@@ -206,6 +206,7 @@ namespace STR
     (
       const double time,  //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector>& fext  //!< external force
     );
 
@@ -216,6 +217,7 @@ namespace STR
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
       const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
     );
@@ -237,6 +239,7 @@ namespace STR
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
       const Teuchos::RCP<Epetra_Vector> disi,  //!< incremental displacements
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
 

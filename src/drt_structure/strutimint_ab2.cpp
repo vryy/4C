@@ -92,7 +92,7 @@ void STR::StruTimIntAB2::IntegrateStep()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, fextn_);
+  ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -107,7 +107,7 @@ void STR::StruTimIntAB2::IntegrateStep()
     disinc.Update(-1.0, *dis_(0), 1.0);
     // internal force
     ApplyForceInternal(timen_, dt,
-                       disn_, Teuchos::rcp(&disinc,false),
+                       disn_, Teuchos::rcp(&disinc,false), veln_,
                        fintn_);
   }
 

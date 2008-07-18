@@ -75,14 +75,15 @@ STR::StruTimIntOneStepTheta::StruTimIntOneStepTheta
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, fint_, stiff_);
+  ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, vel_(), 
+                          fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial external force vector
-  ApplyForceExternal(time_, dis_(), fext_);
+  ApplyForceExternal(time_, dis_(), vel_(), fext_);
 
   // inertial mid-point force vector F_inert
   finertt_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -133,7 +134,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, fextn_);
+  ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -142,7 +143,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   stiff_->Zero();
 
   // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
+  ApplyForceStiffInternal(timen_, dt_, disn_, disi_, veln_, fintn_, stiff_);
 
   // apply forces and stiffness due to constraints
   ApplyForceStiffConstraint(timen_, disn_, fint_, stiff_);

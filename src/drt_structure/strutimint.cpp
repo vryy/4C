@@ -293,7 +293,7 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
   ApplyDirichletBC(time_, dis_(), vel_(), acc_());
 
   // get external force
-  ApplyForceExternal(time_, dis_(), fext);
+  ApplyForceExternal(time_, dis_(), vel_(), fext);
   
   // initialise matrices
   stiff_->Zero();
@@ -312,7 +312,7 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
     discret_.ClearState();
     discret_.SetState("residual displacement", zeros_);
     discret_.SetState("displacement", dis_());
-    //discret_.SetState("velocity",vel_); // not used at the moment
+    if (damping_ == damp_material) discret_.SetState("velocity", vel_());
     discret_.Evaluate(p, stiff_, mass_, fint, null, null);
     discret_.ClearState();
   }
@@ -387,6 +387,7 @@ void STR::StruTimInt::ApplyForceExternal
 (
   const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+  const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
 )
 {
@@ -399,6 +400,7 @@ void STR::StruTimInt::ApplyForceExternal
   // set vector values needed by elements
   discret_.ClearState();
   discret_.SetState("displacement", dis);
+  if (damping_ == damp_material) discret_.SetState("velocity", vel);
   // get load vector
   discret_.EvaluateNeumann(p, *fext);
   discret_.ClearState();
@@ -415,6 +417,7 @@ void STR::StruTimInt::ApplyForceStiffInternal
   const double dt,
   const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
+  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint,  // internal force
   Teuchos::RCP<LINALG::SparseMatrix> stiff  // stiffness matrix
 )
@@ -431,7 +434,7 @@ void STR::StruTimInt::ApplyForceStiffInternal
   discret_.ClearState();
   discret_.SetState("residual displacement", disi);
   discret_.SetState("displacement", dis);
-  //discret_.SetState("velocity", veln_); // not used at the moment
+  if (damping_ == damp_material) discret_.SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_.Evaluate(p, stiff, null, fint, null, null);
   discret_.ClearState();
@@ -448,12 +451,13 @@ void STR::StruTimInt::ApplyForceInternal
   const double dt,
   const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
   const Teuchos::RCP<Epetra_Vector> disi,  // incremental displacements
+  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint  // internal force
 )
 {
   // create the parameters for the discretization
   ParameterList p;
-  // action for elements
+  // action for elements 
   const std::string action = "calc_struct_internalforce";
   p.set("action", action);
   // other parameters that might be needed by the elements
@@ -463,7 +467,7 @@ void STR::StruTimInt::ApplyForceInternal
   discret_.ClearState();
   discret_.SetState("residual displacement", disi);  // these are incremental
   discret_.SetState("displacement", dis);
-  //discret_.SetState("velocity", veln_); // not used at the moment
+  if (damping_ == damp_material) discret_.SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_.Evaluate(p, null, null, fint, null, null);
   discret_.ClearState();

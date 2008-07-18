@@ -116,7 +116,8 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
     // set initial internal force vector
-    ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, fint_, stiff_);
+    ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, vel_(), 
+                            fint_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
@@ -131,7 +132,7 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial external force vector
-  ApplyForceExternal(time_, dis_(), fext_);
+  ApplyForceExternal(time_, dis_(), vel_(), fext_);
 
   // inertial mid-point force vector F_inert
   finertm_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -180,7 +181,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, dis_(), fextn_);
+  ApplyForceExternal(timen_, dis_(), vel_(), fextn_);
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -203,12 +204,14 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   // ordinary internal force and stiffness
   if (midavg_ == midavg_trlike)
   {
-    ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
+    ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  veln_, 
+                            fintn_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
-    ApplyForceStiffInternal(timen_, dt_, dism_, disi_,  fintm_, stiff_);
+    ApplyForceStiffInternal(timen_, dt_, dism_, disi_, velm_,
+                            fintm_, stiff_);
   }
 
   // apply forces and stiffness due to constraints
