@@ -1159,7 +1159,6 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   LINALG::SerialDenseMatrix invJnew(NUMDIM_SOH8,NUMDIM_SOH8);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) 
   {
-    //------------------ new style
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
     // get derivatives wrt to invJhist
@@ -1172,7 +1171,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
     // make inverse of this defgrd
     LINALG::NonsymInverse3x3(defgrd);
     // push-forward of Jinv
-    invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0); // Richtig!!!!!
+    invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
   } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)  
