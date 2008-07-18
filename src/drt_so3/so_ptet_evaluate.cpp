@@ -154,7 +154,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       ptetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
-      if (act==calc_struct_nlnstifflmass) ptetlumpmass(elemat2);
+      if (act==calc_struct_nlnstifflmass) ptetlumpmass(&elemat2);
     }
     break;
 
@@ -494,7 +494,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::ptetlumpmass(Epetra_SerialDenseMatrix& emass)
+void DRT::ELEMENTS::Ptet::ptetlumpmass(Epetra_SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != NULL)
