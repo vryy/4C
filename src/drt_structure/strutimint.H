@@ -290,22 +290,22 @@ namespace STR
     //@{
 
     //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Disp()
-    {
-      return dis_();
-    }
+    Teuchos::RCP<Epetra_Vector> Disp() { return dis_(); }
+
+    //! Return displacements \f$D_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> Dispn() { return disn_; }
 
     //! Return velocities \f$V_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Vel()
-    {
-      return vel_();
-    }
+    Teuchos::RCP<Epetra_Vector> Vel() { return vel_(); }
+
+    //! Return velocities \f$V_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
 
     //! Return accelerations \f$A_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Acc()
-    {
-      return acc_();
-    }
+    Teuchos::RCP<Epetra_Vector> Acc() { return acc_(); }
+
+    //! Return accelerations \f$A_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
 
     //@}
 

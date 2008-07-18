@@ -65,6 +65,27 @@ namespace STR
       name_ab2  //!< Adams-Bashforth 2nd order
     };
 
+    //! Provide the name as string
+    static std::string MapNameEnumToString
+    (
+      const enum NameEnum term  //!< the enum
+    )
+    {
+      switch (term)
+      {
+      case name_zienxie :
+        return "ZienkiewiczXie";
+        break;
+      case name_ab2 :
+        return "AdamsBashforth2";
+        break;
+      default :
+        dserror("Cannot cope with name enum %d", term);
+        return "";
+        break;
+      }
+    }
+
     //! Constructor
     StruTimAda
     (
@@ -92,9 +113,10 @@ namespace STR
                          //!< step repetition
     );
 
-    //! Provide local discretisation error specific to
+    //! Provide local discretisation error vector
+    //! of displacements specific to
     //! marching/auxiliar time integrator pair
-    virtual void EvaluateLocalErrorVector() = 0;
+    virtual void EvaluateLocalErrorDis() = 0;
 
     //@}
 
@@ -131,7 +153,10 @@ namespace STR
     virtual enum NameEnum MethodName() = 0;
 
     //! Provide the name as string
-    virtual std::string MethodTitle() = 0;
+    std::string MethodTitle()
+    {
+      return MapNameEnumToString(MethodName());
+    }
 
     //! Provide local order of accuracy based upon linear test equation
     virtual int MethodOrderOfAccuracy() = 0;
@@ -184,8 +209,8 @@ namespace STR
     //@{
     double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
     double stepsize_;  //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Epetra_Vector> locerrn_;  //!< current local error 
-                                           //!< estimation \f$l_n\f$
+    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local error 
+                                              //!< estimation \f$l_n\f$
     int adaptstep_;
     //@}
 

@@ -55,7 +55,7 @@ namespace STR
     static enum NormEnum MapNormStringToEnum
     (
       const std::string name  //!< name identification string
-      );
+    );
 
     //! Map enum term to string
     static std::string MapNormEnumToString

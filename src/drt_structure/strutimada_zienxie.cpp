@@ -36,20 +36,14 @@ STR::StruTimAdaZienXie::StruTimAdaZienXie
     sdynparams,
     adaparams,
     tis
-  ),
-  genalpha_(Teuchos::null)
+  )
 {
-  // check for generalised-alpha
-  genalpha_ = Teuchos::rcp(dynamic_cast<StruTimIntGenAlpha*>(&(*tis_)), false);
-  if (genalpha_ == Teuchos::null)
+  // check if scheme is second order accurate
+  if (tis_->MethodOrderOfAccuracyDis() > 2)
   {
-    dserror("%s can only work with Generalised-alpha",
+    dserror("%s can only work with <=2nd order accurate marching scheme",
             MethodTitle().c_str());
   }
-
-  // check compatability of marching time integrator
-  if (genalpha_->beta_ == 1./6.)
-    dserror("Generalised-alpha's beta must be non-equal to 1/6");
 
   // hail Mary
   return;
@@ -57,19 +51,27 @@ STR::StruTimAdaZienXie::StruTimAdaZienXie
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::StruTimAdaZienXie::EvaluateLocalErrorVector()
+void STR::StruTimAdaZienXie::EvaluateLocalErrorDis()
 {
-  // accelerations
-  //const Teuchos::RCP<Epetra_Vector> acc = genalpha->GetAcc();
-  //const Teuchos::RCP<Epetra_Vector> accn = genalpha->GetAccn();
+  // get state vectors of marching integrator
+  const Teuchos::RCP<Epetra_Vector> dis = tis_->Disp();  // D_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> disn = tis_->Dispn();  // D_{n+1}^{A2}
+  const Teuchos::RCP<Epetra_Vector> vel = tis_->Vel();  // V_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> acc = tis_->Acc();  // A_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> accn = tis_->Accn();  // A_{n+1}^{A2}
   
-  // 
-  double factor = stepsize_*stepsize_*(1.0-6.0*genalpha_->beta_)/6.0;
+  // build NM3* displacements D_{n+1}^{NM3*}
+  // using the lower or equal than second order accurate new accelerations
+  locerrdisn_->Update(1.0, *dis,
+                      stepsize_, *vel,
+                      0.0);
+  locerrdisn_->Update(stepsize_*stepsize_/3.0, *acc,
+                      stepsize_*stepsize_/6.0, *accn,
+                      1.0);
   
   // provide local discretisation error vector
-  locerrn_->Update(factor, *(genalpha_->accn_),
-                   -factor, *(genalpha_->acc_()), 
-                   0.0);
+  // l_{n+1}^{A2} = D_{n+1}^{NM3*} - D_{n+1}^{A2}
+  locerrdisn_->Update(-1.0, *disn, 1.0);
 
   // see you
   return;

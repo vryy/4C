@@ -57,11 +57,11 @@ STR::StruTimAda::StruTimAda
   timestep_(0),
   stepsizepre_(0),
   stepsize_(sdyn.get<double>("TIMESTEP")),
-  locerrn_(Teuchos::null),
+  locerrdisn_(Teuchos::null),
   adaptstep_(0)
 {
   // allocate local error vector
-  locerrn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // hallelujah
   return;
@@ -92,8 +92,8 @@ void STR::StruTimAda::Integrate()
       // integrate system with marching TIS and 
       tis_->IntegrateStep();
 
-      // get local error vector on #locerrn_
-      EvaluateLocalErrorVector();
+      // get local error vector on #locerrdisn_
+      EvaluateLocalErrorDis();
 
       // check wether step passes
       Indicate(accepted, stpsiznew);
@@ -153,7 +153,7 @@ void STR::StruTimAda::Indicate
 )
 {
   // norm of local discretisation error vector
-  double norm = StruTimIntVector::CalculateNorm(errnorm_, locerrn_); 
+  double norm = StruTimIntVector::CalculateNorm(errnorm_, locerrdisn_); 
 
   // check if acceptable
   accepted = (norm < errtol_);

@@ -50,7 +50,12 @@ namespace STR
   /*====================================================================*/
   /*!
    * \brief Time step size adaptivity with Zienkiewicz-Xie error indicator
-   *        only for generalised-alpha
+   *        only for lower or equal than second order accurate marching
+   *        scheme
+   *
+   * [1] OC Zienkiewicz and YM Xie, A simple error estimator and adaptive
+   *     time stepping procedure for dynamic analysis, Earthquake Engrg.
+   *     Structural Dynamics, 20:871-887, 1991.
    *
    * \author bborn
    * \date 10/07
@@ -75,7 +80,7 @@ namespace STR
     //@{
 
     //! Provide local discretisation error
-    void EvaluateLocalErrorVector();
+    void EvaluateLocalErrorDis();
 
     //@}
 
@@ -86,12 +91,6 @@ namespace STR
     enum StruTimAda::NameEnum MethodName()
     {
       return StruTimAda::name_zienxie;
-    }
-
-    //! Provide the name as string
-    std::string MethodTitle()
-    {
-      return "ZienkiewiczXie";
     }
 
     //! Provide local order of accuracy
@@ -109,9 +108,6 @@ namespace STR
   
     //! not wanted: copy constructor
     StruTimAdaZienXie(const StruTimAdaZienXie& old);
-
-    //! Marching generalised-alpha integrator
-    Teuchos::RCP<StruTimIntGenAlpha> genalpha_;
 
   };
 
