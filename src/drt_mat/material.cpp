@@ -216,21 +216,26 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
                                  const Epetra_SerialDenseMatrix& B,
                                  const double ScalarThis)
 {
+#ifdef DEBUG
   // check sizes
   if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
     dserror("2nd order tensors must be 3 by 3");
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+#endif
 
   // everything in Voigt-Notation
-  Epetra_SerialDenseMatrix AVoigt(6,1);
-  Epetra_SerialDenseMatrix BVoigt(6,1);
+  LINALG::SerialDenseMatrix AVoigt(6,1);
+  LINALG::SerialDenseMatrix BVoigt(6,1);
+
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
   /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
    * however, this is not the case here to arrive at the consistent elasticity */
   AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
   BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
 
   // this is explicitly what the former .Multiply does:
@@ -293,21 +298,26 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
                                  const Epetra_SerialDenseMatrix& B,
                                  const double ScalarThis)
 {
+#ifdef DEBUG
   // check sizes
   if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
     dserror("2nd order tensors must be 3 by 3");
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+#endif
 
   // everything in Voigt-Notation
-  Epetra_SerialDenseMatrix AVoigt(6,1);
-  Epetra_SerialDenseMatrix BVoigt(6,1);
+  LINALG::SerialDenseMatrix AVoigt(6,1);
+  LINALG::SerialDenseMatrix BVoigt(6,1);
+
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
   /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
    * however, this is not the case here to arrive at the consistent elasticity */
   AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
   BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
   C.Multiply('N','T',ScalarAB,BVoigt,AVoigt,1.0);
 
@@ -374,11 +384,13 @@ void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
                                  const Epetra_SerialDenseMatrix& B,
                                  const double ScalarThis)
 {
+#ifdef DEBUG
   // check sizes
   if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
     dserror("2nd order tensors must be 3 by 3");
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+#endif
 
   /* the kronecker-product in matrix notation is:
    * A11*B11 A11*B12 A11*B13   A12*B11 A12*B12 A12*B13   A13*B11 A13*B12 A13*B13
