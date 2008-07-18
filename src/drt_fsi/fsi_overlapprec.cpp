@@ -205,7 +205,7 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
     fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
 
     if (Comm().MyPID()==0)
-      std::cout << tf.ElapsedTime() << std::flush;
+      std::cout << std::scientific << tf.ElapsedTime() << std::flush;
   }
 
   {
@@ -223,7 +223,7 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
     structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
     if (Comm().MyPID()==0)
-      std::cout << ts.ElapsedTime() << std::flush;
+      std::cout << std::scientific << ts.ElapsedTime() << std::flush;
   }
 
   {
@@ -250,7 +250,7 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
     alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
 
     if (Comm().MyPID()==0)
-      std::cout << ta.ElapsedTime() << std::flush;
+      std::cout << std::scientific << ta.ElapsedTime() << std::flush;
   }
 
   if (Comm().MyPID()==0)
