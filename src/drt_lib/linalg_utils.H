@@ -33,97 +33,16 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
+namespace IO
+{
+class DiscretizationWriter;
+}
+
 namespace LINALG
 {
   // forward declaration
   class SparseOperator;
-
-  /// return the first slot of a pair
-  /*!
-    To be used with stl algorithms.
-
-    This should be part of stl but is not. So we define our own version.
-  */
-  template <typename pair_type>
-  struct select1st: public std::unary_function<const pair_type &,
-                                               const typename pair_type::first_type &>
-  {
-    const typename pair_type::first_type &operator()(const pair_type &v) const
-    {
-      return v.first;
-    }
-  };
-
-
-  /// return the second slot of a pair
-  /*!
-    To be used with stl algorithms.
-
-    This should be part of stl but is not. So we define our own version.
-  */
-  template <typename pair_type>
-  struct select2nd: public std::unary_function<const pair_type &,
-                                               const typename pair_type::second_type &>
-  {
-    const typename pair_type::second_type &operator()(const pair_type &v) const
-    {
-      return v.second;
-    }
-  };
-
-
-  /// mem_fun_t version from gcc adapted to Teuchos::RCP
-  /*!
-    \note This is an internal class you never use directly. Use the rcp_fun
-    method instead.
-   */
-  template <class _Ret, class _Tp>
-  class rcp_fun_t : public unary_function<const _Tp*, _Ret>
-  {
-  public:
-    explicit rcp_fun_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
-
-    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
-  private:
-    _Ret (_Tp::*_M_f)();
-  };
-
-
-  /// mem_fun_t version from gcc adapted to Teuchos::RCP
-  /*!
-    \note This is an internal class you never use directly. Use the rcp_fun
-    method instead.
-   */
-  template <class _Ret, class _Tp>
-  class const_rcp_fun_t : public unary_function<const _Tp*, _Ret>
-  {
-  public:
-    explicit const_rcp_fun_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}
-
-    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
-  private:
-    _Ret (_Tp::*_M_f)() const;
-  };
-
-
-  /// mem_fun version from gcc adapted to Teuchos::RCP
-  /*!
-    This is needed if you want to use std containers (vector, set, list, ...)
-    that contain RCPed objects with std algorithms. Use it in place of the
-    usual std::mem_fun method.
-   */
-  template <class _Ret, class _Tp>
-  inline rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)()) { return rcp_fun_t<_Ret, _Tp>(__f); }
-
-  /// mem_fun version from gcc adapted to Teuchos::RCP
-  /*!
-    This is needed if you want to use std containers (vector, set, list, ...)
-    that contain RCPed objects with std algorithms. Use it in place of the
-    usual std::mem_fun method.
-   */
-  template <class _Ret, class _Tp>
-  inline const_rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)() const) { return const_rcp_fun_t<_Ret, _Tp>(__f); }
-
+  class Solver;
 
   /*!
   \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
@@ -191,6 +110,14 @@ namespace LINALG
                              Epetra_SerialDenseVector& L,
                              const bool postproc=false);
 
+  void SymmetricEigenProblem(IO::DiscretizationWriter& output,
+                             LINALG::Solver& solver,
+                             RCP<LINALG::SparseMatrix> A,
+                             RCP<LINALG::SparseMatrix> M,
+                             Epetra_Vector& invtoggle,
+                             int nev,
+                             int step=0,
+                             double time=0.0);
   /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A
@@ -881,6 +808,93 @@ namespace LINALG
    */
   void AllToAllCommunication( const Epetra_Comm& comm,
                               const vector< vector<int> >& send, vector< vector<int> >& recv );
+
+  /// return the first slot of a pair
+  /*!
+    To be used with stl algorithms.
+
+    This should be part of stl but is not. So we define our own version.
+  */
+  template <typename pair_type>
+  struct select1st: public std::unary_function<const pair_type &,
+                                               const typename pair_type::first_type &>
+  {
+    const typename pair_type::first_type &operator()(const pair_type &v) const
+    {
+      return v.first;
+    }
+  };
+
+
+  /// return the second slot of a pair
+  /*!
+    To be used with stl algorithms.
+
+    This should be part of stl but is not. So we define our own version.
+  */
+  template <typename pair_type>
+  struct select2nd: public std::unary_function<const pair_type &,
+                                               const typename pair_type::second_type &>
+  {
+    const typename pair_type::second_type &operator()(const pair_type &v) const
+    {
+      return v.second;
+    }
+  };
+
+
+  /// mem_fun_t version from gcc adapted to Teuchos::RCP
+  /*!
+    \note This is an internal class you never use directly. Use the rcp_fun
+    method instead.
+   */
+  template <class _Ret, class _Tp>
+  class rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  {
+  public:
+    explicit rcp_fun_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
+
+    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
+  private:
+    _Ret (_Tp::*_M_f)();
+  };
+
+
+  /// mem_fun_t version from gcc adapted to Teuchos::RCP
+  /*!
+    \note This is an internal class you never use directly. Use the rcp_fun
+    method instead.
+   */
+  template <class _Ret, class _Tp>
+  class const_rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  {
+  public:
+    explicit const_rcp_fun_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}
+
+    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
+  private:
+    _Ret (_Tp::*_M_f)() const;
+  };
+
+
+  /// mem_fun version from gcc adapted to Teuchos::RCP
+  /*!
+    This is needed if you want to use std containers (vector, set, list, ...)
+    that contain RCPed objects with std algorithms. Use it in place of the
+    usual std::mem_fun method.
+   */
+  template <class _Ret, class _Tp>
+  inline rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)()) { return rcp_fun_t<_Ret, _Tp>(__f); }
+
+  /// mem_fun version from gcc adapted to Teuchos::RCP
+  /*!
+    This is needed if you want to use std containers (vector, set, list, ...)
+    that contain RCPed objects with std algorithms. Use it in place of the
+    usual std::mem_fun method.
+   */
+  template <class _Ret, class _Tp>
+  inline const_rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)() const) { return const_rcp_fun_t<_Ret, _Tp>(__f); }
+
 
 } // namespace LINALG
 

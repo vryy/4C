@@ -136,6 +136,7 @@ using namespace std;
 #define ParObject_ContChainNetw         (int)111
 #define ParObject_Fluid3Nurbs           (int)112
 #define ParObject_ArtWallRemod          (int)113
+#define ParObject_PreStress             (int)114
 
 namespace DRT
 {

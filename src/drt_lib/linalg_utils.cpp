@@ -17,13 +17,11 @@ Maintainer: Michael Gee
 #include <vector>
 
 #include "linalg_utils.H"
-#include "linalg_systemmatrix.H"
 #include "drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
 #include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_RowMatrixTransposer.h"
-
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|
@@ -315,7 +313,7 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
 }
 
 /*----------------------------------------------------------------------*
- |  invert a dense symmetric matrix  (public)                mwgee 04/08|
+ |  invert a dense matrix  (public)                          mwgee 04/08|
  *----------------------------------------------------------------------*/
 double LINALG::NonsymInverse3x3(Epetra_SerialDenseMatrix& A)
 {
@@ -464,6 +462,25 @@ void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
 }
 
 
+
+
+/*----------------------------------------------------------------------*
+| invert a dense nonsymmetric matrix (public)       g.bau 03/07|
+*----------------------------------------------------------------------*/
+void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+{
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
+
+  Epetra_SerialDenseSolver solver;
+  solver.SetMatrix(A);
+  int err = solver.Invert();
+  if (err!=0)
+    dserror("Inversion of nonsymmetric matrix failed.");
+
+ return;
+}
+
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
@@ -504,7 +521,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   const int lda = A.LDA();
   const int dim = A.M();
 
-  int liwork;
+  int liwork=0;
   if (dim == 1) liwork = 1;
   else
   {
@@ -575,24 +592,6 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
     }
   }
   return;
-}
-
-
-/*----------------------------------------------------------------------*
-| invert a dense nonsymmetric matrix (public)       g.bau 03/07|
-*----------------------------------------------------------------------*/
-void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
-{
-  if (A.M() != A.N()) dserror("Matrix is not square");
-  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
-
-  Epetra_SerialDenseSolver solver;
-  solver.SetMatrix(A);
-  int err = solver.Invert();
-  if (err!=0)
-    dserror("Inversion of nonsymmetric matrix failed.");
-
- return;
 }
 
 
@@ -1558,5 +1557,11 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
 
 #endif // PARALLEL
 }
+
+
+
+
+
+
 
 #endif  // #ifdef CCADISCRET
