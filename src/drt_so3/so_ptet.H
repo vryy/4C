@@ -525,7 +525,7 @@ protected:
                                 Epetra_SerialDenseVector* force);
 
   //! lump mass matrix (bborn 07/08)
-  void ptetlumpmass(Epetra_SerialDenseMatrix& emass);
+  void ptetlumpmass(Epetra_SerialDenseMatrix* emass);
 
   void DeformationGradient(vector<double>& disp);
 
