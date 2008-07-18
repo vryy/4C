@@ -475,9 +475,6 @@ void XFEM::DofManager::toGmsh(
       }
       std::cout << " done" << endl;
     }
-    
-    
-    //f_system << IO::GMSH::getConfigString(2);
     f_system.close();
   }
 #endif

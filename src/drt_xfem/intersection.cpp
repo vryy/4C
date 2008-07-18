@@ -4600,7 +4600,6 @@ void XFEM::Intersection::debugFaceMarker(
     }
   }
   f_system << "};" << endl;
-  //f_system << IO::GMSH::getConfigString(2);
   f_system.close();
 }
 

@@ -175,7 +175,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
-    //f_system << IO::GMSH::getConfigString(3);
     f_system.close();
     cout << " done" << endl;
   }
@@ -222,7 +221,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       gmshfilecontent << "};" << endl;
       f_system << gmshfilecontent.str();
     }
-    //f_system << IO::GMSH::getConfigString(3);
     f_system.close();
     cout << " done" << endl;
   }
@@ -270,7 +268,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       gmshfilecontentP << "};" << endl;
       f_systemP << gmshfilecontentP.str();
     }
-    //f_system << IO::GMSH::getConfigString(3);
     f_systemP.close();
     cout << " done" << endl;
     xTree_->printTree(allfiles.outputfile_kenner, step);

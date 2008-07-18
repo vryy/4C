@@ -169,23 +169,5 @@ std::string IO::GMSH::disToString(
   return gmshfilecontent.str();
 }
 
-std::string IO::GMSH::getConfigString(const int numview)
-{
-  std::stringstream gmshfilecontent;
-  for (int iview = 0; iview < numview; ++iview)
-  {
-    gmshfilecontent << "View["<<iview
-        <<"].RangeType = 2;   // Value scale range type (1=default, 2=custom, 3=per time step)"
-        << endl;
-    gmshfilecontent << "View["<<iview
-        <<"].CustomMax = 1.0; // User-defined maximum value to be displayed"
-        << endl;
-    gmshfilecontent << "View["<<iview
-        <<"].CustomMin = 0.0; // User-defined minimum value to be displayed"
-        << endl;
-  }
-  return gmshfilecontent.str();
-}
-
 
 #endif // #ifdef CCADISCRET

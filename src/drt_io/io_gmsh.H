@@ -1,15 +1,15 @@
 /*!
  * \file io_gmsh.H
- \brief simple element print library for Gmsh (mostly for debuging, only sequential)
-
- <pre>
- Maintainer: Axel Gerstenberger
-             gerstenberger@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236
- </pre>
-
- For a complete description, see the section about post processing formations in the Gmsh documentation 
+ * \brief simple element print library for Gmsh (mostly for debuging, only sequential)
+ * 
+ * <pre>
+ * Maintainer: Axel Gerstenberger
+ *             gerstenberger@lnm.mw.tum.de
+ *             http://www.lnm.mw.tum.de
+ *             089 - 289-15236
+ * </pre>
+ * 
+ * For a complete description, see the section about post processing formations in the Gmsh documentation 
  */
 #ifndef GMSH_H
 #define GMSH_H
@@ -279,59 +279,11 @@ namespace IO
       return gmsh_ele_line.str();
     }
 
-    inline std::string text3dToString(
-        const BlitzVec3& xyz,
-        const std::string text, 
-        const int fontsize)
-    {
-      std::stringstream gmsh_ele_line;
-
-      gmsh_ele_line << "T3";
-      // coordinates
-      gmsh_ele_line << "("<< scientific << xyz(0)<<",";
-      gmsh_ele_line << scientific << xyz(1)<<",";
-      gmsh_ele_line << scientific << xyz(2) <<",";             
-      gmsh_ele_line << fontsize << ")";
-      gmsh_ele_line <<"{\"" << text <<"\"};";
-
-      return gmsh_ele_line.str();
-    }
-
-    template<class M> std::string cellWithScalarAndTextToString(
-        const DRT::Element::DiscretizationType distype,    ///< element shape
-        const double scalar,
-        const M& xyze,
-        const std::string& text, 
-        const int fontsize)
-    {
-      std::stringstream gmsh_ele_line;
-
-      gmsh_ele_line << cellWithScalarToString(distype, scalar, xyze) << endl;
-      // header for this element
-      BlitzVec3 coords;
-      coords(0)=xyze(0, 0);
-      coords(1)=xyze(1, 0);
-      coords(2)=xyze(2, 0);
-
-      gmsh_ele_line << text3dToString(coords, text, fontsize);
-
-      return gmsh_ele_line.str();
-    }
-
-    template<class M> std::string cellWithScalarAndTextToString(
-        const DRT::Element::DiscretizationType distype,     ///< element shape
-        const double scalar,
-        const M& xyze,
-        const std::string text)
-    {
-      return cellWithScalarAndTextToString(distype, scalar, xyze, text, 0);
-    }
-
-
+    //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
     template<class V, class M> std::string cellWithScalarFieldToString(
-        const DRT::Element::DiscretizationType distype,        ///< element shape
-        const V& scalarfield,
-        const M& xyze
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const V&                                scalarfield,    ///< scalar field in the element
+        const M&                                xyze            ///< position array
     )
     {
       std::stringstream gmsh_ele_line;
@@ -345,10 +297,12 @@ namespace IO
       return gmsh_ele_line.str();
     }
 
+    //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
     template<class M1, class M2> std::string cellWithVectorFieldToString(
-        const DRT::Element::DiscretizationType distype,        ///< element shape
-        const M1& vectorfield,
-        const M2& xyze)
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const M1&                               vectorfield,    ///< vector field in the element
+        const M2&                               xyze            ///< position array
+        )
     {
       std::stringstream gmsh_ele_line;
       // header for this element
@@ -361,10 +315,12 @@ namespace IO
       return gmsh_ele_line.str();
     }
 
+    //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
     template<class M1, class M2> std::string cellWithTensorFieldToString(
-        const DRT::Element::DiscretizationType distype,        ///< element shape
-        const M1& tensorfield,
-        const M2& xyze)
+        const DRT::Element::DiscretizationType  distype,        ///< element shape
+        const M1&                               tensorfield,    ///< tensor field in the element
+        const M2&                               xyze            ///< position array
+        )
     {
       std::stringstream gmsh_ele_line;
       // header for this element
@@ -376,6 +332,26 @@ namespace IO
 
       return gmsh_ele_line.str();
     }
+    
+    /// print a piece of text at a given position
+    inline std::string text3dToString(
+        const BlitzVec3&    xyz,      ///< 3d Position of text
+        const std::string   text,     ///< text to be printed 
+        const int           fontsize  ///< font size
+        )
+    {
+      std::stringstream gmsh_ele_line;
+
+      gmsh_ele_line << "T3";
+      // coordinates
+      gmsh_ele_line << "("<< scientific << xyz(0)<<",";
+      gmsh_ele_line << scientific << xyz(1)<<",";
+      gmsh_ele_line << scientific << xyz(2) <<",";             
+      gmsh_ele_line << fontsize << ")";
+      gmsh_ele_line <<"{\"" << text <<"\"};";
+
+      return gmsh_ele_line.str();
+    }    
 
     //! print discretization in initial configuration (t = 0)
     std::string disToString(
@@ -397,8 +373,6 @@ namespace IO
         const Teuchos::RCP<DRT::Discretization> dis,
         const std::map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
         const std::map<int,XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap);
-
-    std::string getConfigString(const int numview);
 
   }
 }
