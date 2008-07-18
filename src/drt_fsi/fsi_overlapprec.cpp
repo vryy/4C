@@ -24,15 +24,13 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
  *----------------------------------------------------------------------*/
 int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+#if 0
   if (structuresplit_)
     FSALowerGS(X, Y);
   else
+#endif
     SAFLowerGS(X, Y);
 
-  //MergeSolve(X, Y);
-
-  //UpperGS(X, Y);
-  //SGS(X, Y);
   return 0;
 }
 
@@ -103,9 +101,18 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     Epetra_Time ta(Comm());
 
     Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-    const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
-    aleBoundOp.Multiply(false,*sy,*tmpax);
-    ax->Update(-1.0,*tmpax,1.0);
+    if (structuresplit_)
+    {
+      const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
+      aleBoundOp.Multiply(false,*fy,*tmpax);
+      ax->Update(-1.0,*tmpax,1.0);
+    }
+    else
+    {
+      const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
+      aleBoundOp.Multiply(false,*sy,*tmpax);
+      ax->Update(-1.0,*tmpax,1.0);
+    }
     alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
 
     if (Comm().MyPID()==0)
