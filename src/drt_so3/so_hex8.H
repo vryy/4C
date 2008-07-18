@@ -29,6 +29,11 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
+// prestressing object
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+#include "prestress.H"
+#endif
+
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Hex8
@@ -356,7 +361,7 @@ protected:
     eas_init_multi,
     eas_set_multi,
     postprocess_stress,
-    update_gl,
+    prestress_update,
     multi_readrestart
   };
 
@@ -414,11 +419,18 @@ protected:
   //! determinant of Jacobian in material frame
   vector<double>                                   detJ_;
 
-  //! green lagrange strains storage needed for prestressing structures
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
-  { return glprestrain_; }
-  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+  /// Prestressing object
+  RCP<DRT::ELEMENTS::PreStress>                    prestress_;
+  
+  // compute Jacobian mapping wrt to deformed configuration
+  void UpdateJacobianMapping(const vector<double>& disp, 
+                             DRT::ELEMENTS::PreStress& prestress);
+
+  // compute defgrd in all gp for given disp
+  void DefGradient(const vector<double>& disp, 
+                   Epetra_SerialDenseMatrix& gpdefgrd,
+                   DRT::ELEMENTS::PreStress& prestress);
 #endif
 
 
@@ -469,6 +481,7 @@ protected:
     public:
       Integrator_So_hex8();
   };
+
   /***************OBSOLETE**********************************/
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,

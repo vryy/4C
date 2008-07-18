@@ -1,0 +1,136 @@
+/*!----------------------------------------------------------------------
+\file prestress.H
+
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+#ifndef PRESTRESS_H
+#define PRESTRESS_H
+
+#include "../drt_lib/drt_parobject.H"
+
+#include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_SerialDenseMatrix.h"
+
+namespace DRT
+{
+namespace ELEMENTS
+{
+
+/*!
+\brief A class for handling the prestressing in finite deformations
+
+\author gee (gee@lnm.mw.tum.de)
+*/
+class PreStress : public DRT::ParObject
+{
+public:
+
+  /*!
+  \brief Standard Constructor
+  */
+  PreStress(const int numnode, const int ngp);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Node
+
+  */
+  PreStress(const DRT::ELEMENTS::PreStress& old);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~PreStress() {}
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_PreStress;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  /// get history of deformation gradient
+  inline Epetra_SerialDenseMatrix& FHistory() const { return *Fhist_; }
+
+  /// get history of of reference configuration (inverse of Jacobian)
+  inline Epetra_SerialDenseMatrix& JHistory() const { return *invJhist_; }
+  
+  /// put a matrix to storage
+  inline void MatrixtoStorage(const int gp, 
+                              const Epetra_SerialDenseMatrix& Mat,
+                              Epetra_SerialDenseMatrix& gpMat) const
+  {
+    for (int i=0; i<gpMat.N(); ++i) gpMat(gp,i) = Mat.A()[i];
+    return;
+  }
+  
+  /// get matrix from storage
+  inline void StoragetoMatrix(const int gp, 
+                              Epetra_SerialDenseMatrix& Mat,
+                              const Epetra_SerialDenseMatrix& gpMat) const
+  {
+    for (int i=0; i<gpMat.N(); ++i) Mat.A()[i] = gpMat(gp,i);
+    return;
+  }
+
+private:
+
+  /// no. nodal points of element
+  int                                       numnode_;
+  
+  /// history of deformation gradient
+  Teuchos::RCP<Epetra_SerialDenseMatrix>    Fhist_;
+
+  /// updated Lagrange inverse of Jacobian
+  Teuchos::RCP<Epetra_SerialDenseMatrix>    invJhist_;
+
+  /// get number of gaussian points considered
+  inline int NGP() { return Fhist_->M(); }
+  
+  /// get no. of nodal points
+  inline int NumNode() { return numnode_; }
+
+}; // class PreStress
+} // namespace ELEMENTS
+} // namespace DRT
+
+
+
+
+
+
+
+
+
+
+
+#endif  // #ifndef PreStress
+#endif  // #if defined(PRESTRESS) || defined(POSTSTRESS)
+#endif  // #ifdef CCADISCRET

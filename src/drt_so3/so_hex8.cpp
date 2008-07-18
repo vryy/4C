@@ -30,13 +30,15 @@ data_()
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
   neas_ = 0;
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
-#endif
   invJ_.resize(NUMGPT_SOH8);
   detJ_.resize(NUMGPT_SOH8);
   for (int i=0; i<NUMGPT_SOH8; ++i)
     invJ_[i].Shape(3,3);
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+#endif
+
   return;
 }
 
@@ -52,15 +54,16 @@ neas_(old.neas_),
 data_(old.data_),
 detJ_(old.detJ_)
 {
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
-#endif
   invJ_.resize(old.invJ_.size());
   for (int i=0; i<(int)invJ_.size(); ++i)
   {
     invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
     invJ_[i] = old.invJ_[i];
   }
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+#endif
 
   return;
 }
@@ -111,8 +114,10 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,tmp);
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  // glprestrain_
-  AddtoPack(data,*glprestrain_);
+  // prestress_
+  vector<char> tmpprestress(0);
+  prestress_->Pack(tmpprestress);
+  AddtoPack(data,tmpprestress);
 #endif
 
   // detJ_
@@ -154,8 +159,10 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  // glprestrain_
-  ExtractfromPack(position,data,*glprestrain_);
+  // prestress_
+  vector<char> tmpprestress(0);
+  ExtractfromPack(position,data,tmpprestress);
+  prestress_->Unpack(tmpprestress);
 #endif
   // detJ_
   ExtractfromPack(position,data,detJ_);
