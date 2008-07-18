@@ -89,8 +89,7 @@ namespace MAT
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress, 
-                  int Id);
+                  Epetra_SerialDenseVector* stress);
 
     double Density() {return matdata_->m.artwallremod->density;}
     

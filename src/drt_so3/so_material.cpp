@@ -43,6 +43,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/hyperpolyconvex_ogden.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/contchainnetw.H"
+#include "../drt_mat/artwallremod.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -128,6 +129,16 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
+      
+      break;
+    }
+    case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
+    {
+      MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
+      if (!remo->Initialized())
+        remo->Initialize(NUMGPT_SOH8, this->Id());
+      remo->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = remo->Density();
       
       break;
     }

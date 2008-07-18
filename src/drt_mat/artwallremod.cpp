@@ -137,7 +137,7 @@ void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid)
   srand ( time(NULL) + 5 + eleid*numgp );
 
   gamma_ = rcp(new vector<double>);
-  lambda_ = rcp(new vector<vector<double> >);
+  lambda_ = rcp(new vector<vector<double> > (numgp));
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   mytime_ = rcp(new vector<double>);
@@ -169,7 +169,6 @@ void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid)
     mytime_->push_back(matdata_->m.artwallremod->rembegt);
   }
 
-  //mytime_ = 1.0;  // carefull!
   isinit_ = true;
   
   return ;
@@ -187,8 +186,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                   const int gp,
                                   Teuchos::ParameterList& params,
                                   Epetra_SerialDenseMatrix* cmat,
-                                  Epetra_SerialDenseVector* stress,
-                                  int eleId)
+                                  Epetra_SerialDenseVector* stress)
 
 {
   const double mue = matdata_->m.artwallremod->mue;
@@ -212,7 +210,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
         - 0.25 * C(2)*C(3)*C(3)
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);
-  const double I3invcubroot = pow(I3,-1.0/3.0);
+  const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
   
   // invert C
   Epetra_SerialDenseVector Cinv(6);
@@ -224,94 +222,110 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
   Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
   Cinv.Scale(1.0/I3);
-
+  
   // isotropic part: NeoHooke  ************************************************
   // NeoHooke with penalty W = W^dev(C) + U(J) 
   // W = 1/2 mue (^I1-3) + 1/2 kappa (J-1)^2
 
-  // Volumetric part of PK2 stress
-  Epetra_SerialDenseVector SVol(Cinv);
-  SVol.Scale(kappa*(J-1.0)*J);
-  *stress+=SVol;
-
-  // Deviatoric elastic part (2 d W^dev/d C)
-  Epetra_SerialDenseVector SDev(Cinv);
-  SDev.Scale(-1.0/3.0*I1);
-  SDev+=Id;
-  SDev.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
-  *stress+=SDev;
-
-  // elasticity matrix
-  double scalar1 = 2.0*kappa*J*J - kappa*J;
-  double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
-  double scalar3 = 2.0/3.0*mue*I3invcubroot*I1;
-  double scalar4 = 2.0/3.0*mue*I3invcubroot;
-
-  // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
-  AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
-  for (int i=0; i<6; ++i)
-  {
-     for (int j=0; j<6; ++j)
-     {
-       // add volumetric elastic part 2
-       (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j) // add scalar Cinv x Cinv
-       // add visco-elastic deviatoric part 2
-           + (-scalar4)*Id(i)*Cinv(j)// add scalar Id x Cinv
-           + (-scalar4)*Id(j)*Cinv(i)// add scalar Cinv x Id
-           + (scalar3)*Cinv(i)*Cinv(j)/3.0;// add scalar Cinv x Cinv
-     }
+  // S = Svol + Siso
+  // Svol = J*kappa*(J-1)
+  // Isochoric (deviatoric) part via projection PP:Sbar, see Holzapfel p. 230
+  // Siso = J^{-2/3}  Dev[Sbar] = J^{-2/3} [Sbar - 1/3 trace(Sbar C) Cinv
+  // for this Wiso trace(C Sbar) = trace(mue I C) = mue I1
+  const double third = 1./3.;
+  const double p = kappa*(J-1);
+  for (int i = 0; i < 6; ++i) {
+    (*stress)(i) = J*p * Cinv(i)  + incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
   }
-  // anisotropic part: ***************************************************
-  // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((I_{5,6} - 1.0),2)-1.0)); fiber SEF
+
+  // Elasticity = Cvol + Ciso, via projection see Holzapfel p. 255
   
-  // fiber directions
-  vector<double> a1(3,0.0);
-  vector<double> a2(3,0.0);
+  // Cvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
+  // Ciso = 0 + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
   
-  // structural tensors in voigt-notation
-  Epetra_SerialDenseVector A1(6);
-  Epetra_SerialDenseVector A2(6);
-  for (int i = 0; i < 3; ++i) {
-    A1(i) = a1[i]*a1[i];
-    A2(i) = a2[i]*a2[i];
-  }
-  A1(3) = a1[0]*a1[1]; A1(4) = a1[1]*a1[2]; A1(5) = a1[0]*a1[2];
-  A2(3) = a2[0]*a2[1]; A2(4) = a2[1]*a2[2]; A2(5) = a2[0]*a2[2];
+  AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
   
-  // modified (fiber-) invariants
-  double I4 = 0.0;  // I4 = A1:C^dev
-  double I6 = 0.0;  // I6 = A2:C^dev
-  for (int i=0; i<6; ++i){
+  const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
+  // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
+  //AddtoCmatHolzapfelProduct((*cmat),Cinv,fac);  // fac Cinv o Cinv
+
+  Epetra_SerialDenseMatrix Psl(6,6);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
+  AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // Cinv o Cinv 
+  
+  for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
-      I4 +=  I3invcubroot*C(i) * A1(j);
-      I6 +=  I3invcubroot*C(i) * A2(j);
+      double Siso_i = incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
+      double Siso_j = incJ* (mue*Id(j) - third*mue*I1*Cinv(j));
+      (*cmat)(i,j) += J*(p+J*kappa) * Cinv(i) * Cinv(j)  // J(p + J dp/dJ) Cinv x Cinv
+             + fac * Psl(i,j)                            // fac Cinv o Cinv 
+             - fac*third * Cinv(i) * Cinv(j)             // - fac/3 Cinv x Cinv
+             - 2*third * Cinv(i) * Siso_j                // -2/3 Cinv x Siso
+             - 2*third * Cinv(j) * Siso_i;               // -2/3 Siso x Cinv
+      Psl(i,j) += (-third) * Cinv(i) * Cinv(j);    // on the fly complete Psl needed later
     }
   }
   
-  // scalars
-  const double expo1 = k2 * (I4 - 1.0) * (I4 - 1.0);
-  const double dWdI4 = I3invcubroot * k1 * exp(expo1);
-  const double expo2 = k2 * (I6 - 1.0) * (I6 - 1.0);
-  const double dWdI6 = I3invcubroot * k1 * exp(expo2);
+  // anisotropic part: ***************************************************
+  // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
   
-  // add anisotropic PK2 stress
-  Epetra_SerialDenseVector Saniso(A1);
-  Saniso.Scale(dWdI4);
-  *stress += Saniso;
-  Saniso = A2;
-  Saniso.Scale(dWdI6);
-  *stress += Saniso;
+  // fiber directions
+  Epetra_SerialDenseVector a1(3);
+  Epetra_SerialDenseVector a2(3);
   
-  // add anistropic elasticity
-  const double scalar = I3invcubroot*I3invcubroot * k1 *2*k2;
-  for (int i=0; i<6; ++i){
-     for (int j=0; j<6; ++j){
-       // add volumetric elastic part 2
-       (*cmat)(i,j) += scalar * exp(expo1) * Cinv(i) * A1(j)  // add d2WdI4 Cinv x A1
-                    +  scalar * exp(expo1) * Cinv(j) * A1(i)  // add d2WdI4 A1 x Cinv
-                    +  scalar * exp(expo2) * Cinv(i) * A2(j)  // add d2WdI6 Cinv x A2
-                    +  scalar * exp(expo2) * Cinv(j) * A2(i); // add d2WdI6 A2 x Cinv
-     }
+  a1(0) = 1.0;
+  
+  
+  // structural tensors in voigt notation
+  Epetra_SerialDenseVector A1(6);
+  Epetra_SerialDenseVector A2(6);
+  for (int i = 0; i < 3; ++i) {
+    A1(i) = a1(i)*a1(i);
+    A2(i) = a2(i)*a2(i);
+  }
+  A1(3) = a1(0)*a1(1); A1(4) = a1(1)*a1(2); A1(5) = a1(0)*a1(2);
+  A2(3) = a2(0)*a2(1); A2(4) = a2(1)*a2(2); A2(5) = a2(0)*a2(2);
+
+  // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
+  // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
+  const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2) 
+                    + 2.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
+  const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2) 
+                    + 2.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
+  const double exp1 = exp(k2*(J4-1.)*(J4-1.));
+  const double exp2 = exp(k2*(J6-1.)*(J6-1.));
+  
+  // PK2 fiber part in splitted formulation, see Holzapfel p. 271 
+  Epetra_SerialDenseVector Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
+  const double fib1 = 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
+  const double fib2 = 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
+  Sfiso.Scale(fib1);
+  Epetra_SerialDenseVector Stemp(A2);
+  Stemp.Scale(fib2);
+  Sfiso += Stemp;
+  
+  const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2) 
+                 + 2.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
+  // compute Sfiso = J^{-2/3} * (Sfbar - 1/3 trace(Sfbar C) Cinv
+  for (int i = 0; i < 6; ++i) {
+    Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
+  }
+  (*stress) += Sfiso;
+  
+  // Elasticity fiber part in splitted fromulation, see Holzapfel p. 255 and 272
+  const double delta7bar1 = 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
+  const double delta7bar2 = 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
+  
+  for (int i = 0; i < 6; ++i) {
+    for (int j = 0; j < 6; ++j) {
+      double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv 
+      double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);
+      double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
+      double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
+      (*cmat)(i,j) += delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
+                    + delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
+                    + 2.*third*incJ*traceCSfbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar C) Psl
+                    - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
+    }
   }
 
   return;

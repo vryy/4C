@@ -26,6 +26,7 @@ Maintainer: Lena Wiechert
 #include "mooneyrivlin.H"
 #include "visconeohooke.H"
 #include "contchainnetw.H"
+#include "artwallremod.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
 #include "hyperpolyconvex_ogden.H"
@@ -79,6 +80,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new ViscoNeoHooke(actmat));
   case m_contchainnetw:
     return Teuchos::rcp(new ContChainNetw(actmat));
+  case m_artwallremod:
+    return Teuchos::rcp(new ArtWallRemod(actmat));
   case m_neohooke:
     return Teuchos::rcp(new NeoHooke(actmat));
   case m_aaaneohooke:
