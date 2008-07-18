@@ -91,7 +91,7 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
     if (Comm().MyPID()==0)
-      std::cout << ts.ElapsedTime() << std::flush;
+      std::cout << std::scientific << ts.ElapsedTime() << std::flush;
   }
 
   {
@@ -109,7 +109,7 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
 
     if (Comm().MyPID()==0)
-      std::cout << ta.ElapsedTime() << std::flush;
+      std::cout << std::scientific << ta.ElapsedTime() << std::flush;
   }
 
   {
@@ -129,11 +129,36 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
 
     if (Comm().MyPID()==0)
-      std::cout << tf.ElapsedTime() << std::flush;
+      std::cout << std::scientific << tf.ElapsedTime() << std::flush;
   }
 
-    if (Comm().MyPID()==0)
-      std::cout << "\n";
+  if (Comm().MyPID()==0)
+    std::cout << "\n";
+
+#if 0
+  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+  Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+
+  structInnerOp.EpetraMatrix()->Apply(*sy,*tmpsx);
+  aleInnerOp.EpetraMatrix()->Apply(*ay,*tmpax);
+  fluidInnerOp.EpetraMatrix()->Apply(*fy,*tmpfx);
+
+  sx->Update(-1,*tmpsx,1);
+  ax->Update(-1,*tmpax,1);
+  fx->Update(-1,*tmpfx,1);
+
+  double sn,an,fn;
+  sx->Norm2(&sn);
+  ax->Norm2(&an);
+  fx->Norm2(&fn);
+
+  if (Comm().MyPID()==0)
+    std::cout << "    structural |res|: " << std::scientific << sn
+              << "    ale |res|: " << std::scientific << an
+              << "    fluid |res|: " << std::scientific << fn
+              << "\n";
+#endif
 
   // build solution vector
 
