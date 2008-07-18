@@ -67,11 +67,11 @@ void XFEM::createDofMap(
           }
         }
 
-        const double ratio = XFEM::AreaRatio(*xfemele,ih);
-        const bool almost_empty_element = (fabs(1.0-ratio) < 1.0e-6);
         if (has_label)
         {
-
+          const double ratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+          const bool almost_empty_element = (fabs(1.0-ratio) < 1.0e-4);
+          
           if ( not almost_empty_element)  
           { // void enrichments for everybody !!!
             const int nen = xfemele->NumNode();

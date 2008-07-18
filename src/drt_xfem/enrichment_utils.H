@@ -194,7 +194,16 @@ void computeVectorCellNodeValues(
  * \brief calculates the fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
  */
-double AreaRatio(
+double DomainCoverageRatio(
+    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+    const XFEM::InterfaceHandle&  ih             ///< interface information
+    );
+
+/*! 
+ * \brief calculates the area fraction of an element that is covered by fictitious domains.
+ * \warning should be done separately for each enrichment, but currently it's not done
+ */
+double BoundaryCoverageRatio(
     const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );

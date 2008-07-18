@@ -529,7 +529,7 @@ void XFEM::computeVectorCellNodeValues(
   Calculate ratio between fictitious element size and normal size
   */
 template <DRT::Element::DiscretizationType DISTYPE>
-double AreaRatioT(
+double DomainCoverageRatioT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
@@ -659,7 +659,7 @@ double AreaRatioT(
     return area_fict / area_ele;
 }
 
-double XFEM::AreaRatio(
+double XFEM::DomainCoverageRatio(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
@@ -667,11 +667,11 @@ double XFEM::AreaRatio(
   switch (ele.Shape())
   {
     case DRT::Element::hex8:
-      return AreaRatioT<DRT::Element::hex8>(ele,ih);
+      return DomainCoverageRatioT<DRT::Element::hex8>(ele,ih);
     case DRT::Element::hex20:
-      return AreaRatioT<DRT::Element::hex20>(ele,ih);
+      return DomainCoverageRatioT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
-      return AreaRatioT<DRT::Element::hex27>(ele,ih);
+      return DomainCoverageRatioT<DRT::Element::hex27>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
