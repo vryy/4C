@@ -87,14 +87,14 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
   // info to user : OST --- your oriental scheme
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha"
+    std::cout << "with generalised-alpha" << std::endl
+              << "   beta = " << beta_ << std::endl
+              << "   gamma = " << gamma_ << std::endl
+              << "   alpha_f = " << alphaf_ << std::endl
+              << "   alpha_m = " << alpham_ << std::endl
+              << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
+              << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
-    std::cout << "("
-              << "beta=" << beta_
-              << ", gamma=" << gamma_
-              << ", alpha_f=" << alphaf_
-              << ", alpha_m=" << alpham_
-              << ")" << std::endl << std::endl;
   }
 
   // create state vectors
