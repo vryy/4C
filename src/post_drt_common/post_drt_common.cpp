@@ -525,7 +525,7 @@ PostField PostProblem::getfield(MAP* field_info)
   char* field_name = map_read_string(field_info, "field");
   int numnd = map_read_int(field_info, "num_nd");
   int numele = map_read_int(field_info, "num_ele");
-  int type;
+  int type=0;
 
 
   RCP<DRT::Discretization> dis;
