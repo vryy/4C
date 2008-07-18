@@ -203,21 +203,21 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > data =
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+  const RCP<DRT::Discretization> dis = field_->discretization();
 
   ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
-  RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
+  RCP<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
+  RCP<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
   dis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
 
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RefCountPtr<Epetra_MultiVector> nodal_stresses = rcp(new Epetra_MultiVector(*nodemap, 6));
+  RCP<Epetra_MultiVector> nodal_stresses = rcp(new Epetra_MultiVector(*nodemap, 6));
 
   const int numnodes = dis->NumMyRowNodes();
 
@@ -234,7 +234,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   const Epetra_BlockMap& datamap = nodal_stresses->Map();
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
   Epetra_Import proc0dofimporter(*proc0map_,datamap);
   int err = data_proc0->Import(*nodal_stresses,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
