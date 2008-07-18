@@ -424,13 +424,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           STRUCT_DYNAMIC::damp_rayleigh,
                                           STRUCT_DYNAMIC::damp_material),
                                &sdyn);
-/*
-
-  setStringToIntegralParameter("DAMPING","No",
-                               "build raleigh damping matrix and use it from M_DAMP x M + K_DAMP x K",
-                               yesnotuple,yesnovalue,
-                               &sdyn);
-*/
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
   // Iteration
