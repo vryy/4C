@@ -61,7 +61,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | global variable *solv, vector of length numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
  |                                                       m.gee 11/00    |
