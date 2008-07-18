@@ -66,7 +66,12 @@ class Beam3Register;
 namespace ELEMENTS
 {
 /*!
-\brief three dimensional nonlinear Reissner beam element
+\brief three dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.2,
+section 17.2 ("an interpretation of an element due to simo and vu-quoc"), p. 226 - 231; the current
+implementation sets the initial director angles and curvature to zero, which can be done without loss
+of generality since any initial rotation cancels out in the equations (17.72) and (17.76). As a consequence
+the current nodal directors do not appear in the element, but only the values of the current director
+angles minus reference director angles, respectively 
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -261,11 +266,7 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
-  
-  void Arbeit(double& AN,double& AM,double& AQ, double& xv);
-  void Thermik(double& kT);
-                              
+                              Epetra_SerialDenseVector& elevec1);                            
   //@}
 
   
@@ -315,10 +316,6 @@ private:
   BlitzVec3 betaplusalphanew_;
   BlitzVec3 betaminusalphaold_;
   BlitzVec3 betaminusalphanew_;
-
-
-  //! Tnew_ is to a point of time
-  double timenew_;
   
   //! cross section area
   double crosssec_;
@@ -342,9 +339,8 @@ private:
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
 
+  //! @name Internal calculation methods
 
-  // internal calculation methods
-  
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
   
@@ -373,6 +369,8 @@ private:
   
   //! lump mass matrix (bborn 07/08)
   void b3_lumpmass(Epetra_SerialDenseMatrix* emass);
+  
+  //@}
 			    
   // don't want = operator
   Beam3& operator = (const Beam3& old);

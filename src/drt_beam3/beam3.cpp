@@ -27,7 +27,6 @@ DRT::Element(id,element_beam3,owner),
 data_(),
 material_(0),
 lrefe_(0),
-timenew_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
@@ -59,7 +58,6 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  betaplusalphanew_(old.betaplusalphanew_),
  betaminusalphaold_(old.betaminusalphaold_),
  betaminusalphanew_(old.betaminusalphanew_),
- timenew_(old.timenew_),
  crosssec_(old.crosssec_),
  crosssecshear_(old.crosssecshear_),
  Iyy_(old.Iyy_),
@@ -149,7 +147,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,betaplusalphanew_);
   AddtoPack(data,betaminusalphaold_);
   AddtoPack(data,betaminusalphanew_);
-  AddtoPack(data,timenew_);
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
@@ -201,7 +198,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,betaplusalphanew_);
   ExtractfromPack(position,data,betaminusalphaold_);
   ExtractfromPack(position,data,betaminusalphanew_);   
-  ExtractfromPack(position,data,timenew_);
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -366,25 +362,55 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
       
       /*initial triad Told_ = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
        * of area tensor */
-      for (int line; line<3; line++)	
+      for (int k=0; k<3; k++)	
       {
-        currele->Told_(line,0) = xrefe(line,1)-xrefe(line,0)/currele->lrefe_;
+        currele->Told_(k,0) = ( xrefe(k,1)-xrefe(k,0) )/currele->lrefe_;        
       }
       /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
        * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
        * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
       
-      //seeting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-      double lin1norm = pow(pow(currele->Told_(1,0),2)+pow(currele->Told_(2,0),2),0.5);
-      currele->Told_(0,1) =  0;
-      currele->Told_(1,1) =  currele->Told_(1,0)/lin1norm;
-      currele->Told_(2,1) = -currele->Told_(2,0)/lin1norm;
+      //t2 is calculated as a unit vector in the x2x3-plane orthogonal to t1
+      currele->Told_(0,1) = 0;
+      //if t1 is a unit direction vector for the x1-axis t2 is set to a unit direction vector of the x2-axis
+      if (currele->Told_(1,0) == 0 && currele->Told_(2,0) == 0)
+      {    
+        currele->Told_(1,1) = 1;
+        currele->Told_(2,1) = 0;
+      }
+      //otherwise t2 is calculated from the scalar product with t1
+      else
+      { 
+        //seeting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
+        double lin1norm = pow(pow(currele->Told_(1,0),2)+pow(currele->Told_(2,0),2),0.5);
+        currele->Told_(1,1) =  currele->Told_(1,0)/lin1norm;
+        currele->Told_(2,1) = -currele->Told_(2,0)/lin1norm;
+      }
+   
       //calculating t3 by crossproduct t1 x t2
       currele->Told_(0,2) = -currele->Told_(1,0)*currele->Told_(2,1)-currele->Told_(2,0)*currele->Told_(1,1);
       currele->Told_(1,2) =    currele->Told_(0,0)*currele->Told_(2,1);
       currele->Told_(2,2) =    currele->Told_(0,0)*currele->Told_(1,1);
-       
+    
+      //the triad Tnew_ has the same initial configuration as Told_ (both coincide in the reference configuration)
+      currele->Tnew_ = currele->Told_;
       
+      
+      //the here employed beam element does not need data about the current position of the nodal directors so that
+      //initilization of those can be skipped (the nodal handeled in beam3_evaluate.cpp are not the actual angles,
+      //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
+      //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
+      //generality
+      currele->curvold_ = 0;
+      currele->curvnew_ = 0;
+      for (int k=0; k<3; k++) 
+      {
+        currele->betaplusalphaold_(k)  = 0;   
+        currele->betaplusalphanew_(k)  = 0;
+        currele->betaminusalphaold_(k) = 0;
+        currele->betaminusalphaold_(k) = 0;
+      }
+            
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 	
   return 0;
