@@ -85,7 +85,7 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
     int lid = dstrowmap.LID(dstmap.GID(row));
     int err = edst->SumIntoMyValues(lid, NumEntries, const_cast<double*>(Values), Indices);
     if (err)
-      dserror("SumIntoMyValues error: %d", err);
+      dserror("SumIntoMyValues error: %d.\nMaybe unfill of matrix block is needed.", err);
   }
 }
 
