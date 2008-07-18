@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file condifimplicitintegration.H
+\file scatra_timint_implicit.H
 \brief Associated with control routine for con.-diff.(in)stat. solvers,
 
      including instationary solvers based on
@@ -12,17 +12,17 @@
      and stationary solver.
 
 <pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15245
+            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifndef SCATRATIMINTIMPLICIT_H
-#define SCATRATIMINTIMPLICIT_H
+#ifndef SCATRA_TIMINT_IMPLICIT_H
+#define SCATRA_TIMINT_IMPLICIT_H
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -185,6 +185,7 @@ protected:
   int uprestart_;
   int writestep_;
   int upres_;
+  string writeflux_;
 
   double dta_;
   double dtp_;
@@ -262,5 +263,5 @@ protected:
 
 
 
-#endif  // #ifndef CONDIFIMPLICITINTEGRATION_H
+#endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H
 #endif  // #ifdef CCADISCRET

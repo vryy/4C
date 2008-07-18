@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file condifimplicitintegration.cpp
+\file scatra_timint_implicit.cpp
 \brief Control routine for convection-diffusion (in)stationary solvers,
 
      including instationary solvers based on
@@ -12,10 +12,10 @@
      and stationary solver.
 
 <pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15245
+            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -67,7 +67,8 @@ ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(RCP<DRT::Discretization>      actdi
   restartstep_(0),
   uprestart_(params->get("write restart every", -1)),
   writestep_(0),
-  upres_(params->get("write solution every", -1))
+  upres_(params->get("write solution every", -1)),
+  writeflux_(params->get("write flux","No"))
 {
 
   // -------------------------------------------------------------------
@@ -795,8 +796,11 @@ void ScaTraImplicitTimeInt::Output()
       output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_->WriteVector("residual", residual_);
 
+      if (writeflux_!="No")
+      {
       RCP<Epetra_MultiVector> flux = CalcFlux();
       output_->WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+      }
 
       // write domain decomposition for visualization (only once!)
       if (step_==upres_)
@@ -821,6 +825,12 @@ void ScaTraImplicitTimeInt::Output()
     output_->WriteVector("phinp", phinp_);
     output_->WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
     //output_->WriteVector("residual", residual_);
+
+    if (writeflux_!="No")
+    {
+    RCP<Epetra_MultiVector> flux = CalcFlux();
+    output_->WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+    }
 
     output_->WriteVector("phidtn", phidtn_);
     output_->WriteVector("phin", phin_);
@@ -1178,7 +1188,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
-  // empty vector for (normal) mass or heat fluxes
+  // empty vector for (normal) mass or heat flux vectors (3D)
   Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // we have only 1 dof per node, so we have to treat each spatial direction separately
@@ -1199,27 +1209,29 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
   LINALG::Export(*convel_,*vel);
   eleparams.set("velocity field",vel);
 
-  // control parameters (not yet connected to input file)
-  string fluxcomputation("domain"); // domain/condition
-  string fluxtype("totalflux"); // calculate total/diffusive/convective flux vectors
-
-  // visualization of total flux vector is default at the moment
-  eleparams.set("fluxtype",fluxtype); // noflux / totalflux / diffusiveflux
+  // set control parameters
+  string fluxcomputation("nowhere"); // domain / boundary
+  string fluxtype("noflux"); // noflux / totalflux / diffusiveflux
+  if (writeflux_!="No")
+  {
+    size_t pos = writeflux_.find("_");    // find position of "_" in str
+    fluxcomputation = writeflux_.substr(pos);   // get from "_" to the end
+    fluxtype = writeflux_.substr(0,pos-1); // get from beginning to "_"
+  }
+  eleparams.set("fluxtype",fluxtype);
 
   if (fluxcomputation=="domain")
   {
     // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
   }
-  else if (fluxcomputation=="condition")
+  if (fluxcomputation=="condition")
   {
     // evaluate fluxes on surface condition only
     // if restriction to normal(!) fluxes is needed put it here
     string condstring("FluxCalculation");
     discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
   }
-  else
-    dserror("Unknown parameter for flux calculation.");
 
   // clean up
   discret_->ClearState();
