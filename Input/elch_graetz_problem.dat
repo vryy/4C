@@ -131,7 +131,7 @@ UPRES                           1
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ILU           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
@@ -145,7 +145,6 @@ AZGRAPH        1                  // unused
 AZPOLY         1                  // polynomial order for Neumann
 AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         none               // none sym infnorm scaling of the system
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
 ML_PRINT          0               // ML print-out level (0-10)
 ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
