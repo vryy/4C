@@ -111,43 +111,42 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       b3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not: the function b3_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
+      //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
       //finite differences and prints the relative error of every single element in case that it is >1e-5; before
       //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Beam3.H
       //and Beam3_evaluate.cpp
       /*
-       
        Epetra_SerialDenseMatrix stiff_approx;
        Epetra_SerialDenseMatrix stiff_relerr;
-       stiff_approx.Shape(6,6);
-       stiff_relerr.Shape(6,6);      
+       stiff_approx.Shape(12,12);
+       stiff_relerr.Shape(12,12);      
        double h_rel = 1e-7;
        int outputflag = 0;
        stiff_approx = b3_nlnstiff_approx(mydisp, h_rel);
        
-       for(int line=0; line<6; line++)
+       for(int line=0; line<12; line++)
        {
-       for(int col=0; col<6; col++)
-       {
-       stiff_relerr(line,col)= abs( (elemat1(line,col) - stiff_approx(line,col))/elemat1(line,col) );
-       if (stiff_relerr(line,col)<h_rel*100)
-       //suppressing small entries whose effect is only confusing
-       stiff_relerr(line,col)=0;
-       //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-       if ( isnan( stiff_relerr(line,col) ) )
-       stiff_relerr(line,col)=0;
-       if (stiff_relerr(line,col)>0)
-       outputflag = 1;		      	
+         for(int col=0; col<12; col++)
+         {
+           stiff_relerr(line,col)= abs( (elemat1(line,col) - stiff_approx(line,col))/elemat1(line,col) );
+           //suppressing small entries whose effect is only confusing
+           if (stiff_relerr(line,col)<h_rel*100)
+             stiff_relerr(line,col)=0;
+           //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
+           if ( isnan( stiff_relerr(line,col) ) )
+             stiff_relerr(line,col)=0;
+           if (stiff_relerr(line,col)>0)
+             outputflag = 1;		      	
+         }
+       
+         if(outputflag ==1)
+         {
+           std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
+           std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+           std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+         }    
        }
-       }
-       if(outputflag ==1)
-       {
-       std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-       std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-       std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-       } 
-       */
-
+       */ 
     }
     break;
     case calc_struct_update_istep:
@@ -627,12 +626,15 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     (*force).Size(12);
     for (int i=0; i<3; ++i)
     {
+      (*force)(i)   -= stressn(i);
+      (*force)(i+3) -= stressm(i);
+      (*force)(i+6) += stressn(i);
+      (*force)(i+9) += stressm(i);
+      
       for (int j=0; j<3; ++j)
-      {
-        (*force)(i)   -= stressn(j);
-        (*force)(i+3) -= stressn(j)*spinx21(i,j) + stressm(j);
-        (*force)(i+6) += stressm(j);
-        (*force)(i+9) -= stressn(j)*spinx21(i,j) + stressm(j);       
+      {      
+        (*force)(i+3) -= stressn(j)*spinx21(i,j);      
+        (*force)(i+9) -= stressn(j)*spinx21(i,j);       
       }
     }
   }
@@ -651,13 +653,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
     (*stiffmatrix).Shape(12,12);  
     computestiffbasis(Tnew_,Cm,Cb,spinx21,(*stiffmatrix));
-    
-    if(Id() == 1)
-    {
-      std::cout<<"\n\nspionx21: \n"<<spinx21;
-      std::cout<<"\n\nstiffmatrix: \n"<<(*stiffmatrix);
-    }
-   
+     
     //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.83), (17.87), (17.89)
     computeKsig1(Ksig1,stressn,stressm);
     computeKsig2(Ksig2,stressn,x21);
@@ -666,10 +662,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
    
   }
   
-  
-  
-
-
   /*calculating mass matrix; this beam3 element includes only a lumped mass matrix where for torsion and
    * bending the same moments of inertia are assumed; for slender beams the influence of rotational moments
    * of inertia is dilute so that often rotational inertia is just set to zero; since within this code at one
@@ -693,34 +685,40 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
 
 //the following function can be activated in order to find bugs; it calculates a finite difference
 //approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
-
+/*
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(vector<double>& disp, double h_rel)
 {
   Epetra_SerialDenseMatrix stiff_dummy;
-  stiff_dummy.Shape(6,6);
   Epetra_SerialDenseMatrix mass_dummy;
-  mass_dummy.Shape(6,6);
   Epetra_SerialDenseVector force_disp;
-  force_disp.Size(6);
   Epetra_SerialDenseVector force_disp_delta;
-  force_disp_delta.Size(6);
   Epetra_SerialDenseMatrix stiff_approx;
-  stiff_approx.Shape(6,6);
+  
   vector<double> disp_delta;
+  
+  stiff_dummy.Shape(12,12);
+  mass_dummy.Shape(12,12);
+  force_disp.Size(12);
+  force_disp_delta.Size(12);
+  stiff_approx.Shape(12,12);
+  
 
   DRT::ELEMENTS::Beam3::b3_nlnstiffmass(disp,&stiff_dummy,&mass_dummy,&force_disp);
+  
 
-  for(int col=0; col<6; col++)
+
+  for(int col=0; col<12; col++)
   {
-    force_disp_delta.Size(6);
+    force_disp_delta.Size(12);
     disp_delta = disp;
     disp_delta[col] = disp_delta[col]+h_rel;
     DRT::ELEMENTS::Beam3::b3_nlnstiffmass(disp_delta,&stiff_dummy,&mass_dummy,&force_disp_delta);
-    for(int line=0; line<6; line++)
-    stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;
+    for(int line=0; line<12; line++)
+      stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;
   }
   return stiff_approx;
 }
+*/
 
 // lump mass matrix
 void DRT::ELEMENTS::Beam3::b3_lumpmass(Epetra_SerialDenseMatrix* emass)

@@ -46,7 +46,6 @@ typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-di
 typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
 typedef blitz::TinyMatrix<double,6,6> BlitzMat6x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x6
 typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
-typedef blitz::TinyMatrix<double,12,6> BlitzMat12x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 12x6
 
 
 // forward declarations
@@ -363,9 +362,10 @@ private:
                        Epetra_SerialDenseVector* force);
   
   //calculation of nonlinear stiffness approximated by finite differences; this function should
-  //be activated only for bug fixing
-  
+  //be activated for bug fixing only
+  /*
   Epetra_SerialDenseMatrix b3_nlnstiff_approx(vector<double>& disp, double h_rel);
+  */
   
   //! lump mass matrix (bborn 07/08)
   void b3_lumpmass(Epetra_SerialDenseMatrix* emass);
