@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_constraint_manager.cpp
+\file constraint_manager.cpp
 
 \brief Class controlling constraints and containing the necessary data
 <pre>
@@ -37,15 +37,15 @@ actdisc_(discr)
   ParameterList p;
   actdisc_->SetState("displacement",disp);
   minConstrID_=10000;
-  maxConstrID_=0;
-  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID_));
-  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID_));
-  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID_));
+  int maxConstrID=0;
+  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID));
+  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID));
+  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID));
   
-  mpconplane3d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID_));
-  mpconline2d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID_));
+  mpconplane3d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
+  mpconline2d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
 
-  numConstrID_=max(maxConstrID_-minConstrID_+1,0);
+  numConstrID_=max(maxConstrID-minConstrID_+1,0);
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -94,14 +94,14 @@ actdisc_(discr)
   ParameterList p1;
   actdisc_->SetState("displacement",disp);
   minMonitorID_=10000;
-  maxMonitorID_=0;
-  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",minMonitorID_,maxMonitorID_));
-  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",minMonitorID_,maxMonitorID_));
-  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",minMonitorID_,maxMonitorID_));
+  int maxMonitorID=0;
+  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",minMonitorID_,maxMonitorID));
+  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",minMonitorID_,maxMonitorID));
+  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",minMonitorID_,maxMonitorID));
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
-  numMonitorID_=max(maxMonitorID_-minMonitorID_+1,0);
+  numMonitorID_=max(maxMonitorID-minMonitorID_+1,0);
   havemonitor_= (areamonitor3d_->HaveConstraint())||(volmonitor3d_->HaveConstraint())||(areamonitor2d_->HaveConstraint());
   if (havemonitor_)
   {
@@ -152,7 +152,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   // other parameters that might be needed by the elements
   p.set("total time",time);
   p.set("MinID",minConstrID_);
-  p.set("MaxID",maxConstrID_);
   p.set("NumberofID",numConstrID_);
   // Convert Epetra_Vector constaining lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
@@ -176,6 +175,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
   
   ImportResults(actvalues_,actredundant);
+  
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------

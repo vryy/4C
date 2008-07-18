@@ -62,10 +62,9 @@ namespace UTILS
       mpcnodeonline2d
     };
     
-    //! @name Constructors and destructors and related methods
-  
     /*!
-    \brief Standard Constructor
+    \brief Constructor of a constraint based on a conditions with a given name. It also
+    takes care of the constraint IDs.
     */
   
     Constraint
@@ -84,10 +83,6 @@ namespace UTILS
     {
         return;
     };
-  
-    //@}
-  
-    //! @name Public Member Functions
   
     /*!
      \brief Return if there are constraints
@@ -131,19 +126,15 @@ namespace UTILS
       return constrtype_;
     }
     
-    //@}
-  
+
   protected:
-    
-     //! @name Protected Attributes
     
     /// standard discretization
     RCP<DRT::Discretization> actdisc_;
-    /// condition, that define the constraint
+    /// conditions, that define the constraint (all of the same kind)
     vector<DRT::Condition*> constrcond_;
     /// constraint type
     ConstrType constrtype_;
-    //@}
       
   private:
     
@@ -152,10 +143,11 @@ namespace UTILS
     Constraint operator = (const Constraint& old);
     Constraint(const Constraint& old);
   
-    //! @name Private Member Functions
-      
     //! Return the ConstrType based on the condition name
-    ConstrType GetConstrType(const string& Name);///<condition name
+    ConstrType GetConstrType
+    (
+      const string& Name///<condition name
+    );
     
     //! Evaluate constraint conditions and assemble the results
     void EvaluateConstraint( 
@@ -166,7 +158,6 @@ namespace UTILS
         Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by aasembly of element contributions
-    //@}
   
   }; //class
 } //namespace

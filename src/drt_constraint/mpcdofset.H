@@ -21,7 +21,6 @@ Maintainer: Thomas Kloeppel
 using namespace std;
 
 
-
 namespace UTILS
 {
   /*!
@@ -30,8 +29,6 @@ namespace UTILS
   class MPCDofSet : public DRT::DofSet
   {
   public:
-  
-  
   
     /*!
     \brief Standard Constructor
@@ -45,11 +42,6 @@ namespace UTILS
     */
     virtual ~MPCDofSet() { return; }
   
-  
-    //@}
-  
-    //! @name Construction
-  
     /// Assign dof numbers to all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
             const DRT::Discretization& dis,
@@ -61,12 +53,10 @@ namespace UTILS
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
-    
-    //@}
   
   private:
     
-    RCP<DRT::Discretization> sourcedis_;
+    RCP<DRT::Discretization> sourcedis_; ///< source discretization
   
   
   }; // class MPCDofSet

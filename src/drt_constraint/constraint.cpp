@@ -89,10 +89,9 @@ void UTILS::Constraint::Evaluate(
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
 {
-  
   if ((systemmatrix1==Teuchos::null)&&(systemmatrix2==Teuchos::null)&&
       (systemvector1==Teuchos::null)&&(systemvector2==Teuchos::null))
-  {
+    {
     switch (constrtype_)
     {
       case volconstr3d: 

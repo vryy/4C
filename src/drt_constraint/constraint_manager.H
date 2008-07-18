@@ -43,13 +43,9 @@ namespace UTILS
   {
   public:
   
-    //! @name Constructors and destructors and related methods
-  
     /*!
-    \brief Standard Constructor
-  
+      \brief Constructor of constraint manager, allocating the constraints
     */
-  
     ConstrManager
     (
       RCP<DRT::Discretization> disc,  ///< standard discretization
@@ -65,9 +61,6 @@ namespace UTILS
         return;
     };
   
-    //@}
-  
-    //! @name Public Member Functions
     /*!
       \brief Change stiffness matrix and force vector according to the constraints.
       Values of lagrange multiplier are taken from intern variable.
@@ -100,30 +93,47 @@ namespace UTILS
     };
   
     /*!
-             \brief Scale lagrange multiplier by a double d
+     \brief Scale all lagrange multipliers by a double d
     */
-    void ScaleLagrMult(double d)
+    void ScaleLagrMult
+    (
+      double d   ///< scale factor
+    )
     {
         lagrMultVec_->Scale(d);
         return;
     };
   
     /*!
-         \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
+         \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)
     */
-    void UpdateLagrMult(double factor);
-  
-    void UpdateLagrMult( RCP<Epetra_Vector> vect);
+    void UpdateLagrMult
+    (
+      double factor
+    );
+    
+    /// Add a vector to the vector of lagrnage multipliers 
+    void UpdateLagrMult
+    (
+      RCP<Epetra_Vector> vect  ///< vector to add
+    );
   
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given displacement
     */
-    void ComputeError(double time,RCP<Epetra_Vector> disp);
+    void ComputeError
+    (
+      double time,   /// time, at which the error is to compute at
+      RCP<Epetra_Vector> disp  /// displacement vector at the given time  
+    );
   
     /*!
          \brief Return differences between prescribed and actual value of constraint number i
     */
-    double GetError(int i)
+    double GetError
+    (
+      int i ///< ID of constraint of interest
+    )
     {
         return (*constrainterr_)[i];
     }
@@ -133,10 +143,6 @@ namespace UTILS
     {
       return constrainterr_;
     }
-    /*!
-         \brief Add Increment to lagrange multiplier
-    */
-    void UpdateLagrMult();
   
     /*!
      \brief Return EpetraMap that determined distributation of constraints and lagrange
@@ -147,6 +153,7 @@ namespace UTILS
       return constrmap_;
     };
   
+    //! Return the additional rectangular matrix, construted for lagrange multiplier evaluation
     RCP<LINALG::SparseMatrix> GetConstrMatrix()
     {
       return constrMatrix_;
@@ -155,7 +162,10 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier for constraint i
     */
-    double GetLagrMult(int i)
+    double GetLagrMult
+    (
+      int i ///< ID of constraint of interest
+    )
     {
       return (*lagrMultVec_)[i];
     };
@@ -163,7 +173,10 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier vector
     */
-    void GetLagrMultVector(RCP<Epetra_Vector> tmpmult)
+    void GetLagrMultVector
+    (
+      RCP<Epetra_Vector> tmpmult ///< vector to store lagrange multiplier in
+    )
     {
       LINALG::Export(*lagrMultVec_,*tmpmult);
       return ;
@@ -176,8 +189,9 @@ namespace UTILS
     {
         return haveconstraint_;
     };
+    
     /*!
-         \brief Return if there are monitors
+       \brief Return if there are monitors
     */
     bool HaveMonitor()
     {
@@ -185,9 +199,12 @@ namespace UTILS
     };
   
     /*!
-     \brief Return current value of volume i
+     \brief Return current value 
     */
-    double GetCurrValue(int i)
+    double GetCurrValue
+    (
+      int i ///< ID of constraint of interest
+    )
     {
         return (*actvalues_)[i];
     };
@@ -200,12 +217,13 @@ namespace UTILS
     /*
        \brief Compute values described by a monitor boundary condition
     */
-    void ComputeMonitorValues(RCP<Epetra_Vector> disp);
+    void ComputeMonitorValues
+    (
+      RCP<Epetra_Vector> disp ///< current diplacement
+    );
     //@}
   private:
-  
-      //! name@ Private Member Functions
-  
+    
     /*! \brief Sum values of a completely redundant vector into a distributed vector of the same size
     */
     void ImportResults
@@ -218,29 +236,13 @@ namespace UTILS
       \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
       over all processors
     */
+    void SynchronizeMinConstraint
+    (
+      ParameterList& params,   ///< parameter list, values are stored in
+      RCP<Epetra_Vector>& vect, ///< vector to store results in
+      const char* resultstr  ///< name of value to take minimum of
+    );
   
-    void SynchronizeMinConstraint(ParameterList& params,
-            RCP<Epetra_Vector>& vect,const char* resultstr);
-  
-    /*!
-        \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements
-    */
-    void ManageIDs(ParameterList& params,
-         int& minID,
-         int& maxID,
-         int& numID);
-  
-    /*!
-           \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements
-    */
-    void ManageIDs(ParameterList& params,
-        int& minID,
-        int& maxID,
-        int& numID,
-        vector<int>& MPCids);
-  
-  
-    //@}
   
   private:
   
@@ -250,41 +252,38 @@ namespace UTILS
     ConstrManager(const ConstrManager& old);
   
   
-    //! name@ Private Attributes
-    RCP<DRT::Discretization> actdisc_;
-    RCP<Epetra_Map> constrmap_;
-    RCP<Epetra_Map> redconstrmap_;
-    RCP<Epetra_Map> monitormap_;
-    RCP<Epetra_Map> redmonmap_;
-    RCP<Epetra_Vector> referencevalues_;
-    RCP<Epetra_Vector> initialvalues_;
-    RCP<Epetra_Vector> actvalues_;
-    RCP<Epetra_Vector> constrainterr_;
-    RCP<Epetra_Vector> monitorvalues_;
-    RCP<Epetra_Vector> initialmonvalues_;
-    int minConstrID_;
-    int maxConstrID_;
-    int numConstrID_;
-    int numMonitorID_;
-    int maxMonitorID_;
-    int minMonitorID_;
-    RCP<Epetra_Vector> fact_;
-    RCP<Epetra_Vector> lagrMultVec_;
-    RCP<LINALG::SparseMatrix> constrMatrix_;
-    bool haveconstraint_;
-    bool havemonitor_;
-    double uzawaparam_;
+    RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
+    RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
+    RCP<Epetra_Map> redconstrmap_;   ///< fully redundant vector of constraint values
+    RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
+    RCP<Epetra_Map> redmonmap_;  ///< fully redundant vector of monitor values
+    RCP<Epetra_Vector> referencevalues_;  ///< reference to constrain values to
+    RCP<Epetra_Vector> initialvalues_;   ///< initial values of constrained structures
+    RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
+    RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
+    RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
+    RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
+    int minConstrID_;  ///< smallest constraint boundary condition ID
+    int numConstrID_;  ///< number of constraint boundary conditions
+    int numMonitorID_;  ///< smallest monitor boundary condition ID
+    int minMonitorID_;  ///< number monitor boundary condition ID
+    RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
+    RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
+    RCP<LINALG::SparseMatrix> constrMatrix_;  ///< additional rectangular matrix 
+    bool haveconstraint_;  ///< are there constraints at all?
+    bool havemonitor_;  ///< are there monitor conditions?
+    double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used) 
   
-    RCP<Constraint> volconstr3d_;
-    RCP<Constraint> areaconstr3d_;
-    RCP<Constraint> areaconstr2d_;
-    RCP<MPConstraint> mpconplane3d_;
-    RCP<MPConstraint> mpconline2d_;
+    RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces 
+    RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
+    RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
+    RCP<MPConstraint> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
+    RCP<MPConstraint> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
   
-    RCP<Constraint> volmonitor3d_;
-    RCP<Constraint> areamonitor3d_;
-    RCP<Constraint> areamonitor2d_;
-    //@}
+    RCP<Constraint> volmonitor3d_; ///< 3d volume monitors defined on surfaces
+    RCP<Constraint> areamonitor3d_;  ///< 3d area monitors defined on surfaces
+    RCP<Constraint> areamonitor2d_;  ///< 2d area monitors defined on lines
+    
   
   
   }; //class

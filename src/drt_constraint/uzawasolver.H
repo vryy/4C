@@ -42,12 +42,9 @@ namespace UTILS
   {
   public:
 
-    //! @name Constructors and destructors and related methods
-
     /*!
     \brief Constructor
     */
-
     UzawaSolver(
         RCP<DRT::Discretization> discr,     ///< Discretization
         LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
@@ -64,9 +61,6 @@ namespace UTILS
         return;
     };
 
-    //@}
-
-    //! @name Public Member Functions
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
 
@@ -91,14 +85,15 @@ namespace UTILS
     /*!
       \brief Set uzawa parameter (used for dynamic adaptation and restart)
     */
-    void SetUzawaParameter(double restartval)
+    void SetUzawaParameter
+    (
+      double restartval ///< value to replace Uzawa Parameter with
+    )
     {
       uzawaParam_=restartval;
       counter_=1;
       return;
     }
-
-    //@}
 
 private:
 
@@ -108,26 +103,20 @@ private:
     UzawaSolver(const UzawaSolver& old);
 
 
-    //! name@ Private Attributes
-    RCP<DRT::Discretization> actdisc_;
-    int maxIter_;
-    int tolerance_;
-    bool tolcheck_;
-    double uzawaParam_;
-    double norm_uzawa_;
-    double norm_uzawa_alt_;
-    double quotient_;
-    double norm_constr_uzawa_;
-    double toldisp_;
-    double tolres_;
-    double tolconstr_;
-    RCP<Epetra_Vector>    dirichtoggle_;
-    RCP<Epetra_Vector>    invtoggle_;
-    bool isadapttol_;
-    bool adaptolbetter_ ;
-    RCP<LINALG::Solver> solver_;
-    int counter_;
-    //@}
+    RCP<DRT::Discretization> actdisc_; ///<standard discretization
+    int maxIter_;  ///< number of maximal iterations
+    double uzawaParam_; ///< parameter for Uzawa algorithm
+    double norm_uzawa_;  ///< error norm of extended linear system
+    double quotient_;  ///< quotient of error norms between current and previous iteration
+    double toldisp_;  ///< tolerance for displacement
+    double tolres_;  ///< tolerance for residual
+    double tolconstr_;  ///< tolerance for constraint
+    RCP<Epetra_Vector>    dirichtoggle_;  ///< 
+    RCP<Epetra_Vector>    invtoggle_; ///< inverse dirichlet toggle
+    bool isadapttol_;  ///< adaptive tolerance for solver?
+    bool adaptolbetter_ ; ///< adaptive tolerance for solver usefull?
+    RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
+    int counter_;  ///< counter used for adaptation of uzawa parameter
 
 
   }; //class

@@ -57,8 +57,12 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  
   */
-  ConstraintElement(int id, int owner);
+  ConstraintElement(
+    int id,  ///< A unique global id 
+    int owner ///< element owner
+  );
 
   /*!
   \brief Copy Constructor
