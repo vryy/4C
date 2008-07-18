@@ -19,6 +19,33 @@ Maintainer: Burkhard Bornemann
 #include "strutimint.H"
 
 /*----------------------------------------------------------------------*/
+/* Map damping input string to enum term */
+enum STR::StruTimInt::DampEnum STR::StruTimInt::MapDampStringToEnum
+(
+  const std::string name  //!< identifier
+)
+{
+  if ( (name == "no") or (name == "No") or (name == "NO") )
+  {
+    return damp_none;
+  }
+  else if ( (name == "yes") or (name == "Yes") or (name ==  "YES") 
+            or (name == "Rayleigh") )
+  {
+    return damp_rayleigh;
+  }
+  else if (name == "Material")
+  {
+    return damp_material;
+  }
+  else
+  {
+    dserror("Cannot cope with damping type %s", name.c_str());
+    return damp_none;
+  }
+}
+
+/*----------------------------------------------------------------------*/
 /* Map stress input string to enum */
 enum STR::StruTimInt::StressEnum STR::StruTimInt::MapStressStringToEnum
 (
@@ -98,9 +125,9 @@ STR::StruTimInt::StruTimInt
   writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
   writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
   writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
-  writestress_(MapStressStringToEnum(ioparams.get<string>("STRUCT_STRESS"))),
-  writestrain_(MapStrainStringToEnum(ioparams.get<string>("STRUCT_STRAIN"))),
-  damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
+  writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
+  writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
+  damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
@@ -206,7 +233,7 @@ STR::StruTimInt::StruTimInt
   mass_ = Teuchos::rcp(
     new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
   );
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     damp_ = Teuchos::rcp(
       new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
@@ -297,7 +324,7 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
   stiff_->Complete();
 
   // build Rayleigh damping matrix if desired
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     damp_->Add(*stiff_, false, dampk_, 0.0);
     damp_->Add(*mass_, false, dampm_, 1.0);
@@ -311,7 +338,7 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
   {
     Teuchos::RCP<Epetra_Vector> rhs 
       = LINALG::CreateVector(*dofrowmap_, true);
-    if (damping_)
+    if (damping_ == damp_rayleigh)
     {
       damp_->Multiply(false, *vel_(), *rhs);
     }

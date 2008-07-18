@@ -157,7 +157,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   mass_->Multiply(false, *acct_, *finertt_);
 
   // viscous forces due Rayleigh damping
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
@@ -168,7 +168,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   //                                   - F_{ext;n+theta} )
   fres_->Update(theta_, *fextn_, 1.0-theta_, *fext_, 0.0);
   fres_->Update(-theta_, *fintn_, -(1.0-theta_), *fint_, 1.0);
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     fres_->Update(-1.0, *fvisct_, 1.0);
   }
@@ -181,7 +181,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   //                + 1/dt C     
   //                + theta K_{T}
   stiff_->Add(*mass_, false, 1.0/(theta_*dt_*dt_), theta_);
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     stiff_->Add(*damp_, false, 1.0/dt_, 1.0);
   }
@@ -254,7 +254,7 @@ double STR::StruTimIntOneStepTheta::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     fvisct_->Norm2(&fviscnorm);
   }

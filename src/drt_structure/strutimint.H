@@ -68,6 +68,20 @@ namespace STR
 
   public:
 
+    //! Type of damping
+    enum DampEnum
+    {
+      damp_none,  //!< damping off
+      damp_rayleigh,  //!< globally applied Rayleigh damping
+      damp_material  //!< element-wise applied damping
+    };
+
+    //! Map inpu string to damping enum
+    static enum DampEnum MapDampStringToEnum
+    (
+      const std::string name  //!< identifier
+    );
+
     //! Type of stress
     enum StressEnum
     {
@@ -345,10 +359,11 @@ namespace STR
     enum StrainEnum writestrain_;  //!< strain output type
     //@}
 
-    //! @name Rayleigh damping
-    //!       \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
+    //! @name Damping
+    //!
+    //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
-    bool damping_;  //!< damping active/inactive
+    enum DampEnum damping_;  //!< damping type
     double dampk_;  //!< damping factor for stiffness \f$c_\text{K}\f$
     double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
     //@}

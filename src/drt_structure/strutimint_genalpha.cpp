@@ -245,7 +245,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   mass_->Multiply(false, *accm_, *finertm_);
 
   // viscous forces due Rayleigh damping
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
@@ -264,7 +264,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   {
     fres_->Update(-1.0, *fintm_, 1.0);
   }
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     fres_->Update(-1.0, *fviscm_, 1.0);
   }
@@ -275,7 +275,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   //                + (1 - alpha_f)*y/(beta*dt) C     
   //                + (1 - alpha_f) K_{T}
   stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*dt_*dt_), 1.-alphaf_);
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*dt_), 1.0);
   }
@@ -355,7 +355,7 @@ double STR::StruTimIntGenAlpha::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_)
+  if (damping_ == damp_rayleigh)
   {
     fviscm_->Norm2(&fviscnorm);
   }
