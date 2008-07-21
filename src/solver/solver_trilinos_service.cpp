@@ -87,8 +87,6 @@ void construct_trilinos_matrix(
                             TRILINOSMATRIX  *trimatrix
                          )
 {
-  DSTraceHelper dst("construct_trilinos_matrix");
-
   // create an epetra comm
 #ifdef PARALLEL
   Epetra_MpiComm*    comm = new Epetra_MpiComm(actintra->MPI_INTRA_COMM);
@@ -131,8 +129,6 @@ void construct_trilinos_matrix(
 void construct_trilinos_diagonal_matrix(INTRA *actintra,
                                         TRILINOSMATRIX *trimatrix)
 {
-  DSTraceHelper dst("construct_trilinos_diagonal_matrix");
-
   // create an epetra comm
 #ifdef PARALLEL
   Epetra_MpiComm*    comm = new Epetra_MpiComm(actintra->MPI_INTRA_COMM);
@@ -175,8 +171,6 @@ void deconstruct_trilinos_matrix(
                             TRILINOSMATRIX  *trimatrix
                          )
 {
-  DSTraceHelper dst("deconstruct_trilinos_matrix");
-
   Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)trimatrix->matrix;
   delete matrix;
   trimatrix->matrix = NULL;
@@ -217,8 +211,6 @@ void init_trilinos_matrix(
                             int              disnum
                          )
 {
-  DSTraceHelper dst("init_trilinos_matrix");
-
   // global number of dofs
   trimatrix->numeq_total = actfield->dis[disnum].numeq;
   // local number of dofs
@@ -256,8 +248,6 @@ void make_update(
   INT       inprocs;
   NODE     *actnode;
   ARRAY     coupledofs;
-
-  DSTraceHelper dst("make_update");
 
   /*----------------------------------------------------------------------*/
   imyrank = actintra->intra_rank;
@@ -341,8 +331,6 @@ void make_update(
  *----------------------------------------------------------------------*/
 void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
 {
-  DSTraceHelper dst("trilinos_cp_matrixmask");
-
   if (!(from->epetracomm)  || !(from->rowmap) || !(from->matrix))
     dserror("TRILINOSMATRIX from not properly initialized");
 
@@ -385,8 +373,6 @@ void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
  *----------------------------------------------------------------------*/
 void trilinos_zero_matrix(TRILINOSMATRIX *tri)
 {
-  DSTraceHelper dst("trilinos_zero_matrix");
-
   if (!(tri->epetracomm)  || !(tri->rowmap) || !(tri->matrix))
     dserror("TRILINOSMATRIX tri not properly initialized");
 
@@ -457,8 +443,6 @@ void trilinos_zero_matrix(TRILINOSMATRIX *tri)
 /*----------------------------------------------------------------------*/
 void add_trilinos_value(struct _TRILINOSMATRIX *tri, DOUBLE v, INT row, INT col)
 {
-  DSTraceHelper dst("add_trilinos_value");
-
   Epetra_CrsMatrix* mat = (Epetra_CrsMatrix*)tri->matrix;
   if (mat->Filled())
     dserror("Epetra_CrsMatrix::FillComplete() has been called, cannot assemble anymore");
@@ -505,8 +489,6 @@ void  add_trilinos(
     )
 
 {
-  DSTraceHelper dst("add_trilinos");
-
   /* set some pointers and variables */
   const int myrank      = actintra->intra_rank;
   double** estif        = elearray1->a.da;
@@ -671,7 +653,6 @@ void add_tri_checkcouple(
 
 {
   int         i,k;
-  DSTraceHelper dst("add_tri_checkcouple");
 
   /*----------------------------------------------------------------------*/
   for (k=0; k<ncdofs; k++)
@@ -712,7 +693,6 @@ void add_tri_sendbuff(
     )
 
 {
-  DSTraceHelper dst("add_tri_sendbuff");
   /*----------------------------------------------------------------------*/
   int k;
   for (k=0; k<numsend; ++k)
@@ -738,8 +718,6 @@ void exchange_coup_trilinos(
     )
 
 {
-  DSTraceHelper dst("exchange_coup_trilinos");
-
 #ifdef PARALLEL
   int            tag;
   int            source;
@@ -865,7 +843,6 @@ void exchange_coup_trilinos(
 void close_trilinos_matrix(struct _TRILINOSMATRIX *tri)
 
 {
-  DSTraceHelper dsh("close_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   if (!tri) return;
   Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
@@ -902,8 +879,6 @@ void close_trilinos_matrix(struct _TRILINOSMATRIX *tri)
 /*----------------------------------------------------------------------*/
 void close_nonquad_trilinos_matrix(TRILINOSMATRIX *A, TRILINOSMATRIX *cmat)
 {
-  DSTraceHelper dsh("close_nonquad_trilinos_matrix");
-
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
   if (!Amat) dserror("trilinos matrix not set");
   if (Amat->Filled()) return;
@@ -927,7 +902,6 @@ void close_nonquad_trilinos_matrix(TRILINOSMATRIX *A, TRILINOSMATRIX *cmat)
 void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor)
 
 {
-  DSTraceHelper dst("add_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   if (!from->matrix || !to->matrix) dserror("Either from or to matrix is NULL");
 
@@ -968,7 +942,6 @@ void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor
  *----------------------------------------------------------------------*/
 void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
 {
-  DSTraceHelper dst("matvec_trilinos");
   /*----------------------------------------------------------------------*/
   // get Epetra_CrsMatrix
   if (!A->matrix) dserror("Matrix is NULL");
@@ -995,7 +968,6 @@ void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
  *----------------------------------------------------------------------*/
 void matvec_trilinos_trans(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
 {
-  DSTraceHelper dst("matvec_trilinos_trans");
   /*----------------------------------------------------------------------*/
   // get Epetra_CrsMatrix
   if (!A->matrix) dserror("Matrix is NULL");
@@ -1022,7 +994,6 @@ void matvec_trilinos_trans(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
  *----------------------------------------------------------------------*/
 void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor)
 {
-  DSTraceHelper dst("scale_trilinos_matrix");
   /*----------------------------------------------------------------------*/
   // get Epetra_CrsMatrix
   if (!A->matrix) dserror("Matrix is NULL");
@@ -1048,8 +1019,6 @@ void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor)
 /*----------------------------------------------------------------------*/
 void invert_trilinos_diagonal_matrix(TRILINOSMATRIX* A)
 {
-  DSTraceHelper dst("invert_trilinos_diagonal_matrix");
-
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
 
@@ -1095,8 +1064,6 @@ void mult_trilinos_mmm(TRILINOSMATRIX* dest,
                        TRILINOSMATRIX* C,
                        INT transC)
 {
-  DSTraceHelper dst("mult_trilinos_mmm");
-
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
   if (!B->matrix) dserror("Matrix is NULL");
@@ -1151,8 +1118,6 @@ void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
                             TRILINOSMATRIX* C,
                             INT transC)
 {
-  DSTraceHelper dst("mult_trilinos_mmm_cont");
-
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
   if (!B->matrix) dserror("Matrix is NULL");
@@ -1179,8 +1144,6 @@ void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
 
 void extractGlobalRow(FILE* out,TRILINOSMATRIX* mat,INT row)
 {
-  DSTraceHelper dst("extractGlobalRow");
-
   int length=1000;
 
   vector<double> values(length);

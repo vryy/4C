@@ -12,13 +12,6 @@ extern "C"
 #include "../solver/solver.h"
 
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Simplify dstrc_enter and dstrc_exit calls in c++
- */
-/*----------------------------------------------------------------------*/
-#include "../drt_lib/dstrc.H"
-
 
 void construct_trilinos_matrix(INTRA *actintra, TRILINOSMATRIX *trimatrix);
 void construct_trilinos_diagonal_matrix(INTRA *actintra,
