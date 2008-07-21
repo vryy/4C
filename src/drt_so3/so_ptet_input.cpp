@@ -12,12 +12,6 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 extern "C"
 {
 /*!----------------------------------------------------------------------

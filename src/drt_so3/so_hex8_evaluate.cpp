@@ -13,23 +13,12 @@ Maintainer: Moritz Frenzel
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-#include "so_weg6.H"
 #include "so_hex8.H"
-#include "so_tet10.H"
-#include "so_tet4.H"
-#include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
@@ -541,7 +530,11 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     invJ_[gp].Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,0.0);
     detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
 #ifdef PRESTRESS
-    prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+    if (!(prestress_->IsInit()))
+    {
+      prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+      prestress_->IsInit() = true;
+    }
 #endif
   }
   return;
@@ -731,14 +724,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL){
-      if (!euler_almansi) {
-        for (int i = 0; i < 3; ++i) {
+    if (elestrain != NULL)
+    {
+      if (!euler_almansi) 
+      {
+        for (int i = 0; i < 3; ++i) 
           (*elestrain)(gp,i) = glstrain(i);
-        }
-        for (int i = 3; i < 6; ++i) {
+        for (int i = 3; i < 6; ++i) 
           (*elestrain)(gp,i) = 0.5 * glstrain(i);
-        }
       }
       else
       {
@@ -760,8 +753,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
         LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
         LINALG::SerialDenseMatrix euler_almansi(NUMDIM_SOH8,NUMDIM_SOH8);
-        temp.Multiply('N','N',1.0,gl,invdefgrd,0.);
-        euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.);
+        temp.Multiply('N','N',1.0,gl,invdefgrd,0.0);
+        euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.0);
 
         (*elestrain)(gp,0) = euler_almansi(0,0);
         (*elestrain)(gp,1) = euler_almansi(1,1);

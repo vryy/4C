@@ -15,17 +15,10 @@ written by: Alexander Volf
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 #include "so_integrator.H"
 #include "so_ctet10.H"
-#include "so_hex8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"

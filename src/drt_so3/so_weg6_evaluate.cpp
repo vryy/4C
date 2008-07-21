@@ -13,19 +13,9 @@ Maintainer: Moritz Frenzel
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 #include "so_weg6.H"
-#include "so_hex8.H"
-#include "so_tet10.H"
-#include "so_tet4.H"
-#include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
@@ -33,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 #include "Epetra_SerialDenseSolver.h"
 
 using namespace std; // cout etc.
@@ -383,7 +374,11 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     invJ_[gp].Multiply('N','N',1.0,deriv_gp,xrefe,0.0);
     detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
 #ifdef PRESTRESS
-    prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+    if (!(prestress_->IsInit()))
+    {
+      prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+      prestress_->IsInit() = true;
+    }
 #endif
   }
   return;

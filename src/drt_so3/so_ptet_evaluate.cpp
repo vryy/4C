@@ -12,11 +12,6 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 #include "so_ptet.H"
 #include "so_integrator.H"
 #include "../drt_lib/drt_discret.H"
@@ -511,6 +506,7 @@ void DRT::ELEMENTS::Ptet::ptetlumpmass(Epetra_SerialDenseMatrix* emass)
       (*emass)(c,c) = d;  // apply sum of row entries on diagonal
     }
   }
+  return;
 }
 
 
