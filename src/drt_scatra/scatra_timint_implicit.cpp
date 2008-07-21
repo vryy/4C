@@ -1215,11 +1215,12 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
   if (writeflux_!="No")
   {
     size_t pos = writeflux_.find("_");    // find position of "_" in str
-    fluxcomputation = writeflux_.substr(pos);   // get from "_" to the end
-    fluxtype = writeflux_.substr(0,pos-1); // get from beginning to "_"
+    fluxcomputation = writeflux_.substr(pos+1);   // get from "_" to the end
+    fluxtype = writeflux_.substr(0,pos); // get from beginning to "_"
   }
   eleparams.set("fluxtype",fluxtype);
 
+  // now compute the fluxes
   if (fluxcomputation=="domain")
   {
     // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
