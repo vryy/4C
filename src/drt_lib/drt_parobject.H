@@ -48,9 +48,6 @@ using namespace std;
 #define ParObject_Fluid2Line            (int)18
 #define ParObject_So_hex8               (int)19
 #define ParObject_Soh8Register          (int)20
-#define ParObject_Soh8Surface           (int)21
-#define ParObject_Soh8Line              (int)22
-#define ParObject_Soh8Volume            (int)23
 #define ParObject_Ale3                  (int)24
 #define ParObject_Ale3Register          (int)25
 #define ParObject_Ale3Surface           (int)26
@@ -63,7 +60,6 @@ using namespace std;
 #define ParObject_Ale2Line              (int)37
 #define ParObject_So_tet10              (int)38
 #define ParObject_Sotet10Register       (int)39
-#define ParObject_Sotet10Volume         (int)40
 #define ParObject_Ptet                  (int)41
 #define ParObject_PtetRegister          (int)42
 #define ParObject_NewtonianFluid        (int)43
@@ -76,18 +72,10 @@ using namespace std;
 #define ParObject_ConvecDiffus          (int)50
 #define ParObject_So_weg6               (int)51
 #define ParObject_Sow6Register          (int)52
-#define ParObject_Sow6Volume            (int)53
-// these go away at some point
-//#define ParObject_Sow6Surface           (int)54
-//#define ParObject_Sow6Line              (int)55
 #define ParObject_SoDisp                (int)56
 #define ParObject_SoDispRegister        (int)57
 #define ParObject_So_tet4               (int)61
 #define ParObject_Sotet4Register        (int)62
-#define ParObject_Sotet4Volume          (int)63
-// these go away at some point
-//#define ParObject_Sotet4Surface         (int)64
-//#define ParObject_Sotet4Line            (int)65
 #define ParObject_So_ctet10             (int)66
 #define ParObject_Soctet10Register      (int)67
 #define ParObject_Soctet10Volume        (int)68
