@@ -1538,9 +1538,9 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     if(abs(ztan) < 0.001)
     {
-      ztan = 2;
-     	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
-     	"two (hard coded)" << endl;
+      ztan = +20;
+ 	  	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
+    	" twenty (hard coded)" << endl;
     }
     
     // epk = gp/(abs(ztan + ct*utan))

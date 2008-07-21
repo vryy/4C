@@ -324,7 +324,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     Epetra_Vector fresmdbc(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
   }
-      
+  
+  // reset Lagrange multipliers to last converged state
+  // this resetting is necessary due to multiple active set steps
+  // RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  // RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  // z->Update(1.0,*zold,0.0);
+  // contactmanager_->StoreNodalQuantities("lmcurrent");
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
   

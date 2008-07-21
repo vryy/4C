@@ -361,7 +361,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   bool fulllin   = scontact_.get<bool>("full linearization",false);
-  bool semismooth= scontact_.get<bool>("semismooth newton",false);
+  double ct      = scontact_.get<double>("semismooth ct",0.0);
   
   // invalid parameter combinations
   if (btrafo)
@@ -376,9 +376,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Full linearization not yet implemented for friction");
   if (btrafo && fulllin)
     dserror("Full linearization not yet implemented for basis trafo case");
-  if (ctype=="frictional" && semismooth)
-    dserror("Semi-smooth Newton approach not yet implemented for friction");
-  
+  if (ct == 0)
+  	dserror("Friction Parameter ct = 0, must be greater than 0");
   // overrule input in certain cases
   if (ctype=="meshtying" && !init)
     scontact_.set<bool>("initial contact",true);
@@ -1254,9 +1253,9 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
-    interface_[i]->AssembleS(*smatrix_);
-    interface_[i]->AssembleP(*pmatrix_);
-    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
+//    interface_[i]->AssembleS(*smatrix_);
+//    interface_[i]->AssembleP(*pmatrix_);
+//    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
     
@@ -1809,11 +1808,15 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   LINALG::Export(*fi,*fiexp);
   if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
   
-  
   // add a subvector to feffnew
   RCP<Epetra_Vector> fslmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*fslmod,*fslmodexp);
   if (gslipnodes_->NumGlobalElements())feffnew->Update(1.0,*fslmodexp,1.0);
+  
+  // add weighted gap vector to feffnew, if existing
+  RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*gact,*gexp);
+  if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
   
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                     */
@@ -3024,12 +3027,10 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   // friction
   // sum up incremental jumps from active set nodes
   jump_->Update(1.0,*incrjump_,1.0);
-    
   // friction
   // store updaded jumps to nodes
   StoreNodalQuantities("jump");
     
-  
   /**********************************************************************/
   /* Update Lagrange multipliers z_n+1                                  */
   /**********************************************************************/
@@ -3233,6 +3234,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
             activesetconv_ = true;    // no active set loop for mesh tying
           }
         }
+
         // friction
         else
         {
@@ -3318,7 +3320,6 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
     gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
     gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
-
   
   // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
   // *********************************************************************
@@ -3411,6 +3412,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
+  string ftype   = scontact_.get<string>("friction type","none");
   
   // read weighting factor cn
   // (this is necessary in semi-smooth Newton case, as the search for the
@@ -3467,6 +3469,26 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
+      // friction
+      double tz;
+      double tjump;
+      
+      if(ftype=="tresca")
+      {	
+        // friction
+        // get tangent of contact node
+        double tangent[3];
+        tangent[0] = -cnode->n()[1];
+        tangent[1] =  cnode->n()[0];
+        tangent[2] =  0.0;
+        
+        // compute tangential part of Lagrange multiplier
+        tz = tangent[0]*cnode->lm()[0] + tangent[1]*cnode->lm()[1];
+        
+        // compute tangential part of Lagrange multiplier
+        tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
+      }  
+
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -3498,6 +3520,12 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
           if (ctype!="meshtying")
           {
             cnode->Active() = false;
+            
+            // friction
+            if(ftype=="tresca")
+            {
+            	cnode->Slip() = false;    
+            }
             activesetconv_ = false;
           }
           else
@@ -3506,6 +3534,43 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
             activesetconv_ = true;    // no active set loop for mesh tying
           }
         } 
+        
+        // friction
+        else
+        {
+          if(ftype=="tresca")
+        	{
+          	double frbound = scontact_.get<double>("friction bound",0.0);
+          	double ct = scontact_.get<double>("semismooth ct",0.0);
+        		
+          	if(cnode->Slip() == false)	
+          	{
+          		// check (tz+ct*tjump)-frbound <= 0
+          		if(abs(tz+ct*tjump)-frbound <= 0)
+          		{
+          			
+          		}
+          		else
+          		{
+          			 cnode->Slip() = true;
+          			 activesetconv_ = false;
+          		}
+           	}
+          	else
+          	{
+         		   // check (tz+ct*tjump)-frbound > 0
+          		 if(abs(tz+ct*tjump)-frbound > 0)
+          		 {
+          			 
+          		 }
+          		 else
+          		 {
+          			 cnode->Slip() = false;
+          			 activesetconv_ = false;
+          		 }
+          	}
+        	}
+        }        
       } 
     }
   }
@@ -3528,6 +3593,9 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   gactivedofs_ = null;
   gactiven_ = null;
   gactivet_ = null;
+  gslipnodes_ = null;
+  gslipdofs_ = null;
+  gslipt_ = null;
   
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -3538,6 +3606,9 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
   
   // output of active set status to screen
