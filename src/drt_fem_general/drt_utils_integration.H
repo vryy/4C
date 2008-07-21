@@ -1,7 +1,7 @@
 /*!
 \file drt_utils_integration.H
 
-\brief structs to store gausspoints and weights together
+\brief structs to store integration points and weights together
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -21,7 +21,7 @@ namespace DRT
 namespace UTILS
 {
 
-//! supported 3d gauss rules
+//! supported 3d integration rules
 enum GaussRule3D
 {
     intrule3D_undefined,    ///< use this to initialize a gaussrule, if you don't know the value, yet!
@@ -43,7 +43,7 @@ enum GaussRule3D
 };
 
 
-//! supported 2d gauss rules
+//! supported 2d integration rules
 enum GaussRule2D
 {
     intrule2D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
@@ -58,7 +58,7 @@ enum GaussRule2D
     intrule_tri_37point    ///< degree of precision: 13 (rule from ACM TOMS algorithm #706)
 };
 
-//! supported 1d gauss rules
+//! supported 1d integration rules
 enum GaussRule1D
 {
     intrule1D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
@@ -87,6 +87,7 @@ public:
         return;
     }
     
+    //! copy constructor
     IntegrationPoint(
             const IntegrationPoint&     other) :
                 position_(other.position_),
@@ -97,6 +98,7 @@ public:
     
     ~IntegrationPoint();
     
+    //! return string representation of this class
     std::string toString() const
     {
         std::stringstream s;
@@ -104,12 +106,15 @@ public:
         return s.str();
     }
     
+    //! get integration point position
     inline Vec Position() const { return position_; }
-    
+    //! get integration point weight
     inline double Weight() const { return weight_; }
     
 private:
+    //! 1d, 2d or 3d position of integration point in element coordinates
     const Vec position_;
+    //! integration weight
     const double weight_;
     
     //! Empty constructor
@@ -133,7 +138,10 @@ we get the real volume of 0.1666..., NOT the unit volume of 1.0. Integration ove
 */
 struct IntegrationPoints3D
 {
-  IntegrationPoints3D(const GaussRule3D gaussrule);
+  /// constructor
+  IntegrationPoints3D(
+      const GaussRule3D gaussrule   ///< 3d rule
+      );
   int           nquad;         ///< number of gausspoints
   double        qxg[27][3];    ///< coordinates
   double        qwgt[27];      ///< weights
@@ -150,7 +158,10 @@ we get the real area of 0.5, NOT the unit area of 1.0. Integration over the quad
 */
 struct IntegrationPoints2D
 {
-  IntegrationPoints2D(const GaussRule2D gaussrule);
+  /// constructor
+  IntegrationPoints2D(
+      const GaussRule2D gaussrule   ///< 2d rule
+      );
   int           nquad;        ///< number of gausspoints
   double        qxg[37][2];    ///< coordinates
   double        qwgt[37];      ///< weights
@@ -161,15 +172,18 @@ struct IntegrationPoints2D
 
 <pre>                                                gerstenberger 06/07
 
-In this structure the coordinates and weights used by gauss integration
+In this structure the coordinates and weights used by numerical integration
 are stored.
 
 </pre>
 */
 struct IntegrationPoints1D
 {
-  IntegrationPoints1D(const GaussRule1D gaussrule);
-  int           nquad;        ///< number of gausspoints
+  /// constructor
+  IntegrationPoints1D(
+      const GaussRule1D gaussrule   ///< 1d rule
+      );
+  int           nquad;        ///< number of integration points
   double        qxg[5];       ///< coordinates */
   double        qwgt[5];      ///< weights */
 };
@@ -178,7 +192,7 @@ struct IntegrationPoints1D
 \brief return object with 3D integration points and weights
 */
 inline IntegrationPoints3D getIntegrationPoints3D(
-  const  GaussRule3D gaussrule   ///< used to switch between the implemented gaussrules
+  const  GaussRule3D gaussrule   ///< used to switch between the implemented integration rules
   )
 {
   return IntegrationPoints3D(gaussrule);
@@ -188,7 +202,7 @@ inline IntegrationPoints3D getIntegrationPoints3D(
 \brief return object with 2D integration points and weights
 */
 inline IntegrationPoints2D getIntegrationPoints2D(
-  const  GaussRule2D gaussrule   ///< used to switch between the implemented gaussrules
+  const  GaussRule2D gaussrule   ///< used to switch between the implemented integration rules
   )
 {
   return IntegrationPoints2D(gaussrule);
@@ -198,14 +212,14 @@ inline IntegrationPoints2D getIntegrationPoints2D(
 \brief return object with 1D integration points and weights
 */
 inline IntegrationPoints1D getIntegrationPoints1D(
-  const  GaussRule1D gaussrule   ///< used to switch between the implemented gaussrules
+  const  GaussRule1D gaussrule   ///< used to switch between the implemented integration rules
   )
 {
   return IntegrationPoints1D(gaussrule);
 }
 
 /*!
- *  returns the elementsize in local coordinates
+ *  returns the element size in local coordinates
  */    
 double getSizeInLocalCoordinates( 
     const DRT::Element::DiscretizationType     distype);
