@@ -59,21 +59,21 @@ class Intersection
   public:
 
   /*!
-  \brief  computes the intersection of two discretizations.
-
-  This methods localizes the interface of the
-  cutter discretization within the xfem discretization. Each intersected xfem element
-  is tetrahedralized with help of a Constrained Delaunay Tetrahedralization.
-  The output consists of a list of qadratic tetrahedral volume integration cells and
-  a list of quadratic triangular boundary integration cells
-  representing the curved interface.
-  */
+   * \brief  computes the intersection of two discretizations.
+   * 
+   * This methods localizes the interface of the
+   * cutter discretization within the xfem discretization. Each intersected xfem element
+   * is tetrahedralized with help of a Constrained Delaunay Tetrahedralization.
+   * The output consists of a list of qadratic tetrahedral volume integration cells and
+   * a list of quadratic triangular boundary integration cells
+   * representing the curved interface.
+   */
   void computeIntersection(
       const RCP<DRT::Discretization>         xfemdis,                 ///< xfem discretization
       const RCP<DRT::Discretization>         cutterdis,               ///< cutter discretization
       const std::map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
-      map< int, DomainIntCells >&			       domainintcells,          ///< domainintegrationcells for each intersected element
-      map< int, BoundaryIntCells >& 		     boundaryintcells         ///< boundaryintegrationcells for each intersected element
+      map< int, DomainIntCells >&            domainintcells,          ///< domainintegrationcells for each intersected element
+      map< int, BoundaryIntCells >&          boundaryintcells         ///< boundaryintegrationcells for each intersected element
       );
 
 
