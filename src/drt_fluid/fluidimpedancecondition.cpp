@@ -467,7 +467,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
 
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
-    frequencydomain[0] = DCLungImpedance(0,radius,termradius,density,viscosity,zparent);
+    frequencydomain[0] = DCLungImpedance(0,radius,termradius,density,viscosity,zstored);
 
   if ( treetype_ == "artery" )
     frequencydomain[0] = DCArteryImpedance(0,radius,termradius,density,viscosity,zstored);
@@ -487,7 +487,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   {
     int generation=0;
     if ( treetype_ == "lung" )
-      frequencydomain[k] = LungImpedance(k,generation,radius,termradius,density,viscosity,zparent);
+      frequencydomain[k] = LungImpedance(k,generation,radius,termradius,density,viscosity,zstored);
 
     if ( treetype_ == "artery" )
       frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zstored);
@@ -961,7 +961,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
 						     double termradius,
 						     double density,
 						     double viscosity,
-						     std::complex<double> zparent)
+						     map<const double,complex<double> > zstored)
 {
    // general data
   double lscale = 5.8; // length to radius ratio
@@ -970,13 +970,17 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
 
   // some auxiliary stuff
   complex<double> imag(0,1), Z1, Z2, Z3, ZW;
+  complex<double> koeff, cwave;
   // terminal resistance is assumed zero ff
-  complex<double> zterminal (0,0);
+  //complex<double> zterminal (0,0);
 
   double omega = 2.0*PI*k/period_;
 
   // this has to be moved!!
-
+  double G=0.96e-2;
+  double H=8e-2;
+  double athing=(2.0/PI)*atan(H/G);
+  complex<double> zterminal=(G-imag*H)/(pow(omega,athing));
 
   // build up geometry of present generation
   double area = radius*radius*PI;
@@ -1004,15 +1008,37 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
     complex<double> zright;
     bool terminated = false;
 
+    if (leftradius < termradius && rightradius < termradius)
+            terminated = true;
+          else
+          {
+            map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+            if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
+              zleft = iter->second;
+            else                      // left hand side impedance not yet stored
+            {
+              zleft  = LungImpedance(k,generation,leftradius,termradius,density,viscosity,zstored);
+              zstored.insert( make_pair( leftradius, zleft ) );
+            }
+
+            iter = zstored.find(rightradius);    
+            if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
+              zright = iter->second;
+            else                      // right hand side impedance not yet stored
+            {
+              zright = LungImpedance(k,generation,rightradius,termradius,density,viscosity,zstored);
+              zstored.insert( make_pair( rightradius, zright ) );
+            }
+          }
     // only if both vessels are smaller than the limit truncate
     //if (leftradius < termradius && rightradius < termradius)
-    if (generation >= 23)
+    /*if (generation >= 23)
     terminated = true;
     else
     {
       zleft  = LungImpedance(k,generation,leftradius,termradius,density,viscosity,zparent);
       zright = LungImpedance(k,generation,rightradius,termradius,density,viscosity,zparent);
-    }
+    }*/
 
 
     // ... combine this to the impedance at my downstream end ...
@@ -1027,13 +1053,32 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // ... and compute impedance at my upstream end!
   //*************************************************************
 
+    double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
+    double wonu = sqrt(sqrdwo);                     // Womersley number itself
+
+    if (wonu > 4.0)
+    koeff = 1.0 - (2.0/wonu)/sqrt(imag);
+    else
+    koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
+
+    // wave speed of this frequency in present vessel
+    cwave=sqrt( area*koeff / (density*cw) );
+
+    //Convenience coefficient
+    complex<double> gcoeff = cw * cwave;
+
+    // calculate impedance of this, the present vessel
+    complex<double> argument = omega*length/cwave;
+    complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+                                     ( cos(argument) + imag*gcoeff*zdown*sin(argument) );  
+    
   // calculate impedance of this, the present vessel
 
-  ZW=rw+1.0/(imag*omega*cw)+imag*omega*lw;
+  /*ZW=rw+1.0/(imag*omega*cw)+imag*omega*lw;
   Z1=1.0/(imag*omega*C+1.0/ZW);
   Z2=(R+imag*omega*L)/2.0+zdown;
   Z3=1.0/(1.0/Z1+1.0/Z2);
-  zparent=(R+imag*omega*L)/2.0+Z3;
+  zparent=(R+imag*omega*L)/2.0+Z3;*/
 
   return zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
@@ -1059,7 +1104,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
 								 double termradius,
 								 double density,
 								 double viscosity,
-						         std::complex<double> zparentdc)
+								 map<const double,complex<double> > zstored)
 {
   //general data
   double lscale = 5.8; // length to radius ratio
@@ -1077,15 +1122,38 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
     complex<double> zright;
     bool terminated = false;
 
+    if (leftradius < termradius && rightradius < termradius)
+           terminated = true;
+         else
+         {
+           map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+           if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
+             zleft = iter->second;
+           else                      // left hand side impedance not yet stored
+           {
+             zleft  = DCLungImpedance(generation,leftradius,termradius,density,viscosity,zstored);
+             zstored.insert( make_pair( leftradius, zleft ) );
+           }
+
+           iter = zstored.find(rightradius);    
+           if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
+             zright = iter->second;
+           else                      // right hand side impedance not yet stored
+           {
+             zright = DCLungImpedance(generation,rightradius,termradius,density,viscosity,zstored);
+             zstored.insert( make_pair( rightradius, zright ) );
+           }
+         }
+    
     // only if both vessels are smaller than the limit truncate
     //if (leftradius < termradius && rightradius < termradius)
-    if (generation >= 23)
+    /*if (generation >= 23)
     terminated = true;
     else
     {
       zleft  = DCLungImpedance(generation,leftradius,termradius,density,viscosity,zparentdc);
       zright = DCLungImpedance(generation,rightradius,termradius,density,viscosity,zparentdc);
-    }
+    }*/
 
 
     // ... combine this to the impedance at my downstream end ...
@@ -1102,7 +1170,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
     //*************************************************************
 
     // calculate dc impedance of this, the present vessel
-    zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
+    complex<double>  zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
     return zparentdc;
 }//FluidImplicitTimeInt::DCLungImpedance
 

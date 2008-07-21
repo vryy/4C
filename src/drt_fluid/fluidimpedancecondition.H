@@ -210,7 +210,7 @@ private:
 					double termradius,
 					double density,
 					double visosity,
-					std::complex<double> zparent);
+					map<const double,complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for lung
@@ -220,7 +220,7 @@ private:
   					  double termradius,
   					  double density,
   					  double viscosity,
-					  std::complex<double> zparentdc);
+  					  map<const double,complex<double> > zstored);
 
 protected:
 
