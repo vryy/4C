@@ -187,6 +187,7 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
+    Teuchos::RCP<IO::DiscretizationWriter> output_;
     Teuchos::RCP<IO::DiscretizationWriter> boundaryoutput_;
     //@}
 
