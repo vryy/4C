@@ -47,7 +47,7 @@ namespace XFEM
   /*!
    * \brief A unique identifier for a degree of freedom (DOF)
    * 
-   * Haskell-esque:
+   * in Haskell one would write:
    * type DofKey = (Gid, FieldEnr)
    * 
    * \tparam DofType to distinguish between element and nodal dofs, now the compiler complains

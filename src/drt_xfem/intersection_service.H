@@ -258,15 +258,12 @@ namespace XFEM
     \brief transforms a point in current coordinates to a point
            in element coordinates with respect to a given element
 
-    \param element          (in)        : element
-    \param xsi              (in/out)    : vector of current coordinates/
-    \tparam dim                         : dimension of the element parameter space
     \return                               vector of element coordinates
     */
     inline BlitzVec3 currentToVolumeElementCoordinatesExact(
-            const DRT::Element*         element,
-            const BlitzVec3&            x,
-            const double                tol
+            const DRT::Element*         element,  ///< element, where one seeks the local coordinates for x
+            const BlitzVec3&            x,        ///< physical position (x,y,z)
+            const double                tol       ///< tolerance to define "exact on boundary of element"
             )
     {
         static BlitzVec3 xsi;
@@ -285,7 +282,7 @@ namespace XFEM
     /*!
     \brief compares two points (overloaded method)
 
-    \tparam lenght       (in)    : length of arrays
+    \tparam length       (in)    : length of arrays
     \return true if both points equal each other, false otherwise
     */
     template<int length>
@@ -347,22 +344,31 @@ namespace XFEM
          return true;
      }
      
+     /*!
+     \brief compares two points (overloaded method)
      
-    template <int length>
-    bool comparePoints(   
-        const vector<double>& point1,
-        const vector<double>& point2,
-        const double          tol) 
-    {   
-        dsassert(point1.size() == length, "not of proper length!");
-        dsassert(point2.size() == length, "not of proper length!");
-        for(unsigned int i = 0; i < length ; ++i)
-            if(fabs(point1[i] - point2[i]) > tol)
-            {
-                return false;
-            }
-        return true;
-    }
+     \param point1       (in)    : first point   (vector<double>)
+     \param point2       (in)    : second point  (vector<double>)
+     \param tol          (in)    : tolerance defining whether positions are equal
+     \return true if both points equal each other, false otherwise
+     */
+     template <int length>
+     bool comparePoints(   
+         const vector<double>& point1,
+         const vector<double>& point2,
+         const double          tol) 
+     {   
+         dsassert(point1.size() == length, "not of proper length!");
+         dsassert(point2.size() == length, "not of proper length!");
+         for(unsigned int i = 0; i < length ; ++i)
+         {
+             if(fabs(point1[i] - point2[i]) > tol)
+             {
+                 return false;
+             }
+         }
+         return true;
+     }
      
      
      /*!

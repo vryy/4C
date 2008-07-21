@@ -30,7 +30,7 @@ namespace XFEM
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-    const XFEM::InterfaceHandle&                      ih,
+    const XFEM::InterfaceHandle&                      ih,                      ///< interface information
     std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
     std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs   
 );

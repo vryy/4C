@@ -129,18 +129,15 @@ static inline void updateAForNWE(
 \brief updates the rhs at the corresponding element coordinates for the 
        computation whether a node in current coordinates lies within an element 
 
-\param dim               (in)       : dimension of the problem
-\param b                 (out)      : right-hand-side       
-\param xsi               (in)       : vector of element coordinates
-\param x                 (in)       : node in current coordinates
-\param element           (in)       : element
 */
-template <DRT::Element::DiscretizationType DISTYPE, int dim, class V1, class V2, class V3, class M1>
+template <DRT::Element::DiscretizationType DISTYPE,  ///< shape of the element
+int dim, class V1, class V2, class V3, class M1>
 static inline void updateRHSForNWE(
-        V1&          b,
-        const V2&    xsi,
-        const V3&    x,
-        const M1&    xyze)                                                  
+        V1&          b,       ///< right-hand-sid
+        const V2&    xsi,     ///< vector of element coordinates
+        const V3&    x,       ///< node in physical coordinates (x,y,z)
+        const M1&    xyze     ///< nodal coordinates of an element with shape DISTYPE
+        )                                                  
 {
     
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -434,17 +431,13 @@ static void updateJacobianForMap3To2(
 \brief  updates the nonlinear equations for the computation of the
         surface element coordinates for a surface point in physical coordinates
 
-\param F                (out)       : nonlinear equations
-\param xsi              (in)        : element coordinates    
-\param x                (in)        : physical coordinates      
-\param surface element  (in)        : surface element
 */   
 template<DRT::Element::DiscretizationType DISTYPE>
 static void updateFForMap3To2(
-        BlitzVec3&          F,
-        const BlitzVec2&    xsi,
-        const BlitzVec3&    x,
-        const BlitzMat&     xyze_surfaceElement
+        BlitzVec3&          F,                    ///< nonlinear equations
+        const BlitzVec2&    xsi,                  ///< element coordinates
+        const BlitzVec3&    x,                    ///< physical coordinates
+        const BlitzMat&     xyze_surfaceElement   ///< nodal positions of an element
         )                                                  
 {   
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -471,19 +464,14 @@ static void updateFForMap3To2(
 \brief  updates the nonlinear equations for the computation of the
         surface element coordinates for a surface point in physical coordinates
 
-\param A                (out)       : system matrix
-\param Jacobi           (in)        : Jacobian matrix
-\param F                (in)        : nonlinear equations  
-\param xsi              (in)        : element coordinates      
-\param surface element  (in)        : surface element
 */
 template<DRT::Element::DiscretizationType DISTYPE>
 static void updateAForMap3To2(   
-        BlitzMat&                 A,
-        const BlitzMat3x2&        Jacobi,
-        const BlitzVec3&          F,
-        const BlitzVec2&          xsi,
-        const BlitzMat&           xyze_surfaceElement
+        BlitzMat&                 A,                   ///< system matrix
+        const BlitzMat3x2&        Jacobi,              ///< Jacobian matrix
+        const BlitzVec3&          F,                   ///< nonlinear equations
+        const BlitzVec2&          xsi,                 ///< element coordinates
+        const BlitzMat&           xyze_surfaceElement  ///< nodal positions of an element
         )                                                  
 {   
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -524,15 +512,19 @@ static void updateAForMap3To2(
     
 }
 
-/*----------------------------------------------------------------------*
- |  RQI:    compute element coordinates from a given point              |
- |          in the 3-dim physical space lies on a given surface element |
- *----------------------------------------------------------------------*/
+/*!
+ * \brief compute element coordinates from a given point
+ *        in the 3-dim physical space lies on a given surface element
+ *        Template version 
+ * 
+ * RQI
+ */
 template<DRT::Element::DiscretizationType DISTYPE> 
 static void currentToSurfaceElementCoordinatesT(
-    const BlitzMat& xyze_surfaceElement,
-    const BlitzVec3& physCoord,
-    BlitzVec2& eleCoord)
+    const BlitzMat&   xyze_surfaceElement,   ///< nodal positions of an element
+    const BlitzVec3&  physCoord,             ///< physical coordinates (x,y,z)
+    BlitzVec2&        eleCoord               ///< element coordinates (r,s)
+    )
 {
   bool nodeWithinElement = true;
   

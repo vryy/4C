@@ -1,9 +1,9 @@
 /*!
 \file xdofmapcreation.cpp
 
-\brief defines unknowns based on the intersection pappern from the xfem intersection
+\brief defines unknowns based on the intersection pattern from the xfem intersection
 
-this is related to the physics of the fluid problem and therefore not part of the standard xfem routines
+this is related to the physics of the fluid problem and therefore should not be part of the standard xfem routines
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -21,9 +21,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_f3/xfluid3_interpolation.H"
 
 
-/*----------------------------------------------------------------------*
- |  construct dofmap                                            ag 11/07|
- *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                   ih,
     std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,

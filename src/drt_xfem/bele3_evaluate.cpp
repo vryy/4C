@@ -41,15 +41,13 @@ int DRT::ELEMENTS::Bele3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   return 0;
-} // end of DRT::ELEMENTS::Bele3::Evaluate
+}
 
 
 /*----------------------------------------------------------------------*
- |  do nothing (public)                                      g.bau 07/07|
+ |  do nothing (public)                                      a.ger 07/07|
  |                                                                      |
- |  The function is just a dummy. For the fluid2 elements, the          |
- |  integration of the surface neumann loads takes place in the element.|
- |  We need it there for the stabilisation terms!                       |
+ |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -58,25 +56,6 @@ int DRT::ELEMENTS::Bele3::EvaluateNeumann(ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;
-}
-
-// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::Bele3::is_higher_order_element(
-              const DRT::Element::DiscretizationType  distype) const
-{
-    bool hoel = true;
-    switch (distype)
-    {
-    case quad4: case quad8: case quad9: case tri6:
-        hoel = true;
-        break;
-    case tri3:
-        hoel = false;
-        break;
-    default:
-        dserror("distype unknown!");
-    }
-    return hoel;
 }
 
 

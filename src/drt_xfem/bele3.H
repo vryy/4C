@@ -1,14 +1,13 @@
-/*!----------------------------------------------------------------------
-\file bele3.H
-
-<pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
-
-*----------------------------------------------------------------------*/
+/*!
+ * \file bele3.H
+ * 
+ * <pre>
+ * Maintainer: Axel Gerstenberger
+ *             gerstenberger@lnm.mw.tum.de
+ *             http://www.lnm.mw.tum.de
+ *             089 - 289-15236
+ * </pre>
+ */
 #ifdef CCADISCRET
 #ifndef BELE3_H
 #define BELE3_H
@@ -57,10 +56,11 @@ public:
 
   /*!
   \brief Standard Constructor
-
-  \param id : A unique global id
   */
-  Bele3(int id, int owner);
+  Bele3(
+      int id,     ///< A unique global id
+      int owner   ///< proc num that owns this element
+      );
 
   /*!
   \brief Copy Constructor
@@ -70,76 +70,24 @@ public:
   */
   Bele3(const Bele3& old);
 
-  /*!
-  \brief Deep copy this instance of Bele3 and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
   DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
   virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
   virtual int NumLine() const
-  {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
-      else if (NumNode()==3 || NumNode()==6) return 3;
-      else {
-	  dserror("Could not determine number of lines");
-	  return -1;
-      }
+  {
+    if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
+    else if (NumNode()==3 || NumNode()==6) return 3;
+    else
+    {
+      dserror("Could not determine number of lines");
+      return -1;
+    }
   }
-
-  /*!
-  \brief Return number of surfaces of this element
-  */
   virtual int NumSurface() const {return 1;}
-
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
   virtual int NumVolume() const {return -1;}
-
-  /*!
-  \brief Get vector of ptrs to the volume of this element
-
-  */
   virtual vector<RCP<DRT::Element> > Lines();
-
-  /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
-
-  */
   virtual vector<RCP<DRT::Element> > Surfaces();
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
   virtual int UniqueParObjectId() const { return ParObject_Bele3;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -150,45 +98,11 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
   virtual int NumDofPerElement() const { return 0; }
-
-  /*!
-  \brief Print this element
-  */
   void Print(ostream& os) const;
-
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   //@}
@@ -196,7 +110,8 @@ public:
   //! @name Input and Creation
 
   /*!
-  \brief Read input for this element
+   * \brief Read input for this element
+   * \note Bele3 will be created on the fly for various tasks and no read in is planned
   */
   bool ReadElement()
   {
@@ -208,30 +123,6 @@ public:
 
   //! @name Evaluation
 
-  /*!
-  \brief Evaluate an element
-
-  Evaluate fluid2 element stiffness, mass, internal forces etc
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
   int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
@@ -241,14 +132,6 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
-
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a line Neumann condition on the fluid2 element
-
-  \return 0 if successful, negative otherwise
-  */
   virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
@@ -259,7 +142,7 @@ public:
   //@}
 
   //! @name Other
-
+  //! does this element have non-zero displacements or not
   bool IsMoving() const { return is_moving_; }
 
   //@}
@@ -297,8 +180,6 @@ private:
       }
       return hoel;
     };
-  
-  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
   //! Gaussrule
   DRT::UTILS::GaussRule2D                         gaussrule_;
@@ -306,16 +187,14 @@ private:
   //! flag for fixed or moving boundary
   bool                                            is_moving_;
 
-  //! container containing all kind of fluid2 thisandthat
+  //! container containing all kind of this and that
   DRT::Container                                  data_;
 
 
-  // internal calculation methods
-
-  // don't want = operator
+  //! don't want = operator
   Bele3& operator = (const Bele3& old);
 
-  // calculate Jacobian matrix and it's determinant
+  //! calculate Jacobian matrix and it's determinant
   void f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 	       const Epetra_SerialDenseMatrix& deriv,
                Epetra_SerialDenseMatrix& xjm,
@@ -323,15 +202,7 @@ private:
                const int 	iel
 	       );
 
-  /*!
-   * \brief get the body force from the nodes condition
-   * \return ???
-   */
-  Epetra_SerialDenseMatrix f2_getbodyforce(
-        const double          time		///< ???
-    );
-
-  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
+  //! calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f2_gder(Epetra_SerialDenseMatrix& derxy,
 		 const Epetra_SerialDenseMatrix& deriv,
                  Epetra_SerialDenseMatrix& xjm,
@@ -339,7 +210,7 @@ private:
                  const int iel
 		 );
   
-  // set number of gauss points to element shape default
+  //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
 }; // class Bele3
@@ -385,28 +256,8 @@ public:
   */
   DRT::ELEMENTS::Bele3Register* Clone() const;
 
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
   virtual int UniqueParObjectId() const { return ParObject_Bele3Register;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -419,21 +270,12 @@ public:
 
   //! @name Acess methods
 
-  /*!
-  \brief Print this element
-  */
   void Print(ostream& os) const;
 
   //@}
 
   //! @name Construction
 
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the fluid2 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
   int Initialize(DRT::Discretization& dis);
 
   //@}
@@ -453,12 +295,7 @@ private:
 /*!
 \brief An element representing a line of a bele3 element
 
-\note This is a pure Neumann boundary condition element. It's only
-      purpose is to evaluate line Neumann boundary conditions that might be
-      adjacent to a parent fluid2 element. It therefore does not implement
-      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-
-\author gamnitzer (gamnitzer@lnm.mw.tum.de)
+\author gerstenberger (gerstenberger@lnm.mw.tum.de)
 */
 class Bele3Line : public DRT::Element
 {
@@ -488,42 +325,10 @@ public:
   */
   Bele3Line(const Bele3Line& old);
 
-  /*!
-  \brief Deep copy this instance of an element and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
   DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
   virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of the drt_parobject.H file.
-  */
   virtual int UniqueParObjectId() const { return ParObject_Bele3Line;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -541,69 +346,21 @@ public:
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
 
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
+  For this 3D boundary element, we have 3 displacements, if needed
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {return 3;}
 
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
   virtual int NumDofPerElement() const { return 0; }
 
-  /*!
-  \brief Print this element
-  */
   void Print(ostream& os) const;
 
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //@}
 
     //! @name Evaluation
 
-  /*!
-  \brief Evaluate an element
-
-  Evaluate fluid2 line element stiffness, mass, internal forces etc
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
   virtual int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
@@ -615,20 +372,6 @@ public:
 
   //! @name Evaluate methods
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a line Neumann condition on the fluid2 element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
   virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
@@ -646,7 +389,7 @@ private:
      integrate_Shapefunction
   };
 
-  // don't want = operator
+  //! don't want = operator
   Bele3Line& operator = (const Bele3Line& old);
 
   //! The parent element of this line
@@ -656,16 +399,16 @@ private:
 
 
 
-  // compute infintesimal line element dr for integration along the line
+  //! compute infintesimal line element dr for integration along the line
   double  f2_substitution(
 		      const Epetra_SerialDenseMatrix  xyze,
 		      const Epetra_SerialDenseMatrix  deriv,
 		      const int iel);
 
-  // Get Rule for Gaussintegration according to DRT::UTIL
+  //! Get Rule for Gaussintegration according to DRT::UTIL
   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
-  // integrate shape functions over a line
+  //! integrate shape functions over a line
   void IntegrateShapeFunction(
       ParameterList&             params,
       DRT::Discretization&       discretization,
