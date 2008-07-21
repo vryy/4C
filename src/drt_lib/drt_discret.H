@@ -955,7 +955,7 @@ public:
 				 const string& condstring,
 				 const int condid=-1);
 
-  /*
+  /*!
   \brief Evaluate a specific condition
 
   Loop all conditions attached to the discretization and evaluate them.
