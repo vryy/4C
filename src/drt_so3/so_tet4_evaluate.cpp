@@ -15,20 +15,10 @@ written by : Alexander Volf
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-#include "so_weg6.H"
-#include "so_hex8.H"
-#include "so_tet10.H"
 #include "so_tet4.H"
-#include "so_disp.H"
 #include "so_integrator.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
@@ -37,7 +27,6 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 
 
-//#define VERBOSE_OUTPUT
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -81,7 +70,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")  act = So_tet4::calc_struct_reset_istep;
 #ifdef PRESTRESS
-  else if (action=="calc_struct_prestress_update_green_lagrange") act = So_tet4::update_gl;
+  else if (action=="calc_struct_prestress_update") act = So_tet4::prestress_update;
 #endif
   else dserror("Unknown type of action for So_tet4");
 
@@ -89,9 +78,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   MATERIAL* actmat = &(mat[material_-1]);
 
   // what should the element do
-  switch(act) {
+  switch(act) 
+  {
     // linear stiffness
-    case calc_struct_linstiff: {
+    case calc_struct_linstiff: 
+    {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
@@ -138,7 +129,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     break;
 
     // evaluate stresses and strains at gauss points
-    case calc_struct_stress: {
+    case calc_struct_stress: 
+    {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
@@ -154,24 +146,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_SOTET4,NUMSTR_SOTET4);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
-      else    dserror("requested option not yet implemented for tet4");
+      bool ea = (iostrain == "euler_almansi");
+      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
       AddtoPack(*stressdata, stress);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-      {
-        RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-        if (gl==null)
-          dserror("Cannot output prestrains");
-        if (gl->M() != strain.M() || gl->N() != strain.N())
-          dserror("Mismatch in dimension");
-        // the element outputs 0.5* strains[3-5], but we have the computational quantity here
-        Epetra_SerialDenseMatrix tmp(*gl);
-        for (int i=0; i<NUMGPT_SOTET4; ++i)
-          for (int j=3; j<6; ++j)
-            tmp(i,j) *= 0.5;
-        strain += tmp;
-      }
-#endif
       AddtoPack(*straindata, strain);
     }
     break;
@@ -181,7 +158,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:{
+    case postprocess_stress:
+    {
 
       const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
@@ -276,27 +254,31 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     break;
 
 #ifdef PRESTRESS
-    // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
-    // the previously stored GL strains in an incremental manner
-    case update_gl:
+    case prestress_update:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get displacement state");
+      if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
-      vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      Epetra_SerialDenseMatrix strain(NUMGPT_SOTET4,NUMSTR_SOTET4);
-      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,actmat,false);
-      // the element outputs 0.5* strains[3-5], but we want the computational quantity here
-      for (int i=0; i<NUMGPT_SOTET4; ++i)
-        for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
-      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-      if (gl==null) dserror("Prestress array not initialized");
-      if (gl->M() != strain.M() || gl->N() != strain.N())
-        dserror("Prestress arrauy not initialized");
-      (*gl) += strain;
+
+      // build incremental def gradient for every gauss point
+      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET4,9);
+      DefGradient(mydisp,gpdefgrd,*prestress_);
+      
+      // update deformation gradient and put back to storage
+      LINALG::SerialDenseMatrix deltaF(3,3);
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::SerialDenseMatrix Fnew(3,3);
+      for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
+      {
+        prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+        Fnew.Multiply('N','N',1.0,deltaF,Fhist,0.0);
+        prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+      }
+
+      // push-forward invJ for every gaussian point
+      UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
 #endif
@@ -309,17 +291,20 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: {
+    case calc_struct_update_istep: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_update_imrlike: {
+    case calc_struct_update_imrlike: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_reset_istep: {
+    case calc_struct_reset_istep: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
@@ -504,6 +489,15 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [  -------  -------  ------- ]
     **             [    dX       dY       dZ    ]
     */
+
+#ifdef PRESTRESS
+    if (!(prestress_->IsInit()))
+    {
+      prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
+      prestress_->IsInit() = true;
+    }
+#endif
+
   } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)   
     
   return;
@@ -522,7 +516,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       Epetra_SerialDenseMatrix* elestress,      // stresses at GP
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
       struct _MATERIAL*         material,       // element material data
-      const bool                cauchy)         // stress output options
+      const bool                cauchy,         // stress output options
+      const bool                ea)             // strain output options
 {
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
@@ -530,15 +525,13 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
    const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
   double density;
-  // update element geometry
-  LINALG::SerialDenseMatrix xrefe(NUMNOD_SOTET4,NUMDIM_SOTET4);  // material coord. of element
+  // element geometry
   /* structure of xrefe:
     **             [  X_1   Y_1   Z_1  ]
     **     xrefe = [  X_2   Y_2   Z_2  ]
     **             [   |     |     |   ]
     **             [  X_4   Y_4   Z_4  ]
     */
-  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOTET4,NUMDIM_SOTET4);  // current  coord. of element
   /* structure of xcurr:
     **             [  x_1   y_1   z_1  ]
     **     xcurr = [  x_2   y_2   z_2  ]
@@ -547,19 +540,12 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
   // current  displacements of element
   LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
-
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
     xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
     xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
-
-    xcurr(i,0) = xrefe(i,0) + xdisp(i,0);
-    xcurr(i,1) = xrefe(i,1) + xdisp(i,1);
-    xcurr(i,2) = xrefe(i,2) + xdisp(i,2);
   }
 
 
@@ -593,10 +579,33 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
     // size is 3x3
     LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      // get derivatives wrt to last spatial configuration
+      LINALG::SerialDenseMatrix N_xyz(NUMNOD_SOTET4,NUMDIM_SOTET4);
+      prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
+      
+      // build multiplicative incremental defgrd
+      defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+      
+      // get stored old incremental F
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::SerialDenseMatrix Fnew(3,3);
+      Fnew.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      defgrd = Fnew;
+    }
+#else
     defgrd.Multiply('T','N',1.0,xdisp,nxyz,0.0);
     defgrd(0,0)+=1;
     defgrd(1,1)+=1;
     defgrd(2,2)+=1;
+#endif
     
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
@@ -616,23 +625,44 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     // return gp strains (only in case of stress/strain output)
     if (elestrain != NULL)
     {
-      for (int i = 0; i < 3; ++i)
-        (*elestrain)(gp,i) = glstrain(i);
-      for (int i = 3; i < 6; ++i)
-        (*elestrain)(gp,i) = 0.5 * glstrain(i);
-    }
+      if (!ea) // output Green-Lagrange strains
+      {
+        for (int i = 0; i < 3; ++i)
+          (*elestrain)(gp,i) = glstrain(i);
+        for (int i = 3; i < 6; ++i)
+          (*elestrain)(gp,i) = 0.5 * glstrain(i);
+      }
+      else
+      {
+        // rewriting Green-Lagrange strains in matrix format
+        LINALG::SerialDenseMatrix gl(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        gl(0,0) = glstrain(0);
+        gl(0,1) = 0.5*glstrain(3);
+        gl(0,2) = 0.5*glstrain(5);
+        gl(1,0) = gl(0,1);
+        gl(1,1) = glstrain(1);
+        gl(1,2) = 0.5*glstrain(4);
+        gl(2,0) = gl(0,2);
+        gl(2,1) = gl(1,2);
+        gl(2,2) = glstrain(2);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    {
-      // note: must be AFTER strains are output above!
-      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-      if (gl==null) dserror("Prestress array not initialized");
-      if (gl->M() != NUMGPT_SOTET4 || gl->N() != NUMSTR_SOTET4)
-        dserror("Prestress array not initialized");
-      for (int i=0; i<6; ++i)
-        glstrain(i) += (*gl)(gp,i);
+        // inverse of deformation gradient
+        Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
+        LINALG::NonsymInverse3x3(invdefgrd);
+
+        LINALG::SerialDenseMatrix temp(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        LINALG::SerialDenseMatrix euler_almansi(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        temp.Multiply('N','N',1.0,gl,invdefgrd,0.0);
+        euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.0);
+
+        (*elestrain)(gp,0) = euler_almansi(0,0);
+        (*elestrain)(gp,1) = euler_almansi(1,1);
+        (*elestrain)(gp,2) = euler_almansi(2,2);
+        (*elestrain)(gp,3) = euler_almansi(0,1);
+        (*elestrain)(gp,4) = euler_almansi(1,2);
+        (*elestrain)(gp,5) = euler_almansi(0,2);
+      }
     }
-#endif
 
     /*----------------------------------------------------------------------*
       the B-operator used is equivalent to the one used in hex8, this needs
@@ -842,6 +872,86 @@ int DRT::ELEMENTS::Sotet4Register::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+/*----------------------------------------------------------------------*
+ |  compute def gradient at every gaussian point (protected)   gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::DefGradient(const vector<double>& disp, 
+                                         Epetra_SerialDenseMatrix& gpdefgrd,
+                                         DRT::ELEMENTS::PreStress& prestress)
+{
+  // update element geometry
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
+  }
+
+  for (int gp=0; gp<NUMGPT_SOTET4; ++gp) 
+  {
+    // get derivatives wrt to last spatial configuration
+    LINALG::SerialDenseMatrix N_xyz(NUMNOD_SOTET4,NUMDIM_SOTET4);
+    prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
+
+    // build multiplicative incremental defgrd
+    LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
+    defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+
+    prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
+  }  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
+                                            const vector<double>& disp,
+                                            DRT::ELEMENTS::PreStress& prestress)
+{
+  // get incremental disp
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
+  }
+
+  LINALG::SerialDenseMatrix nxyzhist(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::SerialDenseMatrix nxyznew(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
+  
+  for (int gp=0; gp<NUMGPT_SOTET4; ++gp) 
+  {
+    // get the nxyz old state
+    prestress.StoragetoMatrix(gp,nxyzhist,prestress.JHistory());
+    // build multiplicative incremental defgrd
+    defgrd.Multiply('T','N',1.0,xdisp,nxyzhist,0.0);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+    // make inverse of this defgrd
+    LINALG::NonsymInverse3x3(defgrd);
+
+    // push-forward of nxyz
+    nxyznew.Multiply('N','N',1.0,nxyzhist,defgrd,0.0);
+    // store new reference configuration
+    prestress.MatrixtoStorage(gp,nxyznew,prestress.JHistory());
+
+  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)  
+
+  return;
+}
+#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

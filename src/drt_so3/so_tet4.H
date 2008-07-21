@@ -18,14 +18,17 @@ Maintainer: Moritz Frenzel
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
 using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+
+// prestressing object
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+#include "prestress.H"
+#endif
 
 #include "../drt_mat/material.H"
 
@@ -38,9 +41,9 @@ using namespace Teuchos;
 #define NUMSTR_SOTET4       6      ///< number of strains/stresses 	/****/
 #define NUMGPT_SOTET4       1      ///< total gauss points per element	/****/
 #define NUMDIM_SOTET4       3      ///< number of dimensions 			/****/
-#define NUMCOORD_SOTET4	    4 		///< number of shape function cooordinates (ksi1-ksi4)
-#define NUMNOD_SOTET4_FACE  3		///< number of nodes on a TET4 face (which is a TRI3)
-#define NUMGPT_SOTET4_FACE  1		///< number of GP    on a TET4 face (which is a TRI3)
+#define NUMCOORD_SOTET4	    4 	   ///< number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOTET4_FACE  3	   ///< number of nodes on a TET4 face (which is a TRI3)
+#define NUMGPT_SOTET4_FACE  1	   ///< number of GP    on a TET4 face (which is a TRI3)
 
 // forward declarations
 struct _MATERIAL;
@@ -53,7 +56,6 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Sotet4Volume;
 class Sotet4Register;
 
 /*!
@@ -295,7 +297,7 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables
                              //!< during iteration to last converged state
-    update_gl
+    prestress_update
   };
 
   //! kinematic types of so_tet10
@@ -333,11 +335,18 @@ protected:
   //! vector of partial derivatives in material frame
   vector<Epetra_SerialDenseMatrix>                         nxyz_;
 
-  //! green lagrange strains storage needed for prestressing structures
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
-  { return glprestrain_; }
-  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+  /// Prestressing object
+  RCP<DRT::ELEMENTS::PreStress>                    prestress_;
+  
+  // compute Jacobian mapping wrt to deformed configuration
+  void UpdateJacobianMapping(const vector<double>& disp, 
+                             DRT::ELEMENTS::PreStress& prestress);
+
+  // compute defgrd in all gp for given disp
+  void DefGradient(const vector<double>& disp, 
+                   Epetra_SerialDenseMatrix& gpdefgrd,
+                   DRT::ELEMENTS::PreStress& prestress);
 #endif
 
   // internal calculation methods
@@ -358,7 +367,8 @@ protected:
                                  Epetra_SerialDenseMatrix* stresses,
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
-                                 bool                      cauchy = false);
+                                 bool                      cauchy = false,
+                                 bool                      ea = false);
 
   //! lump mass matrix (bborn 07/08)
   void so_tet4_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
@@ -368,7 +378,7 @@ protected:
                      Epetra_SerialDenseMatrix& nodalstresses);
 
 
-  // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
+  /// #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden (??? auf keinen Fall, Gee)
   void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
