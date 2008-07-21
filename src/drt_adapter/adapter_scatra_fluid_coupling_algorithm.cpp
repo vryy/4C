@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     Epetra_Comm& comm, 
-    Teuchos::ParameterList& prbdyn
+    const Teuchos::ParameterList& prbdyn
     )
 :  FluidBaseAlgorithm(prbdyn,false), // false -> no ALE in fluid algorithm
    ScaTraBaseAlgorithm(prbdyn),

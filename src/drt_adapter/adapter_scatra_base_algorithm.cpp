@@ -105,17 +105,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
 
-  // ----------------------------------------------------- initial field
-  scatratimeparams->set<int>("scalar initial field"     ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
-  scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
-  
-  // -----------------------------------------------------velocity field
-  scatratimeparams->set<int>("velocity field"     ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
-  scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
-  
-  // ---------------------------------(fine-scale) subgrid diffusivity?
-  scatratimeparams->set<string>("fs subgrid diffusivity"   ,scatradyn.get<string>("FSSUGRVISC"));
-
   // -------------------------------------------------- time integration
   // the default time step size
   scatratimeparams->set<double>   ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
@@ -128,10 +117,24 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // restart
   scatratimeparams->set           ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
   scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("UPRES"));
+  //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
+  // write also flux vectors when solution is written out?
+  scatratimeparams->set<string>   ("write flux"   ,scatradyn.get<string>("WRITEFLUX"));
 
-  // --------------------------sublist for combustion-specific gfunction parameters
+  // ---------------------------------------------------- initial field
+  scatratimeparams->set<int>("scalar initial field"     ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
+  scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
+  
+  // ----------------------------------------------------velocity field
+  scatratimeparams->set<int>("velocity field"     ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
+  scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
+  
+  // -------------------------------- (fine-scale) subgrid diffusivity?
+  scatratimeparams->set<string>("fs subgrid diffusivity"   ,scatradyn.get<string>("FSSUGRVISC"));
+
+
+  // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
   if (genprob.probtyp == prb_combust)

@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elch_algorithm.cpp
+\file passive_scatra_algorithm.cpp
 
-\brief Basis of all ELCH algorithms
+\brief Transport of passive scalars in Navier-Stokes velocity field
 
 <pre>
 Maintainer: Georg Bauer
@@ -15,46 +15,39 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-#include "elch_algorithm.H"
+#include "passive_scatra_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::Algorithm::Algorithm(
-    Epetra_Comm& comm, 
-    const Teuchos::ParameterList& prbdyn
-    )
+PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
- // no ELCH specific stuff at the moment
+ // no stuff to add here at the moment
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::Algorithm::~Algorithm()
+PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::TimeLoop()
+void PassiveScaTraAlgorithm::PassiveScaTraAlgorithm::TimeLoop()
 {
-    // solve con-dif equation without coupling to Navier-Stokes
-    // ConDifField().SetVelocityField(1,1);
-    // ConDifField().Integrate();
-
-  // time loop
+  // time loop (no-subcycling at the moment)
   while (NotFinished())
   {
-    // prepare next time step (only ELCH and fluid)
+    // prepare next time step
     PrepareTimeStep();
 
     // solve nonlinear Navier-Stokes system
     DoFluidStep();
 
-    // solve transport equations for ion concentrations and electric potential
+    // solve transport (convection-diffusion) equations for passive scalar 
     DoTransportStep();
 
     // update all field solvers
@@ -71,7 +64,7 @@ return;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::PrepareTimeStep()
+void PassiveScaTraAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
   if (Comm().MyPID()==0)
@@ -86,7 +79,7 @@ void ELCH::Algorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::DoFluidStep()
+void PassiveScaTraAlgorithm::DoFluidStep()
 {
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
@@ -96,7 +89,7 @@ void ELCH::Algorithm::DoFluidStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::DoTransportStep()
+void PassiveScaTraAlgorithm::DoTransportStep()
 {
   
   if (Comm().MyPID()==0)
@@ -109,19 +102,17 @@ void ELCH::Algorithm::DoTransportStep()
 
   // prepare time step
   ScaTraField().PrepareTimeStep();
-  // transfer convective velocity
+  // transfer convective velocity to scalar transport field solver
   ScaTraField().SetVelocityField(2,ConvectiveVelocity());
-  //ConDifField().SetVelocityField(1,1);
 
-  // solve coupled transport equations for ion concentrations and electric 
-  // potential
+  // solve the linear convection-diffusion equation(s)
   ScaTraField().Solve();
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::Update()
+void PassiveScaTraAlgorithm::Update()
 {
   FluidField().Update();
   ScaTraField().Update();
@@ -131,7 +122,7 @@ void ELCH::Algorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::Algorithm::Output()
+void PassiveScaTraAlgorithm::Output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle

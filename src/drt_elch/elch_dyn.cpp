@@ -75,7 +75,7 @@ void elch_dyn()
     dserror("Fluid AND ConDif discretization present. This is not supported.");
 
   // access the problem-speific parameter list
-  Teuchos::ParameterList elchdyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& elchdyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // create an ELCH::Algorithm instance
   Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchdyn));

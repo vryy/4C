@@ -1,17 +1,6 @@
 /*!----------------------------------------------------------------------
 \file scatra_dyn.cpp
-\brief Main control routine for all (in)stationary convect.-diff. solvers,
-
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
-
-     o generalized-alpha time-integration scheme
-
-     and stationary solver.
+\brief entry point for (passive) scalar transport problems
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -37,6 +26,8 @@ Maintainer: Volker Gravemeier
 #include "scatra_dyn.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "passive_scatra_algorithm.H"
+#include "../drt_elch/elch_create_condif.H"
 
 #include "../drt_lib/drt_resulttest.H"
 #include "scatra_resulttest.H"
@@ -50,12 +41,11 @@ extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
- * Main control routine for convection-diffusion incl. various solvers:
+ * Main control routine for scalar transport problems, icl. various solvers
  *
- *        o instationary one-step-theta
- *        o instationary BDF2
- *        o instationary generalized-alpha
- *        o stationary
+ *        o transport of passive scalar in velocity field given by spatial function
+ *        o transport of passive scalar in velocity field given by Navier-Stokes
+ *          (one-way coupling)
  *
  *----------------------------------------------------------------------*/
 void scatra_dyn()
@@ -67,9 +57,20 @@ void scatra_dyn()
   Epetra_SerialComm comm;
 #endif
 
-  // create instance of convection diffusion basis algorithm
+  // access the problem-specific parameter list
   const Teuchos::ParameterList& scatradyn     = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> condifonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn)); 
+
+  // get discretization ids
+  int disnumff = genprob.numff; // typically 0
+  int disnumscatra = genprob.numscatra; // typically 1
+
+  // access the fluid discretization
+  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  
+  // access the scatra discretization
+  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
+  if (!scatradis->Filled()) scatradis->FillComplete();
 
   // set velocity field
   int veltype = Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD");
@@ -77,21 +78,78 @@ void scatra_dyn()
   {
     case 0:  // zero  (see case 1)
     case 1:  // function
+    {
+      // we directly use the elements from the scalar transport elements section
+      if (scatradis->NumGlobalNodes()==0)
+        dserror("No elements in the ---TRANSPORT ELEMENTS section");
+
+      // create instance of convection diffusion basis algorithm (empty fluid discretization)
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> condifonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
+
+      // set velocity field 
+      //(this is done only once. Time-dependent velocity fields are not supported)
       (condifonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
+
+      // solve the problem with given convective velocity
+      (condifonly->ScaTraField()).Integrate();
+
+      // do result test if required
+      DRT::ResultTestManager testmanager(comm);
+      testmanager.AddFieldTest(condifonly->CreateScaTraFieldTest());
+      testmanager.TestAll();
+
       break;
+    }
     case 2:  // Navier_Stokes
-      dserror("condif velocity: >>Navier_Stokes<< not implemented.");
+    {
+      // we use the fluid discretization as layout for the scalar transport discretization
+      if (fluiddis->NumGlobalNodes()==0)
+        dserror("No fluid discretization found!");
+ 
+      // create scatra elements if the scatra discretization is empty
+      if (scatradis->NumGlobalNodes()==0)
+      {
+        Epetra_Time time(comm);
+        ELCH::CreateConDifDiscretization(disnumff,disnumscatra);
+        if (comm.MyPID()==0)
+        cout<<"Created necessary condif discretization from fluid field in...."
+        <<time.ElapsedTime() << " secs\n\n";
+      }
+      else
+        dserror("Fluid AND ConDif discretization present. This is not supported.");
+
+      // create an one-way coupling algorithm instance
+      Teuchos::RCP<PassiveScaTraAlgorithm> algo = Teuchos::rcp(new PassiveScaTraAlgorithm(comm,scatradyn));
+
+      if (genprob.restart)
+      {
+        // read the restart information, set vectors and variables
+        //elch->ReadRestart(genprob.restart);
+        dserror("restart not yet available");
+        exit(1);
+      }
+
+      // solve the whole electrochemistry problem
+      algo->TimeLoop();
+
+      // summarize the performance measurements
+      Teuchos::TimeMonitor::summarize();
+
+      // perform the result test
+      DRT::ResultTestManager testmanager(comm);
+      testmanager.AddFieldTest(algo->FluidField().CreateFieldTest());
+      testmanager.AddFieldTest(algo->CreateScaTraFieldTest());
+      testmanager.TestAll();
+
+      break;
+    } // case 2
     default:
-      dserror("unknown velocity field type for convection-diffusion");
+      dserror("unknown velocity field type for transport of passive scalar");
   }
 
-  // solve the convection-diffusion problem
-  (condifonly->ScaTraField()).Integrate();
 
-  // do result test if required
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(condifonly->CreateScaTraFieldTest());
-  testmanager.TestAll();
+
+
 
   return;
 

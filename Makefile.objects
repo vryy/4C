@@ -215,7 +215,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
 # ---------------------------------------------- scalar transport problems
 OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \
-                src/drt_scatra/scatra_resulttest.o
+                src/drt_scatra/scatra_resulttest.o \
+                src/drt_scatra/passive_scatra_algorithm.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \

@@ -47,8 +47,8 @@ namespace ADAPTER
 
     /// constructor using a Epetra_Comm
     explicit ScaTraFluidCouplingAlgorithm(
-        Epetra_Comm& comm,              //< communicator
-        Teuchos::ParameterList& prbdyn  //< problem-specific parameters
+        Epetra_Comm& comm,              ///< communicator
+        const Teuchos::ParameterList& prbdyn  ///< problem-specific parameters
         );
 
     /// virtual destructor to support polymorph destruction
@@ -80,9 +80,10 @@ namespace ADAPTER
     RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_;}
     
     // increment time and step value
-    void IncrementTimeAndStep(){  
-        step_ += 1;
-        time_ += dt_;
+    void IncrementTimeAndStep()
+    {
+      step_ += 1;
+      time_ += dt_;
     }
 
   private:
@@ -94,7 +95,7 @@ namespace ADAPTER
     RCP<const Epetra_Vector>    velocitynp_;
     
     /// problem-specific parameter list
-    Teuchos::ParameterList& params_;
+    const Teuchos::ParameterList& params_;
 
     //! @name Time stepping variables
 

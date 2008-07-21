@@ -1,8 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elch_algorithm.H
+\file passive_scatra_algorithm.H
 
-\brief Basis of all ELCH algorithms
+\brief Transport of passive scalars in Navier-Stokes velocity field 
+       (one-way coupling)
 
 <pre>
 Maintainer: Georg Bauer
@@ -15,45 +16,33 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-#ifndef ELCH_ALGORITHM_H
-#define ELCH_ALGORITHM_H
+#ifndef PASSIVE_SCATRA_ALGORITHM_H
+#define PASSIVE_SCATRA_ALGORITHM_H
 
 #include <Epetra_Comm.h>
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
 
-/*!
-\brief ELCH: namespace of the electrochemistry module in BACI
-
-*/
-namespace ELCH
-{
-
-  /// ELCH algorithm base
+  /// Basic algorithm for the transport of passive scalars in the fluid velocity field
   /*!
 
-    Base class of ELCH algorithms. Derives from FluidBaseAlgorithm
-    and ConDifBaseAlgorithm.
-    There can (and will) be different subclasses that implement
-    different coupling schemes.
-
     \author gjb
-    \date 03/08
+    \date 07/08
    */
-  class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
+  class PassiveScaTraAlgorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
   public:
 
     /// constructor
-    explicit Algorithm(
-        Epetra_Comm& comm,             ///< problem-specific parameter list
+    explicit PassiveScaTraAlgorithm(
+        Epetra_Comm& comm,             ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    virtual ~PassiveScaTraAlgorithm();
 
-    /// outer level ELCH time loop
+    /// outer level time loop
     void TimeLoop();
 
   protected:
@@ -64,7 +53,7 @@ namespace ELCH
     /// solve Navier-Stokes equations for current time step
     void DoFluidStep();
     
-    /// solve transport equations for current time step
+    /// solve transport (convection-diffusion) equations for current time step
     void DoTransportStep();
 
     /// take current results for converged and save for next time step
@@ -77,7 +66,5 @@ namespace ELCH
 
   };
 
-} // namespace ELCH
-
-#endif // ELCH_ALGORITHM_H
+#endif // PASSIVE_SCATRA_ALGORITHM_H
 #endif // CCADISCRET
