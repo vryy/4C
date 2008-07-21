@@ -20,12 +20,20 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 07/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp) :
+DRT::ELEMENTS::PreStress::PreStress(const int numnode, 
+                                    const int ngp, 
+                                    const bool istet4) :
 ParObject(),
-numnode_(numnode),
-Fhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9))),
-invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9)))
+isinit_(false),
+numnode_(numnode)
 {
+  // allocate history memory
+  Fhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9));
+  if (!istet4)
+    invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9));
+  else
+    invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,12));
+
   // init the deformation gradient history
   Epetra_SerialDenseMatrix F(3,3);
   F(0,0) = F(1,1) = F(2,2) = 1.0;
@@ -37,6 +45,7 @@ invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9)))
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PreStress::PreStress(const DRT::ELEMENTS::PreStress& old) :
 ParObject(old),
+isinit_(old.isinit_),
 numnode_(old.numnode_),
 Fhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.FHistory()))),
 invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.JHistory())))
@@ -57,6 +66,9 @@ void DRT::ELEMENTS::PreStress::Pack(vector<char>& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
+  // pack isinit_
+  AddtoPack(data,isinit_);
+  
   // pack numnode_
   AddtoPack(data,numnode_);
   
@@ -82,6 +94,9 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
+  // extract isinit_
+  ExtractfromPack(position,data,isinit_);
+  
   // extract numnode_
   ExtractfromPack(position,data,numnode_);
   

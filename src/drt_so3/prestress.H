@@ -36,7 +36,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  PreStress(const int numnode, const int ngp);
+  PreStress(const int numnode, const int ngp, const bool istet4=false);
 
   /*!
   \brief Copy Constructor
@@ -99,9 +99,15 @@ public:
     for (int i=0; i<gpMat.N(); ++i) Mat.A()[i] = gpMat(gp,i);
     return;
   }
+  
+  /// get indication whether class is initialized (important for restarts)
+  bool& IsInit() { return isinit_; }
 
 private:
 
+  /// flagindicating whether material configuration has been initialized
+  bool                                      isinit_;
+  
   /// no. nodal points of element
   int                                       numnode_;
   
