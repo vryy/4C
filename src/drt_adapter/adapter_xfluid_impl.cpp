@@ -38,14 +38,16 @@ ADAPTER::XFluidImpl::XFluidImpl(
   : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
     solver_(solver),
-    params_(params),
-    output_(output)
+    params_(params)
 {
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
+  
+  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundaryoutput_->WriteMesh(0,0.0);
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
@@ -234,7 +236,14 @@ void ADAPTER::XFluidImpl::Output()
 {
   fluid_.Output();
 
-  //static int step_counter = 1;
+  boundaryoutput_->NewStep(Step(),Time());
+  boundaryoutput_->WriteVector("interface displacement", idisp_);
+  boundaryoutput_->WriteVector("interface velocity", ivel_);
+  boundaryoutput_->WriteVector("interface velocity (n)", iveln_);
+  boundaryoutput_->WriteVector("interface velocity (n-1)", ivelnm_);
+  boundaryoutput_->WriteVector("interface acceleration (n)", iaccn_);
+  boundaryoutput_->WriteVector("interface acceleration (n-1)", iaccnm_);
+  boundaryoutput_->WriteVector("interface force", itrueres_);
 
   // create interface DOF vectors using the fluid parallel distribution
   const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
@@ -256,7 +265,7 @@ void ADAPTER::XFluidImpl::Output()
 
   LINALG::Export(*itrueres_,*itruerescol);
 
-  PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface traction");
+  PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface force");
   PrintInterfaceVectorField(idispcol, ivelcol  , "_solution_ivel_"  , "interface velocity n+1");
   PrintInterfaceVectorField(idispcol, ivelncol , "_solution_iveln_" , "interface velocity n");
   PrintInterfaceVectorField(idispcol, ivelnmcol, "_solution_ivelnm_", "interface velocity n-1");

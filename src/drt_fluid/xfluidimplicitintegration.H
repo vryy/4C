@@ -167,6 +167,14 @@ public:
   */
   void OutputToGmsh();
 
+  /*!
+   * \brief plot a vector field to a Gmsh postprocessing file
+   * 
+   * @param vectorfield      vector with solution values
+   * @param filestr          basic name of the output file
+   * @param name_in_gmsh     text that appears in the Gmsh window over the scale
+   * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
+   */
   void PlotVectorFieldToGmsh(
       const RCP<Epetra_Vector>   vectorfield,
       const std::string filestr,
@@ -315,8 +323,11 @@ protected:
    */
   XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
 
+  //! store interface information for output
   RCP<XFEM::InterfaceHandle> ihForOutput_;
+  //! store dof distribution information for output
   RCP<XFEM::DofManager>      dofmanagerForOutput_;
+  //! store dof distribution information for output
   DRT::DofSet                dofset_out_;
 
   /// (standard) system matrix
@@ -325,6 +336,7 @@ protected:
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
 
+  /// toggle vector indicating which dofs DON'T have Dirichlet BCs
   RCP<Epetra_Vector>    invtoggle_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
@@ -345,6 +357,7 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
+  /// this struct holds all state vectors needed for time integration
   struct State
   {
   //! @name accelerations at time n and n-1

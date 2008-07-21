@@ -70,6 +70,7 @@ namespace ADAPTER {
   class XFluidImpl : public Fluid
   {
   public:
+    //! constructor
     XFluidImpl(
             Teuchos::RCP<DRT::Discretization> dis,
             Teuchos::RCP<DRT::Discretization> soliddis,
@@ -186,7 +187,7 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<IO::DiscretizationWriter> boundaryoutput_;
     //@}
 
     //! @name state vectors using the solid boundary parallel distribution (row vectors)
