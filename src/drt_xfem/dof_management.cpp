@@ -441,20 +441,6 @@ void XFEM::DofManager::toGmsh(
       std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
       {
         std::ofstream f_system(filename.str().c_str());
-        //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
-        //      f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis());
-        //      {
-        //          // draw elements with associated gid
-        //          stringstream gmshfilecontent;
-        //          gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
-        //          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-        //          {
-        //              DRT::Element* actele = ih->xfemdis()->lColElement(i);
-        //              gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele) << endl;
-        //          };
-        //          gmshfilecontent << "};" << endl;
-        //          f_system << gmshfilecontent.str();
-        //      }
         {
           stringstream gmshfilecontent;
           gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {" << endl;

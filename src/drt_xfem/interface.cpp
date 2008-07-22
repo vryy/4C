@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "xfsi_searchtree.H"
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_gmsh_xfem_extension.H"
 #include "integrationcell.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -173,7 +174,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
-    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     f_system.close();
     cout << " done" << endl;
@@ -189,8 +190,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
     std::ofstream f_system(filename.str().c_str());
-//    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
-//    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     {
       // stringstream for domains
       stringstream gmshfilecontent;
@@ -210,9 +209,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           int closestElementId;
           double distance;
           const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
-          stringstream text;
-          text.precision(3);
-          text << "(<"<< (actele->Id()) << "," << closestElementId << ">,\n"<< fixed << distance << ")";
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
           gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
@@ -399,7 +395,7 @@ int XFEM::PositionWithinConditionBruteForce(
     for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
     {
       const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
-      const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
+      const BlitzMat xyze_cutter(DRT::UTILS::getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
       double distance = 0.0;
       BlitzVec2 eleCoord;
       BlitzVec3 normal;

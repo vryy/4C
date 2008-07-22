@@ -166,9 +166,7 @@ namespace UTILS
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *
-   * this function does just that, so we don't have the associated loop repeated too often
-   *
-   * Note: return value optimization avoids copying the array
+   * \note array is defined as (3,numnode)
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
    *
@@ -183,10 +181,8 @@ namespace UTILS
    * a common task is to get an array of the positions of all nodes of this element
    *
    * template version
-   *
-   * this function does just that, so we don't have the associated loop repeated too often
-   *
-   * Note: array is defined as 3 x numnode
+   * 
+   * \note array is defined as (3,numnode)
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
    *
@@ -215,6 +211,21 @@ namespace UTILS
       return;
   }
 
+  /*!
+   * a common task is to get an array of the current positions of all nodes of this element
+   *
+   * \note array is defined as (3,numnode)
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author a.ger
+   * \date 02/08
+   */
+  blitz::Array<double,2> getCurrentNodalPositions(
+      const DRT::Element*                            ele,                   ///< element with nodal pointers
+      const map<int,blitz::TinyVector<double,3> >&   currentcutterpositions ///< current positions of all cutter nodes
+      );
+  
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {

@@ -1214,4 +1214,28 @@ blitz::Array<double,2> DRT::UTILS::InitialPositionArrayBlitz(
     return xyze;
 }
 
+
+/*!
+\brief  fill array with current nodal positions
+
+\return array with element nodal positions (3,numnode)
+*/    
+blitz::Array<double,2> DRT::UTILS::getCurrentNodalPositions(
+    const DRT::Element*                           ele,                      ///< element with nodal pointers
+    const map<int,blitz::TinyVector<double,3> >&  currentcutterpositions    ///< current positions of all cutter nodes
+    )
+{
+    const int numnode = ele->NumNode();
+    blitz::Array<double,2> xyze(3,numnode);
+    const DRT::Node*const* nodes = ele->Nodes();
+    for (int inode = 0; inode < numnode; ++inode)
+    {
+      const blitz::TinyVector<double,3> x = currentcutterpositions.find(nodes[inode]->Id())->second;
+      xyze(0,inode) = x(0);
+      xyze(1,inode) = x(1);
+      xyze(2,inode) = x(2);
+    }
+    return xyze;
+}
+
 #endif  // #ifdef CCADISCRET

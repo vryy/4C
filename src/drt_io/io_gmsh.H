@@ -1,6 +1,6 @@
 /*!
  * \file io_gmsh.H
- * \brief simple element print library for Gmsh (mostly for debuging, only sequential)
+ * \brief simple element print library for Gmsh (mostly for debugging, only sequential)
  * 
  * <pre>
  * Maintainer: Axel Gerstenberger
@@ -19,10 +19,10 @@
 #include <string>
 #include <vector>
 
-#include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
 
 namespace IO
 {
@@ -256,9 +256,9 @@ namespace IO
 
     //! take an entire DRT::Element and print it with constant scalar value at the given pusition
     std::string elementAtCurrentPositionToString(
-        const double scalar,                                   ///< scalar value for the entire element
-        const DRT::Element* ele,                               ///< element to print
-        const map<int,BlitzVec3>&      currentelepositions     ///< nodal position array
+        const double scalar,                                                  ///< scalar value for the entire element
+        const DRT::Element* ele,                                              ///< element to print
+        const map<int,blitz::TinyVector<double,3> >&  currentelepositions     ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
@@ -335,9 +335,9 @@ namespace IO
     
     /// print a piece of text at a given position
     inline std::string text3dToString(
-        const BlitzVec3&    xyz,      ///< 3d Position of text
-        const std::string   text,     ///< text to be printed 
-        const int           fontsize  ///< font size
+        const blitz::TinyVector<double,3>&    xyz,      ///< 3d Position of text
+        const std::string                     text,     ///< text to be printed 
+        const int                             fontsize  ///< font size
         )
     {
       std::stringstream gmsh_ele_line;
@@ -361,18 +361,10 @@ namespace IO
 
     //! print discretization in current configuration (t > 0)
     std::string disToString(
-        const std::string& s,
-        const double scalar,
-        const Teuchos::RCP<DRT::Discretization> dis,
+        const std::string&                         s,
+        const double                               scalar,
+        const Teuchos::RCP<DRT::Discretization>    dis,
         std::map<int,blitz::TinyVector<double,3> > currentpositions);
-
-    //! print discretization including intersection information in initial configuration (t = 0)
-    std::string disToString(
-        const std::string& s,
-        const double scalar,
-        const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
-        const std::map<int,XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap);
 
   }
 }

@@ -563,7 +563,8 @@ OBJS_IO       = src/io/io_singlefile.o \
 #
 OBJS_DRT_IO_LIB = src/drt_io/io_hdf.o \
                 src/drt_io/io_control.o \
-                src/drt_io/io_gmsh.o
+                src/drt_io/io_gmsh.o \
+                src/drt_io/io_gmsh_xfem_extension.o
 #
 OBJS_DRT_IO   = src/drt_io/io.o \
                 src/drt_io/io_micro.o

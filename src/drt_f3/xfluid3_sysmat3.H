@@ -1487,7 +1487,7 @@ static void Sysmat3(
         
         // get current node coordinates
         const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
-        const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *positions));
+        const BlitzMat xyze_boundary(DRT::UTILS::getCurrentNodalPositions(boundaryele, *positions));
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
@@ -1903,21 +1903,21 @@ void callSysmat3(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat3<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat3<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::tet4:
-                Sysmat3<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat3<DRT::Element::hex20,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat3<DRT::Element::hex27,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::tet4:
+//                Sysmat3<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
@@ -1931,16 +1931,16 @@ void callSysmat3(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat3<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat3<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat3<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat3<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
