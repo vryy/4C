@@ -140,7 +140,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     insertElement(dis.lRowElement(i),currentpositions);
     
     #ifdef DEBUG
-    const BlitzMat xyze(XFEM::getCurrentNodalPositions(dis.lRowElement(i), currentpositions));
+    const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(dis.lRowElement(i), currentpositions));
     const BlitzMat3x2 elemXAABB = XFEM::computeFastXAABB(dis.lRowElement(i), xyze, HIGHERORDER);
     BlitzMat XAABB(3,8);
     XAABB(0,0) = elemXAABB(0,0); XAABB(1,0) = elemXAABB(1,0);XAABB(2,0) = elemXAABB(2,0);
