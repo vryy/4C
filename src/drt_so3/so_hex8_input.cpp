@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 
 #include "so_hex8.H"
+#include "../drt_mat/artwallremod.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -44,6 +45,12 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
   SetMaterial(material);
+  
+  // special element-dependent input of material parameters
+  if (Material()->MaterialType() == m_artwallremod){
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    remo->Setup(NUMGPT_SOH8, this->Id());
+  }
 
   // read possible gaussian points, obsolete for computation
   int ngp[3];

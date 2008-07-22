@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/contchainnetw.H"
+#include "../drt_mat/artwallremod.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -389,12 +390,12 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 //    fiber = "l3_0";
 //    names[fiber] = 1;
   }
-//  // element fiber direction vector
-//  if (fiberdirection_.size()!=0)
-//  {
-//    string fibervecname = "FiberVec";
-//    names[fibervecname] = 3;
-//  }
+  if (Material()->MaterialType() == m_artwallremod){
+    string fiber = "Fiber1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "Fiber2";
+    names[fiber] = 3; // 3-dim vector
+  }
 
   return;
 }
@@ -500,17 +501,25 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       }
     }
   }
-//  // these are the names so_hex8 recognizes, do nothing for everything else
-//  if (name != "FiberVec") return;
-//
-//  // check sizes
-//  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size()))
-//    dserror("FiberVec size mismatch ");
-//
-//  if (name == "FiberVec"){
-//      data = fiberdirection_;
-//  }
-//  else dserror("weirdo impossible case????");
+  if (Material()->MaterialType() == m_artwallremod){
+    MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else if (name == "Owner"){
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Owner();
+    } else {
+      cout << name << endl;
+      dserror("Unknown VisData!");
+    }
+ }
+    
 
   return;
 }

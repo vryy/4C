@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 
 extern struct _MATERIAL *mat;
 
+//#define PI        (asin(1.0)*2.0)
 
 
 /*----------------------------------------------------------------------*
@@ -128,6 +129,54 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   return;
 }
 
+void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
+{
+  a1_ = rcp(new vector<vector<double> > (numgp));
+  a2_ = rcp(new vector<vector<double> > (numgp));
+  int initflag = matdata_->m.artwallremod->init;
+  double gamma = matdata_->m.artwallremod->gamma;
+  gamma = gamma * PI/180.0;  // convert to radians
+  // switch how to setup/initialize fiber directions
+  if (initflag==0){
+  // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
+    Epetra_SerialDenseMatrix id(3,3);
+    // basis is identity
+    for (int i=0; i<3; ++i) id(i,i) = 1.0;
+    Epetra_SerialDenseMatrix initstress(3,3);
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,gamma,id);
+    }
+  } else if (initflag==1){
+  // fibers aligned in local element cosy with gamma around circumferential direction
+    vector<double> rad(3);
+    vector<double> axi(3);
+    vector<double> cir(3);
+    int ierr=0;
+    // read local (cylindrical) cosy-directions at current element
+    frdouble_n("RAD",&rad[0],3,&ierr);
+    frdouble_n("AXI",&axi[0],3,&ierr);
+    frdouble_n("CIR",&cir[0],3,&ierr);
+    if (ierr!=1) dserror("Reading of SO_HEX8 element local cosy failed");
+    Epetra_SerialDenseMatrix locsys(3,3);
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    for (int i=0; i<3; ++i){
+      locsys(i,0) = rad[i];
+      locsys(i,1) = axi[i];
+      locsys(i,2) = cir[i];
+    }
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,gamma,locsys);
+    }
+  } else if (initflag==2){
+    dserror("Random init not yet implemented for ARTWALLREMOD");
+  } else dserror("Unknown init for ARTWALLREMOD");
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -137,6 +186,8 @@ void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid)
   srand ( time(NULL) + 5 + eleid*numgp );
 
   gamma_ = rcp(new vector<double>);
+  a1_ = rcp(new vector<vector<double> > (numgp));
+  a2_ = rcp(new vector<vector<double> > (numgp));
   lambda_ = rcp(new vector<vector<double> > (numgp));
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
@@ -154,12 +205,14 @@ void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid)
   // initialize remodelling parameters
   for(int gp=0; gp<numgp; ++gp){
     lambda_->at(gp).resize(3);
-    if (matdata_->m.artwallremod->initran == 1){
+    a1_->at(gp).resize(3);
+    a2_->at(gp).resize(3);
+    if (matdata_->m.artwallremod->init == 1){
       // random init
       gamma_->push_back(randominit[gp]);
-    } else if (matdata_->m.artwallremod->initran == 0){
+    } else if (matdata_->m.artwallremod->init == 0){
       // pseudo-isotropic init
-      gamma_->push_back(1.0);
+      gamma_->push_back(45.*PI/180);
     } else dserror("Unknown remodeling initialization");
     for (int i = 0; i < 3; ++i){
       lambda_->at(gp)[i] = 0.0;
@@ -167,6 +220,12 @@ void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid)
     phi_->push_back(id);
     stresses_->push_back(initstress);
     mytime_->push_back(matdata_->m.artwallremod->rembegt);
+    //EvaluateFiberVecs(gp);
+    
+//    cout << "gamma: " << gamma_->at(gp) << endl;
+//    cout << "Phi: " << phi_->at(gp) << endl;
+//    cout << "a1: " << PrintVec(a1_->at(gp)) << endl;
+//    cout << "a2: " << PrintVec(a2_->at(gp)) << endl;
   }
 
   isinit_ = true;
@@ -268,22 +327,18 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // anisotropic part: ***************************************************
   // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
   
-  // fiber directions
-  Epetra_SerialDenseVector a1(3);
-  Epetra_SerialDenseVector a2(3);
-  
-  a1(0) = 1.0;
-  
+//  cout << "a1: " << PrintVec(a1_->at(gp)) << endl;
+//  cout << "a2: " << PrintVec(a2_->at(gp)) << endl;
   
   // structural tensors in voigt notation
   Epetra_SerialDenseVector A1(6);
   Epetra_SerialDenseVector A2(6);
   for (int i = 0; i < 3; ++i) {
-    A1(i) = a1(i)*a1(i);
-    A2(i) = a2(i)*a2(i);
+    A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
+    A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
   }
-  A1(3) = a1(0)*a1(1); A1(4) = a1(1)*a1(2); A1(5) = a1(0)*a1(2);
-  A2(3) = a2(0)*a2(1); A2(4) = a2(1)*a2(2); A2(5) = a2(0)*a2(2);
+  A1(3) = a1_->at(gp)[0]*a1_->at(gp)[1]; A1(4) = a1_->at(gp)[1]*a1_->at(gp)[2]; A1(5) = a1_->at(gp)[0]*a1_->at(gp)[2];
+  A2(3) = a2_->at(gp)[0]*a2_->at(gp)[1]; A2(4) = a2_->at(gp)[1]*a2_->at(gp)[2]; A2(5) = a2_->at(gp)[0]*a2_->at(gp)[2];
 
   // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
   // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
@@ -294,10 +349,16 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
   
+  // fibers take compression only
+  double fib1_tension = 1.;
+  double fib2_tension = 1.;
+  if (J4 < 0.0) fib1_tension = 0.;
+  if (J6 < 0.0) fib2_tension = 0.;
+  
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271 
   Epetra_SerialDenseVector Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
-  const double fib1 = 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
-  const double fib2 = 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
+  const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
+  const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   Sfiso.Scale(fib1);
   Epetra_SerialDenseVector Stemp(A2);
   Stemp.Scale(fib2);
@@ -312,8 +373,8 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   (*stress) += Sfiso;
   
   // Elasticity fiber part in splitted fromulation, see Holzapfel p. 255 and 272
-  const double delta7bar1 = 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
-  const double delta7bar2 = 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
+  const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
+  const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
   
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -331,6 +392,27 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   return;
 }
 
+void MAT::ArtWallRemod::EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys)
+{
+  for (int i = 0; i < 3; ++i) {
+    // a1 = cos gamma e1 + sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
+    a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    // a2 = cos gamma e1 - sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
+    a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+  }
+  
+  return;
+}
+
+std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
+{
+  std::stringstream out;
+  vector<double>::const_iterator i;
+  for (i=actvec.begin(); i<actvec.end(); ++i) {
+    out << *i << " ";
+  }
+  return out.str();
+}
 
 
 

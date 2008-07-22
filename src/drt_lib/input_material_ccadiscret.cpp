@@ -578,7 +578,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frdouble("DENS"   ,&(localmat.m.artwallremod->density)    ,&ierr);
      frdouble("K1"     ,&(localmat.m.artwallremod->k1)         ,&ierr);
      frdouble("K2"     ,&(localmat.m.artwallremod->k2)         ,&ierr);
-     frint   ("INITRAN",&(localmat.m.artwallremod->initran)    ,&ierr);
+     frdouble("GAMMA"  ,&(localmat.m.artwallremod->gamma)      ,&ierr);
+     frint   ("INIT"   ,&(localmat.m.artwallremod->init)       ,&ierr);
      frdouble("REMBEGT",&(localmat.m.artwallremod->rembegt)    ,&ierr);
    }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */

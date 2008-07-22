@@ -98,12 +98,20 @@ namespace MAT
     
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
     
+    RCP<vector<vector<double> > > Geta1() const {return a1_;}
+    
+    RCP<vector<vector<double> > > Geta2() const {return a2_;}
+    
+    void Setup(const int numgp, const int eleid);
 
     void Update(const Epetra_SerialDenseMatrix& Phi,
         const Epetra_SerialDenseVector& lambda,
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay);
 
+    void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);
+
+    std::string PrintVec(const vector<double> actvec);
     
   private:
 
@@ -112,6 +120,10 @@ namespace MAT
     
     /// angle of alignment at gp
     Teuchos::RCP<vector<double> > gamma_;
+    /// first fiber vector per gp
+    Teuchos::RCP<vector<vector<double> > > a1_;
+    /// second fiber vector per gp
+    Teuchos::RCP<vector<vector<double> > > a2_;
     /// eigenvectors per gp
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > phi_;
     /// eigenvalues per gp

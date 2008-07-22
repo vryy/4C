@@ -711,7 +711,8 @@ typedef struct _ARTWALLREMOD
      DOUBLE                    density;
      DOUBLE                    k1;
      DOUBLE                    k2;
-     INT                       initran;
+     DOUBLE                    gamma;
+     INT                       init;
      DOUBLE                    rembegt;
 } ARTWALLREMOD;
 /*----------------------------------------------------------------------*

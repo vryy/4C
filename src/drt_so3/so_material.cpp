@@ -135,8 +135,8 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      if (!remo->Initialized())
-        remo->Initialize(NUMGPT_SOH8, this->Id());
+//      if (!remo->Initialized())
+//        remo->Initialize(NUMGPT_SOH8, this->Id());
       remo->Evaluate(glstrain,gp,params,cmat,stress);
       *density = remo->Density();
       
