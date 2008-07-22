@@ -22,6 +22,7 @@ Maintainer: Ursula Mayer
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_io/io.H"
 #include "tetgen.h"
 #include "Teuchos_RefCountPtr.hpp"

@@ -40,6 +40,7 @@ Maintainer: Ursula Mayer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_utils.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -94,7 +95,7 @@ void XFEM::Intersection::computeIntersection(
       DRT::Element*  cutterElement = cutterdis->lColElement(kk);
       if(cutterElement == NULL) dserror("geometry does not obtain elements");
 
-      const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
       checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
       const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
 
@@ -121,7 +122,7 @@ void XFEM::Intersection::computeIntersection(
       cutterDistype_ = cutterElement->Shape();
 
       if(cutterElement == NULL) dserror("cutter element is null\n");
-      const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
       checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
       const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
@@ -162,7 +163,7 @@ void XFEM::Intersection::computeIntersection(
           const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
           const BlitzMat xyze_xfemElementSurface(DRT::UTILS::InitialPositionArrayBlitz(xfemElementSurface));
           const DRT::Element* cutterElementLine = cutterElementLines[m].get();
-          const BlitzMat xyze_cutterElementLine(getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
+          const BlitzMat xyze_cutterElementLine(DRT::UTILS::getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
           if(collectIntersectionPoints(   xfemElement, xfemElementSurface, xyze_xfemElementSurface,
               cutterElementLine, xyze_cutterElementLine,
               interfacePoints,
@@ -2727,7 +2728,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     DRT::Element* cutterElement =  intersectingCutterElements_[faceMarker];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
 
     BlitzVec3 xsi;
     vector<BlitzVec> plane;
@@ -2810,7 +2811,7 @@ void XFEM::Intersection::liftSteinerPointOnEdge(
     static BlitzVec3 xsi;
     xsi = 0.0;
     DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));  
+    const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));  
     const bool intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
    
     if(intersected)
@@ -2898,7 +2899,7 @@ void XFEM::Intersection::liftSteinerPointOnBoundary(
     // compute intersection normal on boundary
     static BlitzVec3 xsi;
     DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));   
+    const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));   
     const bool intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, true);
    
     if(intersected)
@@ -3023,7 +3024,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
         if(adjacentFaceMarker == faceMarker)
         {
             DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-            const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+            const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
             intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, false);
             intersectionNormal = true;
         }
@@ -3036,7 +3037,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
             if(lineIndex != -1)
             {
                 DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
-                const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+                const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
                 intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
@@ -3051,7 +3052,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
         //printf("oppo = %d\n", oppositeIndex);
 
         DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         
         vector<BlitzVec>     plane;
 
@@ -3337,7 +3338,7 @@ bool XFEM::Intersection::computeRecoveryPlane(
     double                      residual = 1.0;
     const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
     DRT::Element*               lineElement = (cutterElementLines[i]).get();
-    const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineElement, currentcutterpositions));
+    const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineElement, currentcutterpositions));
     
     static BlitzMat3x3 A;
     static BlitzVec3   b;
@@ -4002,7 +4003,7 @@ void XFEM::Intersection::storeHigherOrderNode(
         xsiSurf(0) = xsi(0);
         xsiSurf(1) = xsi(1);
         
-        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, xsiSurf, curr);
     }
     else
@@ -4011,7 +4012,7 @@ void XFEM::Intersection::storeHigherOrderNode(
         xsiLine(0) = xsi(2);
         const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
         const DRT::Element* lineele = cutterElementLines[lineIndex].get();
-        const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineele, currentcutterpositions));
+        const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }
     xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr, TOL7);
@@ -4107,7 +4108,7 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
     //domainCoord.push_back(trinodes);
 
     const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
     BlitzVec2 eleCoordBoundaryCorner;
 //    cout << *cutterElement << endl;
@@ -4143,7 +4144,7 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
         //domainCoord.push_back(trinodes);
 
         const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         BlitzVec2 eleCoordBoundaryHO;
         CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
@@ -4191,7 +4192,7 @@ void XFEM::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
     elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomainCorner, physCoordCorner);
 
     const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
     BlitzVec2 eleCoordBoundaryCorner;
     CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
@@ -4223,7 +4224,7 @@ void XFEM::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
       elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO, physCoordHO);
 
       const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
-      const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
       BlitzVec2 eleCoordBoundaryHO;
       CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
