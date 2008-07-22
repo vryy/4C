@@ -158,9 +158,9 @@ STR::StruTimIntImpl::StruTimIntImpl
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-  DRT::Discretization& actdis,
-  LINALG::Solver& solver,
-  IO::DiscretizationWriter& output
+  Teuchos::RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : StruTimInt
   (
@@ -187,7 +187,7 @@ STR::StruTimIntImpl::StruTimIntImpl
   normfres_(0.0),
   normdisi_(0.0),
   disi_(Teuchos::null),
-  timer_(actdis.Comm()),
+  timer_(actdis->Comm()),
   fres_(Teuchos::null)
 {
   // verify: if system has constraints, then Uzawa-type solver is used
@@ -281,9 +281,9 @@ void STR::StruTimIntImpl::Predict()
 void STR::StruTimIntImpl::PredictConstDisVelAcc()
 {
   // constant predictor
-  disn_->Update(1.0, *dis_(), 0.0);
-  veln_->Update(1.0, *vel_(), 0.0);
-  accn_->Update(1.0, *acc_(), 0.0);  
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
+  veln_->Update(1.0, *(*vel_)(0), 0.0);
+  accn_->Update(1.0, *(*acc_)(0), 0.0);  
   
   // see you next time step
   return;
@@ -478,10 +478,10 @@ void STR::StruTimIntImpl::NewtonFull()
     {
       double worst = normfres_;
       double wanted = tolfres_;
-      solver_.AdaptTolerance(wanted, worst, solveradaptolbetter_);
+      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
-    solver_.Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
-    solver_.ResetTolerance();
+    solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
+    solver_->ResetTolerance();
 
     // update end-point displacements etc
     UpdateIter(iter_);
@@ -921,7 +921,7 @@ void STR::StruTimIntImpl::PrintStepText
           " | time %-14.8E"
           " | dt %-14.8E"
           " | numiter %3d\n",
-          step_, stepmax_, time_, dt_, iter_);
+          step_, stepmax_, (*time_)[0], (*dt_)[0], iter_);
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"
@@ -971,12 +971,12 @@ void STR::StruTimIntImpl::OutputRestart
     datawritten = true;
 
     // write restart output, please
-    output_.WriteMesh(step_, time_);
-    output_.NewStep(step_, time_);
-    output_.WriteVector("displacement", dis_());
-    output_.WriteVector("velocity", vel_());
-    output_.WriteVector("acceleration", acc_());
-    //output_.WriteVector("fexternal", fext_);  // CURRENTLY NOT AVAILABLE THINK OF SCENARIO
+    output_->WriteMesh(step_, (*time_)[0]);
+    output_->NewStep(step_, (*time_)[0]);
+    output_->WriteVector("displacement", (*dis_)(0));
+    output_->WriteVector("velocity", (*vel_)(0));
+    output_->WriteVector("acceleration", (*acc_)(0));
+    //output_->WriteVector("fexternal", fext_);  // CURRENTLY NOT AVAILABLE THINK OF SCENARIO
 
     // surface stress
     if (surfstressman_ != Teuchos::null)
@@ -988,8 +988,8 @@ void STR::StruTimIntImpl::OutputRestart
       Teuchos::RCP<Epetra_Vector> con 
         = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
       surfstressman_->GetHistory(A,con);
-      output_.WriteVector("Aold", A);
-      output_.WriteVector("conquot", con);
+      output_->WriteVector("Aold", A);
+      output_->WriteVector("conquot", con);
     }
     
     // potential forces
@@ -999,13 +999,13 @@ void STR::StruTimIntImpl::OutputRestart
       Teuchos::RCP<Epetra_Vector> A 
         = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
       potman_->GetHistory(A);
-      output_.WriteVector("Aold", A);
+      output_->WriteVector("Aold", A);
     }
 
     // constraints
     if (conman_->HaveConstraint())
     {
-      output_.WriteDouble("uzawaparameter",
+      output_->WriteDouble("uzawaparameter",
                           uzawasolv_->GetUzawaParameter());
     }
 
@@ -1044,12 +1044,12 @@ void STR::StruTimIntImpl::OutputState
     datawritten = true;
 
     // write now
-    output_.NewStep(step_, time_);
-    output_.WriteVector("displacement", dis_());
-    output_.WriteVector("velocity", vel_());
-    output_.WriteVector("acceleration", acc_());
-    //output_.WriteVector("fexternal",fext_);  // CURRENTLY NOT AVAILABLE
-    output_.WriteElementData();
+    output_->NewStep(step_, (*time_)[0]);
+    output_->WriteVector("displacement", (*dis_)(0));
+    output_->WriteVector("velocity", (*vel_)(0));
+    output_->WriteVector("acceleration", (*acc_)(0));
+    //output_->WriteVector("fexternal",fext_);  // CURRENTLY NOT AVAILABLE
+    output_->WriteElementData();
   }
 
   // leave for good
@@ -1075,8 +1075,8 @@ void STR::StruTimIntImpl::OutputStressStrain
     // action for elements
     p.set("action", "calc_struct_stress");
     // other parameters that might be needed by the elements
-    p.set("total time", time_);
-    p.set("delta time", dt_);
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
     
     // stress
     if (writestress_ == stress_cauchy)
@@ -1113,15 +1113,15 @@ void STR::StruTimIntImpl::OutputStressStrain
     p.set("strain", straindata);
 
     // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement", zeros_);
-    discret_.SetState("displacement", dis_());
-    discret_.Evaluate(p, null, null, null, null, null);
-    discret_.ClearState();
+    discret_->ClearState();
+    discret_->SetState("residual displacement", zeros_);
+    discret_->SetState("displacement", (*dis_)(0));
+    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->ClearState();
 
     if (not datawritten)
     {
-      output_.NewStep(step_, time_);
+      output_->NewStep(step_, (*time_)[0]);
     }
     datawritten = true;
 
@@ -1137,8 +1137,8 @@ void STR::StruTimIntImpl::OutputStressStrain
       {
         stresstext = "gauss_2PK_stresses_xyz";
       }
-      output_.WriteVector(stresstext, *stressdata, 
-                          *discret_.ElementColMap());
+      output_->WriteVector(stresstext, *stressdata, 
+                           *(discret_->ElementColMap()));
     }
 
     // write strain
@@ -1153,8 +1153,8 @@ void STR::StruTimIntImpl::OutputStressStrain
       {
         straintext = "gauss_GL_strains_xyz";
       }
-      output_.WriteVector(straintext, *straindata,
-                          *discret_.ElementColMap());
+      output_->WriteVector(straintext, *straindata,
+                           *(discret_->ElementColMap()));
     }
   }
 

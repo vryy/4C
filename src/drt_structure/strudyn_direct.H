@@ -73,9 +73,9 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
   const Teuchos::ParameterList& ioflags,  //!< input-output-flags
   const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
   const Teuchos::ParameterList& xparams,  //!< extra flags
-  RefCountPtr<DRT::Discretization>& actdis,  //!< discretisation
-  LINALG::Solver&  solver,  //!< the solver
-  IO::DiscretizationWriter& output  //!< output writer
+  Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
+  Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
+  Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
 );
 
 /*----------------------------------------------------------------------*/
@@ -84,7 +84,9 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 //! \author bborn \date 07/08
 Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
 (
-  const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+  const Teuchos::ParameterList& ioflags,  //!< input-output-flags
+  const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
+  const Teuchos::ParameterList& xparams,  //!< extra flags
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
   Teuchos::RCP<STR::StruTimInt> tis  //!< marching time integrator
 );

@@ -35,7 +35,13 @@ namespace STR
   class StruTimIntAB2 : public StruTimIntExpl
   {
 
+    //! A friendly relation to adaptive partner
+    friend class StruTimAdaAB2;
+
   public:
+
+    //! @name Life
+    //@{
 
     //! Constructor
     StruTimIntAB2
@@ -44,13 +50,24 @@ namespace STR
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       //const Teuchos::ParameterList& ab2params,  //!< AB2 flags
-      DRT::Discretization& actis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
     // ....
+
+    //! Empty constructor
+    StruTimIntAB2() : StruTimIntExpl() { ; }
+
+    //! Copy constructor
+    StruTimIntAB2(const StruTimIntAB2& old) : StruTimIntExpl(old) { ; }
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    void ResizeMStep();
+
+    //@}
 
     //! @name Actions
     //@{
@@ -83,14 +100,15 @@ namespace STR
     int MethodOrderOfAccuracyVel() { return 2; }
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis()
+    double MethodLinErrCoeffDis()
     {
-      const double dto = dt_;
-      return (2.*dt_ + 3.*dto)/(12.*dt_);
+      const double dt = (*dt_)[0];
+      const double dto = (*dt_)[-1];
+      return (2.*dt + 3.*dto)/(12.*dt);
     }
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel()
+    double MethodLinErrCoeffVel()
     {
       return MethodLinErrCoeffDis();
     }
@@ -98,6 +116,9 @@ namespace STR
     //@}
 
   protected:
+
+    //! Initialise
+    void Init();
 
     //! @name Global forces at \f$t_{n+1}\f$
     //@{

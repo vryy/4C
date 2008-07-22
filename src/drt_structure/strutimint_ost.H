@@ -98,6 +98,9 @@ namespace STR
 
   public:
 
+    //! @name Construction
+    //@{
+
     //! Constructor
     StruTimIntOneStepTheta
     (
@@ -105,13 +108,19 @@ namespace STR
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       const Teuchos::ParameterList& onestepthetaparams,  //!< onesteptheta flags
-      DRT::Discretization& actis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
     // ....
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Single-step method: nothing to do here
+    void ResizeMStep() { ; }
+
+    //@}
 
     //! @name Pure virtual methods which have to be implemented
     //@{

@@ -36,16 +36,30 @@ namespace STR
 
   public:
 
+    //! @name Life
+    //@{
+
     //! constructor
     StruTimIntExpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
-      DRT::Discretization& actdis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
+
+    //! Empty constructor
+    StruTimIntExpl() : StruTimInt() { ; }
+
+    //! Copy constructor
+    StruTimIntExpl(const StruTimIntExpl& old) : StruTimInt(old) { ; }
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep() = 0;
+
+    //@}
 
     //! @name Actions
     //@{

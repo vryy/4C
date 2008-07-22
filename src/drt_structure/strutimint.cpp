@@ -16,6 +16,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "strutimint_mstep.H"
 #include "strutimint.H"
 
 /*----------------------------------------------------------------------*/
@@ -106,13 +107,13 @@ STR::StruTimInt::StruTimInt
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-  DRT::Discretization& actdis,
-  LINALG::Solver& solver,
-  IO::DiscretizationWriter& output
+  Teuchos::RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : discret_(actdis),
-  myrank_(actdis.Comm().MyPID()),
-  dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
+  myrank_(actdis->Comm().MyPID()),
+  dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
   solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
@@ -134,19 +135,19 @@ STR::StruTimInt::StruTimInt
   uzawasolv_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
-  time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
+  time_(Teuchos::null),
   timen_(0.0),
-  dt_(sdynparams.get<double>("TIMESTEP")),
+  dt_(Teuchos::null),
   timemax_(sdynparams.get<double>("MAXTIME")),
   stepmax_(sdynparams.get<int>("NUMSTEP")),
-  step_(0),
+  step_(Teuchos::null),
   stepn_(0),
   dirichtoggle_(Teuchos::null),
   invtoggle_(Teuchos::null),
   zeros_(Teuchos::null),
-  dis_(),
-  vel_(),
-  acc_(),
+  dis_(Teuchos::null),
+  vel_(Teuchos::null),
+  acc_(Teuchos::null),
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
@@ -169,23 +170,25 @@ STR::StruTimInt::StruTimInt
   }
 
   // check wether discretisation has been completed
-  if (not discret_.Filled())
+  if (not discret_->Filled())
   {
     dserror("Discretisation is not complete!");
   }
 
 
   // time state 
-  timen_ = time_;  // set target time to initial time
-  step_ = 0;  // time step
+  time_ = Teuchos::rcp(new StruTimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
+  timen_ = (*time_)[0];  // set target time to initial time
+  dt_ = Teuchos::rcp(new StruTimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+  step_ = 0;
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
-  //if (not discret_.Filled())
+  //if (not discret_->Filled())
   //{
-  //  discret_.FillComplete();
+  //  discret_->FillComplete();
   //}
-  //dofrowmap_ = discret_.DofRowMap();
+  //dofrowmap_ = discret_->DofRowMap();
 
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -200,7 +203,7 @@ STR::StruTimInt::StruTimInt
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_.EvaluateDirichlet(p, zeros_, null, null, dirichtoggle_);
+    discret_->EvaluateDirichlet(p, zeros_, null, null, dirichtoggle_);
     zeros_->PutScalar(0.0); // just in case of change
   }
   // opposite of dirichtoggle vector, ie for each component
@@ -213,11 +216,12 @@ STR::StruTimInt::StruTimInt
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
 
   // displacements D_{n}
-  dis_ = StruTimIntState(0, 0, dofrowmap_, true);
+  // cout << "we are here" << endl;
+  dis_ = Teuchos::rcp(new StruTimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
-  vel_ = StruTimIntState(0, 0, dofrowmap_, true);
+  vel_ = Teuchos::rcp(new StruTimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // accelerations A_{n}
-  acc_ = StruTimIntState(0, 0, dofrowmap_, true);
+  acc_ = Teuchos::rcp(new StruTimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -241,33 +245,36 @@ STR::StruTimInt::StruTimInt
   }
 
   // initialize constraint manager
-  conman_ = Teuchos::rcp(new UTILS::ConstrManager(Discretization(), 
-                                           dis_(), sdynparams));
+  conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_, 
+                                                  (*dis_)(0), 
+                                                  sdynparams));
   // initialize Uzawa solver
-  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(Discretization(), solver_, 
-                                            dirichtoggle_, invtoggle_, 
-                                            sdynparams));
+  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(discret_, 
+                                                   *solver_, 
+                                                   dirichtoggle_,
+                                                   invtoggle_, 
+                                                   sdynparams));
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
-  dofrowmap_ = discret_.DofRowMap();
+  dofrowmap_ = discret_->DofRowMap();
 
   // Check for surface stress conditions due to interfacial phenomena
   {
     vector<DRT::Condition*> surfstresscond(0);
-    discret_.GetCondition("SurfaceStress",surfstresscond);
+    discret_->GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
     {
-      surfstressman_ = rcp(new DRT::SurfStressManager(discret_));
+      surfstressman_ = rcp(new DRT::SurfStressManager(*discret_));
     }
   }
   
   // Check for potential conditions 
   {
     vector<DRT::Condition*> potentialcond(0);
-    discret_.GetCondition("Potential",potentialcond);
+    discret_->GetCondition("Potential",potentialcond);
     if (potentialcond.size())
     {
-      potman_ = rcp(new DRT::PotentialManager(discret_));
+      potman_ = rcp(new DRT::PotentialManager(*discret_));
     }
   }
 
@@ -290,10 +297,10 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
     = LINALG::CreateVector(*dofrowmap_, true); // internal force
 
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC(time_, dis_(), vel_(), acc_());
+  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0));
 
   // get external force
-  ApplyForceExternal(time_, dis_(), vel_(), fext);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
   
   // initialise matrices
   stiff_->Zero();
@@ -306,15 +313,15 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
     // action for elements
     p.set("action", "calc_struct_nlnstiffmass");
     // other parameters that might be needed by the elements
-    p.set("total time", time_);
-    p.set("delta time", dt_);
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
     // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement", zeros_);
-    discret_.SetState("displacement", dis_());
-    if (damping_ == damp_material) discret_.SetState("velocity", vel_());
-    discret_.Evaluate(p, stiff_, mass_, fint, null, null);
-    discret_.ClearState();
+    discret_->ClearState();
+    discret_->SetState("residual displacement", zeros_);
+    discret_->SetState("displacement", (*dis_)(0));
+    if (damping_ == damp_material) discret_->SetState("velocity", (*vel_)(0));
+    discret_->Evaluate(p, stiff_, mass_, fint, null, null);
+    discret_->ClearState();
   }
 
   // finish mass matrix
@@ -340,12 +347,12 @@ void STR::StruTimInt::DetermineMassDampConsistAccel()
       = LINALG::CreateVector(*dofrowmap_, true);
     if (damping_ == damp_rayleigh)
     {
-      damp_->Multiply(false, *vel_(), *rhs);
+      damp_->Multiply(false, (*vel_)[0], *rhs);
     }
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     Epetra_Vector rhscopy = Epetra_Vector(*rhs);
     rhs->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
-    solver_.Solve(mass_->EpetraMatrix(), acc_(), rhs, true, true);
+    solver_->Solve(mass_->EpetraMatrix(), (*acc_)(0), rhs, true, true);
   }
 
   // leave this
@@ -369,15 +376,33 @@ void STR::StruTimInt::ApplyDirichletBC
   
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
-  discret_.ClearState();
-  discret_.EvaluateDirichlet(p, dis, vel, acc, dirichtoggle_);
-  discret_.ClearState();
+  discret_->ClearState();
+  discret_->EvaluateDirichlet(p, dis, vel, acc, dirichtoggle_);
+  discret_->ClearState();
 
   // compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
 
   // ciao
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Reset configuration after time step */
+void STR::StruTimInt::ResetStep()
+{
+  // reset anything that needs to be reset at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    p.set("action", "calc_struct_reset_istep");    
+    // go to elements
+    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->ClearState();
+  }
+
+  // I am gone
   return;
 }
 
@@ -398,12 +423,12 @@ void STR::StruTimInt::ApplyForceExternal
   p.set("total time", time);
 
   // set vector values needed by elements
-  discret_.ClearState();
-  discret_.SetState("displacement", dis);
-  if (damping_ == damp_material) discret_.SetState("velocity", vel);
+  discret_->ClearState();
+  discret_->SetState("displacement", dis);
+  if (damping_ == damp_material) discret_->SetState("velocity", vel);
   // get load vector
-  discret_.EvaluateNeumann(p, *fext);
-  discret_.ClearState();
+  discret_->EvaluateNeumann(p, *fext);
+  discret_->ClearState();
 
   // go away
   return;
@@ -431,13 +456,13 @@ void STR::StruTimInt::ApplyForceStiffInternal
   p.set("total time", time);
   p.set("delta time", dt);
   // set vector values needed by elements
-  discret_.ClearState();
-  discret_.SetState("residual displacement", disi);
-  discret_.SetState("displacement", dis);
-  if (damping_ == damp_material) discret_.SetState("velocity", vel);
+  discret_->ClearState();
+  discret_->SetState("residual displacement", disi);
+  discret_->SetState("displacement", dis);
+  if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_.Evaluate(p, stiff, null, fint, null, null);
-  discret_.ClearState();
+  discret_->Evaluate(p, stiff, null, fint, null, null);
+  discret_->ClearState();
   
   // that's it
   return;
@@ -464,13 +489,13 @@ void STR::StruTimInt::ApplyForceInternal
   p.set("total time", time);
   p.set("delta time", dt);
   // set vector values needed by elements
-  discret_.ClearState();
-  discret_.SetState("residual displacement", disi);  // these are incremental
-  discret_.SetState("displacement", dis);
-  if (damping_ == damp_material) discret_.SetState("velocity", vel);
+  discret_->ClearState();
+  discret_->SetState("residual displacement", disi);  // these are incremental
+  discret_->SetState("displacement", dis);
+  if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_.Evaluate(p, null, null, fint, null, null);
-  discret_.ClearState();
+  discret_->Evaluate(p, null, null, fint, null, null);
+  discret_->ClearState();
   
   // where the fun starts
   return;
@@ -481,7 +506,7 @@ void STR::StruTimInt::ApplyForceInternal
 void STR::StruTimInt::Integrate()
 {
   // set target time and step
-  timen_ = time_ + dt_;
+  timen_ = (*time_)[0] + (*dt_)[0];
   stepn_ = step_ + 1;
 
   // time loop
@@ -496,10 +521,10 @@ void STR::StruTimInt::Integrate()
     UpdateStep();
 
     // update time and step
-    time_ = timen_;
+    time_->UpdateSteps(timen_);
     step_ = stepn_;
     // 
-    timen_ += dt_;
+    timen_ += (*dt_)[0];
     stepn_ += 1;
 
     // print info about finished time step

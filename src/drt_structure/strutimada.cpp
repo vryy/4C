@@ -31,7 +31,7 @@ STR::StruTimAda::StruTimAda
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
   Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
 )
-: tis_(tis),
+: sti_(tis),
   discret_(tis->Discretization()),
   mypid_(discret_->Comm().MyPID()),
   solver_(tis->GetSolver()),
@@ -48,6 +48,7 @@ STR::StruTimAda::StruTimAda
   sizeratiomax_(tap.get<double>("SIZERATIOMAX")),
   sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
   sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
+  errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
   errnorm_(StruTimIntVector::MapNormStringToEnum(tap.get<std::string>("ERRNORM"))),
   errtol_(tap.get<double>("ERRTOL")),
   errorder_(1),  // CHANGE THIS CONSTANT
@@ -60,7 +61,7 @@ STR::StruTimAda::StruTimAda
   locerrdisn_(Teuchos::null),
   adaptstep_(0)
 {
-  // allocate local error vector
+  // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // hallelujah
@@ -88,9 +89,16 @@ void STR::StruTimAda::Integrate()
     while ( (not accepted) and (adaptstep_ < adaptstepmax_) )
     {
       // set current stepsize
-      tis_->dt_ = stepsize_;
+      sti_->dt_->SetStep(0, stepsize_);
+      //*(sti_->dt_(0)) = stepsize_;
+
+      // integrate system with auxiliar TIS
+      // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
+      // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
+      IntegrateStepAuxiliar();
+
       // integrate system with marching TIS and 
-      tis_->IntegrateStep();
+      sti_->IntegrateStep();
 
       // get local error vector on #locerrdisn_
       EvaluateLocalErrorDis();
@@ -121,16 +129,18 @@ void STR::StruTimAda::Integrate()
       dserror("Do not know what to do");
     }
     
-    tis_->time_ = time_ + stepsize_;
-    tis_->step_ = timestep_ + 1;
-    tis_->dt_ = stepsize_;
+    // sti_->time_ = time_ + stepsize_;
+    sti_->time_->UpdateSteps(time_ + stepsize_);
+    sti_->step_ = timestep_ + 1;
+    // sti_->dt_ = stepsize_;
+    sti_->dt_->UpdateSteps(stepsize_);
 
-    tis_->UpdateStep();
-    tis_->PrintStep();
-    tis_->OutputStep();
+    sti_->UpdateStep();
+    sti_->PrintStep();
+    sti_->OutputStep();
 
-    tis_->stepn_ = timestep_ += 1;
-    tis_->timen_ = time_ += stepsize_;
+    sti_->stepn_ = timestep_ += 1;
+    sti_->timen_ = time_ += stepsize_;
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
     
@@ -142,6 +152,14 @@ void STR::StruTimAda::Integrate()
 
   // leave for good
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Evaluate local error vector */
+void STR::StruTimAda::EvaluateLocalErrorDis()
+{
+  // assumption: schemes do not have the same order of accuracy
+  locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
 }
 
 /*----------------------------------------------------------------------*/

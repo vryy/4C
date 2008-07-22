@@ -46,6 +46,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strutimada.H"
 #include "strutimada_zienxie.H"
+#include "strutimada_ab2.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -79,7 +80,7 @@ extern SOLVAR* solv;
 void strudyn_direct()
 {
   // access the discretization
-  RefCountPtr<DRT::Discretization> actdis = null;
+  Teuchos::RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
 
   // set degrees of freedom in the discretization
@@ -89,7 +90,8 @@ void strudyn_direct()
   }
 
   // context for output and restart
-  IO::DiscretizationWriter output(actdis);
+  Teuchos::RCP<IO::DiscretizationWriter> output 
+    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
 
   // set some pointers and variables
   SOLVAR* actsolv = &solv[0];
@@ -117,18 +119,23 @@ void strudyn_direct()
   xparams.set<FILE*>("err file", allfiles.out_err);
 
   // create a solver
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams, actdis->Comm(), allfiles.out_err);
-  solver.TranslateSolverParameters(*solveparams, actsolv);
+  Teuchos::RCP<ParameterList> solveparams
+    = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<LINALG::Solver> solver 
+    = Teuchos::rcp(new LINALG::Solver(solveparams, 
+                                      actdis->Comm(),
+                                      allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams, actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // create marching time integrator
   Teuchos::RCP<STR::StruTimInt> sti 
-    = strudyn_CreateMarching(ioflags, sdyn, xparams, actdis, solver, output);
+    = strudyn_CreateMarching(ioflags, sdyn, xparams,
+                             actdis, solver, output);
 
-  // create auxiliar time integartor
+  // create auxiliar time integrator
   Teuchos::RCP<STR::StruTimAda> sta 
-    = strudyn_CreateAuxiliar(sdyn, tap, sti);
+    = strudyn_CreateAuxiliar(ioflags, sdyn, xparams, tap, sti);
 
   // do restart if demanded from input file
   // note that this changes time and step in genalphaparams
@@ -142,7 +149,7 @@ void strudyn_direct()
   {
     const int step = 0;
     const double time = 0.0; // PROVIDE INPUT PARAMETER IN sdyn
-    output.WriteMesh(step, time);
+    output->WriteMesh(step, time);
   }
 
   // integrate in time
@@ -175,9 +182,9 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
-  RefCountPtr<DRT::Discretization>& actdis,
-  LINALG::Solver&  solver,
-  IO::DiscretizationWriter& output
+  Teuchos::RCP<DRT::Discretization>& actdis,
+  Teuchos::RCP<LINALG::Solver>& solver,
+  Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
   Teuchos::RCP<STR::StruTimInt> sti = Teuchos::null;
@@ -195,7 +202,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
     // Generalized Energy Momentum Method
     case STRUCT_DYNAMIC::Gen_EMM :
     {
-      dserror("You should not turn up here.");
+      dserror("You should not turxn up here.");
       dserror("Not yet impl.");
     }
     break;
@@ -208,7 +215,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::StruTimIntGenAlpha(ioflags, sdyn, xparams, gap,
-                                       *actdis, solver, output));
+                                            actdis, solver, output));
     }
     break;
 
@@ -220,7 +227,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::StruTimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
-                                           *actdis, solver, output));
+                                                actdis, solver, output));
     }
     break;
 
@@ -232,7 +239,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::StruTimIntAB2(ioflags, sdyn, xparams, //ab2p,
-                                  *actdis, solver, output));
+                                       actdis, solver, output));
     }
     break;
 
@@ -252,12 +259,14 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 /* create auxiliar time integration scheme */
 Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
 (
-  const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+  const Teuchos::ParameterList& ioflags,
+  const Teuchos::ParameterList& sdyn,
+  const Teuchos::ParameterList& xparams,
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
   Teuchos::RCP<STR::StruTimInt> tis  //!< marching time integrator
 )
 {
-  Teuchos::RCP<STR::StruTimAda> sai = Teuchos::null;
+  Teuchos::RCP<STR::StruTimAda> sta = Teuchos::null;
 
   // auxiliar time integrator
   switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
@@ -265,17 +274,17 @@ Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
 
   case TIMADA_DYNAMIC::timada_kind_none :
     // No adaptivity in time
-    sai = Teuchos::null;
+    sta = Teuchos::null;
     break;
 
   case TIMADA_DYNAMIC::timada_kind_zienxie :
     // Zienkiewivz-Xie error indicator for generalised-alpha
-    sai = Teuchos::rcp(new STR::StruTimAdaZienXie(sdyn, tap, tis));
+    sta = Teuchos::rcp(new STR::StruTimAdaZienXie(sdyn, tap, tis));
     break;
 
   case TIMADA_DYNAMIC::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
-    dserror("AB2 is not implemented, mate");
+    sta = Teuchos::rcp(new STR::StruTimAdaAB2(ioflags, sdyn, xparams, tap, tis));
     break;
 
   default :
@@ -285,7 +294,7 @@ Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
   }
 
   // return the auxiliar integrator
-  return sai;
+  return sta;
 }
 
 #endif  // #ifdef CCADISCRET

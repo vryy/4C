@@ -105,19 +105,27 @@ namespace STR
       const std::string name  //!< identifier
     );
 
+    //! @name Construction
+    //@{
+
     //! Constructor
     StruTimIntImpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
-      DRT::Discretization& actdis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
     virtual ~StruTimIntImpl() { ; }
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep() = 0;
+
+    //@}
 
     //! Do time integration of single step
     void IntegrateStep();

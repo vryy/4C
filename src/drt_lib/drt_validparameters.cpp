@@ -1568,10 +1568,12 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
     "KIND","None","",
     tuple<std::string>(
       "None",
-      "ZienkiewiczXie"),
+      "ZienkiewiczXie",
+      "AdamsBashforth2"),
     tuple<int>(
       TIMADA_DYNAMIC::timada_kind_none,
-      TIMADA_DYNAMIC::timada_kind_zienxie),
+      TIMADA_DYNAMIC::timada_kind_zienxie,
+      TIMADA_DYNAMIC::timada_kind_ab2),
     &list);
 
   DoubleParameter("STEPSIZEMAX", 0.0, "", &list);

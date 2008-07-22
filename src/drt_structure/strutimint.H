@@ -46,8 +46,7 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_finelevelnoxinterface.H"
 
 #include "strutimint_vector.H"
-#include "strutimint_state.H"
-//#include "strutimada.H"
+#include "strutimint_mstep.H"
 
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics
@@ -143,19 +142,56 @@ namespace STR
       }
     }   
 
+    //! @name Life
+    //@{
+
     //! Constructor
     StruTimInt
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
-      DRT::Discretization& actdis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
     virtual ~StruTimInt() { ; }
+
+    //! Empty constructor
+    StruTimInt() { ; }
+
+    //! Copy constructor
+    StruTimInt(const StruTimInt& old) { ; }
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep() = 0;
+
+    //! Merge
+    //!
+    //! Merge basically duplicates the base object content of time
+    //! integrator #tis onto the time integrator #this. This is like
+    //! a copy, but a copy constructor is not permitted, because
+    //! #StruTimInt is pure virtual.
+    //! Usually this is not wanted when copying, but here it is
+    //! highly appreciated. #StruTimInt contains only pointers (of the
+    //! RefCount type) and can thus link -- or merge -- the data
+    //! of #tis with #this. Practically, this turns up with time
+    //! adaptivity in which #tis is the marching integrator
+    //! and #this is the auxiliar method, which shares the marching data.
+    void Merge
+    (
+      StruTimInt& tis  //!< existing integrator to merge against
+    )
+    {
+      // copy it
+      *this = tis;
+      // A slice of lemon?
+      return;
+    }
+
+    //@}
 
     //! @name Actions
     //@{
@@ -189,6 +225,13 @@ namespace STR
     //! becomes impossible. We are ready and keen awating the next
     //! time step.
     virtual void UpdateStep() = 0;
+
+    //! Reset configuration after time step
+    //!
+    //! Thus the last converged state is copied back on the predictor
+    //! for current time step. This applies only to elemet-wise
+    //! quantities
+    void ResetStep();
 
     //! print summary after step
     virtual void PrintStep() = 0;
@@ -292,19 +335,24 @@ namespace STR
       // The object #discret_ is gone, when ConstrManager tries
       // to kill it. We achieve a nice segmentation fault.
       // The 'false' prevents ConstrManager of trying to kill it.
-      return Teuchos::rcp(&discret_, false);
+      //return Teuchos::rcp(&discret_, false);
+
+      // Now, the discretisation is stored as RefCountPointer, thus
+      return discret_;
     }
 
     //! Access solver
     Teuchos::RCP<LINALG::Solver> GetSolver()
     {
-      return Teuchos::rcp(&solver_, false);
+      //return Teuchos::rcp(&solver_, false);
+      return solver_;
     }
 
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> GetDiscretizationWriter()
     {
-      return Teuchos::rcp(&output_, false);
+      //return Teuchos::rcp(&output_, false);
+      return output_;
     }
 
     //@}
@@ -313,19 +361,19 @@ namespace STR
     //@{
 
     //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Disp() { return dis_(); }
+    Teuchos::RCP<Epetra_Vector> Disp() { return (*dis_)(0); }
 
     //! Return displacements \f$D_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> Dispn() { return disn_; }
 
     //! Return velocities \f$V_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Vel() { return vel_(); }
+    Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
 
     //! Return accelerations \f$A_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Acc() { return acc_(); }
+    Teuchos::RCP<Epetra_Vector> Acc() { return (*acc_)(0); }
 
     //! Return accelerations \f$A_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
@@ -336,19 +384,19 @@ namespace STR
 
     //! @name General purpose algorithm members
     //@{
-    DRT::Discretization& discret_;  //!< attached discretisation
+    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int myrank_;  //!< ID of actual processor in parallel
     const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
     //!< to construct matching
     //!< vectors and matrices
-    LINALG::Solver& solver_;  //!< linear algebraic solver
+    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adapated ????
     //@}
 
     //! @name Printing and output
     //@{
-    IO::DiscretizationWriter& output_;  //!< binary output
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     bool printscreen_;  //!< print infos to standard out
     FILE* errfile_;  //!< error file handle
     bool printerrfile_;  //!< print infos to error file #errfile_
@@ -388,9 +436,9 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    double time_;  //!< time \f$t_{n}\f$ of last converged step
+    Teuchos::RCP<StruTimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    double dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<StruTimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;  //!< final time \f$t_\text{fin}\f$
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
@@ -417,12 +465,12 @@ namespace STR
     //! @name Global state vectors
     //@{
 
-    StruTimIntState dis_;  //!< global displacements
-                           //!< \f${D}_{n}, D_{n-1}, ...\f$
-    StruTimIntState vel_;  //!< global velocities
-                           //!< \f${V}_{n}, V_{n-1}, ...\f$
-    StruTimIntState acc_;  //!< global accelerations
-                           //!< \f${A}_{n}, A_{n-1}, ...\f$
+    //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
+    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > dis_;
+    //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
+    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > vel_;
+    //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
+    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > acc_;
     Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
                                         //!< \f${D}_{n+1}\f$  
                                         //!< at \f$t_{n+1}\f$

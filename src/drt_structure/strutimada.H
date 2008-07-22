@@ -86,6 +86,14 @@ namespace STR
       }
     }
 
+    //! List type of local error control
+    enum CtrlEnum
+    {
+      ctrl_dis,  //!< check only displacements
+      ctrl_vel,  //!< check only velocities
+      ctrl_dis_and_vel  //!< check displacements and velocities
+    };
+
     //! Constructor
     StruTimAda
     (
@@ -105,6 +113,13 @@ namespace STR
     //!  algorithm.
     void Integrate();
 
+    //! Make one step with auxiliar scheme
+    //!
+    //! Afterwards, we are going to hold 
+    //! \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
+    //! and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
+    virtual void IntegrateStepAuxiliar() = 0;
+
     //! Indicate error and determine new step size
     void Indicate
     (
@@ -114,9 +129,9 @@ namespace STR
     );
 
     //! Provide local discretisation error vector
-    //! of displacements specific to
+    //! of displacements/velocities specific to
     //! marching/auxiliar time integrator pair
-    virtual void EvaluateLocalErrorDis() = 0;
+    void EvaluateLocalErrorDis();
 
     //@}
 
@@ -170,7 +185,7 @@ namespace STR
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<StruTimInt> tis_;  //!< marching time integrator
+    Teuchos::RCP<StruTimInt> sti_;  //!< marching time integrator
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int mypid_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
@@ -193,6 +208,7 @@ namespace STR
     double sizeratiomax_;
     double sizeratiomin_;
     double sizeratioscale_;
+    enum CtrlEnum errctrl_;  //!< type of check
     enum StruTimIntVector::NormEnum errnorm_;
     double errtol_;
     int errorder_;
@@ -209,8 +225,10 @@ namespace STR
     //@{
     double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
     double stepsize_;  //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local error 
-                                              //!< estimation \f$l_n\f$
+    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local disp. error 
+                                              //!< estimation \f$l_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error 
+                                              //!< estimation \f$\dot{l}_{n+1}\f$
     int adaptstep_;
     //@}
 

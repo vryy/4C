@@ -52,16 +52,16 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
   const Teuchos::ParameterList& genalphaparams,
-  DRT::Discretization& actis,
-  LINALG::Solver& solver,
-  IO::DiscretizationWriter& output
+  Teuchos::RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : StruTimIntImpl
   (
     ioparams,
     sdynparams,
     xparams,
-    actis,
+    actdis,
     solver,
     output
   ),
@@ -116,7 +116,7 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
     // set initial internal force vector
-    ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, vel_(), 
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
                             fint_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
@@ -132,7 +132,7 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial external force vector
-  ApplyForceExternal(time_, dis_(), vel_(), fext_);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext_);
 
   // inertial mid-point force vector F_inert
   finertm_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -152,19 +152,19 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
 void STR::StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
-  disn_->Update(1.0, *dis_(), 0.0);
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
 
   // consistent velocities
-  veln_->Update(1.0, *disn_, -1.0, *dis_(), 0.0);
-  veln_->Update((beta_-gamma_)/beta_, *vel_(),
-                (2.*beta_-gamma_)*dt_/(2.*beta_), *acc_(),
-                gamma_/(beta_*dt_));
+  veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+  veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
+                (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
+                gamma_/(beta_*(*dt_)[0]));
 
   // consistent accelerations
-  accn_->Update(1.0, *disn_, -1.0, *dis_(), 0.0);
-  accn_->Update(-1./(beta_*dt_), *vel_(),
-                (2.*beta_-1.)/(2.*beta_), *acc_(),
-                1./(beta_*dt_*dt_));
+  accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+  accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
+                (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
+                1./(beta_*(*dt_)[0]*(*dt_)[0]));
   
   // watch out
   return;
@@ -181,7 +181,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, dis_(), vel_(), fextn_);
+  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -204,13 +204,13 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   // ordinary internal force and stiffness
   if (midavg_ == midavg_trlike)
   {
-    ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  veln_, 
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_,  veln_, 
                             fintn_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
-    ApplyForceStiffInternal(timen_, dt_, dism_, disi_, velm_,
+    ApplyForceStiffInternal(timen_, (*dt_)[0], dism_, disi_, velm_,
                             fintm_, stiff_);
   }
 
@@ -277,10 +277,10 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
   //                + (1 - alpha_f)*y/(beta*dt) C     
   //                + (1 - alpha_f) K_{T}
-  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*dt_*dt_), 1.-alphaf_);
+  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
   if (damping_ == damp_rayleigh)
   {
-    stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*dt_), 1.0);
+    stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
   }
   stiff_->Complete();  // close stiffness matrix
 
@@ -294,15 +294,15 @@ void STR::StruTimIntGenAlpha::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf_, *disn_, alphaf_, *dis_(), 0.0);
+  dism_->Update(1.-alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
   
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  velm_->Update(1.-alphaf_, *veln_, alphaf_, *vel_(), 0.0);
+  velm_->Update(1.-alphaf_, *veln_, alphaf_, (*vel_)[0], 0.0);
   
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-alpham_, *accn_, alpham_, *acc_(), 0.0);
+  accm_->Update(1.-alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
 
   // jump
   return;
@@ -320,7 +320,7 @@ double STR::StruTimIntGenAlpha::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  dis_()->Norm2(&charnormdis);
+  (*dis_)(0)->Norm2(&charnormdis);
 
   // rise your hat
   return charnormdis;
@@ -376,16 +376,18 @@ void STR::StruTimIntGenAlpha::UpdateIterIncrementally()
       = LINALG::CreateVector(*dofrowmap_, false);
   Teuchos::RCP<Epetra_Vector> aux2
       = LINALG::CreateVector(*dofrowmap_, false);
+  // further auxiliar variables
+  const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  aux->Update(1.0, *disn_, -1.0, *dis_(), 0.0);
-  aux->Update((beta_-gamma_)/beta_, *vel_(),
-              (2.0*beta_-gamma_)*dt_/(2.0*beta_), *acc_(),
-              gamma_/(beta_*dt_));
+  aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
+  aux->Update((beta_-gamma_)/beta_, (*vel_)[0],
+              (2.0*beta_-gamma_)*dt/(2.0*beta_), (*acc_)[0],
+              gamma_/(beta_*dt));
   // blank entries on DBC DOFs
   aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
   // blank entries on non-DBC DOFs
@@ -395,10 +397,10 @@ void STR::StruTimIntGenAlpha::UpdateIterIncrementally()
   veln_->Update(1.0, *aux2, 1.0);
   
   // new end-point accelerations
-  aux->Update(1.0, *disn_, -1.0, *dis_(), 0.0);
-  aux->Update(-1.0/(beta_*dt_), *vel_(),
-              (2.0*beta_-1.0)/(2.0*beta_), *acc_(),
-              1.0/(beta_*dt_*dt_));
+  aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
+  aux->Update(-1.0/(beta_*dt), (*vel_)[0],
+              (2.0*beta_-1.0)/(2.0*beta_), (*acc_)[0],
+              1.0/(beta_*dt*dt));
   // blank entries on DBC DOFs
   aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
   // blank entries on non-DBC DOFs
@@ -420,10 +422,10 @@ void STR::StruTimIntGenAlpha::UpdateIterIteratively()
   disn_->Update(1.0, *disi_, 1.0);
   
   // new end-point velocities
-  veln_->Update(gamma_/(beta_*dt_), *disi_, 1.0);
+  veln_->Update(gamma_/(beta_*(*dt_)[0]), *disi_, 1.0);
   
   // new end-point accelerations
-  accn_->Update(1.0/(beta_*dt_*dt_), *disi_, 1.0);
+  accn_->Update(1.0/(beta_*(*dt_)[0]*(*dt_)[0]), *disi_, 1.0);
 
   // bye
   return;
@@ -437,13 +439,13 @@ void STR::StruTimIntGenAlpha::UpdateStep()
   // important for step size adaptivity
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, etc
-  dis_.UpdateSteps(disn_);
+  dis_->UpdateSteps(*disn_);
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}, etc
-  vel_.UpdateSteps(veln_);
+  vel_->UpdateSteps(*veln_);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}, etc
-  acc_.UpdateSteps(accn_);
+  acc_->UpdateSteps(*accn_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -462,7 +464,7 @@ void STR::StruTimIntGenAlpha::UpdateStep()
     ParameterList p;
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
-    p.set("delta time", dt_);
+    p.set("delta time", (*dt_)[0]);
     // action for elements
     if (midavg_ == midavg_trlike) 
     {
@@ -474,7 +476,7 @@ void STR::StruTimIntGenAlpha::UpdateStep()
       p.set("action", "calc_struct_update_imrlike");
     }
     // go to elements
-    discret_.Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, null, null, null, null, null);
   }
 
   // update surface stress

@@ -19,6 +19,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "strutimint_ab2.H"
 
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 STR::StruTimIntAB2::StruTimIntAB2
@@ -26,17 +27,17 @@ STR::StruTimIntAB2::StruTimIntAB2
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-//  const Teuchos::ParameterList& ab2params,
-  DRT::Discretization& actis,
-  LINALG::Solver& solver,
-  IO::DiscretizationWriter& output
+  //const Teuchos::ParameterList& ab2params,
+  Teuchos::RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : StruTimIntExpl
   (
     ioparams,
     sdynparams,
     xparams,
-    actis,
+    actdis,
     solver,
     output
   ),
@@ -52,11 +53,8 @@ STR::StruTimIntAB2::StruTimIntAB2
               << std::endl;
   }
 
-  // resize state vectors, AB2 is a 2-step method, thus we need two
-  // past steps at t_{n} and t_{n-1}
-  dis_ = StruTimIntState(-1, 0, dofrowmap_, true);
-  vel_ = StruTimIntState(-1, 0, dofrowmap_, true);
-  acc_ = StruTimIntState(-1, 0, dofrowmap_, true);
+  // resize of multi-step quantities
+  ResizeMStep();
 
   // allocate force vectors
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -69,22 +67,37 @@ STR::StruTimIntAB2::StruTimIntAB2
 }
 
 /*----------------------------------------------------------------------*/
+/* Resizing of multi-step quantities */
+void STR::StruTimIntAB2::ResizeMStep()
+{
+  // resize time and stepsize fields
+  time_->Resize(-1, 0, (*time_)[0]);
+  dt_->Resize(-1, 0, (*dt_)[0]);
+
+  // resize state vectors, AB2 is a 2-step method, thus we need two
+  // past steps at t_{n} and t_{n-1}
+  dis_->Resize(-1, 0, dofrowmap_, true);
+  vel_->Resize(-1, 0, dofrowmap_, true);
+  acc_->Resize(-1, 0, dofrowmap_, true);
+}
+
+/*----------------------------------------------------------------------*/
 /* Integrate step */
 void STR::StruTimIntAB2::IntegrateStep()
 {
-  const double dt = dt_;  // \f$\Delta t_{n}\f$
-  const double dto = dt_;  // \f$\Delta t_{n-1}\f$
+  const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
+  const double dto = (*dt_)[-1];  // \f$\Delta t_{n-1}\f$
 
   // new displacements \f$D_{n+}\f$
-  disn_->Update(1.0, *dis_(0), 0.0);
-  disn_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *vel_(0),
-                -(dt*dt)/(2.0*dto), *vel_(-1),
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
+  disn_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *(*vel_)(0),
+                -(dt*dt)/(2.0*dto), *(*vel_)(-1),
                 1.0);
 
   // new velocities \f$V_{n+1}\f$
-  veln_->Update(1.0, *vel_(0), 0.0);
-  veln_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *acc_(0),
-                -(dt*dt)/(2.0*dto), *acc_(-1),
+  veln_->Update(1.0, *(*vel_)(0), 0.0);
+  veln_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *(*acc_)(0),
+                -(dt*dt)/(2.0*dto), *(*acc_)(-1),
                 1.0);
 
   // apply Dirichlet BCs
@@ -104,7 +117,7 @@ void STR::StruTimIntAB2::IntegrateStep()
   {
     // displacement increment in step
     Epetra_Vector disinc = Epetra_Vector(*disn_);
-    disinc.Update(-1.0, *dis_(0), 1.0);
+    disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
     ApplyForceInternal(timen_, dt,
                        disn_, Teuchos::rcp(&disinc,false), veln_,
@@ -141,7 +154,7 @@ void STR::StruTimIntAB2::IntegrateStep()
     // refactor==false: This is not necessary, because we always
     // use the same constant mass matrix, which was firstly factorised
     // in StruTimInt::DetermineMassDampConsistAccel
-    solver_.Solve(mass_->EpetraMatrix(), accn_, frimpn_, false, true);
+    solver_->Solve(mass_->EpetraMatrix(), accn_, frimpn_, false, true);
   }
 
   // apply Dirichlet BCs on accelerations
@@ -157,13 +170,13 @@ void STR::StruTimIntAB2::UpdateStep()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
-  dis_.UpdateSteps(disn_);
+  dis_->UpdateSteps(*disn_);
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}, V_{n-1} := V_{n}
-  vel_.UpdateSteps(veln_);
+  vel_->UpdateSteps(*veln_);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
-  acc_.UpdateSteps(accn_);
+  acc_->UpdateSteps(*accn_);
 
   // update anything that needs to be updated at the element level
   {
@@ -171,11 +184,11 @@ void STR::StruTimIntAB2::UpdateStep()
     ParameterList p;
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
-    p.set("delta time", dt_);
+    p.set("delta time", (*dt_)[0]);
     // action for elements
     p.set("action", "calc_struct_update_istep");    
     // go to elements
-    discret_.Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, null, null, null, null, null);
   }
 
   // bye

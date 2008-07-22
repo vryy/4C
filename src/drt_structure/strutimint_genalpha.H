@@ -69,6 +69,9 @@ namespace STR
       const std::string name  //!< input string
     );
 
+    //! @name Construction
+    //@{
+
     //! Constructor
     StruTimIntGenAlpha
     (
@@ -76,13 +79,19 @@ namespace STR
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       const Teuchos::ParameterList& genalphaparams,  //!< genalpha flags
-      DRT::Discretization& actis,  //!< current discretisation
-      LINALG::Solver& solver,  //!< the solver
-      IO::DiscretizationWriter& output  //!< the output
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
     // ....
+
+    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Single-step method: nothing to do here
+    void ResizeMStep() { ; }
+
+    //@}
 
     //! @name Pure virtual methods which have to be implemented
     //@{
