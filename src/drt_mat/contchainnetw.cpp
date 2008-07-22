@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #include "contchainnetw.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 extern struct _MATERIAL *mat;
 
