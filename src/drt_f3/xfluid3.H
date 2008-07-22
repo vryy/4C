@@ -7,7 +7,7 @@ This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
 In addition to that, it contains the interface between element call
-and gausspoint loop (depending on the fluid implementation)
+and integration point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
@@ -119,7 +119,7 @@ namespace DRT
         
         //@}
         
-        //! @name Acess methods
+        //! @name Access methods
 
         virtual int NumDofPerNode(const DRT::Node& node) const {return this->eleDofManager_.NumDofPerNode(node.Id(), 4);}
 
@@ -183,7 +183,7 @@ namespace DRT
           store_xfem_info
         };
         
-        //! stabilisation actions recognized by fluid3 (genalpha implementation)
+        //! stabilization actions recognized by fluid3 (genalpha implementation)
         enum StabilisationAction
         {
           stabaction_unspecified,
@@ -228,12 +228,12 @@ namespace DRT
           dynamic_smagorinsky
         };
         
-        //! map that converts strings to actions (stabilisation)
+        //! map that converts strings to actions (stabilization)
         static map<string,StabilisationAction>          stabstrtoact_;
         
         //! flag for euler/ale net algorithm
         bool                                            is_ale_;
-        //! container containing all kind of fluid3 thisandthat
+        //! container containing all kind of fluid3 this and that
         DRT::Container                                  data_;
         
       private:
@@ -267,7 +267,7 @@ namespace DRT
         
         ActionType convertStringToActionType(const string& action) const;
         
-        //! convert string to stabilisation action
+        //! convert string to stabilization action
         StabilisationAction ConvertStringToStabAction (const string& action) const;
         
     }; // class XFluid3
@@ -309,7 +309,7 @@ namespace DRT
         
         //@}
         
-        //! @name Acess methods
+        //! @name Access methods
         
         void Print(ostream& os) const;
         
@@ -391,7 +391,7 @@ namespace DRT
         
         //@}
         
-        //! @name Acess methods
+        //! @name Access methods
 
         virtual int NumDofPerNode(const DRT::Node& node) const
         {return parent_->NumDofPerNode(node);}
@@ -458,6 +458,17 @@ namespace DRT
         
     }; // class Fluid3Surface
     
+    
+    /*!
+     * \brief An element representing a line of a fluid3 element
+     * 
+     * \note This is a pure Neumann boundary condition element. It's only
+     *       purpose is to evaluate surface Neumann boundary conditions that might be
+     *       adjacent to a parent fluid3 element. It therefore does not implement
+     *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     * 
+     * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
+     */
     class XFluid3Line : public DRT::Element
     {
       public:
@@ -504,7 +515,7 @@ namespace DRT
         
         //@}
         
-        //! @name Acess methods
+        //! @name Access methods
         
         virtual DiscretizationType Shape() const;
         

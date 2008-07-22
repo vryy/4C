@@ -216,6 +216,11 @@ private:
     EpVec& eforce_;
 };
 
+/*!
+ * class that assembles one after another integral of the weak form into the stiffness matrix
+ * 
+ * specialization for standard assembly
+ */
 template <DRT::Element::DiscretizationType DISTYPE>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly>
 {

@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*/
-// map to convert strings tao actions (stabilisation)
+// map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
 map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::stabstrtoact_;
 
