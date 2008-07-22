@@ -638,7 +638,7 @@ void DatFileReader::ReadDat()
 void DatFileReader::DumpInput()
 {
 #if defined(DEBUG) || defined(OUTPUT_INPUT)
-  if (comm_->MyPID()==0)
+  if (comm_->MyPID()==0 and allfiles.out_err!=NULL)
   {
     fprintf(allfiles.out_err,
             "============================================================================\n"

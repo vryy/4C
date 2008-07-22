@@ -1138,6 +1138,9 @@ OBJS_PRE_EXODUS = src/pre_exodus/pre_exodus.o \
                   src/pre_exodus/pre_exodus_readbc.o \
                   src/pre_exodus/pre_exodus_validate.o
 
+#                 pre_curve
+OBJS_PRE_CURVE = src/pre_curve/pre_curve.o
+
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
 

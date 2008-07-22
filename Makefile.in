@@ -19,6 +19,9 @@ post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 pre_exodus: $(OBJS_PRE_EXODUS) $(FILTER_OBJECTS)
 	$(LD) $(LDFLAGS) $(OBJS_PRE_EXODUS) $(FILTER_OBJECTS) $(FILTER_LIBS) $(EXODUS_LIBS) -o pre_exodus
 
+pre_curve: $(OBJS_PRE_CURVE) $(FILTER_OBJECTS)
+	$(LD) $(LDFLAGS) $(OBJS_PRE_CURVE) $(FILTER_OBJECTS) $(FILTER_LIBS) $(CURVE_LIBS) -o pre_curve
+
 # We need the fortran objects here, visual is called by fortran code.
 post_visual2: $(OBJS_POST_VISUAL2) $(OBJS_POST_COMMON) src/fortran/vis2_qat2v2.o
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_VISUAL2) src/fortran/vis2_qat2v2.o $(OBJS_POST_COMMON) $(PLAIN_LIBS) $(VISUAL2_LIB) -o post_visual2
@@ -484,6 +487,11 @@ $(OBJS_FILTER_COMMON):
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_PRE_EXODUS):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_PRE_CURVE):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
