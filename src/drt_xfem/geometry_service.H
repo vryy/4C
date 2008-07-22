@@ -28,6 +28,19 @@ namespace XFEM
   const static int DISTANCE_TO_ELEMENT_LINE=2;
   const static int DISTANCE_TO_ELEMENT_POINT=3;
 
+  struct compareByEleGid
+  {
+    inline bool operator()(const DRT::Element* A, const DRT::Element* B) const
+    {
+      return (A->Id())<(B->Id()) ? true : false;
+    }
+  };
+  
+  /*!
+   * An set with element pointers, which is ordered by global Element id
+   */
+  typedef std::set< const DRT::Element*, compareByEleGid > EleSet;
+  
   /*!
   \brief Gives the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
          also takes into account current displacements

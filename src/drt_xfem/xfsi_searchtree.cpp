@@ -14,6 +14,7 @@ Maintainer: Ursula Mayer
 #include "xfsi_searchtree.H"
 #include "intersection_service.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -303,7 +304,7 @@ int XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,c
           AABBs.clear();
           AABBs.push_back(AABB_);
           for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-            const BlitzMat xyze(XFEM::getCurrentNodalPositions(*myIt,currentpositions));
+            const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(*myIt,currentpositions));
             const BlitzMat3x2 boundingbox = XFEM::computeFastXAABB(*myIt, xyze, HIGHERORDER);
             AABBs.push_back(boundingbox);
             list<int> childIdx = classifyElement(*myIt,currentpositions);
@@ -383,7 +384,7 @@ int XFEM::XSearchTree::TreeNode::getXFEMLabelOfPointInTreeNode(const DRT::Discre
   closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, pointCoords,dista);
   double SearchRadius = fabs(dista);
   TreeNode* workingNode = this;
-  double AABBradius;
+  double AABBradius = -1.0;
    //cout << "haha" << endl;
   do {
     const BlitzMat3x2 AABB =workingNode->getAABB();
@@ -511,7 +512,7 @@ list<int> XFEM::XSearchTree::TreeNode::classifyElement(
     ) 
 {
   
-  const BlitzMat xyze(XFEM::getCurrentNodalPositions(elem,currentpositions));
+  const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(elem,currentpositions));
   const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze, HIGHERORDER));
   
   return classifyAABB(elemXAABB);
