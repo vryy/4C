@@ -101,7 +101,7 @@ double MAT::AAAneohooke::Density()
  here
 
  Ic   .. first invariant of right Cauchy-Green tensor C
- IIIc .. second invariant of right Cauchy-Green tensor C
+ IIIc .. third invariant of right Cauchy-Green tensor C
 
  The volumetric part is done by a volumetric strain engergy function taken from
  Holzapfel
@@ -136,11 +136,12 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // material parameters for isochoric part
   double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
   double beta     = matdata_->m.aaaneohooke->beta;      // second parameter
+  double nue      = matdata_->m.aaaneohooke->nue;       // Poisson's ratio
   double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
   double beta2 = 9.0;                                   // parameter from Holzapfel
-  double komp  = alpha*20.;                            // bulk modulus with nu = 0.495
+  double komp  = 2.0*alpha / (1.0-2.0*nue);              // bulk modulus               
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I

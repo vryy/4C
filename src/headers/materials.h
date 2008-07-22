@@ -135,7 +135,8 @@ typedef struct _AAA_NEO_HOOKE
 {
      DOUBLE                    youngs;        /* Young's modulus */
      DOUBLE                    beta;          /* 2nd parameter */
-     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    nue;           /* Poisson's ratio */
+     DOUBLE                    density;       /* material specific weight */
 } AAA_NEO_HOOKE;
 
 /*----------------------------------------------------------------------*

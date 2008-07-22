@@ -143,9 +143,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       localmat.mattyp = m_aaaneohooke;
       localmat.m.aaaneohooke = new AAA_NEO_HOOKE();
-      frdouble("YOUNG",  &(localmat.m.aaaneohooke->youngs) ,&ierr);
-      frdouble("BETA" ,  &(localmat.m.aaaneohooke->beta)   ,&ierr);
-      frdouble("DENS" ,  &(localmat.m.aaaneohooke->density),&ierr);
+      frdouble("YOUNG",&(localmat.m.aaaneohooke->youngs)   ,&ierr);
+      frdouble("BETA" ,&(localmat.m.aaaneohooke->beta)     ,&ierr);
+      frdouble("NUE"  ,&(localmat.m.neohooke->possionratio),&ierr);
+      frdouble("DENS" ,&(localmat.m.aaaneohooke->density)  ,&ierr);
    }
    frchk("MAT_MFOC",&ierr);
    if (ierr==1)
