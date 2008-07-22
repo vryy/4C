@@ -110,7 +110,7 @@ DUMPING_PERIOD        0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 TIMEINTEGR       Stationary
 ITEMAX           10
-WRITEFLUX        No
+WRITEFLUX        totalflux_domain
 UPRES            1
 RESTARTEVRY      10
 NUMSTEP          1
