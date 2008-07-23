@@ -1112,24 +1112,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustdyn = list->sublist("COMBUSTION DYNAMIC",false,"");
+  Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,"");
 
-  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&combustdyn);
-  IntParameter("NUMSTEP",1,"Total number of Timesteps",&combustdyn);
-  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&combustdyn);
-  IntParameter("ITEMAX",10,"Total number of FG iterations",&combustdyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustdyn);
-  IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustdyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&combustdyn);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustdyn_fluid = combustdyn.sublist("FLUID",false,"");
-
-  DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustdyn_fluid);
-  DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustdyn_fluid);
+  DoubleParameter("MAXTIME",10.0,"Total simulation time",&combustcontrol);
+  IntParameter("NUMSTEP",100,"Total number of Timesteps",&combustcontrol);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&combustcontrol);
+  IntParameter("ITEMAX",10,"Total number of FG iterations",&combustcontrol);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
+  IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
+  IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustdyn_gfunc = combustdyn.sublist("GFUNCTION",false,"");
+  Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,"");
+
+  DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
+  DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,"");
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(
