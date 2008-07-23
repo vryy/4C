@@ -34,6 +34,14 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
+#include <blitz/array.h>
+#include "../drt_xfem/blitz_tiny_operation.H"
+
+//! generally usefull typedefs, when working with Blitz arrays
+typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
+typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
+typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
+typedef blitz::TinyMatrix<double,3,6> BlitzMat3x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
 // forward declarations
@@ -310,24 +318,19 @@ private:
   // internal calculation methods
 
   //!internal geometric calculations
-  void b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
-                    LINALG::SerialDenseVector& r_curr,
-                    LINALG::SerialDenseVector& z_curr,
+  void b2_local_aux(BlitzMat3x6& B_curr,
+                    BlitzVec6& r_curr,
+                    BlitzVec6& z_curr,
                     double& beta,
-                    const LINALG::SerialDenseMatrix& x_curr,
+                    const BlitzMat3x2& x_curr,
                     const double& lcurr_,
                     const double& lrefe_);
-
+  
   //! calculation of nonlinear stiffness and mass matrix
   void b2_nlnstiffmass(vector<double>&           disp,  //!< element displacement vector
                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
                        Epetra_SerialDenseVector* force);  //!< element internal force vector
-
-  //calculation of nonlinear stiffness approximated by finite differences; this function should
-  //be activated only for bug fixing
-
-  Epetra_SerialDenseMatrix b2_nlnstiff_approx(vector<double>& disp, double h_rel);
 
   // don't want = operator
   Beam2& operator = (const Beam2& old);

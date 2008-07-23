@@ -283,21 +283,15 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
  | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //notation for this function similar to Crisfield, Volume 1;
-void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
-                    			LINALG::SerialDenseVector& rcurr,
-                    			LINALG::SerialDenseVector& zcurr,
+void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
+                    			              BlitzVec6& rcurr,
+                    			              BlitzVec6& zcurr,
                                         double& beta,
-                    			const LINALG::SerialDenseMatrix& xcurr,
-                    			const double& lcurr,
-                    			const double& lrefe_)
+                                        const BlitzMat3x2& xcurr,
+                                        const double& lcurr,
+                                        const double& lrefe_)
 
 {
-	//this function expects x 3x2 matrix xcurr for 3 DOF of 2 beam2 nodes
-	#ifdef DEBUG
-	dsassert(xcurr.M()==3,"improper dimension of xcurr");
-	dsassert(xcurr.N()==2,"improper dimension of xcurr");
-	#endif // #ifdef DEBUG
-
 
   // beta is the rotation angle out of x-axis in a x-y-plane 
   double cos_beta = (xcurr(0,1)-xcurr(0,0))/lcurr;
@@ -338,32 +332,31 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
   if (psi < -PI/2)
  	  halfrotations_--; 
 
-  rcurr[0] = -cos_beta;
-  rcurr[1] = -sin_beta;
-  rcurr[2] = 0;
-  rcurr[3] = cos_beta;
-  rcurr[4] = sin_beta;
-  rcurr[5] = 0;
+  rcurr(0) = -cos_beta;
+  rcurr(1) = -sin_beta;
+  rcurr(2) = 0;
+  rcurr(3) = cos_beta;
+  rcurr(4) = sin_beta;
+  rcurr(5) = 0;
   
-  zcurr[0] = sin_beta;
-  zcurr[1] = -cos_beta;
-  zcurr[2] = 0;
-  zcurr[3] = -sin_beta;
-  zcurr[4] = cos_beta;
-  zcurr[5] = 0;
+  zcurr(0) = sin_beta;
+  zcurr(1) = -cos_beta;
+  zcurr(2) = 0;
+  zcurr(3) = -sin_beta;
+  zcurr(4) = cos_beta;
+  zcurr(5) = 0;
     
-  //assigning values to each element of the Bcurr matrix 
-  Bcurr.Shape(3,6);
-  
+  //assigning values to each element of the Bcurr matrix  
   for(int id_col=0; id_col<6; id_col++)
   	{
-	  Bcurr(0,id_col) = rcurr[id_col];
-	  Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr[id_col];
-	  if (id_col == 2 || id_col ==5)
-	    		Bcurr(2,id_col) = Bcurr(2,id_col) - (lrefe_ / 2);
+  	  Bcurr(0,id_col) = rcurr[id_col];
+  	  Bcurr(1,id_col) = 0;
+  	  Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr[id_col];
   	}
-    Bcurr(1,2) = 1;
-    Bcurr(1,5) = -1;
+    Bcurr(2,2) -= (lrefe_ / 2);
+    Bcurr(2,5) -= (lrefe_ / 2);
+    Bcurr(1,2) += 1;
+    Bcurr(1,5) -= 1;
 
   return;
 } /* DRT::ELEMENTS::Beam2::b2_local_aux */
@@ -378,37 +371,33 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
 {
   const int numdf = 3;
   const int iel = NumNode();
-  //coordinates in reference and current configuration of all the nodes in two dimensions stored in 3 x iel matrices
-  LINALG::SerialDenseMatrix xrefe;
-  LINALG::SerialDenseMatrix xcurr;
-
-  xrefe.Shape(3,2);
-  xcurr.Shape(3,2);
+  //coordinates in current configuration of all the nodes in two dimensions stored in 3 x iel matrices
+  BlitzMat3x2 xcurr;
 
   //current length of beam in physical space
   double lcurr = 0;
   //current angle between x-axis and beam in physical space
   double beta;
   //some geometric auxiliary variables according to Crisfield, Vol. 1
-  LINALG::SerialDenseVector zcurr;
-  LINALG::SerialDenseVector rcurr;
-  LINALG::SerialDenseMatrix Bcurr;
+  BlitzVec6 zcurr;
+  BlitzVec6 rcurr;
+  BlitzMat3x6 Bcurr;
   //auxiliary matrix storing the product of constitutive matrix C and Bcurr
-  LINALG::SerialDenseMatrix aux_CB;
+  BlitzMat3x6 aux_CB;
+  //declaration of local internal forces
+  BlitzVec3 force_loc;
+  //declaration of material parameters
+  double ym; //Young's modulus
+  double sm; //shear modulus
+  double density; //density
 
-  zcurr.Size(6);
-  rcurr.Size(6);
-  Bcurr.Shape(3,6);
-  aux_CB.Shape(3,6);
+
 
   //calculating refenrence configuration xrefe and current configuration xcurr
   for (int k=0; k<iel; ++k)
   {
-    xrefe(0,k) = Nodes()[k]->X()[0];
-    xrefe(1,k) = Nodes()[k]->X()[1];
-
-    xcurr(0,k) = xrefe(0,k) + disp[k*numdf+0];
-    xcurr(1,k) = xrefe(1,k) + disp[k*numdf+1];
+    xcurr(0,k) = Nodes()[k]->X()[0] + disp[k*numdf+0];
+    xcurr(1,k) = Nodes()[k]->X()[1] + disp[k*numdf+1];
     //note: this is actually not the current director angle, but current director angle minus reference director angle
     xcurr(2,k) = disp[k*numdf+2];
   }
@@ -420,11 +409,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
   //calculation of local geometrically important matrices and vectors
   b2_local_aux(Bcurr, rcurr, zcurr, beta, xcurr, lcurr, lrefe_);
   
-  //calculation of local internal forces
-  LINALG::SerialDenseVector force_loc;
-  
-  force_loc.Size(3);
-  
+
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
   / function instead of e.g. beam2_input.cpp or within the Beam2Register class since it is not/
@@ -433,23 +418,19 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
 
   // get the material law
   MATERIAL* currmat = &(mat[material_-1]);
-  double ym;
-  double sm;
-  double density;
-    
   //assignment of material parameters; only St.Venant material is accepted for this beam 
   switch(currmat->mattyp)
-    	{
-	    case m_stvenant:// only linear elastic material supported
-	      {
-	    	  ym = currmat->m.stvenant->youngs;
-	    	  sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
-	    	  density = currmat->m.stvenant->density;
-	      }
-	      break;
-	      default:
-	      dserror("unknown or improper type of material law");
-	 }	
+	{
+    case m_stvenant:// only linear elastic material supported
+    {
+  	  ym = currmat->m.stvenant->youngs;
+  	  sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
+  	  density = currmat->m.stvenant->density;
+    }
+    break;
+    default:
+      dserror("unknown or improper type of material law");
+  }	
 
   /*in the following internal forces are computed; one has to take into consideration that not global director angles cause
    * internal forces, but local ones. Global and local director angles are different from each other by the reference beam 
@@ -468,44 +449,39 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
 
   //calculating tangential stiffness matrix in global coordinates
   if (stiffmatrix != NULL)
-  {
-      
-      //linear elastic part including rotation
-      
-      for(int id_col=0; id_col<6; id_col++)
-      {
-          aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
-          aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
-          aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
-      }
-      
-      (*stiffmatrix).Multiply('T','N',1,Bcurr,aux_CB,0);
-          
-      //adding geometric stiffness by shear force 
-      double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
-      for(int id_lin=0; id_lin<6; id_lin++)
-          for(int id_col=0; id_col<6; id_col++)
-          {
-              (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
-              (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
-          }
-      
-      //adding geometric stiffness by axial force 
-      double aux_N_fac = force_loc(0)/lcurr; 
-      for(int id_lin=0; id_lin<6; id_lin++)
-          for(int id_col=0; id_col<6; id_col++)
-              (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
+  {  
+    //linear elastic part including rotation     
+    for(int id_col=0; id_col<6; id_col++)
+    {
+      aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
+      aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
+      aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
+    }
+    XFEM::BLITZTINY::MtM_product<6,6,3>(aux_CB,Bcurr,*stiffmatrix);
+  
+    //adding geometric stiffness by shear force 
+    double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
+    for(int id_lin=0; id_lin<6; id_lin++)
+        for(int id_col=0; id_col<6; id_col++)
+        {
+          (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
+          (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
+        }
+    
+    //adding geometric stiffness by axial force 
+    double aux_N_fac = force_loc(0)/lcurr; 
+    for(int id_lin=0; id_lin<6; id_lin++)
+        for(int id_col=0; id_col<6; id_col++)
+            (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
   }
   
   //calculation of global internal forces from force = B_transposed*force_loc 
   if (force != NULL)
   {
-      (*force).Size(6);
-      for(int id_col=0; id_col<6; id_col++)
-          for(int id_lin=0; id_lin<3; id_lin++)
-              (*force)(id_col) += Bcurr(id_lin,id_col)*force_loc(id_lin);
+    XFEM::BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
   }
   
+   
   //calculating mass matrix (local version = global version) 
   if (massmatrix != NULL)
   {
@@ -515,7 +491,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
       if (lumpedflag_ == 0)
       {
               //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-              double aux_E[3]={density*lrefe_*crosssec_/6,density*lrefe_*crosssec_/6,density*lrefe_*mominer_/6};
+              double aux_E[3]={density*lrefe_*crosssec_/6, density*lrefe_*crosssec_/6, density*lrefe_*mominer_/6};
               for(int id=0; id<3; id++)
               {
               	    (*massmatrix)(id,id) = 2*aux_E[id];
