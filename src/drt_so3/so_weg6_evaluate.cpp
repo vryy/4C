@@ -375,12 +375,12 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
-    {
       prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
-      prestress_->IsInit() = true;
-    }
 #endif
   }
+#ifdef PRESTRESS
+  prestress_->IsInit() = true;
+#endif
   return;
 }
 

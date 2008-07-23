@@ -492,14 +492,13 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
-    {
       prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
-      prestress_->IsInit() = true;
-    }
 #endif
 
   } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)   
-    
+#ifdef PRESTRESS
+  prestress_->IsInit() = true;
+#endif    
   return;
 }
 
