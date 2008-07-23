@@ -124,8 +124,8 @@ namespace STR
     //! Check sanity prior resize
     bool ResizeSane
     (
-      const int steppast,
-      const int stepfuture
+      const int steppast,  //!< lower index bound
+      const int stepfuture  //!< higher index bound, >= lower bound
     )
     {
       bool sane = true;
@@ -211,7 +211,7 @@ namespace STR
   protected :
 
     //! template base class
-    typedef TimIntMStepBase<STATE> TBase;
+    typedef TimIntMStepBase<STATE> MStepBase;
 
   public :
 
@@ -223,14 +223,14 @@ namespace STR
     (
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
-      const STATE init  //!< initialse to init
+      const STATE init  //!< initialise to init
     )
-    : TBase(steppast, stepfuture)
+    : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
-      for (int index=0; index<TBase::steps_; ++index)
+      for (int index=0; index<MStepBase::steps_; ++index)
       {
-        TBase::state_.push_back(STATE(init));
+        MStepBase::state_.push_back(STATE(init));
       }
   
       // good bye
@@ -246,18 +246,20 @@ namespace STR
     )
     {
       // check this
-      bool sane = TBase::ResizeSane(steppast, stepfuture);
-      if (not sane) dserror("Sanity check not passed.");
+      {
+        bool sane = MStepBase::ResizeSane(steppast, stepfuture);
+        if (not sane) dserror("Sanity check not passed.");
+      }
       
       // add states for steps in past
-      if (steppast < TBase::steppast_)
+      if (steppast < MStepBase::steppast_)
       {
-        for (int past=TBase::steppast_; past>steppast; --past)
+        for (int past=MStepBase::steppast_; past>steppast; --past)
         {
-          TBase::state_.insert(TBase::state_.begin(), STATE(init));
+          MStepBase::state_.insert(MStepBase::state_.begin(), STATE(init));
         }
-        TBase::steppast_ = steppast;
-        TBase::steps_ = TBase::stepfuture_ - TBase::steppast_ + 1;
+        MStepBase::steppast_ = steppast;
+        MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
       }
 
       // farewell
@@ -276,7 +278,7 @@ namespace STR
       const STATE value
     )
     {
-      TBase::state_.at(TBase::IndexByStep(step)) = value;
+      MStepBase::state_.at(MStepBase::IndexByStep(step)) = value;
     }
 
     //! Update multi-step state
@@ -289,11 +291,11 @@ namespace STR
       const STATE staten  //!< state_{n+1}
     )
     {
-      for (int ind=0; ind<TBase::steps_-1; ++ind)
+      for (int ind=0; ind<MStepBase::steps_-1; ++ind)
       {
-        TBase::state_[ind] = TBase::state_[ind+1];
+        MStepBase::state_[ind] = MStepBase::state_[ind+1];
       }
-      TBase::state_[TBase::steps_-1] = staten;
+      MStepBase::state_[MStepBase::steps_-1] = staten;
       
       // ciao
       return;
@@ -331,7 +333,7 @@ namespace STR
   protected :
     
     //! base template class
-    typedef TimIntMStepBase<Epetra_Vector> TBase;
+    typedef TimIntMStepBase<Epetra_Vector> MStepBase;
 
   public :
 
@@ -340,7 +342,7 @@ namespace STR
 
     //! Dummy constructor 
     TimIntMStep()
-    : TBase::TimIntMStepBase()
+    : MStepBase::TimIntMStepBase()
     { ; }
 
     //! Constructor
@@ -351,7 +353,7 @@ namespace STR
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
       const bool inittozero  //!< initialse to zero, if true
     )
-    : TBase(steppast, stepfuture)
+    : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
       for (int index=0; index<steps_; ++index)
@@ -376,18 +378,21 @@ namespace STR
     )
     { 
       // check this
-      bool sane = TBase::ResizeSane(steppast, stepfuture);
-      if (not sane) dserror("Sanity check not passed.");
+      {
+        bool sane = MStepBase::ResizeSane(steppast, stepfuture);
+        if (not sane) dserror("Sanity check not passed.");
+      }
 
       // add states for steps in past
       if (steppast < steppast_)
       {
-        for (int past=steppast_; past>steppast; --past)
+        for (int past=MStepBase::steppast_; past>steppast; --past)
         {
-          state_.insert(state_.begin(), Epetra_Vector(*dofrowmap, inittozero));
+          MStepBase::state_.insert(MStepBase::state_.begin(),
+                                   Epetra_Vector(*dofrowmap, inittozero));
         }
-        steppast_ = steppast;
-        steps_ = stepfuture_ - steppast_ + 1;
+        MStepBase::steppast_ = steppast;
+        MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
       }
 
       // farewell
@@ -409,11 +414,11 @@ namespace STR
       const Epetra_Vector& staten  //!< state_{n+1}
     )
     {
-      for (int ind=0; ind<steps_-1; ++ind)
+      for (int ind=0; ind<MStepBase::steps_-1; ++ind)
       {
-        (state_[ind]).Update(1.0, (state_[ind+1]), 0.0);
+        (MStepBase::state_[ind]).Update(1.0, (MStepBase::state_[ind+1]), 0.0);
       }
-      (state_[steps_-1]).Update(1.0, staten, 0.0);
+      (MStepBase::state_[steps_-1]).Update(1.0, staten, 0.0);
       
       // ciao
       return;
