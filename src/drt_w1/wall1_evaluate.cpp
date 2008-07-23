@@ -282,9 +282,9 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
     /*================================== gaussian point and weight at it */
 
 
-	const double e1 = intpoints.qxg[ip][0];
-	const double e2 = intpoints.qxg[ip][1];
-	const double wgt = intpoints.qwgt[ip];
+  const double e1 = intpoints.qxg[ip][0];
+  const double e2 = intpoints.qxg[ip][1];
+  const double wgt = intpoints.qwgt[ip];
 
     /*-------------------- shape functions at gp e1,e2 on mid surface */
     //w1_shapefunctions(funct,deriv,e1,e2,iel,1);
@@ -454,13 +454,13 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   {
 
     /*
-  	** EAS Update of alphas:
-  	** the current alphas are (re-)evaluated out of
-  	** Kaa and Kda of previous step to avoid additional element call.
-  	** This corresponds to the (innermost) element update loop
-  	** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
-  	*/
-  	alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get alpha of previous iteration
+    ** EAS Update of alphas:
+    ** the current alphas are (re-)evaluated out of
+    ** Kaa and Kda of previous step to avoid additional element call.
+    ** This corresponds to the (innermost) element update loop
+    ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
+    */
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get alpha of previous iteration
 
     // get stored EAS history
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
@@ -496,9 +496,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     /*================================== gaussian point and weight at it */
 
 
-	const double e1 = intpoints.qxg[ip][0];
-	const double e2 = intpoints.qxg[ip][1];
-	const double wgt = intpoints.qwgt[ip];
+  const double e1 = intpoints.qxg[ip][0];
+  const double e2 = intpoints.qxg[ip][1];
+  const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
     DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
@@ -707,7 +707,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
 void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
                           const Epetra_SerialDenseMatrix& deriv,
                           Epetra_SerialDenseMatrix& xjm,
-			              double* det,
+                          double* det,
                           const int iel)
 {
 
@@ -880,8 +880,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
 
 {
   /*--------------------------- call material law -> get tangent modulus--*/
-    switch(material->mattyp)
-    {
+  switch(material->mattyp)
+  {
     case m_stvenant:/*--------------------------------- linear elastic ---*/
     {
       double ym = material->m.stvenant->youngs;
@@ -895,100 +895,336 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
          | EPS_xx |
          | EPS_yy |
          | EPS_xy |
-         | EPS_yx |
-
-  */
+         | EPS_yx | */
+  
+      switch(wtype_)
+      {
   /*---------------------------------material-tangente-- plane stress ---*/
-    switch(wtype_)
-    {
-    case plane_stress:
+        case plane_stress:
+        {
+          double e1=ym/(1. - pv*pv);
+          double e2=pv*e1;
+          double e3=e1*(1. - pv)/2.;
+    
+          C(0,0)=e1;
+          C(0,1)=e2;
+          C(0,2)=0.;
+          C(0,3)=0.;
+    
+          C(1,0)=e2;
+          C(1,1)=e1;
+          C(1,2)=0.;
+          C(1,3)=0.;
+    
+          C(2,0)=0.;
+          C(2,1)=0.;
+          C(2,2)=e3;
+          C(2,3)=e3;
+    
+          C(3,0)=0.;
+          C(3,1)=0.;
+          C(3,2)=e3;
+          C(3,3)=e3;
+          
+          break;
+        }
+        
+  /*----------- material-tangente - plane strain, rotational symmetry ---*/
+        case plane_strain:
+        {
+          double c1=ym/(1.0+pv);
+          double b1=c1*pv/(1.0-2.0*pv);
+          double a1=b1+c1;
+    
+          C(0,0)=a1;
+          C(0,1)=b1;
+          C(0,2)=0.;
+          C(0,3)=0.;
+    
+          C(1,0)=b1;
+          C(1,1)=a1;
+          C(1,2)=0.;
+          C(1,3)=0.;
+    
+          C(2,0)=0.;
+          C(2,1)=0.;
+          C(2,2)=c1/2.;
+          C(2,3)=c1/2.;
+    
+          C(3,0)=0.;
+          C(3,1)=0.;
+          C(3,2)=c1/2;
+          C(3,3)=c1/2;
+          
+          break;
+        }
+        
+        default:
+        {
+           dserror("Only plane strain and plane stress options exist for wtype_");
+           break;
+        }
+      } // switch(wtype_)
+      
+      /*-------------------------- evaluate 2.PK-stresses -------------------*/
+      /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
+
+      Epetra_SerialDenseVector svector;
+      svector.Size(3);
+
+      for (int k=0; k<3; k++)
       {
-      double e1=ym/(1. - pv*pv);
-      double e2=pv*e1;
-      double e3=e1*(1. - pv)/2.;
-
-      C(0,0)=e1;
-      C(0,1)=e2;
-      C(0,2)=0.;
-      C(0,3)=0.;
-
-      C(1,0)=e2;
-      C(1,1)=e1;
-      C(1,2)=0.;
-      C(1,3)=0.;
-
-      C(2,0)=0.;
-      C(2,1)=0.;
-      C(2,2)=e3;
-      C(2,3)=e3;
-
-      C(3,0)=0.;
-      C(3,1)=0.;
-      C(3,2)=e3;
-      C(3,3)=e3;
+        for (int i=0; i<numeps; i++)
+        {
+          svector(k) += C(k,i) * strain(i);
+        }
       }
+      /*------------------ 2.PK stored as matrix -----------------------------*/
+      stress(0,0)=svector(0);
+      stress(0,2)=svector(2);
+      stress(1,1)=svector(1);
+      stress(1,3)=svector(2);
+      stress(2,0)=svector(2);
+      stress(2,2)=svector(1);
+      stress(3,1)=svector(2);
+      stress(3,3)=svector(0);
+      
       break;
-    case plane_strain:
-     /*----------- material-tangente - plane strain, rotational symmetry ---*/
-      {
-      double c1=ym/(1.0+pv);
-      double b1=c1*pv/(1.0-2.0*pv);
-      double a1=b1+c1;
-
-      C(0,0)=a1;
-      C(0,1)=b1;
-      C(0,2)=0.;
-      C(0,3)=0.;
-
-      C(1,0)=b1;
-      C(1,1)=a1;
-      C(1,2)=0.;
-      C(1,3)=0.;
-
-      C(2,0)=0.;
-      C(2,1)=0.;
-      C(2,2)=c1/2.;
-      C(2,3)=c1/2.;
-
-      C(3,0)=0.;
-      C(3,1)=0.;
-      C(3,2)=c1/2;
-      C(3,3)=c1/2;
-      }
-      break;
-      default:
-	dserror("nonsense");
-  }
-  /*-------------------------- evaluate 2.PK-stresses -------------------*/
-  /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
-
-  Epetra_SerialDenseVector svector;
-  svector.Size(3);
-
-  for (int k=0; k<3; k++)
-  {
-    for (int i=0; i<numeps; i++)
-    {
-      svector(k) += C(k,i) * strain(i);
     }
-  }
-  /*------------------ 2.PK stored as matrix -----------------------------*/
-  stress(0,0)=svector(0);
-  stress(0,2)=svector(2);
-  stress(1,1)=svector(1);
-  stress(1,3)=svector(2);
-  stress(2,0)=svector(2);
-  stress(2,2)=svector(1);
-  stress(3,1)=svector(2);
-  stress(3,3)=svector(0);
+    
+    case m_neohooke: /*----------------- neo-Hookean material (popp 07/08) ---*/
+    {
+      // get material parameters
+      double ym = material->m.neohooke->youngs;       // Young's modulus
+      double nu = material->m.neohooke->possionratio; // Poisson's ratio
+          
+      switch(wtype_)
+      {
+        case plane_stress:
+        {
+          // Green-Lagrange Strain Tensor
+          LINALG::SerialDenseMatrix E(3,3);
+          E(0,0) = strain[0];
+          E(1,1) = strain[1];
+          E(2,2) = 0.0;
+          E(0,1) = strain[3];  E(1,0) = strain[3];
+          E(1,2) = 0.0;  E(2,1) = 0.0;
+          E(0,2) = 0.0;  E(2,0) = 0.0;
+          
+          // Right Cauchy-Green Tensor  CG = 2 * E + I
+          LINALG::SerialDenseMatrix CG(E);
+          CG.Scale(2.0);
+          CG(0,0) += 1.0;
+          CG(1,1) += 1.0;
+               
+          // define material constants c1 and beta
+          const double c1 = 0.5 * ym/(2*(1+nu));
+          const double beta = nu/(1-2*nu);
+          
+          // S(2,2)=0 -> condition for unknown CG(2,2)
+          double temp = CG(0,0)*CG(1,1)-CG(0,1)*CG(1,0);
+          CG(2,2) = pow(temp,-beta/(1+beta));
+          
+          // Principal Invariant I3 = det(CG)
+          const double I3 = CG(0,0)*CG(1,1)*CG(2,2) + CG(0,1)*CG(1,2)*CG(2,0)
+                          + CG(0,2)*CG(1,0)*CG(2,1) - (CG(0,2)*CG(1,1)*CG(2,0)
+                          + CG(0,1)*CG(1,0)*CG(2,2) + CG(0,0)*CG(1,2)*CG(2,1));
 
-  }
+          // Calculation of CG^-1 (CGinv)
+          LINALG::SerialDenseMatrix CGinv(CG); 
+          LINALG::SymmetricInverse(CGinv,3);
+          
+          // PK2 Stresses
+          LINALG::SerialDenseMatrix PK2(3,3);
+          int i,j;  
+          for (i=0; i<3; i++)
+            for (j=0; j<3; j++)
+            {
+              PK2(i,j)= 2.0 * c1 * ( - pow(I3,-beta) * CGinv(i,j) );
+            }
+          PK2(0,0) += (2.0 * c1);
+          PK2(1,1) += (2.0 * c1);
+          PK2(2,2) += (2.0 * c1); 
+          
+          // Transfer PK2 to our matrix form
+          Epetra_SerialDenseVector svector(3);
+          svector[0]=PK2(0,0);
+          svector[1]=PK2(1,1);
+          svector[2]=PK2(0,1);
+         
+          stress(0,0)=svector(0);
+          stress(0,2)=svector(2);
+          stress(1,1)=svector(1);
+          stress(1,3)=svector(2);
+          stress(2,0)=svector(2);
+          stress(2,2)=svector(1);
+          stress(3,1)=svector(2);
+          stress(3,3)=svector(0);
+                
+          dserror("Plane stress NeoHooke material not yet implemented!");
+          
+          break;
+        }
+        case plane_strain:
+        {
+          // Green-Lagrange Strain Tensor
+          LINALG::SerialDenseMatrix E(3,3);
+          E(0,0) = strain[0];
+          E(1,1) = strain[1];
+          E(2,2) = 0.0;
+          E(0,1) = strain[3];  E(1,0) = strain[3];
+          E(1,2) = 0.0;  E(2,1) = 0.0;
+          E(0,2) = 0.0;  E(2,0) = 0.0;
+          
+          // Right Cauchy-Green Tensor  CG = 2 * E + I
+          LINALG::SerialDenseMatrix CG(E);
+          CG.Scale(2.0);
+          CG(0,0) += 1.0;
+          CG(1,1) += 1.0;
+          
+          // E(2,2)=0 -> condition for unknown CG(2,2)
+          CG(2,2) = 1.0;
+            
+          // define material constants c1 and beta
+          const double c1 = 0.5 * ym/(2*(1+nu));
+          const double beta = nu/(1-2*nu);
+                    
+          // Principal Invariant I3 = det(CG)
+          const double I3 = CG(0,0)*CG(1,1)*CG(2,2) + CG(0,1)*CG(1,2)*CG(2,0)
+                          + CG(0,2)*CG(1,0)*CG(2,1) - (CG(0,2)*CG(1,1)*CG(2,0)
+                          + CG(0,1)*CG(1,0)*CG(2,2) + CG(0,0)*CG(1,2)*CG(2,1));
+          
+          // Calculation of CG^-1 (CGinv)
+          LINALG::SerialDenseMatrix CGinv(CG); 
+          LINALG::SymmetricInverse(CGinv,3);
+          
+          // PK2 Stresses
+          LINALG::SerialDenseMatrix PK2(3,3);
+          int i,j;  
+          for (i=0; i<3; i++)
+            for (j=0; j<3; j++)
+            {
+              PK2(i,j)= 2.0 * c1 * ( - pow(I3,-beta) * CGinv(i,j) );
+            }
+          PK2(0,0) += (2.0 * c1);
+          PK2(1,1) += (2.0 * c1);
+          PK2(2,2) += (2.0 * c1);
+          
+          // Transfer PK2 to our matrix form
+          Epetra_SerialDenseVector svector(3);
+          svector[0]=PK2(0,0);
+          svector[1]=PK2(1,1);
+          svector[2]=PK2(0,1);
+         
+          stress(0,0)=svector(0);
+          stress(0,2)=svector(2);
+          stress(1,1)=svector(1);
+          stress(1,3)=svector(2);
+          stress(2,0)=svector(2);
+          stress(2,2)=svector(1);
+          stress(3,1)=svector(2);
+          stress(3,3)=svector(0);
+                
+          // Elasticity Tensor
+          const double delta6 = 4. * c1 * beta * pow(I3,-beta);
+          const double delta7 = 4. * c1 * pow(I3,-beta);
+          
+          int k,l;
+          LINALG::SerialDenseMatrix ET(9,9);
+          LINALG::SerialDenseMatrix cmat(6,6);
+          
+          for (k=0; k<3; k++)
+          for (l=0; l<3; l++)
+          {
+            ET(k,l)    = delta6 * (CGinv(0,0) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(0,k) * CGinv(0,l) + CGinv(0,l) * CGinv(0,k));
+            ET(k+3,l)  = delta6 * (CGinv(1,0) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(1,k) * CGinv(0,l) + CGinv(1,l) * CGinv(0,k));
+            ET(k+3,l+3)= delta6 * (CGinv(1,1) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(1,k) * CGinv(1,l) + CGinv(1,l) * CGinv(1,k));
+            ET(k+6,l)  = delta6 * (CGinv(2,0) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(2,k) * CGinv(0,l) + CGinv(2,l) * CGinv(0,k));
+            ET(k+6,l+3)= delta6 * (CGinv(2,1) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(2,k) * CGinv(1,l) + CGinv(2,l) * CGinv(1,k));
+            ET(k+6,l+6)= delta6 * (CGinv(2,2) * CGinv(k,l)) + delta7 * 0.5 *(CGinv(2,k) * CGinv(2,l) + CGinv(2,l) * CGinv(2,k));
+          }
 
-    break;
+          cmat(0,0)=ET(0,0);
+          cmat(0,1)=ET(1,1);
+          cmat(0,2)=ET(2,2);
+          cmat(0,3)=ET(1,0);
+          cmat(0,4)=ET(2,1);
+          cmat(0,5)=ET(2,0);
+          
+          cmat(1,0)=ET(3,3);
+          cmat(1,1)=ET(4,4);
+          cmat(1,2)=ET(5,5);
+          cmat(1,3)=ET(4,3);
+          cmat(1,4)=ET(5,4);
+          cmat(1,5)=ET(5,3);
+          
+          cmat(2,0)=ET(6,6);
+          cmat(2,1)=ET(7,7);
+          cmat(2,2)=ET(8,8);
+          cmat(2,3)=ET(7,6);
+          cmat(2,4)=ET(8,7);
+          cmat(2,5)=ET(8,6);
+          
+          cmat(3,0)=ET(3,0);
+          cmat(3,1)=ET(4,1);
+          cmat(3,2)=ET(5,2);
+          cmat(3,3)=ET(4,0);
+          cmat(3,4)=ET(5,1);
+          cmat(3,5)=ET(5,0);
+          
+          cmat(4,0)=ET(6,3);
+          cmat(4,1)=ET(7,4);
+          cmat(4,2)=ET(8,5);
+          cmat(4,3)=ET(7,3);
+          cmat(4,4)=ET(8,4);
+          cmat(4,5)=ET(8,3);
+          
+          cmat(5,0)=ET(6,0);
+          cmat(5,1)=ET(7,1);
+          cmat(5,2)=ET(8,2);
+          cmat(5,3)=ET(7,0);
+          cmat(5,4)=ET(8,1);
+          cmat(5,5)=ET(8,0);
+          
+          // Transfer elasticity tensor to our matrix form
+          C(0,0)=cmat(0,0);
+          C(0,1)=cmat(0,1);
+          C(0,2)=cmat(0,3);
+          C(0,3)=cmat(0,3);
+
+          C(1,0)=cmat(1,0);
+          C(1,1)=cmat(1,1);
+          C(1,2)=cmat(1,3);
+          C(1,3)=cmat(1,3);
+
+          C(2,0)=cmat(3,0);
+          C(2,1)=cmat(3,1);
+          C(2,2)=cmat(3,3);
+          C(2,3)=cmat(3,3);
+
+          C(3,0)=cmat(3,0);
+          C(3,1)=cmat(3,1);
+          C(3,2)=cmat(3,3);
+          C(3,3)=cmat(3,3);
+          
+          break;
+        }
+        default:
+        {
+          dserror("Only plane strain and plane stress options exist for wtype_");
+          break;
+        }
+      }
+      
+      
+      //dserror("2D NeoHooke not yet implemented");
+      break;
+    }
     default:
-    dserror(" unknown type of material law");
-    }
-
+      dserror("Invalid type of material law for wall element");
+      break;
+  } // switch(material->mattyp)
+    
   return;
 }
 
@@ -1099,13 +1335,13 @@ void DRT::ELEMENTS::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
  |  setup of constant EAS data (private)                       mgit 01/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_eassetup(
-		  Epetra_SerialDenseMatrix& boplin0,
-		  Epetra_SerialDenseVector& F0,       // deformation gradient at origin
-		  Epetra_SerialDenseMatrix& xjm0,     // jacobian matrix at origin
-		  double& detJ0,                      // det of Jacobian at origin
-          double xrefe[2][MAXNOD_WALL1],      // material element coords
-          double xcure[2][MAXNOD_WALL1],      // current element coords
-          const DRT::Element::DiscretizationType& distype)
+      Epetra_SerialDenseMatrix& boplin0,
+      Epetra_SerialDenseVector& F0,       // deformation gradient at origin
+      Epetra_SerialDenseMatrix& xjm0,     // jacobian matrix at origin
+      double& detJ0,                      // det of Jacobian at origin
+      double xrefe[2][MAXNOD_WALL1],      // material element coords
+      double xcure[2][MAXNOD_WALL1],      // current element coords
+      const DRT::Element::DiscretizationType& distype)
 
 {
   // derivatives at origin
@@ -1118,10 +1354,10 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
   memset(xjm0.A(),0,xjm0.N()*xjm0.M()*sizeof(double));
   for (int k=0; k<NumNode(); k++)
   {
-	  xjm0(0,0) += deriv0(0,k) * xrefe[0][k];  // X,r += (X,r)^k
-	  xjm0(0,1) += deriv0(0,k) * xrefe[1][k];  // Y,r += (Y,r)^k
-	  xjm0(1,0) += deriv0(1,k) * xrefe[0][k];  // X,s += (X,s)^k
-	  xjm0(1,1) += deriv0(1,k) * xrefe[1][k];  // Y,s += (Y,s)^k
+    xjm0(0,0) += deriv0(0,k) * xrefe[0][k];  // X,r += (X,r)^k
+    xjm0(0,1) += deriv0(0,k) * xrefe[1][k];  // Y,r += (Y,r)^k
+    xjm0(1,0) += deriv0(1,k) * xrefe[0][k];  // X,s += (X,s)^k
+    xjm0(1,1) += deriv0(1,k) * xrefe[1][k];  // Y,s += (Y,s)^k
   }
 
   /*------------------------------------------ determinant of jacobian ---*/
@@ -1193,19 +1429,19 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
  also the operators G,W0 and Z (private) mgit 01/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
-		  Epetra_SerialDenseMatrix& F_enh,
-		  Epetra_SerialDenseMatrix xjm0,
-		  Epetra_SerialDenseMatrix xjm,
-		  double detJ0,
-		  double det,
-		  Epetra_SerialDenseVector F0,
-		  Epetra_SerialDenseMatrix alpha,
-		  double e1,
-		  double e2,
-		  Epetra_SerialDenseMatrix& G,
-		  Epetra_SerialDenseMatrix& W0,
-		  Epetra_SerialDenseMatrix boplin0,
-		  Epetra_SerialDenseMatrix& Z)
+      Epetra_SerialDenseMatrix& F_enh,
+      Epetra_SerialDenseMatrix xjm0,
+      Epetra_SerialDenseMatrix xjm,
+      double detJ0,
+      double det,
+      Epetra_SerialDenseVector F0,
+      Epetra_SerialDenseMatrix alpha,
+      double e1,
+      double e2,
+      Epetra_SerialDenseMatrix& G,
+      Epetra_SerialDenseMatrix& W0,
+      Epetra_SerialDenseMatrix boplin0,
+      Epetra_SerialDenseMatrix& Z)
 {
 
   // EAS
@@ -1357,10 +1593,10 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
  |total deformation gradient and green lagrange strain (private)mgit 01/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(
-		  Epetra_SerialDenseMatrix F_enh,
-		  Epetra_SerialDenseMatrix& F_tot,
-		  Epetra_SerialDenseVector F,
-		  Epetra_SerialDenseVector& strain)
+      Epetra_SerialDenseMatrix F_enh,
+      Epetra_SerialDenseMatrix& F_tot,
+      Epetra_SerialDenseVector F,
+      Epetra_SerialDenseVector& strain)
 {
 
   // total deformation gradient in matrix notation
@@ -1387,9 +1623,9 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(
  |first piola-kirchhoff stress vector                       (private)mgit 02/08|
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_stress_eas(
-		  Epetra_SerialDenseMatrix stress,
-		  Epetra_SerialDenseMatrix F_tot,
-		  Epetra_SerialDenseMatrix& p_stress)
+      Epetra_SerialDenseMatrix stress,
+      Epetra_SerialDenseMatrix F_tot,
+      Epetra_SerialDenseMatrix& p_stress)
 {
 
   /*-------------reduce stress matrix-----------------------------------------*/
@@ -1492,9 +1728,9 @@ void DRT::ELEMENTS::Wall1::w1_kdd(Epetra_SerialDenseMatrix boplin,
 *-----------------------------------------------------------------------------*/
 
 void DRT::ELEMENTS::Wall1::w1_kda(Epetra_SerialDenseMatrix FCF,
-		                          Epetra_SerialDenseMatrix W0,
-		                          Epetra_SerialDenseMatrix boplin,
-		                          Epetra_SerialDenseMatrix stress,
+                                  Epetra_SerialDenseMatrix W0,
+                                  Epetra_SerialDenseMatrix boplin,
+                                  Epetra_SerialDenseMatrix stress,
                                   Epetra_SerialDenseMatrix G,
                                   Epetra_SerialDenseMatrix Z,
                                   Epetra_SerialDenseMatrix& Kda,
@@ -1542,8 +1778,8 @@ void DRT::ELEMENTS::Wall1::w1_kda(Epetra_SerialDenseMatrix FCF,
   {
     for (int ieas=0; ieas<neas; ieas++)
     {
-	Temp5(i*2,ieas)= (p_stress(0,0)*Z(i*2,ieas)+p_stress(2,0)*Z(i*2+1,ieas))*fac;
-	Temp5(i*2+1,ieas)= (p_stress(3,0)*Z(i*2,ieas)+p_stress(1,0)*Z(i*2+1,ieas))*fac;
+  Temp5(i*2,ieas)= (p_stress(0,0)*Z(i*2,ieas)+p_stress(2,0)*Z(i*2+1,ieas))*fac;
+  Temp5(i*2+1,ieas)= (p_stress(3,0)*Z(i*2,ieas)+p_stress(1,0)*Z(i*2+1,ieas))*fac;
     }
   }
 
@@ -1563,7 +1799,7 @@ void DRT::ELEMENTS::Wall1::w1_kda(Epetra_SerialDenseMatrix FCF,
 *-----------------------------------------------------------------------------*/
 
 void DRT::ELEMENTS::Wall1::w1_kaa(Epetra_SerialDenseMatrix FCF,
-		                          Epetra_SerialDenseMatrix stress,
+                                  Epetra_SerialDenseMatrix stress,
                                   Epetra_SerialDenseMatrix G,
                                   Epetra_SerialDenseMatrix& Kaa,
                                   double fac)
@@ -1608,7 +1844,7 @@ void DRT::ELEMENTS::Wall1::w1_kaa(Epetra_SerialDenseMatrix FCF,
 *-----------------------------------------------------------------------------*/
 
 void DRT::ELEMENTS::Wall1::w1_fint_eas(Epetra_SerialDenseMatrix W0,
-		                          Epetra_SerialDenseMatrix boplin,
+                                  Epetra_SerialDenseMatrix boplin,
                                   Epetra_SerialDenseMatrix G,
                                   Epetra_SerialDenseMatrix p_stress,
                                   Epetra_SerialDenseVector& intforce,
@@ -1622,7 +1858,7 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(Epetra_SerialDenseMatrix W0,
   // BplusW = B+W0
   for(int i=0; i<4; i++)
     for(int j=0; j<2*NumNode(); j++)
-	  BplusW(i,j) = boplin(i,j) + W0(i,j);
+    BplusW(i,j) = boplin(i,j) + W0(i,j);
 
 
   Epetra_SerialDenseMatrix Temp1;
