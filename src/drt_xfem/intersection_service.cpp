@@ -368,7 +368,7 @@ bool XFEM::searchForNearestPointOnSurface(
   
   // normal vector at position xsi
   static BlitzVec3 eleNormalAtXsi;
-  computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
+  computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
   
   BlitzVec3 x_surface_phys;
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);

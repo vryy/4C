@@ -430,10 +430,10 @@ namespace XFEM
     
     //! calculate element normal vector in gausspoint (r,s)
     template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
-    inline void computeNormalToBoundaryElement(
-            const M1&       deriv,                  ///< shape functions derivative in (r,s)
-            const M2&       xs,                     ///< boundary element nodal coordinates in (x,y,z) space
-            BlitzVec3&      unrm                    ///< unit normal vector at (r,s)
+    inline void computeNormalToSurfaceElementViaShape(
+            const M1&       deriv,  ///< shape functions derivative in (r,s) -> (2,numnode)
+            const M2&       xs,     ///< boundary element nodal coordinates in (x,y,z) space -> (3,numnode)
+            BlitzVec3&      unrm    ///< unit normal vector at (r,s)
             )
     {
         const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -481,25 +481,25 @@ namespace XFEM
     
     //! calculate element normal in gausspoint (r,s)
     template<DRT::Element::DiscretizationType DISTYPE>
-    inline void computeNormalToBoundaryElement(
-        const BlitzMat&          xs,                ///< boundary element nodal coordinates in (x,y,z) space
+    inline void computeNormalToSurfaceElement(
+        const BlitzMat&          xs,                ///< surface element nodal coordinates in (x,y,z) space
         const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
-        BlitzVec3&               unitnormalvec
+        BlitzVec3&               unitnormalvec      ///< return unit normal vector in (x,y,z)
             )
     {
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       static blitz::TinyMatrix<double,2,numnode> deriv_boundary;
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,xsi(0),xsi(1),DISTYPE);
       
-      computeNormalToBoundaryElement<DISTYPE>(deriv_boundary, xs, unitnormalvec);
+      computeNormalToSurfaceElementViaShape<DISTYPE>(deriv_boundary, xs, unitnormalvec);
       return;
     }
     
     
     //! calculate element normal in gausspoint (r,s)
-    inline void computeNormalToBoundaryElement(
+    inline void computeNormalToSurfaceElement(
         const DRT::Element*      surfaceElement,    ///< surface element
-        const BlitzMat&          xs,                ///< boundary element nodal coordinates in (x,y,z) space
+        const BlitzMat&          xs,                ///< surface element nodal coordinates in (x,y,z) space
         const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
         BlitzVec3&               unitnormalvec
             )
@@ -507,16 +507,16 @@ namespace XFEM
       switch (surfaceElement->Shape())
       {
           case DRT::Element::quad4:
-              computeNormalToBoundaryElement<DRT::Element::quad4>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad4>(xs, xsi, unitnormalvec);
               break;
           case DRT::Element::quad8:
-              computeNormalToBoundaryElement<DRT::Element::quad8>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad8>(xs, xsi, unitnormalvec);
               break;
           case DRT::Element::quad9:
-              computeNormalToBoundaryElement<DRT::Element::quad9>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad9>(xs, xsi, unitnormalvec);
               break;
           case DRT::Element::tri3:
-              computeNormalToBoundaryElement<DRT::Element::tri3>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::tri3>(xs, xsi, unitnormalvec);
               break;
           default:
               cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;

@@ -178,7 +178,7 @@ const DRT::Element* XFEM::nearestNeighbourInListOld(const DRT::Discretization& d
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 xsi;
       CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, closest_node_pos, xsi);
-      computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
+      computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
       normal(0) += eleNormalAtXsi(0);
       normal(1) += eleNormalAtXsi(1);
       normal(2) += eleNormalAtXsi(2);
@@ -275,7 +275,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
   switch (ElementType) {
   case DISTANCE_TO_ELEMENT_SURFACE:{     
     const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
-    computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, normal);
+    computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi, normal);
     return normal;
     break;
   }
@@ -315,7 +315,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
       BlitzVec3 tmpNormal;
       BlitzVec2 tmpXsi;
       CurrentToSurfaceElementCoordinates(*myIt, xyze_surfaceElement, X, tmpXsi);
-      computeNormalToBoundaryElement(*myIt, xyze_surfaceElement, tmpXsi, tmpNormal);
+      computeNormalToSurfaceElement(*myIt, xyze_surfaceElement, tmpXsi, tmpNormal);
       normalVectors.push_back(tmpNormal);
     }
     return addVectors(normalVectors);
@@ -336,7 +336,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 tmpXsi;
       CurrentToSurfaceElementCoordinates(tmpSurfaceElement, xyze_surfaceElement, closest_node_pos, tmpXsi);
-      computeNormalToBoundaryElement(tmpSurfaceElement, xyze_surfaceElement, tmpXsi, eleNormalAtXsi);
+      computeNormalToSurfaceElement(tmpSurfaceElement, xyze_surfaceElement, tmpXsi, eleNormalAtXsi);
       normal(0) = normal(0) +  eleNormalAtXsi(0);
       normal(1) = normal(1) +  eleNormalAtXsi(1);
       normal(2) = normal(2) +  eleNormalAtXsi(2);
