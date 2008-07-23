@@ -2,11 +2,12 @@
  \file beam3_evaluate.cpp
  \brief
 
- Maintainer: Christian Cyron
- cyron@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15264
- </pre>
+<pre>
+Maintainer: Christian Cyron
+            cyron@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
+</pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
 #ifdef D_BEAM3
