@@ -238,8 +238,8 @@ namespace UTILS
    *
    * template version
    * 
-   * class BoundaryEle:  class name of desired surface/line element, e.g. Fluid3Surface
-   * class ParentEle:    class name of parent element, e.g. Fluid3
+   * \tparam BoundaryEle class name of desired surface/line element, e.g. Fluid3Surface
+   * \tparam ParentEle   class name of parent element, e.g. Fluid3
    *
    * this templated function creates all surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements
@@ -247,17 +247,15 @@ namespace UTILS
    * Surfaces() and Lines() methods for every element class (especially in 3D) using
    * the BACI conventions for element connectivity
    * 
-   * \param buildtype       (in) flag, whether surfaces or lines have to be created
-   * \param ele             (in) pointer on the parent element
-   * \param boundaryeles    (out) vector filled with RCPs of allocated boundary elements
+   * \return boundaryeles   vector filled with RCPs of allocated boundary elements
    *
    * \author gjb
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
   vector<RCP<DRT::Element> > ElementBoundaryFactory(
-      const BoundaryBuildType buildtype,
-      ParentEle* ele
+      const BoundaryBuildType  buildtype,  ///< flag, whether surfaces or lines have to be created
+      ParentEle*               ele         ///< pointer on the parent element
       )
   {
     // do we have to build surface or line elements?
