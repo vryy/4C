@@ -199,6 +199,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       AddtoPack(*straindata, strain);
     }
     break;
+    case Wall1::calc_struct_eleload:
+    {
+      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+    }
+    break;
     default:
       dserror("Unknown type of action for Wall1 %d", act);
   }
