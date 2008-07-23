@@ -29,11 +29,11 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
-        RCP<DRT::Discretization> dis,
-        const RCP<DRT::Discretization> soliddis,
-        RCP<LINALG::Solver> solver,
-        RCP<ParameterList> params,
-        RCP<IO::DiscretizationWriter> output,
+        Teuchos::RCP<DRT::Discretization> dis,
+        const Teuchos::RCP<DRT::Discretization> soliddis,
+        Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale)
   : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),

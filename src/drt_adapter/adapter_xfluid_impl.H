@@ -73,7 +73,7 @@ namespace ADAPTER {
     //! constructor
     XFluidImpl(
             Teuchos::RCP<DRT::Discretization> dis,
-            Teuchos::RCP<DRT::Discretization> soliddis,
+            const Teuchos::RCP<DRT::Discretization> soliddis,
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,
