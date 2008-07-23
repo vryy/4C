@@ -1381,9 +1381,10 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
    if (is_stationary == false)
    {// stabilization parameters for instationary case (default)
-
      /* parameter relating diffusive : reactive forces */
      epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
+     if (diffus == 0.0)
+         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
      /* parameter relating convective : diffusive forces */
      const double epe2 = mk * vel_norm * hk / diffus;
      xi1 = DMAX(epe1,1.0);
@@ -1397,6 +1398,8 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
      /*------------------------------------------------------ compute tau ---*/
      /* stability parameter definition according to Franca and Valentin (2000) */
+	 if (diffus == 0.0)
+	     dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
      epe2 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
      xi2 = DMAX(epe2,1.0);
 

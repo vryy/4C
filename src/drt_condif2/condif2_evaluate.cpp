@@ -304,6 +304,8 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&          lm,
     /* parameter relating diffusive : reactive forces */
     epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
     /* parameter relating convective : diffusive forces */
+    if (diffus == 0.0)
+        dserror("Diffusivity = 0: Preventing division by zero at evaluation at evaluation of stabilization parameter");
     epe2 = mk * vel_norm * hk / diffus;
     xi1 = DMAX(epe1,1.0);
     xi2 = DMAX(epe2,1.0);
@@ -317,6 +319,8 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&          lm,
 
     /*------------------------------------------------------ compute tau ---*/
     /* stability parameter definition according to Franca and Valentin (2000) */
+	if (diffus == 0.0)
+	    dserror("Diffusivity = 0: Preventing division by zero at evaluation of stabilization parameter");
     epe1 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
     xi1 = DMAX(epe1,1.0);
 
@@ -327,6 +331,8 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&          lm,
   if (fssgd == "artificial_all")
   {
     /*-------------------------- compute artificial diffusivity kappa_art ---*/
+	if (diffus == 0.0)
+	    dserror("Diffusivity = 0: Preventing division by zero at evaluation of stabilization parameter");
     epe1 = mk * vel_norm * hk / diffus;     /* convective : diffusive forces */
     xi1 = DMAX(epe1,1.0);
 
