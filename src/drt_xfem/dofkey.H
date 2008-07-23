@@ -48,10 +48,10 @@ namespace XFEM
    * \brief A unique identifier for a degree of freedom (DOF)
    * 
    * in Haskell one would write:
-   * type DofKey = (Gid, FieldEnr)
+   * type DofKey = (gid, FieldEnr)
    * 
-   * \tparam DofType to distinguish between element and nodal dofs, now the compiler complains
-   *         when we mix them, since DofKey<onNode> is different from DofKey<onElement>
+   * \tparam doftype to distinguish between element and nodal dofs, now the compiler complains
+   *                 when we mix them, since DofKey<onNode> is different from DofKey<onElement>.
    */
   template <DofType doftype>
   class DofKey
