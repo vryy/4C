@@ -61,14 +61,14 @@ namespace XFLUID
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-      const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-      const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
-      const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
-      const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
+      const int numparamvelx = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+      const int numparamvely = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
+      const int numparamvelz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
+      const int numparampres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
-      const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
-      const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
+      const int numparamtauxx = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
+      const int numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
       
       const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
       const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
@@ -92,14 +92,14 @@ namespace XFLUID
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = locval[presdof[iparam]];
-      const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
+      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
       if (tauele_unknowns_present)
       {
-          const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
-          const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
-          const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
-          const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
-          const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
+          const int numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
+          const int numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
+          const int numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
+          const int numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
+          const int numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
           const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
           const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
           const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
@@ -113,7 +113,7 @@ namespace XFLUID
           for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
           for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
       }
-      const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
+      const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
       if (discpres_unknowns_present)
       {
           const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
@@ -170,10 +170,10 @@ static void Sysmat3(
     const double visc = material->m.fluid->viscosity;
 
     // flag for higher order elements
-    const bool higher_order_ele = isHigherOrderElement<DISTYPE>();
+    const bool higher_order_ele = XFEM::isHigherOrderElement<DISTYPE>();
     //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
     
-    const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
@@ -183,8 +183,8 @@ static void Sysmat3(
     const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
     
     // figure out whether we have stress unknowns at all
-    const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
-    const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, DiscPres, 0) > 0);
+    const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
+    const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 0) > 0);
     if (tauele_unknowns_present != discpres_unknowns_present) dserror("you need disc. pressure unknowns, if you use stress unknowns");
     //cout << "discpres_unknowns_present: " << discpres_unknowns_present << endl;
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
@@ -201,14 +201,14 @@ static void Sysmat3(
     
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
+    const int numparamvelx = XFEM::getNumParam<ASSTYPE>(dofman, Velx, numnode);
 //    const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
 //    const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
+    const int numparampres = XFEM::getNumParam<ASSTYPE>(dofman, Pres, numnode);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
-    const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
+    const int numparamtauxx = XFEM::getNumParam<ASSTYPE>(dofman, Tauxx, 1);
+    const int numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 1);
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
@@ -301,13 +301,13 @@ static void Sysmat3(
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            XFEM::BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -324,7 +324,7 @@ static void Sysmat3(
 
             // inverse of jacobian
             static BlitzMat3x3 xji;
-            Inverse3x3(xjm, det, xji);
+            XFEM::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
             static BlitzMat derxy(3, numnode);
@@ -577,7 +577,7 @@ static void Sysmat3(
             static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
-                fill_tau(numparamtauxx, shp_tau, etau, tau);
+              XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -755,7 +755,7 @@ static void Sysmat3(
             /* Convective term  u_old * grad u_old: */
             static BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
-            BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
+            XFEM::BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
             static BlitzVec3 visc_old;
@@ -1583,7 +1583,7 @@ static void Sysmat3(
             // compute covariant metric tensor G for surface element (2x2)
             static BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+            XFEM::BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1684,7 +1684,7 @@ static void Sysmat3(
             
             // get normal vector (in x coordinates) to surface element at integration point
             static BlitzVec3 normalvec_solid;
-            computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
+            XFEM::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             static BlitzVec3 normalvec_fluid;
             normalvec_fluid = -normalvec_solid;
@@ -1725,7 +1725,7 @@ static void Sysmat3(
 
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
-            fill_tau(numparamtauxx, shp_tau, etau, tau);
+            XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -1814,7 +1814,7 @@ static void Sysmat3(
             
             static BlitzVec3 disctau_times_n;
             //tau_times_n = blitz::sum(tau(i,j)*normalvec_fluid(j),j);
-            BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
+            XFEM::BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
             assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));

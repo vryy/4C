@@ -26,8 +26,6 @@
 namespace XFLUID
 {
   
-  using namespace XFEM;
-  
   //! for each distype there should be an m_k needed for stabilization computation
   template<DRT::Element::DiscretizationType DISTYPE>
   double MK()
@@ -83,18 +81,18 @@ namespace XFLUID
   
   
   //! calculate characteristic element size for stabilization
-  template<DRT::Element::DiscretizationType DISTYPE, class M1>
+  template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
   double HK(
-      const BlitzMat&                         evelnp,
-      const M1&                               xyze
+      const M1&  evelnp,  ///< nodal velocity array
+      const M2&  xyze     ///< element nodal position array
   )
   {
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
-    // use one point gauss rule to calculate tau at element center
+    // use one point integration rule to calculate hk at element center
     const DRT::UTILS::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();
     
-    // gaussian points
+    // integration points
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
@@ -110,7 +108,7 @@ namespace XFLUID
     // get Jacobian matrix and determinant
     //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
     BlitzMat3x3 xjm_;
-    BLITZTINY::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
+    XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
     const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
     xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
     xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-

@@ -102,17 +102,17 @@ namespace DRT
         
         virtual int NumVolume() const {return 1;}
         
-        virtual vector<RCP<DRT::Element> > Lines();
+        virtual std::vector<RCP<DRT::Element> > Lines();
         
-        virtual vector<RCP<DRT::Element> > Surfaces();
+        virtual std::vector<RCP<DRT::Element> > Surfaces();
         
-        virtual vector<RCP<DRT::Element> > Volumes();
+        virtual std::vector<RCP<DRT::Element> > Volumes();
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3;}
         
-        virtual void Pack(vector<char>& data) const;
+        virtual void Pack(std::vector<char>& data) const;
         
-        virtual void Unpack(const vector<char>& data);
+        virtual void Unpack(const std::vector<char>& data);
         
         //! Destructor
         virtual ~XFluid3();
@@ -141,7 +141,7 @@ namespace DRT
         
         virtual int Evaluate(ParameterList& params,
             DRT::Discretization&      discretization,
-            vector<int>&              lm,
+            std::vector<int>&         lm,
             Epetra_SerialDenseMatrix& elemat1,
             Epetra_SerialDenseMatrix& elemat2,
             Epetra_SerialDenseVector& elevec1,
@@ -151,7 +151,7 @@ namespace DRT
         virtual int EvaluateNeumann(ParameterList& params,
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
-            vector<int>&              lm,
+            std::vector<int>&              lm,
             Epetra_SerialDenseVector& elevec1);
         
         //@}
@@ -251,8 +251,8 @@ namespace DRT
         
         //! evaluate error for beltrami test problem
         void f3_int_beltrami_err(
-            vector<double>&       myvelnp,
-            vector<double>&       myprenp,
+            std::vector<double>&       myvelnp,
+            std::vector<double>&       myprenp,
             const struct _MATERIAL*     material,
             ParameterList&    	  params
         );
@@ -300,9 +300,9 @@ namespace DRT
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3Register;}
         
-        virtual void Pack(vector<char>& data) const;
+        virtual void Pack(std::vector<char>& data) const;
         
-        virtual void Unpack(const vector<char>& data);
+        virtual void Unpack(const std::vector<char>& data);
         
         //! Destructor
         virtual ~XFluid3Register();
@@ -378,13 +378,13 @@ namespace DRT
         }
         }
         
-        virtual vector<RCP<DRT::Element> > Lines();
+        virtual std::vector<RCP<DRT::Element> > Lines();
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3Surface;}
         
-        virtual void Pack(vector<char>& data) const;
+        virtual void Pack(std::vector<char>& data) const;
         
-        virtual void Unpack(const vector<char>& data);
+        virtual void Unpack(const std::vector<char>& data);
         
         //! Destructor
         virtual ~XFluid3Surface();
@@ -408,7 +408,7 @@ namespace DRT
 
         int Evaluate(ParameterList& params,
             DRT::Discretization&      discretization,
-            vector<int>&              lm,
+            std::vector<int>&         lm,
             Epetra_SerialDenseMatrix& elemat1,
             Epetra_SerialDenseMatrix& elemat2,
             Epetra_SerialDenseVector& elevec1,
@@ -418,7 +418,7 @@ namespace DRT
         virtual int EvaluateNeumann(ParameterList& params,
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
-            vector<int>&              lm,
+            std::vector<int>&         lm,
             Epetra_SerialDenseVector& elevec1);
         
         //@}
@@ -451,7 +451,7 @@ namespace DRT
         virtual void IntegrateShapeFunction(
             ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
             DRT::Discretization&             discretization,  ///< vector to be filled by element
-            const vector<int>&               lm,              ///< location vector of this element
+            const std::vector<int>&          lm,              ///< location vector of this element
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
             );
@@ -506,9 +506,9 @@ namespace DRT
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3Line;}
         
-        virtual void Pack(vector<char>& data) const;
+        virtual void Pack(std::vector<char>& data) const;
         
-        virtual void Unpack(const vector<char>& data);
+        virtual void Unpack(const std::vector<char>& data);
         
         //! Destructor
         virtual ~XFluid3Line();
@@ -529,9 +529,10 @@ namespace DRT
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
         
         //! @name Evaluation
-        virtual int Evaluate(ParameterList& params,
+        virtual int Evaluate(
+            ParameterList& params,
             DRT::Discretization&      discretization,
-            vector<int>&              lm,
+            std::vector<int>&   lm,
             Epetra_SerialDenseMatrix& elemat1,
             Epetra_SerialDenseMatrix& elemat2,
             Epetra_SerialDenseVector& elevec1,

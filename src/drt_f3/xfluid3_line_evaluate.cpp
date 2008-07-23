@@ -22,9 +22,9 @@ Maintainer: Axel Gerstenberger
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3Line::Evaluate(
-        ParameterList& params,
+        ParameterList&            params,
         DRT::Discretization&      discretization,
-        vector<int>&              lm,
+        std::vector<int>&         lm,
         Epetra_SerialDenseMatrix& elemat1,
         Epetra_SerialDenseMatrix& elemat2,
         Epetra_SerialDenseVector& elevec1,
@@ -50,10 +50,10 @@ int DRT::ELEMENTS::XFluid3Line::Evaluate(
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3Line::EvaluateNeumann(
-        ParameterList& params,
+        ParameterList&            params,
         DRT::Discretization&      discretization,
         DRT::Condition&           condition,
-        vector<int>&              lm,
+        std::vector<int>&         lm,
         Epetra_SerialDenseVector& elevec1)
 {  
     dserror("Neumann condition on line not implemented");

@@ -85,7 +85,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3Line::Pack(std::vector<char>& data) const
 {
   data.resize(0);
   dserror("this XFluid3Line element does not support communication");
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::XFluid3Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3Line::Unpack(const std::vector<char>& data)
 {
   dserror("this XFluid3Line element does not support communication");
   return;

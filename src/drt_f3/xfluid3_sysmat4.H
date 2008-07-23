@@ -38,40 +38,55 @@ Maintainer: Axel Gerstenberger
 
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace XFEM::PHYSICS;
 
 namespace XFLUID
 {
 
+  using namespace XFEM::PHYSICS;
+
+  //! size factor to allow static arrays
+  ///
+  /// to allow static arrays for a unknown number of unknowns, we make them bigger than necessary
+  /// this factor is multiplied times numnode(distype) to get the size of many arrays
+  template<XFEM::AssemblyType ASSTYPE>
+  struct SizeFac {};
+  /// specialization of SizeFac for XFEM::standard_assembly
+  template<> struct SizeFac<XFEM::standard_assembly> {static const int fac = 1;};
+  /// specialization of SizeFac for XFEM::xfem_assembly
+  template<> struct SizeFac<XFEM::xfem_assembly>     {static const int fac = 3;};
+
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
-            XFEM::AssemblyType ASSTYPE>
+            XFEM::AssemblyType ASSTYPE,
+            class M1, class V1, class M2>
   void fillElementUnknownsArrays4(
           const XFEM::ElementDofManager& dofman,
-          const vector<double>& locval,
-          const vector<double>& locval_hist,
-          BlitzMat& evelnp,
-          BlitzMat& evelnp_hist,
-          BlitzVec& eprenp,
-          BlitzMat& etau
+          const std::vector<double>& locval,
+          const std::vector<double>& locval_hist,
+          M1& evelnp,
+          M1& evelnp_hist,
+          V1& eprenp,
+          M2& etau
           )
   {
       
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-      const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-      const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
-      const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
-      const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
+      //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+      const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
+      const int numparamvely = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Vely);
+      const int numparamvelz = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velz);
+      const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
-      const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 1);
+      //const int numparamtauxx = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 1);
+      const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
       
-      const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
-      const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
-      const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
-      const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
+      const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+      const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+      const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+      const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
       
       for (int iparam=0; iparam<numparamvelx; ++iparam)
       {
@@ -90,20 +105,20 @@ namespace XFLUID
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = locval[presdof[iparam]];
-      const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
+      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
       if (tauele_unknowns_present)
       {
-          const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
-          const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
-          const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
-          const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
-          const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
-          const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
-          const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
-          const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
-          const vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
-          const vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
-          const vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
+          const int numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
+          const int numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
+          const int numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
+          const int numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
+          const int numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+          const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
+          const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
+          const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
+          const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
+          const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
+          const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
           for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
           for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
           for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
@@ -113,36 +128,35 @@ namespace XFLUID
       }
   }
   
-  
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
 template <DRT::Element::DiscretizationType DISTYPE,
-          XFEM::AssemblyType ASSTYPE>
-static void Sysmat4(
-        const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
-        const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
-        const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
-        const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        EpMat&                            estif,         ///< element matrix to calculate
-        EpVec&                            eforce,        ///< element rhs to calculate
-        const struct _MATERIAL*           material,      ///< fluid material
-        const double                      ,          ///< current time (pseudotime for stationary formulation)
-        const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
-        const bool                        newton,        ///< full Newton or fixed-point-like
-        const bool                        pstab,         ///< flag for stabilisation
-        const bool                        supg,          ///< flag for stabilisation
-        const bool                        cstab,         ///< flag for stabilisation
-        const bool                        instationary   ///< switch between stationary and instationary formulation
-        )
+          XFEM::AssemblyType ASSTYPE,
+          class M1, class V1, class M2>
+static void SysmatDomain4(
+    const DRT::Element*               ele,           ///< the element those matrix is calculated
+    const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+    const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
+    const M1& evelnp,
+    const M1& evelnp_hist,
+    const V1& eprenp,
+    const M2& etau,
+    const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
+    const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+    const struct _MATERIAL*           material,      ///< fluid material
+    const double                      time,          ///< current time (pseudotime for stationary formulation)
+    const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
+    const bool                        newton,        ///< full Newton or fixed-point-like
+    const bool                        pstab,         ///< flag for stabilisation
+    const bool                        supg,          ///< flag for stabilisation
+    const bool                        cstab,         ///< flag for stabilisation
+    const bool                        instationary,  ///< switch between stationary and instationary formulation
+    const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
+)
 {
-    // initialize arrays
-    estif.Scale(0.0);
-    eforce.Scale(0.0);
-    
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
+  
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
@@ -162,17 +176,15 @@ static void Sysmat4(
     const double visc = material->m.fluid->viscosity;
 
     // flag for higher order elements
-    const bool higher_order_ele = isHigherOrderElement<DISTYPE>();
+    const bool higher_order_ele = XFEM::isHigherOrderElement<DISTYPE>();
     //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
     
-    const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
-    
-    const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     
     // figure out whether we have stress unknowns at all
-    const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+    const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
 //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 //    cout << endl;
@@ -187,21 +199,13 @@ static void Sysmat4(
     
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
-//    const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
-//    const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
+    //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
+    const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
+    const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-    
-    // split velocity and pressure (and stress)
-    BlitzVec eprenp(numparampres);
-    BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-    BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
-    BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
-    
-    fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau);
+    //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
+    const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
@@ -214,8 +218,6 @@ static void Sysmat4(
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
-        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
-        
         // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
         if (ih->ElementIntersected(ele->Id()))
         {
@@ -226,7 +228,14 @@ static void Sysmat4(
               continue;
             }
         }
-      
+
+        const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+              ih,
+              dofman.getUniqueEnrichments(),
+              cellcenter,
+              XFEM::Enrichment::approachUnknown));
+        
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -269,13 +278,13 @@ static void Sysmat4(
 
             // position of the gausspoint in physical coordinates
             BlitzVec3 gauss_pos_xyz;
-            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            XFEM::BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             BlitzMat3x3 xjm;
-            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -292,7 +301,7 @@ static void Sysmat4(
 
             // inverse of jacobian
             static BlitzMat3x3 xji;
-            Inverse3x3(xjm, det, xji);
+            XFEM::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
             static BlitzMat derxy(3, numnode);
@@ -335,34 +344,37 @@ static void Sysmat4(
                 derxy2 = 0.;
             }
 
-            BlitzVec shp(numparamvelx);
-            BlitzVec shp_dx(numparamvelx);
-            BlitzVec shp_dy(numparamvelx);
-            BlitzVec shp_dz(numparamvelx);
-            BlitzVec shp_dxdx(numparamvelx);
-            BlitzVec shp_dxdy(numparamvelx);
-            BlitzVec shp_dxdz(numparamvelx);
-            BlitzVec shp_dydx(numparamvelx);
-            BlitzVec shp_dydy(numparamvelx);
-            BlitzVec shp_dydz(numparamvelx);
-            BlitzVec shp_dzdx(numparamvelx);
-            BlitzVec shp_dzdy(numparamvelx);
-            BlitzVec shp_dzdz(numparamvelx);
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            typedef blitz::TinyVector<double,shpVecSize> ShpVec;
+            static ShpVec shp;
+            static ShpVec shp_dx;
+            static ShpVec shp_dy;
+            static ShpVec shp_dz;
+            static ShpVec shp_dxdx;
+            static ShpVec shp_dxdy;
+            static ShpVec shp_dxdz;
+            static ShpVec shp_dydx;
+            static ShpVec shp_dydy;
+            static ShpVec shp_dydz;
+            static ShpVec shp_dzdx;
+            static ShpVec shp_dzdy;
+            static ShpVec shp_dzdz;
             
-            BlitzVec shp_tau(numparamtauxx);
+            static blitz::TinyVector<double,shpVecSizeStress> shp_tau;
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // temporary arrays
-                BlitzVec enr_funct(numparamvelx);
-                BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-                BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+                static BlitzVec enr_funct(3*numnode);
+                static BlitzMat enr_derxy(3,3*numnode);
+                static BlitzMat enr_derxy2(6,3*numnode);
                 
-                std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-                      ih,
-                      dofman.getUniqueEnrichments(),
-                      gauss_pos_xyz,
-                      XFEM::Enrichment::approachUnknown));
+//                const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+//                      ih,
+//                      dofman.getUniqueEnrichments(),
+//                      gauss_pos_xyz,
+//                      XFEM::Enrichment::approachUnknown));
               
                 // shape function for nodal dofs
                 XFEM::ComputeEnrichedNodalShapefunction(
@@ -399,7 +411,7 @@ static void Sysmat4(
                 
                 if (tauele_unknowns_present)
                 {
-                    BlitzVec enr_funct_stress(numparamtauxx);
+                    static BlitzVec enr_funct_stress(3*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
                   
                     // shape functions for element dofs
                     XFEM::ComputeEnrichedElementShapefunction(
@@ -423,7 +435,7 @@ static void Sysmat4(
             }
             else
             {
-              for (int iparam = 0; iparam < numparamvelx; ++iparam)
+              for (int iparam = 0; iparam < numnode; ++iparam)
               {
                 shp(iparam) = funct(iparam);
                 shp_dx(iparam) = derxy(0,iparam);
@@ -442,10 +454,7 @@ static void Sysmat4(
               
               if (tauele_unknowns_present)
               {
-                for (int iparam = 0; iparam < numparamtauxx; ++iparam)
-                {
-                  shp_tau(iparam) = funct_stress(iparam);
-                }
+                dserror("no stress enrichments without xfem assembly");
               }
             }
             
@@ -486,7 +495,7 @@ static void Sysmat4(
             //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
       
             // calculate 2nd velocity derivatives at integration point
-            blitz::TinyMatrix<double,3,6> vderxy2;
+            static blitz::TinyMatrix<double,3,6> vderxy2;
             if (higher_order_ele)
             {
               //vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
@@ -540,7 +549,7 @@ static void Sysmat4(
             BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
-                fill_tau(numparamtauxx, shp_tau, etau, tau);
+              XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -718,7 +727,7 @@ static void Sysmat4(
             /* Convective term  u_old * grad u_old: */
             BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
-            BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
+            XFEM::BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
             BlitzVec3 visc_old;
@@ -742,7 +751,7 @@ static void Sysmat4(
             /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
              with  N .. form function matrix                                   */
             //const BlitzVec enr_conv_c_(blitz::sum(enr_derxy(j,i)*velint(j), j));
-            BlitzVec enr_conv_c_(numparamvelx);
+            static ShpVec enr_conv_c_;
             enr_conv_c_ = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
@@ -768,15 +777,16 @@ static void Sysmat4(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            BlitzVec enr_viscs2_xx(numparamvelx);
-            BlitzVec enr_viscs2_xy(numparamvelx);
-            BlitzVec enr_viscs2_xz(numparamvelx);
-            BlitzVec enr_viscs2_yx(numparamvelx);
-            BlitzVec enr_viscs2_yy(numparamvelx);
-            BlitzVec enr_viscs2_yz(numparamvelx);
-            BlitzVec enr_viscs2_zx(numparamvelx);
-            BlitzVec enr_viscs2_zy(numparamvelx);
-            BlitzVec enr_viscs2_zz(numparamvelx);
+            static ShpVec enr_viscs2_xx;
+            static ShpVec enr_viscs2_xy;
+            static ShpVec enr_viscs2_xz;
+            static ShpVec enr_viscs2_yx;
+            static ShpVec enr_viscs2_yy;
+            static ShpVec enr_viscs2_yz;
+            static ShpVec enr_viscs2_zx;
+            static ShpVec enr_viscs2_zy;
+            static ShpVec enr_viscs2_zz;
+
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
               enr_viscs2_xx(iparam) = 0.5 * (2.0 * shp_dxdx(iparam) + shp_dydy(iparam) + shp_dzdz(iparam));
@@ -1323,11 +1333,57 @@ static void Sysmat4(
             } // endif cstab
         } // end loop over gauss points
     } // end loop over integration cells
-    
 
+    return;
+}
+  
+/*!
+  Calculate matrix and rhs for stationary problem formulation
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          class M1, class V1, class M2>
+static void SysmatBoundary4(
+    const DRT::Element*               ele,           ///< the element those matrix is calculated
+    const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+    const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
+    const M1& evelnp,
+    const M1& evelnp_hist,
+    const V1& eprenp,
+    const M2& etau,
+    const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
+    const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+    const struct _MATERIAL*           material,      ///< fluid material
+    const double                      time,          ///< current time (pseudotime for stationary formulation)
+    const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
+    const bool                        newton,        ///< full Newton or fixed-point-like
+    const bool                        pstab,         ///< flag for stabilisation
+    const bool                        supg,          ///< flag for stabilisation
+    const bool                        cstab,         ///< flag for stabilisation
+    const bool                        instationary,  ///< switch between stationary and instationary formulation
+    const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
+)
+{
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
+  
     //if (false)
     if (ASSTYPE == XFEM::xfem_assembly)
     {
+      const int nsd = 3;
+      
+      // number of nodes for element
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      
+      // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+      const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
+      const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
+      // put one here to create arrays of size 1, since they are not needed anyway
+      // in the xfem assembly, the numparam is determined by the dofmanager
+      //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
+      const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
+      
+      
+      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
         // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
         if (tauele_unknowns_present){
     
@@ -1338,8 +1394,6 @@ static void Sysmat4(
     // loop over boundary integration cells
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
-
-        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
       
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
@@ -1361,8 +1415,8 @@ static void Sysmat4(
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
             const DRT::Node* node = nodes[inode];
-            vector<int> lm = ih->cutterdis()->Dof(node);
-            vector<double> myvel(3);
+            std::vector<int> lm = ih->cutterdis()->Dof(node);
+            std::vector<double> myvel(3);
             DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
             vel_boundary(0,inode) = myvel[0];
             vel_boundary(1,inode) = myvel[1];
@@ -1409,6 +1463,7 @@ static void Sysmat4(
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // stress shape function
+            const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
             static BlitzVec funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
             
@@ -1442,7 +1497,7 @@ static void Sysmat4(
             // compute covariant metric tensor G for surface element (2x2)
             BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+            XFEM::BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1466,7 +1521,7 @@ static void Sysmat4(
 
             BlitzVec enr_funct_stress(numparamtauxx);
             
-            std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+            const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                   ih,
                   dofman.getUniqueEnrichments(),
                   gauss_pos_xyz,
@@ -1508,13 +1563,15 @@ static void Sysmat4(
                     enr_funct_stress);
                 
             // perform integration for entire matrix and rhs
-            // create vievs on the shape function arrays for easy handling in the assembly process
-            BlitzVec shp(numparamvelx);
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            typedef blitz::TinyVector<double,shpVecSize> ShpVec;
+            static ShpVec shp;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
               shp(iparam) = enr_funct(iparam);
             }
-            BlitzVec shp_tau(numparamtauxx);
+            static blitz::TinyVector<double,shpVecSizeStress> shp_tau;
             for (int iparam = 0; iparam < numparamtauxx; ++iparam)
             {
               shp_tau(iparam) = enr_funct_stress(iparam);
@@ -1522,7 +1579,7 @@ static void Sysmat4(
             
             // get normal vector (in x coordinates) to surface element at integration point
             BlitzVec3 normalvec_solid;
-            computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
+            XFEM::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             BlitzVec3 normalvec_fluid;
             normalvec_fluid = -normalvec_solid;
@@ -1556,7 +1613,7 @@ static void Sysmat4(
 
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
-            fill_tau(numparamtauxx, shp_tau, etau, tau);
+            XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -1621,7 +1678,7 @@ static void Sysmat4(
             assembler.template Matrix<Velz,Sigmazz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
             
             BlitzVec3 disctau_times_n;
-            BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
+            XFEM::BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
             assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
@@ -1647,7 +1704,7 @@ static void Sysmat4(
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
             const DRT::Node* node = nodes[inode];
-            const vector<int> gdofs(ih->cutterdis()->Dof(node));
+            const std::vector<int> gdofs(ih->cutterdis()->Dof(node));
             (*iforcecol)[dofcolmap->LID(gdofs[0])] += force_boundary(0,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[1])] += force_boundary(1,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[2])] += force_boundary(2,inode);
@@ -1660,6 +1717,69 @@ static void Sysmat4(
     } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
 }
+  
+/*!
+  Calculate matrix and rhs for stationary problem formulation
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+static void Sysmat4(
+        const DRT::Element*               ele,           ///< the element those matrix is calculated
+        const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+        const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
+        const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
+        const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
+        const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
+        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+        EpMat&                            estif,         ///< element matrix to calculate
+        EpVec&                            eforce,        ///< element rhs to calculate
+        const struct _MATERIAL*           material,      ///< fluid material
+        const double                      time,          ///< current time (pseudotime for stationary formulation)
+        const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
+        const bool                        newton,        ///< full Newton or fixed-point-like
+        const bool                        pstab,         ///< flag for stabilisation
+        const bool                        supg,          ///< flag for stabilisation
+        const bool                        cstab,         ///< flag for stabilisation
+        const bool                        instationary   ///< switch between stationary and instationary formulation
+        )
+{
+    // initialize arrays
+    estif.Scale(0.0);
+    eforce.Scale(0.0);
+    
+    // number of nodes for element
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    
+    // dead load in element nodes
+    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+
+    const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
+    
+    // split velocity and pressure (and stress)
+    const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+    const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
+    const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+    blitz::TinyVector<double,shpVecSize> eprenp;
+    blitz::TinyMatrix<double,3,shpVecSize> evelnp;
+    blitz::TinyMatrix<double,3,shpVecSize> evelnp_hist;
+    blitz::TinyMatrix<double,6,shpVecSizeStress> etau;
+    
+    fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau);
+    
+    XFLUID::SysmatDomain4<DISTYPE,ASSTYPE>(
+        ele, ih, dofman, evelnp, evelnp_hist, eprenp, etau, ivelcol, iforcecol,
+        material, time, timefac, newton, pstab, supg, cstab, instationary, assembler);
+    
+    if (ASSTYPE == XFEM::xfem_assembly)
+    {
+      XFLUID::SysmatBoundary4<DISTYPE,ASSTYPE>(
+          ele, ih, dofman, evelnp, evelnp_hist, eprenp, etau, ivelcol, iforcecol,
+          material, time, timefac, newton, pstab, supg, cstab, instationary, assembler);
+    }
+}
+
+
+
 
 /*!
  * \brief entry point for Sysmat call

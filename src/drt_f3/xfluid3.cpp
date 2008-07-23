@@ -87,7 +87,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3::Shape() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3::Pack(std::vector<char>& data) const
 {
   data.resize(0);
 
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3::Unpack(const std::vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -249,7 +249,7 @@ DRT::ELEMENTS::XFluid3Register* DRT::ELEMENTS::XFluid3Register::Clone() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3Register::Pack(std::vector<char>& data) const
 {
   data.resize(0);
 
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::XFluid3Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3Register::Unpack(const std::vector<char>& data)
 {
   int position = 0;
   // extract type

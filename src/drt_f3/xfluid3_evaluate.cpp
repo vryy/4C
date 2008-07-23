@@ -96,7 +96,7 @@ DRT::ELEMENTS::XFluid3::StabilisationAction DRT::ELEMENTS::XFluid3::ConvertStrin
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix&,
                                     Epetra_SerialDenseVector& elevec1,
@@ -404,11 +404,11 @@ DRT::UTILS::GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const Discre
  |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
-  vector<double>&           evelnp,
-  vector<double>&           eprenp,
-  const struct _MATERIAL*   material,
-  ParameterList&            params
-  )
+    std::vector<double>&      evelnp,
+    std::vector<double>&      eprenp,
+    const struct _MATERIAL*   material,
+    ParameterList&            params
+    )
 {
   const int NSD = 3;
 

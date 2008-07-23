@@ -27,14 +27,15 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::XFluid3Surface::Evaluate(    ParameterList&            params,
-                                                DRT::Discretization&      discretization,
-                                                vector<int>&              lm,
-                                                Epetra_SerialDenseMatrix& elemat1,
-                                                Epetra_SerialDenseMatrix& elemat2,
-                                                Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseVector& elevec2,
-                                                Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::XFluid3Surface::Evaluate(
+    ParameterList&            params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
 {
     DRT::ELEMENTS::XFluid3Surface::ActionType act = XFluid3Surface::none;
     string action = params.get<string>("action","none");
@@ -48,7 +49,7 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(    ParameterList&            params
     case integrate_Shapefunction:
     {
       RCP<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
+      std::vector<double> mydispnp;
 
       dispnp = discretization.GetState("dispnp");
       if (dispnp!=null)
@@ -70,11 +71,11 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(    ParameterList&            params
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
-                                           ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+    ParameterList&            params,
+    DRT::Discretization&      discretization,
+    DRT::Condition&           condition,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1)
 {
   // there are 3 velocities and 1 pressure
   return 0;
@@ -289,7 +290,7 @@ void  DRT::ELEMENTS::XFluid3Surface::f3_metric_tensor_for_surface(
 void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
     ParameterList&                   params,
     DRT::Discretization&             discretization,
-    const vector<int>&               lm,
+    const std::vector<int>&          lm,
     Epetra_SerialDenseVector&        elevec1,
     const std::vector<double>&       edispnp)
 {

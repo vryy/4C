@@ -60,7 +60,7 @@ template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHY
 
 //! which shape functions are equal anyway
 template <XFEM::PHYSICS::Field FIELD>
-struct ShapeMangle {};
+struct ShapeMangle;
 template<> struct ShapeMangle<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
 template<> struct ShapeMangle<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
 template<> struct ShapeMangle<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};

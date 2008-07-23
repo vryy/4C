@@ -26,8 +26,6 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-
-using namespace XFEM::PHYSICS;
   
 /*! get number of unknowns for this field
  * use the dofmanager in the general case,
@@ -49,6 +47,37 @@ int getNumParam<XFEM::standard_assembly>(
 {
     return numnode;
 }
+
+//! determine number of parameter
+template<XFEM::AssemblyType ASSTYPE>
+struct NumParam;
+
+/// determine number of parameter for xfem_assembly
+template<> struct NumParam<XFEM::xfem_assembly>
+{
+  template <int NUMNODE> 
+  static int get(
+     const XFEM::ElementDofManager& dofman,
+     const XFEM::PHYSICS::Field     field
+     )
+  {
+    return dofman.NumDofPerField(field);
+  }
+};
+
+/// determine number of parameter for standard_assembly
+template<> struct NumParam<XFEM::standard_assembly>
+{
+  template <int NUMNODE>
+  static int get(
+      const XFEM::ElementDofManager& dofman,
+      const XFEM::PHYSICS::Field     field
+      )
+  {
+    return NUMNODE;
+  }
+};
+
 
 template<class M1, class M2, class M3>
 static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
@@ -105,7 +134,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
 
     if (curve) curvenum = (*curve)[0];
@@ -139,8 +168,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
 
       // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+      const std::vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      const std::vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
       for(int isd=0;isd<3;++isd)
       {
