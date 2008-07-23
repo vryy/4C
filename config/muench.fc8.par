@@ -1,0 +1,96 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=yes
+
+LINUX_DIST=fc6
+MPI_VERSION=lam
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+F77="LC_ALL=C LAMMPIF77=g77 /usr/lib/lam/bin/mpif77"
+CC="LC_ALL=C /usr/lib/lam/bin/mpicc"
+CP="LC_ALL=C /usr/lib/lam/bin/mpic++"
+LD="LC_ALL=C /usr/lib/lam/bin/mpic++"
+
+MPIBOOT=/usr/lib/lam/bin/lamboot
+MPIHALT=/usr/lib/lam/bin/lamhalt
+
+BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
+#BASEDIR=/media/scratch/lib_local/$LINUX_DIST/$MPI_VERSION
+
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/lib/lam/include -I/usr/include/netcdf-3"
+LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
+
+# Trilinos
+TRILINOS_HOME=$BASEDIR/trilinos
+#TRILINOS_HOME=$BASEDIR/trilinos_dbg
+TRILINOS_INCDIR=$TRILINOS_HOME/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="-lmoertel \
+	-ltrilinoscouplings \
+	-lnoxepetra \
+	-lnox \
+	-lifpack \
+	-laztecoo \
+	-lamesos \
+	-lml \
+	-lepetraext \
+	-lepetra \
+	-lteuchos"
+TRILINOS_FILTER_LIB=$TRILINOS_LIB
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec_gcc"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
+# qhull
+QHULL_INC=
+QHULL_LIB="-lqhull"
+
+# super_lu
+SUPERLU_LIB="-lsuperlu_dist"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+# hdf5
+HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
+
+# exodus
+EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
+
+#LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
+LIBS="-lc -lg2c -lmetis -lblitz -llapack -lgoto"
+
+CFLAGS_OPT="-O3"
+CPFLAGS_OPT="-O3"
+FFLAGS_OPT="-O5 -funroll-all-loops -malign-double"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+# Alle Bibliotheken neu uebersetzen?!
+# -malign-double
+CFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
