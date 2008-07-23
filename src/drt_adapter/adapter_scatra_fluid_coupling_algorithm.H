@@ -62,22 +62,28 @@ namespace ADAPTER
 
   protected:
 
-    /// time step size
+	/// time step size
     double Dt() const { return dt_;}
 
     /// time step number
     int Step() const { return step_;}
+    
+	/// total number of time steps
+    int NStep() const { return nstep_;}
 
-    /// tests if there are more time steps to do
-    bool NotFinished() {return ((step_ < nstep_) and (time_ <= maxtime_));}
-
+    /// total time
+    double MaxTime() const { return maxtime_;}
+    
     double Time() const {return time_;}
 
+    /// tests if there are more time steps to do
+    bool NotFinished() { return ((step_ < nstep_) and (time_ <= maxtime_)); }
+    
     // get current velocity from fluid solver
-    void GetCurrentFluidVelocity(){velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());}
-
+    void GetCurrentFluidVelocity(){ velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp()); }
+    
     // get current velocity from fluid solver
-    RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_;}
+    RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_; }
     
     // increment time and step value
     void IncrementTimeAndStep()

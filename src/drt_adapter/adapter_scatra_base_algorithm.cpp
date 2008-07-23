@@ -139,7 +139,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
    * which are only relevant for a combustion problem.                         07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    scatratimeparams->sublist("GFUNCTION")=prbdyn.sublist("GFUNCTION");
+    scatratimeparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
     
   // -------------------------------------------------------------------

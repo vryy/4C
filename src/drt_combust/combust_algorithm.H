@@ -26,8 +26,9 @@ Maintainer: Florian Henke
 
 #include <Epetra_Comm.h>
 
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+//#include "../drt_adapter/adapter_fluid_base_algorithm.H"
+//#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 
 /*!
@@ -48,13 +49,12 @@ namespace COMBUST
     \author henke
     \date 06/08
    */
-  class Algorithm : public ADAPTER::FluidBaseAlgorithm,
-                    public ADAPTER::ScaTraBaseAlgorithm
+  class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
   public:
 
     /// constructor using a Epetra_Comm
-    explicit Algorithm(Epetra_Comm& comm);
+    explicit Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -62,23 +62,11 @@ namespace COMBUST
     /// outer level COMBUST time loop
     void TimeLoop();
 
-    /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
-
   protected:
 
-    /// time step size
-    double Dt() const { return dt_; }
-
-    /// time step number
-    int Step() const { return step_; }
-    
-    /// FG iteration number
+	  /// FG iteration number
     int FGiter() const { return fgiter_; }
 
-    /// tests if there are more time steps to do
-    bool NotFinished() { return ((step_ < stepmax_) and (time_ <= timemax_)); }
-    
     /// reinitialize G-function
     void ReinitializeGfunc();
 
@@ -111,18 +99,12 @@ namespace COMBUST
 
   private:
 
-    /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
-
-    /// actual velocity field at time n+1
-    RCP<const Epetra_Vector>    velocitynp_;
-
     //! @name Time stepping variables
-    int step_;
-    int stepmax_;
-    double time_;
-    double timemax_;
-    double dt_;
+    //int step_;
+    //int stepmax_;
+    //double time_;
+    //double timemax_;
+    //double dt_;
     //@}
     
     //! @name FG iteration variables

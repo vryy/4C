@@ -154,9 +154,10 @@ void combust_dyn()
 //  if (!fluiddis->Filled()) fluiddis->FillComplete();
 //  if (!gfuncdis->Filled()) gfuncdis->FillComplete();
   
+  Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // create an COMBUST::Algorithm instance
   /* Muss das nicht eigentlich combust_ heissen? Wegen Konvention   henke 07/08*/
-    Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm));
+    Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 
     if (genprob.restart)
     {

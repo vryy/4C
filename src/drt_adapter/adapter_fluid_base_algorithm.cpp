@@ -206,7 +206,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
    * which are only relevant for a combustion problem.                 07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    fluidtimeparams->sublist("FLUID")=prbdyn.sublist("FLUID");
+    fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
   }
 
   // -------------------------------------------------------------------

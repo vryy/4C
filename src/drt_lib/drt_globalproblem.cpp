@@ -165,9 +165,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
-  reader.ReadGidSection("--COMBUSTION DYNAMIC", *list);
-  reader.ReadGidSection("--COMBUSTION DYNAMIC/FLUID", *list);
-  reader.ReadGidSection("--COMBUSTION DYNAMIC/GFUNCTION", *list);
+  reader.ReadGidSection("--COMBUSTION CONTROL", *list);
+  reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
+  reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);

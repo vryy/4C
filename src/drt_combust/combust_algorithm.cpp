@@ -21,12 +21,8 @@ Maintainer: Florian Henke
 /*----------------------------------------------------------------------*
  * constructor                                              henke 06/08 * 
  *----------------------------------------------------------------------*/
-COMBUST::Algorithm::Algorithm(Epetra_Comm& comm)
-:  FluidBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams(),false),
-   ScaTraBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams()),
-   comm_(comm),
-   step_(0),
-   time_(0.0)
+COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, ParameterList& combustdyn)
+:  ScaTraFluidCouplingAlgorithm(comm, combustdyn)
 {
   /* Der constructor sollte den gesamten Algorithmus initialisiern.
    * Das heisst:
@@ -35,16 +31,12 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm)
    * o alle Zähler auf 0 setzen (step_(0), f_giter_(0), g_iter_(0), f_iter_(0))
    * o alle Normen und Grenzwerte auf 0 setzen
   */ 
-
+	
   // taking time loop control parameters out of fluid dynamics section
-  const Teuchos::ParameterList& combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // maximum simulation time
-  timemax_=combustdyn.get<double>("MAXTIME");
-  // maximum number of timesteps
-  stepmax_ = combustdyn.get<int>("NUMSTEP");
-  // time step size
-  dt_ = combustdyn.get<double>("TIMESTEP");
-  
+  //timemax_=combustdyn.get<double>("MAXTIME");
+  //printf("\n--timemax_: %f--\n",timemax_);
+
   // counter FGI iterations
   fgiter_ = 0;
   // maximum number of Fluid - G-function iterations
@@ -69,13 +61,19 @@ COMBUST::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
-    // solve con-dif equation without coupling to Navier-Stokes
-    // ConDifField().SetVelocityField(1,1);
-    // ConDifField().Integrate();
 
+/*  
+    if (Comm().MyPID()==0)
+	{
+		cout<<"\n Combustion Algorithmus Timeloop \n";
+		cout<<"\n time step in timeloop: "<< Step() << &endl;
+	}
+*/
+	
   // time loop
   while (NotFinished())
   {
+
     // prepare next time step
     PrepareTimeStep();
     
@@ -164,8 +162,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
  *----------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareTimeStep()
 {
-  step_ += 1;
-  time_ += dt_;
+  IncrementTimeAndStep();
   fgiter_ = 0;
   // fgnormgfunc = large value, determined in Input file
   fgvelnormL2_ = 1.0;
@@ -175,8 +172,8 @@ void COMBUST::Algorithm::PrepareTimeStep()
   if (Comm().MyPID()==0)
   {
 	//cout<<"---------------------------------------  time step  ------------------------------------------\n";
-	printf("---------------------------------------  time step %2d ----------------------------------------\n",step_);
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",time_,timemax_,dt_,step_,stepmax_);
+	printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
   }
   
   FluidField().PrepareTimeStep();
@@ -234,10 +231,10 @@ void COMBUST::Algorithm::DoGfuncField()
      als Konvektions-Diffusions Geschwindigkeit.*/
 
   // exract new velocity from fluid field as provided by the Navier-Stokes solver
-  velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
+  GetCurrentFluidVelocity();
 
   // assign the fluid velocity to the G-function field as convective velocity
-  ScaTraField().SetVelocityField(2,velocitynp_);
+  ScaTraField().SetVelocityField(2,ConvectiveVelocity());
 
   // solve convection-diffusion equation
   ScaTraField().Solve();

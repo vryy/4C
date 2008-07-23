@@ -238,7 +238,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumgff)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions. But here we rename it. So we have nice dirichlet
-    // conditions at the condif discretization.
+    // conditions in the G-function discretization.
 	gfuncdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
     if (myrank==0)  
       cout<<"...transferred ConDif Dirichlet condition no. "<<i+1<<endl;
