@@ -22,7 +22,6 @@ Maintainer: Ursula Mayer
 
 #include "../drt_lib/drt_dserror.H"
 #include <vector>
-using namespace std;
 
 
 namespace XFEM
@@ -58,9 +57,9 @@ class InterfacePoint
     InterfacePoint(
       XFEM::pointType     pType,
       int                 nodeId,
-      vector<int>         lineId,
-      vector<int>         surfId,
-      vector<double>      coordinates
+      std::vector<int>    lineId,
+      std::vector<int>    surfId,
+      std::vector<double> coordinates
       );
     
     
@@ -105,7 +104,7 @@ class InterfacePoint
     \param lineId            (in)        : vector of xfem line Ids the interface point is lying on
     */
     void setLineId(
-      const vector<int>&    lineId
+      const std::vector<int>&    lineId
       );  
       
     /*!
@@ -114,7 +113,7 @@ class InterfacePoint
     \param surfId            (in)        : vector of xfem surface Ids the interface point is lying on
     */
     void setSurfaceId(
-      const vector<int>&    surfId
+      const std::vector<int>&    surfId
       );  
       
     /*!
@@ -123,7 +122,7 @@ class InterfacePoint
     \param coordinates            (in)        : coordinates of interface point
     */
     void setCoord(
-      const vector<double>&    coordinates
+      const std::vector<double>&    coordinates
       );
 
     /*!
@@ -187,17 +186,17 @@ class InterfacePoint
     /*!
     \brief Return Ids of xfem lines the interface point is lying on
      */
-    inline vector<int> getLineId() const { return lineId_;}
+    inline std::vector<int> getLineId() const { return lineId_;}
     
     /*!
     \brief Return Ids of xfem surface the interface point is lying on
      */
-    inline vector<int> getSurfId() const { return surfId_;}
+    inline std::vector<int> getSurfId() const { return surfId_;}
     
     /*!
       \brief Return coordinates the interface points
      */
-    inline vector<double> getCoord() const { return coord_;}
+    inline std::vector<double> getCoord() const { return coord_;}
     
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
@@ -213,25 +212,25 @@ class InterfacePoint
     XFEM::pointType       pType_;
         
     //! number of xfem nodes the point is lying on
-    int             nnode_;
+    int                   nnode_;
     
     //! number of xfem lines the point is lying on
-    int             nline_;
+    int                   nline_;
     
     //! number of xfem surfaces the point is lying on
-    int             nsurf_;
+    int                   nsurf_;
   
     //! ids of xfem nodes the point is lying on
-    int             nodeId_;
+    int                   nodeId_;
   
     //! ids of xfem lines the point is lying on
-    vector<int>     lineId_;
+    std::vector<int>      lineId_;
     
     //! ids of xfem surfaces the point is lying on
-    vector<int>     surfId_;
+    std::vector<int>      surfId_;
     
     //! coordinates of interface points
-    vector<double>  coord_;
+    std::vector<double>   coord_;
     
     
 };

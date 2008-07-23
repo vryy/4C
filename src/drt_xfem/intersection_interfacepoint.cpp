@@ -44,9 +44,9 @@ nsurf_(0)
 XFEM::InterfacePoint::InterfacePoint(
   XFEM::pointType     pType,
   int                 nodeId,
-  vector<int>         lineId,
-  vector<int>         surfId,
-  vector<double>      coordinates
+  std::vector<int>    lineId,
+  std::vector<int>    surfId,
+  std::vector<double> coordinates
   ):
 pType_(pType),
 nodeId_(nodeId),
@@ -151,7 +151,7 @@ void XFEM::InterfacePoint::setNodeId(
  |  set xfem line ids the interface point is lying on        u.may 07/08|                                         
  *----------------------------------------------------------------------*/
 void XFEM::InterfacePoint::setLineId(
-      const vector<int>&    lineId
+      const std::vector<int>&    lineId
       )
 {
   if(nline_ != (int) lineId.size())
@@ -168,7 +168,7 @@ void XFEM::InterfacePoint::setLineId(
  |  set xfem surface ids the interface point is lying on     u.may 07/08|                                         
  *----------------------------------------------------------------------*/
 void XFEM::InterfacePoint::setSurfaceId(
-      const vector<int>&    surfId
+      const std::vector<int>&    surfId
       )
 {
   if(nsurf_ != (int) surfId.size())
@@ -185,7 +185,7 @@ void XFEM::InterfacePoint::setSurfaceId(
  |  set coordinates of the interface point                   u.may 07/08|                                         
  *----------------------------------------------------------------------*/
 void XFEM::InterfacePoint::setCoord(
-      const vector<double>&    coordinates
+      const std::vector<double>&    coordinates
       )
 {
   if((int) coordinates.size() != 3)
