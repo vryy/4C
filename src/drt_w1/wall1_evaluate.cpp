@@ -235,21 +235,22 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
+  double curvefac = 1.0;  // default time curve factor
   if (curvenum>=0 && usetime)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
- // general arrays
-  int       ngauss  = 0;
-  Epetra_SerialDenseMatrix xjm;
-  xjm.Shape(2,2);
-  double det;
+  // general arrays
+  int ngauss = 0;  // total number of Gauss points
+  Epetra_SerialDenseMatrix xjm(2,2);  // iso-parametric Jacobian
+  double det;  // determinant of iso-parametric Jacobian
 
   // no. of nodes on this surface
   const int iel = NumNode();
 
-  const DiscretizationType distype = this->Shape();
+  // quad, tri, etc
+  const DiscretizationType distype = Shape();
 
+  // number of DOFs at each element node
   const int numdf = 2;
 
   // gaussian points
@@ -258,17 +259,20 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   //  vector<double>* thick = data_.Get<vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
-  Epetra_SerialDenseVector      funct(iel);
+  // shape functions
+  Epetra_SerialDenseVector funct(iel);
+  // natural derivatives of shape funcions
   Epetra_SerialDenseMatrix deriv(2,iel);
 
+  // reference co-ordinates of element nodes
   double xrefe[2][MAXNOD_WALL1];
+  // current co-ordinates of element nodes
   double xcure[2][MAXNOD_WALL1];
 
 
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
-
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
 
@@ -285,17 +289,15 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     /*================================== gaussian point and weight at it */
-
-
-  const double e1 = intpoints.qxg[ip][0];
-  const double e2 = intpoints.qxg[ip][1];
-  const double wgt = intpoints.qwgt[ip];
+    const double e1 = intpoints.qxg[ip][0];
+    const double e2 = intpoints.qxg[ip][1];
+    const double wgt = intpoints.qwgt[ip];
 
     /*-------------------- shape functions at gp e1,e2 on mid surface */
     //w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-
     DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
     DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
 
@@ -309,19 +311,19 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
     // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
     for (int i=0; i<2; ++i)
     {
-      ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
+      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac;
     }
 
     // add load components
     for (int node=0; node<NumNode(); ++node)
       for (int dof=0; dof<2; ++dof)
-         elevec1[node*2+dof] += funct[node] *ar[dof];
+         elevec1[node*2+dof] += funct[node] * ar[dof];
 
-      ngauss++;
+    ngauss++;
   } // for (int ip=0; ip<totngp; ++ip)
 
-
-return 0;
+  // finished
+  return 0;
 }
 
 /*----------------------------------------------------------------------*
