@@ -1059,6 +1059,7 @@ PREDEFINED             = __cplusplus \
                          QHULL \
                          D_SHELL8 \
                          D_BEAM2 \
+                         D_BEAM3 \
                          D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \

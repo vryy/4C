@@ -32,7 +32,6 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-lumpedflag_(0),
 thermalenergy_(0),
 
 //note: for corotational approach integration for Neumann conditions only
@@ -63,8 +62,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- lumpedflag_(old.lumpedflag_),
- thermalenergy_(0),
+ thermalenergy_(old.thermalenergy_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -155,8 +153,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
-  //flag determining if consistent or lumped mass matrix
-  AddtoPack(data,lumpedflag_);
   //thermal energy responsible for statistical forces
   AddtoPack(data,thermalenergy_);
   // gaussrule_
@@ -206,8 +202,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
-  //flag determining if consistent or lumped mass matrix
-  ExtractfromPack(position,data,lumpedflag_);
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,thermalenergy_);
   // gaussrule_
@@ -335,8 +329,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
   seedgenerator.seed((unsigned int)std::time(0));
   
   //variable for nodal point coordinates in reference configuration
-  LINALG::SerialDenseMatrix xrefe;
-  xrefe.Shape(3,2);
+  BlitzMat3x2 xrefe;
   
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)

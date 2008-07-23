@@ -299,21 +299,24 @@ private:
   //! length in reference configuration
   double lrefe_;
     
-  //! central triad of the beam, denoted as T in Crisfield, Vol. 2
-  //Told_ is the triad at the end of the last time step
+  //!central triad at the end of hte preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   BlitzMat3x3 Told_;
-  //Tnew_ is the triad at the end of the current iteration step
+  //! central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   BlitzMat3x3 Tnew_;
-  //!Tmid_ according to Crisfield, Vol. 2, equation (17.73)
+  //!midpoint triad for curvature update due to Crisfield, Vol. 2, equation (17.73)
   BlitzMat3x3 Tmid_;
-  //!curvature accroding to Crisfield, Vol. 2, equation (17.72)
+  //!curvature at the end of hte preceeding time step due to Crisfield, Vol. 2, equation (17.72)
   BlitzVec3 curvold_;
+  //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
   BlitzVec3 curvnew_;
   
-  //!auxiliary angles due to Crisfield, Vol. 2, equation (17.70) and (17.71)
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of hte preceeding time step
   BlitzVec3 betaplusalphaold_;
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) during current iteration step
   BlitzVec3 betaplusalphanew_;
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of hte preceeding time step
   BlitzVec3 betaminusalphaold_;
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) during current iteration step
   BlitzVec3 betaminusalphanew_;
   
   //! cross section area
@@ -322,16 +325,13 @@ private:
    //! cross section area including shear corretion factor
   double crosssecshear_;
   
-  /*! moments of inertia of area; in beam3_input.cpp the initial triad T_ has to be calculated in such a way that its
-   * first axis is parallel to the beam axis whereas the second and third axis are principal axes, respectively; Irr_
-   * is the polare moment of inertia of area around the beam axis*/
+  //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
   double Iyy_;
+  //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
   double Izz_;
+  //!polar moment of inertia of area
   double Irr_;
-  
-  //! flag determining if consistent or lumped mass matrix
-  int lumpedflag_;
-  
+
   //! thermal energy responsible for statistical forces
   double thermalenergy_;
 
@@ -362,10 +362,11 @@ private:
                        Epetra_SerialDenseVector* force);
   
   //calculation of nonlinear stiffness approximated by finite differences; this function should
-  //be activated for bug fixing only
+  //be activated only for bug fixing 
   /*
-  Epetra_SerialDenseMatrix b3_nlnstiff_approx(vector<double>& disp, double h_rel);
+  Epetra_SerialDenseMatrix b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force);
   */
+  
   
   //! lump mass matrix (bborn 07/08)
   void b3_lumpmass(Epetra_SerialDenseMatrix* emass);

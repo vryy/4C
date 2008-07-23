@@ -109,47 +109,11 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       b3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
       else if (act == Beam3::calc_struct_internalforce)
       b3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
-
-      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
-      //finite differences and prints the relative error of every single element in case that it is >1e-5; before
-      //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Beam3.H
-      //and Beam3_evaluate.cpp
-      /*
-       Epetra_SerialDenseMatrix stiff_approx;
-       Epetra_SerialDenseMatrix stiff_relerr;
-       stiff_approx.Shape(12,12);
-       stiff_relerr.Shape(12,12);      
-       double h_rel = 1e-7;
-       int outputflag = 0;
-       stiff_approx = b3_nlnstiff_approx(mydisp, h_rel);
-       
-       for(int line=0; line<12; line++)
-       {
-         for(int col=0; col<12; col++)
-         {
-           stiff_relerr(line,col)= abs( (elemat1(line,col) - stiff_approx(line,col))/elemat1(line,col) );
-           //suppressing small entries whose effect is only confusing
-           if (stiff_relerr(line,col)<h_rel*100)
-             stiff_relerr(line,col)=0;
-           //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-           if ( isnan( stiff_relerr(line,col) ) )
-             stiff_relerr(line,col)=0;
-           if (stiff_relerr(line,col)>0)
-             outputflag = 1;		      	
-         }
-       
-         if(outputflag ==1)
-         {
-           std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-           std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-           std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-         }    
-       }
-       */ 
+    
     }
     break;
     case calc_struct_update_istep:
+    case calc_struct_update_imrlike:
     {
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geomatric
@@ -158,12 +122,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       Told_ = Tnew_;
       curvold_ = curvnew_;
       betaplusalphaold_ = betaplusalphanew_;
-      betaminusalphaold_ = betaminusalphanew_;    
-    }
-    break;
-    case calc_struct_update_imrlike:
-    {
-      ;// there is nothing to do here at the moment
+      betaminusalphaold_ = betaminusalphanew_; 
     }
     break;
     case calc_struct_reset_istep:
@@ -277,10 +236,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
 
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
 
-
-  /*by the following code part stochastic external forces can be applied elementwise; for decoupling 
-   * load frequency and time step size stochastical forces should better be applied outside the element*/
-
+  //stochastic forces due to fluctuation-dissipation theorem
   if (thermalenergy_ > 0)
   {
     extern struct _MATERIAL *mat;
@@ -318,10 +274,10 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
     for (int i=0; i<3; ++i)
     {
       elevec1(i)   += normalGenTrans.random();
-      elevec1(i+3) += normalGenRot.random();
+      //elevec1(i+3) += normalGenRot.random();
       elevec1(i+6) += normalGenTrans.random();
-      elevec1(i+9) += normalGenRot.random();
-    }           
+      //elevec1(i+9) += normalGenRot.random();
+    }   
   }
   
   return 0;
@@ -331,7 +287,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing basis of stiffness matrix of Crisfield, Vol. 2, equation (17.81)
-void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew_, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
+inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew_, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
 {
   //calculating the first matrix of (17.81) directly involves multiplications of large matrices (e.g. with the 12x6-matrix X)
   //application of the definitions in (17.74) allows blockwise evaluation with multiplication and addition of 3x3-matrices only
@@ -403,11 +359,13 @@ void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew_, const Bli
     }
   }
   
+  //Checking variation of strains with respect to displacements
+  
   return;
 } // DRT::ELEMENTS::Beam3::computestiffbasis
 
 //computing spin matrix out of a rotation vector
-void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale)
+inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale)
 {
   XFEM::BLITZTINY::V_scale<3>(rotationangle,spinscale);
   spin(0,0) = 0;
@@ -423,7 +381,7 @@ void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotationangl
 } // DRT::ELEMENTS::Beam3::computespin 
 
 //computing rotation matrix out of a spin matrix
-void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, const BlitzMat3x3& spin)
+inline void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, const BlitzMat3x3& spin)
 {
   rotationmatrix = spin;
   rotationmatrix(0,0) +=1;
@@ -434,7 +392,7 @@ void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, const Bl
 } //DRT::ELEMENTS::Beam3::computerotation 
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm)
+inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm)
 {
   Ksig1.Shape(12,12);
   BlitzMat3x3 Sn;
@@ -461,7 +419,7 @@ void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const B
 } //DRT::ELEMENTS::Beam3::computeKsig1
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.87) and (17.88)
-void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const BlitzVec3& stressn, const BlitzVec3& x21)
+inline void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const BlitzVec3& stressn, const BlitzVec3& x21)
 {
   Ksig2.Shape(12,12);
   BlitzMat3x3 Sn;
@@ -526,7 +484,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   BlitzVec3 deltabetaminusalpha;
   BlitzMat3x3 Saux;
   BlitzMat3x3 Raux;
-  
 
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
@@ -536,7 +493,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
       xcurr(j,k)   = Nodes()[k]->X()[j] + disp[k*6+j]; //translational DOF
       xcurr(j+3,k) = disp[k*6+j+3]; //rotational DOF
     }
-
   }
 
   //first of all "new" variables have to be adopted to dispalcement passed in from BACI driver
@@ -570,6 +526,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   XFEM::BLITZTINY::V_scale<3>(curvnew_,1/lrefe_);
   curvnew_ += curvold_;
 
+  //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
+  XFEM::BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
+  XFEM::BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
+  epsilonn(0) -=  1;
+
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
    / function instead of e.g. Beam3_input.cpp or within the Beam3Register class since it is not/
@@ -596,12 +557,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     dserror("unknown or improper type of material law");
   }
   
-  //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
-  XFEM::BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
-  XFEM::BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
-  epsilonn(0) -=  1;
-  
-
+ 
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
   epsilonn(0) *= ym*crosssec_;
   epsilonn(1) *= sm*crosssecshear_;
@@ -653,12 +609,63 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
     (*stiffmatrix).Shape(12,12);  
     computestiffbasis(Tnew_,Cm,Cb,spinx21,(*stiffmatrix));
+    
      
     //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.83), (17.87), (17.89)
     computeKsig1(Ksig1,stressn,stressm);
     computeKsig2(Ksig2,stressn,x21);
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
+
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
+      //finite differences and finally the relative error is printed; in case that there is no significant error in any
+      //element no printout is thrown
+      //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Beam3.H
+      //and Beam3_evaluate.cpp
+      /*
+      if(Id() == 8) //limiting the following tests to certain element numbers
+      {
+       Epetra_SerialDenseMatrix stiff_approx;
+       Epetra_SerialDenseMatrix stiff_relerr;
+       stiff_approx.Shape(12,12);
+       stiff_relerr.Shape(12,12);      
+       double h_rel = 1e-7;
+       int outputflag = 0;
+       stiff_approx = b3_nlnstiff_approx(xcurr, h_rel, *force);
+       
+       for(int line=0; line<12; line++)
+       {
+         for(int col=0; col<12; col++)
+         {
+           if( fabs( (*stiffmatrix)(line,col) ) > h_rel)
+             stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
+           else
+           {
+             if( fabs( stiff_approx(line,col) ) < h_rel*1000)
+               stiff_relerr(line,col) = 0;
+             else
+               stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
+           }
+           //suppressing small entries whose effect is only confusing
+           if (stiff_relerr(line,col)<h_rel*100)
+             stiff_relerr(line,col)=0;
+           //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
+           if ( isnan( stiff_relerr(line,col) ) )
+             stiff_relerr(line,col)=0;
+           if (stiff_relerr(line,col)>0)
+             outputflag = 1;  
+          }
+       
+           if(outputflag ==1)
+           {
+             std::cout<<"\n\n acutally calculated stiffness matrix"<< *stiffmatrix;
+             std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+             std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+           }    
+         }
+        } 
+        */
    
   }
   
@@ -683,42 +690,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   return;
 } // DRT::ELEMENTS::Beam3::b3_nlnstiffmass
 
-//the following function can be activated in order to find bugs; it calculates a finite difference
-//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
-/*
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(vector<double>& disp, double h_rel)
-{
-  Epetra_SerialDenseMatrix stiff_dummy;
-  Epetra_SerialDenseMatrix mass_dummy;
-  Epetra_SerialDenseVector force_disp;
-  Epetra_SerialDenseVector force_disp_delta;
-  Epetra_SerialDenseMatrix stiff_approx;
-  
-  vector<double> disp_delta;
-  
-  stiff_dummy.Shape(12,12);
-  mass_dummy.Shape(12,12);
-  force_disp.Size(12);
-  force_disp_delta.Size(12);
-  stiff_approx.Shape(12,12);
-  
-
-  DRT::ELEMENTS::Beam3::b3_nlnstiffmass(disp,&stiff_dummy,&mass_dummy,&force_disp);
-  
-
-
-  for(int col=0; col<12; col++)
-  {
-    force_disp_delta.Size(12);
-    disp_delta = disp;
-    disp_delta[col] = disp_delta[col]+h_rel;
-    DRT::ELEMENTS::Beam3::b3_nlnstiffmass(disp_delta,&stiff_dummy,&mass_dummy,&force_disp_delta);
-    for(int line=0; line<12; line++)
-      stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;
-  }
-  return stiff_approx;
-}
-*/
 
 // lump mass matrix
 void DRT::ELEMENTS::Beam3::b3_lumpmass(Epetra_SerialDenseMatrix* emass)
@@ -739,6 +710,144 @@ void DRT::ELEMENTS::Beam3::b3_lumpmass(Epetra_SerialDenseMatrix* emass)
     }
   }
 }
+
+//the following function can be activated in order to find bugs; it calculates a finite difference
+//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
+/*
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force)
+{
+
+  BlitzVec3 epsilonn_aux;
+  BlitzVec3 epsilonm_aux;
+  BlitzVec3 stressn_aux;
+  BlitzVec3 stressm_aux;
+  BlitzVec3 x21_aux;
+  BlitzVec3 betaplusalphanew;
+  BlitzVec3 betaminusalphanew;
+  BlitzVec3 deltabetaplusalpha;
+  BlitzVec3 deltabetaminusalpha;
+  BlitzVec3 curvnew;
+  BlitzMat3x3 Saux;
+  BlitzMat3x3 Raux;
+  BlitzMat3x3 Tnew;
+  BlitzMat3x3 Tmid;
+  BlitzMat6x2 xcurr_aux;
+  Epetra_SerialDenseMatrix stiff_approx;
+  Epetra_SerialDenseVector force_aux;
+  stiff_approx.Shape(12,12);
+    
+  //calculating strains in new configuration
+  for(int i=0; i<6; i++)
+  {
+    for(int k=0; k<2; k++)
+    {
+      xcurr_aux = xcurr;
+      xcurr_aux(i,k) = xcurr_aux(i,k) + h_rel;
+      
+      
+      //difference between coordinates of both nodes, x21_aux' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
+      for (int j=0; j<3; ++j)
+      {
+        x21_aux(j) = xcurr_aux(j,1) - xcurr_aux(j,0);
+        betaplusalphanew(j) = xcurr_aux(j+3,1) + xcurr_aux(j+3,0);
+        betaminusalphanew(j) = xcurr_aux(j+3,1) - xcurr_aux(j+3,0);
+      }
+      //the basis configuration is the new one of the actual calculation process; for numerical approximation
+      //other configurations rotated out of this one by h_rel are considered
+      deltabetaplusalpha  = betaplusalphanew;
+      deltabetaplusalpha -= betaplusalphanew_;
+    
+      deltabetaminusalpha  = betaminusalphanew;
+      deltabetaminusalpha -= betaminusalphanew_;
+
+      //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
+      computespin(Saux,deltabetaplusalpha, 0.5);
+      computerotation(Raux,Saux);
+      XFEM::BLITZTINY::MM_product<3,3,3>(Raux,Tnew_,Tnew);
+
+      //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
+      computespin(Saux,deltabetaplusalpha, 0.25);
+      computerotation(Raux,Saux);
+      XFEM::BLITZTINY::MM_product<3,3,3>(Raux,Tnew_,Tmid);
+      
+      //updating curvature, Crisfield, Vol. 2, equation (17.72)
+      XFEM::BLITZTINY::MtV_product<3,3>(Tmid,deltabetaminusalpha,curvnew);
+      XFEM::BLITZTINY::V_scale<3>(curvnew,1/lrefe_);
+    
+      curvnew += curvnew_;
+      epsilonm_aux = curvnew;
+
+      //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
+      XFEM::BLITZTINY::MtV_product<3,3>(Tnew,x21_aux,epsilonn_aux);
+      XFEM::BLITZTINY::V_scale<3>(epsilonn_aux,1/lrefe_);
+      epsilonn_aux(0) -=  1;
+
+      // get the material law
+      MATERIAL* currmat = &(mat[material_-1]);
+      double ym;
+      double sm;
+      double density;
+
+      //assignment of material parameters; only St.Venant material is accepted for this beam 
+      switch(currmat->mattyp)
+      {
+        case m_stvenant:// only linear elastic material supported
+        {
+          ym = currmat->m.stvenant->youngs;
+          sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
+          density = currmat->m.stvenant->density;
+        }
+        break;
+        default:
+        dserror("unknown or improper type of material law");
+      }
+
+      //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
+      epsilonn_aux(0) *= ym*crosssec_;
+      epsilonn_aux(1) *= sm*crosssecshear_;
+      epsilonn_aux(2) *= sm*crosssecshear_;
+      XFEM::BLITZTINY::MV_product<3,3>(Tnew,epsilonn_aux,stressn_aux);  
+
+      //turning bending strain epsilonm into bending stress stressm
+      epsilonm_aux = curvnew;
+      epsilonm_aux(0) *= sm*Irr_;
+      epsilonm_aux(1) *= ym*Iyy_;
+      epsilonm_aux(2) *= ym*Izz_;
+      XFEM::BLITZTINY::MV_product<3,3>(Tnew,epsilonm_aux,stressm_aux); 
+        
+      //computing spin matrix S(x21_aux)/2 according to Crisfield, Vol. 2, equation (17.74)
+      BlitzMat3x3 spinx21_aux;
+      computespin(spinx21_aux,x21_aux,0.5);
+
+      //computing global internal forces, Crisfield Vol. 2, equation (17.79)
+      //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
+      force_aux.Size(12);
+      for (int u=0; u<3; ++u)
+      {
+        force_aux(u)   -= stressn_aux(u);
+        force_aux(u+3) -= stressm_aux(u);
+        force_aux(u+6) += stressn_aux(u);
+        force_aux(u+9) += stressm_aux(u);
+        
+        for (int j=0; j<3; ++j)
+        {      
+          force_aux(u+3) -= stressn_aux(j)*spinx21_aux(u,j);      
+          force_aux(u+9) -= stressn_aux(j)*spinx21_aux(u,j);       
+        }
+      }
+      
+      for(int u = 0;u<12;u++)
+      {
+        stiff_approx(u,i+k*6)= ( force_aux(u) - force(u) )/h_rel;
+      }
+   
+    }
+  }
+   
+  return stiff_approx;
+} // DRT::ELEMENTS::Beam3::b3_nlnstiff_approx
+
+*/
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM3
