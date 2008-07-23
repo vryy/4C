@@ -3,10 +3,10 @@
 PLATFORM=LINUX_MUENCH
 PARALLEL=yes
 
-LINUX_DIST=fc8
+LINUX_DIST=fc6
 MPI_VERSION=lam
 
-PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+PROGRAMNAME=cca_fc8_"$MPI_VERSION"
 F77="LC_ALL=C LAMMPIF77=g77 /usr/lib/lam/bin/mpif77"
 CC="LC_ALL=C /usr/lib/lam/bin/mpicc"
 CP="LC_ALL=C /usr/lib/lam/bin/mpic++"
