@@ -48,30 +48,27 @@ Maintainer: Burkhard Bornemann
 #include "strtimada_zienxie.H"
 #include "strtimada_ab2.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+//! General problem data
+//!
+//! global variable GENPROB genprob is defined in global_control.c
+//! \author m.gee \date 06/01
 extern GENPROB genprob;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//! File pointers
+//!
+//! This structure struct _FILES allfiles is defined in input_control_global.c
+//! and the type is in standardtypes.h
+//! It holds all file pointers and some variables needed for the FRSYSTEM
 extern FILES allfiles;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//! global variable *solv, vector of lenght numfld of structures SOLVAR
+//! defined in solver_control.c
+//!
+//! \author m.gee \date 11/00
 extern SOLVAR* solv;
 
 
@@ -202,7 +199,7 @@ Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
     // Generalized Energy Momentum Method
     case STRUCT_DYNAMIC::Gen_EMM :
     {
-      dserror("You should not turxn up here.");
+      dserror("You should not turn up here.");
       dserror("Not yet impl.");
     }
     break;
@@ -215,7 +212,7 @@ Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams, gap,
-                                            actdis, solver, output));
+                                        actdis, solver, output));
     }
     break;
 
@@ -227,7 +224,7 @@ Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
-                                                actdis, solver, output));
+                                            actdis, solver, output));
     }
     break;
 
@@ -239,7 +236,7 @@ Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
 
       // create time integrator
       sti = rcp(new STR::TimIntAB2(ioflags, sdyn, xparams, //ab2p,
-                                       actdis, solver, output));
+                                   actdis, solver, output));
     }
     break;
 
