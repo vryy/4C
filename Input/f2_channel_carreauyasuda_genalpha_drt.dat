@@ -325,15 +325,7 @@ UZAWAALGO                       newtonlinuzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-ADAPTSTEPMAX                    0
-ERRNORM                         Vague
-ERRTOL                          0
 KIND                            None
-SIZERATIOMAX                    0
-SIZERATIOMIN                    0
-SIZERATIOSCALE                  0
-STEPSIZEMAX                     0
-STEPSIZEMIN                     0
 --------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS   No
 MEASURED_DISP0 0

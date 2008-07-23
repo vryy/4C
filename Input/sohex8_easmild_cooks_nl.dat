@@ -106,15 +106,7 @@ MU_MINUS       1
 MU_PLUS        1               
 INV_ANA_TOL    1000
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-ADAPTSTEPMAX                    0
-ERRNORM                         Vague
-ERRTOL                          0
 KIND                            None
-SIZERATIOMAX                    0
-SIZERATIOMIN                    0
-SIZERATIOSCALE                  0
-STEPSIZEMAX                     0
-STEPSIZEMIN                     0
 -----------------------------------------------------THERMAL SOLVER
 ------------------------------------------------------------STATIC
 NONLINEAR
