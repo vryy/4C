@@ -284,8 +284,8 @@ void stru_genalpha_zienxie_drt()
     (double) tap.get<double>("SIZERATIOMAX"),
     (double) tap.get<double>("SIZERATIOMIN"),
     (double) tap.get<double>("SIZERATIOSCALE"),
-    (TimeAdaptivity::TAErrNorm) Teuchos::getIntegralValue<int>(tap,"ERRNORM"),
-    (double) tap.get<double>("ERRTOL"),
+    (TimeAdaptivity::TAErrNorm) Teuchos::getIntegralValue<int>(tap,"LOCERRNORM"),
+    (double) tap.get<double>("LOCERRTOL"),
     3,
     (int) tap.get<int>("ADAPTSTEPMAX"),
     //

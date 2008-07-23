@@ -1583,7 +1583,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   DoubleParameter("SIZERATIOSCALE", 0.0, "", &list);
 
   setStringToIntegralParameter(
-    "ERRNORM", "Vague", "",
+    "LOCERRNORM", "Vague", "",
     tuple<std::string>(
       "Vague",
       "L1",
@@ -1598,7 +1598,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       TIMADA_DYNAMIC::timada_err_norm_inf),
     &list);
 
-  DoubleParameter("ERRTOL", 0.0, "", &list);
+  DoubleParameter("LOCERRTOL", 0.0, "", &list);
   IntParameter("ADAPTSTEPMAX", 0, "", &list);
 }
 
