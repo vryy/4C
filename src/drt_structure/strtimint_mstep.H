@@ -194,7 +194,7 @@ namespace STR
 
     //@}
 
-    //! multiple state vectors, i.e. displ., veloc., accel.
+    //! Multi-step quantity, it's stored vectorially
     std::vector<STATE> state_;
 
   };
