@@ -283,7 +283,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
  | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //notation for this function similar to Crisfield, Volume 1;
-void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
+inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
                     			              BlitzVec6& rcurr,
                     			              BlitzVec6& zcurr,
                                         double& beta,
