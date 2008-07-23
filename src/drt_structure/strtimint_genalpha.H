@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_genalpha.H
+\file strtimint_genalpha.H
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_impl.H"
+#include "strtimint_impl.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

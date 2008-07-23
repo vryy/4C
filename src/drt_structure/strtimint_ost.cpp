@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_ost.cpp
+\file strtimint_ost.cpp
 \brief Structural time integration with one-step-theta
 
 <pre>
@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_ost.H"
+#include "strtimint_ost.H"
 
 /*======================================================================*/
 /* constructor */

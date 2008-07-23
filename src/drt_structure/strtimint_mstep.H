@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_mstep.H
+\file strtimint_mstep.H
 
 <pre>
 Maintainer: Burkhard Bornemann

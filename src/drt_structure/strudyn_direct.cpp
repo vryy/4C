@@ -37,16 +37,16 @@ Maintainer: Burkhard Bornemann
 #include "stru_resulttest.H"
 #include "../drt_inv_analysis/inv_analysis.H"
 
-#include "strutimint.H"
-#include "strutimint_impl.H"
-#include "strutimint_expl.H"
-#include "strutimint_genalpha.H"
-#include "strutimint_ost.H"
-#include "strutimint_ab2.H"
+#include "strtimint.H"
+#include "strtimint_impl.H"
+#include "strtimint_expl.H"
+#include "strtimint_genalpha.H"
+#include "strtimint_ost.H"
+#include "strtimint_ab2.H"
 
-#include "strutimada.H"
-#include "strutimada_zienxie.H"
-#include "strutimada_ab2.H"
+#include "strtimada.H"
+#include "strtimada_zienxie.H"
+#include "strtimada_ab2.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

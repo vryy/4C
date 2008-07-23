@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_vector.cpp
+\file strtimint_vector.cpp
 \brief Dummy object holding vector utility functions
 
 <pre>
@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_vector.H"
+#include "strtimint_vector.H"
 
 /*----------------------------------------------------------------------*/
 /* Map vector norm identifaction string to enum term */

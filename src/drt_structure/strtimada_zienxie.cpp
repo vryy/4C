@@ -1,8 +1,8 @@
 /*======================================================================*/
 /*!
-\file strutimada_ab2.cpp
+\file strtimada_zienxie.cpp
 
-\brief Adams-Bashforth2 time step indicator for time adaptivity
+\brief ZienkiewiczXie time step indicator for time adaptivity
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -20,56 +20,46 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <iostream>
 
-#include "strutimada_ab2.H"
+#include "strtimada_zienxie.H"
 
 
 /*----------------------------------------------------------------------*/
-/* Slender constructor */
-STR::StruTimAdaAB2::StruTimAdaAB2
+/* Constructor */
+STR::StruTimAdaZienXie::StruTimAdaZienXie
 (
-  const Teuchos::ParameterList& ioparams,  //!< ioflags
   const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
-  const Teuchos::ParameterList& xparams,  //!< extra flags
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-  Teuchos::RCP<StruTimInt>& tis  //!< marching time integrator
+  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
 )
 : StruTimAda
   (
     sdynparams,
     adaparams,
     tis
-  ),
-  ab2_(Teuchos::null)
+  )
 {
-  // allocate Adams-Bashforth2 integrator
-  ab2_ = Teuchos::rcp(new StruTimIntAB2(ioparams, sdynparams, xparams,
-                                        tis->Discretization(), 
-                                        tis->GetSolver(),
-                                        tis->GetDiscretizationWriter()));
+  // check if scheme is .LE. second order accurate
+  if (sti_->MethodOrderOfAccuracyDis() != 2)
+  {
+    dserror("%s can only work with 2nd order accurate marching scheme",
+            MethodTitle().c_str());
+  }
 
-  // merge 
-  ab2_->Merge(*tis);
-
-  // resize multi-step quantities
-  ab2_->ResizeMStep();
-  
-  // I am lost
+  // hail Mary
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::StruTimAdaAB2::IntegrateStepAuxiliar()
+void STR::StruTimAdaZienXie::IntegrateStepAuxiliar()
 {
-
   // get state vectors of marching integrator
-  //const Teuchos::RCP<Epetra_Vector> dis = sti_->Disp();  // D_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> disn = sti_->Dispn();  // D_{n+1}^{A2}
-  //const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
-  //const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
-  //const Teuchos::RCP<Epetra_Vector> accn = sti_->Accn();  // A_{n+1}^{A2}
-
-  /*
+  const Teuchos::RCP<Epetra_Vector> dis = sti_->Disp();  // D_{n}^{A2}
+  //const Teuchos::RCP<Epetra_Vector> disn = sti_->Dispn();  // D_{n+1}^{A2}
+  const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> accn = sti_->Accn();  // A_{n+1}^{A2}
+  
   // build NM3* displacements D_{n+1}^{NM3*}
   // using the lower or equal than second order accurate new accelerations
   locerrdisn_->Update(1.0, *dis,
@@ -78,16 +68,9 @@ void STR::StruTimAdaAB2::IntegrateStepAuxiliar()
   locerrdisn_->Update(stepsize_*stepsize_/3.0, *acc,
                       stepsize_*stepsize_/6.0, *accn,
                       1.0);
-  */
   
-  // integrate
-  ab2_->IntegrateStep();
-  ab2_->ResetStep();
-  // copy onto target
-  locerrdisn_->Update(1.0, *(ab2_->disn_), 0.0);
-
   // provide local discretisation error vector
-  // l_{n+1}^{A2} = D_{n+1}^{AB2} - D_{n+1}^{A1}
+  // l_{n+1}^{A2} = D_{n+1}^{NM3*} - D_{n+1}^{A2}
   //locerrdisn_->Update(-1.0, *disn, 1.0);
 
   // see you

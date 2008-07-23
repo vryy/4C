@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_genalpha.cpp
+\file strtimint_genalpha.cpp
 \brief Structural time integration with generalised-alpha
 
 <pre>
@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_genalpha.H"
+#include "strtimint_genalpha.H"
 
 /*----------------------------------------------------------------------*/
 /* convert input string to enum for mid-average type */

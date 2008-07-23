@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_expl.cpp
+\file strtimint_expl.cpp
 \brief Explicit time integration for spatial discretised 
        structural dynamics
 
@@ -19,8 +19,8 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <sstream>
 
-#include "strutimint.H"
-#include "strutimint_expl.H"
+#include "strtimint.H"
+#include "strtimint_expl.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

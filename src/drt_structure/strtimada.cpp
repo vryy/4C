@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimada.cpp
+\file strtimada.cpp
 
 \brief Time step adaptivity front-end for structural dynamics
 
@@ -20,7 +20,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <iostream>
 
-#include "strutimada.H"
+#include "strtimada.H"
 
 
 /*----------------------------------------------------------------------*/

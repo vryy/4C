@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_ab2.cpp
+\file strtimint_ab2.cpp
 \brief Structural time integration with Adams-Bashforth 2nd order
 
 <pre>
@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_ab2.H"
+#include "strtimint_ab2.H"
 
 
 /*----------------------------------------------------------------------*/

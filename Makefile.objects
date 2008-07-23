@@ -150,16 +150,16 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/strugenalpha.o \
                 src/drt_structure/strugenalpha_lsnewton.o \
                 src/drt_structure/stru_genalpha_zienxie_drt.o \
-                src/drt_structure/strutimint.o \
-                src/drt_structure/strutimint_vector.o \
-                src/drt_structure/strutimint_impl.o \
-                src/drt_structure/strutimint_expl.o \
-                src/drt_structure/strutimint_genalpha.o \
-                src/drt_structure/strutimint_ost.o \
-                src/drt_structure/strutimint_ab2.o \
-                src/drt_structure/strutimada.o \
-                src/drt_structure/strutimada_zienxie.o \
-                src/drt_structure/strutimada_ab2.o \
+                src/drt_structure/strtimint.o \
+                src/drt_structure/strtimint_vector.o \
+                src/drt_structure/strtimint_impl.o \
+                src/drt_structure/strtimint_expl.o \
+                src/drt_structure/strtimint_genalpha.o \
+                src/drt_structure/strtimint_ost.o \
+                src/drt_structure/strtimint_ab2.o \
+                src/drt_structure/strtimada.o \
+                src/drt_structure/strtimada_zienxie.o \
+                src/drt_structure/strtimada_ab2.o \
                 src/drt_structure/strudyn_direct.o \
                 src/drt_structure/stru_static_drt.o \
                 src/drt_structure/stru_resulttest.o

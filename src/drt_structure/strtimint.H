@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint.H
+\file strtimint.H
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -45,8 +45,8 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
-#include "strutimint_vector.H"
-#include "strutimint_mstep.H"
+#include "strtimint_vector.H"
+#include "strtimint_mstep.H"
 
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics

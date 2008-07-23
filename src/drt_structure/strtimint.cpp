@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint.cpp
+\file strtimint.cpp
 \brief Time integration for spatially discretised structural dynamics
 
 <pre>
@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strutimint_mstep.H"
-#include "strutimint.H"
+#include "strtimint_mstep.H"
+#include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
 /* Map damping input string to enum term */

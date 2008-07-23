@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_impl.cpp
+\file strtimint_impl.cpp
 \brief Implicit time integration for spatial discretised 
        structural dynamics
 
@@ -19,8 +19,8 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <sstream>
 
-#include "strutimint.H"
-#include "strutimint_impl.H"
+#include "strtimint.H"
+#include "strtimint_impl.H"
 
 /*----------------------------------------------------------------------*/
 /* map enum term to input string */

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_vector.H
+\file strtimint_vector.H
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -20,7 +20,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <string>
 
-#include "strutimint.H"
+#include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

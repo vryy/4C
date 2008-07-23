@@ -1,6 +1,6 @@
 /*======================================================================*/
 /*!
-\file strutimada.H
+\file strtimada.H
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -39,7 +39,7 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
-#include "strutimint.H"
+#include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure dynamics namespace */

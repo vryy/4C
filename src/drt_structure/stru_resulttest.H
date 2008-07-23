@@ -20,7 +20,7 @@ Maintainer: Moritz Frenzel
 
 #include "stru_static_drt.H"
 #include "strugenalpha.H"
-#include "strutimint.H"
+#include "strtimint.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"

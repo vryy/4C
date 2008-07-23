@@ -31,14 +31,14 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 
-#include "strutimint.H"
-#include "strutimint_impl.H"
-#include "strutimint_expl.H"
-#include "strutimint_genalpha.H"
-#include "strutimint_ost.H"
-#include "strutimint_ab2.H"
+#include "strtimint.H"
+#include "strtimint_impl.H"
+#include "strtimint_expl.H"
+#include "strtimint_genalpha.H"
+#include "strtimint_ost.H"
+#include "strtimint_ab2.H"
 
-#include "strutimada.H"
+#include "strtimada.H"
 
 using namespace std;
 using namespace Teuchos;
