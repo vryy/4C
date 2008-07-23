@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /* constructor */
-STR::StruTimIntOneStepTheta::StruTimIntOneStepTheta
+STR::TimIntOneStepTheta::TimIntOneStepTheta
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -31,7 +31,7 @@ STR::StruTimIntOneStepTheta::StruTimIntOneStepTheta
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: StruTimIntImpl
+: TimIntImpl
   (
     ioparams,
     sdynparams,
@@ -100,7 +100,7 @@ STR::StruTimIntOneStepTheta::StruTimIntOneStepTheta
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::StruTimIntOneStepTheta::PredictConstDisConsistVelAcc()
+void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -127,7 +127,7 @@ void STR::StruTimIntOneStepTheta::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
+void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 {
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -175,7 +175,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   }
   fres_->Update(-1.0, *finertt_, 1.0);
 
-  //cout << StruTimIntVector::CalculateNorm(vectornorm_l2, fextn_) << endl;
+  //cout << TimIntVector::CalculateNorm(vectornorm_l2, fextn_) << endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
@@ -194,7 +194,7 @@ void STR::StruTimIntOneStepTheta::EvaluateForceStiffResidual()
 
 /*----------------------------------------------------------------------*/
 /* evaluate theta-state vectors by averaging end-point vectors */
-void STR::StruTimIntOneStepTheta::EvaluateMidState()
+void STR::TimIntOneStepTheta::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+theta} := theta * D_{n+1} + (1-theta) * D_{n}
@@ -215,7 +215,7 @@ void STR::StruTimIntOneStepTheta::EvaluateMidState()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for displacements
  * originally by lw */
-double STR::StruTimIntOneStepTheta::CalcRefNormDisplacement()
+double STR::TimIntOneStepTheta::CalcRefNormDisplacement()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -233,7 +233,7 @@ double STR::StruTimIntOneStepTheta::CalcRefNormDisplacement()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double STR::StruTimIntOneStepTheta::CalcRefNormForce()
+double STR::TimIntOneStepTheta::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -266,7 +266,7 @@ double STR::StruTimIntOneStepTheta::CalcRefNormForce()
 
 /*----------------------------------------------------------------------*/
 /* incremental iteration update of state */
-void STR::StruTimIntOneStepTheta::UpdateIterIncrementally()
+void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 {
   // Auxiliar vector holding new velocities and accelerations
   // by extrapolation/scheme on __all__ DOFs. This includes
@@ -317,7 +317,7 @@ void STR::StruTimIntOneStepTheta::UpdateIterIncrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::StruTimIntOneStepTheta::UpdateIterIteratively()
+void STR::TimIntOneStepTheta::UpdateIterIteratively()
 {
 
   // new end-point displacements
@@ -336,7 +336,7 @@ void STR::StruTimIntOneStepTheta::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::StruTimIntOneStepTheta::UpdateStep()
+void STR::TimIntOneStepTheta::UpdateStep()
 {
   // update state
   // new displacements at t_{n+1} -> t_n

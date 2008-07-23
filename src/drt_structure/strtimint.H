@@ -13,8 +13,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_H
-#define STRUTIMINT_H
+#ifndef STRTIMINT_H
+#define STRTIMINT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -59,11 +59,11 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class StruTimInt
+  class TimInt
   {
 
     //! Structural time adaptivity is friend
-    friend class StruTimAda;
+    friend class TimAda;
 
   public:
 
@@ -146,7 +146,7 @@ namespace STR
     //@{
 
     //! Constructor
-    StruTimInt
+    TimInt
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -157,15 +157,15 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~StruTimInt() { ; }
+    virtual ~TimInt() { ; }
 
     //! Empty constructor
-    StruTimInt() { ; }
+    TimInt() { ; }
 
     //! Copy constructor
-    StruTimInt(const StruTimInt& old) { ; }
+    TimInt(const TimInt& old) { ; }
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
     //! Merge
@@ -173,16 +173,16 @@ namespace STR
     //! Merge basically duplicates the base object content of time
     //! integrator #tis onto the time integrator #this. This is like
     //! a copy, but a copy constructor is not permitted, because
-    //! #StruTimInt is pure virtual.
+    //! #TimInt is pure virtual.
     //! Usually this is not wanted when copying, but here it is
-    //! highly appreciated. #StruTimInt contains only pointers (of the
+    //! highly appreciated. #TimInt contains only pointers (of the
     //! RefCount type) and can thus link -- or merge -- the data
     //! of #tis with #this. Practically, this turns up with time
     //! adaptivity in which #tis is the marching integrator
     //! and #this is the auxiliar method, which shares the marching data.
     void Merge
     (
-      StruTimInt& tis  //!< existing integrator to merge against
+      TimInt& tis  //!< existing integrator to merge against
     )
     {
       // copy it
@@ -326,9 +326,9 @@ namespace STR
     Teuchos::RCP<DRT::Discretization> Discretization()
     { 
       // Here a 'false' must be used. This is due to
-      // the fact that StruTimInt possesses a references
+      // the fact that TimInt possesses a references
       // on the discretisation #discret_ and not
-      // a Teuchos::RefCountPointer. Eventually, StruTimInt
+      // a Teuchos::RefCountPointer. Eventually, TimInt
       // will be destroyed and it will immediately destroy
       // its #discret_ member. However, #discret_ is handed down
       // to the ConstrManager and kept there as a RefCountPointer.
@@ -436,9 +436,9 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<StruTimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
+    Teuchos::RCP<TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<StruTimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;  //!< final time \f$t_\text{fin}\f$
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
@@ -466,11 +466,11 @@ namespace STR
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > dis_;
+    Teuchos::RCP<TimIntMStep<Epetra_Vector> > dis_;
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > vel_;
+    Teuchos::RCP<TimIntMStep<Epetra_Vector> > vel_;
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<StruTimIntMStep<Epetra_Vector> > acc_;
+    Teuchos::RCP<TimIntMStep<Epetra_Vector> > acc_;
     Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
                                         //!< \f${D}_{n+1}\f$  
                                         //!< at \f$t_{n+1}\f$
@@ -498,5 +498,5 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_H
+#endif  // #ifndef STRTIMINT_H
 #endif  // #ifdef CCADISCRET

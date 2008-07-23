@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_GENALPHA_H
-#define STRUTIMINT_GENALPHA_H
+#ifndef STRTIMINT_GENALPHA_H
+#define STRTIMINT_GENALPHA_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -39,11 +39,11 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class StruTimIntGenAlpha : public StruTimIntImpl
+  class TimIntGenAlpha : public TimIntImpl
   {
 
     //! Zienkiewicz-Xie auxiliar scheme is friend
-    friend class StruTimAdaZienXie;
+    friend class TimAdaZienXie;
 
   public:
 
@@ -73,7 +73,7 @@ namespace STR
     //@{
 
     //! Constructor
-    StruTimIntGenAlpha
+    TimIntGenAlpha
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -87,7 +87,7 @@ namespace STR
     //! Destructor
     // ....
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
     void ResizeMStep() { ; }
 
@@ -97,9 +97,9 @@ namespace STR
     //@{
 
     //! Return name
-    enum StruTimInt::NameEnum MethodName()
+    enum TimInt::NameEnum MethodName()
     { 
-      return StruTimInt::name_genalpha;
+      return TimInt::name_genalpha;
     }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
@@ -210,10 +210,10 @@ namespace STR
   protected:
 
     //! equal operator is NOT wanted
-    StruTimIntGenAlpha operator=(const StruTimIntGenAlpha& old);
+    TimIntGenAlpha operator=(const TimIntGenAlpha& old);
 
     //! copy constructor is NOT wanted
-    StruTimIntGenAlpha(const StruTimIntGenAlpha& old);
+    TimIntGenAlpha(const TimIntGenAlpha& old);
 
     //! @name set-up
     //@{
@@ -272,10 +272,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
-  };  // class StruTimIntGenAlpha
+  };  // class TimIntGenAlpha
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_GENALPHA_H
+#endif  // #ifndef STRTIMINT_GENALPHA_H
 #endif  // #ifdef CCADISCRET

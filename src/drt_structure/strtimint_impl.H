@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_IMPL_H
-#define STRUTIMINT_IMPL_H
+#ifndef STRTIMINT_IMPL_H
+#define STRTIMINT_IMPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,7 +31,7 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class StruTimIntImpl : public StruTimInt
+  class TimIntImpl : public TimInt
   {
 
   public:
@@ -109,7 +109,7 @@ namespace STR
     //@{
 
     //! Constructor
-    StruTimIntImpl
+    TimIntImpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -120,9 +120,9 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~StruTimIntImpl() { ; }
+    virtual ~TimIntImpl() { ; }
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
     //@}
@@ -408,7 +408,7 @@ namespace STR
   protected:
 
     //! copy constructor is NOT wanted
-    StruTimIntImpl(const StruTimIntImpl& old);
+    TimIntImpl(const TimIntImpl& old);
 
     //! @name General purpose algorithm parameters
     //@{
@@ -419,7 +419,7 @@ namespace STR
     //@{
     enum SolTechEnum itertype_;  //!< kind of iteration technique
     enum ConvCheckEnum itercnvchk_;  //!< convergence check
-    enum StruTimIntVector::NormEnum iternorm_;  //!< vector norm to 
+    enum TimIntVector::NormEnum iternorm_;  //!< vector norm to 
     //!< check with
     int itermax_;  //!< maximally permitted iterations
     double toldisi_;  //!< tolerance residual displacements
@@ -444,10 +444,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
     //@}
 
-  };  // class StruTimIntImpl
+  };  // class TimIntImpl
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_IMPL_H
+#endif  // #ifndef STRTIMINT_IMPL_H
 #endif  // #ifdef CCADISCRET

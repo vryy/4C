@@ -24,7 +24,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::StruTimIntExpl:: StruTimIntExpl
+STR::TimIntExpl:: TimIntExpl
 (
   const Teuchos::ParameterList& ioparams,  //!< ioflags
   const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -33,7 +33,7 @@ STR::StruTimIntExpl:: StruTimIntExpl
   Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
   Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
 )
-: StruTimInt
+: TimInt
   (
     ioparams,
     sdynparams,
@@ -55,7 +55,7 @@ STR::StruTimIntExpl:: StruTimIntExpl
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::StruTimIntExpl::PrintStep()
+void STR::TimIntExpl::PrintStep()
 {
   // print out
   if ( (myrank_ == 0) and printscreen_ )
@@ -74,7 +74,7 @@ void STR::StruTimIntExpl::PrintStep()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::StruTimIntExpl::PrintStepText
+void STR::TimIntExpl::PrintStepText
 (
   FILE* ofile
 )
@@ -100,7 +100,7 @@ void STR::StruTimIntExpl::PrintStepText
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void STR::StruTimIntExpl::OutputStep()
+void STR::TimIntExpl::OutputStep()
 {
   // this flag is passed
   bool datawritten = false;
@@ -121,7 +121,7 @@ void STR::StruTimIntExpl::OutputStep()
 /*----------------------------------------------------------------------*/
 /* write restart
  * originally mwgee 03/07 */
-void STR::StruTimIntExpl::OutputRestart
+void STR::TimIntExpl::OutputRestart
 (
   bool& datawritten
 )
@@ -191,7 +191,7 @@ void STR::StruTimIntExpl::OutputRestart
 /*----------------------------------------------------------------------*/
 /* output displacements, velocities and accelerations
  * originally mwgee 03/07 */
-void STR::StruTimIntExpl::OutputState
+void STR::TimIntExpl::OutputState
 (
   bool& datawritten
 )
@@ -219,7 +219,7 @@ void STR::StruTimIntExpl::OutputState
 /*----------------------------------------------------------------------*/
 /* stress output
  * originally by lw */
-void STR::StruTimIntExpl::OutputStressStrain
+void STR::TimIntExpl::OutputStressStrain
 (
   bool& datawritten
 )

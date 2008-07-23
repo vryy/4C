@@ -13,8 +13,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_VECTOR_H
-#define STRUTIMINT_VECTOR_H
+#ifndef STRTIMINT_VECTOR_H
+#define STRTIMINT_VECTOR_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -33,11 +33,11 @@ namespace STR
    * \author bborn
    * \date 07/08
    */
-  class StruTimIntVector
+  class TimIntVector
   {
 
-    //! friendship with StruTimInt
-    friend class StruTimInt;
+    //! friendship with TimInt
+    friend class TimInt;
 
   public:
 
@@ -66,22 +66,22 @@ namespace STR
     //! Determine norm of force residual
     static double CalculateNorm
     (
-      const enum StruTimIntVector::NormEnum norm,  //!< norm to use
+      const enum TimIntVector::NormEnum norm,  //!< norm to use
       const Teuchos::RCP<Epetra_Vector> vect  //!< the vector
     );
 
   private:
 
     //! Constructor
-    StruTimIntVector() { ; }
+    TimIntVector() { ; }
 
     //! Destructor
-    ~StruTimIntVector() { ; }
+    ~TimIntVector() { ; }
 
   };
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_VECTOR_H
+#endif  // #ifndef STRTIMINT_VECTOR_H
 #endif  // #ifdef CCADISCRET

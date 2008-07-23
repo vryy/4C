@@ -13,8 +13,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifdef CCADISCRET
-#ifndef STRUTIMADA_H
-#define STRUTIMADA_H
+#ifndef STRTIMADA_H
+#define STRTIMADA_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -53,7 +53,7 @@ namespace STR
    * \author bborn
    * \date 07/08
    */
-  class StruTimAda
+  class TimAda
   {
 
   public:
@@ -95,15 +95,15 @@ namespace STR
     };
 
     //! Constructor
-    StruTimAda
+    TimAda
     (
       const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
       const Teuchos::ParameterList& tap,  //!< adaptive input flags
-      Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+      Teuchos::RCP<TimInt> tis  //!< marching time integrator
     );
 
     //! Destructor
-    virtual ~StruTimAda() { ; }
+    virtual ~TimAda() { ; }
 
     //! @name Actions
     //@{
@@ -181,11 +181,11 @@ namespace STR
   protected:
 
     //! not wanted: copy constructor
-    StruTimAda(const StruTimAda& old);
+    TimAda(const TimAda& old);
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<StruTimInt> sti_;  //!< marching time integrator
+    Teuchos::RCP<TimInt> sti_;  //!< marching time integrator
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int mypid_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
@@ -209,7 +209,7 @@ namespace STR
     double sizeratiomin_;
     double sizeratioscale_;
     enum CtrlEnum errctrl_;  //!< type of check
-    enum StruTimIntVector::NormEnum errnorm_;
+    enum TimIntVector::NormEnum errnorm_;
     double errtol_;
     int errorder_;
     int adaptstepmax_;
@@ -232,7 +232,7 @@ namespace STR
     int adaptstep_;
     //@}
 
-  }; // class StruTimAda
+  }; // class TimAda
 
 }  // namespace STR
 
@@ -245,10 +245,10 @@ namespace STR
 std::ostream& operator<<
 (
   std::ostream& str,
-  const STR::StruTimAda::StruTimAda& ta
+  const STR::TimAda::TimAda& ta
 );
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMADA_H
+#endif  // #ifndef STRTIMADA_H
 #endif  // #ifdef CCADISCRET

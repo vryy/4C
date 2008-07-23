@@ -25,13 +25,13 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::StruTimAdaZienXie::StruTimAdaZienXie
+STR::TimAdaZienXie::TimAdaZienXie
 (
   const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+  Teuchos::RCP<TimInt> tis  //!< marching time integrator
 )
-: StruTimAda
+: TimAda
   (
     sdynparams,
     adaparams,
@@ -51,7 +51,7 @@ STR::StruTimAdaZienXie::StruTimAdaZienXie
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::StruTimAdaZienXie::IntegrateStepAuxiliar()
+void STR::TimAdaZienXie::IntegrateStepAuxiliar()
 {
   // get state vectors of marching integrator
   const Teuchos::RCP<Epetra_Vector> dis = sti_->Disp();  // D_{n}^{A2}

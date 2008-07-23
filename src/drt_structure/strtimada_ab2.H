@@ -15,8 +15,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifdef CCADISCRET
-#ifndef STRUTIMADA_AB2_H
-#define STRUTIMADA_AB2_H
+#ifndef STRTIMADA_AB2_H
+#define STRTIMADA_AB2_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -54,7 +54,7 @@ namespace STR
    * \author bborn
    * \date 10/07
    */
-  class StruTimAdaAB2 : public StruTimAda
+  class TimAdaAB2 : public TimAda
   {
 
   public:
@@ -63,25 +63,25 @@ namespace STR
     //@{
 
     //! Full-fledged constructor
-    StruTimAdaAB2
+    TimAdaAB2
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<StruTimInt>& tis  //!< marching time integrator
+      Teuchos::RCP<TimInt>& tis  //!< marching time integrator
     );
 
     //! Slender constructor
-    StruTimAdaAB2
+    TimAdaAB2
     (
       const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
       const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<StruTimInt>& tis  //!< marching time integrator
+      Teuchos::RCP<TimInt>& tis  //!< marching time integrator
     );
 
     //! Destructor
-    ~StruTimAdaAB2() { ; }
+    ~TimAdaAB2() { ; }
 
     //@}
 
@@ -97,9 +97,9 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum StruTimAda::NameEnum MethodName()
+    enum TimAda::NameEnum MethodName()
     {
-      return StruTimAda::name_ab2;
+      return TimAda::name_ab2;
     }
 
     //! Provide local order of accuracy
@@ -113,18 +113,18 @@ namespace STR
   protected:
 
     //! not wanted: = operator
-    StruTimAdaAB2 operator = (const StruTimAdaAB2& old);
+    TimAdaAB2 operator = (const TimAdaAB2& old);
   
     //! not wanted: copy constructor
-    StruTimAdaAB2(const StruTimAdaAB2& old);
+    TimAdaAB2(const TimAdaAB2& old);
 
     //! The AB2 integrator 
-    Teuchos::RCP<StruTimIntAB2> ab2_;
+    Teuchos::RCP<TimIntAB2> ab2_;
 
   };
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMADA_AB2_H
+#endif  // #ifndef STRTIMADA_AB2_H
 #endif  // #ifdef CCADISCRET

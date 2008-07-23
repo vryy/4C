@@ -15,8 +15,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifdef CCADISCRET
-#ifndef STRUTIMADA_ZIENXIE_H
-#define STRUTIMADA_ZIENXIE_H
+#ifndef STRTIMADA_ZIENXIE_H
+#define STRTIMADA_ZIENXIE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -61,21 +61,21 @@ namespace STR
    * \author bborn
    * \date 10/07
    */
-  class StruTimAdaZienXie : public StruTimAda
+  class TimAdaZienXie : public TimAda
   {
 
   public:
 
     //! Constructor
-    StruTimAdaZienXie
+    TimAdaZienXie
     (
       const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
       const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+      Teuchos::RCP<TimInt> tis  //!< marching time integrator
     );
 
     //! Destructor
-    ~StruTimAdaZienXie() { ; }
+    ~TimAdaZienXie() { ; }
 
     //! @name Actions
     //@{
@@ -89,9 +89,9 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum StruTimAda::NameEnum MethodName()
+    enum TimAda::NameEnum MethodName()
     {
-      return StruTimAda::name_zienxie;
+      return TimAda::name_zienxie;
     }
 
     //! Provide local order of accuracy
@@ -105,15 +105,15 @@ namespace STR
   protected:
 
     //! not wanted: = operator
-    StruTimAdaZienXie operator = (const StruTimAdaZienXie& old);
+    TimAdaZienXie operator = (const TimAdaZienXie& old);
   
     //! not wanted: copy constructor
-    StruTimAdaZienXie(const StruTimAdaZienXie& old);
+    TimAdaZienXie(const TimAdaZienXie& old);
 
   };
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMADA_ZIENXIE_H
+#endif  // #ifndef STRTIMADA_ZIENXIE_H
 #endif  // #ifdef CCADISCRET

@@ -22,7 +22,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::StruTimIntAB2::StruTimIntAB2
+STR::TimIntAB2::TimIntAB2
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -32,7 +32,7 @@ STR::StruTimIntAB2::StruTimIntAB2
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: StruTimIntExpl
+: TimIntExpl
   (
     ioparams,
     sdynparams,
@@ -68,7 +68,7 @@ STR::StruTimIntAB2::StruTimIntAB2
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
-void STR::StruTimIntAB2::ResizeMStep()
+void STR::TimIntAB2::ResizeMStep()
 {
   // resize time and stepsize fields
   time_->Resize(-1, 0, (*time_)[0]);
@@ -83,7 +83,7 @@ void STR::StruTimIntAB2::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void STR::StruTimIntAB2::IntegrateStep()
+void STR::TimIntAB2::IntegrateStep()
 {
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
   const double dto = (*dt_)[-1];  // \f$\Delta t_{n-1}\f$
@@ -153,7 +153,7 @@ void STR::StruTimIntAB2::IntegrateStep()
     accn_->PutScalar(0.0);
     // refactor==false: This is not necessary, because we always
     // use the same constant mass matrix, which was firstly factorised
-    // in StruTimInt::DetermineMassDampConsistAccel
+    // in TimInt::DetermineMassDampConsistAccel
     solver_->Solve(mass_->EpetraMatrix(), accn_, frimpn_, false, true);
   }
 
@@ -166,7 +166,7 @@ void STR::StruTimIntAB2::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void STR::StruTimIntAB2::UpdateStep()
+void STR::TimIntAB2::UpdateStep()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}

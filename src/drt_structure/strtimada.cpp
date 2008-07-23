@@ -25,11 +25,11 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::StruTimAda::StruTimAda
+STR::TimAda::TimAda
 (
   const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+  Teuchos::RCP<TimInt> tis  //!< marching time integrator
 )
 : sti_(tis),
   discret_(tis->Discretization()),
@@ -49,7 +49,7 @@ STR::StruTimAda::StruTimAda
   sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
   sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
   errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-  errnorm_(StruTimIntVector::MapNormStringToEnum(tap.get<std::string>("ERRNORM"))),
+  errnorm_(TimIntVector::MapNormStringToEnum(tap.get<std::string>("ERRNORM"))),
   errtol_(tap.get<double>("ERRTOL")),
   errorder_(1),  // CHANGE THIS CONSTANT
   adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
@@ -70,7 +70,7 @@ STR::StruTimAda::StruTimAda
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-void STR::StruTimAda::Integrate()
+void STR::TimAda::Integrate()
 {
   // initialise time loop
   double time_ = timeinitial_;
@@ -156,7 +156,7 @@ void STR::StruTimAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* Evaluate local error vector */
-void STR::StruTimAda::EvaluateLocalErrorDis()
+void STR::TimAda::EvaluateLocalErrorDis()
 {
   // assumption: schemes do not have the same order of accuracy
   locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
@@ -164,14 +164,14 @@ void STR::StruTimAda::EvaluateLocalErrorDis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void STR::StruTimAda::Indicate
+void STR::TimAda::Indicate
 (
   bool& accepted,
   double& stpsiznew
 )
 {
   // norm of local discretisation error vector
-  double norm = StruTimIntVector::CalculateNorm(errnorm_, locerrdisn_); 
+  double norm = TimIntVector::CalculateNorm(errnorm_, locerrdisn_); 
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -225,12 +225,12 @@ void STR::StruTimAda::Indicate
 
 /*----------------------------------------------------------------------*/
 /* Print constants */
-void STR::StruTimAda::PrintConstants
+void STR::TimAda::PrintConstants
 (
   std::ostream& str
 ) const
 {
-  str << "StruTimAda:  Constants" << std::endl
+  str << "TimAda:  Constants" << std::endl
       << "   Initial time = " << timeinitial_ << std::endl
       << "   Final time = " << timefinal_ << std::endl
       << "   Initial Step = " << timestepinitial_ << std::endl
@@ -241,7 +241,7 @@ void STR::StruTimAda::PrintConstants
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " << StruTimIntVector::MapNormEnumToString(errnorm_) << std::endl
+      << "   Error norm = " << TimIntVector::MapNormEnumToString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptive step = " << adaptstepmax_ << std::endl;
@@ -250,12 +250,12 @@ void STR::StruTimAda::PrintConstants
 
 /*----------------------------------------------------------------------*/
 /* Print variables */
-void STR::StruTimAda::PrintVariables
+void STR::TimAda::PrintVariables
 (
   std::ostream& str
 ) const
 {
-  str << "StruTimAda:  Variables" << endl
+  str << "TimAda:  Variables" << endl
       << "   Current time = " << time_ << endl
       << "   Previous step size = " << stepsizepre_ << endl
       << "   Current step size = " << stepsize_ << endl
@@ -266,12 +266,12 @@ void STR::StruTimAda::PrintVariables
 
 /*----------------------------------------------------------------------*/
 /* Print */
-void STR::StruTimAda::Print
+void STR::TimAda::Print
 (
   std::ostream& str
 ) const
 {
-  str << "StruTimAda" << endl;
+  str << "TimAda" << endl;
   PrintConstants(str);
   PrintVariables(str);
   // step aside
@@ -284,7 +284,7 @@ void STR::StruTimAda::Print
 std::ostream& operator<<
 (
   std::ostream& str, 
-  const STR::StruTimAda::StruTimAda& ta
+  const STR::TimAda::TimAda& ta
 )
 {
   ta.Print(str);

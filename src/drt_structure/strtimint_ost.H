@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_OST_H
-#define STRUTIMINT_OST_H
+#ifndef STRTIMINT_OST_H
+#define STRTIMINT_OST_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -93,7 +93,7 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class StruTimIntOneStepTheta : public StruTimIntImpl
+  class TimIntOneStepTheta : public TimIntImpl
   {
 
   public:
@@ -102,7 +102,7 @@ namespace STR
     //@{
 
     //! Constructor
-    StruTimIntOneStepTheta
+    TimIntOneStepTheta
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -116,7 +116,7 @@ namespace STR
     //! Destructor
     // ....
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
     void ResizeMStep() { ; }
 
@@ -126,9 +126,9 @@ namespace STR
     //@{
 
     //! Return name
-    enum StruTimInt::NameEnum MethodName()
+    enum TimInt::NameEnum MethodName()
     { 
-      return StruTimInt::name_onesteptheta;
+      return TimInt::name_onesteptheta;
     }
 
     //! Provide number of steps, a single-step method returns 1
@@ -222,10 +222,10 @@ namespace STR
   protected:
 
     //! equal operator is NOT wanted
-    StruTimIntOneStepTheta operator=(const StruTimIntOneStepTheta& old);
+    TimIntOneStepTheta operator=(const TimIntOneStepTheta& old);
 
     //! copy constructor is NOT wanted
-    StruTimIntOneStepTheta(const StruTimIntOneStepTheta& old);
+    TimIntOneStepTheta(const TimIntOneStepTheta& old);
 
     //! @name Key coefficients
     //@{
@@ -257,10 +257,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
-  };  // class StruTimIntOneStepTheta
+  };  // class TimIntOneStepTheta
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_OST_H
+#endif  // #ifndef STRTIMINT_OST_H
 #endif  // #ifdef CCADISCRET

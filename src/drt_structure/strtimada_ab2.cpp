@@ -25,15 +25,15 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Slender constructor */
-STR::StruTimAdaAB2::StruTimAdaAB2
+STR::TimAdaAB2::TimAdaAB2
 (
   const Teuchos::ParameterList& ioparams,  //!< ioflags
   const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
   const Teuchos::ParameterList& xparams,  //!< extra flags
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-  Teuchos::RCP<StruTimInt>& tis  //!< marching time integrator
+  Teuchos::RCP<TimInt>& tis  //!< marching time integrator
 )
-: StruTimAda
+: TimAda
   (
     sdynparams,
     adaparams,
@@ -42,7 +42,7 @@ STR::StruTimAdaAB2::StruTimAdaAB2
   ab2_(Teuchos::null)
 {
   // allocate Adams-Bashforth2 integrator
-  ab2_ = Teuchos::rcp(new StruTimIntAB2(ioparams, sdynparams, xparams,
+  ab2_ = Teuchos::rcp(new TimIntAB2(ioparams, sdynparams, xparams,
                                         tis->Discretization(), 
                                         tis->GetSolver(),
                                         tis->GetDiscretizationWriter()));
@@ -59,7 +59,7 @@ STR::StruTimAdaAB2::StruTimAdaAB2
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::StruTimAdaAB2::IntegrateStepAuxiliar()
+void STR::TimAdaAB2::IntegrateStepAuxiliar()
 {
 
   // get state vectors of marching integrator

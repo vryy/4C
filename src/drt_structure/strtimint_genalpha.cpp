@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* convert input string to enum for mid-average type */
-enum STR::StruTimIntGenAlpha::MidAverageEnum STR::StruTimIntGenAlpha::MapMidAvgStringToEnum
+enum STR::TimIntGenAlpha::MidAverageEnum STR::TimIntGenAlpha::MapMidAvgStringToEnum
 (
   const std::string name
 )
@@ -46,7 +46,7 @@ enum STR::StruTimIntGenAlpha::MidAverageEnum STR::StruTimIntGenAlpha::MapMidAvgS
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::StruTimIntGenAlpha::StruTimIntGenAlpha
+STR::TimIntGenAlpha::TimIntGenAlpha
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -56,7 +56,7 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: StruTimIntImpl
+: TimIntImpl
   (
     ioparams,
     sdynparams,
@@ -149,7 +149,7 @@ STR::StruTimIntGenAlpha::StruTimIntGenAlpha
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
+void STR::TimIntGenAlpha::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -173,7 +173,7 @@ void STR::StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
+void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
 {
   // build by last converged state and predicted target state
   // the predicted mid-state
@@ -290,7 +290,7 @@ void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
 
 /*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
-void STR::StruTimIntGenAlpha::EvaluateMidState()
+void STR::TimIntGenAlpha::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
@@ -311,7 +311,7 @@ void STR::StruTimIntGenAlpha::EvaluateMidState()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for displacements
  * originally by lw */
-double STR::StruTimIntGenAlpha::CalcRefNormDisplacement()
+double STR::TimIntGenAlpha::CalcRefNormDisplacement()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -329,7 +329,7 @@ double STR::StruTimIntGenAlpha::CalcRefNormDisplacement()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double STR::StruTimIntGenAlpha::CalcRefNormForce()
+double STR::TimIntGenAlpha::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -369,7 +369,7 @@ double STR::StruTimIntGenAlpha::CalcRefNormForce()
 
 /*----------------------------------------------------------------------*/
 /* incremental iteration update of state */
-void STR::StruTimIntGenAlpha::UpdateIterIncrementally()
+void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
   // auxiliar global vectors
   Teuchos::RCP<Epetra_Vector> aux
@@ -415,7 +415,7 @@ void STR::StruTimIntGenAlpha::UpdateIterIncrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::StruTimIntGenAlpha::UpdateIterIteratively()
+void STR::TimIntGenAlpha::UpdateIterIteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -433,7 +433,7 @@ void STR::StruTimIntGenAlpha::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::StruTimIntGenAlpha::UpdateStep()
+void STR::TimIntGenAlpha::UpdateStep()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity

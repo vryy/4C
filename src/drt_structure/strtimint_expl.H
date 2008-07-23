@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_EXPL_H
-#define STRUTIMINT_EXPL_H
+#ifndef STRTIMINT_EXPL_H
+#define STRTIMINT_EXPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,7 +31,7 @@ namespace STR
    * \author bborn
    * \date 07/08
    */
-  class StruTimIntExpl : public StruTimInt
+  class TimIntExpl : public TimInt
   {
 
   public:
@@ -40,7 +40,7 @@ namespace STR
     //@{
 
     //! constructor
-    StruTimIntExpl
+    TimIntExpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -51,12 +51,12 @@ namespace STR
     );
 
     //! Empty constructor
-    StruTimIntExpl() : StruTimInt() { ; }
+    TimIntExpl() : TimInt() { ; }
 
     //! Copy constructor
-    StruTimIntExpl(const StruTimIntExpl& old) : StruTimInt(old) { ; }
+    TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
     //@}
@@ -156,5 +156,5 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_EXPL_H
+#endif  // #ifndef STRTIMINT_EXPL_H
 #endif  // #ifdef CCADISCRET

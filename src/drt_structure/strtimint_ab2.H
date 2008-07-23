@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_AB2_H
-#define STRUTIMINT_AB2_H
+#ifndef STRTIMINT_AB2_H
+#define STRTIMINT_AB2_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -32,11 +32,11 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class StruTimIntAB2 : public StruTimIntExpl
+  class TimIntAB2 : public TimIntExpl
   {
 
     //! A friendly relation to adaptive partner
-    friend class StruTimAdaAB2;
+    friend class TimAdaAB2;
 
   public:
 
@@ -44,7 +44,7 @@ namespace STR
     //@{
 
     //! Constructor
-    StruTimIntAB2
+    TimIntAB2
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -59,12 +59,12 @@ namespace STR
     // ....
 
     //! Empty constructor
-    StruTimIntAB2() : StruTimIntExpl() { ; }
+    TimIntAB2() : TimIntExpl() { ; }
 
     //! Copy constructor
-    StruTimIntAB2(const StruTimIntAB2& old) : StruTimIntExpl(old) { ; }
+    TimIntAB2(const TimIntAB2& old) : TimIntExpl(old) { ; }
 
-    //! Resize #StruTimIntMStep<T> multi-step quantities
+    //! Resize #TimIntMStep<T> multi-step quantities
     void ResizeMStep();
 
     //@}
@@ -87,7 +87,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum StruTimInt::NameEnum MethodName() { return StruTimInt::name_ab2; }
+    enum TimInt::NameEnum MethodName() { return TimInt::name_ab2; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -134,10 +134,10 @@ namespace STR
                                           //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
     //@}
 
-  };  // class StruTimIntAB2
+  };  // class TimIntAB2
 
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_AB2_H
+#endif  // #ifndef STRTIMINT_AB2_H
 #endif  // #ifdef CCADISCRET

@@ -129,12 +129,12 @@ void strudyn_direct()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // create marching time integrator
-  Teuchos::RCP<STR::StruTimInt> sti 
+  Teuchos::RCP<STR::TimInt> sti 
     = strudyn_CreateMarching(ioflags, sdyn, xparams,
                              actdis, solver, output);
 
   // create auxiliar time integrator
-  Teuchos::RCP<STR::StruTimAda> sta 
+  Teuchos::RCP<STR::TimAda> sta 
     = strudyn_CreateAuxiliar(ioflags, sdyn, xparams, tap, sti);
 
   // do restart if demanded from input file
@@ -177,7 +177,7 @@ void strudyn_direct()
 
 /*======================================================================*/
 /* create marching time integrator */
-Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
+Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
 (
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
@@ -187,7 +187,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
   Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
-  Teuchos::RCP<STR::StruTimInt> sti = Teuchos::null;
+  Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
 
   // create specific time integrator
   switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
@@ -214,7 +214,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
       const Teuchos::ParameterList& gap = sdyn.sublist("GENALPHA");
 
       // create time integrator
-      sti = rcp(new STR::StruTimIntGenAlpha(ioflags, sdyn, xparams, gap,
+      sti = rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams, gap,
                                             actdis, solver, output));
     }
     break;
@@ -226,7 +226,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
       const Teuchos::ParameterList& ostp = sdyn.sublist("ONESTEPTHETA");
 
       // create time integrator
-      sti = rcp(new STR::StruTimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
+      sti = rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
                                                 actdis, solver, output));
     }
     break;
@@ -238,7 +238,7 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
       //const Teuchos::ParameterList& ab2p = sdyn.sublist("ADAMSBASHFORTH2");
 
       // create time integrator
-      sti = rcp(new STR::StruTimIntAB2(ioflags, sdyn, xparams, //ab2p,
+      sti = rcp(new STR::TimIntAB2(ioflags, sdyn, xparams, //ab2p,
                                        actdis, solver, output));
     }
     break;
@@ -257,16 +257,16 @@ Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 
 /*======================================================================*/
 /* create auxiliar time integration scheme */
-Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
+Teuchos::RCP<STR::TimAda> strudyn_CreateAuxiliar
 (
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<STR::StruTimInt> tis  //!< marching time integrator
+  Teuchos::RCP<STR::TimInt> tis  //!< marching time integrator
 )
 {
-  Teuchos::RCP<STR::StruTimAda> sta = Teuchos::null;
+  Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
 
   // auxiliar time integrator
   switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
@@ -279,12 +279,12 @@ Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
 
   case TIMADA_DYNAMIC::timada_kind_zienxie :
     // Zienkiewivz-Xie error indicator for generalised-alpha
-    sta = Teuchos::rcp(new STR::StruTimAdaZienXie(sdyn, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, tap, tis));
     break;
 
   case TIMADA_DYNAMIC::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
-    sta = Teuchos::rcp(new STR::StruTimAdaAB2(ioflags, sdyn, xparams, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaAB2(ioflags, sdyn, xparams, tap, tis));
     break;
 
   default :
