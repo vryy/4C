@@ -98,7 +98,7 @@ void caldyn_drt()
   case STRUCT_DYNAMIC::onesteptheta:
   case STRUCT_DYNAMIC::ab2:
     // direct time integration
-    strudyn_direct();
+    STR::strudyn_direct();
     break;
   default:
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());

@@ -17,9 +17,6 @@ Maintainer: Burkhard Bornemann
 #ifndef STRUDYN_DIRECT_H
 #define STRUDYN_DIRECT_H
 
-
-#ifdef __cplusplus /* stuff which is c++ specific */
-
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -39,63 +36,49 @@ Maintainer: Burkhard Bornemann
 #include "strtimint_ab2.H"
 
 #include "strtimada.H"
+#include "strtimada_zienxie.H"
+#include "strtimada_ab2.H"
 
-using namespace std;
-using namespace Teuchos;
-
-
-
-#endif /* end of #ifdef __cplusplus */
-
-
-
-
-
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C" 
+/*----------------------------------------------------------------------*/
+/* Structural Dynamics */
+namespace STR
 {
-#endif
 
-/*----------------------------------------------------------------------*/
-//! Direct time integration of temporally (and spatially) discretised
-//! structure
-//!
-//! \author bborn \date 06/08
-void strudyn_direct();
+  /*====================================================================*/
+  //! Direct time integration of temporally (and spatially) discretised
+  //! structure
+  //!
+  //! \author bborn \date 06/08
+  void strudyn_direct();
 
-/*----------------------------------------------------------------------*/
-//! Create marching time integrator convenience routine
-//!
-//! \author bborn \date 07/08 
-Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
-(
-  const Teuchos::ParameterList& ioflags,  //!< input-output-flags
-  const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
-  const Teuchos::ParameterList& xparams,  //!< extra flags
-  Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
-  Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
-  Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
-);
+  /*====================================================================*/
+  //! Create marching time integrator convenience routine
+  //!
+  //! \author bborn \date 07/08 
+  Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
+  (
+    const Teuchos::ParameterList& ioflags,  //!< input-output-flags
+    const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
+    const Teuchos::ParameterList& xparams,  //!< extra flags
+    Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
+    Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
+    Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
+  );
 
-/*----------------------------------------------------------------------*/
-//! Create auxiliar time integrator convenience routine
-//!
-//! \author bborn \date 07/08
-Teuchos::RCP<STR::TimAda> strudyn_CreateAuxiliar
-(
-  const Teuchos::ParameterList& ioflags,  //!< input-output-flags
-  const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
-  const Teuchos::ParameterList& xparams,  //!< extra flags
-  const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<STR::TimInt> tis  //!< marching time integrator
-);
+  /*====================================================================*/
+  //! Create auxiliar time integrator convenience routine
+  //!
+  //! \author bborn \date 07/08
+  Teuchos::RCP<STR::TimAda> strudyn_CreateAuxiliar
+  (
+    const Teuchos::ParameterList& ioflags,  //!< input-output-flags
+    const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
+    const Teuchos::ParameterList& xparams,  //!< extra flags
+    const Teuchos::ParameterList& tap,  //!< adaptive input flags
+    Teuchos::RCP<STR::TimInt> tis  //!< marching time integrator
+  );
 
-#ifdef __cplusplus
-}
-#endif
-
-
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRUDYN_DIRECT_H */

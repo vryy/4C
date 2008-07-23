@@ -319,7 +319,7 @@ namespace STR
 
   /*====================================================================*/
   /*! \brief Specialise general #TimIntMStepBase object 
-   *         for #Epetra_Vector as needed for state vectors
+   *         for \c Epetra_Vector as needed for state vectors
    *         -- displacements, velocities and accelerations
    *         (alright, accelerations do not truely belong to the phase 
    *         state) -- in structural dynamics

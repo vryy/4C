@@ -74,7 +74,7 @@ extern SOLVAR* solv;
 
 /*======================================================================*/
 /* structural non-linear dynamics */
-void strudyn_direct()
+void STR::strudyn_direct()
 {
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = null;
@@ -174,7 +174,7 @@ void strudyn_direct()
 
 /*======================================================================*/
 /* create marching time integrator */
-Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
+Teuchos::RCP<STR::TimInt> STR::strudyn_CreateMarching
 (
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
@@ -254,7 +254,7 @@ Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
 
 /*======================================================================*/
 /* create auxiliar time integration scheme */
-Teuchos::RCP<STR::TimAda> strudyn_CreateAuxiliar
+Teuchos::RCP<STR::TimAda> STR::strudyn_CreateAuxiliar
 (
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
