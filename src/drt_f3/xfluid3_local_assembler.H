@@ -121,11 +121,13 @@ public:
     
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
+              XFEM::PHYSICS::Field trialfield,
+              class V1,
+              class V2>
     void Matrix(
-            const BlitzVec&     testshape,
+            const V1&           testshape,
             const double&       fac,
-            const BlitzVec&     trialshape
+            const V2&           trialshape
             ) const
     {
         const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(SymmetryMangle<testfield>::name);
@@ -183,9 +185,10 @@ public:
     }
     
     //! assemble one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
+    template <XFEM::PHYSICS::Field testfield,
+              class V1>
     void Vector(
-            const BlitzVec&     testshape,
+            const V1&           testshape,
             const double&       fac
             ) const
     {
@@ -245,11 +248,13 @@ public:
     
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
+              XFEM::PHYSICS::Field trialfield,
+              class V1,
+              class V2>
     void Matrix(
-            const BlitzVec&     testshape,
+            const V1&           testshape,
             const double&       fac,
-            const BlitzVec&     trialshape
+            const V2&           trialshape
             ) const
     {
         const int numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -266,9 +271,10 @@ public:
     }
     
     //! assemble one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
+    template <XFEM::PHYSICS::Field testfield,
+              class V1>
     void Vector(
-            const BlitzVec&     testshape,
+            const V1&           testshape,
             const double&       fac
             ) const
     {
