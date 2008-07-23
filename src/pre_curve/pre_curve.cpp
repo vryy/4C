@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 
   if (myrank==0)
   {
-    DRT::UTILS::TimeCurve& c = DRT::UTILS::TimeCurveManager::Instance().Curve(curve);
+    DRT::UTILS::TimeCurve& c = DRT::UTILS::TimeCurveManager::Instance().Curve(curve-1);
 
     std::ofstream f(file.c_str());
     f << "# count   time   f(t)   f'(t)   f''(t)\n";
