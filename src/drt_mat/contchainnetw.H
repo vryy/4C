@@ -22,11 +22,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
-#include "../drt_io/io_gmsh.H"
 extern struct _FILES  allfiles;
 
-
-using namespace Teuchos;
 
 namespace MAT
 {
