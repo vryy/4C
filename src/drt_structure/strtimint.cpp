@@ -417,8 +417,6 @@ void STR::TimInt::ApplyForceExternal
 )
 {
   ParameterList p;
-  // action for elements
-  p.set("action", "calc_struct_eleload");
   // other parameters needed by the elements
   p.set("total time", time);
 
