@@ -237,7 +237,36 @@ namespace STR
     virtual void PrintStep() = 0;
 
     //! Output to file
-    virtual void OutputStep() = 0;
+    //! This routine always prints the last converged state, i.e.
+    //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+    //! upon object prior to writing stuff here.
+    //! \author mwgee (originally) \date 03/07
+    void OutputStep();
+
+    //! Write restart
+    //! \author mwgee (originally) \date 03/07
+    void OutputRestart
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
+
+    //! Output displacements, velocities and accelerations
+    //! and more system vectors
+    //! \author mwgee (originally) \date 03/07
+    void OutputState
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
+
+    //! Stress & strain output
+    //! \author lw (originally)
+    void OutputStressStrain
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
 
     //@}
 
@@ -337,21 +366,20 @@ namespace STR
       // The 'false' prevents ConstrManager of trying to kill it.
       //return Teuchos::rcp(&discret_, false);
 
-      // Now, the discretisation is stored as RefCountPointer, thus
+      // Now, the discretisation is stored as Teuchos::RefCountPointer,
+      // thus
       return discret_;
     }
 
     //! Access solver
     Teuchos::RCP<LINALG::Solver> GetSolver()
     {
-      //return Teuchos::rcp(&solver_, false);
       return solver_;
     }
 
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> GetDiscretizationWriter()
     {
-      //return Teuchos::rcp(&output_, false);
       return output_;
     }
 

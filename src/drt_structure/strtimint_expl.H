@@ -87,37 +87,6 @@ namespace STR
       FILE* ofile  //!< output file handle
     );
 
-    //! Output to file
-    //! This routine always prints the last converged state, i.e.
-    //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
-    //! upon object prior to writing stuff here.
-    //! \author mwgee (originally) \date 03/07
-    void OutputStep();
-
-    //! Write restart
-    //! \author mwgee (originally) \date 03/07
-    void OutputRestart
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
-    );
-
-    //! Output displacements, velocities and accelerations
-    //! \author mwgee (originally) \date 03/07
-    void OutputState
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
-    );
-
-    //! Stress & strain output
-    //! \author lw (originally)
-    void OutputStressStrain
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
-    );
-
     //@}
 
     //! @name Attribute access functions
