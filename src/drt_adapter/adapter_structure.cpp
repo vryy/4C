@@ -95,10 +95,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 {
+#ifdef PRESTRESS
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#else
   double alphaf = structure_.AlphaF();
   Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Dispn()));
   dispnp->Update(1./(1.-alphaf),*Dispnm(),-alphaf/(1.-alphaf));
   return dispnp;
+#endif
 }
 
 
@@ -106,7 +110,11 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 {
+#ifdef PRESTRESS
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#else
   return structure_.Disp();
+#endif
 }
 
 
@@ -114,7 +122,11 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 {
+#ifdef PRESTRESS
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#else
   return structure_.Dispm();
+#endif
 }
 
 
@@ -339,8 +351,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::RelaxationSolve(Teuchos:
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
 {
+#ifdef PRESTRESS
+  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+#else
   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
   return idis;
+#endif
 }
 
 
@@ -348,6 +364,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
 {
+#ifdef PRESTRESS
+  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+#else
   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
 
@@ -355,6 +374,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
   idis->Update(1./(1.-alphaf),*idism,-alphaf/(1.-alphaf));
 
   return idis;
+#endif
 }
 
 /*----------------------------------------------------------------------*/
