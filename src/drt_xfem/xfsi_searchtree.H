@@ -77,7 +77,14 @@ namespace XFEM
         \param  aabb              : AxisAlignedBoundingBox of this TreeNode (=Octant)
         \param  tree              : Pointer to tree to which this Node belongs to
         */
-        TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree, TreeNode* parent);
+        TreeNode(
+            const int Depth, 
+            const BlitzMat3x2& aabb, 
+            XSearchTree* tree, 
+            TreeNode* parent
+            );
+        
+        //! destructor
         virtual ~TreeNode();
         
         //! gives STATE_INNER_NODE or STATE_LEAF_NODE
@@ -87,10 +94,14 @@ namespace XFEM
         int getDepth();
         
         //! gives number of nodes
-        int getNodesInTree(int type);
+        int getNodesInTree(
+            int type
+            );
 
         //! get child with index idx
-        TreeNode* getChild(const int idx);
+        TreeNode* getChild(
+            const int idx
+            );
 
         //! get parent node
         TreeNode* getParent();
@@ -115,25 +126,37 @@ namespace XFEM
          \return                             list of elements which are candidates, gives back an 
                                              empty list if point type (fluid/solid) is definitly known
          */
-        int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointcoords, int& closestElementID);
+        int queryPointType(
+            const DRT::Discretization& dis,
+            const std::map<int,BlitzVec3>& currentpositions, 
+            const BlitzVec3& pointcoords, 
+            int& closestElementID);
         
         //! gives back ElementList_ 
         list< const DRT::Element* > getElementList();
         
         //! recusivly searches for the nearest neigbour to pointcoords (NOT YET IMPLEMENTED)
-        void queryNearestNeighbour(const BlitzVec3& pointcoords);
+        void queryNearestNeighbour(
+            const BlitzVec3& pointcoords
+            );
         
         //! gives the center coords of the AABB of this treenode
         BlitzVec3 getCenterCoord();
         
         //! sets an treenode to be completly fluid (label should be set to 0)
-        void setFluid(const int label);
+        void setFluid(
+            const int label
+            );
         
         //! sets an treenode to be completly surrounded by a solid with given XFEM-coupling condidition
-        void setSolid(const int label);
+        void setSolid(
+            const int label
+            );
         
         //! gives a gmsh string to visualize the tree
-        void printTree(stringstream& fc) const;
+        void printTree(
+            stringstream& fc
+            ) const;
         
         //! get memory usage
         int getMemoryUsage() const;
@@ -142,7 +165,9 @@ namespace XFEM
          const BlitzMat3x2& getAABB();
          
          //! gives back a List of Candidates for an axis aligned search region
-         list< const DRT::Element* > getCandidateList(const BlitzMat3x2& AASearchRegion);
+         list< const DRT::Element* > getCandidateList(
+             const BlitzMat3x2& AASearchRegion
+             );
 
        
       private:
@@ -159,13 +184,20 @@ namespace XFEM
             );
         
         //! gives the octand(=child) of this treenode to which the point belongs 
-        int classifyPoint(const BlitzVec3& pointcoords);
+        int classifyPoint(
+            const BlitzVec3& pointcoords
+            );
 
         //! determines the XFEM-Label of an Point. The point should be located in the TreeNode calling the function
-        int getXFEMLabelOfPointInTreeNode(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords);
+        int getXFEMLabelOfPointInTreeNode(
+            const DRT::Discretization& dis,
+            const std::map<int,BlitzVec3>& currentpositions, 
+            const BlitzVec3& pointCoords);
         
          //! gives the AABB of a child of this treenode
-        BlitzMat3x2 getChildOctAABB(const int chldIdx);
+        BlitzMat3x2 getChildOctAABB(
+            const int chldIdx
+            );
         
 
       
@@ -185,7 +217,10 @@ namespace XFEM
       //! true if tree has to be (re)initialized 
       bool TreeInit_;
       
+      //! true bounding box of tree was given by an constructor argument
       bool hasExternAABB_;
+      
+      //! bounding box of the whole tree
       const BlitzMat3x2 AABB_;
       
       //! count nbr. of requests to the tree
@@ -206,7 +241,7 @@ namespace XFEM
       //! pointer to the root of the tree
       XFEM::XSearchTree::TreeNode* treeRoot_;
       
-      //! 
+      //! nodes which had to search in more than their own TreeNode
       int nodesWithReTry_;
       
       //! inserts an element into the tree
@@ -216,64 +251,109 @@ namespace XFEM
           );
       
     public:
+      //! standard tree constructor
       XSearchTree();
-      XSearchTree(const BlitzMat3x2 AABB);
+      
+      //! tree constructor defining an external bounding box, shoudl be used
+      XSearchTree(
+          const BlitzMat3x2 AABB
+          );
+      
+      //! destructor
       virtual ~XSearchTree();
       
+      //! gives actual tree depth
       int getDepth();
+      
+      //! gives number of total requests set on the tree
       int getTotalRequests();
+      
+      //! gives the mean path-length for a request
       double getMeanSearchlength();
       
       //! searches for the nearest neigbour to pointcoords (NOT YET IMPLEMENTED)
-      void queryNearestNeighbour(const BlitzVec& pointCoords);
+      void queryNearestNeighbour(
+          const BlitzVec& pointCoords  ///< coords of point which will be examined
+          );
       
       /*!
       \brief gives back the type of a point (fluid or solid): 
-
-      \param  dis               (in)    : discretization containing elements 
-      \param  currentpositions  (in)    : current position of elements in dis
-      \param  pointCoords       (in)    : coords of point which will be examined
       \return                             0->fluid 1..n->Solid with XFEM-Coupling condition
       */
-      int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& closestElementId, double& distance);
+      int queryPointType(
+          const DRT::Discretization& dis,  ///< discretization containing elements 
+          const std::map<int,BlitzVec3>& currentpositions, ///< current position of elements in dis
+          const BlitzVec3& pointCoords, ///< coords of point which will be examined
+          int& closestElementId, ///> id of closest element
+          double& distance ///> distance of closest element (<0 solid, >=0 fluid) 
+          );
       
       //! destroys and rebuilds the whole tree
-      void rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);
+      void rebuild(
+          const DRT::Discretization& dis, ///< discretization containing elements 
+          const std::map<int,BlitzVec3>& currentpositions ///< current position of elements in dis
+          );
       
-      void setMaxOverlap(double maxO);
+      //! set maximum of overlap allowed for elements in a tree node, node wont build child nodes (=refine) this value is exeeded
+      void setMaxOverlap(
+          double maxO ///< value
+          );
+
+      //! get actual value of maximum allowed overlap
       double getMaxOverlap();
       
       //! gives back a List of Candidates for an axis aligned search region
-      list< const DRT::Element* > getCandidateList(const BlitzVec3& X,const double radius);
+      list< const DRT::Element* > getCandidateList(
+          const BlitzVec3& X, ///< physical coords of point we need candidates
+          const double radius ///< radius to search for candidates
+          );
       
-      void setElementsForOverlapCheck(int maxO){
+      //! set the maximum number of elements for which a overlap check will be performed
+      void setElementsForOverlapCheck(
+          int maxO
+          ){
         ELEMENTS_USED_FOR_OVERLAP_CHECK_ = maxO;
       }
+      
+      //! get the maximum number of elements for which a overlap check will be performed      
       int getElementsForOverlapCheck(){
         return ELEMENTS_USED_FOR_OVERLAP_CHECK_;
       }
 
-      void printTreeMetrics(const int step) const;
-      
+      //! print tree metrics like requests, time, mean path length, memory usage, ...
+      void printTreeMetrics(
+          const int step ///< file postfix
+          ) const;
       
       //! if the flag is set by this method, rebuild will be called within the next search request
       void setRebuildFlag();
       
       //! dumps a visualization of the tree in a gmsh file (tree0000<step>.pos)
-      void printTree(const int step) const;
+      void printTree(
+          const int step ///< file postfix 
+          ) const;
 
-      //! dumps a visualization of the tree in a gmsh file (<prefiy>_tree0000<step>.pos)
-      void printTree(const string prefix, const int step) const;
+      //! dumps a visualization of the tree in a gmsh file (<prefix>_tree0000<step>.pos)
+      void printTree(
+          const string prefix, ///< file prefix
+          const int step ///< file postfix
+          ) const;
      
       //! get memory usage
       int getMemoryUsage() const;
      
       //! the XFEM-Coupling-Condition-Label of a element by its gid
-      int getLabelByElementID(const int gid);
+      int getLabelByElementID(
+          const int gid ///< global elements id
+          );
       
   }; 
   
-  bool compare_gId(const DRT::Element* A, const DRT::Element* B);
+  //! compare operator used to sort lists of elements (sort be globalId)
+  bool compare_gId(
+      const DRT::Element* A, ///< first element to compare 
+      const DRT::Element* B  ///< second element to compare
+      );
 
 } // namespace XFEM
 

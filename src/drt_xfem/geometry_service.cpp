@@ -221,7 +221,7 @@ const DRT::Element* XFEM::nearestNeighbourInListNew(
   BlitzVec3 testpoint(0.407,0.407,0.0933);
   double eps = 0.01;
   if (X(0)>testpoint(0)-eps && X(0)<testpoint(0)+eps && X(1)>testpoint(1)-eps && X(1)<testpoint(1)+eps && X(2)>testpoint(2)-eps && X(2)<testpoint(2)+eps)
-    printDEBUG = true;
+    printDEBUG = false;
   if (printDEBUG)  
   {
     cout << "nbr of candidates in list : "<< ElementList.size()<< endl;
@@ -390,13 +390,6 @@ double XFEM::getSquaredElementDistance(
     BlitzVec3&                              vector2minDistPoint,
     int&                                    distanceType)
 {  
-  /* 1.) get nearest point on element support in xsi-coordinates
-   *  2.) if ((xsi0<xsi0_min||xsi0>xsi0_max) XOR (xsi1<xsi1_min || xsi1>xsi1_max)) 
-   *      nearest point is on element surface (which is a line because the element itself is 2D) 
-   *  3.) if xsi is totaly out of bounds the nearest point on this surface is one of the node points
-   *  4.) if its perfectly in xsi-limits nearest point is on the element surface
-   */ 
- 
   double distance = 1.0e12;
   BlitzVec3 normal;
   const BlitzMat2x2 xsiBoundingBox = XFEM::getXsiBoundingBox(surfaceElement);
@@ -622,7 +615,7 @@ void XFEM::checkRoughGeoType(
     dserror("order of element shapefuntion is not correct");
 }
 
-// gives maximum distance of a point from an AABB
+//! gives maximum distance of a point from an AABB
 double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
   double maxDistance2=0.0;
   double AABB_X2=0.0;
@@ -646,7 +639,7 @@ double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
   return sqrt(maxDistance2); 
 }
 
-// gives AABB of an circle
+//! gives AABB of an circle
 BlitzMat3x2 XFEM::getAABBofSphere(const BlitzVec3& X, const double radius){
   const int nsd=3;
   BlitzMat3x2 AABB;
@@ -688,5 +681,25 @@ const DRT::Node* XFEM::getNodeAtXsi(
   dserror ("there is no node at xsi ==> wrong tolerance?, bug??");
   return NULL; 
 }
+
+double biggestRadiusInAABBawayFromX(
+    const BlitzMat3x2&                      AABB, ///<bounding box
+    const BlitzVec3&                        X, //point coords                  
+    const BlitzVec3&                        circleCenter //point coords                  
+    )
+{
+  int xCompare = 0;
+  int yCompare = 0;
+  int zCompare = 0;
+  if (X(0)>circleCenter(0))
+    xCompare =1;
+  if (X(1)>circleCenter(1))
+    yCompare =1;
+  if (X(2)>circleCenter(2))
+    zCompare =1;
+     
+  return 5.0;
+}
+
 
 #endif  // #ifdef CCADISCRET

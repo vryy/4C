@@ -379,23 +379,23 @@ int XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,c
 int XFEM::XSearchTree::TreeNode::getXFEMLabelOfPointInTreeNode(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords){
   if (ElementList_.size()==0) 
     dserror("should not have an empty list here!");
-  double dista=0;
+  double distance=0;
   const DRT::Element* closestEle;
-  closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, pointCoords,dista);
-  double SearchRadius = fabs(dista);
-  TreeNode* workingNode = this;
   double AABBradius = -1.0;
-   //cout << "haha" << endl;
+  TreeNode* workingNode = this;
+  closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, pointCoords,distance);
+  double SearchRadius = fabs(distance);
   do {
-    const BlitzMat3x2 AABB =workingNode->getAABB();
-    for (int i=0;i<3;i++)
-      AABBradius =max(AABBradius, fabs(AABB(0,1)-AABB(0,0)));
+    const BlitzMat3x2 AABB=workingNode->getAABB();
+    for (int i=0;i<3;i++){
+      AABBradius=max(AABBradius, fabs(AABB(0,1)-AABB(0,0)));
+    }
     tree_->Candidates_+=workingNode->getElementList().size();
-    closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, workingNode->getElementList(), pointCoords,dista);
+    closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, workingNode->getElementList(), pointCoords,distance);
     workingNode=workingNode->getParent();
-  } while (workingNode!=NULL && workingNode->hasParent() && SearchRadius>AABBradius);
+  } while (workingNode!=NULL && SearchRadius>AABBradius);
   
-  if (dista<=0) {
+  if (distance<0) {
     const int eleId = closestEle->Id();
 //    cout << "classified as solid: "<<tree_->getLabelByElementID(eleId)<< endl;
     return (tree_->getLabelByElementID(eleId)); //solid
@@ -579,7 +579,6 @@ list<int> XFEM::XSearchTree::TreeNode::classifyAABB(
   return octants;
   
 }
-
 
 int XFEM::XSearchTree::TreeNode::getState() {
   return State_;
