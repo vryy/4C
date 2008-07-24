@@ -2549,6 +2549,15 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     */
     tau_(2) = 1./(tau_(0)*normgsq);
 
+    // for this implementation, tau_(0) does not store an intrinsic
+    // time scale but has to be divided by timefac
+    // later on, during the computation of the element matrix and
+    // load vector it will be rescaled ...
+    tau_(0)/=timefac;
+    tau_(1)/=timefac;
+    // same division for tau_C
+    tau_(2)/=timefac;
+    
   }
   else if(whichtau == Fluid3::codina)
   {
@@ -2615,6 +2624,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
      *
      * */
     tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_norm*hk));
+
+    // rescaling of tau_C for this implementation
+    tau_(2)/=timefac;
 
   }
   else
