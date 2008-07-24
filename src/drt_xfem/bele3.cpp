@@ -144,8 +144,8 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 {
   os << "Bele3 ";
   Element::Print(os);
-  std::cout << endl;
-  std::cout << data_;
+  os << endl;
+  os << data_;
   return;
 }
 
@@ -162,9 +162,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
