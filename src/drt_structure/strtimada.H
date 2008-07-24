@@ -192,6 +192,14 @@ namespace STR
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 
+    //! @name Output settings
+    //@{
+    double outsyseverytime_;  //!< print system (dis,vel,acc,...) 
+                              //!< every given time
+    double outstreverytime_;  //!< print stress/strain every given time
+    double outrestreverytime_;  //!< print restart every given time
+    //@}
+
     //! @name Plain time integration constants
     //@{
     double timeinitial_;  //!< initial time: t_0

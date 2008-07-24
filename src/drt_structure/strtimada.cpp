@@ -37,6 +37,10 @@ STR::TimAda::TimAda
   solver_(tis->GetSolver()),
   output_(tis->GetDiscretizationWriter()),
   //
+  outsyseverytime_(tap.get<double>("OUTSYSEVERYTIME")),
+  outstreverytime_(tap.get<double>("OUTSTREVERYTIME")),
+  outrestreverytime_(tap.get<double>("OUTRESTEVERYTIME")),
+  //
   timeinitial_(0.0),
   timefinal_(sdyn.get<double>("MAXTIME")),
   timestepinitial_(0),
@@ -107,9 +111,12 @@ void STR::TimAda::Integrate()
       Indicate(accepted, stpsiznew);
 
       // modify step-size
-      if (not accepted)
+      if ( (not accepted) and (mypid_ == 0) )
       {
         printf("Repeating step with stepsize = %g\n", stpsiznew);
+        std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+                  << " - - - - - - - - - - - - - - -"
+                  << std::endl;
         stepsize_ = stpsiznew;
       }
       adaptstep_ += 1;
@@ -144,10 +151,13 @@ void STR::TimAda::Integrate()
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
     
-    std::cout << "Step " << timestep_ 
-              << ", Time " << time_ 
-              << ", Step size " << stepsize_ 
-              << std::endl;
+    if (mypid_ == 0)
+    {
+      std::cout << "Step " << timestep_ 
+                << ", Time " << time_ 
+                << ", StepSize " << stepsize_ 
+                << std::endl;
+    }
   }
 
   // leave for good
@@ -177,10 +187,13 @@ void STR::TimAda::Indicate
   accepted = (norm < errtol_);
 
   // debug
-  std::cout << "ErrNorm " << norm 
-            << ", ErrTol " << errtol_ 
-            << ", Accept " << accepted 
-            << std::endl;
+  if (mypid_ == 0)
+  {
+    std::cout << "LocErrNorm " << std::scientific << norm 
+              << ", LocErrTol " << errtol_ 
+              << ", Accept " << std::boolalpha << accepted 
+              << std::endl;
+  }
 
   // get error order
   errorder_ = MethodOrderOfAccuracy();
