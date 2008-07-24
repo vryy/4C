@@ -2,7 +2,7 @@
 /*!
 \file adapter_fluid_moving_boundary.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -43,19 +43,18 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(cons
     case prb_fluid_ale:
     case prb_freesurf:
     {
-      std::cout << "using FluidAle as FluidMovingBoundary" << endl;
+      //std::cout << "using FluidAle as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     }
     case prb_fsi_xfem:
     {
-      std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
+      //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
       break;
     }
     default:
       dserror("fsi type not supported");
-      exit(1);
     }
 }
 
