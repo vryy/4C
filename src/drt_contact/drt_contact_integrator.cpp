@@ -1679,7 +1679,10 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
   for (int slave=0;slave<sele.NumNode();++slave)
   {
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
+#ifdef CONTACTONEMORTARLOOP
     const int* sdofs = snode->Dofs();
+#endif // #ifdef CONTACTONEMORTARLOOP
+    
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
