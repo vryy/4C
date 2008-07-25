@@ -158,6 +158,7 @@ void STR::TimAda::Integrate()
     // printing and output
     sti_->UpdateStep();
     sti_->PrintStep();
+    //
     OutputPeriod();
     
     // update
@@ -165,9 +166,11 @@ void STR::TimAda::Integrate()
     sti_->timen_ = time_ += stepsize_;
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
+    //
     UpdatePeriod();
     outrest_ = outsys_ = outstr_ = false;
     
+    // the user reads but rarely listens
     if (mypid_ == 0)
     {
       std::cout << "Step " << timestep_ 
