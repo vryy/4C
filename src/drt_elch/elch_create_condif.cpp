@@ -146,7 +146,7 @@ void CreateConDifDiscretization(int disnumff,int disnumscatra)
   int matnr = -1;
   for (int i=0; i<nummat; ++i)
   {
-    if (DRT::Problem::Instance()->Material(i).mattyp==m_condif)
+    if (DRT::Problem::Instance()->Material(i).mattyp==m_matlist)
     {
       // For historical reasons material numbers are given in FORTRAN
       // style.
@@ -154,7 +154,20 @@ void CreateConDifDiscretization(int disnumff,int disnumscatra)
       break;
     }
   }
-  if (matnr==-1)
+  if (matnr == -1) // if there is no material list, search for a single material
+  {
+    for (int i=0; i<nummat; ++i) 
+    {
+      if (DRT::Problem::Instance()->Material(i).mattyp==m_condif)
+      {
+        // For historical reasons material numbers are given in FORTRAN
+        // style.
+        matnr = i+1;
+        break;
+      }
+    }
+  }
+  if (matnr==-1) // we could not find any proper material
     dserror("No ConDif material defined. Cannot generate convection-diffusion mesh.");
 
   // construct condif elements

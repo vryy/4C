@@ -92,6 +92,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.m.condif = new _CONDIF();
       frdouble("DIFFUSIVITY",&(localmat.m.condif->diffusivity),&ierr);
    }
+   frchk("MAT_matlist",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp = m_matlist;
+      localmat.m.matlist = new _MATLIST();
+      frint("NUMMAT",&(localmat.m.matlist->nummat),&ierr);
+      if (ierr!=1) dserror("Reading of NUMMAT in MATLIST material failed");
+      int nummat = localmat.m.matlist->nummat;
+      /* assure that there is at least one single material in the material list */
+      dsassert(nummat>0,"NUMMAT is not greater than zero");
+      /* we allocate an int array for the material ids and read them into it */
+      localmat.m.matlist->matids =(int*)CCACALLOC(nummat, sizeof(int));
+      frint_n("MATIDS",localmat.m.matlist->matids,nummat,&ierr);
+   }
    frchk("MAT_Struct_StVenantKirchhoff",&ierr);
    if (ierr==1)
    {

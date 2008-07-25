@@ -35,6 +35,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
+
 // forward declarations
 struct _MATERIAL;
 
@@ -89,6 +90,21 @@ public:
 
   */
   DRT::Element* Clone() const;
+
+  /// Set element material
+  /*!
+    Material numbers are read from the input file. The element stores
+    a corresponding material object. These material objects can be
+    anything from very simple (just a little calculation) to highly
+    sophisticated with history data. The material is packed and
+    unpacked along with its element.
+
+    \param matnum : material number from input file
+    
+    \note reimplementation of this method, due to initialising 
+          numdofpernode_, since the material is known now.
+   */
+  virtual void SetMaterial(int matnum);
 
   /*!
   \brief Get shape type of element
@@ -183,7 +199,11 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
+  virtual int NumDofPerNode(const DRT::Node& node) const 
+  {
+    dsassert(numdofpernode_!=-1,"NumDofPerNode is -1");
+    return numdofpernode_;
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -329,11 +349,14 @@ private:
   };
 
   //! Gaussrule
-  DRT::UTILS::GaussRule3D                         gaussrule_;
+  DRT::UTILS::GaussRule3D   gaussrule_;
   //! flag for euler/ale net algorithm
-  bool                                            is_ale_;
+  bool                      is_ale_;
   //! container containing all kind of condif3 thisandthat
-  DRT::Container                                  data_;
+  DRT::Container            data_;
+  //! number of dofs per node (for systems of transport equations)
+  //! (storage neccessary because we dont know the material in the post filters anymore)
+  int                       numdofpernode_;
 
   // internal calculation methods
 
@@ -399,7 +422,7 @@ private:
    * \brief calculate stabilization parameter
    */
   void Caltau(
-      double&                                 tau,
+      vector<double>&                         tau,
       const Epetra_SerialDenseVector&         evel,
       const DRT::Element::DiscretizationType& distype,
       Epetra_SerialDenseVector&               funct,
@@ -408,7 +431,7 @@ private:
       Epetra_SerialDenseMatrix&               derxy,
       Epetra_SerialDenseMatrix&               xjm,
       vector<double>&                         velint,
-      const double&                           diffus,
+      const vector<double>&                   diffus,
       const int&                              iel,
       const double&                           timefac,
       bool&                                   is_stationary
@@ -430,7 +453,8 @@ private:
       const double&             fac,
       const double&             diffus,
       const int&                iel,
-      double                    timefac
+      const double&             timefac,
+      const int&                dofindex
       );
   
   /*!
@@ -449,7 +473,8 @@ private:
       const double&             tau,
       const double&             fac,
       const double&             diffus,
-      const int&                iel
+      const int&                iel,
+      const int&                dofindex
       );
 
   /*!
@@ -459,7 +484,8 @@ private:
       vector<double>&           phinp,
       struct _MATERIAL*         material,
       Epetra_SerialDenseVector& evel,
-      Condif3::FluxType         fluxtype
+      Condif3::FluxType         fluxtype,
+      const int&                dofindex
       );
 }; // class Condif3
 

@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 
 #include "condif3.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // for CalculateFlux()
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -28,6 +29,8 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Epetra_SerialDenseSolver.h>
+
+#include "../drt_lib/drt_globalproblem.H"
 
 
 using namespace DRT::UTILS;
@@ -70,13 +73,14 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
 
-  if (mat->MaterialType() != m_condif)
-    dserror("Material law is not a condif element");
-
   MATERIAL* actmat = NULL;
 
   if(mat->MaterialType()== m_condif)
     actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
+    else if (mat->MaterialType()== m_matlist)
+    {
+      actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
+    }
     else
       dserror("condif material expected but got type %d", mat->MaterialType());
 
@@ -147,11 +151,15 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     {
       Node* node = (Nodes())[k];
       vector<int> dof = discretization.Dof(node);
+      int numdof = dof.size();
         // up to now, there's only one dof per node
-      if (dof[0]!=lm[k])
-        { cout<<"dof[0]= "<<dof[0]<<"  lm[j]="<<lm[k]<<endl;
-          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
+      for (int i=0;i<numdof;++i)
+      {
+        if (dof[i]!=lm[k*numdof+i])
+        { cout<<"dof[i]= "<<dof[i]<<"  lm[k*numdof+i]="<<lm[k*numdof+i]<<endl;
+        dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
         }
+      }
     }
 
     // access control parameter
@@ -163,17 +171,21 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
       fluxtype = Condif3::diffusiveflux;
     else
       fluxtype=Condif3::noflux;  //default value
+    
+    // do a loop for systems of transported scalars
+    for (int i = 0; i<numdofpernode_; ++i)
+    {
+      Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel,fluxtype,i);
 
-    Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel,fluxtype);
-
-    for (int k=0;k<iel;k++)
-    { // form arithmetic mean of assembled nodal flux vectors
-      // => factor is the number of adjacent elements for each node
-      double factor = (Nodes()[k])->NumElement();
-      elevec1[k]+=eflux(0,k)/factor;
-      elevec2[k]+=eflux(1,k)/factor;
-      elevec3[k]+=eflux(2,k)/factor;
-    }
+      for (int k=0;k<iel;k++)
+      { // form arithmetic mean of assembled nodal flux vectors
+        // => factor is the number of adjacent elements for each node
+        double factor = (Nodes()[k])->NumElement();
+        elevec1[k*numdofpernode_+i]+=eflux(0,k)/factor;
+        elevec2[k*numdofpernode_+i]+=eflux(1,k)/factor;
+        elevec3[k*numdofpernode_+i]+=eflux(2,k)/factor;
+      }
+    } // loop over numdofpernode
   }
   break;
   default:
@@ -218,9 +230,29 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
   // dead load in element nodes
   const Epetra_SerialDenseVector bodyforce = BodyForce(time);
 
-  // get diffusivity
-  if(material->mattyp != m_condif) dserror("Material law is not of type m_condif.");
-  const double diffus = material->m.condif->diffusivity;
+  // get diffusivity / diffusivities
+  vector<double> diffus(numdofpernode_);
+
+  if (material->mattyp == m_matlist)
+  {
+    for (int k = 0;k<numdofpernode_;++k)
+    {
+      const int matid = material->m.matlist->matids[k];
+      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+      if (singlemat.mattyp != m_condif) dserror("no condif material found");
+      diffus[k]= singlemat.m.condif->diffusivity;
+#if 0
+      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
+#endif
+    }
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
+    diffus[0] = material->m.condif->diffusivity;
+  }
+  else
+    dserror("Material type is not supported");
 
   /*----------------------------------------- declaration of variables ---*/
   Epetra_SerialDenseVector      funct(iel);
@@ -230,9 +262,9 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
   Epetra_SerialDenseMatrix      derxy(nsd,iel);
   Epetra_SerialDenseMatrix      derxy2(6,iel);
   static vector<double>         velint(nsd);
-  double                        edeadng;
-  double                        hist; // history data at integration point
-  double                        tau; // stabilization parameter
+  vector<double>                edeadng(numdofpernode_);
+  vector<double>                hist(numdofpernode_); // history data at integration point
+  vector<double>                tau(numdofpernode_); // stabilization parameter
 
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter tau
@@ -362,25 +394,36 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
     } //end loop over i
 
     /*---------------- get history data (n,i) at integration point */
-    hist=0.0;
-    for (int j=0;j<iel;j++)
+    for (int k = 0;k<numdofpernode_;++k)
     {
-      hist += funct[j]*ehist[j];
+      hist[k] = 0;
+      for (int j=0;j<iel;j++)
+      {
+        hist[k] += funct[j]*ehist[j*numdofpernode_+k];
+      }
     }
 
     // get bodyforce in gausspoint
-    edeadng = 0.0;
-    for (int inode=0;inode<iel;inode++)
+    for (int k = 0;k<numdofpernode_;++k)
     {
-      edeadng+= bodyforce[inode]*funct[inode];
+      edeadng[k] = 0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        edeadng[k]+= bodyforce[inode*numdofpernode_+k]*funct[inode];
+        // note: bodyforce calculation isn't filled with functionality yet.
+        // -> this line has no effect since bodyforce is always zero.
+      }
     }
 
     /*-------------- perform integration for entire matrix and rhs ---*/
-    if(is_stationary==false)
-      Condif3CalMat(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,fac,diffus,iel,timefac);
-    else
-      Condif3CalMatStationary(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,fac,diffus,iel);
-
+    for (int k=0;k<numdofpernode_;++k) // deal with a system of transported scalars
+    {
+      if(is_stationary==false)
+        Condif3CalMat(*sys_mat,*residual,velint,hist[k],funct,derxy,derxy2,edeadng[k],tau[k],fac,diffus[k],iel,timefac,k);
+      else
+        Condif3CalMatStationary(*sys_mat,*residual,velint,hist[k],funct,derxy,derxy2,edeadng[k],tau[k],fac,diffus[k],iel,k);
+    } // loop over each scalar
+    
   } // integration loop
 
   return;
@@ -463,7 +506,7 @@ bool DRT::ELEMENTS::Condif3::isHigherOrderElement(
 const Epetra_SerialDenseVector DRT::ELEMENTS::Condif3::BodyForce(const double time) const
 {
    const int iel = NumNode();
-   Epetra_SerialDenseVector bodyforce(iel); // initialization included
+   Epetra_SerialDenseVector bodyforce(iel*numdofpernode_); // initialization included
    vector<DRT::Condition*> myneumcond;
 
    // check whether all nodes have a unique VolumeNeumann condition
@@ -585,7 +628,8 @@ void DRT::ELEMENTS::Condif3::Condif3CalMat(
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    double                    timefac
+    const double&             timefac,
+    const int&                dofindex
     )
 {
 /*========================= further variables =========================*/
@@ -617,7 +661,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 } // end of loop over nodes of element
 
 /*--------------------------------- now build single stiffness terms ---*/
-
+const int numdof =numdofpernode_;
 // -------------------------------------------System matrix
 for (int vi=0; vi<iel; ++vi)
 {
@@ -625,13 +669,13 @@ for (int vi=0; vi<iel; ++vi)
     {
     /* Standard Galerkin terms: */
     /* transient term */
-    estif(vi, ui) += fac*funct[vi]*funct[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac*funct[vi]*funct[ui] ;
 
     /* convective term */
-    estif(vi, ui) += timefacfac*funct[vi]*conv[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct[vi]*conv[ui] ;
 
     /* diffusive term */
-    estif(vi, ui) += timefacfac*diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi) + derxy(2, ui)*derxy(2, vi)) ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi) + derxy(2, ui)*derxy(2, vi)) ;
 
     /* Stabilization terms: */
     /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
@@ -646,23 +690,23 @@ for (int vi=0; vi<iel; ++vi)
 
     /* 2) convective stabilization */
     /* transient term */
-    estif(vi, ui) += taufac*conv[vi]*funct[ui];
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*funct[ui];
 
     /* convective term */
-    estif(vi, ui) += timetaufac*conv[vi]*conv[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv[vi]*conv[ui] ;
 
     /* diffusive term */
-    estif(vi, ui) += -timetaufac*conv[vi]*diff[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv[vi]*diff[ui] ;
 
     /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
     /* transient term */
-    estif(vi, ui) += taufac*diff[vi]*funct[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*funct[ui] ;
 
     /* convective term */
-    estif(vi, ui) += timetaufac*diff[vi]*conv[ui] ; 
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff[vi]*conv[ui] ; 
 
     /* diffusive term */
-    estif(vi, ui) += -timetaufac*diff[vi]*diff[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff[vi]*diff[ui] ;
   }
 }
 
@@ -670,16 +714,16 @@ for (int vi=0; vi<iel; ++vi)
 for (int vi=0; vi<iel; ++vi)
 {
   /* RHS source term */
-  eforce[vi] += fac*funct[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += fac*funct[vi]*rhsint ;
 
   /* transient stabilization of RHS source term */
   //eforce[vi] += -taufac*funct[vi]*rhsint ;
 
   /* convective stabilization of RHS source term */
-  eforce[vi] += taufac*conv[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
 
   /* diffusive stabilization of RHS source term */
-  eforce[vi] += taufac*diff[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
 }
 
 return;
@@ -746,7 +790,8 @@ void DRT::ELEMENTS::Condif3::Condif3CalMatStationary(
     const double&             tau,
     const double&             fac,
     const double&             diffus,
-    const int&                iel
+    const int&                iel,
+    const int&                dofindex
     )
 {
 /*========================= further variables =========================*/
@@ -776,7 +821,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 } // end of loop over nodes of element
 
 /*--------------------------------- now build single stiffness terms ---*/
-
+const int numdof =numdofpernode_;
 // -------------------------------------------System matrix
 for (int vi=0; vi<iel; ++vi)
 {
@@ -784,27 +829,27 @@ for (int vi=0; vi<iel; ++vi)
     {
     /* Standard Galerkin terms: */
     /* convective term */
-    estif(vi, ui) += fac*funct[vi]*conv[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac*funct[vi]*conv[ui] ;
 
     /* diffusive term */
-    estif(vi, ui) += fac_diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi)+ derxy(2, ui)*derxy(2, vi)) ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi)+ derxy(2, ui)*derxy(2, vi)) ;
 
-    /* Stabilization terms: */
+    /* Stabilization term: */
     /* 1) convective stabilization */
 
     /* convective term */
-    estif(vi, ui) += taufac*conv[vi]*conv[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*conv[ui] ;
 
     /* diffusive term */
-    estif(vi, ui) += -taufac*conv[vi]*diff[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -taufac*conv[vi]*diff[ui] ;
 
     /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
 
     /* convective term */
-    estif(vi, ui) += taufac*diff[vi]*conv[ui] ; 
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*conv[ui] ; 
 
     /* diffusive term */
-    estif(vi, ui) += -taufac*diff[vi]*diff[ui] ;
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -taufac*diff[vi]*diff[ui] ;
   }
 }
 
@@ -812,13 +857,13 @@ for (int vi=0; vi<iel; ++vi)
 for (int vi=0; vi<iel; ++vi)
 {
   /* RHS source term */
-  eforce[vi] += fac*funct[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += fac*funct[vi]*rhsint ;
 
   /* convective stabilization of RHS source term */
-  eforce[vi] += taufac*conv[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
 
   /* diffusive stabilization of RHS source term */
-  eforce[vi] += taufac*diff[vi]*rhsint ;
+  eforce[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
 }
 
 return;
@@ -1178,7 +1223,7 @@ void DRT::ELEMENTS::Condif3::gder2(
 // calculate stabilization parameter
 //
 void DRT::ELEMENTS::Condif3::Caltau(
-    double&                                 tau,
+    vector<double>&                         tau,
     const Epetra_SerialDenseVector&         evel,
     const DRT::Element::DiscretizationType& distype,
     Epetra_SerialDenseVector&               funct,
@@ -1187,7 +1232,7 @@ void DRT::ELEMENTS::Condif3::Caltau(
     Epetra_SerialDenseMatrix&               derxy,
     Epetra_SerialDenseMatrix&               xjm,
     vector<double>&                         velint,
-    const double&                           diffus,
+    const vector<double>&                   diffus,
     const int&                              iel,
     const double&                           timefac,
     bool&                                   is_stationary
@@ -1381,29 +1426,35 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
    if (is_stationary == false)
    {// stabilization parameters for instationary case (default)
-     /* parameter relating diffusive : reactive forces */
-     epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
-     if (diffus == 0.0)
-         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-     /* parameter relating convective : diffusive forces */
-     const double epe2 = mk * vel_norm * hk / diffus;
-     xi1 = DMAX(epe1,1.0);
-     xi2 = DMAX(epe2,1.0);
+     for(int k = 0;k<numdofpernode_;++k)
+     {
 
-     /*--------------------------------------------------- compute tau ---*/
-     tau = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus/mk)*xi2);
+       /* parameter relating diffusive : reactive forces */
+       epe1 = 2.0 * timefac * diffus[k] / (mk * DSQR(hk)); 
+       if (diffus[k] == 0.0)
+         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+       /* parameter relating convective : diffusive forces */
+       const double epe2 = mk * vel_norm * hk / diffus[k];
+       xi1 = DMAX(epe1,1.0);
+       xi2 = DMAX(epe2,1.0);
+
+       /*--------------------------------------------------- compute tau ---*/
+       tau[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus[k]/mk)*xi2);
+     } // for k
    }
    else
    {// stabilization parameters for stationary case
+     for (int k = 0;k<numdofpernode_;++k)
+     {
+       /*------------------------------------------------------ compute tau ---*/
+       /* stability parameter definition according to Franca and Valentin (2000) */
+       if (diffus[k] == 0.0)
+         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+       epe2 = mk * vel_norm * hk / diffus[k];      /* convective : diffusive forces */
+       xi2 = DMAX(epe2,1.0);
 
-     /*------------------------------------------------------ compute tau ---*/
-     /* stability parameter definition according to Franca and Valentin (2000) */
-	 if (diffus == 0.0)
-	     dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-     epe2 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
-     xi2 = DMAX(epe2,1.0);
-
-     tau = (DSQR(hk)*mk)/(2.0*diffus*xi2);
+       tau[k] = (DSQR(hk)*mk)/(2.0*diffus[k]*xi2);
+     } // for k
    }
 
 #if 0
@@ -1425,7 +1476,8 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     vector<double>&           ephinp,
     struct _MATERIAL*         material,
     Epetra_SerialDenseVector& evel,
-    Condif3::FluxType         fluxtype
+    Condif3::FluxType         fluxtype,
+    const int&                dofindex
 )
 {
   /*------------------------------------------------- set element data */
@@ -1445,8 +1497,22 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   }
 
   // get diffusivity
-  if(material->mattyp != m_condif) dserror("Material law is not of type m_condif.");
-  const double diffus = material->m.condif->diffusivity;
+  double diffus = 0;
+
+  if (material->mattyp == m_matlist)
+  {
+    const int matid = material->m.matlist->matids[dofindex];
+    const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+    if (singlemat.mattyp != m_condif) dserror("no condif material found");
+    diffus = singlemat.m.condif->diffusivity;
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
+    diffus = material->m.condif->diffusivity;
+  }
+  else
+    dserror("Material type is not supported");
 
   /*----------------------------------------- declaration of variables ---*/
   Epetra_SerialDenseVector        funct(iel);
@@ -1554,17 +1620,17 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     {
     case Condif3::totalflux:
       //convective flux terms
-        flux(0,iquad)+=evel[iquad*nsd]*ephinp[iquad];
-        flux(1,iquad)+=evel[1+iquad*nsd]*ephinp[iquad];
-        flux(2,iquad)+=evel[2+iquad*nsd]*ephinp[iquad];
+        flux(0,iquad)+=evel[iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
+        flux(1,iquad)+=evel[1+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
+        flux(2,iquad)+=evel[2+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
       // no break statement here!
     case Condif3::diffusiveflux:
       //diffusive flux terms
       for (int k=0;k<iel;k++)
       {
-        flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k];
-        flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k];
-        flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k];
+        flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k*numdofpernode_+dofindex];
+        flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k*numdofpernode_+dofindex];
+        flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k*numdofpernode_+dofindex];
       }
       break;
     case Condif3::noflux:

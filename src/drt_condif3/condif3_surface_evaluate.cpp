@@ -105,32 +105,38 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     else
       fluxtype=Condif3::noflux;  //default value
 
-    // compute fluxes on each node of the parent element
-    Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel,fluxtype);
-
-    // handle the result dofs in the right order (compare lm with lmparent)
-    int dofcount = 0;
-    for (int i=0; i<NumNode(); ++i)
+    // do a loop for systems of transported scalars
+    const int numdofpernode = parent_->numdofpernode_;
+    for (int j = 0; j<numdofpernode; ++j)
     {
-      for(int k = 0; k<ielparent;++k)
+      // compute fluxes on each node of the parent element
+      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel,fluxtype,j);
+
+      // handle the result dofs in the right order (compare lm with lmparent)
+      int dofcount = 0;
+      for (int i=0; i<NumNode(); ++i)
       {
-        if (lm[i]==lmparent[k]) // dof ids match => assemble this value
+        for(int k = 0; k<ielparent;++k)
         {
-          dofcount++;
-          // form arithmetic mean of assembled nodal flux vectors
-          // => factor is the number of adjacent elements for each node
-          double factor = (parent_->Nodes()[k])->NumElement();
-          // here, we rely on the right order (see above!)
-          //Node* node = (parent_->Nodes())[k];
-          //vector<int> dof = discretization.Dof(node);
-          //if (dof[0]!=lm[i]) dserror("mismatch");
-          elevec1[i]+=eflux(0,k)/factor;
-          elevec2[i]+=eflux(1,k)/factor;
-          elevec3[i]+=eflux(2,k)/factor;
+          if (lm[i]==lmparent[k]) // dof ids match => assemble this value
+          {
+            dofcount++;
+            // form arithmetic mean of assembled nodal flux vectors
+            // => factor is the number of adjacent elements for each node
+            double factor = (parent_->Nodes()[k])->NumElement();
+            // here, we rely on the right order (see above!)
+            //Node* node = (parent_->Nodes())[k];
+            //vector<int> dof = discretization.Dof(node);
+            //if (dof[0]!=lm[i]) dserror("mismatch");
+            elevec1[i*numdofpernode+j]+=eflux(0,k)/factor;
+            elevec2[i*numdofpernode+j]+=eflux(1,k)/factor;
+            elevec3[i*numdofpernode+j]+=eflux(2,k)/factor;
+          }
         }
       }
-    }
-    if (dofcount != NumNode()) dserror("Expected dof for surface element is missing");
+      if (dofcount != NumNode()) dserror("Expected dof for surface element is missing");
+
+    } // loop over numdofpernode
 
   }
   break;

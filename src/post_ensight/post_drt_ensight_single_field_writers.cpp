@@ -80,14 +80,37 @@ void AleEnsightWriter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 {
-  //phinp is a scalar result field with ONE dof per node.
-  //Therefore it is NOT possible to hand over field->problem()->num_dim()
-  // (equals 2 or 3) as a number of dofs
-  EnsightWriter::WriteResult("phinp", "phi", dofbased, 1);
+  //get number of dofs
+  int numdof = field->discretization()->DofRowMap()->NumGlobalElements();
+  //get number of nodes
+  int numnodes = field->discretization()->NumGlobalNodes();
+  // compute number of dofs per node
+  if (numdof%numnodes !=0) dserror("numdof is not an integer multiple of numnodes");
+  int numdofpernode = numdof/numnodes;
+  // write results for each transported scalar
+  if (numdofpernode == 1)
+  {
+    EnsightWriter::WriteResult("phinp","phi",dofbased,1);
+    // write flux vectors (always 3D)
+    EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
+  }
+  else
+  {
+    for(int k = 0; k < numdofpernode; k++)
+    {
+      ostringstream temp;
+      temp << k;
+      string name = "phi_"+temp.str();
+      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k);
+      // write flux vectors (always 3D)
+      EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
+    }
+  }
+
   // write velocity field (always 3D)
   EnsightWriter::WriteResult("convec_velocity", "velocity", nodebased, 3);
-  // write flux vectors (always 3D)
-  EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
+
+  // write element results (e.g. element owner)
   WriteElementResults(field);
 }
 

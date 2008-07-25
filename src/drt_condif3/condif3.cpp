@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_mat/matlist.H"
 
 using namespace DRT::UTILS;
 
@@ -27,7 +28,8 @@ DRT::ELEMENTS::Condif3::Condif3(int id, int owner) :
 DRT::Element(id,element_condif3,owner),
 gaussrule_(intrule3D_undefined),
 is_ale_(false),
-data_()
+data_(),
+numdofpernode_(-1)
 {
     return;
 }
@@ -53,6 +55,36 @@ DRT::Element* DRT::ELEMENTS::Condif3::Clone() const
   DRT::ELEMENTS::Condif3* newelement = new DRT::ELEMENTS::Condif3(*this);
   return newelement;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  create material class (public)                            gjb 07/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
+{
+  // the standard part:
+  //mat_ = MAT::Material::Factory(matnum);  // not allowed since mat_ is private
+  DRT::Element::SetMaterial(matnum);
+
+  // the special part:
+  // now the element knows its material, and we can use it to determine numdofpernode
+  RefCountPtr<MAT::Material> mat = Material();
+  MATERIAL* actmat = NULL;
+  if(mat->MaterialType()== m_condif)
+  {
+    numdofpernode_=1; // we only have a single scalar
+  }
+  else if (mat->MaterialType()== m_matlist) // we have a system of scalars
+  {
+    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
+    numdofpernode_=actmat->m.matlist->nummat;
+  }
+  else
+    dserror("condif material expected but got type %d", mat->MaterialType());
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Return the shape of a Condif3 element                      (public) |
@@ -93,6 +125,8 @@ void DRT::ELEMENTS::Condif3::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // Gaussrule
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  // numdofpernode
+  AddtoPack(data,numdofpernode_);
 
   // data_
   vector<char> tmp(0);
@@ -122,6 +156,8 @@ void DRT::ELEMENTS::Condif3::Unpack(const vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
+  // numdofpernode
+  ExtractfromPack(position,data,numdofpernode_);
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

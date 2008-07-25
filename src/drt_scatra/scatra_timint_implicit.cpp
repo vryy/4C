@@ -798,8 +798,32 @@ void ScaTraImplicitTimeInt::Output()
 
       if (writeflux_!="No")
       {
-      RCP<Epetra_MultiVector> flux = CalcFlux();
-      output_->WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+        RCP<Epetra_MultiVector> flux = CalcFlux();
+        int numdofpernode = flux->GlobalLength()/discret_->NumGlobalNodes();
+        // post_drt_ensight does not support multivectors based on the dofmap
+        // for now, I create single vectors that can be handled by the filter
+
+        // get the noderowmap
+        const Epetra_Map* noderowmap = discret_->NodeRowMap();
+        Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+        for(int k=0;k<numdofpernode;++k)
+        {
+          ostringstream temp;
+          temp << k;
+          string name = "flux_phi_"+temp.str();
+          for (int i = 0;i<fluxk->MyLength();++i)
+          {
+            DRT::Node* actnode = discret_->lRowNode(i);
+            int dofgid = discret_->Dof(actnode,k);
+            fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+            fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+            fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+          }
+          if (numdofpernode==1)
+            output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
+          else
+            output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
+        }
       }
 
       // write domain decomposition for visualization (only once!)
@@ -829,7 +853,7 @@ void ScaTraImplicitTimeInt::Output()
     if (writeflux_!="No")
     {
     RCP<Epetra_MultiVector> flux = CalcFlux();
-    output_->WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("flux", flux, IO::DiscretizationWriter::dofvector);
     }
 
     output_->WriteVector("phidtn", phidtn_);
@@ -1114,13 +1138,18 @@ void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
       // the set of degrees of freedom associated with the node
       vector<int> nodedofset = discret_->Dof(lnode);
 
-      const int gid = nodedofset[0];
-      int lid = dofrowmap->LID(gid);
-      double phi0=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(0,lnode->X());
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+        // evaluate component k of spatial function
+        double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
 
-      phinp_->ReplaceMyValues(1,&phi0,&lid);
-      phin_->ReplaceMyValues(1,&phi0,&lid);
-      phinm_->ReplaceMyValues(1,&phi0,&lid);
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        phinm_->ReplaceMyValues(1,&initialval,&doflid);
+      }
     }
   }
   else if (init==2) // field_by_condition
@@ -1150,21 +1179,24 @@ void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
           // the set of degrees of freedom associated with the node
           vector<int> nodedofset = discret_->Dof(lnode);
 
-          // get initial value from condition
-          double phi0 = 2.0;
-
-          // set initial value
-          const int gid = nodedofset[0];
-          int lid = dofrowmap->LID(gid);
-          phinp_->ReplaceMyValues(1,&phi0,&lid);
-          phin_->ReplaceMyValues(1,&phi0,&lid);
-          phinm_->ReplaceMyValues(1,&phi0,&lid);
+          int numdofs = nodedofset.size();
+          for (int k=0;k< numdofs;++k)
+          {
+            // get initial value from condition
+            double phi0 = 2.0;
+            // set initial value
+            const int dofgid = nodedofset[k];
+            int doflid = dofrowmap->LID(dofgid);
+            phinp_->ReplaceMyValues(1,&phi0,&doflid);
+            phin_->ReplaceMyValues(1,&phi0,&doflid);
+            phinm_->ReplaceMyValues(1,&phi0,&doflid);
+          }
         }
       }
     }
   }
   else
-    dserror("unknown option for condif initial field: %d", init);
+    dserror("unknown option for initial field: %d", init);
 
   return;
 } // ScaTraImplicitTimeInt::SetInitialField
@@ -1185,11 +1217,9 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
   // vectors and matrices
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  // get the noderowmap
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
   // empty vector for (normal) mass or heat flux vectors (3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
   // we have only 1 dof per node, so we have to treat each spatial direction separately
   Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);

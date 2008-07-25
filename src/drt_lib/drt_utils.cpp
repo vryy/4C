@@ -81,6 +81,7 @@ extern "C"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
@@ -571,6 +572,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
       powLaw->Unpack(data);
       return powLaw;
+    }
+    case ParObject_MatList:
+    {
+      MAT::MatList* matlist = new MAT::MatList();
+      matlist->Unpack(data);
+      return matlist;
     }
     case ParObject_CNode:
     {

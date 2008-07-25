@@ -65,6 +65,7 @@ void ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_cou
     const Epetra_BlockMap& phinpmap = mysol_->Map();
     string position = res->position;
 
+    // we only can test the first(!) scalar of a system (e.g. first dof at every node)
     if (position=="phi")
     {
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];

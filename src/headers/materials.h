@@ -61,9 +61,10 @@ typedef struct _MATERIAL
      struct _ARTWALLREMOD     *artwallremod;  /* Arterial Wall Material Law with Remodeling */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
-     struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
+     struct _VP_ROBINSON      *vp_robinson;   /* viscoplastic Robinson material */
      struct _STRUCT_MULTISCALE *struct_multiscale;     /* material parameters are calculated from microscale simulation */
-     }                         m;            /* union pointer to material specific structure */
+     struct _MATLIST          *matlist;       /* collection of any single materials (used for scalar transport problems)*/
+     }                         m;             /* union pointer to material specific structure */
 
 } MATERIAL;
 
@@ -788,3 +789,13 @@ typedef struct _STRUCT_MULTISCALE
                                  * discretization */
   char   *micro_inputfile_name; /* inputfile name for microstructure */
 } STRUCT_MULTISCALE;
+
+/*----------------------------------------------------------------------*
+ | material collection                                     gjb 07/08    |
+ *----------------------------------------------------------------------*/
+typedef struct _MATLIST
+{
+     INT         nummat; /* number of materials in list */
+     INT*        matids; /* pointer to an array that holds the material ids */
+
+} MATLIST;
