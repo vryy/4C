@@ -1576,9 +1576,9 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       TIMADA_DYNAMIC::timada_kind_ab2),
     &list);
 
-  DoubleParameter("OUTSYSEVERYTIME", 0.0, "", &list);
-  DoubleParameter("OUTSTREVERYTIME", 0.0, "", &list);
-  DoubleParameter("OUTRESTEVERYTIME", 0.0, "", &list);
+  DoubleParameter("OUTSYSPERIOD", 0.0, "", &list);
+  DoubleParameter("OUTSTRPERIOD", 0.0, "", &list);
+  DoubleParameter("OUTRESTPERIOD", 0.0, "", &list);
 
   DoubleParameter("STEPSIZEMAX", 0.0, "", &list);
   DoubleParameter("STEPSIZEMIN", 0.0, "", &list);

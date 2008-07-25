@@ -37,12 +37,9 @@ STR::TimAda::TimAda
   solver_(tis->GetSolver()),
   output_(tis->GetDiscretizationWriter()),
   //
-  outsyseverytime_(tap.get<double>("OUTSYSEVERYTIME")),
-  outstreverytime_(tap.get<double>("OUTSTREVERYTIME")),
-  outrestreverytime_(tap.get<double>("OUTRESTEVERYTIME")),
-  //
   timeinitial_(0.0),
   timefinal_(sdyn.get<double>("MAXTIME")),
+  timedirect_(Sign(timefinal_-timeinitial_)),
   timestepinitial_(0),
   timestepfinal_(sdyn.get<int>("NUMSTEP")),
   stepsizeinitial_(sdyn.get<double>("TIMESTEP")),
@@ -63,7 +60,17 @@ STR::TimAda::TimAda
   stepsizepre_(0),
   stepsize_(sdyn.get<double>("TIMESTEP")),
   locerrdisn_(Teuchos::null),
-  adaptstep_(0)
+  adaptstep_(0),
+  //
+  outsys_(false),
+  outstr_(false),
+  outrest_(false),
+  outsysperiod_(tap.get<double>("OUTSYSPERIOD")),
+  outstrperiod_(tap.get<double>("OUTSTRPERIOD")),
+  outrestperiod_(tap.get<double>("OUTRESTPERIOD")),
+  outsystime_(timeinitial_+outsysperiod_),
+  outstrtime_(timeinitial_+outstrperiod_),
+  outresttime_(timeinitial_+outrestperiod_)
 {
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
@@ -92,6 +99,11 @@ void STR::TimAda::Integrate()
     double stpsiznew;
     while ( (not accepted) and (adaptstep_ < adaptstepmax_) )
     {
+
+      // modify step-size #stepsize_ according to output period
+      // and store output type on #outstep_
+      SizeForOutput();
+
       // set current stepsize
       sti_->dt_->SetStep(0, stepsize_);
       //*(sti_->dt_(0)) = stepsize_;
@@ -110,7 +122,7 @@ void STR::TimAda::Integrate()
       // check wether step passes
       Indicate(accepted, stpsiznew);
 
-      // modify step-size
+      // adjust step-size
       if ( (not accepted) and (mypid_ == 0) )
       {
         printf("Repeating step with stepsize = %g\n", stpsiznew);
@@ -118,6 +130,7 @@ void STR::TimAda::Integrate()
                   << " - - - - - - - - - - - - - - -"
                   << std::endl;
         stepsize_ = stpsiznew;
+        outrest_ = outsys_ = outstr_ = false;
       }
       adaptstep_ += 1;
     }
@@ -142,9 +155,10 @@ void STR::TimAda::Integrate()
     // sti_->dt_ = stepsize_;
     sti_->dt_->UpdateSteps(stepsize_);
 
+    // printing and output
     sti_->UpdateStep();
     sti_->PrintStep();
-    sti_->OutputStep();
+    OutputPeriod();
 
     sti_->stepn_ = timestep_ += 1;
     sti_->timen_ = time_ += stepsize_;
@@ -231,8 +245,76 @@ void STR::TimAda::Indicate
   {
     stpsiznew = stepsizemin_;
   }
-  
+
   // get away from here
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*  Modify step size to hit precisely output period */
+void STR::TimAda::SizeForOutput()
+{
+  // check output of restart data first
+  if ( (fabs(time_ + stepsize_) >= fabs(outresttime_))
+       and (outrestperiod_ != 0.0) )
+
+  {
+    stepsize_ = outresttime_ - time_;
+    outrest_ = true;
+  }
+
+  // check output of system vectors
+  if ( (fabs(time_ + stepsize_) >= fabs(outsystime_))
+       and (outsysperiod_ != 0.0) )
+  {
+    stepsize_ = outsystime_ - time_;
+    outsys_ = true;
+    if (fabs(outsystime_) < fabs(outresttime_)) outrest_ = false;
+  }
+
+  // check output of stress/strain
+  if ( (fabs(time_ + stepsize_) >= fabs(outstrtime_))
+       and (outstrperiod_ != 0.0) )
+  {
+    stepsize_ = outstrtime_ - time_;
+    outstr_ = true;
+    if (fabs(outstrtime_) < fabs(outresttime_)) outrest_ = false;
+    if (fabs(outstrtime_) < fabs(outsystime_)) outsys_ = false;
+  }
+
+  // give a lift
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Output to file(s) */
+void STR::TimAda::OutputPeriod()
+{
+  // this flag is passed along subroutines and prevents
+  // repeated initialising of output writer, printing of
+  // state vectors, or similar
+  bool datawritten = false;
+
+  // output restart (try this first)
+  // write restart step
+  if (outrest_)
+  {
+    sti_->OutputRestart(datawritten);
+  }
+
+  // output results (not necessary if restart in same step)
+  if (outsys_ and (not datawritten) )
+  {
+    sti_->OutputState(datawritten);
+  }
+
+  // output stress & strain
+  if (outstr_)
+  {
+    sti_->OutputStressStrain(datawritten);
+  }
+
+  // flag down the cab
   return;
 }
 

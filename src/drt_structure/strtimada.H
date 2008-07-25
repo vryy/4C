@@ -159,6 +159,12 @@ namespace STR
       std::ostream& str  //!< output stream
     ) const;
 
+    //! Modify step size to hit precisely output period
+    void SizeForOutput();
+
+    //! Output to file(s)
+    void OutputPeriod();
+
     //@}
 
     //! @name Attributes
@@ -183,6 +189,15 @@ namespace STR
     //! not wanted: copy constructor
     TimAda(const TimAda& old);
 
+    //! A revolutionary routine to get --well-- the sign of a number.
+    static int Sign
+    (
+      const double number
+    )
+    {
+      return (number==0.0) ? 0 : (number>0.0) ? +1 : -1;
+    }
+
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<TimInt> sti_;  //!< marching time integrator
@@ -192,18 +207,13 @@ namespace STR
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 
-    //! @name Output settings
-    //@{
-    double outsyseverytime_;  //!< print system (dis,vel,acc,...) 
-                              //!< every given time
-    double outstreverytime_;  //!< print stress/strain every given time
-    double outrestreverytime_;  //!< print restart every given time
-    //@}
+
 
     //! @name Plain time integration constants
     //@{
     double timeinitial_;  //!< initial time: t_0
     double timefinal_;  //!< final time
+    int timedirect_;  //!< +1: in positive, -1: in negative time direction
     int timestepinitial_;  //!< initial time step index: 0 (often)
     int timestepfinal_;  //!< maximum time step: n_max
     double stepsizeinitial_;  //!< initial step size: dt_n
@@ -238,6 +248,22 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error 
                                               //!< estimation \f$\dot{l}_{n+1}\f$
     int adaptstep_;
+    //@}
+
+    //! @name Output settings
+    //@{
+    bool outsys_;  //!< do it this step: write system to file
+    bool outstr_;  //!< do it this step: write stress/strain to file
+    bool outrest_;  //!< do it this step: write restart data to file
+    double outsysperiod_;  //!< print system (dis,vel,acc,...) 
+                           //!< every given period of time
+    double outstrperiod_;  //!< print stress/strain every given 
+                           //!< period of time
+    double outrestperiod_;  //!< print restart every given 
+                            //!< period of time
+    double outsystime_;  //!< next output time point for system
+    double outstrtime_;  //!< next output time point for stress/strain
+    double outresttime_;  //!< next output time point for restart
     //@}
 
   }; // class TimAda

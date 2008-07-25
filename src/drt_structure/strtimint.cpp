@@ -592,6 +592,7 @@ void STR::TimInt::OutputStressStrain
   discret_->Evaluate(p, null, null, null, null, null);
   discret_->ClearState();
 
+  // Make new step
   if (not datawritten)
   {
     output_->NewStep(step_, (*time_)[0]);
