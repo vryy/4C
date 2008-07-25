@@ -165,6 +165,9 @@ namespace STR
     //! Output to file(s)
     void OutputPeriod();
 
+    //!  Update output periods
+    void UpdatePeriod();
+
     //@}
 
     //! @name Attributes

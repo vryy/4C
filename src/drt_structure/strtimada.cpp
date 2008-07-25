@@ -84,8 +84,8 @@ STR::TimAda::TimAda
 void STR::TimAda::Integrate()
 {
   // initialise time loop
-  double time_ = timeinitial_;
-  int timestep_ = timestepinitial_;
+  time_ = timeinitial_;
+  timestep_ = timestepinitial_;
   stepsize_ = stepsizeinitial_;
   stepsizepre_ = stepsize_;
 
@@ -159,11 +159,14 @@ void STR::TimAda::Integrate()
     sti_->UpdateStep();
     sti_->PrintStep();
     OutputPeriod();
-
+    
+    // update
     sti_->stepn_ = timestep_ += 1;
     sti_->timen_ = time_ += stepsize_;
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
+    UpdatePeriod();
+    outrest_ = outsys_ = outstr_ = false;
     
     if (mypid_ == 0)
     {
@@ -315,6 +318,17 @@ void STR::TimAda::OutputPeriod()
   }
 
   // flag down the cab
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update output periods */
+void STR::TimAda::UpdatePeriod()
+{
+  if (outrest_) outresttime_ += outrestperiod_;
+  if (outsys_) outsystime_ += outsysperiod_;
+  if (outstr_) outstrtime_ += outstrperiod_;
+  // freedom
   return;
 }
 
