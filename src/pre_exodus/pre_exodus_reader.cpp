@@ -1256,6 +1256,16 @@ void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
   }
 }
 
+void EXODUS::PrintMap(ostream& os,const map<double,int> mymap)
+{
+  map<double,int>::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": " << iter->second;
+      os << endl;
+  }
+}
+
 void EXODUS::PrintMap(ostream& os,const map<int,map<int,int> > mymap)
 {
   map<int,map<int,int> >::const_iterator iter;
