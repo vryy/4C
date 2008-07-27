@@ -157,7 +157,19 @@ public:
   
   //! Add Element Block to mesh
   void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
-
+  
+  //! Erase Element Block from mesh
+  void EraseElementBlock(const int id);
+  
+  //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
+  map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints) const;
+  
+  //! Plot Nodes in Gmsh-file
+  void PlotNodesGmsh();
+  
+  //! Plot all ElementBlocks into Gmsh-file
+  void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
+  
 private:
   RCP<map<int,vector<double> > > nodes_;
   
@@ -391,6 +403,8 @@ inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape 
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
 void PrintMap(ostream& os, const map<int,vector<double> >mymap);
 void PrintMap(ostream& os,const map<int,set<int> > mymap);
+void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
+void PrintMap(ostream& os,const map<int,pair<int,int> > mymap);
 void PrintVec(ostream& os, const vector<int> actvec);
 void PrintVec(ostream& os, const vector<double> actvec);
 void PrintSet(ostream& os, const set<int> actset);
@@ -398,6 +412,8 @@ void PrintSet(ostream& os, const set<int> actset);
 
 int HexSideNumberExoToBaci(const int exoface);
 int PyrSideNumberExoToBaci(const int exoface);
+
+
 
 } // of namespace EXODUS
 

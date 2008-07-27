@@ -36,7 +36,7 @@ MAT::ArtWallRemod::ArtWallRemod()
   lambda_ = rcp(new vector<vector<double> >);
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  mytime_ = rcp(new vector<double>);
+  remtime_ = rcp(new vector<double>);
 }
 
 
@@ -77,7 +77,7 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
     AddtoPack(data,gamma_->at(var));
     AddtoPack(data,phi_->at(var));
     AddtoPack(data,stresses_->at(var));
-    AddtoPack(data,mytime_->at(var));
+    AddtoPack(data,remtime_->at(var));
   }
   
   return;
@@ -109,7 +109,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   gamma_ = rcp(new vector<double>);
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  mytime_ = rcp(new vector<double>);
+  remtime_ = rcp(new vector<double>);
   for (int var = 0; var < histsize; ++var) {
     double gamma;
     Epetra_SerialDenseMatrix tmp(3,3);
@@ -121,7 +121,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     stresses_->push_back(tmp);
     double mytime;
     ExtractfromPack(position,data,mytime);
-    mytime_->push_back(mytime);
+    remtime_->push_back(mytime);
   }
 
   if (position != (int)data.size())
@@ -175,65 +175,29 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   } else if (initflag==2){
     dserror("Random init not yet implemented for ARTWALLREMOD");
   } else dserror("Unknown init for ARTWALLREMOD");
+  
+  // check for remodelling option and initialize 
+  if (matdata_->m.artwallremod->rembegt != -1.){
+    // history 
+    gamma_ = rcp(new vector<double> (numgp));  // of alignment angles
+    lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
+    phi_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
+    stresses_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
+    remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
+    for (int gp = 0; gp < numgp; ++gp) {
+      gamma_->at(gp) = gamma;
+      lambda_->at(gp).resize(3);
+      for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
+      Epetra_SerialDenseMatrix emptymat(3,3);
+      phi_->at(gp) = emptymat;
+      stresses_->at(gp) = emptymat;
+      remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
+    }
+  }
 
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::ArtWallRemod::Initialize(const int numgp, const int eleid) 
-{
-  srand ( time(NULL) + 5 + eleid*numgp );
-
-  gamma_ = rcp(new vector<double>);
-  a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp));
-  lambda_ = rcp(new vector<vector<double> > (numgp));
-  phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  mytime_ = rcp(new vector<double>);
-  // initial basis is identity
-  Epetra_SerialDenseMatrix id(3,3);
-  for (int i=0; i<3; ++i) id(i,i) = 1.0;
-  Epetra_SerialDenseMatrix initstress(3,3);
-  
-  vector<double> randominit(8);
-  for (int i = 0; i < numgp; ++i) {
-    randominit[i] = ( (double)rand() / ((double)(RAND_MAX)+(double)(1)) );
-  }
-  
-  // initialize remodelling parameters
-  for(int gp=0; gp<numgp; ++gp){
-    lambda_->at(gp).resize(3);
-    a1_->at(gp).resize(3);
-    a2_->at(gp).resize(3);
-    if (matdata_->m.artwallremod->init == 1){
-      // random init
-      gamma_->push_back(randominit[gp]);
-    } else if (matdata_->m.artwallremod->init == 0){
-      // pseudo-isotropic init
-      gamma_->push_back(45.*PI/180);
-    } else dserror("Unknown remodeling initialization");
-    for (int i = 0; i < 3; ++i){
-      lambda_->at(gp)[i] = 0.0;
-    }
-    phi_->push_back(id);
-    stresses_->push_back(initstress);
-    mytime_->push_back(matdata_->m.artwallremod->rembegt);
-    //EvaluateFiberVecs(gp);
-    
-//    cout << "gamma: " << gamma_->at(gp) << endl;
-//    cout << "Phi: " << phi_->at(gp) << endl;
-//    cout << "a1: " << PrintVec(a1_->at(gp)) << endl;
-//    cout << "a2: " << PrintVec(a2_->at(gp)) << endl;
-  }
-
-  isinit_ = true;
-  
-  return ;
-  
-}
 
 
 /*----------------------------------------------------------------------*
@@ -328,8 +292,11 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // anisotropic part: ***************************************************
   // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
   
-//  cout << "a1: " << PrintVec(a1_->at(gp)) << endl;
-//  cout << "a2: " << PrintVec(a2_->at(gp)) << endl;
+  // decide whether its time to remodel
+  const double time = params.get("total time",-1.0);
+  if ((remtime_->at(gp) != -1.) && (time > remtime_->at(gp))){
+    Remodel(gp,time);
+  }
   
   // structural tensors in voigt notation
   Epetra_SerialDenseVector A1(6);
@@ -389,7 +356,46 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
                     - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
     }
   }
+  
+  // store current stress in case of remodeling
+  if (remtime_->at(gp) != -1.){
+    for (int i = 0; i < 3; ++i) stresses_->at(gp)(i,i) = (*stress)(i);
+    stresses_->at(gp)(0,1) = (*stress)(3); stresses_->at(gp)(1,0) = (*stress)(3);
+    stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
+    stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
+  }
 
+
+  return;
+}
+
+void MAT::ArtWallRemod::Remodel(const int gp, const double time)
+{
+  // evaluate eigenproblem based on stress of previous step
+  Epetra_SerialDenseVector lambda(3);
+  // watch out! stress matrix will temporarily hold eigenvectors!
+  LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
+  
+  // modulation function acc. Hariton: tan g = max lambda / 2nd max lambda
+  double newgamma = atan(lambda(3)/lambda(2));
+  
+  // check whether delta gamma is larger than tolerance
+  const double gammatol = 0.0001;
+  if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
+    remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
+    return; // get out here
+  }
+  
+  EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
+  
+  // update
+  gamma_->at(gp) = newgamma;
+  remtime_->at(gp) = time; // we remodel only once pre timestep, not during iteration
+  
+  // debug/plotting storage
+  phi_->at(gp) = stresses_->at(gp);
+  for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = lambda(i);
+  
   return;
 }
 

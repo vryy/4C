@@ -49,7 +49,8 @@ void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);
 void ValidateElementJacobian(EXODUS::Mesh& mymesh,const DRT::Element::DiscretizationType distype, RCP<EXODUS::ElementBlock>);
 
 //! Check one element for positive Jacobian
-bool PositiveEle(vector<int>& nodes,EXODUS::Mesh& mymesh, Epetra_SerialDenseMatrix& deriv);
+bool PositiveEle(const vector<int>& nodes,const EXODUS::Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv);
+int EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords);
 
 //! Rewind one Element
 vector<int> RewindEle(vector<int> old_nodeids, const DRT::Element::DiscretizationType distype);

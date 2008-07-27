@@ -36,6 +36,7 @@ its parameters and conditions.
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_readbc.H"
 #include "pre_exodus_validate.H"
+#include "pre_exodus_centerline.H"
 
 
 using namespace std;
@@ -50,202 +51,212 @@ int main(
   MPI_Init(&argc,&argv);
 #endif
 
-    string exofile;
-    string bcfile;
-    string headfile;
-    string datfile;
-    
-    // related to solid shell extrusion
-    double soshthickness = 0.0;
-    int soshnumlayer = 1;
-    int soshseedid = 0;
-    int soshgmsh = -1;
-    int concat2loose = 0;
+  string exofile;
+  string bcfile;
+  string headfile;
+  string datfile;
+  string cline;
+  
+  // related to solid shell extrusion
+  double soshthickness = 0.0;
+  int soshnumlayer = 1;
+  int soshseedid = 0;
+  int soshgmsh = -1;
+  int concat2loose = 0;
 
-    Teuchos::CommandLineProcessor My_CLP;
-    My_CLP.setDocString("Preprocessor Exodus2Baci \n");
-    My_CLP.throwExceptions(false);
-    My_CLP.setOption("exo",&exofile,"exodus file to open");
-    My_CLP.setOption("bc",&bcfile,"bc's and ele's file to open");
-    My_CLP.setOption("head",&headfile,"baci header file to open");
-    My_CLP.setOption("dat",&datfile,"output .dat file name [defaults to exodus file name]");
-    // here options related to solid shell extrusion are defined
-    My_CLP.setOption("gensosh",&soshthickness,"generate solid-shell body with given thickness");
-    My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
-    My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
-    My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
-    My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
-    
-    CommandLineProcessor::EParseCommandLineReturn
-      parseReturn = My_CLP.parse(argc,argv);
+  Teuchos::CommandLineProcessor My_CLP;
+  My_CLP.setDocString("Preprocessor Exodus2Baci \n");
+  My_CLP.throwExceptions(false);
+  My_CLP.setOption("exo",&exofile,"exodus file to open");
+  My_CLP.setOption("bc",&bcfile,"bc's and ele's file to open");
+  My_CLP.setOption("head",&headfile,"baci header file to open");
+  My_CLP.setOption("dat",&datfile,"output .dat file name [defaults to exodus file name]");
+  // here options related to solid shell extrusion are defined
+  My_CLP.setOption("gensosh",&soshthickness,"generate solid-shell body with given thickness");
+  My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
+  My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
+  My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
+  My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
+  
+  My_CLP.setOption("cline",&cline,"generate local element coordinate systems based on centerline file, or mesh line (set to 'mesh'");
+  map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
+  
+  CommandLineProcessor::EParseCommandLineReturn
+    parseReturn = My_CLP.parse(argc,argv);
 
-    if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
+  if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
+  {
+    exit(0);
+  }
+  if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
+  {
+    dserror("CommandLineProcessor reported an error");
+  }
+
+  /**************************************************************************
+   * Start with the preprocessing
+   **************************************************************************/
+  if (exofile=="")
+  {
+    if (datfile!="")
     {
-      exit(0);
-    }
-    if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
-    {
-      dserror("CommandLineProcessor reported an error");
-    }
-
-    /**************************************************************************
-     * Start with the preprocessing
-     **************************************************************************/
-    if (exofile=="")
-    {
-      if (datfile!="")
-      {
-        // just validate a given BACI input file
-        EXODUS::ValidateInputFile(datfile);
-        return 0;
-      }
-      else
-      {
-        cout<<"No Exodus II file was found"<<endl;
-        My_CLP.printHelpMessage(argv[0],cout);
-        exit(1);
-      }
-    }
-
-    // create mesh object based on given exodus II file
-    EXODUS::Mesh mymesh(exofile.c_str());
-    // print infos to cout
-    mymesh.Print(cout);
-
-    /**************************************************************************
-     * Edit a existing Mesh, e.g. extrusion of surface
-     **************************************************************************/
-
-    // generate solid shell extrusion based on exodus file
-    if (soshthickness!=0.0){
-      if (exofile=="") dserror("no exofile specified for extrusion");
-      EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose);
-      mysosh.WriteMesh("extr_" + exofile);
-      exit(0);
-    }
-
-    /**************************************************************************
-     * Read ControlFile for Boundary and Element descriptions
-     **************************************************************************/
-
-    // declare empty vectors for holding "boundary" conditions
-    vector<EXODUS::elem_def> eledefs;
-    vector<EXODUS::cond_def> condefs;
-
-    if (bcfile=="")
-    {
-      int error = EXODUS::CreateDefaultBCFile(mymesh);
-      if (error!=0) dserror("Creation of default bc-file not successful.");
+      // just validate a given BACI input file
+      EXODUS::ValidateInputFile(datfile);
+      return 0;
     }
     else
     {
-      // read provided bc-file
-      EXODUS::ReadBCFile(bcfile,eledefs,condefs);
-      
-      int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
-      int test = eledefs.size() + condefs.size();
-      if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl; 
+      cout<<"No Exodus II file was found"<<endl;
+      My_CLP.printHelpMessage(argv[0],cout);
+      exit(1);
     }
+  }
 
-    /**************************************************************************
-     * Read HeaderFile for 'header' parameters, e.g. solver, dynamic, material
-     * or create a default HeaderFile
-     **************************************************************************/
-    if (headfile=="")
-    {
-      string defaultheadfilename = "default.head";
-      cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
+  // create mesh object based on given exodus II file
+  EXODUS::Mesh mymesh(exofile.c_str());
+  // print infos to cout
+  mymesh.Print(cout);
 
-      // open default header file
-      ofstream defaulthead(defaultheadfilename.c_str());
-      if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
+  /**************************************************************************
+   * Edit a existing Mesh, e.g. extrusion of surface
+   **************************************************************************/
 
-      // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
+  // generate solid shell extrusion based on exodus file
+  if (soshthickness!=0.0){
+    if (exofile=="") dserror("no exofile specified for extrusion");
+    EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose);
+    mysosh.WriteMesh("extr_" + exofile);
+    
+    exit(0);
+  }
+  
+  // generate local element coordinate systems based on centerline
+  if (cline!=""){
+    elecenterlineinfo = EleCenterlineInfo(cline,mymesh);
+  }
 
-      // write default .dat header into file
+  /**************************************************************************
+   * Read ControlFile for Boundary and Element descriptions
+   **************************************************************************/
+
+  // declare empty vectors for holding "boundary" conditions
+  vector<EXODUS::elem_def> eledefs;
+  vector<EXODUS::cond_def> condefs;
+
+  if (bcfile=="")
+  {
+    int error = EXODUS::CreateDefaultBCFile(mymesh);
+    if (error!=0) dserror("Creation of default bc-file not successful.");
+  }
+  else
+  {
+    // read provided bc-file
+    EXODUS::ReadBCFile(bcfile,eledefs,condefs);
+    
+    int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
+    int test = eledefs.size() + condefs.size();
+    if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl; 
+  }
+
+  /**************************************************************************
+   * Read HeaderFile for 'header' parameters, e.g. solver, dynamic, material
+   * or create a default HeaderFile
+   **************************************************************************/
+  if (headfile=="")
+  {
+    string defaultheadfilename = "default.head";
+    cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
+
+    // open default header file
+    ofstream defaulthead(defaultheadfilename.c_str());
+    if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
+
+    // get valid input parameters
+    Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
+
+    // write default .dat header into file
 //      Teuchos::ParameterList empty;
 //      Teuchos::ParameterList size = list->sublist("PROBLEM SIZE");
 //      cout << size << " hello " << endl;
 //      DRT::INPUT::PrintDatHeader(defaulthead,*list);
-      stringstream prelimhead;
-      DRT::INPUT::PrintDatHeader(prelimhead,*list);
-      string headstring = prelimhead.str();
-      size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
-      if (size_section!=string::npos){
-        size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
-        headstring.erase(size_section,typ_section-size_section);
-      }
-      defaulthead << headstring;
-
-
-      defaulthead <<
-      "---------------------------------------------------------MATERIALS"<<endl<<
-      "-------------------------------------------------------LOAD CURVES"<<endl<<
-      "------------------------------------------------------------CURVE1"<<endl<<
-      "------------------------------------------------------------CURVE2"<<endl<<
-      "------------------------------------------------------------CURVE3"<<endl<<
-      "------------------------------------------------------------CURVE4"<<endl<<
-      "------------------------------------------------------------FUNCT1"<<endl<<
-      "------------------------------------------------------------FUNCT2"<<endl<<
-      "------------------------------------------------------------FUNCT3"<<endl<<
-      "------------------------------------------------------------FUNCT4"<<endl;
-
-      // close default header file
-      if (defaulthead.is_open()) defaulthead.close();
+    stringstream prelimhead;
+    DRT::INPUT::PrintDatHeader(prelimhead,*list);
+    string headstring = prelimhead.str();
+    size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
+    if (size_section!=string::npos){
+      size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+      headstring.erase(size_section,typ_section-size_section);
     }
+    defaulthead << headstring;
 
-    /**************************************************************************
-     * Finally, create and validate the BACI input file
-     **************************************************************************/
-    if ((headfile!="") && (bcfile!="") && (exofile!=""))
+
+    defaulthead <<
+    "---------------------------------------------------------MATERIALS"<<endl<<
+    "-------------------------------------------------------LOAD CURVES"<<endl<<
+    "------------------------------------------------------------CURVE1"<<endl<<
+    "------------------------------------------------------------CURVE2"<<endl<<
+    "------------------------------------------------------------CURVE3"<<endl<<
+    "------------------------------------------------------------CURVE4"<<endl<<
+    "------------------------------------------------------------FUNCT1"<<endl<<
+    "------------------------------------------------------------FUNCT2"<<endl<<
+    "------------------------------------------------------------FUNCT3"<<endl<<
+    "------------------------------------------------------------FUNCT4"<<endl;
+
+    // close default header file
+    if (defaulthead.is_open()) defaulthead.close();
+  }
+
+  /**************************************************************************
+   * Finally, create and validate the BACI input file
+   **************************************************************************/
+  if ((headfile!="") && (bcfile!="") && (exofile!=""))
+  {
+    // set default dat-file name if needed
+    if (datfile=="")
     {
-      // set default dat-file name if needed
-      if (datfile=="")
-      {
-        string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
-        datfile=exofilebasename+".dat";
-      }
-
-      // screen info
-      cout << "creating and checking BACI input file       --> " << datfile << endl;
-      //cout << "checking BACI input file       --> "<<datfile<< endl;
-
-      // communication objects needed for rewinding timer
-    #ifdef PARALLEL
-      int myrank = 0;
-      int nproc  = 1;
-      MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-      MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-      if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
-      RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-    #else
-      RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
-    #endif
-
-      // check for positive Element-Center-Jacobians and otherwise rewind them 
-      Epetra_Time time(*comm);
-      RCP<Time> timerewind;
-      timerewind= TimeMonitor::getNewTimer("Rewinding");
-      RCP<TimeMonitor> tm_rewind = rcp(new TimeMonitor(*timerewind));
-      ValidateMeshElementJacobians(mymesh);
-      tm_rewind = null;
-      cout << "...Ensure positive element jacobians";
-      cout << "        in...." << time.ElapsedTime() <<" secs" << endl;
-      //TimeMonitor::summarize();
-
-      // write the BACI input file
-      RCP<Time> timewrite;
-      timewrite = TimeMonitor::getNewTimer("Writing");
-      RCP<TimeMonitor> tm_write = rcp(new TimeMonitor(*timewrite));
-      EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
-      tm_write = null;
-      cout << "...Writing dat-file";
-      cout << "                         in...." << time.ElapsedTime() << " secs" << endl;
-
-      //validate the generated BACI input file
-      EXODUS::ValidateInputFile(datfile);
+      string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
+      datfile=exofilebasename+".dat";
     }
+
+    // screen info
+    cout << "creating and checking BACI input file       --> " << datfile << endl;
+    //cout << "checking BACI input file       --> "<<datfile<< endl;
+
+    // communication objects needed for rewinding timer
+  #ifdef PARALLEL
+    int myrank = 0;
+    int nproc  = 1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+    if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
+    RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+  #else
+    RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
+  #endif
+
+    // check for positive Element-Center-Jacobians and otherwise rewind them 
+    Epetra_Time time(*comm);
+    RCP<Time> timerewind;
+    timerewind= TimeMonitor::getNewTimer("Rewinding");
+    RCP<TimeMonitor> tm_rewind = rcp(new TimeMonitor(*timerewind));
+    ValidateMeshElementJacobians(mymesh);
+    tm_rewind = null;
+    cout << "...Ensure positive element jacobians";
+    cout << "        in...." << time.ElapsedTime() <<" secs" << endl;
+    //TimeMonitor::summarize();
+
+    // write the BACI input file
+    RCP<Time> timewrite;
+    timewrite = TimeMonitor::getNewTimer("Writing");
+    RCP<TimeMonitor> tm_write = rcp(new TimeMonitor(*timewrite));
+    EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
+    tm_write = null;
+    cout << "...Writing dat-file";
+    cout << "                         in...." << time.ElapsedTime() << " secs" << endl;
+
+    //validate the generated BACI input file
+    EXODUS::ValidateInputFile(datfile);
+  }
 
 #ifdef PARALLEL
   MPI_Finalize();

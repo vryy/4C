@@ -80,8 +80,6 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_artwallremod; }
     
-    void Initialize(const int numgp, const int eleid) ;
-    
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,
                   Teuchos::ParameterList& params,
@@ -101,10 +99,7 @@ namespace MAT
     
     void Setup(const int numgp, const int eleid);
 
-    void Update(const Epetra_SerialDenseMatrix& Phi,
-        const Epetra_SerialDenseVector& lambda,
-        const vector<double> rem_toggle,
-        const int gp, const double r0, const double decay);
+    void Remodel(const int gp, const double time);
 
     void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);
 
@@ -129,7 +124,7 @@ namespace MAT
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
     
     // remember time
-    Teuchos::RCP<vector<double> > mytime_;
+    Teuchos::RCP<vector<double> > remtime_;
     
     bool isinit_;
     

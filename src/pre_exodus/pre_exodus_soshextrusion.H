@@ -42,6 +42,11 @@ namespace EXODUS
   bool CheckExtrusion(const EXODUS::SideSet sideset);
   bool CheckExtrusion(const EXODUS::NodeSet nodeset);
   
+  void RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
+      map<int,vector<int> >& newconn, map<int,vector<double> >& newnodes,map<int,set<int> >& ext_node_conn,
+      const RCP<map<int,vector<double> > > basenodes, 
+      const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair);
+  
   vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance,
       const int layer, const int numlayers, const vector<double> normal);
   
@@ -52,6 +57,7 @@ namespace EXODUS
   vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
   
   vector<double> Normal(int head1, int origin, int head2, const EXODUS::Mesh& basemesh);
+  vector<double> Normal(int head1, int origin, int head2,const map<int,vector<double> >& coords);
   
   void CheckNormDir(vector<double>& checkn,const vector<double> refn);
   

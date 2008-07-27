@@ -37,7 +37,8 @@ namespace EXODUS
 {
 //! write datfile
 int WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
-    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs);
+    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs,
+    const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo);
 
 //! datfile Intro
 void WriteDatIntro(const string& headfile,const EXODUS::Mesh& mymesh, ostream& dat);
@@ -64,10 +65,12 @@ const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& 
 void WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! Elements into datfile
-void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat);
+void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
+    const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo);
 
 //! Elements from eblock
-void DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat);
+void DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat,
+    const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo,const int eb_id);
 
 inline string CondGeomTypeToString(const EXODUS::cond_def& def)
 {

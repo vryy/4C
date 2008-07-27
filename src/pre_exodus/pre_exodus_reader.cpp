@@ -21,6 +21,7 @@ is handed to a c++ object mesh.
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "pre_exodus_soshextrusion.H" //for gmsh plot
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -925,6 +926,158 @@ void EXODUS::Mesh::AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const
   map<int,RCP<ElementBlock> > eblocks = GetElementBlocks();
   eblocks.insert(std::pair<int,RCP<ElementBlock> >(GetNumElementBlocks()+1,eblock));
 }
+/*----------------------------------------------------------------------*
+ |  Erase Element Block from mesh(public)                      maf 07/08|
+ *----------------------------------------------------------------------*/
+void EXODUS::Mesh::EraseElementBlock(const int id)
+{
+  int red_numele = GetElementBlock(id)->GetNumEle();
+  elementBlocks_.erase(id);
+  num_elem_ = num_elem_ - red_numele;
+}
+
+/*------------------------------------------------------------------------*
+ | - calculates the midpoint of each element                               |
+ | - returns map <midpoint-ID,pair<eblock-ID,element-ID> >         SP 06/08|
+ *------------------------------------------------------------------------*/
+map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints) const
+{
+	//map that will be returned
+	map<int,pair<int,int> > conn_mpID_elID;
+	
+//	//initialising midpoints
+//	this->midpoints_ = rcp(new map<int,vector<double> >);
+	
+	//auxiliary variables
+	int counter_elements = 0;
+	int nodes_per_element = 0;
+	
+	vector<double> sumVector(3,0);
+	vector<double> midPoint(3,0);
+	
+	map<int,RCP<ElementBlock> > EBlocks = this->GetElementBlocks();
+	map<int,RCP<ElementBlock> >::const_iterator it;
+		
+	map<int,vector<int> > EleConn;
+	map<int,vector<int> >::const_iterator it_2;
+	
+	vector<int>::const_iterator it_3;
+	
+	//loop over ElementBlocks
+	for(it = EBlocks.begin(); it != EBlocks.end(); ++it)
+	{
+		EleConn = *(it->second->GetEleConn());
+	
+		//loop over element connectivity
+		for(it_2 = EleConn.begin(); it_2 != EleConn.end(); ++it_2)
+		{
+			counter_elements++;
+			nodes_per_element = 0;
+					
+			sumVector[0] = 0;
+			sumVector[1] = 0;
+			sumVector[2] = 0;
+					
+			//loop over each Node in one element connectivity
+			for(it_3 = it_2->second.begin(); it_3 != it_2->second.end(); ++it_3)
+			{
+				nodes_per_element++;
+					
+				//sum of two vectors
+				sumVector[0] += GetNodeExo(*it_3)[0];
+				sumVector[1] += GetNodeExo(*it_3)[1];
+				sumVector[2] += GetNodeExo(*it_3)[2];
+			}
+		
+			//midpoint of element i
+			midPoint[0]=sumVector[0]/nodes_per_element;
+			midPoint[1]=sumVector[1]/nodes_per_element;
+			midPoint[2]=sumVector[2]/nodes_per_element;
+				
+			//insert calculated midpoint in midpoints_	
+      midpoints.insert(std::pair<int,vector<double> >(counter_elements,midPoint));
+			//conn_mpID_elID = (midpoint-ID, eblock-ID, element-ID)
+			pair<int,int> eb_e = make_pair(it->first,it_2->first);
+			conn_mpID_elID.insert(pair<int,pair<int,int> >(counter_elements,eb_e));
+		}
+	}
+	//EXODUS::PrintMap(cout,conn_mpID_elID);
+	return conn_mpID_elID;
+}
+
+/*------------------------------------------------------------------------*
+ |creates gmsh-file to visualize mesh                             MF 07/08|
+ *------------------------------------------------------------------------*/
+void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const
+{
+  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes(); 
+  ofstream f_system(fname.c_str());
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Mesh \" {" << endl;
+
+  map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
+  map<int,vector<int> > conn;
+  map<int,vector<int> > ::const_iterator it;
+  
+  for(eb_it=ebs.begin(); eb_it!=ebs.end(); ++eb_it){
+    RCP<map<int,vector<int> > > actconn = eb_it->second->GetEleConn();
+    for(it = actconn->begin(); it != actconn->end(); ++it)
+    {
+      int eleid = it->first;
+      const vector<int> elenodes = it->second;
+      int numnodes = elenodes.size();
+      if (numnodes==6) gmshfilecontent << "SI(";
+      else if (numnodes==8) gmshfilecontent << "SH(";
+      for(unsigned int i=0; i<elenodes.size(); ++i){
+        // node map starts with 0 but exodus with 1!
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[0] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[1] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[2];
+        if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+        else gmshfilecontent << ",";
+      }
+      gmshfilecontent << "{";
+      for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
+      gmshfilecontent << eleid << "};" << endl;
+    }
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ |creates gmsh-file to visualize all nodes                        SP 06/08|
+ *------------------------------------------------------------------------*/
+void EXODUS::Mesh::PlotNodesGmsh()
+{
+	ofstream f_system("mesh_all_nodes.gmsh");
+	stringstream gmshfilecontent;
+	gmshfilecontent << "View \" Nodes \" {" << endl;
+	
+	map<int,vector<double> >::const_iterator it;
+	//loop over all nodes
+	for (it=nodes_->begin(); it != nodes_->end(); it++){
+		
+		const vector<double> mycoords = it->second;
+	    
+		//writing of coordinates of each node
+		gmshfilecontent << "SP(";  
+    gmshfilecontent << mycoords[0] << ",";
+    gmshfilecontent << mycoords[1] << ",";
+    gmshfilecontent << mycoords[2];
+    gmshfilecontent << ")";
+    
+    //writing of node-ID 
+    gmshfilecontent << "{";
+    gmshfilecontent << it->first << "," << it->first << "," << it->first << "};" << endl;
+  }
+	gmshfilecontent << "};" << endl;
+	f_system << gmshfilecontent.str();
+	f_system.close();
+}
 
 
 EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vector<int> > >& eleconn, string name)
@@ -1099,6 +1252,33 @@ void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
       for (i=actvec.begin(); i<actvec.end(); ++i) {
         os << *i << ",";
       }
+      os << endl;
+  }
+}
+
+void EXODUS::PrintMap(ostream& os,const map<int,map<int,int> > mymap)
+{
+  map<int,map<int,int> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      map<int,int> actmap = iter->second;
+      map<int,int>::iterator i;
+      for (i=actmap.begin(); i!=actmap.end(); ++i) {
+        os << i->first << ": " << i->second;
+      }
+      os << endl;
+  }
+}
+
+void EXODUS::PrintMap(ostream& os,const map<int,pair<int,int> > mymap)
+{
+  map<int,pair<int,int> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      pair<int,int> actpair = iter->second;
+      os << actpair.first << " <=> " << actpair.second;
       os << endl;
   }
 }

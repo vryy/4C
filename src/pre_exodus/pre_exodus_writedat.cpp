@@ -25,7 +25,8 @@ using namespace std;
 using namespace Teuchos;
 
 int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
-    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs)
+    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs,
+    const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
   // open datfile
   ofstream dat(datfile.c_str());
@@ -50,7 +51,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   EXODUS::WriteDatNodes(mymesh,dat);
 
   // write elements
-  EXODUS::WriteDatEles(eledefs,mymesh,dat);
+  EXODUS::WriteDatEles(eledefs,mymesh,dat,elecenterlineinfo);
 
   // write END
   dat << "---------------------------------------------------------------END\n"\
@@ -338,7 +339,8 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
   return;
 }
 
-void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat)
+void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
+     const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
   dat << "----------------------------------------------------------ELEMENTS" << endl;
   
@@ -362,7 +364,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     }
   }
   
-  int ele = 1; // BACI-Dat eles start with 1
+  int startele = 1; // BACI-Dat eles start with 1, this int is adapted for more than one element section
 
   // print structure elements
   dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
@@ -370,7 +372,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
   
   // print fluid elements
@@ -379,7 +381,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
   // print ale elements
@@ -388,7 +390,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
   // print transport elements
@@ -397,13 +399,14 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
   return;
 }
 
-void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& datfile)
+void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& startele, ostream& datfile,
+    const map<int,map<int,vector<vector<double> > > >& elescli,const int eb_id)
 {
   RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
@@ -412,13 +415,22 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     stringstream dat; // first build up the string for actual element line
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
-    dat << "   " << struele;
+    dat << "   " << startele;
     dat << " " << acte.ename;                       // e.g. "SOLIDH8"
     dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
-    dat << "   " << acte.desc << endl;              // e.g. "MAT 1"
-    struele ++;
+    dat << "   " << acte.desc;              // e.g. "MAT 1"
+    if(elescli.size()!=0){
+      // write local cosy from centerline to each element
+      vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
+      dat << " RAD " << fixed << setprecision(5) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
+      dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
+      dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
+    }
+    dat << endl;  // finish this element line
+
+    startele ++;
     datfile<<dat.str(); // only one access to the outfile (saves system time)
   }
   return;

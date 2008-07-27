@@ -17,6 +17,9 @@ Here everything related with solid-shell body extrusion
 #ifdef D_EXODUS
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_reader.H"
+#include "pre_exodus_validate.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -109,6 +112,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     RCP<map<int,vector<int> > > newconn = rcp(new map<int,vector<int> >);
     int newele = 0;
     
+    // another map is needed for twistfixing: in case of layered extrusion it 
+    // consists of elements enclosing the layers, i.e. from most inner to most outer node
+    map<int,vector<int> > encloseconn;
+    map<int,vector<int> > layerstack;
+    
     // set of elements already done
     set<int> doneles;
     set<int>::iterator i_doneles;
@@ -140,8 +148,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     vector<int>::const_iterator i_node;
     int newid;
     
-    // store average node normals for each node
+    // store average node normals for each basemesh node
     map<int,vector<double> > node_normals;
+    // store average node normals for base node of new extrusion
+    map<int,vector<double> > ext_node_normals;
     
     // calculate the normal at the first node which defines the "outside" dir
     vector<int> myNodeNbrs = FindNodeNeighbors(actelenodes,actelenodes.front());
@@ -178,14 +188,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
       
       // put new node into map of OldNodeToNewNode
-      vector<int> newids(1,newid);
+      vector<int> newids(1,ExoToStore(newid));
       node_pair.insert(std::pair<int,vector<int> >(*i_node,newids));
       // insert node into base layer
-      layer_nodes[0].push_back(newid);
+      layer_nodes[0].push_back(ExoToStore(newid));
       
       // calculate extruding direction
       vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,ele_conn,basemesh,normcheck);
       node_normals.insert(pair<int,vector<double> >(*i_node,normal));
+      ext_node_normals.insert(pair<int,vector<double> >(ExoToStore(newid),normal));
       //ele_nodenormals.push_back(normal);
       
       // create layers at this node location
@@ -197,11 +208,28 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         // put new coords into newnode map
         newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
         // put new node into map of OldNodeToNewNode
-        node_pair[*i_node].push_back(newid);
+        node_pair[*i_node].push_back(ExoToStore(newid));
         // finally store this node where it will be connected to an ele
-        layer_nodes[i_layer].push_back(newid);
+        layer_nodes[i_layer].push_back(ExoToStore(newid));
       }
-    }    
+    }
+    
+    /* find out initial sign of jacobian for this first extruded element as reference
+     * The issue is that we can extrude into inside and outside therefore
+     * maybe produce all negative elements however not twisted
+     * Just make sure your initial element is NOT twisted (choose appropriate seed) */
+    vector<int> firstele(layer_nodes[0]);
+    firstele.insert(firstele.end(),layer_nodes[layers].begin(),layer_nodes[layers].end());
+    int nnodes = firstele.size();  // could be either 6 or 8
+    map<int,vector<double> >coords;
+    for (int i = 0; i < nnodes; ++i) {
+      coords.insert(pair<int,vector<double> >(firstele[i],newnodes->find(firstele[i])->second));
+    }
+    int initelesign = EleSaneSign(firstele,coords);
+    encloseconn.insert(pair<int,vector<int> >(newele,firstele));
+    int stackbase=newele;
+    vector<int> empty;
+    layerstack.insert(pair<int,vector<int> >(stackbase,empty)); // **************
     
     doneles.insert(startele); // the first element is done ************************
     // form every new layer element
@@ -212,6 +240,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
       // insert new element into new connectivity
       newconn->insert(pair<int,vector<int> >(newele,newelenodes));
+      layerstack.find(stackbase)->second.push_back(newele);
       ++ newele;
       newelenodes.clear();
     }
@@ -306,17 +335,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
             
             // put new node into map of OldNodeToNewNode
-            vector<int> newids(1,newid);
+            vector<int> newids(1,ExoToStore(newid));
             node_pair.insert(std::pair<int,vector<int> >(thirdnode,newids));
             
             // insert node into base layer
-            layer_nodes[0].push_back(newid);
+            layer_nodes[0].push_back(ExoToStore(newid));
 
             // get reference direction for new avg normal here firstedgenode
             vector<double> refnormal = node_normals.find(firstedgenode)->second;
             // calculate extruding direction
             vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh,normcheck);
             node_normals.insert(pair<int,vector<double> >(thirdnode,normal));
+            ext_node_normals.insert(pair<int,vector<double> >(ExoToStore(newid),normal));
 
             // create layers at this node location
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
@@ -327,9 +357,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode
-              node_pair[thirdnode].push_back(newid);
+              node_pair[thirdnode].push_back(ExoToStore(newid));
               // finally store this node where it will be connected to an ele
-              layer_nodes[i_layer].push_back(newid);
+              layer_nodes[i_layer].push_back(ExoToStore(newid));
             }
             //EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,thirdnode,normal,node_conn,node_normals);
           } else {
@@ -371,17 +401,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode
-              vector<int> newids(1,newid);
+              vector<int> newids(1,ExoToStore(newid));
               node_pair.insert(std::pair<int,vector<int> >(fourthnode,newids));
               
               // insert node into base layer
-              layer_nodes[0].push_back(newid);
+              layer_nodes[0].push_back(ExoToStore(newid));
               
               // get reference direction for new avg normal here firstedgenode
               vector<double> refnormal = node_normals.find(secedgenode)->second;
               // calculate extruding direction
               vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh,normcheck);
               node_normals.insert(pair<int,vector<double> >(fourthnode,normal));
+              ext_node_normals.insert(pair<int,vector<double> >(ExoToStore(newid),normal));
 
               // create layers at this node location
               for (int i_layer = 1; i_layer <= layers; ++i_layer) {
@@ -392,9 +423,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
                 newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
                 
                 // put new node into map of OldNodeToNewNode
-                node_pair[fourthnode].push_back(newid);
+                node_pair[fourthnode].push_back(ExoToStore(newid));
                 // finally store this node where it will be connected to an ele
-                layer_nodes[i_layer].push_back(newid);
+                layer_nodes[i_layer].push_back(ExoToStore(newid));
               }
             } else {
               for (int i_layer = 0; i_layer <= layers; ++i_layer) {
@@ -405,6 +436,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             }
           } // end of 4-node case
           
+          // create enclose-element and insert into map
+          vector<int> ele(layer_nodes[0]);
+          ele.insert(ele.end(),layer_nodes[layers].begin(),layer_nodes[layers].end());
+          encloseconn.insert(pair<int,vector<int> >(newele,ele));
+
           // form every new layer element
           for (int i_layer = 0; i_layer < layers; ++i_layer){
             vector<int> basenodes = layer_nodes[i_layer];
@@ -436,6 +472,17 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     }// end of extruding all elements in connectivity
     
     if (gmsh == 0) PlotEleConnGmsh(*newconn,*newnodes);
+    
+//    // repair twisted extrusion elements
+//    PrintMap(cout,*newconn);
+//    PrintMap(cout,*newnodes);
+//    cout << endl;
+//    map<int,set<int> > ext_node_conn = NodeToEleConn(*newconn);
+//    RepairTwistedExtrusion(thickness,initelesign,highestnid,encloseconn,*newconn,*newnodes,ext_node_conn,basemesh.GetNodes(),ext_node_normals,node_pair);
+//    cout << "danach" << endl;
+//    PrintMap(cout,*newconn);
+//    PrintMap(cout,*newnodes);
+//    PlotEleConnGmsh(*newconn,*newnodes);
     
     // create new Element Blocks
     std::ostringstream blockname;
@@ -604,6 +651,130 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
   if (myname.find("extrude") != string::npos)
     return true;
   return false;
+}
+
+void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
+    map<int,vector<int> >& newconn, map<int,vector<double> >& newnodes, map<int,set<int> >& ext_node_conn,
+    const RCP<map<int,vector<double> > > basenodes,
+    const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair)
+{
+
+  map<int,vector<int> >::const_iterator i_encl;
+  vector<int>::const_iterator it;
+  
+  for(i_encl=encloseconn.begin();i_encl!=encloseconn.end();++i_encl){
+    vector<int> actele = i_encl->second;
+    int nnodes = actele.size();  // could be either 6 or 8
+    map<int,vector<double> >coords;
+    for (int i = 0; i < nnodes; ++i) {
+      coords.insert(pair<int,vector<double> >(actele[i],newnodes.find(actele[i])->second));
+    }
+    int actelesign = EleSaneSign(actele,coords);
+    
+    if(actelesign != initelesign){ // thus we have a twisted element
+      cout << "twisted: ";PrintVec(cout,i_encl->second);
+      
+      // get extrusion base which is always the first half of actele
+      vector<int> baseface;
+      for (int i = 0; i < nnodes/2; ++i) baseface.push_back(actele[i]);
+      
+      // store angular deviation between avgNormal to nodeNormal
+      map<double,int> normaldeviations;  // carefull, we compare doubles here, should work though
+      map<double,int>::iterator i_dev;
+      pair<map<double,int>::iterator,bool> doubleentry;
+      const double epsilon = 1.0E-6;
+      map<int,vector<double> > node_normals;
+      // calculate node normals of baseface
+      for (it=baseface.begin();it!=baseface.end();++it){
+        vector<int> nnbr = FindNodeNeighbors(baseface,*it);
+        vector<double> normal = Normal(nnbr.front(),*it,nnbr.back(),coords);
+        node_normals.insert(pair<int,vector<double> >(*it,normal));
+        vector<double> avgnormal = avgnode_normals.find(*it)->second;
+        // scalarproduct normal.avgNormal delivers deviation
+        double dev = abs(normal[0]*avgnormal[0] + normal[1]*avgnormal[1] + normal[2]*avgnormal[2]);
+        doubleentry = normaldeviations.insert(pair<double,int>(dev,*it));
+        // in case of two exactly equal deviations we raise it a bit
+        if(doubleentry.second==false) normaldeviations.insert(pair<double,int>(dev+epsilon,*it));
+      }
+      
+      // repair element at all nodes with deviation larger as tolerance
+      const double devtol = 0.9;
+      for(i_dev=normaldeviations.begin();i_dev!=normaldeviations.end();++i_dev){
+        double actdev = i_dev->first;
+        if (actdev < devtol){
+          int repairbasenode = i_dev->second;
+          vector<double> repairnormal = node_normals.find(repairbasenode)->second;
+          CheckNormDir(repairnormal,avgnode_normals.find(repairbasenode)->second);
+          vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,1,1,repairnormal);
+          
+          // create new node or move node if only one element is left at this node
+          int repairnodepos = FindPosinVec(repairbasenode,baseface) + nnodes/2;
+          int repairnode = actele.at(repairnodepos);
+          
+          if(ext_node_conn.find(repairnode)->second.size() == 1){
+            // move case
+            newnodes.find(repairnode)->second = newcoords;
+            coords.find(repairnode)->second = newcoords;  // coords update
+          } else {
+            int newid = highestnid; ++ highestnid;
+            int newExoNid = ExoToStore(newid);
+            // put new coords into newnode map
+            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+            coords.insert(pair<int,vector<double> >(newExoNid,newcoords)); // coords update
+            
+            // replace previously connected node corresponding to repairnode with new node in actele
+            actele.at(repairnodepos) = newExoNid;
+            // update ext_node_conn
+            ext_node_conn.find(repairnode)->second.erase(i_encl->first);
+          }
+        }
+      }
+      
+      
+      
+      
+      
+//      // repair element by extruding into most deviated normal dir
+//      int repairnode = normaldeviations.begin()->second;
+//      vector<double> repairnormal = node_normals.find(repairnode)->second;
+//      CheckNormDir(repairnormal,avgnode_normals.find(repairnode)->second);
+//      vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairnode)->second,thickness,1,1,repairnormal);
+//      
+//      PrintMap(cout,coords);
+//      cout << "newcoords of " << repairnode << ":"; PrintVec(cout,newcoords);
+//      
+//      // create new node
+//      int newid = highestnid; ++ highestnid;
+//      int newExoNid = ExoToStore(newid);
+//      // put new coords into newnode map
+//      newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+//      coords.insert(pair<int,vector<double> >(newExoNid,newcoords));
+//      
+//      // replace previously connected node corresponding to repairnode with new node in actele
+//      PrintVec(cout,actele);
+//      int repairnodepos = FindPosinVec(repairnode,baseface) + nnodes/2; 
+//      actele.at(repairnodepos) = newExoNid;
+      
+      
+      
+      int repairedelesign = EleSaneSign(actele,coords);
+      
+      if(repairedelesign != initelesign){
+        // still not sane!
+        i_dev = normaldeviations.begin();
+        ++i_dev;
+        int snd_repairnode = i_dev->second;
+        cout << "next candidate is: " << snd_repairnode << endl;
+      }
+      
+      // replace element in extrusion connectivity with repaired one
+      newconn.find(i_encl->first)->second = actele;
+    }
+  }
+  
+  PrintMap(cout,newconn);
+  
+  return;
 }
 
 
@@ -888,6 +1059,25 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   return normal;
 }
 
+vector<double> EXODUS::Normal(int head1, const int origin, int head2,const map<int,vector<double> >& coords)
+{
+  vector<double> normal(3);
+  vector<double> h1 = coords.find(head1)->second;
+  vector<double> h2 = coords.find(head2)->second;
+  vector<double> o  = coords.find(origin)->second;
+  
+  normal[0] =   ((h1[1]-o[1])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[1]-o[1]));
+  normal[1] = - ((h1[0]-o[0])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[0]-o[0]));
+  normal[2] =   ((h1[0]-o[0])*(h2[1]-o[1]) - (h1[1]-o[1])*(h2[0]-o[0]));
+  
+  double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
+  normal[0] = normal[0]/length;
+  normal[1] = normal[1]/length;
+  normal[2] = normal[2]/length;
+  
+  return normal;
+}
+
 void EXODUS::CheckNormDir(vector<double>& checkn,const vector<double> refn)
 {
   // compute scalar product of the two normals
@@ -1131,10 +1321,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     if (numnodes==6) gmshfilecontent << "SI(";
     else if (numnodes==8) gmshfilecontent << "SH(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
-      // node map starts with 0 but exodus with 1!
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }
