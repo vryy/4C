@@ -474,8 +474,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // repair twisted extrusion elements
     cout << "Repairing twisted elements..." << endl;
     map<int,set<int> > ext_node_conn = NodeToEleConn(*newconn);
-    RepairTwistedExtrusion(thickness,initelesign,highestnid,encloseconn,*newconn,*newnodes,ext_node_conn,basemesh.GetNodes(),ext_node_normals,node_pair);
-    cout << "...done" << endl;
+    int twistcounter = RepairTwistedExtrusion(thickness,initelesign,highestnid,encloseconn,*newconn,*newnodes,ext_node_conn,basemesh.GetNodes(),ext_node_normals,node_pair);
+    cout << twistcounter << " elements repaired." << endl;
     
     // Gmsh Debug-Output of extrusion Mesh
     if (gmsh == 0) PlotEleConnGmsh(*newconn,*newnodes);
@@ -649,7 +649,7 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
   return false;
 }
 
-void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
+int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
     map<int,vector<int> >& newconn, map<int,vector<double> >& newnodes, map<int,set<int> >& ext_node_conn,
     const RCP<map<int,vector<double> > > basenodes,
     const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair)
@@ -657,6 +657,7 @@ void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign
 
   map<int,vector<int> >::const_iterator i_encl;
   vector<int>::const_iterator it;
+  int twistcounter = 0;
   
   for(i_encl=encloseconn.begin();i_encl!=encloseconn.end();++i_encl){
     vector<int> actele = i_encl->second;
@@ -668,6 +669,7 @@ void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign
     int actelesign = EleSaneSign(actele,coords);
     
     if(actelesign != initelesign){ // thus we have a twisted element
+      ++ twistcounter;
       //cout << "twisted: ";PrintVec(cout,i_encl->second);
       
       // get extrusion base which is always the first half of actele
@@ -695,6 +697,9 @@ void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign
       
       // repair element at all nodes with deviation larger as tolerance
       const double devtol = 0.9;
+      vector<int> backup_actele(actele);
+      //map<int,vector<double> >backup_newnodes(newnodes);
+      
       for(i_dev=normaldeviations.begin();i_dev!=normaldeviations.end();++i_dev){
         double actdev = i_dev->first;
         if (actdev < devtol){
@@ -732,21 +737,44 @@ void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign
       // double check
       if(repairedelesign != initelesign){
         // still not sane!
+        /*
         cout << "Twisted Element Repairing still not successfull!" << endl;
         cout << "Element: ", PrintVec(cout,actele);
         cout << "InitSign: " << initelesign << ", ActSign: " << repairedelesign << endl;
         cout << "Deviations: "; PrintMap(cout,normaldeviations);
-        cout << "Compare Normals: Avg vs. Face "<< endl;
+        cout << "Compare Normals: Face: "; PrintVec(cout,node_normals.find(baseface[0])->second);
+        
         for(it=baseface.begin();it!=baseface.end();++it){
           cout << "Node: " << *it << ", avg: ";
-          PrintVec(cout,avgnode_normals.find(*it)->second);
-          cout << "face: ";
           PrintVec(cout,avgnode_normals.find(*it)->second);
         }
         
         map<int,vector<int> >obstinates;
-        obstinates.insert(pair<int,vector<int> >(1,actele));
+        obstinates.insert(pair<int,vector<int> >(i_encl->first,actele));
+        obstinates.insert(pair<int,vector<int> >(0,backup_actele));
         PlotEleConnGmsh(obstinates,newnodes);
+        */
+        
+        // extreme repair: align all normals in one direction
+        it = baseface.begin(); // first node is the reference
+        vector<double>refnormal = node_normals.find(*it)->second;
+        CheckNormDir(refnormal,avgnode_normals.find(*it)->second);
+        for(it=(baseface.begin());it!=baseface.end();++it){
+          int repairnodepos = FindPosinVec(*it,baseface) + nnodes/2;
+          int repairnode = actele.at(repairnodepos);
+          vector<double>repairnormal = node_normals.find(*it)->second;
+          CheckNormDir(repairnormal,refnormal);
+          vector<double> newcoords = ExtrudeNodeCoords(coords.find(*it)->second,thickness,1,1,repairnormal);
+          // move node to this aligned position
+          newnodes.find(ExoToStore(repairnode))->second = newcoords;
+          coords.find(repairnode)->second = newcoords;  // coords update
+        }
+        
+        int doublerepairedelesign = EleSaneSign(actele,coords);
+        if (doublerepairedelesign != initelesign) cout << "What?!" << endl;
+        
+        //PlotEleConnGmsh(obstinates,newnodes);
+
       }
       
       // replace element in extrusion connectivity with repaired one
@@ -754,7 +782,7 @@ void EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign
     }
   }
   
-  return;
+  return twistcounter;
 }
 
 
