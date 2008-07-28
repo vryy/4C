@@ -49,7 +49,7 @@ namespace FSI {
               (defaults to 1.0)
 
   - "Tolerance" - Tolerance test for residual in krylov subspace
-                  (defaults to 1e-8)
+                  (defaults to 1e-1)
 
 <h2>References</h2>
 
