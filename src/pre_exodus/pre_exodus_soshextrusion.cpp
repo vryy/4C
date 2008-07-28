@@ -482,7 +482,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     
     // create new Element Blocks
     std::ostringstream blockname;
-    blockname << "extrude" << i_extr->first;
+    blockname << "ext";
+    //string blockname = "extr";
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
       int numnodes = newconn->find(0)->second.size();
@@ -490,7 +491,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");
-      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str()));
+      blockname << highestblock;
+      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str().c_str()));
       neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
       highestblock ++;
       break;
@@ -515,15 +517,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }
       if (hexcounter>0){
         std::ostringstream hexblockname;
-        //hexblockname << blockname.str() << "h";
-        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexblockname.str()));
+        hexblockname << blockname.str().c_str() << "h" << highestblock;
+        string hexname = hexblockname.str().c_str();
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (wegcounter>0){
         std::ostringstream wegblockname;
-        //wegblockname << blockname.str() << "w";
-        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str()));
+        wegblockname << blockname.str().c_str() << "w" << highestblock;
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str().c_str()));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }

@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_mat/artwallremod.H"
 
 using namespace DRT::UTILS;
 
@@ -238,6 +239,54 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol(Epetra_SerialDenseMatrix& stresses,
     nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
   }
 }
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data (public)                maf 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
+  if (Material()->MaterialType() == m_artwallremod){
+    string fiber = "Fiber1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "Fiber2";
+    names[fiber] = 3; // 3-dim vector
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                         maf 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisData(name,data);
+  if (Material()->MaterialType() == m_artwallremod){
+    MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else if (name == "Owner"){
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Owner();
+    } else {
+      cout << name << endl;
+      dserror("Unknown VisData!");
+    }
+ }
+    
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  allocate and return So_weg6Register (public)                maf 04/07|

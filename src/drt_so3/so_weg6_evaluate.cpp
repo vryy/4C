@@ -596,7 +596,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, params);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, gp, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

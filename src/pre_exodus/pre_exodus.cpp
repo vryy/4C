@@ -63,6 +63,12 @@ int main(
   int soshseedid = 0;
   int soshgmsh = -1;
   int concat2loose = 0;
+  
+  // related to centerline
+  vector<double> cline_coordcorr(3);
+  double clinedx = 0.0;
+  double clinedy = 0.0;
+  double clinedz = 0.0;
 
   Teuchos::CommandLineProcessor My_CLP;
   My_CLP.setDocString("Preprocessor Exodus2Baci \n");
@@ -79,6 +85,9 @@ int main(
   My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
   
   My_CLP.setOption("cline",&cline,"generate local element coordinate systems based on centerline file, or mesh line (set to 'mesh'");
+  My_CLP.setOption("clinedx",&clinedx,"move centerline coords to align with mesh: delta x");
+  My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
+  My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
   map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
   
   CommandLineProcessor::EParseCommandLineReturn
@@ -92,6 +101,7 @@ int main(
   {
     dserror("CommandLineProcessor reported an error");
   }
+  cline_coordcorr[0] = clinedx; cline_coordcorr[1] = clinedy; cline_coordcorr[2] = clinedz;
 
   /**************************************************************************
    * Start with the preprocessing
@@ -132,7 +142,7 @@ int main(
   
   // generate local element coordinate systems based on centerline
   if (cline!=""){
-    elecenterlineinfo = EleCenterlineInfo(cline,mymesh);
+    elecenterlineinfo = EleCenterlineInfo(cline,mymesh,cline_coordcorr);
   }
 
   /**************************************************************************

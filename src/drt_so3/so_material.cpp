@@ -226,6 +226,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
+      const int gp,
       ParameterList&            params)         // algorithmic parameters e.g. time
 {
   RefCountPtr<MAT::Material> mat = Material();
@@ -258,6 +259,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       *density = neo->Density();
 
     break;
+    }
+    case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
+    {
+      MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
+      remo->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = remo->Density();
+      
+      break;
     }
     case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {

@@ -1,12 +1,13 @@
 //"pre_exodus_centerline.cpp"
 
 #include "pre_exodus_centerline.H"
+#include <iostream>
 #include "pre_exodus_soshextrusion.H"// for Gmsh plot
 
 
 using namespace EXODUS;
 
-map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh)
+map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double> coordcorr)
 {
 
   if (cline=="mesh"){ // create Centerline object from NodeSet
@@ -27,16 +28,18 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     // get rid of helper eb where the centerline ns was based on
     map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
     map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    vector<int> eb_ids;
     // check for Centerline ElementBlock
     for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb){
       const string myname = i_eb->second->GetName();
       if (myname.find("centerline") != string::npos) mymesh.EraseElementBlock(i_eb->first);
+      else eb_ids.push_back(i_eb->first);
     }
     
     //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh);
+    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
 
-    EXODUS::PlotCosys(myCLine,mymesh);       //generation of accordant Gmsh-file  
+    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file  
     // plot mesh to gmsh
     string meshname = "centerlinemesh.gmsh";
     mymesh.PlotElementBlocksGmsh(meshname,mymesh);
@@ -45,16 +48,36 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     return centlineinfo;
     
   } else { //creation of a Centerline object from file
-    EXODUS::Centerline myCLine(cline); 
+    cout << "Reading centerline..." << endl;
+    EXODUS::Centerline myCLine(cline,coordcorr);
+    cout << "...done" << endl;
+    
+    //myCLine.PrintPoints();
+    
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
+    
+    // get ids of the eblocks you want to calculate the locsys's
+    string identifier = "ext";
+    map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    vector<int> eb_ids;
+    for (i_eb=ebs.begin(); i_eb!=ebs.end(); ++i_eb) {
+      string actname = i_eb->second->GetName();
+      size_t found;
+      found = actname.find(identifier);
+      if (found!=string::npos) eb_ids.push_back(i_eb->first);
+    }
 
+    cout << "Generating local coosys..." << endl;
     //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh);
-    EXODUS::PlotCosys(myCLine,mymesh);       //generation of accordant Gmsh-file  
+    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
+    cout << "...done" << endl;
+    
+    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file  
 
     // plot mesh to gmsh
     string meshname = "centerlinemesh.gmsh";
-    mymesh.PlotElementBlocksGmsh(meshname,mymesh);
+    mymesh.PlotElementBlocksGmsh(meshname,mymesh,eb_ids);
 
     
     return centlineinfo;
@@ -69,20 +92,59 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 /*------------------------------------------------------------------------*
  |Ctor                                                            SP 06/08|
  *------------------------------------------------------------------------*/
-Centerline::Centerline(string filename)
+Centerline::Centerline(string filename,vector<double> coordcorr)
 {
 	//initialization of points_
 	points_ = rcp(new map<int,vector<double> >);
 	
 	//routine to open file
 	ifstream infile;
-	infile.open(filename.c_str(), ios::binary);
+	infile.open(filename.c_str(), ifstream::in);
 	
-	if(!infile)
-	{
-		cout << "File couldn't be opened.";
+	// check
+	if(!infile){
+	  cout << "Could not open Centerline file: " << filename.c_str() << endl;
+	  dserror("Could not open Centerline file!");
 	}
-
+	
+	// read in the whole file into a "table"
+	// for large file this might be memory intensive!
+	typedef vector<float> Row;
+	vector<Row> table;
+	
+	while(infile){
+	  string line;
+	  getline(infile, line);
+	  istringstream is(line);
+	  Row row;
+	  while (is){
+	    float data;
+	    is >> data;
+	    row.push_back(data);
+	  }
+	  table.push_back(row);
+	}
+  infile.close();
+	
+  // sort the table
+  int clp_id = 0;
+  for (unsigned i=0; i<table.size(); i++)  
+  {  
+    Row row = table[i];
+    if(row.size() > 1){ // if true we have a "number-row"
+      vector<double> clp(3);
+      for (int j = 0; j < 3; ++j){
+        // correct possible offset of coords
+        clp[j] = table[i][j] + coordcorr[j];  // first 3 numbers are CL coords
+      }
+      points_->insert(pair<int,vector<double> >(clp_id,clp)); // fill map
+      ++ clp_id;
+    }
+  }
+  
+  //PrintMap(cout,*points_);
+	
+  /* Stefans old code to read matlab file and shift coords
 	//auxiliary variables
 	double d;
 	int i=0,j=0;
@@ -114,6 +176,7 @@ Centerline::Centerline(string filename)
 		++i;
 	}
 	infile.close();
+	*/
 }
 
 Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes)
@@ -235,11 +298,13 @@ void EXODUS::normalize3d(vector<double>& v)
  |- creates local coordinate systems for each element             SP 06/08|
  |- returns a map containing calc. directions referred to each element    |
  *------------------------------------------------------------------------*/
-map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh)
+map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Centerline& mycline,
+    const EXODUS::Mesh& mymesh, const vector<int>& eb_ids)
 {
+  
   map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, eblock-ID, element-ID)
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints);
+  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
@@ -248,7 +313,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 	double min_distance,temp;
 	
 	map<int,vector<double> > clpoints = *(mycline.GetPoints());
-		
+	
+	// this search should later be replaced by a nice search-tree!
 	//in this section for each element the nearest point on the centerline is searched
 	//and the ids of each element midpoint and the accordant centerline points are stored
 	//
@@ -343,11 +409,11 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
  |- creates local coordinate systems for each element like element_cosys   |
  |- generates gmsh-file to visualize coordinate systems            SP 06/08|
  *------------------------------------------------------------------------*/
-void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh)
+void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, const vector<int>& eb_ids)
 {
   map<int,vector<double> > midpoints; // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, eblock-ID, element-ID)
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints);
+  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables

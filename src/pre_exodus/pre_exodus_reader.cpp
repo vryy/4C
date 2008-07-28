@@ -940,7 +940,7 @@ void EXODUS::Mesh::EraseElementBlock(const int id)
  | - calculates the midpoint of each element                               |
  | - returns map <midpoint-ID,pair<eblock-ID,element-ID> >         SP 06/08|
  *------------------------------------------------------------------------*/
-map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints) const
+map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const
 {
 	//map that will be returned
 	map<int,pair<int,int> > conn_mpID_elID;
@@ -955,8 +955,15 @@ map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& 
 	vector<double> sumVector(3,0);
 	vector<double> midPoint(3,0);
 	
-	map<int,RCP<ElementBlock> > EBlocks = this->GetElementBlocks();
+	map<int,RCP<ElementBlock> > EBlocks;
 	map<int,RCP<ElementBlock> >::const_iterator it;
+  // work only on eblocks in eb_ids
+  vector<int>::const_iterator id;
+  map<int,RCP<EXODUS::ElementBlock> > ebs;
+  for (id=eb_ids.begin();id!=eb_ids.end();++id){
+    RCP<EXODUS::ElementBlock> acteb = this->GetElementBlock(*id);
+    EBlocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(*id,acteb));
+  }
 		
 	map<int,vector<int> > EleConn;
 	map<int,vector<int> >::const_iterator it_2;
@@ -1016,6 +1023,55 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& 
   gmshfilecontent << "View \" Mesh \" {" << endl;
 
   map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
+  map<int,vector<int> > conn;
+  map<int,vector<int> > ::const_iterator it;
+  
+  for(eb_it=ebs.begin(); eb_it!=ebs.end(); ++eb_it){
+    RCP<map<int,vector<int> > > actconn = eb_it->second->GetEleConn();
+    for(it = actconn->begin(); it != actconn->end(); ++it)
+    {
+      int eleid = it->first;
+      const vector<int> elenodes = it->second;
+      int numnodes = elenodes.size();
+      if (numnodes==6) gmshfilecontent << "SI(";
+      else if (numnodes==8) gmshfilecontent << "SH(";
+      for(unsigned int i=0; i<elenodes.size(); ++i){
+        // node map starts with 0 but exodus with 1!
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[0] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[1] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[2];
+        if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+        else gmshfilecontent << ",";
+      }
+      gmshfilecontent << "{";
+      for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
+      gmshfilecontent << eleid << "};" << endl;
+    }
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ |creates gmsh-file to visualize mesh                             MF 07/08|
+ *------------------------------------------------------------------------*/
+void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const
+{
+  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes(); 
+  ofstream f_system(fname.c_str());
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Mesh \" {" << endl;
+  
+  vector<int>::const_iterator id;
+  map<int,RCP<EXODUS::ElementBlock> > ebs;
+  for (id=ebids.begin();id!=ebids.end();++id){
+    RCP<EXODUS::ElementBlock> acteb = mymesh.GetElementBlock(*id);
+    ebs.insert(pair<int,RCP<EXODUS::ElementBlock> >(*id,acteb));
+  }
+  
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
   map<int,vector<int> > conn;
   map<int,vector<int> > ::const_iterator it;

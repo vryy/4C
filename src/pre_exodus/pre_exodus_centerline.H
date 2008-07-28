@@ -16,7 +16,7 @@ using namespace std;
 namespace EXODUS
 {
 
-map<int,map<int,vector<vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh);
+map<int,map<int,vector<vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double>coordcorr);
 
 class Centerline
 {
@@ -24,7 +24,7 @@ private:
 	RCP<map<int,vector<double> > > points_;
 public:
 	//ctor
-	Centerline(string);
+	Centerline(string,vector<double> coordcorr);
 	Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes);
 	//dtor
 	~Centerline();
@@ -48,9 +48,9 @@ vector<double> cross_product3d(vector<double>,vector<double>);
 //normalizes a vector
 void normalize3d(vector<double>&);
 //creates local coordinate systems for each element and returns resulting map
-map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&);
+map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&);
 //creates local coordinate systems for each element and creates gmsh-file for visualizing
-void PlotCosys(EXODUS::Centerline&,const EXODUS::Mesh&);
+void PlotCosys(EXODUS::Centerline&,const EXODUS::Mesh&,const vector<int>&);
 
 }// of namespace EXODUS
 

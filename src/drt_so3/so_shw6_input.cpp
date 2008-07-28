@@ -20,6 +20,7 @@ Maintainer: Moritz Frenzel
 #endif
 
 #include "so_shw6.H" //**
+#include "../drt_mat/artwallremod.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -52,6 +53,12 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
   frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of SOLIDSHW6 element material failed");
   SetMaterial(material);
+
+  // special element-dependent input of material parameters
+  if (Material()->MaterialType() == m_artwallremod){
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    remo->Setup(NUMGPT_WEG6, this->Id());
+  }
 
   // we expect kintype to be total lagrangian
   kintype_ = sow6_totlag;

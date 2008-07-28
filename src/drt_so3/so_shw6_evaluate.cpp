@@ -607,7 +607,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, params);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, gp, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1001,6 +1001,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
       */
       for (int i=0; i<intpoints.nquad; ++i) {
         M(i*NUMSTR_WEG6+2,0) = intpoints.qxg[i][2];  // t at gp
+        //M(i*NUMSTR_WEG6+2,1) = intpoints.qxg[i][0]*intpoints.qxg[i][2];  // r*t at gp
+        //M(i*NUMSTR_WEG6+2,2) = intpoints.qxg[i][1]*intpoints.qxg[i][2];  // s*t at gp
       }
 
       // return adress of just evaluated matrix

@@ -162,13 +162,14 @@ public:
   void EraseElementBlock(const int id);
   
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
-  map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints) const;
+  map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
   
   //! Plot Nodes in Gmsh-file
   void PlotNodesGmsh();
   
   //! Plot all ElementBlocks into Gmsh-file
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
+  void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const;
   
 private:
   RCP<map<int,vector<double> > > nodes_;
