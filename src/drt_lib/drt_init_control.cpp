@@ -102,7 +102,7 @@ void ntaini_ccadiscret(int argc, char** argv)
 
   sprintf(allfiles.outputfile_name, "%s%d.err",
           allfiles.outputfile_kenner, myrank);
-  if ((allfiles.out_err = fopen(allfiles.outputfile_name,"w"))==NULL)
+  if ((allfiles.out_err = fopen("/dev/null","w"))==NULL)
   {
     printf("Opening of output file .err failed\n");
 #ifdef PARALLEL
