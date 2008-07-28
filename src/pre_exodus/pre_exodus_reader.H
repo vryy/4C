@@ -164,6 +164,9 @@ public:
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
   map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
   
+  //! Adjust local element ids referenced in SideSet to global ids
+  map<int,vector<int> > GlobalifySSeleids(const int ssid);
+  
   //! Plot Nodes in Gmsh-file
   void PlotNodesGmsh();
   
@@ -295,8 +298,13 @@ public:
   
   map<int,vector<int> > GetSideSet() const {return sides_;}
   
+  void ReplaceSides(map<int,vector<int> >newsides) {sides_ = newsides; return;};
+  
+  vector<int> GetFirstSideSet() const {return sides_.begin()->second;}
+  
   void FillSideLists(int* elemlist, int* sidelist) const;
-
+  void FillSideLists(int* elemlist, int* sidelist, const map<int,vector<int> >& sides) const;
+  
   void Print(ostream& os, bool verbose=false) const;
   
 private:

@@ -32,9 +32,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   //map<int,vector<double> > newnodes;
   RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes ar stored
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
-  map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
+  map<int,EXODUS::NodeSet> newnodesets;             // here the new NS are stored
+  map<int,EXODUS::SideSet> newsidesets;             // here the new SS are stored
   int highestblock = basemesh.GetNumElementBlocks(); // check whether there are ebs at all
   int highestns = basemesh.GetNumNodeSets();// check whether there are nss at all
+  int highestss = basemesh.GetNumSideSets();
   map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
   if (highestblock!=0) highestblock = ebs.rbegin()->first+1; // if there are ebs get the highest number, not necessarily consecutive
@@ -47,6 +49,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 
   map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
   map<int,EXODUS::SideSet>::const_iterator i_sss;
+  if (highestss!=0) highestss = sss.rbegin()->first+1;// if there are ss get the highest number, not necessarily consecutive
+  else highestss = 1; // case of no sidesets at all -> starts with 1 due to exodus format
 
   /* Extrusion is always based on a connectivity map*/
   // map of connectivity maps to be extruded
@@ -111,6 +115,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // loop through all its elements to create new connectivity  ***************
     RCP<map<int,vector<int> > > newconn = rcp(new map<int,vector<int> >);
     int newele = 0;
+    
+    map<int,vector<int> > newsideset; // this sideset will become the new extruded out-'side'
+    map<int,vector<int> >::iterator i_ss;
+    int ss_id = 0;
     
     // another map is needed for twistfixing: in case of layered extrusion it 
     // consists of elements enclosing the layers, i.e. from most inner to most outer node
@@ -241,6 +249,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       // insert new element into new connectivity
       newconn->insert(pair<int,vector<int> >(newele,newelenodes));
       layerstack.find(stackbase)->second.push_back(newele);
+      
+      // if we are at top layer put the corresponding side into newsideset
+      if (i_layer==layers-1){
+        vector<int> ss(3);  // third pos for later eblockid
+        ss.at(0) = newele;  // first entry is element id
+        if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
+        else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
+        else dserror("wrong number of elenodes!");
+        newsideset.insert(pair<int,vector<int> >(ss_id,ss));
+        ++ ss_id; // raise ss_id
+      }
+      
       ++ newele;
       newelenodes.clear();
     }
@@ -449,6 +469,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
             // insert new element into new connectivity
             newconn->insert(pair<int,vector<int> >(newele,newelenodes));
+            
+            // if we are at top layer put the corresponding side into newsideset
+            if (i_layer==layers-1){
+              vector<int> ss(3);  // third pos for later eblockid
+              ss.at(0) = newele;  // first entry is element id
+              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
+              else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
+              else dserror("wrong number of elenodes!");
+              newsideset.insert(pair<int,vector<int> >(ss_id,ss));
+              ++ ss_id; // raise ss_id
+            }
+            
             ++ newele;
             newelenodes.clear();
           }
@@ -507,10 +539,20 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         int numnodes = i_ele->second.size();
         if (numnodes == 8){
           hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+          if (newsideset.find(i_ele->first)!=newsideset.end()){
+            newsideset.find(i_ele->first)->second.at(0) = hexcounter;  // update sideset with new element ids
+            // store eblockid the sideset is related to at 3rd position, in hexcase it will be highestblock
+            newsideset.find(i_ele->first)->second.at(2) = highestblock;
+          }
           hexcounter ++;
         }
         else if (numnodes == 6){
           wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+          if (newsideset.find(i_ele->first)!=newsideset.end()){
+            newsideset.find(i_ele->first)->second.at(0) = wegcounter;  // update sideset with new element ids
+            // store eblockid the sideset is related to at 3rd position, in wegcase it will probably be highestblock+1
+            newsideset.find(i_ele->first)->second.at(2) = highestblock+1;
+          }
           wegcounter ++;
         }
         else dserror("Number of basenodes for extrusion not supported");
@@ -522,6 +564,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
+      } else {
+        // in case we have ONLY wedges we need to trim the '+1' in the related eblockid
+        for(i_ss=newsideset.begin();i_ss!=newsideset.end();++i_ss) i_ss->second.at(2) -= 1;
       }
       if (wegcounter>0){
         std::ostringstream wegblockname;
@@ -530,6 +575,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
+      
+      // put new sideset into map
+      string sidesetname = "extsideset";
+      EXODUS::SideSet newSideSet = EXODUS::SideSet(newsideset,sidesetname);
+      newsidesets.insert(pair<int,EXODUS::SideSet>(highestss,newSideSet));
       break;
     }
     default: dserror("unrecognized extrude type");
@@ -618,11 +668,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 
   
   string newtitle = "extrusion";
-  map<int,EXODUS::SideSet> emptysideset;
+  //map<int,EXODUS::SideSet> emptysideset;
   
   cout << "...done" << endl;
 
-  EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,emptysideset,newtitle);
+  EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,newsidesets,newtitle);
  
   return extruded_mesh;
 }

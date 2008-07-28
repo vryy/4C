@@ -892,7 +892,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   map<int,SideSet>::const_iterator iss;
   const map<int,SideSet> sss = GetSideSets();
   for (iss=sss.begin(); iss != sss.end(); ++iss){
-    const int ssID = iss->first;   
+    const int ssID = iss->first;
     const SideSet ss = iss->second;
     const int num_side_in_set = ss.GetNumSides();
     const string name = ss.GetName();
@@ -904,7 +904,13 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
     if (error!=0) dserror("error writing side set params");
     vector<int> side_set_elem_list(num_side_in_set);
     vector<int> side_set_side_list(num_side_in_set);
-    ss.FillSideLists(&side_set_elem_list[0],&side_set_side_list[0]);
+    // in case the sideset is newly created we have to adjust element ids to global numbering
+    map<int,vector<int> >globalsides;
+    if (iss->second.GetFirstSideSet().size()==3){
+      globalsides = GlobalifySSeleids(ssID);
+      ss.FillSideLists(&side_set_elem_list[0],&side_set_side_list[0],globalsides);
+    } else ss.FillSideLists(&side_set_elem_list[0],&side_set_side_list[0]);
+    
     error = ex_put_side_set(exoid,ssID,&side_set_elem_list[0],&side_set_side_list[0]);
     if (error!=0) dserror("error writing side set");
     error = ex_put_name (exoid, EX_SIDE_SET, ssID, ssname);
@@ -1011,6 +1017,38 @@ map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& 
 	//EXODUS::PrintMap(cout,conn_mpID_elID);
 	return conn_mpID_elID;
 }
+
+map<int,vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid)
+{
+  SideSet ss = GetSideSet(ssid);
+  
+  map<int,RCP<EXODUS::ElementBlock> > ebs = GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+  
+  // Range Vector for global eleID identification in SideSet
+  vector<int> glob_eb_erange(1,0);
+  int rangebreak = 0;
+  // Also we once get all EBlocks
+  vector<EXODUS::ElementBlock> eblocks;
+  vector<map<int,vector<int> > > econns;
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    rangebreak += i_ebs->second->GetNumEle();
+    glob_eb_erange.push_back(rangebreak);
+  }
+  
+  map<int,vector<int> >sideset = ss.GetSideSet();
+  map<int,vector<int> >::iterator i_ss;
+  
+  for(i_ss=sideset.begin();i_ss!=sideset.end();++i_ss){
+    if (i_ss->second.size()!=3) dserror("Problem in new SideSet!"); // double check
+    int ebid = i_ss->second.at(2);
+    int lowerbound = glob_eb_erange.at(ebid-1);
+    i_ss->second.at(0) = i_ss->second.at(0) + lowerbound +1;
+  }
+  
+  return sideset;
+}
+
 
 /*------------------------------------------------------------------------*
  |creates gmsh-file to visualize mesh                             MF 07/08|
@@ -1242,6 +1280,17 @@ void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
 {
   map<int,vector<int> > sides = GetSideSet();
   map<int,vector<int> >::iterator it;
+  int i=0;
+  for (it=sides.begin(); it != sides.end(); ++it){
+    elemlist[i] = it->second[0];
+    sidelist[i] = it->second[1];
+    ++i;
+  }
+}
+
+void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist, const map<int,vector<int> >& sides) const
+{
+  map<int,vector<int> >::const_iterator it;
   int i=0;
   for (it=sides.begin(); it != sides.end(); ++it){
     elemlist[i] = it->second[0];
