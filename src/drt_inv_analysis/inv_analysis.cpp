@@ -55,6 +55,9 @@ Inv_analysis::Inv_analysis(ParameterList& params,
 
   numb_run_=0;
 
+   // get the surface neuman nodes
+   discret_.GetCondition("SurfaceNeumann",surfneum_ );
+
 }
 
 void Inv_analysis::get_measured_disp()
@@ -120,6 +123,15 @@ void Inv_analysis::get_measured_disp()
   {
     measured_disp_=measured_disp;
   }
+
+  else if (mp_==10)
+  {
+    for (int i=0;i<mp_;i++)
+    {
+      measured_disp_(i)=measured_disp(i*5);
+    }
+  }
+
   else if (mp_==5)
   {
     for (int i=0;i<mp_;i++)
@@ -127,7 +139,9 @@ void Inv_analysis::get_measured_disp()
       measured_disp_(i)=measured_disp(i*12);
     }
   }
-  else  dserror("Inverse analysis is only implemented for 50 or 5 measurment values");
+
+  else  dserror("Inverse analysis is only implemented for 50, 10 or 5 measurment values");
+
 }
 
 
@@ -143,8 +157,60 @@ void Inv_analysis::evaluate()
 
   calculate_new_parameters();
   numb_run_++;
+  reset_parameters();
+  return;
+}
 
-  // reset the values for next run
+
+void Inv_analysis::Integrate()
+{
+  int max_itter = 100000;
+
+  do {
+    int    step    = params_.get<int>   ("step" ,0);
+    double maxtime = params_.get<double>("max time",0.0);
+
+    get_surfneum_nodes();
+
+    // can have values "full newton" , "modified newton" , "nonlinear cg"
+    string equil = params_.get<string>("equilibrium iteration","full newton");
+
+    // can have values takes values "constant" consistent"
+    string pred  = params_.get<string>("predictor","constant");
+    int predictor=-1;
+    if      (pred=="constant")   predictor = 1;
+    else if (pred=="consistent") predictor = 2;
+    else dserror("Unknown type of predictor");
+
+    //full newton equilibrium
+    if (equil=="full newton")
+    {
+      for (int i=step; i<mp_; ++i)
+      {
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+
+        get_disp_curve(dis_,  i);
+
+        StruGenAlpha::FullNewton();
+        StruGenAlpha::UpdateandOutput();
+        double time = params_.get<double>("total time",0.0);
+        if (time>=maxtime) break;
+      }
+    }
+    else dserror("Inverse analysis is only implemented for full newton");
+
+  evaluate();
+
+  } while (error_>tol_ && numb_run_<max_itter);
+
+  return;
+
+}
+
+void Inv_analysis::reset_parameters()
+{
+ // reset the values for next run
 
   params_.set<int>("step", 0);
   params_.set<double>("total time", 0.0);
@@ -181,70 +247,15 @@ void Inv_analysis::evaluate()
   return;
 }
 
-
-void Inv_analysis::Integrate()
-{
-  int max_itter = 100000;
-
-  do {
-    int    step    = params_.get<int>   ("step" ,0);
-    double maxtime = params_.get<double>("max time",0.0);
-
-    // get the surface neuman nodes
-
-    vector<DRT::Condition*> surfneum;
-    discret_.GetCondition("SurfaceNeumann",surfneum );
-    get_surfneum_nodes(surfneum);
-
-
-    // can have values "full newton" , "modified newton" , "nonlinear cg"
-    string equil = params_.get<string>("equilibrium iteration","full newton");
-
-    // can have values takes values "constant" consistent"
-    string pred  = params_.get<string>("predictor","constant");
-    int predictor=-1;
-    if      (pred=="constant")   predictor = 1;
-    else if (pred=="consistent") predictor = 2;
-    else dserror("Unknown type of predictor");
-
-    //full newton equilibrium
-    if (equil=="full newton")
-    {
-      for (int i=step; i<mp_; ++i)
-      {
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-
-        get_disp_curve(dis_,  i);
-
-        StruGenAlpha::FullNewton();
-        StruGenAlpha::UpdateandOutput();
-        double time = params_.get<double>("total time",0.0);
-        if (time>=maxtime) break;
-      }
-    }
-    else dserror("Inverse analysis is only implemented for full newton");
-
-  //Barrier
-  // ask drt problem.instance() nach dem epetra comm (communicator) der weiss auf welchem prozessor wir sind myrank und dann nur fuer 0 laufen lassen!
-  evaluate();
-  //Barrier
- } while (error_>tol_ && numb_run_<max_itter);
-
-  return;
-
-}
-
-
-void Inv_analysis::get_surfneum_nodes(vector<DRT::Condition*> surfneumConditions)
+void Inv_analysis::get_surfneum_nodes()
 {
   set<int> nodeSet;
   int test = 0;
 
   // loop for every surfneum condition, for the tension test it should be one time only
-  for(unsigned int i=0; i<surfneumConditions.size(); i++)
+  for(unsigned int i=0; i<surfneum_.size(); i++)
   {
-    map< int, RefCountPtr<DRT::Element > >  geometryMap = surfneumConditions[i]->Geometry();
+    map< int, RefCountPtr<DRT::Element > >           geometryMap = surfneum_[i]->Geometry();
     map< int, RefCountPtr<DRT::Element > >::iterator iterGeo;
 
     // loop for each geometry should be one as well
@@ -275,6 +286,18 @@ void Inv_analysis::get_surfneum_nodes(vector<DRT::Condition*> surfneumConditions
       }
     }
   }
+
+
+    static int myrank;
+    myrank = dis_->Comm().MyPID();
+    cout << "Myrank " << myrank << endl;
+    cout << "Nodes: " << endl;
+    for (int i=0; i<surfneum_nodes_.size();i++) {
+      cout << surfneum_nodes_[i] << " ";
+    }
+    cout << endl;
+
+
   return;
 }
 
@@ -330,6 +353,9 @@ void Inv_analysis::calculate_new_parameters()
   p_0_storage_.push_back(p_[0]);
   p_1_storage_.push_back(p_[1]);
   p_2_storage_.push_back(p_[2]);
+
+  // row map for one prosessor
+  //const Epetra_Map* final_disp_row_map = final_disp_.Map();
 
   // calculating delta_p_
 
