@@ -43,6 +43,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_beam2:
       nv = 3;
     break;
+    case DRT::Element::element_beam3:
+      nv = 6;
+    break;
     case DRT::Element::element_shell8:
       nv = 6;
     break;
@@ -58,6 +61,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_so_weg6:
     case DRT::Element::element_sodisp:
     case DRT::Element::element_so_shw6:
+    case DRT::Element::element_truss3:
       nv = 3;
     break;
     case DRT::Element::element_fluid3:
@@ -112,7 +116,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   mllist.set<RefCountPtr<vector<double> > >("nullspace",null);
   const Epetra_Map* rowmap = DofRowMap();
   int numdf = 1; // default value for no. of degrees of freedom
-  int dimns = 1; // default value for sirze of nullspace
+  int dimns = 1; // default value for size of nullspace
 
   // get the first element of the discretization
   // Note that a processor might not have any elements
@@ -127,6 +131,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_beam3:
       numdf = 6;
+      dimns = 6;
+    break;
+    case DRT::Element::element_truss3:
+      numdf = 3;
       dimns = 6;
     break;
     case DRT::Element::element_shell8:
@@ -384,19 +392,24 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         if (lid<0) dserror("Cannot find dof");
         switch (j) // j is degree of freedom
         {
+        //translation of element in x-direction
         case 0:
           mode[0][lid] = 1.0;
           mode[1][lid] = 0.0;
-          mode[2][lid] = -x[1] + x0[1];
+          mode[2][lid] = 0.0;
         break;
+        //translation of element in y-direction
         case 1:
           mode[0][lid] = 0.0;
           mode[1][lid] = 1.0;
-          mode[2][lid] = x[0] - x0[0];
+          mode[2][lid] = 0.0;
         break;
+        //rotation of element about z-axis 
+        //(e.g. x[0]-x0[0] is the arm of lever for translation in y-direction in case of rotation about z-axis)
+        //(hence x[0]-x0[0] is the translation in y-direction in case of unit rotation about z-axis)
         case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
+          mode[0][lid] = -x[1] + x0[1];
+          mode[1][lid] =  x[0] - x0[0];
           mode[2][lid] = 1.0;
         break;
         default:
@@ -423,28 +436,143 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
        if (lid<0) dserror("Cannot find dof");
        switch (j) // j is degree of freedom
        {
+       //translation of element in x-direction
        case 0:
          mode[0][lid] = 1.0;
          mode[1][lid] = 0.0;
-         mode[2][lid] = -x[1] + x0[1];
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
        break;
+       //translation of element in y-direction
        case 1:
          mode[0][lid] = 0.0;
          mode[1][lid] = 1.0;
-         mode[2][lid] = x[0] - x0[0];
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
        break;
+       //translation of element in z-direction
        case 2:
          mode[0][lid] = 0.0;
          mode[1][lid] = 0.0;
          mode[2][lid] = 1.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about x-axis
+       case 3:
+         mode[0][lid] = 0.0;
+         mode[1][lid] = -x[2] + x0[2];
+         mode[2][lid] =  x[1] - x0[1];
+         mode[3][lid] = 1.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about y-axis
+       case 4:
+         mode[0][lid] =  x[2] - x0[2];
+         mode[1][lid] = 0.0;
+         mode[2][lid] = -x[0] + x0[0];
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 1.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about z-axis
+       case 5:
+         mode[0][lid] = -x[1] + x0[1];
+         mode[1][lid] =  x[0] - x0[0];
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 1.0;
        break;
        default:
-         dserror("Only dofs 0 - 2 supported");
+         dserror("Only dofs 0 - 5 supported");
        break;
        } // switch (j)
      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
    } // for (int i=0; i<NumMyRowNodes(); ++i)
  } // else if (ele->Type() == DRT::Element::element_beam3)
+  
+   else if (ele->Type() == DRT::Element::element_truss3)
+ {
+   for (int i=0; i<NumMyRowNodes(); ++i)
+   {
+     DRT::Node* actnode = lRowNode(i);
+     const double* x = actnode->X();
+     vector<int> dofs = Dof(actnode);
+     for (unsigned j=0; j<dofs.size(); ++j)
+     {
+       const int dof = dofs[j];
+       const int lid = rowmap->LID(dof);
+       if (lid<0) dserror("Cannot find dof");
+       switch (j) // j is degree of freedom
+       {
+       //translation of element in x-direction
+       case 0:
+         mode[0][lid] = 1.0;
+         mode[1][lid] = 0.0;
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //translation of element in y-direction
+       case 1:
+         mode[0][lid] = 0.0;
+         mode[1][lid] = 1.0;
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //translation of element in z-direction
+       case 2:
+         mode[0][lid] = 0.0;
+         mode[1][lid] = 0.0;
+         mode[2][lid] = 1.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about x-axis
+       case 3:
+         mode[0][lid] = 0.0;
+         mode[1][lid] = -x[2] + x0[2];
+         mode[2][lid] =  x[1] - x0[1];
+         mode[3][lid] = 1.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about y-axis
+       case 4:
+         mode[0][lid] =  x[2] - x0[2];
+         mode[1][lid] = 0.0;
+         mode[2][lid] = -x[0] + x0[0];
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 1.0;
+         mode[5][lid] = 0.0;
+       break;
+       //rotation of element about z-axis
+       case 5:
+         mode[0][lid] = -x[1] + x0[1];
+         mode[1][lid] =  x[0] - x0[0];
+         mode[2][lid] = 0.0;
+         mode[3][lid] = 0.0;
+         mode[4][lid] = 0.0;
+         mode[5][lid] = 1.0;
+       break;
+       default:
+         dserror("Only dofs 0 - 5 supported");
+       break;
+       } // switch (j)
+     } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+   } // for (int i=0; i<NumMyRowNodes(); ++i)
+ } // else if (ele->Type() == DRT::Element::element_truss3)
 
 
 
