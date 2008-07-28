@@ -330,7 +330,7 @@ void StruGenAlpha::ConstantPredictor()
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-  
+
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
   accn_->Update(1.0,*acc_,0.0);
@@ -434,7 +434,7 @@ void StruGenAlpha::ConstantPredictor()
 #else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
-    
+
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
@@ -615,7 +615,7 @@ void StruGenAlpha::ConsistentPredictor()
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
-  
+
   // zerofy velocity and acceleration in case of statics
   if (dynkindstat)
   {
@@ -626,7 +626,7 @@ void StruGenAlpha::ConsistentPredictor()
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-  
+
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -1497,7 +1497,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
-  
+
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
   if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
@@ -2267,7 +2267,7 @@ void StruGenAlpha::PTC()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-  
+
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
 
@@ -2708,7 +2708,7 @@ void StruGenAlpha::Update()
 
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
-  
+
   const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   string iostress      = params_.get<string>("io structural stress"   ,"none");
@@ -2735,14 +2735,14 @@ void StruGenAlpha::Update()
   //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
   //                     - alpham/(1.-alpham) * A_n
   acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
-  
+
   // zerofy velocity and acceleration in case of statics
   if (dynkindstat)
   {
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-  
+
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
@@ -3024,7 +3024,7 @@ void StruGenAlpha::ExtrapolateEndState()
     veln_->PutScalar(0.0);
     accn_->PutScalar(0.0);
   }
-  
+
   return;
 } // StruGenAlpha::ExtrapolateEndState
 
@@ -3060,12 +3060,12 @@ void StruGenAlpha::Integrate()
         double time = params_.get<double>("total time",0.0);
         //double dt   = params_.get<double>("delta time",0.01);
         // what algorithm is used?
-        // - "newtonlinuzawa": Potential is linearized wrt displacements 
+        // - "newtonlinuzawa": Potential is linearized wrt displacements
         //                     and Lagrange multipliers
         //                     Linear problem is solved with Uzawa algorithm
-        // - "augmentedlagrange": Potential is linearized wrt displacements 
+        // - "augmentedlagrange": Potential is linearized wrt displacements
         //                        keeping Lagrange multiplier fixed
-        //                        Until convergence Lagrange multiplier 
+        //                        Until convergence Lagrange multiplier
         //                        increased by Uzawa_param*(Vol_err)
         if (algo=="newtonlinuzawa")
         {
@@ -3761,8 +3761,7 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
     discret_.SetState("displacement",dism_);
-    discret_.SetState("displacement",velm_);
-    //discret_.SetState("velocity",velm_); // not used at the moment
+    discret_.SetState("velocity",velm_);
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,fint_);
     discret_.ClearState();
