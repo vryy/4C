@@ -227,7 +227,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     dirParams.set("User Defined Direction Factory",factory);
 
     Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-    exParams.set("Tolerance", 1e-01);
+    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
     exParams.set("omega", fsidyn.get<double>("RELAX"));
     exParams.set("kmax", 10);
     exParams.set("Method", "MPE");
@@ -251,7 +251,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     dirParams.set("User Defined Direction Factory",factory);
 
     Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-    exParams.set("Tolerance", 1e-01);
+    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
     exParams.set("omega", fsidyn.get<double>("RELAX"));
     exParams.set("kmax", 10);
     exParams.set("Method", "RRE");
