@@ -203,7 +203,7 @@ void UTILS::ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     
     RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
     LINALG::Export(*actvalues_,*actredundant);
-    //Compute initial values and assemble them to the completely redundant vector
+    //Compute current values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
     volconstr3d_->Evaluate(p,null,null,null,null,actredundant);

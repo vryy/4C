@@ -53,7 +53,6 @@ actdisc_(discr)
 
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
-|Compute values defined to keep track of.                                |
 *-----------------------------------------------------------------------*/
 UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& name)
 {
