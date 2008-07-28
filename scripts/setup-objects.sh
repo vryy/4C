@@ -17,7 +17,7 @@ OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_GLOBAL_CPP) \$(OBJS_SOLVER) \$(OB
 
 FILTER_OBJECTS="\$(OBJS_POST_DRT_COMMON) \
 \$(OBJS_DRT_IO_LIB) \$(OBJS_DRT_LIB) \$(OBJS_DRT_MAT_LIB) \$(OBJS_PSS) \$(OBJS_PAR) \$(OBJS_DRT_CONTACT_LIB) \$(OBJS_DRT_CONDIF3_LIB) \
-\$(OBJS_INTERSECTION) \$(OBJS_DRT_CONSTRAINT_LIB) \$(OBJS_DRT_F2_LIB) \$(OBJS_DRT_B2_LIB) \$(OBJS_DRT_B3_LIB) \$(OBJS_DRT_F3_LIB)  \$(OBJS_DRT_S8_LIB) \
+\$(OBJS_INTERSECTION) \$(OBJS_DRT_CONSTRAINT_LIB) \$(OBJS_DRT_F2_LIB) \$(OBJS_DRT_B2_LIB) \$(OBJS_DRT_B3_LIB) \$(OBJS_DRT_T3_LIB) \$(OBJS_DRT_F3_LIB)  \$(OBJS_DRT_S8_LIB) \
 \$(OBJS_SOH8_LIB) \$(OBJS_DRT_W1_LIB) \$(OBJS_DRT_ALE_LIB) \$(OBJS_DRT_SURFSTRESS) \$(OBJS_FILTER_COMMON)"
 
 # ALE
@@ -33,6 +33,11 @@ fi
 # BEAM3
 if grep '^[[:blank:]]*D_BEAM3' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_BEAM3)"
+fi
+
+# TRUSS3
+if grep '^[[:blank:]]*D_TRUSS3' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_TRUSS3)"
 fi
 
 # drt solid elements
@@ -167,6 +172,11 @@ fi
 # BEAM3
 if grep '^[[:blank:]]*D_BEAM3' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_DRT_B3) \$(OBJS_DRT_B3_LIB)"
+fi
+
+# TRUSS3
+if grep '^[[:blank:]]*D_TRUSS3' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_DRT_T3) \$(OBJS_DRT_T3_LIB)"
 fi
 
 # SHELL9
