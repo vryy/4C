@@ -380,6 +380,11 @@ OBJS_DRT_B3_LIB   = src/drt_beam3/beam3.o \
                 src/drt_beam3/beam3_input.o \
                 src/drt_beam3/beam3_evaluate.o
 OBJS_DRT_B3   = 
+# -------------------------------------------------- drt version of truss3
+OBJS_DRT_T3_LIB   = src/drt_truss3/truss3.o \
+                src/drt_truss3/truss3_input.o \
+                src/drt_truss3/truss3_evaluate.o
+OBJS_DRT_T3   = 
 #-------------------------------------------------- old version of shell8
 OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \

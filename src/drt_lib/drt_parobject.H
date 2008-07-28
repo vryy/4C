@@ -126,6 +126,8 @@ using namespace std;
 #define ParObject_ArtWallRemod          (int)113
 #define ParObject_PreStress             (int)114
 #define ParObject_MatList               (int)115
+#define ParObject_Truss3                (int)116
+#define ParObject_Truss3Register        (int)117
 
 namespace DRT
 {

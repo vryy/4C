@@ -44,6 +44,7 @@ extern "C"
 #include "drt_discret.H"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_truss3/truss3.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/fluid2_nurbs.H"
@@ -163,6 +164,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Beam3Register* object =
                       new DRT::ELEMENTS::Beam3Register(DRT::Element::element_beam3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_TRUSS3
+    case ParObject_Truss3:
+    {
+      DRT::ELEMENTS::Truss3* object = new DRT::ELEMENTS::Truss3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Truss3Register:
+    {
+      DRT::ELEMENTS::Truss3Register* object =
+                      new DRT::ELEMENTS::Truss3Register(DRT::Element::element_truss3);
       object->Unpack(data);
       return object;
     }
@@ -651,6 +669,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     sodisp,
     beam2,
     beam3,
+    truss3,
     constrele
   };
 
@@ -677,6 +696,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLID3") type = sodisp;
   else if (eletype=="BEAM2") type = beam2;
   else if (eletype=="BEAM3") type = beam3;
+  else if (eletype=="TRUSS3") type = truss3;
   else if (eletype=="CONSTRELE") type = constrele;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
@@ -696,6 +716,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case beam3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_TRUSS3
+    case truss3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
       return ele;
     }
     break;

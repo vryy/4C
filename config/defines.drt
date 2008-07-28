@@ -25,6 +25,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_SOLID3           # spatial solid elements
 # D_BEAM2            # 2D Timoshenko beam element 
 # D_BEAM3            # 3D Timoshenko beam element 
+# D_TRUSS3           # 3D total Lagrange truss element
 
 
 #   problem types
