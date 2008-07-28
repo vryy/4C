@@ -351,7 +351,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
   // get an idea of interface displacement
   idispn_ = StructureField().ExtractInterfaceDispn();
-  iveln_ = MBFluidField().ExtractInterfaceVeln();
+  iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
 
   Teuchos::Time timer("time step timer");
 
@@ -508,7 +508,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // extract final displacement and velocity
     // since we did update, this is very easy to extract
     idispn_ = StructureField().ExtractInterfaceDispn();
-    iveln_ = MBFluidField().ExtractInterfaceVeln();
+    iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
 
     // write current solution
     Output();
@@ -837,11 +837,11 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 ) const
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  
+
   bool secondorder;
   if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)  secondorder = true;
   else                                                            secondorder = false;
-  
+
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
   if (secondorder)
   {
