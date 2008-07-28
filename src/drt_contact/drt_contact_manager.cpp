@@ -361,6 +361,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool semism    = scontact_.get<bool>("semismooth newton",false);
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   
   // invalid parameter combinations
@@ -376,8 +377,9 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Full linearization not yet implemented for friction");
   if (btrafo && fulllin)
     dserror("Full linearization not yet implemented for basis trafo case");
-  if (ct == 0)
+  if (semism && ctype=="frictional" && ct == 0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
+  
   // overrule input in certain cases
   if (ctype=="meshtying" && !init)
     scontact_.set<bool>("initial contact",true);
@@ -3136,7 +3138,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -3440,7 +3442,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -3746,7 +3748,7 @@ void CONTACT::Manager::StoreNodalQuantities(const string& state)
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
     
     // export global LM vector or Jump vector to current interface slave dof row map
     RCP<Epetra_Vector> vectorglobal = null;
@@ -3825,7 +3827,7 @@ void CONTACT::Manager::PrintActiveSet()
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
