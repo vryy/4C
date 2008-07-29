@@ -113,7 +113,7 @@ public:
   //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
   
-  //! Get onde SideSet
+  //! Get one SideSet
   SideSet GetSideSet(const int id) const;
   
   //! Get Side Set Connectivity with Global Nodes
@@ -160,6 +160,9 @@ public:
   
   //! Erase Element Block from mesh
   void EraseElementBlock(const int id);
+  
+  //! Erase SideSet from mesh
+  void EraseSideSet(const int id);
   
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
   map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;

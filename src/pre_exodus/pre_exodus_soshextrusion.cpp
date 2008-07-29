@@ -76,9 +76,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   }
   
   set<int> nodes_from_sideset;
+  int extrusion_sideset_id;
   // loop through all SideSets to check for extrusion
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
-    bool toextrude = CheckExtrusion(i_sss->second);
+    bool toextrude = CheckExtrusion(i_sss->second); // currently no rule is applied, the one (and only) sideset is extruded
+    extrusion_sideset_id = i_sss->first;
     if (toextrude){
       map<int,vector<int> > sidesetconn = basemesh.GetSideSetConn(i_sss->second,true);
       extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,sidesetconn));
@@ -592,7 +594,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       const set<int> extruded_nodes = FindExtrudedNodes(free_edge_nodes,node_pair,existing_ns.GetNodeSet());
       if (extruded_nodes.size()!=0){
         std::ostringstream nodesetname;
-        nodesetname << "ext" << existing_ns.GetName() << i_nss->first;
+        nodesetname << "ext" << highestns << existing_ns.GetName() << i_nss->first;
         EXODUS::NodeSet newnodeset(extruded_nodes,nodesetname.str(),nodesetname.str());
         newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
         highestns ++;
@@ -604,8 +606,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // additionally create new NodeSet with ALL nodes at newly created "free" faces
     // this is the sum of above, but could be handy for applying just one BC
     set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
-    string nodesetname = "extruded_free_boundary";
-    EXODUS::NodeSet newnodeset(free_nodes,nodesetname,nodesetname);
+    std::ostringstream nodesetname;
+    nodesetname << "ext_free_boundary" << highestns;;
+    EXODUS::NodeSet newnodeset(free_nodes,nodesetname.str(),nodesetname.str());
     newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
     highestns ++;
 
@@ -624,14 +627,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
     }
     std::ostringstream nodesetname;
-    nodesetname << "base_nodes";//sideset.GetName() << "nodes";
+    nodesetname << "base_nodes" << extrusion_sideset_id;//sideset.GetName() << "nodes";
     string propname = "";
     EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
     newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
     highestns ++;
     
     std::ostringstream nodesetnamer;
-    nodesetnamer << "roof_nodes";//sideset.GetName() << "nodes";
+    nodesetnamer << "roof_nodes" << extrusion_sideset_id;//sideset.GetName() << "nodes";
     EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
     newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
     highestns ++;
@@ -666,6 +669,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   }
   
 
+  // get rid of original extrusion SideSet
+  basemesh.EraseSideSet(extrusion_sideset_id);
   
   string newtitle = "extrusion";
   //map<int,EXODUS::SideSet> emptysideset;
@@ -824,7 +829,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign,
         }
         
         int doublerepairedelesign = EleSaneSign(actele,coords);
-        if (doublerepairedelesign != initelesign) cout << "What?!" << endl;
+        if (doublerepairedelesign != initelesign) cout << "What?! Element still twisted, I give up!" << endl;
         
         //PlotEleConnGmsh(obstinates,newnodes);
 

@@ -932,6 +932,7 @@ void EXODUS::Mesh::AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const
   map<int,RCP<ElementBlock> > eblocks = GetElementBlocks();
   eblocks.insert(std::pair<int,RCP<ElementBlock> >(GetNumElementBlocks()+1,eblock));
 }
+
 /*----------------------------------------------------------------------*
  |  Erase Element Block from mesh(public)                      maf 07/08|
  *----------------------------------------------------------------------*/
@@ -940,6 +941,14 @@ void EXODUS::Mesh::EraseElementBlock(const int id)
   int red_numele = GetElementBlock(id)->GetNumEle();
   elementBlocks_.erase(id);
   num_elem_ = num_elem_ - red_numele;
+}
+
+/*----------------------------------------------------------------------*
+ |  Erase SideSet from mesh(public)                            maf 07/08|
+ *----------------------------------------------------------------------*/
+void EXODUS::Mesh::EraseSideSet(const int id)
+{
+  sideSets_.erase(id);
 }
 
 /*------------------------------------------------------------------------*
