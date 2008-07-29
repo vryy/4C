@@ -681,6 +681,9 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
       if(distype == "Nurbs")
       {
+	// get the number of nurbs patches
+	int npatches = psize.get<int>("NPATCHES");
+
         // cast discretisation to nurbs variant to be able
         // to add the knotvector
         DRT::NURBS::NurbsDiscretization* nurbsdis
@@ -689,31 +692,16 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
         if(i!=0 || j!=0)
         {
-          dserror("up to now I'm only supporting single patch, single field and single dis isogeometric analysis!\n");
+          dserror("up to now I'm only supporting single field and single dis isogeometric analysis!\n");
         }
 
-        std::vector<Teuchos::RCP<std::vector<double> > > knots(dim);
-        for(int dir=0;dir<dim;++dir)
-        {
-          knots[dir]=Teuchos::rcp(new std::vector<double> );
-        }
+        // allocate a knot vector object
+        Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+	  =
+          Teuchos::rcp (new DRT::NURBS::Knotvector(dim,npatches));
 
         // read the knotvector data from the input
-        std::vector<int>    degree        (dim);
-        std::vector<int>    n_x_m_x_l     (dim);
-        std::vector<string> knotvectortype(dim);
-
-        reader.ReadKnots(degree,n_x_m_x_l,knotvectortype,knots);
-
-        // allocate and set knot vector object
-        Teuchos::RCP<DRT::NURBS::Knotvector> disknots
-            =
-          Teuchos::rcp (new DRT::NURBS::Knotvector(dim,degree,n_x_m_x_l));
-
-        for(int dir=0;dir<dim;++dir)
-        {
-          disknots->SetKnots(dir,knotvectortype[dir],knots[dir]);
-        }
+        reader.ReadKnots(npatches,dim,disknots);
 
         // consistency checks
         disknots->FinishKnots();

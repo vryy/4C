@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "drt_discret.H"
+#include "drt_knotvector.H"
 #include "drt_control_point.H"
 
 using namespace std;
@@ -129,18 +130,18 @@ public:
   void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const;
 
   /*!
-    \brief read a knotvector section (for isogeometric analysis)
+    \brief read the knotvector section (for isogeometric analysis)
 
-    \param  degree         (out): degrees of the bsplines used in this discretisation
-    \param  size           (out): knotvector sizes n_x_m_x_l
-    \param  knotvectortype (out): string for interpolated or periodic knotvector
-    \param  knots          (out): node vector coordinates
+    \param  npatches       (in ): number of patches in thos nurbs discretisation
+    \param  dim            (in ): dimension, i.e. number of knotvectors in one patch 
+    \param  disknots       (out): node vector coordinates
 
   */
-  void ReadKnots(std::vector<int>                                 & degree        ,
-                 std::vector<int>                                 & size          ,
-                 std::vector<string>                              & knotvectortype,
-                 std::vector<Teuchos::RCP<std::vector<double> > > & knots         ) const;
+  void ReadKnots(
+    const int                            npatches,
+    const int                            dim     ,
+    Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+    ) const;
 
 private:
 

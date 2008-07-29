@@ -291,12 +291,21 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
 /// read a knotvector section (for isogeometric analysis)
 //----------------------------------------------------------------------
 void DatFileReader::ReadKnots(
-  std::vector<int>                                 & degree   ,
-  std::vector<int>                                 & n_x_m_x_l,
-  std::vector<string>                              & knotvectortype,
-  std::vector<Teuchos::RCP<std::vector<double> > > & knots    ) const
+  const int                            npatches,
+  const int                            dim     ,
+  Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+  ) const
 {
+  // make sure that we have some Knotvector obeject to fill
+  if (disknots==Teuchos::null)
+  {
+    dserror("disknots should have been allocated before");
+  }
 
+  // this is a pointer to the knots of one patch in one direction
+  // we will read them and put them 
+  vector<Teuchos::RCP<vector<double> > > patch_knots(dim);
+  
   // open input file --- this is done on all procs
   ifstream file;
 
@@ -304,105 +313,163 @@ void DatFileReader::ReadKnots(
 
   // temporary strings
   string tmp;
-  string dummy;
 
-  // string for u/v/w
-  string dir;
-
-  // index for u/v/w
-  int direction=0;
 
   int filecount=0;
 
   // start to read something when read is true
   bool read=false;
 
+  
+  bool knotvectorsection=false;
+
+  // index for number of patch
+  int            npatch          = 0;
+  // index for u/v/w
+  int            actdim          =-1;
+  // ints for the number of knots
+  vector<int>    n_x_m_x_l(dim);
+  // ints for patches degrees
+  vector<int>    degree(dim);
+  // a vector of strings holding the knotvectortypes read
+  vector<string> knotvectortype(dim);
+
   // loop lines in file
   for (; file; ++filecount)
   {
-    file >> tmp ;
+    file >> tmp;
 
-    if(!(tmp[0]=='-'&&tmp[1]=='-'))
+    // if this a new section
+    if((tmp[0]=='-'&&tmp[1]=='-'))
     {
-      // this is a standard line --- not a new section
 
-      // if read is true, we are in the coordinate section of a knotvector
-      // --- just read it
-      if(read)
-      {
-        char* endptr = NULL;
-
-        double dv = strtod(tmp.c_str(), &endptr);
-
-        (*(knots[direction])).push_back(dv);
-      }
-    }
-    else
-    {
-      // this a new section
-
-      // section lines ---------SOMETHING never contain knot data
-
-      // reset read on each new section
-      read=false;
-
-      string::size_type loc = tmp.rfind("KNOT");
+      // check whether it is the knotvectorsection
+      string::size_type loc = tmp.rfind("KNOTVECTORS");
+ 
       if (loc != string::npos)
       {
         // if this is true, we are at the beginning of a knot section
+	knotvectorsection=true;
+	// there is nothing more to be done in this line
+	continue;
+      }
+      else
+      {
+	knotvectorsection=false;
 
-        file >> dummy >> dir;
+	// there is nothing more to be done in this line
+	continue;
+      }
+    }
 
-        tmp = tmp.substr(loc,string::npos);
+    if(knotvectorsection)
+    {
+      // check for a new patch
+      string::size_type loc;
+      
+      loc = tmp.rfind("BEGIN");
+      if (loc != string::npos)
+      {
+	file >> tmp;
+	read=true;
+	
+	actdim=-1;
 
-        if(dir[0]=='U' || dir[0]=='V' || dir[0]=='W')
-        {
-          // get the direction
-          if(dir[0]=='U')
-          {
-            direction=0;
-          }
-          if(dir[0]=='V')
-          {
-            direction=1;
-          }
-          if(dir[0]=='W')
-          {
-            direction=2;
-            if(degree.size()<3)
-            {
-              dserror("cowardly refusing to read a third knotvector in 2d-problems\n");
-            }
-          }
+	for(int rr=0;rr<dim;++rr)
+	{
+	  patch_knots[rr]=rcp(new vector<double>);
+	  (*(patch_knots[rr])).clear();
+	}
 
-          // make sure no dirt is left on knots
-          (*(knots[direction])).clear();
+	continue;
+      }
 
-          // activate read for the following coordinate section
-          read = true;
+      loc = tmp.rfind("ID");
+      if (loc != string::npos)
+      {
+	// get ID of patch we are currently reading
+	string str_npatch;
+	file >> str_npatch;
+	
+	char* endptr = NULL;
+	npatch=strtol(str_npatch.c_str(),&endptr,10);
+	npatch--;
 
-          // get number of knots in this direction
-          string numknots;
-          file >> dummy >> numknots;
+	continue;
+      }
 
-          char* endptr = NULL;
-          n_x_m_x_l[direction]=strtol(numknots.c_str(),&endptr,10);
+      loc = tmp.rfind("NUMKNOTS");
+      if (loc != string::npos)
+      {
+	string str_numknots;
+	file >> str_numknots;
 
-          // finally get degree and interpolation properties in this direction
-          string degreestr;
+	// new dimesion for knotvector
+	actdim++;
+	if(actdim>dim)
+	{
+	  dserror("too many knotvectors for (we only need dim)\n");
+	}
 
-          file >> dummy >> degreestr;
+	char* endptr = NULL;
+	n_x_m_x_l[actdim]=strtol(str_numknots.c_str(),&endptr,10);
 
-          string interpol;
-          file >> dummy >> interpol;
+	continue;
+      }
 
-          (knotvectortype[direction]).insert(0,interpol);
+      loc = tmp.rfind("DEGREE");
+      if (loc != string::npos)
+      {
+	string str_degree;
+	file >> str_degree;
 
-          endptr = NULL;
-          degree[direction]=strtol(degreestr.c_str(),&endptr,10);
-        } // selection of directions
-      } // knotvector section
-    } // if this is the beginning of a section
+	char* endptr = NULL;
+	degree[actdim]=strtol(str_degree.c_str(),&endptr,10);
+
+	continue;
+      }
+
+      loc = tmp.rfind("TYPE");
+      if (loc != string::npos)
+      {
+	string type;
+
+	file >> type;
+
+	cout << knotvectortype[actdim] << " " << type << "\n";
+	knotvectortype[actdim]=type;
+
+	continue;
+      }
+
+      loc = tmp.rfind("END");
+      if (loc != string::npos)
+      {
+	for (int rr=0;rr<dim;++rr)
+	{
+	  disknots->SetKnots(
+	    rr                ,
+	    npatch            ,
+	    degree[rr]        ,
+	    n_x_m_x_l[rr]     ,
+	    knotvectortype[rr],
+	    patch_knots[rr]   );
+	}
+	file >> tmp;
+	read=false;
+	continue;
+      }
+
+      if(read)
+      {
+	char* endptr = NULL;
+
+        double dv = strtod(tmp.c_str(), &endptr);
+
+	(*(patch_knots[actdim])).push_back(dv);
+      }
+    }
+
   } // end loop through file
 
   return;
