@@ -300,10 +300,10 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
     }
 
     // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
@@ -341,7 +341,10 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
       // get gid, location in the patch
       int gid = actele->Id();
 
-      vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+      int patchid=0;
+
+      vector<int> ele_cart_id;
+      knots->ConvertEleGidToKnotIds(patchid,gid,ele_cart_id);
 
       // want to loop all control points of the element,
       // so get the number of points
@@ -1042,7 +1045,7 @@ void FLD::TurbulenceStatistics::EvaluateIntegralMeanValuesInPlanes()
   else
   {
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     numele_ = nele_x_mele_x_lele[0]*nele_x_mele_x_lele[2];
   }
