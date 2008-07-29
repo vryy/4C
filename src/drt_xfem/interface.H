@@ -101,6 +101,13 @@ public:
         return cutterdis_->gElement(element_gid);
     }
 
+    /// Print Information about the contained search tree
+    void PrintTreeInformation(const int step) const
+    {
+        xTree_->printTreeMetrics(step);
+        return;
+    }
+    
 private:
   
     //! don't want default constructor
