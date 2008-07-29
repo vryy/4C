@@ -87,9 +87,6 @@ namespace XFEM
         assert(&other != this);
         return;
       }
-              
-      //! destructor
-      ~Enrichment() {return;}
       
       //! return string representation of the Enrichment
       std::string toString() const;

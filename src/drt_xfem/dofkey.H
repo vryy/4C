@@ -78,12 +78,6 @@ namespace XFEM
           assert(&other != this);
           return;
       }
-        
-      //! destructor
-      ~DofKey()
-      {
-        return;
-      }
       
       //! return string representation of this class
       std::string toString() const

@@ -54,9 +54,6 @@ class FieldEnr
       assert(&other != this);
       return;
     }
-    
-    //! destructor
-    ~FieldEnr() {return;}
 
     //! return string representation
     std::string toString() const;

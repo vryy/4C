@@ -89,9 +89,6 @@ public:
 
     //! Copy Constructor
     explicit IntCell(const IntCell& old);
-    
-    //! Destructor
-    virtual ~IntCell();
 
     /*!  = operator
      * create true copy -> allows to have constant instance members
