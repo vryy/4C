@@ -172,7 +172,7 @@ namespace STR
   protected:
 
     //! not wanted: = operator
-    TimAdaJoint operator = (const TimAdaJoint& old);
+    TimAdaJoint operator=(const TimAdaJoint& old);
   
     //! not wanted: copy constructor
     TimAdaJoint(const TimAdaJoint& old);
