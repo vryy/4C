@@ -5659,9 +5659,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   \                             /
           */
 
-          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(0) ;
-          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(1) ;
-          elevec[fui  ] -= fac_tauM_conv_c_af_ui*resM_(2) ;
+          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(0);
+          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(1);
+          elevec[fui  ] -= fac_tauM_conv_c_af_ui*resM_(2);
 
         } // end loop rows
       } // end supg
