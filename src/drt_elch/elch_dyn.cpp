@@ -13,7 +13,7 @@
 
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
-#include "elch_create_condif.H"
+#include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
@@ -21,18 +21,12 @@
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*/
 // entry point for ELCH in DRT
 /*----------------------------------------------------------------------*/
-void elch_dyn()
+void elch_dyn(int disnumff,int disnumscatra, int restart)
 {
   // create a communicator
 #ifdef PARALLEL
@@ -44,10 +38,6 @@ void elch_dyn()
   // print ELCH-Logo to screen
   if (comm.MyPID()==0) printlogo();
 
-  // get discretization ids
-  int disnumff = genprob.numff; // typically 0
-  int disnumscatra = genprob.numscatra; // typically 1
-  
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
@@ -66,9 +56,12 @@ void elch_dyn()
   if (condifdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
-    ELCH::CreateConDifDiscretization(disnumff,disnumscatra);
+    std::map<string,string> conditions_to_copy;
+    conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
+    //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
+    SCATRA::CreateScaTraDiscretization(fluiddis,condifdis,conditions_to_copy,false);
     if (comm.MyPID()==0)
-    cout<<"Created necessary condif discretization from fluid field in...."
+    cout<<"Created scalar transport discretization from fluid field in...."
     <<time.ElapsedTime() << " secs\n\n";
   }
   else
@@ -80,7 +73,7 @@ void elch_dyn()
   // create an ELCH::Algorithm instance
   Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchdyn));
 
-  if (genprob.restart)
+  if (restart)
   {
     // read the restart information, set vectors and variables
     //elch->ReadRestart(genprob.restart);

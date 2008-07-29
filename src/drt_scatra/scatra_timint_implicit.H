@@ -59,6 +59,8 @@ extern "C" /* stuff which is c and is accessed from c++ */
 using namespace std;
 using namespace Teuchos;
 
+namespace SCATRA{
+
 /*!
 \brief time integration for convection-diffusion problems
 
@@ -261,7 +263,7 @@ protected:
 
 }; // class ScaTraImplicitTimeInt
 
-
+} // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H
 #endif  // #ifdef CCADISCRET

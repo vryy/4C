@@ -47,18 +47,18 @@ namespace ADAPTER {
     virtual ~ScaTraBaseAlgorithm();
 
     /// access to the scalar transport field solver
-    ScaTraImplicitTimeInt& ScaTraField() { return *scatra_;};
+    SCATRA::ScaTraImplicitTimeInt& ScaTraField() { return *scatra_;};
 
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest()
     {
-      return Teuchos::rcp(new ScaTraResultTest::ScaTraResultTest(*scatra_));
+      return Teuchos::rcp(new SCATRA::ScaTraResultTest::ScaTraResultTest(*scatra_));
     };
 
   private:
 
     /// scalar transport field solver
-    Teuchos::RCP<ScaTraImplicitTimeInt> scatra_;
+    Teuchos::RCP<SCATRA::ScaTraImplicitTimeInt> scatra_;
 
   }; // class ScaTraBaseAlgorithm
 

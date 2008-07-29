@@ -53,10 +53,11 @@ extern struct _GENPROB     genprob;
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(RCP<DRT::Discretization>      actdis,
-                                             RCP<LINALG::Solver>           solver,
-                                             RCP<ParameterList>            params,
-                                             RCP<IO::DiscretizationWriter> output) :
+SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
+    RCP<DRT::Discretization>      actdis,
+    RCP<LINALG::Solver>           solver,
+    RCP<ParameterList>            params,
+    RCP<IO::DiscretizationWriter> output) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
@@ -228,7 +229,7 @@ ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(RCP<DRT::Discretization>      actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::Integrate()
+void SCATRA::ScaTraImplicitTimeInt::Integrate()
 {
   // bound for the number of startsteps
   int    numstasteps         =params_->get<int>   ("number of start steps");
@@ -273,7 +274,7 @@ void ScaTraImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::TimeLoop()
+void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
 {
   // time measurement: time loop --- start TimeMonitor tm2
   tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
@@ -355,7 +356,7 @@ void ScaTraImplicitTimeInt::TimeLoop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
+void SCATRA::ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
 {
   /*
 
@@ -395,7 +396,7 @@ void ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::PrepareTimeStep()
+void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -493,7 +494,7 @@ void ScaTraImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::Solve(
+void SCATRA::ScaTraImplicitTimeInt::Solve(
   bool is_stat //if true, stationary formulations are used in the element
   )
 {
@@ -693,7 +694,7 @@ void ScaTraImplicitTimeInt::Solve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::Update()
+void SCATRA::ScaTraImplicitTimeInt::Update()
 {
 
   // update time derivative of phi
@@ -780,7 +781,7 @@ void ScaTraImplicitTimeInt::Update()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::Output()
+void SCATRA::ScaTraImplicitTimeInt::Output()
 {
   //-------------------------------------------- output of solution
   //increase counters
@@ -863,68 +864,65 @@ void ScaTraImplicitTimeInt::Output()
 
 
 #if 0  // DEBUG IO --- the whole systemmatrix
+  {
+    int rr;
+    int mm;
+    for(rr=0;rr<residual_->MyLength();rr++)
+    {
+      int NumEntries;
+
+      vector<double> Values(27);
+      vector<int> Indices(27);
+
+      sysmat_->ExtractGlobalRowCopy(rr,27,NumEntries,&Values[0],&Indices[0]);
+      printf("Row %4d\n",rr);
+
+      for(mm=0;mm<NumEntries;mm++)
       {
-	  int rr;
-	  int mm;
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      int NumEntries;
-
-	      vector<double> Values(27);
-	      vector<int> Indices(27);
-
-	      sysmat_->ExtractGlobalRowCopy(rr,
-					    27,
-					    NumEntries,
-					    &Values[0],&Indices[0]);
-	      printf("Row %4d\n",rr);
-
-	      for(mm=0;mm<NumEntries;mm++)
-	      {
-		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-	      }
-	  }
+        printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
       }
+    }
+  }
 #endif
 
 #if 0  // DEBUG IO  --- rhs of linear system
-      {
-	  int rr;
-	  double* data = residual_->Values();
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      printf("rhs [%4d] %22.15e\n",rr,data[rr]);
-	  }
-      }
+  {
+    int rr;
+    double* data = residual_->Values();
+    for(rr=0;rr<residual_->MyLength();rr++)
+    {
+      printf("rhs [%4d] %22.15e\n",rr,data[rr]);
+    }
+  }
 #endif
 
 #if 0  // DEBUG IO --- neumann_loads
-      {
-	  int rr;
-	  double* data = neumann_loads_->Values();
-	  for(rr=0;rr<phinp_->MyLength();rr++)
-	  {
-	      printf("neum[%4d] %26.19e\n",rr,data[rr]);
-	  }
-      }
+  {
+    int rr;
+    double* data = neumann_loads_->Values();
+    for(rr=0;rr<phinp_->MyLength();rr++)
+    {
+      printf("neum[%4d] %26.19e\n",rr,data[rr]);
+    }
+  }
 
 #endif
 
 
 #if 0  //DEBUG IO --- incremental solution
-      for (int proc=0; proc<phinp_->Comm().NumProc(); ++proc)
+  for (int proc=0; proc<phinp_->Comm().NumProc(); ++proc)
+  {
+    if (proc==myrank_)
+    {
+      printf("Proc %d\n",myrank_); fflush(stdout);
+      for(int rr=0;rr<phinp_->MyLength();++rr)
       {
-        if (proc==myrank_)
-        {
-          printf("Proc %d\n",myrank_); fflush(stdout);
-          for(int rr=0;rr<phinp_->MyLength();++rr)
-          {
-            printf("sol[%4d] %26.19e\n",phinp_->Map().GID(rr),(*phinp_)[rr]);
-          }
-        }
-        fflush(stdout);
-        phinp_->Comm().Barrier();
+        printf("sol[%4d] %26.19e\n",phinp_->Map().GID(rr),(*phinp_)[rr]);
       }
+    }
+    fflush(stdout);
+    phinp_->Comm().Barrier();
+  }
 #endif
 
 #if 0  //DEBUG IO --- convective velocity
@@ -944,7 +942,7 @@ convel_->Print(cout);
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::ReadRestart(int step)
+void SCATRA::ScaTraImplicitTimeInt::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -965,7 +963,7 @@ void ScaTraImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::SolveStationaryProblem()
+void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
@@ -1036,7 +1034,7 @@ void ScaTraImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
+void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 {
     if (veltype != cdvel_)
         dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
@@ -1075,7 +1073,7 @@ void ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
+void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
 {
   if (veltype != cdvel_)
     dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
@@ -1118,7 +1116,7 @@ void ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epe
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
+void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
   { // just to be sure!
@@ -1211,7 +1209,7 @@ void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraImplicitTimeInt::CalcFlux()
 {
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -1281,7 +1279,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                     vg 05/07|
  *----------------------------------------------------------------------*/
-ScaTraImplicitTimeInt::~ScaTraImplicitTimeInt()
+SCATRA::ScaTraImplicitTimeInt::~ScaTraImplicitTimeInt()
 {
   return;
 }// ScaTraImplicitTimeInt::~ScaTraImplicitTimeInt::

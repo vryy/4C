@@ -74,7 +74,7 @@ Maintainer: Florian Henke
 #include "combust_dyn.H"
 #include "combust_utils.H"
 #include "combust_algorithm.H"
-#include "combust_create_gfunction.H"
+#include "../drt_scatra/scatra_utils.H"
 //#include "xfluidimplicitintegration.H"
 //#include "../drt_lib/drt_resulttest.H"
 //#include "xfluidresulttest.H"
@@ -130,7 +130,10 @@ void combust_dyn()
   if (gfuncdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
-    COMBUST::CreateGfuncDiscretization(disnumff,disnumgff);
+    std::map<string,string> conditions_to_copy;
+    conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
+    //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
+    SCATRA::CreateScaTraDiscretization(fluiddis,gfuncdis,conditions_to_copy,false);
     if (comm.MyPID()==0)
     cout<<"Created G-function discretization from fluid discretization in...."
     <<time.ElapsedTime() << " secs\n\n";

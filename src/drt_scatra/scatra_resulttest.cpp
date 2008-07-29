@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ScaTraResultTest::ScaTraResultTest(ScaTraImplicitTimeInt& scatra)
+SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraImplicitTimeInt& scatra)
 {
   dis_    = scatra.discret_;
   mysol_  = scatra.phinp_ ;
@@ -46,7 +46,7 @@ ScaTraResultTest::ScaTraResultTest(ScaTraImplicitTimeInt& scatra)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one scalar transport discretization supported for testing");
@@ -90,7 +90,7 @@ void ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_cou
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool ScaTraResultTest::Match(const RESULTDESCR* res)
+bool SCATRA::ScaTraResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==scatra;
 }

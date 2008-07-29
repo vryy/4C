@@ -21,6 +21,9 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_resulttest.H"
 #include "scatra_timint_implicit.H"
 
+
+namespace SCATRA{
+
 /*!
   \brief scalar-transport specific result test class
 
@@ -56,6 +59,7 @@ private:
   RefCountPtr<Epetra_MultiVector>  myflux_;
 };
 
+} // namespace SCATRA
 
 #endif /* CCADISCRET       */
 

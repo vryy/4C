@@ -23,7 +23,12 @@ extern "C"
 /* headers and prototypes of functions also accessible from c */
 
 /*! entry point for the solution of electrochemistry problems */
-void elch_dyn();
+void elch_dyn(
+    int disnumff,      /* fluid discretization number, typically 0 */
+    int disnumscatra,  /* scatra discretization number, typically 1 */
+    int restart        /* do we have to perform a restart?  */
+    );
+
 /*! prints the BACI electrochemistry-module logo on the screen */
 void printlogo();
 

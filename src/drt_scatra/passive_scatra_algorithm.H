@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 #include <Epetra_Comm.h>
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
+namespace SCATRA{
 
   /// Basic algorithm for the transport of passive scalars in the fluid velocity field
   /*!
@@ -65,6 +66,8 @@ Maintainer: Georg Bauer
   private:
 
   };
+
+} // namespace SCATRA
 
 #endif // PASSIVE_SCATRA_ALGORITHM_H
 #endif // CCADISCRET

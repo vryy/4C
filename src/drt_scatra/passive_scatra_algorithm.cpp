@@ -20,7 +20,7 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
+SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
  // no stuff to add here at the moment
@@ -29,14 +29,14 @@ PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
+SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::PassiveScaTraAlgorithm::TimeLoop()
+void SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm::TimeLoop()
 {
   // time loop (no-subcycling at the moment)
   while (NotFinished())
@@ -64,7 +64,7 @@ return;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::PrepareTimeStep()
+void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
   if (Comm().MyPID()==0)
@@ -79,7 +79,7 @@ void PassiveScaTraAlgorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::DoFluidStep()
+void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
 {
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
@@ -89,7 +89,7 @@ void PassiveScaTraAlgorithm::DoFluidStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::DoTransportStep()
+void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
 {
   
   if (Comm().MyPID()==0)
@@ -112,7 +112,7 @@ void PassiveScaTraAlgorithm::DoTransportStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::Update()
+void SCATRA::PassiveScaTraAlgorithm::Update()
 {
   FluidField().Update();
   ScaTraField().Update();
@@ -122,7 +122,7 @@ void PassiveScaTraAlgorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PassiveScaTraAlgorithm::Output()
+void SCATRA::PassiveScaTraAlgorithm::Output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle

@@ -1,0 +1,253 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_utils.cpp
+
+\brief utility functions for scalar transport problems
+
+<pre>
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+
+#ifdef PARALLEL
+#include <mpi.h>
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
+
+#include <string>
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "scatra_utils.H"
+
+// we need to know all necessary element types for the mesh creation
+#include "../drt_f2/fluid2.H"
+#include "../drt_f3/fluid3.H"
+#include "../drt_condif2/condif2.H"
+#include "../drt_condif3/condif3.H"
+//#include "../drt_combust/combust3.H"
+
+
+/*----------------------------------------------------------------------*/
+// create scalar transport discretization parallel to the fluid one
+/*----------------------------------------------------------------------*/
+void SCATRA::CreateScaTraDiscretization(
+    Teuchos::RefCountPtr<DRT::Discretization>& fluiddis, 
+    Teuchos::RefCountPtr<DRT::Discretization>& scatradis,
+    std::map<string,string>& conditions_to_copy,
+    bool makequadratic
+    )
+{
+  // is the fluid discretization ready?
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
+
+  // is the second discretization really empty?
+  if (scatradis->NumGlobalElements() or scatradis->NumGlobalNodes())
+  {
+    dserror("There are %d elements and %d nodes in empty discretization. Panic.",
+            scatradis->NumGlobalElements(), scatradis->NumGlobalNodes());
+  }
+
+  int myrank = scatradis->Comm().MyPID();
+
+  vector<int> egid;
+  egid.reserve(fluiddis->NumMyRowElements());
+
+  vector<string> eletype;
+  eletype.reserve(fluiddis->NumMyRowElements());
+
+  set<int> rownodeset;
+  set<int> colnodeset;
+  const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
+
+  // Loop all fluid elements. Here we do ugly castings. 
+  // Please do not take this for an example of how to code in baci!
+
+  // We need to test for all elements (including ghosted ones) to
+  // catch all nodes attached to fluid elements
+  int numelements = fluiddis->NumMyColElements();
+
+  for (int i=0; i<numelements; ++i)
+  {
+    DRT::Element* actele = fluiddis->lColElement(i);
+    bool found = false;
+    bool myele = fluiddis->ElementRowMap()->MyGID(actele->Id());
+
+#ifdef D_FLUID3
+    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
+    if (not found and f3!=NULL)
+    {
+      found = true;
+      eletype.push_back("CONDIF3");
+    }
+#endif
+
+#ifdef D_FLUID2
+    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
+    if (not found and f2!=NULL)
+    {
+      found = true;
+      eletype.push_back("CONDIF2");
+    }
+#endif
+
+    if (not found)
+      dserror("unsupported fluid element type '%s'", typeid(*actele).name());
+
+    {
+      if (myele)
+        egid.push_back(actele->Id());
+
+      // copy node ids of actele to rownodeset but leave those that do
+      // not belong to this processor
+      remove_copy_if(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
+                     inserter(rownodeset, rownodeset.begin()),
+                     not1(DRT::UTILS::MyGID(noderowmap)));
+
+      copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
+           inserter(colnodeset, colnodeset.begin()));
+    }
+  } // loop over my elements
+
+  if (makequadratic == true) dserror("Automatic conversion to quadratic elements not implemented.");
+
+  // construct nodes in the new discretization
+  for (int i=0; i<noderowmap->NumMyElements(); ++i)
+  {
+    int gid = noderowmap->GID(i);
+    if (rownodeset.find(gid)!=rownodeset.end())
+    {
+      DRT::Node* fluidnode = fluiddis->lRowNode(i);
+      scatradis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+    }
+  }
+
+  // we get the node maps almost for free
+  vector<int> scatranoderowvec(rownodeset.begin(), rownodeset.end());
+  rownodeset.clear();
+  RefCountPtr<Epetra_Map> scatranoderowmap = rcp(new Epetra_Map(-1,
+                                                             scatranoderowvec.size(),
+                                                             &scatranoderowvec[0],
+                                                             0,
+                                                             scatradis->Comm()));
+  scatranoderowvec.clear();
+
+  vector<int> scatranodecolvec(colnodeset.begin(), colnodeset.end());
+  colnodeset.clear();
+  RefCountPtr<Epetra_Map> scatranodecolmap = rcp(new Epetra_Map(-1,
+                                                             scatranodecolvec.size(),
+                                                             &scatranodecolvec[0],
+                                                             0,
+                                                             scatradis->Comm()));
+  scatranodecolvec.clear();
+
+  // now do the elements
+
+  // We must not add a new material type here because that might move
+  // the internal material vector. And each element material might
+  // have a pointer to that vector. Too bad.
+  // So we search for a appropriate material and take the first
+  // one we find. If we find a MatList material we take this one,
+  // if not search for convection diffusion material law.
+  int nummat = DRT::Problem::Instance()->NumMaterials();
+  int matnr = -1;
+  for (int i=0; i<nummat; ++i)
+  {
+    if (DRT::Problem::Instance()->Material(i).mattyp==m_matlist)
+    {
+      matnr = i+1;// For historical reasons material numbers are given in FORTRAN style.
+      break;
+    }
+  }
+  if (matnr == -1) // if there is no material list, search for a single condif material
+  {
+    for (int i=0; i<nummat; ++i) 
+    {
+      if (DRT::Problem::Instance()->Material(i).mattyp==m_condif)
+      {
+        matnr = i+1;// For historical reasons material numbers are given in FORTRAN style.
+        break;
+      }
+    }
+  }
+  if (matnr==-1) // we could not find any proper material
+    dserror("No appropriate material found. Cannot generate scalar transport discretization.");
+
+  // construct scalar transport elements
+  // The order of the elements might be different from that of the
+  // fluid elements. We don't care. There are no dofs to these elements.
+  for (unsigned i=0; i<egid.size(); ++i)
+  {
+    DRT::Element* fluidele = fluiddis->gElement(egid[i]);
+
+    // create a scalar transport element with the same global element id
+    RCP<DRT::Element> scatraele = DRT::UTILS::Factory(eletype[i],"Polynomial",egid[i],myrank);
+
+    // get global node ids of fluid element
+    vector<int> nids;
+    nids.reserve(fluidele->NumNode());
+    transform(fluidele->Nodes(), fluidele->Nodes()+fluidele->NumNode(),
+              back_inserter(nids), mem_fun(&DRT::Node::Id));
+
+    // set the same global node ids to the new scalar transport element
+    scatraele->SetNodeIds(nids.size(), &nids[0]);
+
+    // We need to set material and gauss points to complete element setup.
+    // This is again really ugly as we have to extract the actual
+    // element type in order to access the material property
+
+#ifdef D_FLUID2
+    DRT::ELEMENTS::Condif2* condif2 = dynamic_cast<DRT::ELEMENTS::Condif2*>(scatraele.get());
+    if (condif2!=NULL)
+    {
+      condif2->SetMaterial(matnr);
+    }
+    else
+#endif
+    {
+#ifdef D_FLUID3
+      DRT::ELEMENTS::Condif3* condif3 = dynamic_cast<DRT::ELEMENTS::Condif3*>(scatraele.get());
+      if (condif3!=NULL)
+      {
+        condif3->SetMaterial(matnr);
+      }
+      else
+#endif
+      {
+        dserror("unsupported element type '%s'", typeid(*scatraele).name());
+      }
+    }
+
+    // add new scalar transport element to discretization
+    scatradis->AddElement(scatraele);
+  }
+
+  // copy selected conditions to the new discretization (and rename them if desired)
+  for (map<string,string>::const_iterator conditername = conditions_to_copy.begin();
+       conditername != conditions_to_copy.end();
+       ++conditername)
+  {
+    vector<DRT::Condition*> conds;
+    fluiddis->GetCondition((*conditername).first, conds);
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      // We use the same nodal ids and therefore we can just copy the conditions.
+      // The map gives the new condition names (e.g. renaming from TransportDirichlet to Dirichlet)
+      scatradis->SetCondition((*conditername).second, rcp(new DRT::Condition(*conds[i])));
+    }
+  }
+
+  // redistribute nodes to column (ghost) map
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*scatradis, *scatranoderowmap, *scatranodecolmap);
+}
+
+
+#endif  // CCADISCRET

@@ -24,10 +24,10 @@ Maintainer: Volker Gravemeier
 #endif
 
 #include "scatra_dyn.H"
+#include "passive_scatra_algorithm.H"
+#include "scatra_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "passive_scatra_algorithm.H"
-#include "../drt_elch/elch_create_condif.H"
 
 #include "../drt_lib/drt_resulttest.H"
 #include "scatra_resulttest.H"
@@ -110,21 +110,23 @@ void scatra_dyn()
       if (scatradis->NumGlobalNodes()==0)
       {
         Epetra_Time time(comm);
-        ELCH::CreateConDifDiscretization(disnumff,disnumscatra);
+        std::map<string,string> conditions_to_copy;
+        conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
+        SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,false);
         if (comm.MyPID()==0)
-        cout<<"Created necessary condif discretization from fluid field in...."
+        cout<<"Created scalar transport discretization from fluid field in...."
         <<time.ElapsedTime() << " secs\n\n";
       }
       else
         dserror("Fluid AND ConDif discretization present. This is not supported.");
 
       // create an one-way coupling algorithm instance
-      Teuchos::RCP<PassiveScaTraAlgorithm> algo = Teuchos::rcp(new PassiveScaTraAlgorithm(comm,scatradyn));
+      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,scatradyn));
 
       if (genprob.restart)
       {
         // read the restart information, set vectors and variables
-        //elch->ReadRestart(genprob.restart);
+        //algo->ReadRestart(genprob.restart);
         dserror("restart not yet available");
         exit(1);
       }
@@ -148,11 +150,8 @@ void scatra_dyn()
   }
 
 
-
-
-
   return;
 
-} // end of dyn_condif_drt()
+} // end of scatra_dyn()
 
 #endif  // #ifdef CCADISCRET

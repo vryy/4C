@@ -169,7 +169,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // create all vectors and variables associated with the time
     // integration (call the constructor)
     //------------------------------------------------------------------
-    scatra_ = rcp(new ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
+    scatra_ = rcp(new SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
 
   }
   else if (timintscheme == INPUTPARAMS::timeint_gen_alpha)
@@ -187,7 +187,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // create all vectors and variables associated with the time
     // integration (call the constructor)
     //------------------------------------------------------------------
-    scatra_ = rcp(new ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
+    scatra_ = rcp(new SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
 
   }
   else
