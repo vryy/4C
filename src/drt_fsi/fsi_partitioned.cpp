@@ -837,24 +837,17 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 ) const
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  bool secondorder;
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)  secondorder = true;
-  else                                                            secondorder = false;
-
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
-  if (secondorder)
+
+  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
   {
-    ivel = rcp(new Epetra_Vector(iveln_->Map()));
-    ivel->Update(-1.0, *iveln_, 0.0);
-    ivel->Update( 1.0/(0.5*Dt()), *idispnp, 1.0);
-    ivel->Update(-1.0/(0.5*Dt()), *idispn_, 1.0);
+    ivel = rcp(new Epetra_Vector(*iveln_));
+    ivel->Update(2./Dt(), *idispnp, -2./Dt(), *idispn_, -1.);
   }
   else
   {
     ivel = rcp(new Epetra_Vector(*idispn_));
-    ivel->Update(1.0, *idispnp, -1.0);
-    ivel->Scale(1./Dt());
+    ivel->Update(1./Dt(), *idispnp, -1./Dt());
   }
   return ivel;
 }
