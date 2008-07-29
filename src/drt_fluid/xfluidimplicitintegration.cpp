@@ -502,8 +502,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
-  cout << "tree after interfaceconstructor" << endl;
-  ih->PrintTreeInformation(step_);
+  //cout << "tree after interfaceconstructor" << endl;
+  //ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
   ihForOutput_ = ih;
 
@@ -1278,7 +1278,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   if (gmshdebugout)
   {
@@ -1614,7 +1614,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 {
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   if (gmshdebugout)
   {

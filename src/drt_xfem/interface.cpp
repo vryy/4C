@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "interface.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "xfsi_searchtree.H"
 #include "xfem_condition.H"
@@ -163,7 +164,7 @@ std::string XFEM::InterfaceHandle::toString() const
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
   
   const bool gmsh_tree_output = false;
   

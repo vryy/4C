@@ -63,6 +63,9 @@ void XFEM::Intersection::computeIntersection(
 
   TEUCHOS_FUNC_TIME_MONITOR(" XFEM::Intersection");
 
+  std::cout << std::endl << "XFEM::Intersection:";
+  flush(std::cout);
+  
   static int timestepcounter_ = -1;
   timestepcounter_++;
   bool xfemIntersection;
@@ -200,11 +203,10 @@ void XFEM::Intersection::computeIntersection(
 
   //debugDomainIntCells(domainintcells,2);
   const double t_end = ds_cputime()-t_start;
-  std::cout << endl;
   if(countMissedPoints_ > 0)
-    cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
+    cout << endl << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
-  std::cout << "XFEM::Intersection: Success (" << t_end  <<  " secs), intersected elements: " << domainintcells.size();
+  std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << domainintcells.size();
   std::cout << endl;
 }
 
@@ -1542,7 +1544,7 @@ void XFEM::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pnnQ";    //o2 Y
+  char switches[] = "pnnQR";    //o2 Y R
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
