@@ -34,7 +34,7 @@ namespace ADAPTER
   {
   public:
 
-    FluidXFEM(const Teuchos::ParameterList& prbdyn,
+    explicit FluidXFEM(const Teuchos::ParameterList& prbdyn,
                     std::string condname);
 
     /// fluid field
