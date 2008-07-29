@@ -276,8 +276,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(
       new StringConditionComponent(
         "degrees of freedom for the pbc plane","xy",
-        Teuchos::tuple<std::string>("xy","yx","yz","zy","xz","zx"),
-        Teuchos::tuple<std::string>("xy","xy","yz","yz","xz","xz"))));
+        Teuchos::tuple<std::string>("xy","yx","yz","zy","xz","zx","xyz"),
+        Teuchos::tuple<std::string>("xy","xy","yz","yz","xz","xz","xyz"))));
 
   pbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("LAYER")));
   pbccomponents.push_back(Teuchos::rcp(new IntConditionComponent("Layer of periodic boundary condition",true)));
