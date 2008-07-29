@@ -94,7 +94,14 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
   xTree_ = rcp(new XSearchTree(AABB));
   
-  CleanIntersectionMaps();
+  // remove malicious entries from both maps
+  const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
+  
+  for (set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
+  {
+    elementalDomainIntCells_.erase(*eleid);
+    elementalBoundaryIntCells_.erase(*eleid);
+  }
   
 }
 /*----------------------------------------------------------------------*
@@ -108,11 +115,12 @@ XFEM::InterfaceHandle::~InterfaceHandle()
 /*----------------------------------------------------------------------*
  |  clean                                                       ag 11/07|
  *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandle::CleanIntersectionMaps()
+std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() const
 {
   // clean up double counted intersections
   set<int> ele_to_delete;
 
+  // find unintersected elements and put their Id them in aboves set
   std::map<int, DomainIntCells >::const_iterator entry;
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
@@ -137,12 +145,7 @@ void XFEM::InterfaceHandle::CleanIntersectionMaps()
       ele_to_delete.insert(xfemele->Id());
     }
   }
-  
-  for (set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
-  {
-    elementalDomainIntCells_.erase(*eleid);
-    elementalBoundaryIntCells_.erase(*eleid);
-  }
+  return ele_to_delete;
 }
 
 /*----------------------------------------------------------------------*

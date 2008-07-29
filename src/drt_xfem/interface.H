@@ -68,7 +68,7 @@ public:
     //! get pointer to elementsByLabel_
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
-    //! get pointer to map with all elements gids sorted by their interface labels
+    //! get pointer to search tree
     Teuchos::RCP<XSearchTree> getSearchTree() const {return xTree_;};
  
     
@@ -116,8 +116,8 @@ private:
     //! don't want copy constructor
     explicit InterfaceHandle(const InterfaceHandle&);
     
-    //! for difficult cases during intersection, do sanity checks and remove redundant boundary integration cells 
-    void CleanIntersectionMaps();
+    //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
+    std::set<int> FindDoubleCountedIntersectedElements() const;
   
     //! intersected domain
     const RCP<DRT::Discretization> xfemdis_;
