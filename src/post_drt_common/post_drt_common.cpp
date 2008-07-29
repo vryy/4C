@@ -506,7 +506,7 @@ void PostProblem::read_meshes()
       // -------------------------------------------------------------------
       // connect degrees of freedom for periodic boundary conditions
       // -------------------------------------------------------------------
-      if(!cond_pbcssurf->empty())
+      if(!cond_pbcssurf->empty() || !cond_pbcsline->empty())
       {
         PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.UpdateDofsForPeriodicBoundaryConditions();
