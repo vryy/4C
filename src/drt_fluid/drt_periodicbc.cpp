@@ -74,7 +74,7 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
     timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
 
 
-    #if 1
+    #if 0
     {
       // create nodal graph of problem, according to old RowNodeMap
       RefCountPtr<Epetra_CrsGraph> nodegraph = discret_->BuildNodeGraph();
@@ -162,7 +162,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     // map from global masternodeids (on this proc) to global slavenodeids
     // for a single condition
-    map<int,int> midtosid;
+    map<int,vector<int> > midtosid;
 
     // pointers to master and slave condition
     DRT::Condition* mastercond=NULL;
@@ -180,6 +180,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     planes.push_back("xy");
     planes.push_back("xz");
     planes.push_back("yz");
+    planes.push_back("xyz");
 
     // the id of the plane --- will be counted in the loop....
     int num=0;
@@ -318,9 +319,17 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
         // it is based on the fact that the letters x, y and z are 
         // consecutive in the ASCII table --- 'x' is the ASCII
         // calue of x ....
-        dofsforpbcplane[0] = thisplane->c_str()[0] - 'x';
-        dofsforpbcplane[1] = thisplane->c_str()[1] - 'x';
 
+	if (*thisplane == "xyz")
+	{
+	  // nodes in exact the same position are coupled
+	  dofsforpbcplane.clear();
+	}
+	else
+	{
+	  dofsforpbcplane[0] = thisplane->c_str()[0] - 'x';
+	  dofsforpbcplane[1] = thisplane->c_str()[1] - 'x';
+	}
         //--------------------------------------------------
         // we just write the sets into vectors
         (masternodeids).clear();
@@ -458,17 +467,17 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
-  map<int,int>        &midtosid,
-  const vector <int>   masternodeids,
-  const vector <int>   slavenodeids,
-  const vector <int>   dofsforpbcplane
+  map<int,vector<int> > &midtosid,
+  const vector <int>     masternodeids,
+  const vector <int>     slavenodeids,
+  const vector <int>     dofsforpbcplane
   )
 {
 
 
   // these are just parameter definitions for the octree search algorithm
   double tol            = 1E-9;
-  int    maxnodeperleaf = 25;
+  int    maxnodeperleaf = 250;
 
   //----------------------------------------------------------------------
   //                   BUILD PROCESSOR LOCAL OCTREE
@@ -523,8 +532,8 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 void PeriodicBoundaryConditions::AddConnectivity(
-  map<int,int>       &midtosid,
-  const int           pbcid
+  map<int,vector<int> > &midtosid,
+  const int              pbcid
   )
 {
 
@@ -542,7 +551,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
   //                           ALL CONDITIONS
   //----------------------------------------------------------------------
   {
-    map<int,int>::iterator iter;
+    map<int,vector<int> >::iterator iter;
     int  masterid;
     int  slaveid;
     bool alreadyinlist;
@@ -551,27 +560,32 @@ void PeriodicBoundaryConditions::AddConnectivity(
     {
       // get id of masternode and slavenode
       masterid  = iter->first;
-      slaveid   = iter->second;
-
-      // is masterid already in allcoupledrownodes?
+      
+      vector<int>::iterator i;
+      for(i=(iter->second).begin();i!=(iter->second).end();++i)
       {
-        alreadyinlist=false;
+	slaveid = *i;
 
-        map<int,vector<int> >::iterator found;
-
-        found = allcoupledrownodes_->find(masterid);
-        if(found != allcoupledrownodes_->end())
-        {
-          // masterid is already in the list --- i.e., the master is the
-          // master of a previous condition. Simply append the slave id here
-          alreadyinlist=true;
-          found->second.push_back(slaveid);
-        }
-        // masterid is not in the list yet. -> new entry
-        if (alreadyinlist==false)
-        {
-          (*allcoupledrownodes_)[masterid].push_back(slaveid);
-        } // end if not in map
+	// is masterid already in allcoupledrownodes?
+	{
+	  alreadyinlist=false;
+	  
+	  map<int,vector<int> >::iterator found;
+	  
+	  found = allcoupledrownodes_->find(masterid);
+	  if(found != allcoupledrownodes_->end())
+	  {
+	    // masterid is already in the list --- i.e., the master is the
+	    // master of a previous condition. Simply append the slave id here
+	    alreadyinlist=true;
+	    found->second.push_back(slaveid);
+	  }
+	  // masterid is not in the list yet. -> new entry
+	  if (alreadyinlist==false)
+	  {
+	    (*allcoupledrownodes_)[masterid].push_back(slaveid);
+	  } // end if not in map
+	}
       }
     } // end insert entries of midtosid into the allcoupledrownodes map
 

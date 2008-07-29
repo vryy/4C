@@ -133,9 +133,9 @@ public:
 
   */
   void CreateGlobalNodeMatching(
-    const vector<int>& slavenodeids,
-    const vector<int>& dofsforpbcplane,
-    map<int,int> &     midtosid
+    const vector<int>     & slavenodeids,
+    const vector<int>     & dofsforpbcplane,
+    map<int,vector<int> > & midtosid
     );
 
   /// find pairs of nearest nodes

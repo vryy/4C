@@ -152,10 +152,10 @@ public:
   
   */
   void CreateNodeCouplingForSinglePBC(
-    map<int,int>       &midtosid,
-    const vector <int>  masternodeids,
-    const vector <int>  slavenodeids,
-    const vector <int>  dofsforpbcplane);
+    map<int,vector<int> > &midtosid,
+    const vector <int>     masternodeids,
+    const vector <int>     slavenodeids,
+    const vector <int>     dofsforpbcplane);
 
   /*!
   \brief Add the connectivity from this condition (midtosid, on input)
@@ -191,7 +191,7 @@ public:
 
   */
   void AddConnectivity(
-    map<int,int> &midtosid,const int pbcid);
+    map<int,vector<int> > &midtosid,const int pbcid);
   
   //@}
 

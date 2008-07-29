@@ -130,9 +130,9 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
-  const vector<int>&     slavenodeids,
-  const vector<int>&     dofsforpbcplane,
-  map<int,int>&          midtosid
+  const vector<int>    &     slavenodeids,
+  const vector<int>    &     dofsforpbcplane,
+  map<int,vector<int> >&     midtosid
   )
 {
   int myrank  =discret_.Comm().MyPID();
@@ -322,7 +322,8 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         if(nodeisinbox==true)
         {
 
-          map<int,int>::iterator found = midtosid.find(idofclosestpoint);
+          map<int,vector<int> >::iterator found 
+	    = midtosid.find(idofclosestpoint);
 
           if( found != midtosid.end() )
           {
@@ -330,14 +331,23 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
             // have to check whether this is a better value
             if(diststom[idofclosestpoint] > distofclosestpoint)
             {
-              midtosid[idofclosestpoint] = actnode->Id();
+	      (midtosid[idofclosestpoint]).clear();
+	      (midtosid[idofclosestpoint]).push_back(actnode->Id());
               diststom[idofclosestpoint] = distofclosestpoint;
             }
+	    else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9 
+		    && 
+		    diststom[idofclosestpoint]>distofclosestpoint-1e-9 
+	      )
+	    {
+	      (midtosid[idofclosestpoint]).push_back(actnode->Id());
+	    }
           }
           else
           {
             // this is the first estimate for a closest point
-            midtosid[idofclosestpoint] = actnode->Id();
+	    (midtosid[idofclosestpoint]).clear();
+	    (midtosid[idofclosestpoint]).push_back(actnode->Id());
             diststom[idofclosestpoint] = distofclosestpoint;
 
           }
