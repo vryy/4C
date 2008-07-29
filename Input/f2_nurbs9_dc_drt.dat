@@ -13,6 +13,7 @@ dRIVEN_cAVITY_iNPUT_tESTING
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           100
 NODES              144
+NPATCHES           1
 DIM                2
 MATERIALS          1
 NUMDF              3
@@ -72,7 +73,9 @@ E 4 -   1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
------------------------------------------------------KNOT VECTOR U
+-----------------------------------------------------KNOTVECTORS
+BEGIN NURBSPATCH
+ID        1
 NUMKNOTS  15
 DEGREE    2
 TYPE      Interpolated
@@ -91,7 +94,6 @@ TYPE      Interpolated
 1
 1
 1
------------------------------------------------------KNOT VECTOR V
 NUMKNOTS  15
 DEGREE    2
 TYPE      Interpolated
@@ -110,6 +112,7 @@ TYPE      Interpolated
 1
 1
 1
+END NURBSPATCH
 -------------------------------------------------------NODE COORDS
 CP  1  COORD  0.000000e+00    0.000000e+00    0.000000e+00    1.000000e+00
 CP  2  COORD  5.000000e-02    0.000000e+00    0.000000e+00    1.000000e+00
