@@ -282,60 +282,65 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     const string name_in_gmsh
     )
 {
-std::stringstream filename;
-std::stringstream filenamedel;
-filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
-std::remove(filenamedel.str().c_str());
-std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-std::ofstream f_system(filename.str().c_str());
-
-{
-  stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
-  for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  if (gmshdebugout)
   {
-    const DRT::Element* actele = boundarydis_->lColElement(i);
-//      cout << *actele << endl;
-    vector<int> lm;
-    vector<int> lmowner;
-    actele->LocationVector(*boundarydis_, lm, lmowner);
-
-    // extract local values from the global vector
-    vector<double> myvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-
-    vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
-
-    const int nsd = 3;
-    const int numnode = actele->NumNode();
-    BlitzMat elementvalues(nsd,numnode);
-    BlitzMat elementpositions(nsd,numnode);
-    int counter = 0;
-    for (int iparam=0; iparam<numnode; ++iparam)
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
+    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    std::ofstream f_system(filename.str().c_str());
+    
     {
-      const DRT::Node* node = actele->Nodes()[iparam];
-//        cout << *node << endl;
-      const double* pos = node->X();
-      for (int isd = 0; isd < nsd; ++isd)
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
+      for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
       {
-        elementvalues(isd,iparam) = myvelnp[counter];
-        elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
-        counter++;
+        const DRT::Element* actele = boundarydis_->lColElement(i);
+        //      cout << *actele << endl;
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*boundarydis_, lm, lmowner);
+        
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
+        
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
+        
+        const int nsd = 3;
+        const int numnode = actele->NumNode();
+        BlitzMat elementvalues(nsd,numnode);
+        BlitzMat elementpositions(nsd,numnode);
+        int counter = 0;
+        for (int iparam=0; iparam<numnode; ++iparam)
+        {
+          const DRT::Node* node = actele->Nodes()[iparam];
+          //        cout << *node << endl;
+          const double* pos = node->X();
+          for (int isd = 0; isd < nsd; ++isd)
+          {
+            elementvalues(isd,iparam) = myvelnp[counter];
+            elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
+            counter++;
+          }
+        }
+        //      cout << elementpositions << endl;
+        //      exit(1);
+        
+        gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+            actele->Shape(), elementvalues, elementpositions) << endl;
       }
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
     }
-//      cout << elementpositions << endl;
-//      exit(1);
-
-    gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-          actele->Shape(), elementvalues, elementpositions) << endl;
+    f_system.close();
+    std::cout << " done" << endl;
   }
-  gmshfilecontent << "};" << endl;
-  f_system << gmshfilecontent.str();
-}
-f_system.close();
-std::cout << " done" << endl;
 }
 
 
