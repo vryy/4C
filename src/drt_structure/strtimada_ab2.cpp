@@ -43,9 +43,9 @@ STR::TimAdaAB2::TimAdaAB2
 {
   // allocate Adams-Bashforth2 integrator
   ab2_ = Teuchos::rcp(new TimIntAB2(ioparams, sdynparams, xparams,
-                                        tis->Discretization(), 
-                                        tis->GetSolver(),
-                                        tis->GetDiscretizationWriter()));
+                                    tis->Discretization(), 
+                                    tis->GetSolver(),
+                                    tis->GetDiscretizationWriter()));
 
   // merge 
   ab2_->Merge(*tis);
@@ -69,17 +69,6 @@ void STR::TimAdaAB2::IntegrateStepAuxiliar()
   //const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
   //const Teuchos::RCP<Epetra_Vector> accn = sti_->Accn();  // A_{n+1}^{A2}
 
-  /*
-  // build NM3* displacements D_{n+1}^{NM3*}
-  // using the lower or equal than second order accurate new accelerations
-  locerrdisn_->Update(1.0, *dis,
-                      stepsize_, *vel,
-                      0.0);
-  locerrdisn_->Update(stepsize_*stepsize_/3.0, *acc,
-                      stepsize_*stepsize_/6.0, *accn,
-                      1.0);
-  */
-  
   // integrate
   ab2_->IntegrateStep();
   ab2_->ResetStep();

@@ -61,6 +61,7 @@ namespace STR
     //! List of all available auxiliar schemes
     enum NameEnum
     {
+      name_vague,  //!< name is unknown
       name_zienxie,  //!< Zienkiewicz-Xie method
       name_ab2  //!< Adams-Bashforth 2nd order
     };

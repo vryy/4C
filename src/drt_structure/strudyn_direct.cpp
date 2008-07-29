@@ -47,6 +47,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimada.H"
 #include "strtimada_zienxie.H"
 #include "strtimada_ab2.H"
+#include "strtimada_joint.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -281,7 +282,8 @@ Teuchos::RCP<STR::TimAda> STR::strudyn_CreateAuxiliar
 
   case TIMADA_DYNAMIC::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
-    sta = Teuchos::rcp(new STR::TimAdaAB2(ioflags, sdyn, xparams, tap, tis));
+    //sta = Teuchos::rcp(new STR::TimAdaAB2(ioflags, sdyn, xparams, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, sdyn, xparams, tap, tis));
     break;
 
   default :

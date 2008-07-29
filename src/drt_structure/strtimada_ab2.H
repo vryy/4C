@@ -72,14 +72,6 @@ namespace STR
       Teuchos::RCP<TimInt>& tis  //!< marching time integrator
     );
 
-    //! Slender constructor
-    TimAdaAB2
-    (
-      const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
-      const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<TimInt>& tis  //!< marching time integrator
-    );
-
     //! Destructor
     ~TimAdaAB2() { ; }
 

@@ -65,6 +65,9 @@ namespace STR
     //! Structural time adaptivity is friend
     friend class TimAda;
 
+    //! Joint auxiliar schemes are friends
+    template <typename T> friend class TimAdaJoint;
+
   public:
 
     //! Type of damping
