@@ -64,6 +64,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   int concat_counter = 0;
   
   map<int,vector<int> > node_pair; // stores new node id with base node id
+  map<int,int> inv_node_pair; // inverse map of above new node (first of layers) -> base node
 
   // loop through all EBlocks to check for extrusion blocks
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
@@ -200,6 +201,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       // put new node into map of OldNodeToNewNode
       vector<int> newids(1,newid);
       node_pair.insert(std::pair<int,vector<int> >(*i_node,newids));
+      inv_node_pair.insert(pair<int,int>(newid,*i_node));
       // insert node into base layer
       layer_nodes[0].push_back(newid);
       
@@ -359,6 +361,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(thirdnode,newids));
+            inv_node_pair.insert(pair<int,int>(newid,thirdnode));
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -425,6 +428,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
               node_pair.insert(std::pair<int,vector<int> >(fourthnode,newids));
+              inv_node_pair.insert(pair<int,int>(newid,fourthnode));
               
               // insert node into base layer
               layer_nodes[0].push_back(newid);
@@ -462,6 +466,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
           vector<int> ele(layer_nodes[0]);
           ele.insert(ele.end(),layer_nodes[layers].begin(),layer_nodes[layers].end());
           encloseconn.insert(pair<int,vector<int> >(newele,ele));
+          int stackbase=newele;
+          vector<int> empty;
+          layerstack.insert(pair<int,vector<int> >(stackbase,empty)); // **************
 
           // form every new layer element
           for (int i_layer = 0; i_layer < layers; ++i_layer){
@@ -471,6 +478,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
             // insert new element into new connectivity
             newconn->insert(pair<int,vector<int> >(newele,newelenodes));
+            layerstack.find(stackbase)->second.push_back(newele);
             
             // if we are at top layer put the corresponding side into newsideset
             if (i_layer==layers-1){
@@ -508,8 +516,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // repair twisted extrusion elements
     cout << "Repairing twisted elements..." << endl;
     map<int,set<int> > ext_node_conn = NodeToEleConn(*newconn);
-    int twistcounter = RepairTwistedExtrusion(thickness,initelesign,highestnid,encloseconn,*newconn,*newnodes,ext_node_conn,basemesh.GetNodes(),ext_node_normals,node_pair);
-    cout << twistcounter << " elements repaired." << endl;
+    int twistcounter = RepairTwistedExtrusion(thickness,layers,initelesign,highestnid,
+        encloseconn,layerstack,*newconn,*newnodes,ext_node_conn,
+        ext_node_normals,node_pair,inv_node_pair);
+    cout << twistcounter << " makro-elements and all their layer-elements repaired." << endl;
     
     // Gmsh Debug-Output of extrusion Mesh
     if (gmsh == 0) PlotEleConnGmsh(*newconn,*newnodes);
@@ -707,15 +717,24 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
   return false;
 }
 
-int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
-    map<int,vector<int> >& newconn, map<int,vector<double> >& newnodes, map<int,set<int> >& ext_node_conn,
-    const RCP<map<int,vector<double> > > basenodes,
-    const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair)
+int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thickness
+    const int numlayers,    // number of layers in extrusion
+    const int initelesign,  // the sign of det(J) of first extruded ele as reference for pos or neg extrusion (in)
+    int& highestnid,        // current global highest node id (in/out)
+    const map<int,vector<int> >& encloseconn, // connectivity of enclosing elements to be tested for twist (in)
+    const map<int,vector<int> >& layerstack,  // stack of layer elements above the base element
+    map<int,vector<int> >& newconn,     // connectivity of created extrusion elements (in/out) 
+    map<int,vector<double> >& newnodes, // created extrusion nodes (in/out)
+    map<int,set<int> >& ext_node_conn,  // node to ele map of created extrusion connectivity (in/out)
+    const map<int,vector<double> >& avgnode_normals, // averaged node normals at extrusion basenodes
+    map<int,vector<int> >& node_pair,   // map basenode -> newnodes of extrusion
+    const map<int,int>& inv_node_pair)  // inverse map of above
 {
 
   map<int,vector<int> >::const_iterator i_encl;
   vector<int>::const_iterator it;
   int twistcounter = 0;
+  
   
   for(i_encl=encloseconn.begin();i_encl!=encloseconn.end();++i_encl){
     vector<int> actele = i_encl->second;
@@ -774,14 +793,45 @@ int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign,
             // move case
             newnodes.find(ExoToStore(repairnode))->second = newcoords;
             coords.find(repairnode)->second = newcoords;  // coords update
-          } else {
-            int newid = highestnid; ++ highestnid;
-            int newMapNid = ExoToStore(newid);
-            // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newMapNid,newcoords));
-            coords.insert(pair<int,vector<double> >(newid,newcoords)); // coords update
             
-            // replace previously connected node corresponding to repairnode with new node in actele
+            // layer case rework layer elements within enclosing one
+            if (numlayers > 1){
+              const vector<int> layereles = layerstack.find(i_encl->first)->second;
+              vector<int>::const_iterator i_layerele;
+              int i_layer = 1;
+              for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
+                vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
+                ++i_layer;
+                int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
+                newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
+              }
+            }
+          } else {
+            int newid;
+            
+            // layer case rework layer elements within enclosing one
+            const vector<int> layereles = layerstack.find(i_encl->first)->second;
+            vector<int>::const_iterator i_layerele;
+            int i_layer = 1;
+            for(i_layerele=layereles.begin();i_layerele!=layereles.end();++i_layerele){
+              vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
+              
+              // replace also the base for inner inner
+              if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
+              
+              // create new node
+              newid = highestnid; ++ highestnid;
+              int newMapNid = ExoToStore(newid);
+              // put new coords into newnode map
+              newnodes.insert(pair<int,vector<double> >(newMapNid,newlayercoords));
+              coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
+              
+              // replace previously connected node corresponding to repairnode with new node in actlayerele
+              newconn.find(*i_layerele)->second.at(repairnodepos) = newid;
+              
+              ++i_layer;
+            }
+            // update actual enclosing element for following double check
             actele.at(repairnodepos) = newid;
             // update ext_node_conn
             ext_node_conn.find(repairnode)->second.erase(i_encl->first);
@@ -826,6 +876,19 @@ int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign,
           // move node to this aligned position
           newnodes.find(ExoToStore(repairnode))->second = newcoords;
           coords.find(repairnode)->second = newcoords;  // coords update
+          
+          // layer case rework layer elements within enclosing one
+          if (numlayers > 1){
+            const vector<int> layereles = layerstack.find(i_encl->first)->second;
+            vector<int>::const_iterator i_layerele;
+            int i_layer = 1;
+            for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
+              vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(*it)->second,thickness,i_layer,numlayers,repairnormal);
+              ++i_layer;
+              int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
+              newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
+            }
+          }
         }
         
         int doublerepairedelesign = EleSaneSign(actele,coords);
@@ -835,8 +898,6 @@ int EXODUS::RepairTwistedExtrusion(const double thickness,const int initelesign,
 
       }
       
-      // replace element in extrusion connectivity with repaired one
-      newconn.find(i_encl->first)->second = actele;
     }
   }
   

@@ -42,10 +42,11 @@ namespace EXODUS
   bool CheckExtrusion(const EXODUS::SideSet sideset);
   bool CheckExtrusion(const EXODUS::NodeSet nodeset);
   
-  int RepairTwistedExtrusion(const double thickness,const int initelesign, int& highestnid, map<int,vector<int> >& encloseconn,
+  int RepairTwistedExtrusion(const double thickness,const int numlayers,const int initelesign, int& highestnid,
+      const map<int,vector<int> >& encloseconn, const map<int,vector<int> >& layerstack,
       map<int,vector<int> >& newconn, map<int,vector<double> >& newnodes,map<int,set<int> >& ext_node_conn,
-      const RCP<map<int,vector<double> > > basenodes, 
-      const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair);
+      const map<int,vector<double> >& avgnode_normals, map<int,vector<int> >& node_pair,
+      const map<int,int>& inv_node_pair);
   
   vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance,
       const int layer, const int numlayers, const vector<double> normal);
