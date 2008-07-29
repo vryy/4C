@@ -249,6 +249,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("ELEMENTS",0,"Total number of elements",&size);
   IntParameter("NODES",0,"Total number of nodes",&size);
+  IntParameter("NPATCHES",0,"number of nurbs patches",&size);
   IntParameter("DIM",3,"2d or 3d problem",&size);
   IntParameter("MATERIALS",0,"number of materials",&size);
   IntParameter("NUMDF",3,"maximum number of degrees of freedom",&size);
