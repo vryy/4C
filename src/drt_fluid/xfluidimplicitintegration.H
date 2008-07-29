@@ -270,9 +270,10 @@ public:
 
 protected:
 
-  // don't want = operator and cctor
+  // don't want = operator and cctor and default constructor
   XFluidImplicitTimeInt operator = (const XFluidImplicitTimeInt& old);
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
+  XFluidImplicitTimeInt();
 
   //! @name general algorithm parameters
   //! fluid discretization

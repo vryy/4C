@@ -259,7 +259,7 @@ static void SysmatDomain4(
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
-            // discontinouos stress shape functions
+            // discontinuous stress shape functions
             static BlitzVec funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
             static BlitzMat deriv_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
@@ -467,6 +467,9 @@ static void SysmatDomain4(
                 for (int iparam = 0; iparam < numparampres; ++iparam)
                     velint(isd) += evelnp(isd,iparam)*shp(iparam);
             }
+//            cout << velint << endl;
+//            cout << evelnp << endl;
+//            cout << shp << endl;
 
             // get history data (n) at integration point
             BlitzVec3 histvec;
@@ -1521,6 +1524,8 @@ static void SysmatBoundary4(
 
             BlitzVec enr_funct_stress(numparamtauxx);
             
+            if (dofman.getUniqueEnrichments().size() > 1)
+              dserror("for an intersected element, we assume only 1 enrichment for now!");
             const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                   ih,
                   dofman.getUniqueEnrichments(),

@@ -124,6 +124,15 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   nodalDofDistributionMap_.clear();
   elementalDofDistributionMap_.clear();
+  
+  // get density from elements
+  {
+    ParameterList eleparams;
+    eleparams.set("action","get_density");
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+    density_ = eleparams.get("density", 0.0);
+    if (density_ <= 0.0) dserror("received illegal density value");
+  }
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -493,6 +502,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
+  cout << "tree after interfaceconstructor" << endl;
+  ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
   ihForOutput_ = ih;
 
@@ -598,7 +609,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // Vectors used for solution process
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
-  trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
+  //trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
+  trueresidual_ = Teuchos::null;
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
 
@@ -678,7 +690,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
-  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+  //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
   int               itnum = 0;
   bool              stopnonliniter = false;
@@ -806,11 +818,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
         discret_->ClearState();
 
-        density_ = eleparams.get("density", 0.0);
-        if (density_ <= 0.0) dserror("recieved illegal density value");
-
         // How to extract the density from the fluid material?
-        trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+        //trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
         iforcecol->Scale(density_/dta_/theta_);
 
         // finalize the complete matrix
@@ -1107,8 +1116,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
-
-  density_ = eleparams.get("density", 0.0);
 
   // finalize the system matrix
   sysmat_->Complete();

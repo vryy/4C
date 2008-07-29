@@ -45,24 +45,14 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_linear_fluid")
     act = XFluid3::calc_linear_fluid;
-  else if (action == "calc_fluid_genalpha_sysmat_and_residual")
-    act = XFluid3::calc_fluid_genalpha_sysmat_and_residual;
-  else if (action == "time update for subscales")
-    act = XFluid3::calc_fluid_genalpha_update_for_subscales;
-  else if (action == "time average for subscales and residual")
-    act = XFluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = XFluid3::calc_fluid_stationary_systemmat_and_residual;  
   else if (action == "calc_fluid_beltrami_error")
     act = XFluid3::calc_fluid_beltrami_error;
-  else if (action == "calc_turbulence_statistics")
-    act = XFluid3::calc_turbulence_statistics;
-  else if (action == "calc_fluid_box_filter")
-    act = XFluid3::calc_fluid_box_filter;
-  else if (action == "calc_smagorinsky_const")
-    act = XFluid3::calc_smagorinsky_const;
   else if (action == "store_xfem_info")
     act = XFluid3::store_xfem_info;
+  else if (action == "get_density")
+    act = XFluid3::get_density;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -116,6 +106,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
+      case get_density:
+      {
+        // This is a very poor way to transport the density to the
+        // outside world. Is there a better one?
+        params.set("density", actmat->m.fluid->density);
+        break;
+      }
+  
     //--------------------------------------------------
     //--------------------------------------------------
     // the standard one-step-theta implementation
@@ -330,9 +328,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, elemat1, elevec1,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
-          // This is a very poor way to transport the density to the
-          // outside world. Is there a better one?
-          params.set("density", actmat->m.fluid->density);
           break;
       }
       case store_xfem_info:

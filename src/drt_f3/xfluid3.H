@@ -172,15 +172,10 @@ namespace DRT
           none,
           calc_fluid_systemmat_and_residual,
           calc_linear_fluid,
-          calc_fluid_genalpha_sysmat_and_residual,
-          calc_fluid_genalpha_update_for_subscales,
-          calc_fluid_genalpha_average_for_subscales_and_residual,
           calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_beltrami_error,
-          calc_turbulence_statistics,
-          calc_fluid_box_filter,
-          calc_smagorinsky_const,
-          store_xfem_info
+          store_xfem_info,
+          get_density
         };
         
         //! stabilization actions recognized by fluid3 (genalpha implementation)
@@ -329,12 +324,7 @@ namespace DRT
     
     
     /*!
-     * \brief An element representing a surface of a fluid3 element
-     * 
-     * \note This is a pure Neumann boundary condition element. It's only
-     *       purpose is to evaluate surface Neumann boundary conditions that might be
-     *       adjacent to a parent fluid3 element. It therefore does not implement
-     *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     * \brief An element representing a surface of a xfluid3 element
      * 
      * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
      */
@@ -460,12 +450,7 @@ namespace DRT
     
     
     /*!
-     * \brief An element representing a line of a fluid3 element
-     * 
-     * \note This is a pure Neumann boundary condition element. It's only
-     *       purpose is to evaluate surface Neumann boundary conditions that might be
-     *       adjacent to a parent fluid3 element. It therefore does not implement
-     *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     * \brief An element representing a line of a xfluid3 element
      * 
      * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
      */
@@ -487,13 +472,15 @@ namespace DRT
   \param lline: the local line number of this line w.r.t. the parent element
          */
         
-        XFluid3Line(  int id,
-            int owner,
-            int nnode,
+        XFluid3Line(
+            const int id,
+            const int owner,
+            const int nnode,
             const int* nodeids,
             DRT::Node** nodes,
             DRT::Element* parent,
-            const int lline);
+            const int lline
+            );
         
         /*!
          * \brief Copy Constructor

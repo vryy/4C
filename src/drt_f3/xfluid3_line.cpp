@@ -24,13 +24,14 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XFluid3Line::XFluid3Line(  int id,
-                                        int owner,
-                                        int nnode,
-                                        const int* nodeids,
-                                        DRT::Node** nodes,
-                                        DRT::Element* parent,  
-                                        const int lline) :
+DRT::ELEMENTS::XFluid3Line::XFluid3Line(
+    const int id,
+    const int owner,
+    const int nnode,
+    const int* nodeids,
+    DRT::Node** nodes,
+    DRT::Element* parent,  
+    const int lline) :
 DRT::Element(id,element_xfluid3line,owner),
 parent_(parent),
 lline_(lline)
