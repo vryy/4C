@@ -72,11 +72,12 @@ public:
   \brief Standard Constructor
 
   */
-  XFluidImplicitTimeInt(RCP<DRT::Discretization>  dis,
-                       LINALG::Solver&           solver,
-                       ParameterList&            params,
-                       IO::DiscretizationWriter& output,
-                       bool                      alefluid=false);
+  explicit XFluidImplicitTimeInt(
+      RCP<DRT::Discretization>  dis,
+      LINALG::Solver&           solver,
+      ParameterList&            params,
+      IO::DiscretizationWriter& output,
+      bool                      alefluid=false);
 
 
   /*!

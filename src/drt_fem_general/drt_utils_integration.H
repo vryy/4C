@@ -88,7 +88,7 @@ public:
     }
     
     //! copy constructor
-    IntegrationPoint(
+    explicit IntegrationPoint(
             const IntegrationPoint&     other) :
                 position_(other.position_),
                 weight_(other.weight_)
@@ -139,7 +139,7 @@ we get the real volume of 0.1666..., NOT the unit volume of 1.0. Integration ove
 struct IntegrationPoints3D
 {
   /// constructor
-  IntegrationPoints3D(
+  explicit IntegrationPoints3D(
       const GaussRule3D gaussrule   ///< 3d rule
       );
   int           nquad;         ///< number of gausspoints
@@ -159,7 +159,7 @@ we get the real area of 0.5, NOT the unit area of 1.0. Integration over the quad
 struct IntegrationPoints2D
 {
   /// constructor
-  IntegrationPoints2D(
+  explicit IntegrationPoints2D(
       const GaussRule2D gaussrule   ///< 2d rule
       );
   int           nquad;        ///< number of gausspoints
@@ -180,7 +180,7 @@ are stored.
 struct IntegrationPoints1D
 {
   /// constructor
-  IntegrationPoints1D(
+  explicit IntegrationPoints1D(
       const GaussRule1D gaussrule   ///< 1d rule
       );
   int           nquad;        ///< number of integration points

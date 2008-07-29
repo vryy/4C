@@ -65,7 +65,7 @@ namespace DRT
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
-        XFluid3(
+        explicit XFluid3(
             int id,    ///< A unique global id
             int owner  ///< processor id where the element is located
         );
@@ -286,10 +286,10 @@ namespace DRT
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
-        XFluid3Register(DRT::Element::ElementType etype);
+        explicit XFluid3Register(DRT::Element::ElementType etype);
         
         //! Copy Constructor
-        XFluid3Register(const DRT::ELEMENTS::XFluid3Register& old);
+        explicit XFluid3Register(const DRT::ELEMENTS::XFluid3Register& old);
         
         DRT::ELEMENTS::XFluid3Register* Clone() const;
         
@@ -337,7 +337,7 @@ namespace DRT
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
-        XFluid3Surface(
+        explicit XFluid3Surface(
             int id,                         ///< A unique global id
             int owner,                      ///< Processor owning this surface
             const int nnode,                ///< Number of nodes attached to this element
@@ -352,7 +352,7 @@ namespace DRT
          * 
          * Makes a deep copy of a Element
          */
-        XFluid3Surface(const XFluid3Surface& old);
+        explicit XFluid3Surface(const XFluid3Surface& old);
         
         DRT::Element* Clone() const;
         
@@ -472,7 +472,7 @@ namespace DRT
   \param lline: the local line number of this line w.r.t. the parent element
          */
         
-        XFluid3Line(
+        explicit XFluid3Line(
             const int id,
             const int owner,
             const int nnode,
@@ -487,7 +487,7 @@ namespace DRT
          * 
          * Makes a deep copy of a Element
          */
-        XFluid3Line(const XFluid3Line& old);
+        explicit XFluid3Line(const XFluid3Line& old);
         
         DRT::Element* Clone() const;
         

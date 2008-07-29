@@ -57,7 +57,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Bele3(
+  explicit Bele3(
       int id,     ///< A unique global id
       int owner   ///< proc num that owns this element
       );
@@ -68,7 +68,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Bele3(const Bele3& old);
+  explicit Bele3(const Bele3& old);
 
   DRT::Element* Clone() const;
   virtual DiscretizationType Shape() const;
@@ -237,7 +237,7 @@ public:
   \brief Standard Constructor
 
   */
-  Bele3Register(DRT::Element::ElementType etype);
+  explicit Bele3Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor

@@ -36,7 +36,7 @@ public:
   /*!
   \brief not documented yet
   */
-  XFluidResultTest(XFluidImplicitTimeInt& fluid);
+  explicit XFluidResultTest(XFluidImplicitTimeInt& fluid);
 
   /// our version of nodal value tests
   /*!
@@ -51,9 +51,9 @@ public:
 private:
 
   /// pointer to fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis_;
+  Teuchos::RCP<DRT::Discretization> fluiddis_;
   /// pointer to unknown vector with values 
-  RefCountPtr<Epetra_Vector>       mysol_;
+  Teuchos::RCP<Epetra_Vector>       mysol_;
 };
 
 }

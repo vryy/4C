@@ -101,13 +101,7 @@ class FieldEnr
   private:
     
     //! hidden default constructor
-    explicit FieldEnr() :
-      field_(XFEM::PHYSICS::undefinedField),
-      enr_(Enrichment())
-    {
-      dserror("FieldEnr() -> please don't call me!");
-      return;
-    }
+    explicit FieldEnr();
   
     //! physical field variable to be enriched
     const PHYSICS::Field field_;
