@@ -1583,14 +1583,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 
         // random noise is perc percent of the initial profile
 
-        double perc = 0.1;
-
-        if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
-            ==
-            "channel_flow_of_height_2")
-        {
-          perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
-        }
+        double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
         // out to screen
         if (myrank_==0)
