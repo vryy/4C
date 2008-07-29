@@ -2,6 +2,7 @@
 
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
+#include "fsi_nox_linearsystem_bgs.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -278,6 +279,7 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
 
+#if 1
   linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
                                                              lsParams,
                                                              Teuchos::rcp(iJac,false),
@@ -285,6 +287,16 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
                                                              Teuchos::rcp(iPrec,false),
                                                              M,
                                                              noxSoln));
+#else
+  linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
+                                                      lsParams,
+                                                      Teuchos::rcp(iJac,false),
+                                                      J,
+                                                      noxSoln,
+                                                      StructureField().LinearSolver(),
+                                                      FluidField().LinearSolver(),
+                                                      AleField().LinearSolver()));
+#endif
 
   return linSys;
 }
