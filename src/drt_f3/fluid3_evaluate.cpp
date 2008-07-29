@@ -2783,11 +2783,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       dserror("we need a nurbs discretisation for nurbs elements\n");
     }
 
-    // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
-
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // use size of planes and mele to determine number of layers
     int numsublayers=(size-1)/nele_x_mele_x_lele[1];
@@ -2800,8 +2797,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     // get gid, location in the patch
     int gid = Id();
 	
-    vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
-      
+    vector<int> ele_cart_id;
+    
+    int npatch = -1;
+
+    knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
+    if(npatch!=0)
+    {
+      dserror("expected single patch nurbs problem for calculating means");
+    }
+
     // want to loop all control points of the element, 
     // so get the number of points
     const int numnp = NumNode();
