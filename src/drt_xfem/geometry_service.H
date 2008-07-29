@@ -24,12 +24,9 @@ Maintainer: Ursula Mayer
 
 namespace XFEM
 {
-  //! Value for ElementTyp in distance calculation
-  const static int DISTANCE_TO_ELEMENT_SURFACE=1;
-  //! Value for ElementTyp in distance calculation
-  const static int DISTANCE_TO_ELEMENT_LINE=2;
-  //! Value for ElementTyp in distance calculation
-  const static int DISTANCE_TO_ELEMENT_POINT=3;
+
+  //! this proporty decides which distance algorithm is used
+  enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
 
   /*!
   \brief Gives the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
@@ -49,45 +46,22 @@ namespace XFEM
   BlitzMat3x2 getXAABBofDis(
       const DRT::Discretization&              dis ///<discretization containing elements
       );  
-  
-  
+
   /*!
   \brief gives back the nearest Element in an List of Elements (wrapper)
   \return                             pointer to nearest element
   */
   const DRT::Element* nearestNeighbourInList(
       const DRT::Discretization&              dis, ///< discretization containing elements 
-      const std::map<int,BlitzVec3>&          currentpositions,///< current position of elements in dis
-      const list<const DRT::Element* >&       ElementList, ///<list of elements to be examined
-      const BlitzVec3&                        x,  ///<coords of point which will be examined
-      double&                                 dist ///>distance btw. x and nearest element
-      );
-
-  /*!
-   \brief gives back the nearest Element in an List of Elements 
-          (old version, not used any more, will disappear)
-   \return                             pointer to nearest element
-   */
-  const DRT::Element* nearestNeighbourInListOld(
-      const DRT::Discretization&              dis,///< discretization containing elements 
       const std::map<int,BlitzVec3>&          currentpositions, ///< current position of elements in dis
       const list<const DRT::Element* >&       ElementList, ///<list of elements to be examined
-      const BlitzVec3&                        x, ///<coords of point which will be examined
-      double&                                 dist///>distance btw. x and nearest element
+      const BlitzVec3&                        X,  ///<coords of point which will be examined
+      map<const DRT::Element*, double >&      squaredDistanceMap, ///<> map of already known distances (may be empty)
+      BlitzVec3&                              vector2minDistPoint,  ///>vector to point on surface element with minimal distance
+      double&                                 eleDistance, ///>distance btw. x and nearest element
+      DistanceType&                           distanceType ///>distance Typ                            
       );
 
-  /*!
-   \brief gives back the nearest Element in an List of Elements
-   \return                             pointer to nearest element
-   */
-  const DRT::Element* nearestNeighbourInListNew(
-      const DRT::Discretization&              dis,///< discretization containing elements
-      const std::map<int,BlitzVec3>&          currentpositions,  ///< current position of elements in dis
-      const list<const DRT::Element* >&       ElementList, ///<list of elements to be examined
-      const BlitzVec3&                        x, ///<coords of point which will be examined
-      double&                                 distance///>distance btw. x and nearest element
-      );
-  
   /*!
    \brief  gives the Element from a list whose XAABB has the minimum maxDistance to the Point
    \return                             pointer to nearest element
@@ -96,7 +70,7 @@ namespace XFEM
       const DRT::Discretization&              dis,///< discretization containing elements
       const std::map<int,BlitzVec3>&          currentpositions,///< current position of elements in dis 
       const list<const DRT::Element* >&       ElementList, ///<list of elements to be examined
-      const BlitzVec3&                        x, ///<coords of point which will be examined
+      const BlitzVec3&                        X, ///<coords of point which will be examined
       double&                                 dist ///>distance btw. x and nearest element
       );
 
@@ -166,7 +140,7 @@ namespace XFEM
   \brief check the type of geometry of an element, rough because only linear or nonlinear is checked
   */ 
   void checkRoughGeoType(
-      DRT::Element*                           element, ///< element
+      const DRT::Element*                     element, ///< element
       const BlitzMat                          xyze_element,///< actual point positions in element
       EleGeoType&                             eleGeoType ///> geometry type
       );
@@ -186,8 +160,8 @@ namespace XFEM
       const std::map<int,BlitzVec3>&          currentpositions,///< actual point positions in all elements
       const BlitzVec3&                        physCoord, ///< coordinates of point (physical)
       BlitzVec2&                              xsi, ///> coordinates of nearest point (parameter space)
-      BlitzVec3&                              normal,///> element normal at nearest point
-      int&                                    distanceTyp///> type of distance (nearest point in element, nearest point on boundary: line or node)
+      BlitzVec3&                              x_surface_phys,///> vector 2 minimal distance point on surface
+      DistanceType&                           distanceTyp///> type of distance (nearest point in element, nearest point on boundary: line or node)
       );
 
   /*!
@@ -200,7 +174,7 @@ namespace XFEM
       const std::map<int,BlitzVec3>&          currentpositions,///< actual point positions in all element
       const BlitzVec3&                        physCoord,///<  coordinates of point (physical)
       BlitzVec2&                              xsi, ///<> coordinates of nearest point (parameter space)
-      BlitzVec3&                              vector2minDistPoint///> element normal at nearest point
+      BlitzVec3&                              x_surface_phys///> vector 2 minimal distance point on surface
       );
 
   /*!
@@ -213,7 +187,7 @@ namespace XFEM
       const std::map<int,BlitzVec3>&          currentpositions,///< actual point positions in all elements
       const BlitzVec3&                        physCoord,///<  coordinates of point (physical)
       BlitzVec2&                              xsi,///<> coordinates of nearest point (parameter space)
-      BlitzVec3&                              vector2minDistPoint);///> element normal at nearest point
+      BlitzVec3&                              x_surface_phys);///> vector 2 minimal distance point on surface
 
   
   /*!
@@ -226,7 +200,7 @@ namespace XFEM
       const std::map<int,BlitzVec3>&          currentpositions,///< actual point positions in all elements
       const BlitzVec3&                        physCoord,///<  coordinates of point (physical)
       BlitzVec2&                              xsi,///<> coordinates of nearest point (parameter space)
-      BlitzVec3&                              vector2minDistPoint);///<> coordinates of nearest point (parameter space)
+      BlitzVec3&                              x_surface_phys);///<> coordinates of nearest point (physical space)
   
   
   /*!
@@ -239,7 +213,7 @@ namespace XFEM
       const std::map<int,BlitzVec3>&          currentpositions, ///< actual point positions in all elements
       const BlitzVec2&                        xsi, //< coordinates of point to get normal on (parameter space)
       const BlitzVec3&                        X, //< coordinates of point we at least want to know the distance from (physical)
-      const int&                              ElementType///< type of distance (nearest point in element, nearest point on boundary: line or node)
+      const DistanceType&                     DistanceType///< type of distance (nearest point in element, nearest point on boundary: line or node)
       );
 
   
@@ -286,11 +260,20 @@ namespace XFEM
           AABB and centered at C) pointing away from X
   \return Node
   */
-  double biggestRadiusInAABBawayFromX(
+  double biggestRadiusInAABB(
       const BlitzMat3x2&                      AABB, ///<bounding box
-      const BlitzVec3&                        X, //point coords                  
-      const BlitzVec3&                        circleCenter //point coords                  
+      const BlitzVec3&                        X ///<point coords                  
       );
+  
+  /*!
+  \brief  checks if point X is within AABB
+  \return true/false
+  */
+  bool isContainedXinAABB(
+      const BlitzMat3x2& AABB, ///<bounding box
+      const BlitzVec3& X //<point coords    
+      );
+
   
   
 }
