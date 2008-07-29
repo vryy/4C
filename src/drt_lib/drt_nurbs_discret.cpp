@@ -22,7 +22,9 @@ DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
   const string             name, 
   RefCountPtr<Epetra_Comm> comm) 
   :
-  DRT::Discretization::Discretization(name,comm)
+  DRT::Discretization::Discretization(name,comm),
+  npatches_                          (        0),
+  knots_                             (     null)  
 {
   return;
 }

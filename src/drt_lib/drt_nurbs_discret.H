@@ -94,40 +94,62 @@ public:
   /*!
   \brief return number of knots in each direction
 
+  \param npatch (i)
+         the number of the patch we are interested in
+
   \return  : The number of knots in each direction
 
   \author gammi
 
   */
-  virtual vector<int> Return_n_x_m_x_l()
+  virtual vector<int> Return_n_x_m_x_l(const int npatch)
     {
-      return(knots_->Return_n_x_m_x_l());
+      return(knots_->Return_n_x_m_x_l(npatch));
     }
 
   /*!
   \brief return degree in each direction
+
+  \param npatch (i)
+         the number of the patch we are interested in
 
   \return  : The degree in each direction
 
   \author gammi
 
   */
-  virtual vector<int> Return_degree()
+  virtual vector<int> Return_degree(const int npatch)
     {
-      return(knots_->ReturnDegree());
+      return(knots_->ReturnDegree(npatch));
+    }
+
+  /*!
+  \brief return the offsets
+
+  \return  : The element offsets of all patches
+
+  \author gammi
+
+  */
+  virtual vector<int> Return_Offsets()
+    {
+      return(knots_->ReturnOffsets());
     }
 
   /*!
   \brief return number of elements in each direction
+
+  \param npatch (i)
+         the number of the patch we are interested in
 
   \return  : The number of elements in each direction
 
   \author gammi
 
   */
-  virtual vector<int> Return_nele_x_mele_x_lele()
+  virtual vector<int> Return_nele_x_mele_x_lele(const int npatch)
     {
-      return(knots_->Return_nele_x_mele_x_lele());
+      return(knots_->Return_nele_x_mele_x_lele(npatch));
     }
 
 
@@ -136,6 +158,9 @@ private:
   NurbsDiscretization operator = (const NurbsDiscretization& old);
   //! don't want copy constructor
   NurbsDiscretization(const DRT::NURBS::NurbsDiscretization& old);
+
+  //! the number of patches in this nurbs discretisation
+  int                                    npatches_;
 
   //! the knotvector
   //! dimension  u     : nurbs curve   (n)
