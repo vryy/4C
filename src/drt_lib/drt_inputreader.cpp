@@ -435,9 +435,7 @@ void DatFileReader::ReadKnots(
 	string type;
 
 	file >> type;
-
-	cout << knotvectortype[actdim] << " " << type << "\n";
-	knotvectortype[actdim]=type;
+        knotvectortype[actdim]=type;
 
 	continue;
       }
