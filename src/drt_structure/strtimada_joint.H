@@ -184,7 +184,7 @@ namespace STR
 
   /*====================================================================*/
   /*! \brief Explicitly declare #TimIntAB2 instantiated class 
-   *         for joint auxiliar schemes
+   *         for joint auxiliar scheme with Adams-Bashforth2
    */
   template class TimAdaJoint<TimIntAB2>;
 
