@@ -157,6 +157,7 @@ protected:
 class ScaTraEnsightWriter : public EnsightWriter
 {
 public:
+    /// constructor
     ScaTraEnsightWriter(
             PostField* field,
             string filename) :

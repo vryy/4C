@@ -21,7 +21,7 @@ Maintainer: Florian Henke
 /*----------------------------------------------------------------------*
  * constructor                                              henke 06/08 * 
  *----------------------------------------------------------------------*/
-COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, ParameterList& combustdyn)
+COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn)
 :  ScaTraFluidCouplingAlgorithm(comm, combustdyn)
 {
   /* Der constructor sollte den gesamten Algorithmus initialisiern.
