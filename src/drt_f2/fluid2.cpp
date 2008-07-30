@@ -53,7 +53,6 @@ gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
 data_(old.data_)
 {
-  gaussrule_ = old.gaussrule_;
   return;
 }
 
