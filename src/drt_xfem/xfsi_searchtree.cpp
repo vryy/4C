@@ -26,24 +26,9 @@ extern struct _FILES  allfiles;
 using namespace std;
 
 XFEM::XSearchTree::XSearchTree():
-MAX_TREEDEPTH_(8),
-MAX_OVERLAP_ALLOWED_(0.875),
-ELEMENTS_USED_FOR_OVERLAP_CHECK_(1),
-hasExternAABB_(true),
-TreeInit_(false),
-searchRequests_(0),
-Candidates_(0),
-SearchLength_(0),
-MinSearchLength_(INT_MAX),
-treeRoot_(NULL),
-rootLevelSearches_(0){
-}
-
-XFEM::XSearchTree::XSearchTree(const BlitzMat3x2 AABB) :
   MAX_TREEDEPTH_(8),
   MAX_OVERLAP_ALLOWED_(0.875),
-  ELEMENTS_USED_FOR_OVERLAP_CHECK_(2),
-  AABB_(AABB),
+  ELEMENTS_USED_FOR_OVERLAP_CHECK_(1),
   hasExternAABB_(true),
   TreeInit_(false),
   searchRequests_(0),
@@ -51,10 +36,27 @@ XFEM::XSearchTree::XSearchTree(const BlitzMat3x2 AABB) :
   SearchLength_(0),
   MinSearchLength_(INT_MAX),
   treeRoot_(NULL),
-  rootLevelSearches_(0)
-{
+  rootLevelSearches_(0){
 }
 
+XFEM::XSearchTree::XSearchTree(
+    const BlitzMat3x2 AABB,
+    const int MAX_TREEDEPTH,
+    const int ELEMENTS_USED_FOR_OVERLAP_CHECK,
+    const double MAX_OVERLAP_ALLOWED):
+      MAX_TREEDEPTH_(MAX_TREEDEPTH),
+      MAX_OVERLAP_ALLOWED_(MAX_OVERLAP_ALLOWED),
+      ELEMENTS_USED_FOR_OVERLAP_CHECK_(ELEMENTS_USED_FOR_OVERLAP_CHECK),
+      AABB_(AABB),
+      hasExternAABB_(true),
+      TreeInit_(false),
+      searchRequests_(0),
+      Candidates_(0),
+      SearchLength_(0),
+      MinSearchLength_(INT_MAX),
+      treeRoot_(NULL),
+      rootLevelSearches_(0){
+}
 
 XFEM::XSearchTree::~XSearchTree() {
   delete treeRoot_;
@@ -402,6 +404,9 @@ int XFEM::XSearchTree::TreeNode::getXFEMLabelOfPointInTreeNode(const DRT::Discre
   BlitzVec3 minDistPoint(0.0,0.0,0.0);
   BlitzMat3x2 workAABB;
   do {
+    if (!workingNode->hasParent()){
+      tree_->rootLevelSearches_++;  
+    }
     tmpCandidateCounter = workingNode->getElementList().size();
     closestEle=XFEM::nearestNeighbourInList(dis, currentpositions, workingNode->getElementList(), X, squaredDistanceMap, minDistPoint, distance, distanceType);
     workAABB = workingNode->getAABB();
@@ -415,9 +420,7 @@ int XFEM::XSearchTree::TreeNode::getXFEMLabelOfPointInTreeNode(const DRT::Discre
       }
     }
     workingNode=workingNode->getParent();
-    if (!workingNode->hasParent()){
-      tree_->rootLevelSearches_++;    
-    }
+    
   } while (workingNode!=NULL);
   dserror("should not get here");
   return -1;
@@ -516,21 +519,17 @@ list<int> XFEM::XSearchTree::TreeNode::classifyAABB(
     if (AABB(1, 1) > YPlaneCoordinate_) {
       if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(8);
-//        do_refine[8] = isAABBbiggerThanElemXAABB;
       }
       if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(7);
-//        do_refine[7] = isAABBbiggerThanElemXAABB;
       }
     }
     if (AABB(1, 0) <= YPlaneCoordinate_) {
       if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(6);
-//        do_refine[6] = isAABBbiggerThanElemXAABB;
       }
       if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(5);
-//        do_refine[5] = isAABBbiggerThanElemXAABB;
       }
     }
   }
@@ -538,21 +537,17 @@ list<int> XFEM::XSearchTree::TreeNode::classifyAABB(
     if (AABB(1, 1) > YPlaneCoordinate_) {
       if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(4);
-//        do_refine[4] = isAABBbiggerThanElemXAABB;
       }
       if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(3);
-//        do_refine[3] = isAABBbiggerThanElemXAABB;
       }
     }
     if (AABB(1, 0) <= YPlaneCoordinate_) {
       if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(2);
-//        do_refine[2] = isAABBbiggerThanElemXAABB;
       }
       if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(1);
-//        do_refine[1] = isAABBbiggerThanElemXAABB;
       }
     }
     
@@ -697,6 +692,65 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const
     fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor*tree_->MAX_TREEDEPTH_+actTreedepth_, XAABB)<< endl;
   }
   
+}
+
+void XFEM::XSearchTree::printTreeMetricsFile(const int step) const
+{
+  if (!TreeInit_) {
+     cout << "nothing to write, tree not initialized yet -> done" << endl;
+     return;
+   }
+  std::stringstream filename;
+  filename << allfiles.outputfile_kenner << "_treeMetrics_" << std::setw(5) << setfill('0') << step << ".txt";
+  bool fileExists = false;
+  std::fstream fin(filename.str().c_str(),ios::in);
+  if( fin.is_open() )
+  {
+  fileExists=true;
+  }
+  fin.close();
+  
+  std::fstream f_system(filename.str().c_str(), ios::out | ios::app);
+  stringstream filecontentToAdd;
+  cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+  filecontentToAdd.precision(10);
+  if (!fileExists){
+    filecontentToAdd << "searchRequests" <<  "\t"
+                     << "searchLength" << "\t"
+                     << "minSearchLength"  << "\t"
+                     << "rootLevelSearches_" << "\t"
+                     << "candidates" << "\t"
+                     << "elements" << "\t"
+                     << "nodes" << "\t"
+                     << "leafnodes" << "\t"
+                     << "depth" << "\t"
+                     << "max_depth" << "\t"
+                     << "mem" << "\t"
+                     << "time"<< endl;
+  }
+  stringstream ts;
+  Teuchos::TimeMonitor::summarize(ts);
+  string s = ts.str().substr(ts.str().find("XSearchTree")+43,10);
+  s = s.substr(0,s.find(" "));
+  double time =  atof(s.data()); 
+  filecontentToAdd << searchRequests_ <<  "\t"
+                   << SearchLength_ << "\t"
+                   << MinSearchLength_+1  << "\t"
+                   << rootLevelSearches_ << "\t"
+                   << Candidates_ << "\t"
+                   << treeRoot_->getElementList().size()<<"\t"
+                   << treeRoot_->getNodesInTree(XFEM::XSearchTree::TreeNode::ANY_NODE) << "\t"
+                   << treeRoot_->getNodesInTree(XFEM::XSearchTree::TreeNode::LEAF_NODE) << "\t"
+                   << treeRoot_->getDepth() << "\t"
+                   << MAX_TREEDEPTH_ << "\t"
+                   << getMemoryUsage() << "\t"
+                   << fixed << time << endl;
+  
+  f_system << filecontentToAdd.str();
+  f_system.close();
+  
+  cout << " done" << endl;
+
 }
 
 void XFEM::XSearchTree::printTreeMetrics(const int step) const

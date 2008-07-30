@@ -125,6 +125,14 @@ private:
     
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
+   
+    //! read Input file for search tree parameters (tree.cfg)
+    void readTreeParameters(
+        int& MAX_TREEDEPTH, ///> max tree depth
+        int& ELEMENTS_USED_FOR_OVERLAP_CHECK, ///> value for elements used for overlap check
+        double& MAX_OVERLAP_ALLOWED, ///> threshold for overlap 
+        const string filename="tree.cfg" ///< filename of file containing parameters 
+        ) const;
   
     //! intersected domain
     const Teuchos::RCP<DRT::Discretization> xfemdis_;

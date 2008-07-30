@@ -77,7 +77,11 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,currentcutterpositions_);
   const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
-  xTree_ = rcp(new XSearchTree(AABB));
+  int MAX_TREEDEPTH;
+  int ELEMENTS_USED_FOR_OVERLAP_CHECK;
+  double MAX_OVERLAP_ALLOWED; 
+  readTreeParameters(MAX_TREEDEPTH, ELEMENTS_USED_FOR_OVERLAP_CHECK, MAX_OVERLAP_ALLOWED);
+  xTree_ = rcp(new XSearchTree(AABB, MAX_TREEDEPTH, ELEMENTS_USED_FOR_OVERLAP_CHECK, MAX_OVERLAP_ALLOWED) );
   
   // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
@@ -280,10 +284,59 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_systemP.close();
     cout << " done" << endl;
     xTree_->printTree(allfiles.outputfile_kenner, step);
-    xTree_->printTreeMetrics(step);
   }
+  xTree_->printTreeMetrics(step);
+  xTree_->printTreeMetricsFile(step);
   return;
 }
+
+//! read Input file for search tree parameters (tree.cfg)
+void XFEM::InterfaceHandle::readTreeParameters(
+    int& MAX_TREEDEPTH, ///> max tree depth
+    int& ELEMENTS_USED_FOR_OVERLAP_CHECK, ///> value for elements used for overlap check
+    double& MAX_OVERLAP_ALLOWED, ///> threshold for overlap 
+    const string filename ///< filename of file containing parameters 
+    ) const{
+ 
+  std::fstream fin(filename.c_str(),ios::in);
+  if( !fin.is_open() )
+  { // if file cannot be opened return standard values
+    cout << "using standard parameters for tree because input file cannot be read!" <<endl;
+    MAX_TREEDEPTH = 5;
+    ELEMENTS_USED_FOR_OVERLAP_CHECK = 1;
+    MAX_OVERLAP_ALLOWED = 0.875;
+    return;
+  }
+  MAX_TREEDEPTH = -1;
+  ELEMENTS_USED_FOR_OVERLAP_CHECK = -1;
+  MAX_OVERLAP_ALLOWED = -1.0;
+  string line;
+  while (!fin.eof()){
+    getline(fin,line);
+//    cout << line << endl;
+    if(line.find("MAX_TREEDEPTH")!=string::npos){
+//      cout << "set MAX_TREEDEPTH to " << atoi(line.substr((line.find("=")+1)).c_str())<< endl;
+      MAX_TREEDEPTH=atoi(line.substr((line.find("=")+1)).c_str());
+    }
+    if(line.find("ELEMENTS_USED_FOR_OVERLAP_CHECK")!=string::npos){
+//      cout << "set ELEMENTS_USED_FOR_OVERLAP_CHECK to " << atoi(line.substr((line.find("=")+1)).c_str()) << endl;
+      ELEMENTS_USED_FOR_OVERLAP_CHECK=atoi(line.substr((line.find("=")+1)).c_str());
+    }
+    if(line.find("MAX_OVERLAP_ALLOWED")!=string::npos){
+//      cout << "set ELEMENTS_USED_FOR_OVERLAP_CHECK to " << atof(line.substr((line.find("=")+1)).c_str())<< endl;
+      ELEMENTS_USED_FOR_OVERLAP_CHECK = atof(line.substr((line.find("=")+1)).c_str());
+    }
+  } 
+  fin.close();
+  if (MAX_TREEDEPTH<0)
+    MAX_TREEDEPTH=5;
+  if (ELEMENTS_USED_FOR_OVERLAP_CHECK<0)
+    ELEMENTS_USED_FOR_OVERLAP_CHECK=1;
+  if (MAX_OVERLAP_ALLOWED<0)
+    MAX_OVERLAP_ALLOWED=0.875;
+}
+
+
 
 XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
     const int gid,

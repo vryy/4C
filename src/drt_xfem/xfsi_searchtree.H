@@ -254,12 +254,15 @@ namespace XFEM
     public:
       //! standard tree constructor
       XSearchTree();
-      
-      //! tree constructor defining an external bounding box, shoudl be used
+            
+      //! tree constructor defining all tree parameters
       XSearchTree(
-          const BlitzMat3x2 AABB
+          const BlitzMat3x2 AABB,
+          const int MAX_TREEDEPTH = 5,
+          const int ELEMENTS_USED_FOR_OVERLAP_CHECK = 1,
+          const double MAX_OVERLAP_ALLOWED = 0.875
           );
-      
+
       //! destructor
       virtual ~XSearchTree();
       
@@ -308,6 +311,11 @@ namespace XFEM
         return ELEMENTS_USED_FOR_OVERLAP_CHECK_;
       }
 
+      //! print tree metrics like requests, time, mean path length, memory usage, to data file
+      void printTreeMetricsFile(
+          const int step///< file postfix
+          ) const;
+      
       //! print tree metrics like requests, time, mean path length, memory usage, ...
       void printTreeMetrics(
           const int step ///< file postfix
