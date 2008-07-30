@@ -44,15 +44,9 @@ Maintainer: Georg Bauer
 extern struct _GENPROB     genprob;
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                        vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
     RCP<DRT::Discretization>      actdis,
     RCP<LINALG::Solver>           solver,
@@ -216,9 +210,6 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
 } // ScaTraImplicitTimeInt::ScaTraImplicitTimeInt
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Start the time integration. Allows                                   |
  |                                                                      |
@@ -226,9 +217,6 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
  |  o the "standard" time integration                                   |
  |                                                              vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::Integrate()
 {
   // bound for the number of startsteps
@@ -265,15 +253,9 @@ void SCATRA::ScaTraImplicitTimeInt::Integrate()
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
 {
   // time measurement: time loop --- start TimeMonitor tm2
@@ -346,16 +328,10 @@ void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
 } // ScaTraImplicitTimeInt::TimeLoop
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | set part of the residual vector belonging to the old timestep        |
  |                                                              vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
 {
   /*
@@ -387,23 +363,15 @@ void SCATRA::ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
 } // ScaTraImplicitTimeInt::SetOldPartOfRighthandside
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step                    vg 08/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
-  step_ += 1;
-
-  time_ += dta_;
+  IncrementTimeAndStep();
 
   // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
   if (timealgo_==INPUTPARAMS::timeint_bdf2)
@@ -450,50 +418,72 @@ void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
-  {
-    ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","calc_condif_eleload");
+  ApplyDirichletBC(time_,phinp_);
+  ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
-    // other parameters needed by the elements
-    eleparams.set("total time",time_);
-    eleparams.set("delta time",dta_);
-    eleparams.set("thsl",theta_*dta_);
-    eleparams.set("condif velocity field",cdvel_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    // predicted dirichlet values
-     // phinp then also holds prescribed new dirichlet values
-     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-    discret_->EvaluateDirichlet(eleparams,phinp_,null,null,dirichtoggle_);
-    discret_->ClearState();
-
-    // evaluate Neumann conditions
-    eleparams.set("total time",time_);
-    eleparams.set("thsl",theta_*dta_);
-
-    neumann_loads_->PutScalar(0.0);
-    discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-    discret_->ClearState();
-  }
-
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 } // ScaTraImplicitTimeInt::PrepareTimeStep
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate Dirichlet boundary conditions at t_{n+1}           gjb 07/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraImplicitTimeInt::ApplyDirichletBC
+(
+  const double time,
+  Teuchos::RCP<Epetra_Vector> phinp
+)
+{
+  // apply DBCs
+  // needed parameters
+  ParameterList p;
+  p.set("total time",time);  // actual time t_{n+1}
+
+  // predicted Dirichlet values
+  // \c  phinp then also holds prescribed new dirichlet values
+  //     dirichtoggle_ is 1 for dirichlet dofs, 0 elsewhere
+  discret_->ClearState();
+  discret_->EvaluateDirichlet(p,phinp,Teuchos::null,Teuchos::null,dirichtoggle_);
+  discret_->ClearState();
+
+  // compute an inverse of the dirichtoggle vector
+  invtoggle_->PutScalar(1.0);
+  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate Neumann boundary conditions at t_{n+1}             gjb 07/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraImplicitTimeInt::ApplyNeumannBC
+(
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> phinp,
+  Teuchos::RCP<Epetra_Vector>& neumann_loads
+)
+{
+  // prepare load vector
+  neumann_loads->PutScalar(0.0);
+
+  ParameterList p;
+  // needed parameters
+  p.set("total time", time);   // actual time t_{n+1}
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp);
+  // evaluate Neumann conditions
+  discret_->EvaluateNeumann(p,*neumann_loads);
+  discret_->ClearState();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | contains the solver                                          vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::Solve(
   bool is_stat //if true, stationary formulations are used in the element
   )
@@ -512,7 +502,7 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
 
     sysmat_->Zero();
 
-      // add Neumann loads
+      // add Neumann loads and reset the residual vector
     residual_->Update(1.0,*neumann_loads_,0.0);
 
     // create the parameters for the discretization
@@ -684,16 +674,11 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
   return;
 } // ScaTraImplicitTimeInt::Solve
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                              vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::Update()
 {
 
@@ -772,15 +757,10 @@ void SCATRA::ScaTraImplicitTimeInt::Update()
   return;
 }// ScaTraImplicitTimeInt::TimeUpdate
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                           vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::Output()
 {
   //-------------------------------------------- output of solution
@@ -933,15 +913,9 @@ convel_->Print(cout);
 } // ScaTraImplicitTimeInt::Output
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |                                                             kue 04/07|
  -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
@@ -954,15 +928,10 @@ void SCATRA::ScaTraImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(phidtn_, "phidtn");
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*----------------------------------------------------------------------*
  | solve stationary convection-diffusion problem                vg 05/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
@@ -977,34 +946,8 @@ void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
-  {
-     ParameterList eleparams;
-     // action for elements
-     eleparams.set("action","calc_condif_eleload");
-
-     // other parameter needed by the elements
-     eleparams.set("condif velocity field",cdvel_);
-     eleparams.set("fs subgrid diffusivity",fssgd_);
-     eleparams.set("using stationary formulation",true);
-
-     // set vector values needed by elements
-     discret_->ClearState();
-     discret_->SetState("phinp",phinp_);
-     // predicted dirichlet values
-     // phinp then also holds prescribed new dirichlet values
-     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-     discret_->EvaluateDirichlet(eleparams,phinp_,null,null,dirichtoggle_);
-     discret_->ClearState();
-
-     // evaluate Neumann conditions
-     neumann_loads_->PutScalar(0.0);
-     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-     discret_->ClearState();
-  }
-
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+  ApplyDirichletBC(time_,phinp_);
+  ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------
   //                     solve nonlinear equation
@@ -1024,16 +967,9 @@ void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
 } // ScaTraImplicitTimeInt::SolveStationaryProblem
 
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | update the velocity field                                   gjb 04/08|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 {
     if (veltype != cdvel_)
@@ -1064,15 +1000,9 @@ void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 } // ScaTraImplicitTimeInt::SetVelocityField
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | update the velocity field                                   gjb 04/08|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
 {
   if (veltype != cdvel_)
@@ -1107,15 +1037,9 @@ void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<c
 } // ScaTraImplicitTimeInt::SetVelocityField
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  set initial field for phi                                gjb   04/08|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
@@ -1200,15 +1124,9 @@ void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 } // ScaTraImplicitTimeInt::SetInitialField
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraImplicitTimeInt::CalcFlux()
 {
   // get a vector layout from the discretization to construct matching

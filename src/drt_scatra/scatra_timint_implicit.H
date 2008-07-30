@@ -117,6 +117,29 @@ public:
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
+  
+  /// increment time and step value
+  void IncrementTimeAndStep()
+  {
+    step_ += 1;
+    time_ += dta_;
+  }
+  
+  //! Apply Dirichlet boundary conditions on provided state vector
+  void ApplyDirichletBC
+  (  
+    const double time,  //!< evaluation time
+    Teuchos::RCP<Epetra_Vector> phinp //!< transported scalar(s)
+                                      //!< (may be Teuchos::null) 
+  );
+
+  //! Apply Neumann boundary conditions
+  void ApplyNeumannBC
+  (
+    const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> phinp,   //!< transported scalar(s) state
+    Teuchos::RCP<Epetra_Vector>& neumann_loads //!< Neumann loads
+  );
 
   void Solve(bool is_stat=false);
 
