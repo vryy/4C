@@ -56,11 +56,10 @@ extern "C"
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 
 
-
-
 /* headers and prototypes of functions also acessible from c */
-void scatra_dyn();
 
+/*! entry point for the solution of scalar transport problems */
+void scatra_dyn();
 
 
 

@@ -20,8 +20,12 @@ Maintainer: Georg Bauer
 
 namespace SCATRA
 {
-/// automatically create a matching scalar transport discretization 
-/// from an already existing fluid discretization
+
+/*!
+\brief automatically create a matching scalar transport discretization 
+       from existing fluid discretization
+
+*/
 void CreateScaTraDiscretization(
     Teuchos::RCP<DRT::Discretization>& fluiddis,  ///< RCP to fluid discretization
     Teuchos::RCP<DRT::Discretization>& scatradis, ///< RCP to empty scalar transport discretization

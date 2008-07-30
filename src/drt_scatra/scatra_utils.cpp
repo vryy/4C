@@ -26,6 +26,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "scatra_utils.H"
 
 // we need to know all necessary element types for the mesh creation
@@ -40,7 +41,7 @@ Maintainer: Georg Bauer
 // create scalar transport discretization parallel to the fluid one
 /*----------------------------------------------------------------------*/
 void SCATRA::CreateScaTraDiscretization(
-    Teuchos::RefCountPtr<DRT::Discretization>& fluiddis, 
+    Teuchos::RefCountPtr<DRT::Discretization>& fluiddis,
     Teuchos::RefCountPtr<DRT::Discretization>& scatradis,
     std::map<string,string>& conditions_to_copy,
     bool makequadratic
@@ -56,6 +57,7 @@ void SCATRA::CreateScaTraDiscretization(
             scatradis->NumGlobalElements(), scatradis->NumGlobalNodes());
   }
 
+  // prepare some variables we need
   int myrank = scatradis->Comm().MyPID();
 
   vector<int> egid;
@@ -78,32 +80,17 @@ void SCATRA::CreateScaTraDiscretization(
   for (int i=0; i<numelements; ++i)
   {
     DRT::Element* actele = fluiddis->lColElement(i);
-    bool found = false;
-    bool myele = fluiddis->ElementRowMap()->MyGID(actele->Id());
-
-#ifdef D_FLUID3
-    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
-    if (not found and f3!=NULL)
+    bool ismyele = fluiddis->ElementRowMap()->MyGID(actele->Id());
+    // we use the shape of the fluid elements to find out if we have a 2D or 3D problem
+    switch (DRT::UTILS::getDimension(actele))
     {
-      found = true;
-      eletype.push_back("CONDIF3");
+      case 3: {eletype.push_back("CONDIF3"); break;}
+      case 2: {eletype.push_back("CONDIF2"); break;}
+      default: dserror("Illegal dimension: %d",DRT::UTILS::getDimension(actele));
     }
-#endif
-
-#ifdef D_FLUID2
-    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
-    if (not found and f2!=NULL)
-    {
-      found = true;
-      eletype.push_back("CONDIF2");
-    }
-#endif
-
-    if (not found)
-      dserror("unsupported fluid element type '%s'", typeid(*actele).name());
 
     {
-      if (myele)
+      if (ismyele)
         egid.push_back(actele->Id());
 
       // copy node ids of actele to rownodeset but leave those that do
