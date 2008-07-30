@@ -27,7 +27,7 @@ namespace STR
   /*====================================================================*/
   /*!
    * \brief Front-end for structural dynamics
-   *        with *explicit* time integrators
+   *        with \b explicit time integrators
    * \author bborn
    * \date 07/08
    */
