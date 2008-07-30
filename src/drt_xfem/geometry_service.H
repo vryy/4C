@@ -142,7 +142,7 @@ namespace XFEM
   void checkRoughGeoType(
       const DRT::Element*                     element, ///< element
       const BlitzMat                          xyze_element,///< actual point positions in element
-      EleGeoType&                             eleGeoType ///> geometry type
+      XFEM::EleGeoType&                       eleGeoType ///> geometry type
       );
   
   

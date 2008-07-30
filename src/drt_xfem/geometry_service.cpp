@@ -529,7 +529,9 @@ double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
   return Area;  
 }
 
-double XFEM::getVolume(const BlitzMat3x2& AABB){
+double XFEM::getVolume(
+    const BlitzMat3x2& AABB
+    ){
   const int nsd=3;
   double A=1;
   for(int dim=0; dim<nsd; dim++)
@@ -542,7 +544,7 @@ double XFEM::getVolume(const BlitzMat3x2& AABB){
 
 
 void XFEM::checkRoughGeoType(
-           const DRT::Element*                element,
+           const DRT::Element*          element,
            const BlitzMat               xyze_element,
            EleGeoType&                  eleGeoType)
 {
