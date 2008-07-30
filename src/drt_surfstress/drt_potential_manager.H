@@ -14,9 +14,12 @@ Maintainer: Ursula Mayer
 #define DRT_POTENTIAL_MANAGER_H_
 
 #include <Teuchos_RefCountPtr.hpp>
-#include <Epetra_Vector.h>
-
 #include <Teuchos_ParameterList.hpp>
+
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
@@ -38,16 +41,17 @@ class PotentialManager
 {
 public:
 
-   /*!
+  /*!
     \brief Standard Constructor
 
     \param discret (in): Discretization
-  */
-  PotentialManager(DRT::Discretization& discret);
+   */
+  PotentialManager( Teuchos::RCP<DRT::Discretization> discretRCP,
+      DRT::Discretization& discret);
 
   /*!
     \brief Destructor
-  */
+   */
   ~PotentialManager() {};
 
   /*!
@@ -57,15 +61,15 @@ public:
     \param p (in): parameter list
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
-  */
+   */
   void EvaluatePotential( ParameterList& p,
-                          RefCountPtr<Epetra_Vector> disp,
-                          RefCountPtr<Epetra_Vector> fint,
-                          RefCountPtr<LINALG::SparseMatrix> stiff);
+      RefCountPtr<Epetra_Vector> disp,
+      RefCountPtr<Epetra_Vector> fint,
+      RefCountPtr<LINALG::SparseMatrix> stiff);
 
   /*!
     \brief update history variables
-  */
+   */
   void Update();
 
   /*!
@@ -74,19 +78,19 @@ public:
     still have the data of the former step. The column map based
     vectors used for calculations are exported to row map based ones
     needed for writing.
-  */
+   */
   void GetHistory(RCP<Epetra_Vector> A_old_temp_row);
 
   /*!
     \brief get row map of surface elements
-  */
+   */
   RCP<Epetra_Map> GetSurfRowmap() { return surfrowmap_; }
 
   /*!
     \brief set history variables after reading restart. The row map
     based vectors written in case of restart are exported to column
     based ones needed for calculations again.
-  */
+   */
   void SetHistory(RCP<Epetra_Vector> A_old)
   {
     LINALG::Export(*A_old, *A_old_);
@@ -116,28 +120,49 @@ public:
     \param gamma_min_eq (in): minimum equilibrium surface stress
     \param con_quot_max (in) maximum surfactant concentration
     \param con_quot_eq (in) equilibrium surfactant concentration
-  */
+   */
   void StiffnessAndInternalForces(const int curvenum,
-                                  const double& A,
-                                  Epetra_SerialDenseVector& fint,
-                                  Epetra_SerialDenseMatrix& K_surf,
-                                  const int ID,
-                                  const double time,
-                                  const double dt,
-                                  const double label,
-                                  const double depth,
-                                  const double rootDist,
-                                  const double cutOff);
-  
-  
+      const double& A,
+      Epetra_SerialDenseVector& fint,
+      Epetra_SerialDenseMatrix& K_surf,
+      const int ID,
+      const double time,
+      const double dt,
+      const double label,
+      const double depth,
+      const double rootDist,
+      const double cutOff);
+
+
 private:
 
   //don't want = operator and cctor
   PotentialManager operator = (const PotentialManager& old);
   PotentialManager(const DRT::PotentialManager& old);
 
+  /*!
+  \brief Update displacements
+   */
+  void UpdateDisplacementsOfBoundaryDiscretization(
+    Teuchos::RCP<Epetra_Vector> idisp_solid
+    );
 
+  /*!
+  \brief  set history variables after reading restart. The row map
+          based vectors written in case of restart are exported to column
+          based ones needed for calculations again.
+   */
+  void searchElementsInCutOffRadius(    
+    const vector<double>&   point,
+    set< int >&             potentialElementIds, 
+    const double            cutOff
+    );
+  
+  
   //! name@ Private Attributes
+
+  // current discretization
+  RCP<DRT::Discretization> discretRCP_;
 
   // current discretization
   DRT::Discretization& discret_;
@@ -150,12 +175,25 @@ private:
 
   // surface areas of former time step
   RefCountPtr<Epetra_Vector> A_old_;
-  
+
   //! XSearchTree xTree_
   Teuchos::RCP<XFEM::XSearchTree>  xTree_;
 
+  //! current position of boundary elements
+  std::map<int,vector<double> > currentboundarypositions_;
 
+  LINALG::MapExtractor                   potboundary_;
+
+  //! @name local copies of input parameters
+  Teuchos::RCP<DRT::Discretization>      boundarydis_;
+  Teuchos::RCP<Teuchos::ParameterList>   params_;
   //@}
+
+  //! @name state vectors using the solid boundary parallel distribution (row vectors)
+  Teuchos::RCP<Epetra_Vector> idisp_total_; 
+  Teuchos::RCP<Epetra_Vector> idisp_onproc_;
+
+
 }; //class
 }//namespace DRT
 
