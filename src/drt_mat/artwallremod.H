@@ -81,6 +81,7 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_artwallremod; }
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
+                  const Epetra_SerialDenseMatrix& defgrd,
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,

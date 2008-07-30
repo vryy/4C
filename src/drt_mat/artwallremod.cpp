@@ -209,6 +209,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
 */
 
 void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
+                                 const Epetra_SerialDenseMatrix& defgrd,
                                   const int gp,
                                   Teuchos::ParameterList& params,
                                   Epetra_SerialDenseMatrix* cmat,
@@ -365,6 +366,18 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
     stresses_->at(gp)(0,1) = (*stress)(3); stresses_->at(gp)(1,0) = (*stress)(3);
     stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
     stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
+    
+    // store Cauchy stresses and use those for remodeling driver
+    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
+                  defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
+                  defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
+                  defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
+                  defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
+                  defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+    LINALG::SerialDenseMatrix temp(3,3);
+    temp.Multiply('N','N',1.0/detF,defgrd,stresses_->at(gp),0.);
+    stresses_->at(gp).Multiply('N','T',1.0,temp,defgrd,0.);
+
   }
 
 
@@ -378,13 +391,13 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   // watch out! stress matrix will temporarily hold eigenvectors!
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
   
-  // modulation function acc. Hariton: tan g = max lambda / 2nd max lambda
-  double newgamma = atan(lambda(2)/lambda(1));
+  // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+  double newgamma = atan(lambda(1)/lambda(2));
   
   // check whether delta gamma is larger than tolerance
-  const double gammatol = 0.0001;
+  const double gammatol = 0.001;
   if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
-    remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
+    //remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
     return; // get out here
   }
   
