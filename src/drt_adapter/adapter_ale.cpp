@@ -82,8 +82,8 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
-  UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
+  DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -313,8 +313,8 @@ ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
   incr_           = LINALG::CreateVector(*dofrowmap,true);
 
-  UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
+  DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;

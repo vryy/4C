@@ -61,8 +61,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
 
-  UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
+  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
   // create interface DOF vectors using the solid parallel distribution
   const Epetra_Map* fluidsurface_dofrowmap = boundarydis_->DofRowMap();

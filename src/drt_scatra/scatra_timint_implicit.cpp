@@ -30,7 +30,7 @@ Maintainer: Georg Bauer
 // for the condition writer output
 /*
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

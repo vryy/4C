@@ -28,8 +28,8 @@ ADAPTER::FluidGenAlpha::FluidGenAlpha(
     params_(params),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
+  DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
 
   // build inner velocity map
   // dofs at the interface are excluded
@@ -428,7 +428,7 @@ void ADAPTER::FluidGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& dom
                                             const LINALG::MultiMapExtractor& rangemaps,
                                             bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = UTILS::ConditionElementMap(*Discretization(),
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionElementMap(*Discretization(),
                                                                          "FSICoupling");
   fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
 }

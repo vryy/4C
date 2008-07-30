@@ -28,7 +28,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

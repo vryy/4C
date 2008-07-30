@@ -30,8 +30,8 @@ ADAPTER::FluidImpl::FluidImpl(
     params_(params),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
+  DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
 
   fluid_.SetFSISurface(&interface_);
   fluid_.SetFreeSurface(&freesurface_);
@@ -456,7 +456,7 @@ void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainm
                                         const LINALG::MultiMapExtractor& rangemaps,
                                         bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = UTILS::ConditionElementMap(*Discretization(),
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionElementMap(*Discretization(),
                                                                          "FSICoupling");
   fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
 }

@@ -24,9 +24,10 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
+#include "../drt_lib/drt_utils.H"
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/stru_resulttest.H"
-#include "adapter_utils.H"
+
 
 
 namespace ADAPTER {

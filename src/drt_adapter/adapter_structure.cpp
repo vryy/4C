@@ -69,7 +69,7 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
     solver_(solver),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
   structure_.SetFSISurface(&interface_);
 }
 

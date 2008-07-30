@@ -21,7 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/xfsi_searchtree.H"
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include <cstdlib>
 
 
@@ -59,7 +59,7 @@ discret_(discret)
 
   // split dof vector of soliddiscretization into a dof vector of potential boundary condition and 
   // remaining dofs
-  ADAPTER::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
+  DRT::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
   
   // create potential surface dof row map using the solid parallel distribution
   // for all potential surface elements belonging to the solid discretization on a single 

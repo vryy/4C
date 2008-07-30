@@ -26,9 +26,9 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluidresulttest.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "adapter_fluid.H"
-#include "adapter_utils.H"
 
 
 /// Algorithm adapter classes for use in multi-field problems

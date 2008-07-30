@@ -4,8 +4,8 @@
 
 #include "fsi_debugwriter.H"
 
-#include "../drt_adapter/adapter_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
@@ -41,7 +41,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 
   coup_.SetupCoupling(*dis,
                       *dis_,
-                      *ADAPTER::UTILS::ConditionNodeMap(*dis,"FSICoupling"),
+                      *DRT::UTILS::ConditionNodeMap(*dis,"FSICoupling"),
                       *dis_->NodeRowMap());
 }
 

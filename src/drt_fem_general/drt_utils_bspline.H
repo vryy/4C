@@ -541,9 +541,13 @@ private:
       // give some information on bspline
       PrintBspline();
 
+      char* str = new char [errormessage.size()+1];
+      strcpy (str, errormessage.c_str());
       // and the throw the error and exit with a
       // sigsegv
-      dserror(errormessage.c_str());
+      // dserror(errormessage.c_str());
+      dserror(str);
+      
       return;
     };
 

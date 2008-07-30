@@ -27,8 +27,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_utils.H"
 
-#include "adapter_utils.H"
 
 
 /// Algorithm adapter classes for use in multi-field problems
