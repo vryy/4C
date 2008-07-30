@@ -93,6 +93,12 @@ namespace MAT
     
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
     
+    RCP<vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
+    
+    RCP<vector<double> > Getgammas() const {return gamma_;}
+
+    RCP<vector<double> > Getremtimes() const {return remtime_;}
+
     RCP<vector<vector<double> > > Geta1() const {return a1_;}
     
     RCP<vector<vector<double> > > Geta2() const {return a2_;}
@@ -133,6 +139,11 @@ namespace MAT
 void ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
                                         const double time,
                                         const int iter);
+
+void ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
+    const double time,
+    const int iter);
+
 
 }
 

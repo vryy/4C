@@ -382,7 +382,7 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   double newgamma = atan(lambda(2)/lambda(1));
   
   // check whether delta gamma is larger than tolerance
-  const double gammatol = 0.01;
+  const double gammatol = 0.0001;
   if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
     remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
     return; // get out here
@@ -421,6 +421,56 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
     out << *i << " ";
   }
   return out.str();
+}
+
+void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
+    const double time,
+    const int iter)
+{
+    std::stringstream filename;
+    filename << allfiles.outputfile_kenner << "_rem" << ".txt";
+    ofstream outfile;
+    outfile.open(filename.str().c_str(),ios_base::app);
+    int nele = dis->NumMyColElements();
+    int endele = nele;
+    for (int iele=0; iele<endele; ++iele) //++iele) iele+=10)
+    {
+      const DRT::Element* actele = dis->lColElement(iele);
+      RefCountPtr<MAT::Material> mat = actele->Material();
+      if (mat->MaterialType() != m_artwallremod) return;
+      MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
+      int ngp = remo->Geta1()->size();
+      int endgp = ngp; //ngp;
+      for (int gp = 0; gp < endgp; ++gp){
+        double gamma = remo->Getgammas()->at(gp);
+        double remtime = remo->Getremtimes()->at(gp);
+        vector<double> lamb = remo->Getlambdas()->at(gp);
+        Epetra_SerialDenseMatrix phi = remo->Getphis()->at(gp);
+        
+        // time
+        outfile << time << ",";
+        // iter
+        outfile << iter << ",";
+        // eleId
+        outfile << iele << ",";
+        // gp
+        outfile << gp << ",";
+        
+        outfile << gamma << ",";
+        outfile << gamma*180./PI << ",";
+        outfile << remtime << ",";
+        // eigenvalues
+        for (int i=0;i<3;++i) outfile << lamb[i] << ",";
+        // eigenvectors
+        for (int i=0;i<3;++i)
+          for (int j=0;j<3;++j)
+            outfile << phi(j,i) << ",";
+        // end
+        outfile << endl;
+      }
+    }
+    outfile.close();
+    return;
 }
 
 void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
