@@ -49,7 +49,7 @@ namespace XFEM
       //! standard constructor
       explicit ElementDofManager(
           const DRT::Element& ele,
-          const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
+          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
           const std::set<XFEM::FieldEnr>& enrfieldset,
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
@@ -74,7 +74,7 @@ namespace XFEM
           const int  gid    ///< unique global node id
       ) const
       {
-        map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
+        map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
         if (tmp == nodalDofSet_.end())
         {
           std::cout << gid << endl;
@@ -191,7 +191,7 @@ namespace XFEM
     private:
       
       //! unknowns for each global node id (gid)
-      std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
+      std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
       
       //! number of unknowns for each global node id (gid)
       std::map<int, int> nodalNumDof_;
@@ -295,20 +295,23 @@ namespace XFEM
       
     private:
       
+      /// find unique enrichments among all dofs in this DofManager
+      std::set<XFEM::Enrichment> GatherUniqueEnrichments() const;
+      
       //! pointer to the xfem discretization of which we hold the unknowns
-      Teuchos::RCP<DRT::Discretization> xfemdis_;
+      const Teuchos::RCP<DRT::Discretization> xfemdis_;
       
       /*! unknowns for each global node id (gid) on this processor
        * if it does not contain the key, the number of unknowns is supposed to be zero
        * meaning, the the dofmanager will not crash but give back an empty set of unknowns
        * see also getNodeDofSet()
        */
-      std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
+      std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
       
       /*! unknowns for each global element id (gid) on this processor
        * same as above, see getElementDofSet()
        */
-      std::map<int, const set<XFEM::FieldEnr> > elementalDofs_;
+      std::map<int, const std::set<XFEM::FieldEnr> > elementalDofs_;
       
       //! set of all enrichments that are available on this proc.
       std::set<XFEM::Enrichment> unique_enrichments_;

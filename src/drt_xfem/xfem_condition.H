@@ -30,14 +30,14 @@ namespace XFEM
  */
 void CollectElementsByXFEMCouplingLabel(
     const DRT::Discretization&           cutterdis,
-    std::map<int,set<int> >&             elementsByLabel
+    std::map<int,std::set<int> >&             elementsByLabel
     );
 
 /*! invert collection
  *   the result is a map where for each element id we get the corresponding xfem condition label
  */ 
 void InvertElementsByLabel(
-    const std::map<int,set<int> >&   elementsByLabel,
+    const std::map<int,std::set<int> >&   elementsByLabel,
     std::map<int, int>&              labelByElementId
     );
 

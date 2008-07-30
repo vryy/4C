@@ -39,8 +39,8 @@ public:
 
     //! constructor
     explicit InterfaceHandle(
-            const RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
-            const RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
+            const Teuchos::RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
+            const Teuchos::RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
             const Epetra_Vector&                  idispcol      ///< interface displacements for current position of interface
             );
     //! destructor
@@ -53,9 +53,9 @@ public:
     void toGmsh(const int step) const;
 
     //! return pointer to the intersected discretization
-    RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
+    Teuchos::RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
     //! return pointer to the intersecting discretization
-    RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
+    Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
     const std::map<int,BlitzVec3>* currentcutterpositions() const {return &currentcutterpositions_;};
@@ -116,14 +116,21 @@ private:
     //! don't want copy constructor
     explicit InterfaceHandle(const InterfaceHandle&);
     
+    //! put a position into the map for each nodal id
+    void FillCurrentCutterPositionMap(
+        const Teuchos::RCP<DRT::Discretization>  cutterdis,              ///< dis containing nodes
+        const Epetra_Vector&                     idispcol,               ///< vector with displacements
+        std::map<int,BlitzVec3>&                 currentcutterpositions  ///< map to be filled with positions
+        ) const;
+    
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
   
     //! intersected domain
-    const RCP<DRT::Discretization> xfemdis_;
+    const Teuchos::RCP<DRT::Discretization> xfemdis_;
 
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
-    const RCP<DRT::Discretization> cutterdis_;
+    const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
     //! current positions of all cutter nodes
     std::map<int,BlitzVec3>        currentcutterpositions_;
@@ -135,7 +142,7 @@ private:
     std::map<int, BoundaryIntCells > elementalBoundaryIntCells_;
     
     //! for each xfem condition label there is a set of boundary elements
-    std::map<int,set<int> >          elementsByLabel_;
+    std::map<int,std::set<int> >          elementsByLabel_;
     
     //! XSearchTree xTree_
     Teuchos::RCP<XFEM::XSearchTree>  xTree_;

@@ -1,10 +1,9 @@
 /*!
 \file xdofmapcreation.H
 
-\brief defines unknowns based on the intersection pappern from the xfem intersection
+\brief defines unknowns based on the intersection pattern from the xfem intersection
 
 this is related to the physics of the fluid problem and therefore not part of the standard xfem routines
-
 somehow this should work for each physical problem differently
 
 <pre>
@@ -31,8 +30,8 @@ namespace XFEM
  */
 void createDofMap(
     const XFEM::InterfaceHandle&                      ih,                      ///< interface information
-    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
-    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs   
+    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< enriched fields per node
+    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< enriched fields per element   
 );
 
 /*! 
@@ -41,8 +40,8 @@ void createDofMap(
  */
 void applyStandardEnrichment(
     const XFEM::InterfaceHandle&             ih,
-    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );
 
 /*! 
@@ -51,8 +50,8 @@ void applyStandardEnrichment(
  */
 void applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&             ih,
-    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );
 
 } // namespace XFEM

@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 
 void XFEM::CollectElementsByXFEMCouplingLabel(
     const DRT::Discretization&           cutterdis,
-    std::map<int,set<int> >&             elementsByLabel
+    std::map<int,std::set<int> >&        elementsByLabel
     )
 {
   // Reset
@@ -33,7 +33,7 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
     DRT::Condition* xfemCondition = *conditer;
     const int label = xfemCondition->Getint("label");
     const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
-    set< DRT::Element* > cutterElements;
+    std::set< DRT::Element* > cutterElements;
     // find all elements of this condition
     map<int, RCP<DRT::Element > >::const_iterator iterGeo;
     for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
@@ -45,11 +45,11 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
 }
 
 void XFEM::InvertElementsByLabel(
-    const std::map<int,set<int> >&   elementsByLabel,
+    const std::map<int,std::set<int> >&   elementsByLabel,
     std::map<int, int>&              labelByElementId)
 {
   labelByElementId.clear();
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int xfemlabel = conditer->first;
     for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)

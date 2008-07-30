@@ -32,29 +32,13 @@ extern struct _FILES  allfiles;
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
-    const RCP<DRT::Discretization>        xfemdis, 
-    const RCP<DRT::Discretization>        cutterdis,
-    const Epetra_Vector&                  idispcol) :
+    const Teuchos::RCP<DRT::Discretization>  xfemdis, 
+    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const Epetra_Vector&                     idispcol) :
       xfemdis_(xfemdis),
       cutterdis_(cutterdis)
 {
-  currentcutterpositions_.clear();
-  {
-    for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
-    {
-      const DRT::Node* node = cutterdis->lColNode(lid);
-      vector<int> lm;
-      lm.reserve(3);
-      cutterdis->Dof(node, lm);
-      vector<double> mydisp(3);
-      DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
-      BlitzVec3 currpos;
-      currpos(0) = node->X()[0] + mydisp[0];
-      currpos(1) = node->X()[1] + mydisp[1];
-      currpos(2) = node->X()[2] + mydisp[2];
-      currentcutterpositions_[node->Id()] = currpos;
-    }
-  }
+  FillCurrentCutterPositionMap(cutterdis, idispcol, currentcutterpositions_);
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
@@ -95,9 +79,10 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
   xTree_ = rcp(new XSearchTree(AABB));
   
-  // remove malicious entries from both maps
+  // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
   
+  // remove malicious entries from both maps
   for (set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
   {
     elementalDomainIntCells_.erase(*eleid);
@@ -113,13 +98,37 @@ XFEM::InterfaceHandle::~InterfaceHandle()
     return;
 }
 
+void XFEM::InterfaceHandle::FillCurrentCutterPositionMap(
+    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const Epetra_Vector&                     idispcol,
+    std::map<int,BlitzVec3>&                 currentcutterpositions
+    ) const
+{
+  currentcutterpositions.clear();
+  
+  for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = cutterdis->lColNode(lid);
+    vector<int> lm;
+    lm.reserve(3);
+    cutterdis->Dof(node, lm);
+    vector<double> mydisp(3);
+    DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+    BlitzVec3 currpos;
+    currpos(0) = node->X()[0] + mydisp[0];
+    currpos(1) = node->X()[1] + mydisp[1];
+    currpos(2) = node->X()[2] + mydisp[2];
+    currentcutterpositions[node->Id()] = currpos;
+  }
+}
+
 /*----------------------------------------------------------------------*
  |  clean                                                       ag 11/07|
  *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() const
 {
   // clean up double counted intersections
-  set<int> ele_to_delete;
+  std::set<int> ele_to_delete;
 
   // find unintersected elements and put their Id them in aboves set
   std::map<int, DomainIntCells >::const_iterator entry;
@@ -128,7 +137,7 @@ std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() cons
     const DomainIntCells cells = entry->second;
     DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     DomainIntCells::const_iterator cell;
-    set<int> labelset;
+    std::set<int> labelset;
     bool one_cell_is_fluid = false;
     for (cell = cells.begin(); cell != cells.end(); ++cell)
     {
@@ -345,8 +354,8 @@ int XFEM::PositionWithinCondition(
 {
   //PositionWithinConditionBruteForce(x_in, ih, posInCondition);
   const int label = PositionWithinConditionTree(x_in, ih, closestElementId,distance);
-//  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
-//  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+//  const std::map<int,std::set<int> >& elementsByLabel = *(ih.elementsByLabel());
+//  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
 //   {
 //     const int label = conditer->first;
 //     if (posInCondition1[label]!=posInCondition2[label])
@@ -379,13 +388,13 @@ int XFEM::PositionWithinConditionBruteForce(
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinCondition");
   //init
   std::map<int,bool>  posInCondition; // not really needed, but this method could go away soon, so it won't be cleaned
-  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
+  const std::map<int,std::set<int> >& elementsByLabel = *(ih.elementsByLabel());
   
   /////////////////
   // loop labels
   /////////////////
   int label = 0;
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     label = conditer->first;
     posInCondition[label] = false; 

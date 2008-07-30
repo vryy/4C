@@ -23,22 +23,22 @@ Maintainer: Axel Gerstenberger
 
 void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                   ih,
-    std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
-    std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
+    std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
+    std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal
 )
 {
   // temporary assembly
-  std::map<int, set<XFEM::FieldEnr> >  nodalDofSet;
-  std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
+  std::map<int, std::set<XFEM::FieldEnr> >  nodalDofSet;
+  std::map<int, std::set<XFEM::FieldEnr> >  elementalDofs;
 
   // get elements for each coupling label
-  const std::map<int,set<int> >& elementsByLabel = *ih.elementsByLabel(); 
+  const std::map<int,std::set<int> >& elementsByLabel = *ih.elementsByLabel(); 
 
   // invert collection
   std::map<int,int> labelPerElementId;
   XFEM::InvertElementsByLabel(elementsByLabel, labelPerElementId);
 
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int label = conditer->first;
 
@@ -144,8 +144,8 @@ void XFEM::createDofMap(
 
 void XFEM::applyStandardEnrichment(
     const XFEM::InterfaceHandle&             ih,
-    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 )
 {
   const int standard_label = 0;
@@ -214,8 +214,8 @@ void XFEM::applyStandardEnrichment(
 
 void XFEM::applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&             ih,
-    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 )
 {
   const int standard_label = 0;

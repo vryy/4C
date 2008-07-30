@@ -46,7 +46,7 @@ XFEM::ElementDofManager::ElementDofManager() :
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
     const DRT::Element& ele,
-    const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
+    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
     const std::set<XFEM::FieldEnr>& enrfieldset,
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
 ) :
@@ -54,7 +54,7 @@ XFEM::ElementDofManager::ElementDofManager(
   DisTypePerElementField_(element_ansatz)
 {
   // count number of dofs for each node
-  map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
+  map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp;
   for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp)
   {
     const int gid = tmp->first;
@@ -64,7 +64,7 @@ XFEM::ElementDofManager::ElementDofManager(
   // set number of parameters per field to zero
   for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp)
   {
-    const set<XFEM::FieldEnr> enrfieldset = tmp->second;
+    const std::set<XFEM::FieldEnr> enrfieldset = tmp->second;
     for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
@@ -91,7 +91,7 @@ XFEM::ElementDofManager::ElementDofManager(
     map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
     if (entry == nodalDofSet_.end())
       dserror("impossible ;-)");
-    const set<XFEM::FieldEnr> enrfieldset = entry->second;
+    const std::set<XFEM::FieldEnr> enrfieldset = entry->second;
     
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
@@ -157,12 +157,12 @@ XFEM::ElementDofManager::~ElementDofManager()
 std::string XFEM::ElementDofManager::toString() const
 {
   std::stringstream s;
-  map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
+  map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp;
   for (tmp = nodalDofSet_.begin(); tmp != nodalDofSet_.end(); ++tmp)
   {
     const int gid = tmp->first;
     const set <XFEM::FieldEnr> actset = tmp->second;
-    for ( set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
+    for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
       s << "Node: " << gid << ", " << var->toString() << endl;
     };
@@ -175,37 +175,55 @@ std::string XFEM::ElementDofManager::toString() const
  *----------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
   xfemdis_(ih->xfemdis())
-  {
+{
   XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_);
   
-  unique_enrichments_.clear();
-  for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
+  unique_enrichments_ = GatherUniqueEnrichments();
+
+  if (xfemdis_->Comm().MyPID() == 0)
+  {
+    std::cout << " Enrichments available:" << endl;
+    for (std::set<XFEM::Enrichment>::const_iterator enr =
+      unique_enrichments_.begin(); enr != unique_enrichments_.end(); ++enr)
+    {
+      std::cout << "  - " << enr->toString() << endl;
+    }
+    flush(cout);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::set<XFEM::Enrichment> XFEM::DofManager::GatherUniqueEnrichments() const
+{
+  // set of unique enrichments
+  std::set<XFEM::Enrichment> unique_enrichments;
+  
+  // collect enrichments from nodal dofs
+  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
   fieldenriter!=nodalDofSet_.end(); ++fieldenriter)
   {
     const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
       enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
-      unique_enrichments_.insert(enrfield->getEnrichment());
+      unique_enrichments.insert(enrfield->getEnrichment());
     }
   }
-  for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
+  
+  // collect enrichments from elemental dofs
+  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
   fieldenriter!=elementalDofs_.end(); ++fieldenriter)
   {
     const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
       enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
-      unique_enrichments_.insert(enrfield->getEnrichment());
+      unique_enrichments.insert(enrfield->getEnrichment());
     }
   }
-  std::cout << " Enrichments available:" << endl;
-  for (std::set<XFEM::Enrichment>::const_iterator enr =
-    unique_enrichments_.begin(); enr != unique_enrichments_.end(); ++enr)
-  {
-    std::cout << "  - " << enr->toString() << endl;
-  }
-  }
+  return unique_enrichments;
+}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                   ag 11/07|
@@ -233,7 +251,7 @@ std::string XFEM::DofManager::toString() const
   {
     const int gid = xfemdis_->lRowNode(i)->Id();
     const set <XFEM::FieldEnr> actset = nodalDofSet_.find(gid)->second;
-    for ( set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
+    for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
       s << "Node: " << gid << ", " << var->toString() << endl;
     };
@@ -283,7 +301,7 @@ void XFEM::DofManager::toGmsh(
         
         if (blub != elementalDofs_.end())
         {
-          const set<XFEM::FieldEnr> schnapp = blub->second;
+          const std::set<XFEM::FieldEnr> schnapp = blub->second;
           val = schnapp.size();
           gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
         }
@@ -303,11 +321,11 @@ void XFEM::DofManager::toGmsh(
         const int node_gid = xfemnode->Id();
         
         double val = 0.0;
-        std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
         
         if (blub != nodalDofSet_.end())
         {
-          const set<XFEM::FieldEnr> schnapp = blub->second;
+          const std::set<XFEM::FieldEnr> schnapp = blub->second;
           val = schnapp.size();
           
           
@@ -333,7 +351,7 @@ void XFEM::DofManager::toGmsh(
         const int node_gid = xfemnode->Id();
         
         double val = 0.0;
-        std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;
@@ -369,7 +387,7 @@ void XFEM::DofManager::toGmsh(
         const int node_gid = xfemnode->Id();
         
         double val = 0.0;
-        std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;
@@ -405,7 +423,7 @@ void XFEM::DofManager::toGmsh(
         const int node_gid = xfemnode->Id();
         
         double val = 0.0;
-        std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;
