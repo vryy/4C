@@ -13,12 +13,6 @@ Maintainer: Michael Gee
 
 #ifdef CCADISCRET
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
-
-
 #ifdef PARALLEL
 #ifdef LINUX_MUENCH
 typedef int idxtype;
@@ -95,6 +89,11 @@ extern "C"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
 
 
 /*----------------------------------------------------------------------*
@@ -758,7 +757,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case fluid2:
     {
       RefCountPtr<DRT::Element> ele;
-      
+
       if(eledistype=="NURBS4" || eledistype=="NURBS9")
       {
         ele = rcp(new DRT::ELEMENTS::NURBS::Fluid2Nurbs(id,owner));
@@ -781,7 +780,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case fluid3:
     {
       RefCountPtr<DRT::Element> ele;
-      
+
       if(eledistype=="NURBS8" || eledistype=="NURBS27")
       {
         ele = rcp(new DRT::ELEMENTS::NURBS::Fluid3Nurbs(id,owner));
@@ -1272,7 +1271,7 @@ blitz::Array<double,2> DRT::UTILS::InitialPositionArrayBlitz(
 \brief  fill array with current nodal positions
 
 \return array with element nodal positions (3,numnode)
-*/    
+*/
 blitz::Array<double,2> DRT::UTILS::getCurrentNodalPositions(
     const DRT::Element*                           ele,                      ///< element with nodal pointers
     const map<int,blitz::TinyVector<double,3> >&  currentcutterpositions    ///< current positions of all cutter nodes

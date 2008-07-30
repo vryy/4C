@@ -44,11 +44,7 @@ extern struct _GENPROB  genprob;
 /*----------------------------------------------------------------------*/
 void ntaini_ccadiscret(int argc, char** argv)
 {
-#ifdef DEBUG
-  dsinit();
-#endif
-  /*---------------------------------------------- initialise warnings ---*/
-  dswarning(0,0);
+  ds_cputime_init();
 
   int myrank = 0;
 

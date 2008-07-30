@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "drt_resulttest.H"
+#include "drt_dserror.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

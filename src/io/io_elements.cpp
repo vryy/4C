@@ -51,6 +51,7 @@ Mistakes to avoid:
 
 */
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
 #ifdef PARALLEL
@@ -1704,5 +1705,5 @@ void out_print_element_versions(FILE* file)
 #endif
 }
 
-
+#endif
 #endif

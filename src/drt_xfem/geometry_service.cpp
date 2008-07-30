@@ -18,18 +18,18 @@ Maintainer: Ursula Mayer
 using namespace std;
 using namespace XFEM;
 
-  
+
 BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions){
   const int nsd = 3;
   BlitzMat3x2 XAABB;
-  if (dis.NumGlobalElements() == 0){ 
+  if (dis.NumGlobalElements() == 0){
     XAABB(0,0)=0;XAABB(0,1)=0;
     XAABB(1,0)=0;XAABB(1,1)=0;
     XAABB(2,0)=0;XAABB(2,1)=0;
     return XAABB;
     }
 
-  // initialize XAABB as rectangle around the first point of dis 
+  // initialize XAABB as rectangle around the first point of dis
   const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
   const BlitzVec3 pos = currentpositions.find(nodeid)->second;
   for(int dim=0; dim<nsd; ++dim)
@@ -37,11 +37,11 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  
+
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   //BlitzMat curr = BlitzMat(3, currentpositions.size());
-  
-  
+
+
   for (int j=0; j< dis.NumMyColElements(); ++j) {
     const DRT::Element* ele = dis.lColElement(j);
     BlitzMat curr(3, ele->NumNode());
@@ -63,8 +63,8 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
     BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(ele, curr, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
-  
-  #ifdef DEBUG5  
+
+  #ifdef DEBUG5
     cout << "_XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
   #endif
   return XAABB;
@@ -92,9 +92,9 @@ BlitzMat3x2 XFEM::getXAABBofDis(
 
 const DRT::Element* XFEM::nearestXAABBNeighbourInList(
     const DRT::Discretization&        dis,
-    const std::map<int,BlitzVec3>&    currentpositions, 
-    const list<const DRT::Element* >& ElementList, 
-    const BlitzVec3&                  X, 
+    const std::map<int,BlitzVec3>&    currentpositions,
+    const list<const DRT::Element* >& ElementList,
+    const BlitzVec3&                  X,
     double&                           dist)
 {
   dist=1.0e12;
@@ -107,24 +107,24 @@ const DRT::Element* XFEM::nearestXAABBNeighbourInList(
     checkRoughGeoType(*myIt, xyze, eleGeoType);
     distance = (getMaxDistanceFromAABB(X, computeFastXAABB(*myIt, xyze, eleGeoType)));
     if (distance < dist){
-      closest_element = *myIt;   
-      dist = distance;      
+      closest_element = *myIt;
+      dist = distance;
     }
   }
   return closest_element;
 }
 
 const DRT::Element* XFEM::nearestNeighbourInList(
-    const DRT::Discretization&              dis, ///< discretization containing elements 
+    const DRT::Discretization&              dis, ///< discretization containing elements
     const std::map<int,BlitzVec3>&          currentpositions, ///< current position of elements in dis
     const list<const DRT::Element* >&       ElementList, ///<list of elements to be examined
     const BlitzVec3&                        X,  ///<coords of point which will be examined
     map<const DRT::Element*, double >&      squaredDistanceMap, ///<> map of already known distances (may be empty)
     BlitzVec3&                              vector2minDistPoint,  ///>vector from querypoint X to point on surface element with minimal distance
     double&                                 eleDistance, ///>distance btw. x and nearest element
-    DistanceType&                           distanceType ///>distance Typ                            
-    )                           
-{ 
+    DistanceType&                           distanceType ///>distance Typ
+    )
+{
   double min_ele_distance = 1.0e12;
   const DRT::Element* closest_element=NULL;
   DistanceType closestElement_distanceType=ELEMENT_SURFACE;
@@ -151,9 +151,9 @@ const DRT::Element* XFEM::nearestNeighbourInList(
     if (distance < min_ele_distance)
     {
       if (distIterator!=squaredDistanceMap.end())
-        nearestDistanceIsFromList = true;  
+        nearestDistanceIsFromList = true;
       else
-        nearestDistanceIsFromList = false;  
+        nearestDistanceIsFromList = false;
       closest_element = cutterele;
       closestElement_distanceType = tmpdistanceType;
       xsi = eleCoord;
@@ -174,13 +174,13 @@ const DRT::Element* XFEM::nearestNeighbourInList(
   min_ele_distance = sqrt(min_ele_distance);
   if (scalarproduct<0.0)
     min_ele_distance *= (-1);
-  
+
   #ifdef DEBUG
   if (scalarproduct==0.0){
     cout << "scalarprod is 0" << endl;
   }
   #endif
-  
+
   eleDistance =  min_ele_distance;
   return closest_element;
 }
@@ -188,15 +188,15 @@ const DRT::Element* XFEM::nearestNeighbourInList(
 BlitzVec3 XFEM::getNormalAtXsi(
     const DRT::Discretization&        dis,
     const DRT::Element*               surfaceElement,
-    const std::map<int,BlitzVec3>&    currentpositions, 
-    const BlitzVec2&                  xsi, 
+    const std::map<int,BlitzVec3>&    currentpositions,
+    const BlitzVec2&                  xsi,
     const BlitzVec3&                  X,
     const DistanceType&               distanceType)
-{ 
+{
   BlitzVec3 normal(0.0,0.0,0.0);
 
   switch (distanceType) {
-  case ELEMENT_SURFACE:{     
+  case ELEMENT_SURFACE:{
     const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
     computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi, normal);
     return normal;
@@ -215,7 +215,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
       xsiA(1) =(-1.0);
       xsiB(0) =xsi(0);
       xsiB(1) =1.0;
-    }        
+    }
     else {
       xsiA(0)=(-1.0);
       xsiA(1)=xsi(1);
@@ -243,7 +243,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
     }
     return addVectors(normalVectors);
     break;
-  } 
+  }
   case ELEMENT_POINT:
   {
     bool printDEBUG = false;
@@ -275,7 +275,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
 }
 
 list < const DRT::Element* > XFEM::getCommonElements(
-    const DRT::Node* A, 
+    const DRT::Node* A,
     const DRT::Node* B)
 {
   list < const DRT::Element* > commonEles;
@@ -285,19 +285,19 @@ list < const DRT::Element* > XFEM::getCommonElements(
   for(int i=0; i<A->NumElement();i++)
    {
     for(int j=0; j<B->NumElement();j++)
-     {      
+     {
       if (tmp1[i]->Id()==tmp2[j]->Id())
         commonEles.push_back(A->Elements()[i]);
      }
    }
   return commonEles;
 }
-    
+
 BlitzVec3 XFEM::addVectors(
     const list< BlitzVec3 > vectors
     )
 {
-    BlitzVec3 vecSum(0.0,0.0,0.0); 
+    BlitzVec3 vecSum(0.0,0.0,0.0);
     for(list< BlitzVec3 >::const_iterator myIt = vectors.begin(); myIt!=vectors.end();++myIt)
     {
       vecSum(0) = vecSum(0) +  (*myIt)(0);
@@ -306,7 +306,7 @@ BlitzVec3 XFEM::addVectors(
     }
     return vecSum;
   }
-  
+
 /*----------------------------------------------------------------------*
  |  RQI:    searches the nearest point on a surface          peder 07/08|
  |          element for a given point in physical coordinates           |
@@ -318,42 +318,42 @@ double XFEM::getSquaredElementDistance(
     BlitzVec2&                              xsi,
     BlitzVec3&                              x_surface_phys,
     DistanceType&                           distanceType)
-{  
+{
   double distance = 1.0e12;
   BlitzVec3 normal;
   const BlitzMat2x2 xsiBoundingBox = XFEM::getXsiBoundingBox(surfaceElement);
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
   CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
 
-  if ( (xsi(0) < xsiBoundingBox(0,0) || xsi(0) > xsiBoundingBox(0,1) ) && 
+  if ( (xsi(0) < xsiBoundingBox(0,0) || xsi(0) > xsiBoundingBox(0,1) ) &&
       (xsi(1) < xsiBoundingBox(1,0) || xsi(1) > xsiBoundingBox(1,1) )    )   {
     distanceType = ELEMENT_POINT;
 //    cout<<" point type xsi:" <<  xsi(0)<<", "<<xsi(1)<< endl;
   }
   else {
     if ( xsi(0)>=xsiBoundingBox(0,0) && xsi(0)<=xsiBoundingBox(0,1) && xsi(1)>=xsiBoundingBox(1,0) && xsi(1)<=xsiBoundingBox(1,1) ){
-      distanceType = ELEMENT_SURFACE;      
+      distanceType = ELEMENT_SURFACE;
 //      cout<<" surface type xsi:" <<  xsi(0)<<", "<<xsi(1)<< endl;
     }
     else {
-      distanceType = ELEMENT_LINE;   
+      distanceType = ELEMENT_LINE;
 //      cout<<" line type xsi:" <<  xsi(0)<<", "<<xsi(1)<< endl;
     }
   }
 
   switch (distanceType) {
-  case ELEMENT_SURFACE:    
+  case ELEMENT_SURFACE:
     distance = getSquaredElementDistance_Surface(surfaceElement, currentpositions,physCoord, xsi, x_surface_phys);
     break;
-  case ELEMENT_LINE: 
+  case ELEMENT_LINE:
     distance = getSquaredElementDistance_Line(surfaceElement, currentpositions,physCoord, xsi, x_surface_phys);
     break;
-  case ELEMENT_POINT:        
+  case ELEMENT_POINT:
     distance = getSquaredElementDistance_Point(surfaceElement, currentpositions,physCoord, xsi, x_surface_phys);
     break;
   }
   return distance;
-}  
+}
 
 
 double XFEM::getSquaredElementDistance_Surface(
@@ -366,7 +366,7 @@ double XFEM::getSquaredElementDistance_Surface(
   double distance = 1.0e12;
   BlitzVec3 normal(0.0,0.0,0.0);
   BlitzVec3 vector2minDistPoint(0.0,0.0,0.0);
-  
+
   // normal vector at position xsi
   BlitzVec3 eleNormalAtXsi;
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
@@ -377,7 +377,7 @@ double XFEM::getSquaredElementDistance_Surface(
   vector2minDistPoint(2) = X(2) - x_surface_phys(2);
   // absolute distance between point and surface
   distance = (vector2minDistPoint(0)*vector2minDistPoint(0) + vector2minDistPoint(1)*vector2minDistPoint(1) + vector2minDistPoint(2)*vector2minDistPoint(2));
-  return distance; 
+  return distance;
 }
 
 double XFEM::getSquaredElementDistance_Line(
@@ -393,12 +393,12 @@ double XFEM::getSquaredElementDistance_Line(
   // normal vector at position xsi
   BlitzVec3 eleNormalAtXsi;
   BlitzVec3 vector2minDistPoint(0.0,0.0,0.0);
-  
+
   if (xsi(0)>=1) xsi(0)=1;
   if (xsi(0)<=(-1)) xsi(0)=(-1);
   if (xsi(1)>=1) xsi(1)=1;
   if (xsi(1)<=(-1)) xsi(1)=(-1);
-  
+
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);
   // normal pointing away from the surface towards physCoord
@@ -407,7 +407,7 @@ double XFEM::getSquaredElementDistance_Line(
   vector2minDistPoint(2) = X(2) - x_surface_phys(2);
   // absolute distance between point and surface
   distance = (vector2minDistPoint(0)*vector2minDistPoint(0) + vector2minDistPoint(1)*vector2minDistPoint(1) + vector2minDistPoint(2)*vector2minDistPoint(2));
-  return distance; 
+  return distance;
 }
 
 double XFEM::getSquaredElementDistance_Point(
@@ -419,13 +419,13 @@ double XFEM::getSquaredElementDistance_Point(
 {
   double min_node_distance = 1.0e12;
   const DRT::Node* closestNode;
-  const DRT::Node*const* nodes = surfaceElement->Nodes();  
+  const DRT::Node*const* nodes = surfaceElement->Nodes();
   BlitzVec3 xNodePos;
   int numnode = surfaceElement->NumNode();
   for (int inode = 0; inode < numnode; ++inode)
   {
     BlitzVec3 vector;
-    const DRT::Node* surfaceElementNode = nodes[inode]; 
+    const DRT::Node* surfaceElementNode = nodes[inode];
     // node position in physical coordinates
     const BlitzVec3 x_node = currentpositions.find(surfaceElementNode->Id())->second;
 
@@ -441,15 +441,15 @@ double XFEM::getSquaredElementDistance_Point(
       min_node_distance = distance;
       xNodePos = x_node;
     }
-  }     
+  }
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
   CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, xNodePos, xsi);
   x_surface_phys = xNodePos;
-  return min_node_distance; 
+  return min_node_distance;
 }
 
 
-  
+
 BlitzMat2x2 XFEM::getXsiBoundingBox(const DRT::Element* surfaceElement){
   BlitzMat2x2 xsiBB;
   xsiBB(0,0)=(-1);
@@ -486,7 +486,7 @@ double XFEM::getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const Bl
 }
 
 bool XFEM::isContainedXinAABB(
-    const BlitzMat3x2& AABB, 
+    const BlitzMat3x2& AABB,
     const BlitzVec3& X)
 {
   const int nsd=3;
@@ -526,7 +526,7 @@ double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
       return 0;
     Area = Area * edge;
   }
-  return Area;  
+  return Area;
 }
 
 double XFEM::getVolume(
@@ -549,7 +549,7 @@ void XFEM::checkRoughGeoType(
            EleGeoType&                  eleGeoType)
 {
   const DRT::Element::DiscretizationType distype = element->Shape();
-  
+
   if(DRT::UTILS::getOrder(distype) ==1)
     eleGeoType = LINEAR;
   else if(DRT::UTILS::getOrder(distype)==2)
@@ -563,7 +563,7 @@ double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
   double maxDistance2=0.0;
   double AABB_X2=0.0;
   double AABB_Y2=0.0;
-  double AABB_Z2=0.0; 
+  double AABB_Z2=0.0;
 
   for(int x=0; x<2; x++)
   {
@@ -578,8 +578,8 @@ double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
         maxDistance2 = max(maxDistance2, (AABB_X2+AABB_Y2+AABB_Z2) );
       }
     }
-  } 
-  return sqrt(maxDistance2); 
+  }
+  return sqrt(maxDistance2);
 }
 
 //! gives AABB of an circle
@@ -591,11 +591,11 @@ BlitzMat3x2 XFEM::getAABBofSphere(const BlitzVec3& X, const double radius){
     AABB(dim, 1)= X(dim)+radius;
     AABB(dim, 0)= X(dim)-radius;
   }
-  return AABB; 
+  return AABB;
 }
 
 const DRT::Node* XFEM::getNodeAtXsi(
-    const DRT::Element*             surfaceElement, 
+    const DRT::Element*             surfaceElement,
     const std::map<int,BlitzVec3>&  currentpositions,
     const BlitzVec2&                xsi)
 {
@@ -605,37 +605,37 @@ const DRT::Node* XFEM::getNodeAtXsi(
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, X);
 //  cout << "X:" << X(0)<<", "<<X(1)<<", "<<X(2)<< endl;
 //  cout << "xsi:" << xsi(0)<<", "<<xsi(1)<< endl;
-  const DRT::Node*const* nodes = surfaceElement->Nodes();  
+  const DRT::Node*const* nodes = surfaceElement->Nodes();
   int numnode = surfaceElement->NumNode();
   for (int inode = 0; inode < numnode; ++inode)
   {
     BlitzVec3 vector;
-    const DRT::Node* surfaceElementNode = nodes[inode]; 
+    const DRT::Node* surfaceElementNode = nodes[inode];
     // node position in physical coordinates
     const BlitzVec3 x_node = currentpositions.find(surfaceElementNode->Id())->second;
 //    cout << "X_node:" << x_node(0)<<", "<<x_node(1)<<", "<<x_node(2)<< endl;
-    
-    if ( (fabs(X(0)-x_node(0))<=TOL) && 
+
+    if ( (fabs(X(0)-x_node(0))<=TOL) &&
          (fabs(X(1)-x_node(1))<=TOL) &&
          (fabs(X(2)-x_node(2))<=TOL) ){
       return surfaceElementNode;
     }
-  } 
+  }
   dserror ("there is no node at xsi ==> wrong tolerance?, bug??");
-  return NULL; 
+  return NULL;
 }
 
 double XFEM::biggestRadiusInAABB(
     const BlitzMat3x2&                      AABB, ///<bounding box
-    const BlitzVec3&                        X //point coords                  
+    const BlitzVec3&                        X //point coords
     )
 {
   double radius=0.0;
   for (int i=0; i<3; i++){
     radius = min(radius,fabs(X(i)-AABB(i,0)));
-    radius = min(radius,fabs(X(i)-AABB(i,1)));    
+    radius = min(radius,fabs(X(i)-AABB(i,1)));
   }
-
+  return radius;
 }
 
 

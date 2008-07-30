@@ -311,6 +311,10 @@ void* am4redef(
 void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
 
 
+/* to make sure we do not have a redefinition here as its also defined in dserror.H */
+#ifndef DSERROR_H
+#define DSERROR_H
+
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -339,10 +343,6 @@ void dsassert_func(
     char                string[]
     );
 
-/* to make sure we do not have a redefinition here as its also defined in dserror.H */
-#ifndef DSERROR_H
-#define DSERROR_H
-
 #define dsassert(test, string) dsassert_func(__FILE__, __LINE__, test, string)
 
 /*!
@@ -358,8 +358,6 @@ void dsassert_func(
   clauses without braces ({}).
  */
 #define dserror dslatest(__FILE__, __LINE__), dserror_func
-
-#endif 
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
@@ -429,6 +427,8 @@ void dsdeletearray(
  *----------------------------------------------------------------------*/
 void dstrace_to_err(void);
 
+#endif
+
 /*----------------------------------------------------------------------*
  | routine to initialise the cpu - time                  genk 05/02     |
  *----------------------------------------------------------------------*/
@@ -438,8 +438,6 @@ void ds_cputime_init(void);
  | routine to meassure the cpu - time                    genk 05/02     |
  *----------------------------------------------------------------------*/
 DOUBLE ds_cputime(void);
-
-
 
 /*----------------------------------------------------------------------*
  |  pss_fr.c                                             m.gee 11/01    |
