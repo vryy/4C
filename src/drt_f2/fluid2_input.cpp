@@ -226,6 +226,9 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     }
     break;
   }
+  case tri3: case tri6: 
+    gaussrule_ = intrule2D_undefined; // no input of Gauss rule for triangles
+    break;
   default:
     dserror("Reading of FLUID2 element failed: GP and set gaussrule");
   } // end switch distype
