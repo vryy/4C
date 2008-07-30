@@ -130,7 +130,12 @@ namespace MAT
     
   };
 
+void ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
+                                        const double time,
+                                        const int iter);
+
 }
+
 
 #endif /*CCADISCRET*/
 #endif /*ARTWALLREMOD_H_*/

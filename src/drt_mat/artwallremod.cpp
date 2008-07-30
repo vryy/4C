@@ -19,6 +19,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
+#include "contchainnetw.H" // for debug plotting
+
 
 extern struct _MATERIAL *mat;
 
@@ -377,10 +379,10 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
   
   // modulation function acc. Hariton: tan g = max lambda / 2nd max lambda
-  double newgamma = atan(lambda(3)/lambda(2));
+  double newgamma = atan(lambda(2)/lambda(1));
   
   // check whether delta gamma is larger than tolerance
-  const double gammatol = 0.0001;
+  const double gammatol = 0.01;
   if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
     remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
     return; // get out here
@@ -421,6 +423,86 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
   return out.str();
 }
 
+void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
+                                      const double time,
+                                      const int iter)
+{
+  std::stringstream filename;
+  filename << allfiles.outputfile_kenner << "_rem" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
+  std::ofstream f_system(filename.str().c_str());
+
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Time: " << time << " Iter: " << iter << " \" {" << endl;
+  for (int iele=0; iele<dis->NumMyColElements(); ++iele)
+  {
+    const DRT::Element* actele = dis->lColElement(iele);
+    
+    // build current configuration
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*dis,lm,lmowner);
+    RCP<const Epetra_Vector> disp = dis->GetState("displacement");
+    vector<double> mydisp(lm.size(),0);
+    //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    const int numnode = actele->NumNode();
+    const int numdof = 3;
+    blitz::Array<double,2> xyze(3, numnode);
+    for (int inode = 0; inode < numnode; ++inode)
+    {
+      xyze(0, inode) = actele->Nodes()[inode]->X()[0]+ mydisp[inode*numdof+0];
+      xyze(1, inode) = actele->Nodes()[inode]->X()[1]+ mydisp[inode*numdof+1];
+      xyze(2, inode) = actele->Nodes()[inode]->X()[2]+ mydisp[inode*numdof+2];
+    }
+    gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
+        1.0, xyze) << endl;
+    
+    vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
+    RCP<vector<vector<double> > > a1s = remo->Geta1();
+    RCP<vector<vector<double> > > a2s = remo->Geta2();
+    
+   
+    // material plot at gauss points
+    int ngp = remo->Geta1()->size();
+    for (int gp = 0; gp < ngp; ++gp){
+      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
+      
+      vector<vector<double> > fibgp(2);
+      fibgp.at(0) = a1s->at(gp);
+      fibgp.at(1) = a2s->at(gp); 
+      
+      for (int k=0; k<2; ++k){
+        
+        gmshfilecontent << "VP(" << scientific << point[0] << ",";
+        gmshfilecontent << scientific << point[1] << ",";
+        gmshfilecontent << scientific << point[2] << ")";
+        gmshfilecontent << "{" << scientific
+        <<        fibgp.at(k)[0] 
+        << "," << fibgp.at(k)[1] 
+        << "," << fibgp.at(k)[2]
+        << "};" << endl;
+        
+        // draw also negative direction to avoid "jumping"
+        gmshfilecontent << "VP(" << scientific << point[0] << ",";
+        gmshfilecontent << scientific << point[1] << ",";
+        gmshfilecontent << scientific << point[2] << ")";
+        gmshfilecontent << "{" << scientific
+        <<        -fibgp.at(k)[0] 
+        << "," << -fibgp.at(k)[1] 
+        << "," << -fibgp.at(k)[2]
+        << "};" << endl;
+
+      }
+    }
+  }
+  gmshfilecontent << "};" << endl;
+
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  
+  return;
+}
 
 
 #endif
