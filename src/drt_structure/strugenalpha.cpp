@@ -224,7 +224,7 @@ fsisurface_(NULL)
     vector<DRT::Condition*> potentialcond(0);
     discret_.GetCondition("Potential",potentialcond);
     if (potentialcond.size())
-      pot_man_=rcp(new DRT::PotentialManager(discret_));
+      pot_man_=rcp(new DRT::PotentialManager(Discretization(),discret_));
 
 
   // build damping matrix if desired

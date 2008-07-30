@@ -469,7 +469,7 @@ protected:
   /// surface stresses
   RCP<DRT::SurfStressManager>   surf_stress_man_;
 
-  /// stresses due to potentials
+  /// stresses due to molecular interaction potentials between structural surfaces
   RCP<DRT::PotentialManager>    pot_man_;
 
   // For a relative convergence check, reference norms have to be

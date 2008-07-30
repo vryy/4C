@@ -274,7 +274,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("Potential",potentialcond);
     if (potentialcond.size())
     {
-      potman_ = rcp(new DRT::PotentialManager(*discret_));
+      potman_ = rcp(new DRT::PotentialManager(Discretization(), *discret_));
     }
   }
 
