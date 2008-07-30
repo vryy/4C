@@ -277,10 +277,10 @@ void ADAPTER::XFluidImpl::Output()
 }
 
 void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
-    const RCP<Epetra_Vector>   displacementfield,
-    const RCP<Epetra_Vector>   vectorfield,
-    const string filestr,
-    const string name_in_gmsh
+    const Teuchos::RCP<Epetra_Vector>   displacementfield,
+    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const std::string filestr,
+    const std::string name_in_gmsh
     )
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
