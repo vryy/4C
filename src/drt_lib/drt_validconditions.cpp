@@ -649,7 +649,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Impedance condition
 
   Teuchos::RCP<ConditionDefinition> impedancebc =
-    Teuchos::rcp(new ConditionDefinition("IMPEDANCE CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF IMPEDANCE CONDITIONS",
                                          "ImpedanceCond",
                                          "Impedance boundary condition",
                                          DRT::Condition::ImpedanceCond,
@@ -659,9 +659,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
   impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung",
-    Teuchos::tuple<std::string>("lung","artery"),
-    Teuchos::tuple<std::string>("lung","artery"),
+    Teuchos::tuple<std::string>("lung","artery","windkessel"),
+    Teuchos::tuple<std::string>("lung","artery","windkessel"),
     true)));
+  AddNamedReal(impedancebc,"termradius");
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k1")));
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k2")));
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k3")));

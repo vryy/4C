@@ -169,7 +169,6 @@ protected:
   void UpdateResidual( RCP<Epetra_Vector> residual );
 
 private:
-
   /*!
   \brief calculate area at outflow boundary
   */
@@ -179,6 +178,11 @@ private:
     \brief determine impedances in frequency domain and time domain
   */
   void Impedances( double area, double density, double viscosity );
+
+  /*!
+    \brief determine impedances in frequency domain from windkessel model
+  */
+  std::complex<double> WindkesselImpedance(double k);
 
   /*!
   \brief compute tree and root impedance for given frequency for artery
@@ -232,8 +236,10 @@ private:
   int condid_;
   //! time period of present cyclic problem
   double period_;
+  //! truncation radius at leafs of the tree
+  double termradius_;
   //! condition type ( lung / artery / kidney / ... )
-  //! implemented so far: lung, artery
+  //! implemented so far: lung, artery, windkessel
   string treetype_;
 
   //! 'material' parameters required for artery tree

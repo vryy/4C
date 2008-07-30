@@ -245,6 +245,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   // get relevant data from impedance condition
   // ---------------------------------------------------------------------
   treetype_ = *((impedancecond[numcond])->Get<string>("tree"));
+  termradius_ = (impedancecond[numcond])->GetDouble("termradius");
   // 'material' parameters required for artery tree
   k1_ = (impedancecond[numcond])->GetDouble("k1");
   k2_ = (impedancecond[numcond])->GetDouble("k2");
@@ -374,11 +375,6 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
   eleparams.set<double>("Area calculation", 0.0);
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
-  eleparams.set("assemble matrix 1",false);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",false);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
 
   const string condstring("ImpedanceCond");
 
@@ -460,17 +456,17 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   map<const double, std::complex<double> > zstored;     // as argument
 
   // set up some geometry data
-  double radius = sqrt(area/PI);   // the radius to which the artery tree is connected
-  //double radius = 5.0;
-  //  double termradius = radius/5000; // the radius at which the artery tree is terminated
-  double termradius = 0.25; // the radius at which the artery tree is terminated
+  double radius = sqrt(area/PI);  // the radius to which the artery tree is connected
 
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
-    frequencydomain[0] = DCLungImpedance(0,radius,termradius,density,viscosity,zstored);
+    frequencydomain[0] = DCLungImpedance(0,radius,termradius_,density,viscosity,zstored);
 
   if ( treetype_ == "artery" )
-    frequencydomain[0] = DCArteryImpedance(0,radius,termradius,density,viscosity,zstored);
+    frequencydomain[0] = DCArteryImpedance(0,radius,termradius_,density,viscosity,zstored);
+
+  if ( treetype_ == "windkessel" )
+    frequencydomain[0] = WindkesselImpedance(0);
 
   // erase all DC entities from the stored data
   zstored.clear();
@@ -482,20 +478,19 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   //
   // note that we also need the complex conjugated ones, i.e.
   // Z(-w_1) = conj(Z(w_1)  to Z(-w_cyclesteps) = conj(Z(w_cyclesteps)
+   for (int k=1; k<cyclesteps_; k++)
+   {
+     int generation=0;
+     if ( treetype_ == "lung" )
+       frequencydomain[k] = LungImpedance(k,generation,radius,termradius_,density,viscosity,zstored);
 
-  for (int k=1; k<cyclesteps_; k++)
-  {
-    int generation=0;
-    if ( treetype_ == "lung" )
-      frequencydomain[k] = LungImpedance(k,generation,radius,termradius,density,viscosity,zstored);
+     if ( treetype_ == "artery" )
+       frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius_,density,viscosity,zstored);
 
-    if ( treetype_ == "artery" )
-      frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zstored);
-  //cout<<real(frequencydomain[k])<<endl;
-}
-//   if(myrank_ == 0)
-//     for (int k=0; k<cyclesteps_; k++)
-//       cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
+     if ( treetype_ == "windkessel" )
+       frequencydomain[k] = WindkesselImpedance(k);
+   }
+
 
   // --------------------------------------------------------------------------
   // inverse Fourier transform
@@ -513,16 +508,15 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   double imagpart = sin(constexp);
   std::complex<double> eiwt (realpart,imagpart);  // e^{i w_k / T}
 
-
   // now for all discrete times get the influence of all frequencies that have
   // been pre-computed
   for (int timefrac = 0; timefrac < cyclesteps_; timefrac++)
   {
-    for (int k=0; k<cyclesteps_; k++)
+    for (int k=0; k<cyclesteps_/2; k++)
       timedomain[timefrac] += pow(eiwt,timefrac*k) * frequencydomain[k];
 
     // and now the conjugated ones are added
-    for (int k=1; k<cyclesteps_; k++)
+    for (int k=1; k<cyclesteps_/2; k++)
       timedomain[timefrac] += pow(eiwt,-timefrac*k) * conj(frequencydomain[k]);
   }
 
@@ -533,6 +527,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
     if (abs(imag(timedomain[i])) > 1E-4 )
       cout << "error in imaginary part is = " << timedomain[i] << endl;
   }
+
   return;
 }
 
@@ -568,11 +563,6 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   eleparams.set("action","flowrate calculation");
   eleparams.set<double>("Outlet flowrate", 0.0);
   eleparams.set("total time",time);
-  eleparams.set("assemble matrix 1",false);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",false);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -610,7 +600,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 
   if (myrank_ == 0)
   {
-    cout << "Impedance condition Id : " << condid << " current Flowrate = " << parflowrate << endl;
+    cout << "Impedance condition Id: " << condid << " current Flowrate = " << parflowrate << endl;
   }
 
   return;
@@ -651,9 +641,8 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     // the convolution integral
     for (int j=0; j<cyclesteps_; j++)
     {
-      int qindex = ( flowratespos_+j ) % cyclesteps_;
+      int qindex = ( flowratespos_+j+1 ) % cyclesteps_;
       int zindex = -1-j+cyclesteps_;
-
       pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
     }
 
@@ -663,13 +652,6 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     ParameterList eleparams;
     // action for elements
     eleparams.set("action","Outlet impedance");
-
-    //Only assemble a single vector
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
 
     eleparams.set("total time",time);
     eleparams.set("delta time",dta);
@@ -691,6 +673,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 }//FluidImplicitTimeInt::OutflowBoundary
 
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -707,6 +690,40 @@ void FLD::UTILS::FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
   residual->Update(1.0,*impedancetbc_,1.0);
 }
 
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  windkessel impedance for wave number k                  chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*!
+determine impedance for every wave number from simple windkessel model
+
+this method is an alternative to the impedance calculation from arterial trees
+ */
+std::complex<double> FLD::UTILS::FluidImpedanceBc::WindkesselImpedance(double k)
+{
+  //  double pr = 0.1148;  // proximal resistance
+  //  double dr = 1.9352;  // distal resistance
+  //  double ct = 0.3660;  // capacitance
+
+  double pr = k1_;  // proximal resistance
+  double dr = k2_;  // distal resistance
+  double ct = k3_;  // capacitance
+
+  complex<double> imag(0,1), imp;
+
+  double omega = 2.0*PI*k/period_; // circular frequency
+
+  imp = ( pr+dr + imag*omega*ct*pr*dr ) / ( 1.0 + imag*omega*ct*dr );
+
+  return imp;
+}
 
 
 
@@ -755,8 +772,8 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
 {
   // general data
   double lscale = 50.0; // length to radius ratio
-  double alpha = 0.9;   // right daughter vessel ratio
-  double beta = 0.6;    // left daughter vessel ratio
+  double alpha = 0.50;   // right daughter vessel ratio
+  double beta = 0.85;    // left daughter vessel ratio
 
   // some auxiliary stuff
   complex<double> koeff, imag(0,1), cwave;
@@ -821,14 +838,6 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   //*************************************************************
   double compliance = 1.5*area / ( k1_ * exp(k2_*radius) + k3_ );
 
-  // alternativ
-  double h = radius/10;
-  double E = 0.4144;
-
-  //double compliance = 1.5*area*radius / (E*h);
-
-  //  cout << "compliance_Olufsen = " << compliance1 << "     my_Compliance = " << compliance << "    ratio = " << compliance/compliance1 <<endl;
-
   double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
@@ -880,8 +889,8 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
 {
   // general data
   double lscale = 50.0; // length to radius ratio
-  double alpha = 0.9;   // right daughter vessel ratio
-  double beta = 0.6;    // left daughter vessel ratio
+  double alpha = 0.50;   // right daughter vessel ratio
+  double beta = 0.85;    // left daughter vessel ratio
   double mu = viscosity * density; // dynamic (physical) viscosity
 
   // terminal resistance is assumed zero
@@ -936,9 +945,10 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   // ... and compute dc impedance at my upstream end!
   //*************************************************************
 
-  // calculate dc impedance of this, the present vessel
+  // calculate dc impedance of this, the present, vessel
   complex<double> zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
-  cout << "generation: " << generation << endl;
+  // DEBUG output
+  //cout << "generation: " << generation << endl;
   return zparentdc;
 }
 

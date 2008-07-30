@@ -2319,6 +2319,99 @@ plane normal).
 The meshes on both corresponding surfaces have to match exactly.
 
 
+\subsection{DESIGN SURF IMPEDANCE CONDITIONS}
+
+\begin{verbatim}
+--------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
+DSURF 2
+E 2 - 1 timeperiod 1000 artery termradius 5.0 2.0  -2.253  8.65E-2
+E 3 - 2 timeperiod 1000 artery termradius 5.0 2.0  -2.253  8.65E-2
+\end{verbatim}
+
+\subsubsection*{Input parameter explanation}
+An impedance boundary condition is designed to be used at outflow boundaries of
+vessel systems such as the airways or blood vessels. In the current implementation 
+one condition (one physical outflow surface) has to be one input line. Consequently
+the outflow surface has to be one surface. This is usually the case if you define your
+nodal clouds properly.
+\par
+The parameters after the ``-'' are the following:
+\begin{itemize}
+\item Integer number, condition Id
+\item phrase \texttt{timeperiod} followed by the period lenght given in the time 
+      unit used
+\item type of boundary condition. Possible strings are
+    \begin{itemize}
+      \item \texttt{artery}: Olufsen artery tree condition
+      \item \texttt{lung}: ask Andrew for details
+      \item \texttt{windkessel}: three-parameter windkessel model
+    \end{itemize}
+\item phrase \texttt{termradius} followed by the terminal radius of the tree given
+      in the length unit used.
+\end{itemize}
+The remaining parameters depend upon the type of boundary condition.
+\begin{itemize}
+ \item case: Olufsen artery tree model; three parameters defining the compliance
+       of the single vessels. These parameters are called $k_1$, $k_2$ and $k_3$
+       in~[1]or~[2]. The values that can be found there
+       are
+       \begin{align*}
+        k_1 = 2.0 \times 10^7 \, \frac{\mathrm{g}}{\mathrm{s^2\, cm}} \qquad
+        k_2 = -22.53 \,\frac{1}{\mathrm{cm}} \qquad
+        k_3 = 8.65 \times 10^5 \, \frac{\mathrm{g}}{\mathrm{s^2\, cm}}
+       \end{align*}
+       These values have to be fit to the units used!
+ \item case: lung model; Parameters are unused and not read
+ \item case: windkessel model; three parameters defining the resistances and the
+       compliance (capacitance) of the windkessel. Ordered as follows:
+       \begin{itemize}
+         \item proximal resistance, e.g. $1148\,\frac{\mathrm{g}}{\mathrm{s\, cm^4}}$
+         \item distal resistance, e.g. $19352\,\frac{\mathrm{g}}{\mathrm{s\, cm^4}}$
+         \item capacitance, e.g. $0.0000366\,\frac{\mathrm{s^2\,cm^4}}{\mathrm{g}}$
+       \end{itemize}
+       The resistances and the capacitanct have to be adjusted t the respective organ
+       or tree and have to be transfered to the unit system used!
+\end{itemize}
+
+\paragraph{The idea} behind the different models can be found in [1] and [2] for the artery
+tree model while some remarks on the popular windkessel model can for example be taken from [3].
+Explanations for the lung impedance model have to be requested from Andrew Comerford.
+
+\paragraph{Current problems} with the present implementation are:
+\begin{itemize}
+  \item While aparently correct the \texttt{artery} implementation of the Olufsen
+        artery tree type of impedance system does rarely give the proper phase 
+        shift in the convoluted pressure function over time. Frequently the pressure
+        tends to follow the flowrate quite closely. This seems to be due to some 
+        unknown `miracle parameters'. Improvements are strongly required!
+  \item The \texttt{windkessel} implementation does much better with respect to 
+        the pressure but suffers from unknown parameters. It is very hard to guess 
+        those somewhat unphysical parameters. In the best case you have some data to 
+        fit your parameters to.
+  \item A large problem is encountered when more than one outlet has an impedance
+        condition assigned. In this case flow from one outlet to the others is 
+        observed. This artificial cross-flow oscillates between the outlets while 
+        it increases in magnitude until the thing crashes.
+        One of the possible reasons seems to be the time lag of the boundary
+        pressure.
+\end{itemize}
+
+\subsubsection*{References}
+%
+\begin{tabular}{cl}
+$[1]$ & Mette S. Olufsen: Structured tree outflow condition for blood flow in larger
+systematic arteries.\\ & \textit{American Physiological Society}, 1999. \\
+$[2]$ &
+Mette S. Olufsen, Charles S. Peskin, Won Yong Kim, Erik M. Pedersen, Ali Nadim and Jesper Larsen:\\
+&Numerical simulation and experimental validation of blood flow in arteries with structured-tree
+outflow\\ & conditions. \textit{Annals of Biomedical Engineering} \textbf{28}:1281-1299, 2000. \\
+$[3]$ &
+Mette S. Olufsen, Ali Nadim and Lewis A. Lipsitz: Dynamics of cerebral blood flow regulation \\
+&explained using a lumped parameter model. \textit{Am J Physiol Regulatory Integrative Comp Physiol}\\
+&\textbf{282}:R611-R622, 2002.
+\end{tabular}
+
+
 \subsection{DNODE}
 \begin{verbatim}
 -----------------------------------------------DNODE-NODE TOPOLOGY
