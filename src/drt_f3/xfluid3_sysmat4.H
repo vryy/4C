@@ -136,14 +136,14 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatDomain4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1& evelnp,
     const M1& evelnp_hist,
     const V1& eprenp,
     const M2& etau,
-    const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-    const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+    const Teuchos::RCP<Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+    const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
     const struct _MATERIAL*           material,      ///< fluid material
     const double                      time,          ///< current time (pseudotime for stationary formulation)
     const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
@@ -164,7 +164,7 @@ static void SysmatDomain4(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    blitz::TinyMatrix<double,nsd,numnode> xyze;
+    static blitz::TinyMatrix<double,nsd,numnode> xyze;
     DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
@@ -178,8 +178,6 @@ static void SysmatDomain4(
     // flag for higher order elements
     const bool higher_order_ele = XFEM::isHigherOrderElement<DISTYPE>();
     //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
-    
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     
@@ -236,6 +234,8 @@ static void SysmatDomain4(
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -281,9 +281,8 @@ static void SysmatDomain4(
             XFEM::BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
-            //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            BlitzMat3x3 xjm;
+            static BlitzMat3x3 xjm;
             XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
@@ -1348,21 +1347,21 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatBoundary4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1& evelnp,
     const M1& evelnp_hist,
     const V1& eprenp,
     const M2& etau,
-    const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-    const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+    const Teuchos::RCP<Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+    const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
     const struct _MATERIAL*           material,      ///< fluid material
     const double                      time,          ///< current time (pseudotime for stationary formulation)
     const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
     const bool                        newton,        ///< full Newton or fixed-point-like
-    const bool                        pstab,         ///< flag for stabilisation
-    const bool                        supg,          ///< flag for stabilisation
-    const bool                        cstab,         ///< flag for stabilisation
+    const bool                        pstab,         ///< flag for stabilization
+    const bool                        supg,          ///< flag for stabilization
+    const bool                        cstab,         ///< flag for stabilization
     const bool                        instationary,  ///< switch between stationary and instationary formulation
     const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
 )
@@ -1483,7 +1482,7 @@ static void SysmatBoundary4(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            BlitzMat3x2 dxyzdrs;
+            static BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1498,7 +1497,7 @@ static void SysmatBoundary4(
             }
             
             // compute covariant metric tensor G for surface element (2x2)
-            BlitzMat2x2 metric;
+            static BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
             XFEM::BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
@@ -1612,9 +1611,6 @@ static void SysmatBoundary4(
                     interface_velint(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
                 }
             }
-            
-            // get pressure
-            //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
@@ -1730,12 +1726,12 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 static void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+        const Teuchos::RCP<Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+        const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         EpMat&                            estif,         ///< element matrix to calculate
         EpVec&                            eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
@@ -1794,14 +1790,14 @@ static void Sysmat4(
 void callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
+        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
-        const RCP<Epetra_Vector>          ivelcol,
-        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        EpMat&                         estif,
-        EpVec&                         eforce,
+        const Teuchos::RCP<Epetra_Vector> ivelcol,
+        const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
+        EpMat&                            estif,
+        EpVec&                            eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt

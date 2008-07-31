@@ -48,7 +48,7 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
     {
     case integrate_Shapefunction:
     {
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       std::vector<double> mydispnp;
 
       dispnp = discretization.GetState("dispnp");

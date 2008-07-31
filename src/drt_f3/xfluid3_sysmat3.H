@@ -129,12 +129,12 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 static void Sysmat3(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+        const Teuchos::RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
+        const Teuchos::RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
         EpMat&                         estif,         ///< element matrix to calculate
         EpVec&                         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
@@ -1876,14 +1876,14 @@ static void Sysmat3(
 void callSysmat3(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
+        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
-        const RCP<Epetra_Vector>          ivelcol,
-        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        EpMat&                         estif,
-        EpVec&                         eforce,
+        const Teuchos::RCP<Epetra_Vector> ivelcol,
+        const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
+        EpMat&                            estif,
+        EpVec&                            eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt

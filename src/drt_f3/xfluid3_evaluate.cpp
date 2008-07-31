@@ -98,7 +98,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
-  const RCP<MAT::Material> mat = Material();
+  const Teuchos::RCP<MAT::Material> mat = Material();
   if (mat->MaterialType()!=m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
@@ -126,10 +126,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             break;
         
         // need current velocity/pressure and history vector
-        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
         if (velnp==null)
             dserror("Cannot get state vector 'velnp'");
-        RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
+        Teuchos::RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
         if (hist==null)
             dserror("Cannot get state vectors 'hist'");
 
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               break;
           
           // need current velocity/pressure 
-          RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+          Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
           if (velnp==null)
               dserror("Cannot get state vector 'velnp'");
 
@@ -333,7 +333,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       case store_xfem_info:
       {
           // get access to global dofman
-          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+          const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager",null);
           if (globaldofman == null)
             dserror("nope, I need a DofManager!");
           
@@ -343,7 +343,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
           
           // store pointer to interface handle
-          ih_ = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
           break;
       }
       default:
