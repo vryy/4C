@@ -29,7 +29,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
- |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
     const Teuchos::RCP<DRT::Discretization>  xfemdis, 
@@ -95,7 +94,6 @@ XFEM::InterfaceHandle::InterfaceHandle(
   
 }
 /*----------------------------------------------------------------------*
- |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::~InterfaceHandle()
 {
@@ -127,7 +125,6 @@ void XFEM::InterfaceHandle::FillCurrentCutterPositionMap(
 }
 
 /*----------------------------------------------------------------------*
- |  clean                                                       ag 11/07|
  *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() const
 {
@@ -163,7 +160,6 @@ std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() cons
 }
 
 /*----------------------------------------------------------------------*
- |  transform  to a string                                      ag 11/07|
  *----------------------------------------------------------------------*/
 std::string XFEM::InterfaceHandle::toString() const
 {
@@ -172,7 +168,6 @@ std::string XFEM::InterfaceHandle::toString() const
 }
 
 /*----------------------------------------------------------------------*
- |  transform  to a string                                      ag 11/07|
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
@@ -268,7 +263,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           int closestElementId;
           double distance;
  
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
+          //const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
           
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
@@ -290,7 +285,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   return;
 }
 
-//! read Input file for search tree parameters (tree.cfg)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandle::readTreeParameters(
     int& MAX_TREEDEPTH, ///> max tree depth
     int& ELEMENTS_USED_FOR_OVERLAP_CHECK, ///> value for elements used for overlap check
@@ -324,7 +320,7 @@ void XFEM::InterfaceHandle::readTreeParameters(
     }
     if(line.find("MAX_OVERLAP_ALLOWED")!=string::npos){
 //      cout << "set ELEMENTS_USED_FOR_OVERLAP_CHECK to " << atof(line.substr((line.find("=")+1)).c_str())<< endl;
-      ELEMENTS_USED_FOR_OVERLAP_CHECK = atof(line.substr((line.find("=")+1)).c_str());
+      ELEMENTS_USED_FOR_OVERLAP_CHECK = atoi(line.substr((line.find("=")+1)).c_str());
     }
   } 
   fin.close();
@@ -337,7 +333,8 @@ void XFEM::InterfaceHandle::readTreeParameters(
 }
 
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
     const int gid,
     const DRT::Element::DiscretizationType distype
@@ -354,6 +351,9 @@ XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
   return tmp->second;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
     const int gid
 ) const
@@ -367,6 +367,9 @@ XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
   return tmp->second;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementIntersected(
     const int element_gid
 ) const
@@ -383,7 +386,6 @@ bool XFEM::InterfaceHandle::ElementIntersected(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
 int XFEM::PositionWithinCondition(
     const BlitzVec3&                  x_in,
@@ -396,7 +398,6 @@ int XFEM::PositionWithinCondition(
 }
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
 int XFEM::PositionWithinCondition(
     const BlitzVec3&                  x_in,
@@ -430,7 +431,6 @@ int XFEM::PositionWithinCondition(
 }
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 int XFEM::PositionWithinConditionBruteForce(
     const BlitzVec3&                  x_in,
@@ -495,7 +495,6 @@ int XFEM::PositionWithinConditionBruteForce(
 }
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
 int XFEM::PositionWithinConditionTree(
     const BlitzVec3&                  x_in,
@@ -517,7 +516,6 @@ int XFEM::PositionWithinConditionTree(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinAnyInfluencingCondition(
     const BlitzVec3&                  x_in,
