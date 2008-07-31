@@ -46,7 +46,6 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimada.H"
 #include "strtimada_zienxie.H"
-#include "strtimada_ab2.H"
 #include "strtimada_joint.H"
 
 
