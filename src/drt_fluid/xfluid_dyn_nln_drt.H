@@ -26,35 +26,6 @@ Maintainer: Axel Gerstenberger
 #define XFLUID_DYN_NLN_DRT_H
 
 
-
-/* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-#ifdef __cplusplus /* stuff which is c++ specific */
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
-#include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_io/io.H"
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-#include "../fluid_full/fluid_prototypes.h"
-}
-
-#endif /* end of #ifdef __cplusplus */
-/* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-
-
-
-
 /* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 #ifdef __cplusplus
 extern "C"
@@ -63,9 +34,15 @@ extern "C"
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 
 
-
-
-/* headers and prototypes of functions also acessible from c */
+/*!
+ * Main control routine for fluid including various solvers:
+ *
+ *        o instationary one-step-theta
+ *        o instationary BDF2
+ *        o instationary generalized-alpha
+ *        o stationary
+ *
+ */
 void xdyn_fluid_drt();
 
 

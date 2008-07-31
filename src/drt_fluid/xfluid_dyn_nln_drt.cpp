@@ -71,15 +71,7 @@ extern struct _SOLVAR  *solv;
 
 
 
-/*----------------------------------------------------------------------*
- * Main control routine for fluid including various solvers:
- *
- *        o instationary one-step-theta
- *        o instationary BDF2
- *        o instationary generalized-alpha
- *        o stationary
- *
- *----------------------------------------------------------------------*/
+
 void xdyn_fluid_drt()
 {
   std::cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
@@ -87,9 +79,9 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> fluiddis = null;
+  Teuchos::RCP<DRT::Discretization> fluiddis = null;
   fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-  RCP<DRT::Discretization> soliddis = null;
+  Teuchos::RCP<DRT::Discretization> soliddis = null;
   soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
   const int fmyrank = fluiddis->Comm().MyPID();
@@ -115,7 +107,7 @@ void xdyn_fluid_drt()
       solidoutput.WriteMesh(0,0.0);
       // solid displacement (to be removed)
       const Epetra_Map* soliddofrowmap = soliddis->DofRowMap();
-      RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddofrowmap,true);
+      Teuchos::RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddofrowmap,true);
 
       solidoutput.NewStep    (0,0.0);
       soliddispnp->PutScalar(0.0);
@@ -144,7 +136,7 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  Teuchos::RCP<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,fluiddis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,fluidsolv);
   fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
@@ -155,7 +147,7 @@ void xdyn_fluid_drt()
   if (getIntegralValue<int>(fdyn,"SIMPLER"))
   {
     ParameterList& p = solveparams->sublist("SIMPLER");
-    RCP<ParameterList> params = rcp(&p,false);
+    Teuchos::RCP<ParameterList> params = rcp(&p,false);
     LINALG::Solver s(params,fluiddis->Comm(),allfiles.out_err);
     s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
   }
@@ -172,7 +164,7 @@ void xdyn_fluid_drt()
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
   // ------------------------------------------------ basic scheme, i.e.
-  // --------------------- solving nonlinear or linearised flow equation
+  // --------------------- solving nonlinear or linearized flow equation
   fluidtimeparams.set<int>("type of nonlinear solve" ,
 					 Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
@@ -185,7 +177,7 @@ void xdyn_fluid_drt()
   fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
 
   // ---------------------------------------------- nonlinear iteration
-  // set linearisation scheme
+  // set linearization scheme
   fluidtimeparams.set<bool>("Use reaction terms for linearisation",
                            Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
   // maximum number of nonlinear iteration steps
@@ -194,7 +186,7 @@ void xdyn_fluid_drt()
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
   fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
-  // set adaptoive linear solver tolerance
+  // set adaptive linear solver tolerance
   fluidtimeparams.set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams.set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
 

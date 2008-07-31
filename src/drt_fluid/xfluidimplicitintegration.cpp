@@ -55,11 +55,12 @@ extern struct _FILES  allfiles;
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
-		RCP<DRT::Discretization> actdis,
-		LINALG::Solver&       solver,
-		ParameterList&        params,
-		IO::DiscretizationWriter& output,
-		const bool alefluid) :
+    Teuchos::RCP<DRT::Discretization> actdis,
+    LINALG::Solver&                   solver,
+    ParameterList&                    params,
+    IO::DiscretizationWriter&         output,
+    const bool                        alefluid
+    ) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
@@ -139,19 +140,8 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Start the time integration. Allows                                   |
- |                                                                      |
- |  o starting steps with different algorithms                          |
- |  o the "standard" time integration                                   |
- |                                                           gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Integrate(
-        RCP<DRT::Discretization> cutterdiscret
+    Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
 {
   // bound for the number of startsteps
@@ -215,15 +205,8 @@ void FLD::XFluidImplicitTimeInt::Integrate(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | contains the time loop                                    gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::TimeLoop(
-        RCP<DRT::Discretization> cutterdiscret
+    Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
 {
   // time measurement: time loop
@@ -289,38 +272,7 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
-    //
-    // One-step-Theta: (step>1)
-    //
-    //  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_
-    //  "(n+1)"
-    //
-    //  velnm_ =veln_
-    //  veln_  =velnp_
-    //
-    // BDF2:           (step>1)
-    //
-    //               2*dt(n)+dt(n-1)		  dt(n)+dt(n-1)
-    //  accn_   = --------------------- velnp_ - --------------- veln_
-    //             dt(n)*[dt(n)+dt(n-1)]	  dt(n)*dt(n-1)
-    //
-    //                     dt(n)
-    //           + ----------------------- velnm_
-    //             dt(n-1)*[dt(n)+dt(n-1)]
-    //
-    //
-    //  velnm_ =veln_
-    //  veln_  =velnp_
-    //
-    // BDF2 and  One-step-Theta: (step==1)
-    //
-    // The given formulas are only valid from the second timestep. In the
-    // first step, the acceleration is calculated simply by
-    //
-    //  accn_  = (velnp_-veln_) / (dt)
-    //
     // -------------------------------------------------------------------
-
     TimeUpdate();
 
     // time measurement: output and statistics
@@ -361,13 +313,6 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | setup the variables to do a new time step                 u.kue 06/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
@@ -385,29 +330,11 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | setup the variables to do a new nonlinear iteration      a.ger 064/08|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 {
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
-  //
-  //
-  //         One-step-Theta:
-  //
-  //                 hist_ = veln_ + dta*(1-Theta)*accn_
-  //
-  //
-  //         BDF2: for constant time step:
-  //
-  //                   hist_ = 4/3 veln_ - 1/3 velnm_
-  //
   // -------------------------------------------------------------------
   TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
       state_.veln_, state_.velnm_, state_.accn_,
@@ -416,13 +343,6 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
-  //
-  //                     +-                                      -+
-  //                     | /     dta \          dta  veln_-velnm_ |
-  // velnp_ =veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
-  //                     | \     dtp /          dtp     dtp       |
-  //                     +-                                      -+
-  //
   // -------------------------------------------------------------------
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
@@ -481,19 +401,12 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | contains the nonlinear iteration loop                     gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
-        RCP<DRT::Discretization>  cutterdiscret,
-        const Epetra_Vector&      idispcol,
-        RCP<Epetra_Vector>        ivelncol,
-        RCP<Epetra_Vector>        iaccncol
-        )
+    Teuchos::RCP<DRT::Discretization>  cutterdiscret,
+    const Epetra_Vector&      idispcol,
+    Teuchos::RCP<Epetra_Vector>        ivelncol,
+    Teuchos::RCP<Epetra_Vector>        iaccncol
+    )
 {
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -501,14 +414,14 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
-  //cout << "tree after interfaceconstructor" << endl;
-  //ih->PrintTreeInformation(step_);
+  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
+//  cout << "tree after interfaceconstructor" << endl;
+//  ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
   ihForOutput_ = ih;
 
   // apply enrichments
-  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -651,21 +564,14 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | contains the nonlinear iteration loop                     gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::NonlinearSolve(
-        RCP<DRT::Discretization> cutterdiscret,
-        RCP<Epetra_Vector>       idispcol,
-        RCP<Epetra_Vector>       ivelcol,
-        RCP<Epetra_Vector>       iforcecol,
-        RCP<Epetra_Vector>       ivelncol,
-        RCP<Epetra_Vector>       iaccncol
-        )
+    Teuchos::RCP<DRT::Discretization> cutterdiscret,
+    Teuchos::RCP<Epetra_Vector>       idispcol,
+    Teuchos::RCP<Epetra_Vector>       ivelcol,
+    Teuchos::RCP<Epetra_Vector>       iforcecol,
+    Teuchos::RCP<Epetra_Vector>       ivelncol,
+    Teuchos::RCP<Epetra_Vector>       iaccncol
+    )
 {
 
   ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol,ivelncol,iaccncol);
@@ -1054,13 +960,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | build linear system matrix and rhs                        u.kue 11/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
@@ -1132,14 +1031,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                           gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::TimeUpdate()
 {
 
@@ -1156,13 +1047,6 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | output of solution vector to binio                        gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Output()
@@ -1197,7 +1081,7 @@ void FLD::XFluidImplicitTimeInt::Output()
     if (writestresses_)
     {
       dserror("not supported, yet");
-      RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
       output_.WriteVector("traction",traction);
     }
 
@@ -1223,7 +1107,7 @@ void FLD::XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
       output_.WriteVector("traction",traction);
     }
 
@@ -1239,13 +1123,6 @@ void FLD::XFluidImplicitTimeInt::Output()
 } // FluidImplicitTimeInt::Output
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |                                                             kue 04/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
@@ -1266,13 +1143,6 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | output of solution vector to gmsh                          acki 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::OutputToGmsh()
@@ -1605,10 +1475,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 }
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
-    const RCP<Epetra_Vector>   vectorfield,
-    const string filestr,
-    const string name_in_gmsh,
+    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const std::string filestr,
+    const std::string name_in_gmsh,
     const bool plot_to_gnuplot
     ) const
 {
@@ -1749,18 +1621,11 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  set initial flow field for test cases                    gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
-        RCP<DRT::Discretization> cutterdiscret,
-  int whichinitialfield,
-  int startfuncno
-  )
+    Teuchos::RCP<DRT::Discretization> cutterdiscret,
+    int whichinitialfield,
+    int startfuncno
+    )
 {
   // create zero displacement vector to use initial position of interface
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
@@ -1883,13 +1748,6 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | evaluate error for test cases with analytical solutions   gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
@@ -1957,16 +1815,9 @@ void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | solve stationary fluid problem                              gjb 10/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
-        RCP<DRT::Discretization> cutterdiscret
-        )
+    Teuchos::RCP<DRT::Discretization> cutterdiscret
+    )
 {
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
@@ -2071,13 +1922,6 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::CalcStresses()
 {
   string condstring("FluidStressCalc");
@@ -2112,15 +1956,8 @@ FLD::XFluidImplicitTimeInt::~XFluidImplicitTimeInt()
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | LiftDrag                                                  chfoe 11/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
-\brief calculate lift&drag forces and angular momenta
+\brief calculate lift&drag forces and angular moments
 
 Lift and drag forces are based upon the right hand side true-residual entities
 of the corresponding nodes. The contribution of the end node of a line is entirely
@@ -2130,12 +1967,12 @@ Idea of this routine:
 
 create
 
-map< label, set<DRT::Node*> >
+map< label, std::set<DRT::Node*> >
 
 which is a set of nodes to each L&D Id
 nodal forces of all the nodes within one set are added to one L&D force
 
-Notice: Angular moments obtained from lift&drag forces currently refere to the
+Notice: Angular moments obtained from lift&drag forces currently refer to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
@@ -2273,8 +2110,8 @@ void FLD::XFluidImplicitTimeInt::LiftDrag() const
 
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
 {
   ParameterList eleparams;
@@ -2298,12 +2135,14 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FLD::XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                                          const LINALG::MultiMapExtractor& domainmaps,
-                                          const LINALG::MultiMapExtractor& rangemaps,
-                                          bool splitmatrix)
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::XFluidImplicitTimeInt::UseBlockMatrix(
+    Teuchos::RCP<std::set<int> > condelements,
+    const LINALG::MultiMapExtractor& domainmaps,
+    const LINALG::MultiMapExtractor& rangemaps,
+    bool splitmatrix
+    )
 {
   dserror("not tested");
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;

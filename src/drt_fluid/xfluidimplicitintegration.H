@@ -51,7 +51,6 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_TimeMonitor.hpp>
 
 
-using namespace Teuchos;
 
 namespace FLD
 {
@@ -73,7 +72,7 @@ public:
 
   */
   explicit XFluidImplicitTimeInt(
-      RCP<DRT::Discretization>  dis,
+      Teuchos::RCP<DRT::Discretization>  dis,
       LINALG::Solver&           solver,
       ParameterList&            params,
       IO::DiscretizationWriter& output,
@@ -91,24 +90,24 @@ public:
 
   */
   void Integrate(
-          RCP<DRT::Discretization> cutterdiscret
-          );
+      Teuchos::RCP<DRT::Discretization> cutterdiscret
+      );
 
   /*!
   \brief Do time integration (time loop)
 
   */
   void TimeLoop(
-          RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-          );
+      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      );
 
   /*!
   \brief Solve stationary problem
 
   */
   void SolveStationaryProblem(
-          RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-          );
+      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      );
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -122,23 +121,23 @@ public:
 
   */
   void NonlinearSolve(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution
-          RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
-          RCP<Epetra_Vector>       itruerescol,       ///< interface residual with coloumn distribution
-          RCP<Epetra_Vector>       ivelncol = null,
-          RCP<Epetra_Vector>       iaccncol = null
-          );
+      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
+      Teuchos::RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution
+      Teuchos::RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
+      Teuchos::RCP<Epetra_Vector>       itruerescol,       ///< interface residual with coloumn distribution
+      Teuchos::RCP<Epetra_Vector>       ivelncol = null,
+      Teuchos::RCP<Epetra_Vector>       iaccncol = null
+      );
 
   /*!
   \brief compute Interface
   */
   void ComputeInterfaceAndSetDOFs(
-          RCP<DRT::Discretization>  cutterdiscret,
-          const Epetra_Vector&      idispcol,
-          RCP<Epetra_Vector>        ivelncol = null,
-          RCP<Epetra_Vector>        iaccncol = null
-          );
+      Teuchos::RCP<DRT::Discretization>  cutterdiscret,
+      const Epetra_Vector&      idispcol,
+      Teuchos::RCP<Epetra_Vector>        ivelncol = null,
+      Teuchos::RCP<Epetra_Vector>        iaccncol = null
+      );
 
   /*!
     \brief build linear system matrix and rhs
@@ -153,6 +152,45 @@ public:
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next
          timestep.
+  <pre>
+  
+    // -------------------------------------------------------------------
+    //                         update solution
+    //        current solution becomes old solution of next timestep
+    //
+    // One-step-Theta: (step>1)
+    //
+    //  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_
+    //  "(n+1)"
+    //
+    //  velnm_ =veln_
+    //  veln_  =velnp_
+    //
+    // BDF2:           (step>1)
+    //
+    //               2*dt(n)+dt(n-1)              dt(n)+dt(n-1)
+    //  accn_   = --------------------- velnp_ - --------------- veln_
+    //             dt(n)*[dt(n)+dt(n-1)]          dt(n)*dt(n-1)
+    //
+    //                     dt(n)
+    //           + ----------------------- velnm_
+    //             dt(n-1)*[dt(n)+dt(n-1)]
+    //
+    //
+    //  velnm_ =veln_
+    //  veln_  =velnp_
+    //
+    // BDF2 and  One-step-Theta: (step==1)
+    //
+    // The given formulas are only valid from the second timestep. In the
+    // first step, the acceleration is calculated simply by
+    //
+    //  accn_  = (velnp_-veln_) / (dt)
+    //
+    // -------------------------------------------------------------------
+  
+  </pre>
+         
   */
   void TimeUpdate();
 
@@ -177,7 +215,7 @@ public:
    * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
    */
   void PlotVectorFieldToGmsh(
-      const RCP<Epetra_Vector>   vectorfield,
+      const Teuchos::RCP<Epetra_Vector>   vectorfield,
       const std::string filestr,
       const std::string name_in_gmsh,
       const bool plot_to_gnuplot
@@ -188,10 +226,10 @@ public:
 
   */
   void SetInitialFlowField(
-    RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-    int whichinitialfield,
-    int startfuncno
-    );
+      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
+      int whichinitialfield,
+      int startfuncno
+      );
 
   /*!
   \brief calculate error between a analytical solution and the
@@ -264,10 +302,12 @@ public:
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
   /// switch fluid field to block matrix
-  void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                      const LINALG::MultiMapExtractor& domainmaps,
-                      const LINALG::MultiMapExtractor& rangemaps,
-                      bool splitmatrix=true);
+  void UseBlockMatrix(
+      Teuchos::RCP<std::set<int> > condelements,
+      const LINALG::MultiMapExtractor& domainmaps,
+      const LINALG::MultiMapExtractor& rangemaps,
+      bool splitmatrix=true
+      );
 
 protected:
 
@@ -278,10 +318,11 @@ protected:
 
   //! @name general algorithm parameters
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
-  LINALG::Solver&               solver_;
-  ParameterList&                params_;
-  IO::DiscretizationWriter&     output_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
+  LINALG::Solver&                        solver_;
+  ParameterList&                         params_;
+  IO::DiscretizationWriter&              output_;
+  
   //! the processor ID from the communicator
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -326,58 +367,60 @@ protected:
   XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
 
   //! store interface information for output
-  RCP<XFEM::InterfaceHandle> ihForOutput_;
+  Teuchos::RCP<XFEM::InterfaceHandle> ihForOutput_;
   //! store dof distribution information for output
-  RCP<XFEM::DofManager>      dofmanagerForOutput_;
+  Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
   //! store dof distribution information for output
   DRT::DofSet                dofset_out_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
-  RCP<Epetra_Vector>    dirichtoggle_;
+  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
 
   /// toggle vector indicating which dofs DON'T have Dirichlet BCs
-  RCP<Epetra_Vector>    invtoggle_;
+  Teuchos::RCP<Epetra_Vector>    invtoggle_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RCP<Epetra_Vector>    zeros_;
+  Teuchos::RCP<Epetra_Vector>    zeros_;
 
   /// the vector containing body and surface forces
-  RCP<Epetra_Vector>    neumann_loads_;
+  Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
   /// (standard) residual vector (rhs for the incremental form),
-  RCP<Epetra_Vector>    residual_;
+  Teuchos::RCP<Epetra_Vector>    residual_;
 
   /// robinrhs_: additional rhs when using robin-BC
-  RCP<Epetra_Vector>    robinrhs_;
+  Teuchos::RCP<Epetra_Vector>    robinrhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
-  RCP<Epetra_Vector>    trueresidual_;
+  Teuchos::RCP<Epetra_Vector>    trueresidual_;
 
   /// Nonlinear iteration increment vector
-  RCP<Epetra_Vector>    incvel_;
+  Teuchos::RCP<Epetra_Vector>    incvel_;
 
   /// this struct holds all state vectors needed for time integration
+  ///
+  /// they need to be written for restart
   struct State
   {
-  //! @name accelerations at time n and n-1
-  RCP<Epetra_Vector>    accn_;
-  RCP<Epetra_Vector>    accnm_;
-  //@}
+    //! @name accelerations at time n and n-1
+    Teuchos::RCP<Epetra_Vector>    accn_;
+    Teuchos::RCP<Epetra_Vector>    accnm_;
+    //@}
 
-  //! @name velocities and pressures at time n+1, n and n-1
-  RCP<Epetra_Vector>    velnp_;
-  RCP<Epetra_Vector>    veln_;
-  RCP<Epetra_Vector>    velnm_;
-  //@}
+    //! @name velocities and pressures at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector>    velnp_;
+    Teuchos::RCP<Epetra_Vector>    veln_;
+    Teuchos::RCP<Epetra_Vector>    velnm_;
+    //@}
 
   } state_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
-  RCP<Epetra_Vector>    hist_;
+  Teuchos::RCP<Epetra_Vector>    hist_;
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
