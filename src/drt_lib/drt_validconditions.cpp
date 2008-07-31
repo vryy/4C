@@ -306,6 +306,47 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(lineperiodic);
   condlist.push_back(surfperiodic);
 
+
+  /*--------------------------------------------------------------------*/
+  // weak Dirichlet
+
+  std::vector<Teuchos::RCP<ConditionComponent> > weakDirichletcomponents;
+
+  // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
+  weakDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Choice of gamma parameter","adjoint-consistent",
+        Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"),
+        Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"))));
+
+  // we provide a vector of 3 values for velocities 
+  weakDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
+
+  // values for curves
+  weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",3,true,true)));
+  // and optional spatial functions
+  weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
+
+
+  Teuchos::RCP<ConditionDefinition> lineweakdirichlet 
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE WEAK DIRICHLET CONDITIONS",
+                                         "LineWeakDirichlet",
+                                         "LineWeakDirichlet",
+                                         DRT::Condition::LineWeakDirichlet,
+                                         true,
+                                         DRT::Condition::Line));
+
+  // we attach all the components of this condition to this weak line DBC
+  for (unsigned i=0; i<weakDirichletcomponents.size(); ++i)
+  {
+    lineweakdirichlet->AddComponent(weakDirichletcomponents[i]);
+  }
+
+  // and append it to the list of all conditions
+  condlist.push_back(lineweakdirichlet);
+
   /*--------------------------------------------------------------------*/
   // FSI
 

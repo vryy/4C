@@ -78,6 +78,7 @@ public:
     Contact,
     LinePeriodic,
     SurfacePeriodic,
+    LineWeakDirichlet,
     FSICoupling,
     FREESURFCoupling,
     SurfaceTension,

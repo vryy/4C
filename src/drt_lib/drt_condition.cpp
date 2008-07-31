@@ -112,7 +112,10 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==MPC_NodeOnPlane_3D)          os << "Multipoint constraint on a plane";
   else if (Type()==MPC_NodeOnLine_2D)           os << "Multipoint constraint on a line";
   else if (Type()==LJ_Potential)                os << "Lennard-Jones potential on a surface";
-
+  else if (Type()==LineWeakDirichlet)           os << "line weak Dirichlet condition";
+  else if (Type()==LinePeriodic)                os << "line periodic boundary condition";
+  else if (Type()==SurfacePeriodic)             os << "surface periodic boundary condition";
+  
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);
   if ((int)geometry_.size())
