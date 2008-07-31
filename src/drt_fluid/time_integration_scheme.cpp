@@ -142,13 +142,13 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
 
     One-step-Theta:
 
-    acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
+     acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
 
 
     BDF2:
 
-                   2*dt(n)+dt(n-1)          dt(n)+dt(n-1)
-      acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
+                   2*dt(n)+dt(n-1)                  dt(n)+dt(n-1)
+     acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
                  dt(n)*[dt(n)+dt(n-1)]              dt(n)*dt(n-1)
 
                          dt(n)
