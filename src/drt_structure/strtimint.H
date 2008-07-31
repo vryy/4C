@@ -118,6 +118,7 @@ namespace STR
     {
       name_genalpha,  //!< generalised-alpha
       name_onesteptheta,  //!< one-step-theta
+      name_gemm,  //!< generalised energy-momentum method
       name_ab2  //!< Adams-Bashforth 2nd order
     };
 
@@ -134,6 +135,9 @@ namespace STR
         break;
       case name_onesteptheta :
         return "OneStepTheta";
+        break;
+      case name_gemm :
+        return "GEMM";
         break;
       case name_ab2 :
         return "AdamsBashforth2";

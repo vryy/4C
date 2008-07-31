@@ -42,6 +42,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint_expl.H"
 #include "strtimint_genalpha.H"
 #include "strtimint_ost.H"
+#include "strtimint_gemm.H"
 #include "strtimint_ab2.H"
 
 #include "strtimada.H"
@@ -219,7 +220,9 @@ Teuchos::RCP<STR::TimInt> STR::strudyn_CreateMarching
     // Generalised energy-momentum method (GEMM)
     case STRUCT_DYNAMIC::gemm :
     {
-      dserror("Not yet impl.");
+      // create time integrator
+      sti = Teuchos::rcp(new STR::TimIntGEMM(ioflags, sdyn, xparams,
+                                             actdis, solver, output));
     }
     break;
 
