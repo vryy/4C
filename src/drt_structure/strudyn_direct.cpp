@@ -273,7 +273,6 @@ Teuchos::RCP<STR::TimAda> STR::strudyn_CreateAuxiliar
 
   case TIMADA_DYNAMIC::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
-    //sta = Teuchos::rcp(new STR::TimAdaAB2(ioflags, sdyn, xparams, tap, tis));
     sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, sdyn, xparams, tap, tis));
     break;
 
