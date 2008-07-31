@@ -422,8 +422,8 @@ namespace STR
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int myrank_;  //!< ID of actual processor in parallel
     const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
-    //!< to construct matching
-    //!< vectors and matrices
+                                   //!< to construct matching
+                                   //!< vectors and matrices
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adapated ????
@@ -437,7 +437,7 @@ namespace STR
     bool printerrfile_;  //!< print infos to error file #errfile_
     bool printiter_;  //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
-    //!< if 0, restart is not written
+                             //!< if 0, restart is not written
     bool writestate_;  //!< write state on/off
     int writestateevery_;  //!< write state every given step
     int writestrevery_;  //!< write stress/strain every given step
