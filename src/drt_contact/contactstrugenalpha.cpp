@@ -1534,7 +1534,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       else if (predictor==2) ConsistentPredictor();
       //Does predicted displacement satisfy constraint?
       double time = params_.get<double>("total time",0.0);
-      double dt   = params_.get<double>("delta time",0.01);
+      //double dt   = params_.get<double>("delta time",0.01);
       // what algorithm is used?
       // - "newtonlinuzawa":      Potential is linearized wrt displacements and Lagrange multipliers
       //                  Linear problem is solved with Uzawa algorithm
