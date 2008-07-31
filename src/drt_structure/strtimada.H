@@ -95,6 +95,19 @@ namespace STR
       ctrl_dis_and_vel  //!< check displacements and velocities
     };
 
+    //! Type of adaptivity algorithm
+    enum AdaEnum
+    {
+      ada_vague,  //!< algorithm is unknown
+      ada_upward,  //!< of upward type, i.e. auxiliar scheme has \b higher order
+                   //!< of accuracy than marching scheme
+      ada_downward,  //!< of downward type, i.e. auxiliar scheme has \b lower order
+                     //!< of accuracy than marching scheme
+      ada_orderequal,  //!< of equal order type, i.e. auxiliar scheme has the \b some
+                       //!< order of accuracy like the marching method
+      ada_ident  //!< auxiliar scheme is \b identical to marching scheme
+    };
+
     //! Constructor
     TimAda
     (
@@ -183,8 +196,22 @@ namespace STR
       return MapNameEnumToString(MethodName());
     }
 
+    //! Provide local order of accuracy based upon linear test equation 
+    //! for displacements
+    virtual int MethodOrderOfAccuracyDis() = 0;
+
     //! Provide local order of accuracy based upon linear test equation
-    virtual int MethodOrderOfAccuracy() = 0;
+    //! for velocities
+    virtual int MethodOrderOfAccuracyVel() = 0;
+
+    //! Return linear error coefficient of displacements
+    virtual double MethodLinErrCoeffDis() = 0;
+
+    //! Return linear error coefficient of velocities
+    virtual double MethodLinErrCoeffVel() = 0;
+
+    //! Provide type of algorithm
+    virtual enum AdaEnum MethodAdaptDis() = 0;
 
     //@}
 

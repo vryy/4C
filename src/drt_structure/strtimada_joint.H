@@ -96,6 +96,7 @@ namespace STR
         adaparams,
         sti
       ),
+      ada_(ada_vague),
       sta_(Teuchos::null)
     {
       // allocate auxiliar integrator
@@ -105,7 +106,27 @@ namespace STR
                                 sti->GetDiscretizationWriter()));
       // check explicitness
       if (sta_->MethodImplicit())
+      {
         dserror("Implicit might work, but please check carefully");
+      }
+
+      // check order
+      if (sta_->MethodOrderOfAccuracyDis() > sti_->MethodOrderOfAccuracyDis())
+      {
+        ada_ = ada_upward;
+      }
+      else if (sta_->MethodOrderOfAccuracyDis() < sti_->MethodOrderOfAccuracyDis())
+      {
+        ada_ = ada_downward;
+      }
+      else if (sta_->MethodName() == sti_->MethodName())
+      {
+        ada_ = ada_ident;
+      }
+      else
+      {
+        ada_ = ada_orderequal;
+      }
 
       // merge 
       sta_->Merge(*sti);
@@ -161,10 +182,34 @@ namespace STR
       return MapNameTimIntToTimAda(sti_->MethodName());
     }
 
-    //! Provide local order of accuracy
-    int MethodOrderOfAccuracy()
+    //! Provide local order of accuracy of displacements
+    int MethodOrderOfAccuracyDis()
     {
-      return 2;
+      return sta_->MethodOrderOfAccuracyDis();
+    }
+
+    //! Provide local order of accuracy of velocities
+    int MethodOrderOfAccuracyVel()
+    {
+      return sta_->MethodOrderOfAccuracyVel();
+    }
+
+    //! Return linear error coefficient of displacements
+    double MethodLinErrCoeffDis()
+    {
+      return sta_->MethodLinErrCoeffDis();
+    }
+
+    //! Return linear error coefficient of velocities
+    double MethodLinErrCoeffVel()
+    {
+      return sta_->MethodLinErrCoeffVel();
+    }
+
+    //! Provide type of algorithm
+    enum AdaEnum MethodAdaptDis()
+    {
+      return ada_;
     }
 
     //@}
@@ -176,6 +221,9 @@ namespace STR
   
     //! not wanted: copy constructor
     TimAdaJoint(const TimAdaJoint& old);
+
+    //! type of adaptivity algorithm
+    enum AdaEnum ada_;
 
     //! The auxiliar integrator 
     Teuchos::RCP<T> sta_;

@@ -95,9 +95,33 @@ namespace STR
     }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracy()
+    int MethodOrderOfAccuracyDis()
     {
       return 3;
+    }
+
+    //! Provide local order of accuracy
+    int MethodOrderOfAccuracyVel()
+    {
+      return 2;
+    }
+
+    //! Return linear error coefficient of displacements
+    double MethodLinErrCoeffDis()
+    {
+      return -1.0/24.0;
+    }
+
+    //! Return linear error coefficient of velocities
+    double MethodLinErrCoeffVel()
+    {
+      return -1.0/12.0;
+    }
+
+    //! Provide type of algorithm
+    enum AdaEnum MethodAdaptDis()
+    {
+      return ada_upward;
     }
 
     //@}

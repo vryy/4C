@@ -83,6 +83,10 @@ STR::TimAda::TimAda
 /* Integrate adaptively in time */
 void STR::TimAda::Integrate()
 {
+  // Richardson extrapolation to no avail
+  if (MethodAdaptDis() == ada_ident)
+    dserror("This combination is not implemented ... Richardson's extrapolation");
+
   // initialise time loop
   time_ = timeinitial_;
   timestep_ = timestepinitial_;
@@ -188,8 +192,18 @@ void STR::TimAda::Integrate()
 /* Evaluate local error vector */
 void STR::TimAda::EvaluateLocalErrorDis()
 {
-  // assumption: schemes do not have the same order of accuracy
-  locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
+  if (MethodAdaptDis() == ada_orderequal)
+  {
+    const double coeffmarch = sti_->MethodLinErrCoeffDis();
+    const double coeffaux = MethodLinErrCoeffDis();
+    locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
+    locerrdisn_->Scale(coeffmarch/(coeffaux-coeffmarch));
+  }
+  else 
+  {
+    // schemes do not have the same order of accuracy
+    locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -216,7 +230,10 @@ void STR::TimAda::Indicate
   }
 
   // get error order
-  errorder_ = MethodOrderOfAccuracy();
+  if (MethodAdaptDis() == ada_upward)
+    errorder_ = sti_->MethodOrderOfAccuracyDis();
+  else
+    errorder_ = MethodOrderOfAccuracyDis();
 
   // optimal size ration with respect to given tolerance
   double sizrat = pow(errtol_/norm, 1.0/(errorder_+1.0));
