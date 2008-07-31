@@ -208,36 +208,27 @@ Teuchos::RCP<STR::TimInt> STR::strudyn_CreateMarching
     // Generalised-alpha time integration
     case STRUCT_DYNAMIC::genalpha :
     {
-      // get generalised-alpha specific parameter list
-      const Teuchos::ParameterList& gap = sdyn.sublist("GENALPHA");
-
       // create time integrator
-      sti = rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams, gap,
-                                        actdis, solver, output));
+      sti = Teuchos::rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams,
+                                                 actdis, solver, output));
     }
     break;
 
     // One-step-theta (OST) time integration
     case STRUCT_DYNAMIC::onesteptheta :
     {
-      // get one-step-theta specific parameter list
-      const Teuchos::ParameterList& ostp = sdyn.sublist("ONESTEPTHETA");
-
       // create time integrator
-      sti = rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
-                                            actdis, solver, output));
+      sti = Teuchos::rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams,
+                                                     actdis, solver, output));
     }
     break;
 
     // Adams-Bashforth 2nd order (AB2) time integration
     case STRUCT_DYNAMIC::ab2 :
     {
-      // get AB2 specific parameter list
-      //const Teuchos::ParameterList& ab2p = sdyn.sublist("ADAMSBASHFORTH2");
-
       // create time integrator
-      sti = rcp(new STR::TimIntAB2(ioflags, sdyn, xparams, //ab2p,
-                                   actdis, solver, output));
+      sti = Teuchos::rcp(new STR::TimIntAB2(ioflags, sdyn, xparams,
+                                            actdis, solver, output));
     }
     break;
 

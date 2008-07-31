@@ -26,7 +26,6 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-  const Teuchos::ParameterList& onestepthetaparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
@@ -40,7 +39,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
     solver,
     output
   ),
-  theta_(onestepthetaparams.get<double>("THETA")),
+  theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
   dist_(Teuchos::null),
   velt_(Teuchos::null),
   acct_(Teuchos::null),
@@ -55,8 +54,9 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with one-step-theta (theta=" 
-              << theta_ << ")" << std::endl << std::endl;
+    std::cout << "with one-step-theta" << std::endl
+              << "   theta = " << theta_ << std::endl 
+              << std::endl;
   }
 
   // create state vectors

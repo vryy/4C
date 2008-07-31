@@ -51,7 +51,6 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-  const Teuchos::ParameterList& genalphaparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
@@ -65,12 +64,12 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     solver,
     output
   ),
-  midavg_(MapMidAvgStringToEnum(genalphaparams.get<string>("GENAVG"))),
+  midavg_(MapMidAvgStringToEnum(sdynparams.sublist("GENALPHA").get<string>("GENAVG"))),
   /* iterupditer_(false), */
-  beta_(genalphaparams.get<double>("BETA")),
-  gamma_(genalphaparams.get<double>("GAMMA")),
-  alphaf_(genalphaparams.get<double>("ALPHA_F")),
-  alpham_(genalphaparams.get<double>("ALPHA_M")),
+  beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
+  gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
+  alphaf_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
+  alpham_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
   dism_(Teuchos::null),
   velm_(Teuchos::null),
   accm_(Teuchos::null),

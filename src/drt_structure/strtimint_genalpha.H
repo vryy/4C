@@ -78,7 +78,6 @@ namespace STR
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
-      const Teuchos::ParameterList& genalphaparams,  //!< genalpha flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
