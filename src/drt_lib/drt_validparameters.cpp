@@ -552,7 +552,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& gemm = sdyn.sublist("GEMM",false,"");
 
-  DoubleParameter("XSI",0.5,"generalisation factor in (0,1]",&gemm);
+  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&gemm);
+  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&gemm);
+  //DoubleParameter("XSI",0.0,"generalisation factor in (0,1]",&gemm);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
