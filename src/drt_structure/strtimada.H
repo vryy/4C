@@ -254,14 +254,17 @@ namespace STR
     //@{
     double stepsizemax_;  //!< maximum time step size (upper limit)
     double stepsizemin_;  //!< minimum time step size (lower limit)
-    double sizeratiomax_;
-    double sizeratiomin_;
-    double sizeratioscale_;
+    double sizeratiomax_;  //!< maximally permitted increase of current step size 
+                           //!< relative to last converged one
+    double sizeratiomin_;  //!< minimally permitted increase 
+                           //!< (or maximally permitted decrease) 
+                           //!< of current step size relative to last converged one
+    double sizeratioscale_;  //!< safety factor, should be lower than 1.0
     enum CtrlEnum errctrl_;  //!< type of check
-    enum TimIntVector::NormEnum errnorm_;
-    double errtol_;
-    int errorder_;
-    int adaptstepmax_;
+    enum TimIntVector::NormEnum errnorm_;  //!< norm for local error vector
+    double errtol_;  //!< target local error tolerance
+    int errorder_;  //!< order of local error indication
+    int adaptstepmax_;  //!< maximally permitted trials to find tolerable step size
     //@}
 
     //! @name plain time integration variables
