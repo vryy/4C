@@ -98,7 +98,7 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f)
+void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::SetupRHS");
 

@@ -182,7 +182,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
 
     Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
     mfParams.set("lambda", 1.0e-4);
-    mfParams.set("itemax", -1);
+    mfParams.set("itemax", 1);
     mfParams.set("Kelley Perturbation", false);
 
     lineSearchParams.set("Method", "Full Step");

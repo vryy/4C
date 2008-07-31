@@ -75,13 +75,13 @@ FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
     const Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
 
     // A rather simple hack. We need something better!
-    //const int itemax = MBFluidField().Itemax();
-    //if (fillFlag==MF_Res and mfresitemax_ > 0)
-    //  MBFluidField().SetItemax(mfresitemax_ + 1);
+    const int itemax = MBFluidField().Itemax();
+    if (fillFlag==MF_Res and mfresitemax_ > 0)
+      MBFluidField().SetItemax(mfresitemax_ + 1);
 
     MBFluidField().NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
 
-    //MBFluidField().SetItemax(itemax);
+    MBFluidField().SetItemax(itemax);
 
     return FluidToStruct(MBFluidField().ExtractInterfaceForces());
   }

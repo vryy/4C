@@ -22,7 +22,7 @@ void NOX::FSI::Group::CaptureSystemState()
 {
   // we know we already have the first linear system calculated
 
-  mfsi_.SetupRHS(RHSVector.getEpetraVector());
+  mfsi_.SetupRHS(RHSVector.getEpetraVector(),true);
   mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
 
   sharedLinearSystem.getObject(this);

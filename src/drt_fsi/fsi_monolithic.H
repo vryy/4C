@@ -200,7 +200,7 @@ namespace UTILS
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f) = 0;
+    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;

@@ -88,7 +88,7 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
+void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupRHS");
 

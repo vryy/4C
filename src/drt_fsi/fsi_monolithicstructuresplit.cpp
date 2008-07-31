@@ -98,7 +98,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f)
+void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupRHS");
 
@@ -107,6 +107,35 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f)
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
+
+#if 0
+  if (firstcall)
+  {
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    {
+      // add rhs term for second order coupling
+      Teuchos::RCP<Epetra_Vector> veln = FluidToStruct(FluidField().ExtractInterfaceVeln());
+      veln = StructureField().Interface().InsertCondVector(veln);
+      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
+
+      Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+      s->Apply(*veln,*rhs);
+
+      double timescale = FluidField().TimeScaling();
+      rhs->Scale(1./timescale);
+
+      veln = StructureField().Interface().ExtractOtherVector(rhs);
+      Extractor().AddVector(*veln,0,f);
+
+      veln = StructureField().Interface().ExtractCondVector(rhs);
+      veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
+      Extractor().AddVector(*veln,1,f);
+
+      // ale and shape derivatives are missing...
+    }
+  }
+#endif
 
   // NOX expects a different sign here.
   f.Scale(-1.);
@@ -195,13 +224,17 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
   if (mmm!=Teuchos::null)
   {
-    //LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
+    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
     LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    //LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
+    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    mat.Matrix(1,1).Add(fmgg,false,1./(timescale),1.0);
-    mat.Matrix(1,2).Add(fmig,false,1./(timescale),1.0);
+    mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
+    mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
+
+    mat.Matrix(1,2).Zero();
+    mat.Matrix(1,2).Add(fmgi,false,1.,1.0);
+    mat.Matrix(1,2).Add(fmii,false,1.,1.0);
   }
 
   // done. make sure all blocks are filled.

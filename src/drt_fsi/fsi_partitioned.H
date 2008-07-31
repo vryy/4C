@@ -151,7 +151,7 @@ private:
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;
-  
+
   /// interface velocity from time step begin
   Teuchos::RCP<Epetra_Vector> iveln_;
 
@@ -179,7 +179,9 @@ private:
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist_;
 
+protected:
   int mfresitemax_;
+private:
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;

@@ -244,7 +244,10 @@ double ADAPTER::FluidImpl::ResidualScaling() const
 double ADAPTER::FluidImpl::TimeScaling() const
 {
   if (params_->get<bool>("interface second order"))
+  {
+    dserror("second order coupling not supported");
     return 2./fluid_.Dt();
+  }
   else
     return 1./fluid_.Dt();
 }

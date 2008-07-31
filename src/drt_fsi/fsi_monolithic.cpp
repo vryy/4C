@@ -210,7 +210,7 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
-    fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
+    //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
 }
 
