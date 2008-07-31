@@ -294,7 +294,6 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   veln_->Multiply(1.0, *dirichtoggle_, *aux, 0.0);
   // add new velocities only on non-DBC/free DOFs
   veln_->Update(1.0, *aux2, 1.0);
-  
 
   // new end-point accelerations
   aux->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_, 
@@ -319,7 +318,6 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 /* iterative iteration update of state */
 void STR::TimIntOneStepTheta::UpdateIterIteratively()
 {
-
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
