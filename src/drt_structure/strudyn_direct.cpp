@@ -189,18 +189,12 @@ Teuchos::RCP<STR::TimInt> STR::strudyn_CreateMarching
   // create specific time integrator
   switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
   {
-    // Generalized alpha time integration
+    // old style time integrators
     case STRUCT_DYNAMIC::gen_alfa :
-    {
-      dserror("You should not turn up here.");
-    }
-    break;
-
-    // Generalized Energy Momentum Method
     case STRUCT_DYNAMIC::Gen_EMM :
+    case STRUCT_DYNAMIC::centr_diff :
     {
       dserror("You should not turn up here.");
-      dserror("Not yet impl.");
     }
     break;
 
@@ -219,6 +213,13 @@ Teuchos::RCP<STR::TimInt> STR::strudyn_CreateMarching
       // create time integrator
       sti = Teuchos::rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams,
                                                      actdis, solver, output));
+    }
+    break;
+
+    // Generalised energy-momentum method (GEMM)
+    case STRUCT_DYNAMIC::gemm :
+    {
+      dserror("Not yet impl.");
     }
     break;
 

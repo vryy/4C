@@ -380,6 +380,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                   "Static",
                                                   "GenAlpha",
                                                   "OneStepTheta",
+                                                  "GEMM",
                                                   "AdamsBashforth2"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
@@ -387,6 +388,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           STRUCT_DYNAMIC::statics,
                                           STRUCT_DYNAMIC::genalpha,
                                           STRUCT_DYNAMIC::onesteptheta,
+                                          STRUCT_DYNAMIC::gemm,
                                           STRUCT_DYNAMIC::ab2),
                                &sdyn);
 
@@ -545,6 +547,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA",false,"");
 
   DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&onesteptheta);
+
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& gemm = sdyn.sublist("GEMM",false,"");
+
+  DoubleParameter("XSI",0.5,"generalisation factor factor in (0,1]",&gemm);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

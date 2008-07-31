@@ -223,7 +223,7 @@ namespace STR
     //! A revolutionary routine to get --well-- the sign of a number.
     static int Sign
     (
-      const double number
+      const double number  //!< a real number
     )
     {
       return (number==0.0) ? 0 : (number>0.0) ? +1 : -1;
@@ -260,7 +260,7 @@ namespace STR
                            //!< (or maximally permitted decrease) 
                            //!< of current step size relative to last converged one
     double sizeratioscale_;  //!< safety factor, should be lower than 1.0
-    enum CtrlEnum errctrl_;  //!< type of check
+    enum CtrlEnum errctrl_;  //!< type of control, see #CtrlEnum
     enum TimIntVector::NormEnum errnorm_;  //!< norm for local error vector
     double errtol_;  //!< target local error tolerance
     int errorder_;  //!< order of local error indication
@@ -281,7 +281,7 @@ namespace STR
                                               //!< estimation \f$l_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error 
                                               //!< estimation \f$\dot{l}_{n+1}\f$
-    int adaptstep_;
+    int adaptstep_;  //!< trial counter, cf. #adaptstepmax_
     //@}
 
     //! @name Output settings

@@ -73,6 +73,7 @@ enum
     genalpha,                   /* generalised-alpha time integrator, 
                                  * new style (implicit) */
     onesteptheta,               /* one-step-theta time integrator (implicit) */
+    gemm,                       /* generalised energy-momementum method */
     ab2                         /* Adams-Bashforth 2nd order (explicit) */
    }               Typ;         /* type of time integration algorithm */
 enum _genavgtype
