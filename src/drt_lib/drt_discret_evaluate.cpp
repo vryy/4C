@@ -552,6 +552,105 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
   return;
 } // end of DRT::Discretization::EvaluateCondition
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate a condition on a surface using parent data        (public) |
+ |                                                          gammi 07/08 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateConditionUsingParentData(
+  ParameterList&                       params       ,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+  Teuchos::RCP<Epetra_Vector>          systemvector1,
+  Teuchos::RCP<Epetra_Vector>          systemvector2,
+  Teuchos::RCP<Epetra_Vector>          systemvector3,
+  const string&                        condstring   ,
+  const int                            condid       )
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
+
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemvector2!=Teuchos::null;
+  const bool assemblevec3 = systemvector3!=Teuchos::null;
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first == condstring)
+    {
+      DRT::Condition& cond = *(fool->second);
+      if (condid == -1 || condid ==cond.Getint("ConditionID"))
+      {
+	map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+	// no check for empty geometry here since in parallel computations
+	// can exist processors which do not own a portion of the elements belonging
+	// to the condition geometry
+
+	map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+	// stuff the whole condition into the parameterlist
+	// --- we want to be able to access boundary values
+	// on the element level
+	params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
+
+	// define element matrices and vectors
+	Epetra_SerialDenseMatrix elematrix1;
+	Epetra_SerialDenseMatrix elematrix2;
+	Epetra_SerialDenseVector elevector1;
+	Epetra_SerialDenseVector elevector2;
+	Epetra_SerialDenseVector elevector3;
+
+	// element matrices and vectors will be reshaped
+	// during the element call!
+
+	for (curr=geom.begin(); curr!=geom.end(); ++curr)
+	{
+	  // get element location vector and ownerships
+	  vector<int> lm;
+	  vector<int> lmowner;
+	  curr->second->LocationVector(*this,lm,lmowner);
+
+	  // place vectors for parent lm and lmowner in 
+	  // the parameterlist --- the element will fill
+	  // them since only the element implementation
+	  // knows its parent
+	  RefCountPtr<vector<int> > plm     =rcp(new vector<int>);
+	  RefCountPtr<vector<int> > plmowner=rcp(new vector<int>);
+
+	  params.set<RefCountPtr<vector<int> > >("plm",plm);
+	  params.set<RefCountPtr<vector<int> > >("plmowner",plmowner);
+
+	  // call the element specific evaluate method
+	  int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
+					   elevector1,elevector2,elevector3);
+	  if (err) dserror("error while evaluating elements");
+
+	  // assembly to all parent dofs even if we just integrated 
+	  // over a boundary element
+	  int eid = curr->second->Id();
+
+	  if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,*plm,*plmowner);
+	  if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,*plm,*plmowner);
+	  if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,*plm,*plmowner);
+	  if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,*plm,*plmowner);
+	  if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,*plm,*plmowner);
+	} // end loop geometry elements of this conditions
+      } // the condition number is as desired or we wanted to evaluate 
+        // all numbers
+    } // end we have a condition of type condstring 
+  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  return;
+} // end of DRT::Discretization::EvaluateConditionUsingParentData
+
+
+
 /*----------------------------------------------------------------------*
  |  evaluate spatial function (public)                       g.bau 03/07|
  *----------------------------------------------------------------------*/
