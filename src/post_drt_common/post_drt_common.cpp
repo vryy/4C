@@ -70,10 +70,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   MPI_Init(&argc,&argv);
 #endif
 
-#ifdef DEBUG
-  dsinit();
-#endif
-
   string file = "xxx";
   string output;
 
