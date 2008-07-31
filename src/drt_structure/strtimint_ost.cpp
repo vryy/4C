@@ -102,21 +102,24 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
  * and consistent velocities and displacements */
 void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 {
+  // time step size
+  const double dt = (*dt_)[0];
+
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
 
   // new end-point velocities
-  veln_->Update(1.0/(theta_*(*dt_)[0]), *disn_,
-                -1.0/(theta_*(*dt_)[0]), *(*dis_)(0), 
+  veln_->Update(1.0/(theta_*dt), *disn_,
+                -1.0/(theta_*dt), *(*dis_)(0), 
                 0.0);
   veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
                 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_, 
-                -1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *(*dis_)(0), 
+  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_, 
+                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0), 
                 0.0);
-  accn_->Update(-1.0/(theta_*theta_*(*dt_)[0]), *(*vel_)(0), 
+  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0), 
                 -(1.0-theta_)/theta_, *(*acc_)(0),
                 1.0);
   
