@@ -619,12 +619,11 @@ namespace XFEM
    
     
     /*!
-    \brief checks an element is Cartesian, linear or higherorder
+    \brief checks if an element is Cartesian, linear or higherorder
 
-    \param element        (in)         : XAABB of the cutting element
-    \param xyze_element   (in)         : XAABB of the xfem element
-    \param eleGeoType     (in)         : element geometric type CARTESIAN LINEAR or HIGHERORDER
-    \return true if the XAABB's intersect or false otherwise
+    \param element        (in)         : element
+    \param xyze_element   (in)         : coordinates of the element
+    \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
     */
     void checkGeoType(
              DRT::Element*                element,
