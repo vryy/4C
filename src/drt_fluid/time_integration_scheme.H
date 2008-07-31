@@ -35,9 +35,6 @@ Maintainer: Axel Gerstenberger
 
 #include "Epetra_Vector.h"
 
-using namespace std;
-using namespace Teuchos;
-
 namespace FLD
 {
 
@@ -54,12 +51,12 @@ namespace TIMEINT_THETA_BDF2
                        +-                                      -+
   */
   void ExplicitPredictor(
-      const RCP<Epetra_Vector>&   veln,
-      const RCP<Epetra_Vector>&   velnm,
-      const RCP<Epetra_Vector>&   accn,
-      const double                dta,
-      const double                dtp,
-      RCP<Epetra_Vector>&         velnp
+      const Teuchos::RCP<Epetra_Vector>&   veln,
+      const Teuchos::RCP<Epetra_Vector>&   velnm,
+      const Teuchos::RCP<Epetra_Vector>&   accn,
+      const double                         dta,
+      const double                         dtp,
+      Teuchos::RCP<Epetra_Vector>&         velnp
   );
 
   /*!
@@ -78,13 +75,13 @@ namespace TIMEINT_THETA_BDF2
                    hist_ = 4/3 veln_ - 1/3 velnm_
   */
   void SetOldPartOfRighthandside(
-      const RCP<Epetra_Vector>&   veln,
-      const RCP<Epetra_Vector>&   velnm,
-      const RCP<Epetra_Vector>&   accn,
-      const FLUID_TIMEINTTYPE     timealgo,
-      const double                dta,
-      const double                theta,
-      RCP<Epetra_Vector>&         hist
+      const Teuchos::RCP<Epetra_Vector>&   veln,
+      const Teuchos::RCP<Epetra_Vector>&   velnm,
+      const Teuchos::RCP<Epetra_Vector>&   accn,
+      const FLUID_TIMEINTTYPE              timealgo,
+      const double                         dta,
+      const double                         theta,
+      Teuchos::RCP<Epetra_Vector>&         hist
   );
 
   /*!
@@ -92,16 +89,16 @@ namespace TIMEINT_THETA_BDF2
          iteration.
   */
   void CalculateAcceleration(
-      const RCP<Epetra_Vector>&   velnp,
-      const RCP<Epetra_Vector>&   veln,
-      const RCP<Epetra_Vector>&   velnm,
-      const FLUID_TIMEINTTYPE     timealgo,
-      const int                   step,
-      const double                theta,
-      const double                dta,
-      const double                dtp,
-      RCP<Epetra_Vector>&         accn,
-      RCP<Epetra_Vector>&         accnm
+      const Teuchos::RCP<Epetra_Vector>&   velnp,
+      const Teuchos::RCP<Epetra_Vector>&   veln,
+      const Teuchos::RCP<Epetra_Vector>&   velnm,
+      const FLUID_TIMEINTTYPE              timealgo,
+      const int                            step,
+      const double                         theta,
+      const double                         dta,
+      const double                         dtp,
+      Teuchos::RCP<Epetra_Vector>&         accn,
+      Teuchos::RCP<Epetra_Vector>&         accnm
   );
 }
 }

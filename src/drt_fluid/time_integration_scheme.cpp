@@ -28,17 +28,15 @@ Maintainer: Axel Gerstenberger
 
 
 /*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-    const RCP<Epetra_Vector>&   veln,
-    const RCP<Epetra_Vector>&   velnm,
-    const RCP<Epetra_Vector>&   accn,
-    const FLUID_TIMEINTTYPE     timealgo,
-    const double                dta,
-    const double                theta,
-    RCP<Epetra_Vector>&         hist
+    const Teuchos::RCP<Epetra_Vector>&   veln,
+    const Teuchos::RCP<Epetra_Vector>&   velnm,
+    const Teuchos::RCP<Epetra_Vector>&   accn,
+    const FLUID_TIMEINTTYPE              timealgo,
+    const double                         dta,
+    const double                         theta,
+    Teuchos::RCP<Epetra_Vector>&         hist
 )
 {
   /*
@@ -79,16 +77,14 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 
 
 /*----------------------------------------------------------------------*
- |  do explicit predictor step to start nonlinear iteration from a      |
- |  better value                                             gammi 04/07|
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
-    const RCP<Epetra_Vector>&   veln,
-    const RCP<Epetra_Vector>&   velnm,
-    const RCP<Epetra_Vector>&   accn,
-    const double                dta,
-    const double                dtp,
-    RCP<Epetra_Vector>&         velnp
+    const Teuchos::RCP<Epetra_Vector>&   veln,
+    const Teuchos::RCP<Epetra_Vector>&   velnm,
+    const Teuchos::RCP<Epetra_Vector>&   accn,
+    const double                         dta,
+    const double                         dtp,
+    Teuchos::RCP<Epetra_Vector>&         velnp
 )
 {
   const double fact1 = dta*(1.0+dta/dtp);
@@ -104,20 +100,18 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
 
 
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
-    const RCP<Epetra_Vector>&   velnp,
-    const RCP<Epetra_Vector>&   veln,
-    const RCP<Epetra_Vector>&   velnm,
-    const FLUID_TIMEINTTYPE     timealgo,
-    const int                   step,
-    const double                theta,
-    const double                dta,
-    const double                dtp,
-    RCP<Epetra_Vector>&         accn,
-    RCP<Epetra_Vector>&         accnm
+    const Teuchos::RCP<Epetra_Vector>&   velnp,
+    const Teuchos::RCP<Epetra_Vector>&   veln,
+    const Teuchos::RCP<Epetra_Vector>&   velnm,
+    const FLUID_TIMEINTTYPE              timealgo,
+    const int                            step,
+    const double                         theta,
+    const double                         dta,
+    const double                         dtp,
+    Teuchos::RCP<Epetra_Vector>&         accn,
+    Teuchos::RCP<Epetra_Vector>&         accnm
 )
 {
 
