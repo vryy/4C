@@ -541,7 +541,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
-  modifyed by chfoe 04/08
+  modified by chfoe 04/08
 
   Calculate the flow rate accros an impedance boundary surface
 
@@ -587,6 +587,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
     // we are now in the initial fill-in phase
     // new data is appended to our flowrates vector
     flowrates_->push_back(parflowrate);
+    flowratespos_++;
   }
   else
   {
@@ -594,7 +595,6 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
     // replace the element that was computed exactly a cycle ago
     int pos = flowratespos_ % cyclesteps_;
     (*flowrates_)[pos] = parflowrate;
-
     flowratespos_++;
   }
 
@@ -605,6 +605,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -632,42 +633,45 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 */
 void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int condid)
 {
-  // calculate outflow boundary only for cycles past the first one
-  if ( time > period_ )
+  // evaluate convolution integral
+  double pressure=0.0;
+
+  // the convolution integral
+  for (int j=0; j<cyclesteps_; j++)
   {
-    // evaluate convolution integral
-    double pressure=0.0;
+    int qindex = ( flowratespos_+j ) % cyclesteps_;
 
-    // the convolution integral
-    for (int j=0; j<cyclesteps_; j++)
-    {
-      int qindex = ( flowratespos_+j+1 ) % cyclesteps_;
-      int zindex = -1-j+cyclesteps_;
-      pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
-    }
+    // flowrate is zero if not yet a full cycle is calculated
+    double actflowrate;
+    if (qindex > flowrates_->size()-1)
+      actflowrate = 0.0;
+    else
+      actflowrate = (*flowrates_)[qindex];
 
-    pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
+    int zindex = -1-j+cyclesteps_;
+    pressure += impvalues_[zindex] * actflowrate * dta; // units: pressure x time
+  }
 
-    // call the element to apply the pressure
-    ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","Outlet impedance");
+  pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
 
-    eleparams.set("total time",time);
-    eleparams.set("delta time",dta);
-    eleparams.set("thsl",theta*dta);
-    eleparams.set("ConvolutedPressure",pressure);
+  // call the element to apply the pressure
+  ParameterList eleparams;
+  // action for elements
+  eleparams.set("action","Outlet impedance");
 
-     if (myrank_ == 0)
-       printf("Pressure from convolution: %f\n",pressure);
+  eleparams.set("total time",time);
+  eleparams.set("delta time",dta);
+  eleparams.set("thsl",theta*dta);
+  eleparams.set("ConvolutedPressure",pressure);
+
+  if (myrank_ == 0)
+    printf("Pressure from convolution: %f\n",pressure);
 
 
-     impedancetbc_->PutScalar(0.0); // ??
-     const string condstring("ImpedanceCond");
-     discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
-     discret_->ClearState();
-
-  } // end if ( time too small )
+  impedancetbc_->PutScalar(0.0); // ??
+  const string condstring("ImpedanceCond");
+  discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
+  discret_->ClearState();
 
   return;
 }//FluidImplicitTimeInt::OutflowBoundary
@@ -708,10 +712,6 @@ this method is an alternative to the impedance calculation from arterial trees
  */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::WindkesselImpedance(double k)
 {
-  //  double pr = 0.1148;  // proximal resistance
-  //  double dr = 1.9352;  // distal resistance
-  //  double ct = 0.3660;  // capacitance
-
   double pr = k1_;  // proximal resistance
   double dr = k2_;  // distal resistance
   double ct = k3_;  // capacitance
