@@ -477,7 +477,6 @@ private:
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
-
 }; // class Fluid2
 
 
@@ -781,8 +780,9 @@ private:
   {
      none,
      integrate_Shapefunction,
-     calc_node_normal,
-     calc_surface_tension
+     calc_node_normal       ,
+     calc_surface_tension   ,
+     enforce_weak_dbc
   };
 
   // don't want = operator
@@ -834,9 +834,51 @@ private:
 
 
 
+
+
+  /*!
+    \brief Evaluate weakly imposed Dirichlet conditions
+
+    This method calculates the contributions to rhs and matrix of
+    weak Dirichlet boundary conditions for a generalized alpha 
+    system.
+
+    Literature:
+    Weak imposition of Dirichlet boundary conditions in fluid mechanics
+    Y. Bazilevs, T.J.R. Hughes
+    Computers & Fluids 36 (2007) 12–26
+
+    \param lm        (in)  : location vector of boundary element
+    \param plm       (in)  : location vector of parent element
+    \param elemat    (out) : element matrix contribution
+    \param elevec    (out) : element vector contribution
+    \param pevelaf   (in)  : current intermediate velocities on the
+                             parent elements node array
+    \param val       (in)  : values for weak DBC
+    \param functions (in)  : spatial functions to multiply weak 
+                             Dirichlet condition value with
+    \param curvefac  (in)  : factor from timecurve
+    \param Cb        (in)  : shape funtion dependent parameter 
+                             for penalty term
+    \param wd_gamma  (in)  : switch between adjoint-(in)consistent
+    \param afgdt     (in)  : time integration dependent factor
+
+  */
+  void EvaluateWeakDirichlet(
+    vector<int>&               lm            ,
+    vector<int>&               plm           ,
+    Epetra_SerialDenseMatrix&  elemat        ,
+    Epetra_SerialDenseVector&  elevec        ,
+    blitz::Array<double,2>&    pevelaf       ,
+    vector<double>             val           ,
+    const vector<int>*         functions     ,
+    double                     curvefac      ,
+    double                     Cb            ,
+    double                     wd_gamma      ,
+    double                     afgdt
+    );
+
 }; // class Fluid2Line
-
-
 
 
 } // namespace ELEMENTS
