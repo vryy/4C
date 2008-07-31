@@ -66,28 +66,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   timeevaldirich_       = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
   timesolver_           = TimeMonitor::getNewTimer("      + solver calls"         );
   timeout_              = TimeMonitor::getNewTimer("      + output and statistics");
-#ifdef PERF
-  timeeleassemble_      = TimeMonitor::getNewTimer("       + time for assembly"     );
-  timeelegetdoflocation_= TimeMonitor::getNewTimer("       + time to get lm"        );
-
-  timeelegetvelnp_      = TimeMonitor::getNewTimer("        + get global vectors an set node values");
-  timeeleinitsmag_      = TimeMonitor::getNewTimer("        + initialize Smagorinsky model");
-  timeeleinitstab_      = TimeMonitor::getNewTimer("        + initialize stabilization flags");
-  timeelesysmat_        = TimeMonitor::getNewTimer("        + complete call to sysmat");
-
-  timeelederxy2_        = TimeMonitor::getNewTimer("         + second derivatives");
-  timeelederxy_         = TimeMonitor::getNewTimer("         + first derivatives");
-  timeeletau_           = TimeMonitor::getNewTimer("         + computation of tau");
-  timeelegalerkin_      = TimeMonitor::getNewTimer("         + Galerkin part (matrix and rhs)");
-  timeelepspg_          = TimeMonitor::getNewTimer("         + pspg part (matrix and rhs)");
-  timeelesupg_          = TimeMonitor::getNewTimer("         + supg part (matrix and rhs)");
-  timeelecstab_         = TimeMonitor::getNewTimer("         + cstab part (matrix and rhs)");
-  timeelevstab_         = TimeMonitor::getNewTimer("         + vstab part (matrix and rhs)");
-  timeelecrossrey_      = TimeMonitor::getNewTimer("         + cross and reynolds stresses");
-  timeeleintertogp_     = TimeMonitor::getNewTimer("         + interpolation to gausspoint");
-  timeeleseteledata_    = TimeMonitor::getNewTimer("         + blitz init, get bodyforce and xyze");
-  timeeletdextras_      = TimeMonitor::getNewTimer("         + time dependent fine scale specials");
-#endif
 
   // time measurement --- start TimeMonitor tm0
   tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
@@ -1059,32 +1037,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // (fine-scale) subgrid viscosity flag
   eleparams.set("fs subgrid viscosity",fssgv_);
 
-#ifdef PERF
-  // pass time monitor to element for detailed time measurement
-
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time for assembly",timeeleassemble_      );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time to get lm"   ,timeelegetdoflocation_);
-
-  eleparams.set<RefCountPtr<Teuchos::Time> >("get global vectors an set node values"    ,timeelegetvelnp_  );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("initialise Smagorinsky model"             ,timeeleinitsmag_  );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("initialise stabilization flags"           ,timeeleinitstab_  );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("complete call to sysmat"                  ,timeelesysmat_    );
-
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for second derivatives"         ,timeelederxy2_    );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for secondfirst"                ,timeelederxy_     );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for computation of tau"         ,timeeletau_       );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for galerkin loops"             ,timeelegalerkin_  );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for pspg loop"                  ,timeelepspg_      );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for supg loop"                  ,timeelesupg_      );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for cstab loop"                 ,timeelecstab_     );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for vstab loop"                 ,timeelevstab_     );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for cross and reynolds loop"    ,timeelecrossrey_  );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time used to interpolate to gauss points" ,timeeleintertogp_ );
-  eleparams.set<RefCountPtr<Teuchos::Time> >("set basic element data"                   ,timeeleseteledata_);
-  eleparams.set<RefCountPtr<Teuchos::Time> >("time dependent fine scale specials"       ,timeeletdextras_  );
-#endif
-
-
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -1232,6 +1184,34 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // get density
   density_ = eleparams.get<double>("density");
+
+  //----------------------------------------------------------------------
+  // apply weak Dirichlet boundary conditions to sysmat_ and residual_
+  //----------------------------------------------------------------------
+  {
+    ParameterList weakdbcparams;
+
+    // set action for elements
+    weakdbcparams.set("action","enforce_weak_dbc");
+    weakdbcparams.set("afgdt",alphaF_*gamma_*dt_);
+    weakdbcparams.set("total time",time_);
+
+    // set the only required state vector
+    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+
+    // evaluate
+    discret_->EvaluateConditionUsingParentData
+      (weakdbcparams      ,
+       sysmat_            ,
+       Teuchos::null      ,
+       residual_          ,
+       Teuchos::null      ,
+       Teuchos::null      ,
+       "LineWeakDirichlet");
+    
+    // clear state
+    discret_->ClearState();
+  }
 
   // end time measurement for element call
   tm3_ref_=null;
