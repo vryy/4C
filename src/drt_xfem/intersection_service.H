@@ -61,7 +61,7 @@ namespace XFEM
      * \return a^2
      */
     template <typename T>
-    inline T sqr(T a)
+    inline T sqr(const T a)
     {
         return a * a;
     }
@@ -129,7 +129,7 @@ namespace XFEM
     \return sum
     */   
     inline double SumOfFabsEntries(
-        BlitzVec3&     v  ///< vector 
+        const BlitzVec3&     v  ///< vector 
         )
     {
         return abs(v(0)) + abs(v(1)) + abs(v(2));
