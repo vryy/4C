@@ -1,25 +1,16 @@
-/*!----------------------------------------------------------------------
-\file xfluid_dyn_nln_drt.H
-\brief Control routine for fluid (time) integration. Calls
-
-     o Single step one-step-theta time integration
-
-     o Two step BDF2 Gear's methode with one-step-theta start step
-
-     o Genalpha time integartion
-
-     o Stationary solver
-
-
-<pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
-
-*----------------------------------------------------------------------*/
-
+/*!
+ * \file xfluid_dyn_nln_drt.H
+ *
+ * contains control routine for fluid (time) integration
+ * 
+ * <pre>
+ * Maintainer: Axel Gerstenberger
+ *             gerstenberger@lnm.mw.tum.de
+ *             http://www.lnm.mw.tum.de
+ *             089 - 289-15236
+ * </pre>
+ * 
+ */
 #ifdef CCADISCRET
 
 #ifndef XFLUID_DYN_NLN_DRT_H
@@ -37,10 +28,13 @@ extern "C"
 /*!
  * Main control routine for fluid including various solvers:
  *
- *        o instationary one-step-theta
- *        o instationary BDF2
- *        o instationary generalized-alpha
- *        o stationary
+ *     o Single step one-step-theta time integration
+ *     
+ *     o Two step BDF2 Gear's methode with one-step-theta start step
+ *     
+ *     o Genalpha time integartion
+ *     
+ *     o Stationary solver
  *
  */
 void xdyn_fluid_drt();
