@@ -26,7 +26,6 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_fluid/xfluidimplicitintegration.H"
 #include "../drt_fluid/xfluidresulttest.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "adapter_fluid.H"
 
