@@ -672,7 +672,7 @@ public:
 
   //@}
 
-  /// @name Acess methods
+  /// @name Access methods
   //@{
 
   /// Get number of degrees of freedom of a certain node
