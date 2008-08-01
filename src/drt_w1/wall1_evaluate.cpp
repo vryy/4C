@@ -47,14 +47,14 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix& elemat2,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector& elevec2,
-                                    Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
+                                   DRT::Discretization&      discretization,
+                                   vector<int>&              lm,
+                                   Epetra_SerialDenseMatrix& elemat1,
+                                   Epetra_SerialDenseMatrix& elemat2,
+                                   Epetra_SerialDenseVector& elevec1,
+                                   Epetra_SerialDenseVector& elevec2,
+                                   Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Wall1::ActionType act = Wall1::calc_none;
   // get the action required
@@ -138,14 +138,18 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
     case Wall1::calc_struct_nlnstiff_gemm:
     {
       // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> dispo = discretization.GetState("old displacement");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (dispo==Teuchos::null or disp==Teuchos::null or res==Teuchos::null)
+        dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydispo(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispo,mydispo,lm);
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      FintStiffMassGEMM(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      GEMMFintStiffMass(params,lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
     case calc_struct_update_istep:

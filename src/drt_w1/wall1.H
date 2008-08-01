@@ -528,9 +528,11 @@ private:
 
   /// evaluate the element forces and stiffness and mass for GEMM
   /// \author bborn \date 08/08
-  void FintStiffMassGEMM(
+  void GEMMFintStiffMass(
+    const ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
-    const std::vector<double>& disp,  ///< element displacements
+    const std::vector<double>& dispo,  ///< element displacements at \f$t_{n}\f$
+    const std::vector<double>& disp,  ///< element displacements at \f$t_{n+1}\f$
     const std::vector<double>& residual,  ///< residual displacements 
     Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
     Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix

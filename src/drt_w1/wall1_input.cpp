@@ -152,8 +152,8 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       data_.Add("feas",feas);
       data_.Add("invKaa",invKaa);
       data_.Add("Kda",Kda);
-      }
     }
+  }
 
   //read lokal or global stresses
   char buffer [50];
@@ -165,25 +165,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
      else dserror ("Reading of WALL1 element failed");
   }
 
-//  //read TSI
-// #if 0
-//  tsi_couptyp = tsi_coup_none;  /* default */
-//  char buffer[50];
-//  frchar("TSI_COUPTYP",buffer,&ierr);
-//  if (ierr)
-//  {
-//    if (strncmp(buffer,"None",4)==0) tsi_couptyp_ = tsi_coup_none;
-//    if (strncmp(buffer,"Thermconf",9)==0) tsi_couptyp_ = tsi_coup_thermconf;
-//    if (strncmp(buffer,"Thermcreate",11)==0) tsi_couptyp_ = tsi_coup_thermcreate;
-//  }
-//#endif
-        
   return true;
 } // Wall1::ReadElement()
 
 
-//Get gaussrule on dependance of gausspoints 
-
+/*----------------------------------------------------------------------*
+ |  Get gaussrule on dependance of gausspoints                     mgit |
+ *----------------------------------------------------------------------*/
 DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 {
   DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;

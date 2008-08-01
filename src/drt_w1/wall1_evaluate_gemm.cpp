@@ -35,8 +35,10 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /* evaluate the element forces and stiffness and mass for GEMM */
-void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
+void DRT::ELEMENTS::Wall1::GEMMFintStiffMass(
+  const ParameterList& params,
   const std::vector<int>& lm,
+  const std::vector<double>& dispo,
   const std::vector<double>& disp,
   const std::vector<double>& residual,
   Epetra_SerialDenseMatrix* stiffmatrix,
@@ -50,31 +52,36 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 {
   // constants
   const int numnode = NumNode();
-  const int nd = numnode * Wall1::noddof_;
-  const DiscretizationType distype = this->Shape();
+  const int edof = numnode * Wall1::noddof_;
+  const DiscretizationType distype = Shape();
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule_);
+  // GEMM coefficients
+  const double gemmalphaf = params.get<double>("alpha f");
+  const double gemmxsi = params.get<double>("xsi");
 
   // general arrays
   Epetra_SerialDenseVector funct(numnode);
   Epetra_SerialDenseMatrix deriv(Wall1::numdim_,numnode);
   Epetra_SerialDenseMatrix xjm(Wall1::numdim_,Wall1::numdim_);
-  Epetra_SerialDenseMatrix boplin(4,2*numnode);
-  Epetra_SerialDenseVector F(4);
-  Epetra_SerialDenseVector strain(4);
+  Epetra_SerialDenseMatrix boplin(4,edof);
+  Epetra_SerialDenseVector Fuv(4);  // disp-based def.grad. vector at t_{n+1}
+  Epetra_SerialDenseVector Fuvo(4);  // disp-based def.grad. vector at t_{n}
+  Epetra_SerialDenseVector Ev(4);  // Green-Lagrange strain vector
   double det;
-  Epetra_SerialDenseMatrix xrefe(2,numnode);
-  Epetra_SerialDenseMatrix xcure(2,numnode);
-  const int numeps = 4;
-  Epetra_SerialDenseMatrix b_cure(numeps,nd);
+  Epetra_SerialDenseMatrix Xe(Wall1::numdim_,numnode);  // material/initial element co-ordinates
+  Epetra_SerialDenseMatrix xe(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n+1}
+  Epetra_SerialDenseMatrix xeo(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n}
+  Epetra_SerialDenseMatrix b_cure(Wall1::numstr_,edof);
   Epetra_SerialDenseMatrix stress(4,4);
   Epetra_SerialDenseMatrix C(4,4);
 
-  // for eas, in any case declare variables, sizes etc. only in eascase
+  // for EAS, in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix* F_enh;  // EAS matrix F_enh
-  Epetra_SerialDenseMatrix* F_tot;  // EAS vector F_tot
-  Epetra_SerialDenseMatrix* p_stress;  // first piola-kirchhoff stress vector
+  Epetra_SerialDenseMatrix* Fenh;  // EAS matrix Fenh
+  Epetra_SerialDenseMatrix* Ftot;  // EAS vector Ftot at t_{n+1}
+  Epetra_SerialDenseMatrix* Ftoto;  // EAS vector Ftot at t_{n}
+  Epetra_SerialDenseMatrix* pk1sts;  // first piola-kirchhoff stress vector
   Epetra_SerialDenseMatrix* xjm0;  // Jacobian Matrix (origin)
   Epetra_SerialDenseVector* F0;  // Deformation Gradient (origin)
   Epetra_SerialDenseMatrix* boplin0; // B operator (origin)
@@ -96,29 +103,34 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   // element co-ordinates
   for (int k=0; k<numnode; ++k)
   {
-    xrefe(0,k) = Nodes()[k]->X()[0];
-    xrefe(1,k) = Nodes()[k]->X()[1];
-    xcure(0,k) = xrefe(0,k) + disp[k*Wall1::noddof_+0];
-    xcure(1,k) = xrefe(1,k) + disp[k*Wall1::noddof_+1];
+    Xe(0,k) = Nodes()[k]->X()[0];
+    Xe(1,k) = Nodes()[k]->X()[1];
+    xe(0,k) = Xe(0,k) + disp[k*Wall1::noddof_+0];
+    xe(1,k) = Xe(1,k) + disp[k*Wall1::noddof_+1];
+    xeo(0,k) = Xe(0,k) + dispo[k*Wall1::noddof_+0];
+    xeo(1,k) = Xe(1,k) + dispo[k*Wall1::noddof_+1];
   }
 
   // set-up EAS parameters
-  if (iseas_ == true)
+  if (iseas_)
   {
     // allocate EAS quantities
-    F_enh = new Epetra_SerialDenseMatrix(4,1);
-    F_tot = new Epetra_SerialDenseMatrix(4,3);
-    p_stress = new Epetra_SerialDenseMatrix(4,1);
+    Fenh = new Epetra_SerialDenseMatrix(4,1);
+    Ftot = new Epetra_SerialDenseMatrix(4,3);
+    pk1sts = new Epetra_SerialDenseMatrix(4,1);
     xjm0 = new Epetra_SerialDenseMatrix(2,2);
     F0 = new Epetra_SerialDenseVector(4);
-    boplin0 = new Epetra_SerialDenseMatrix(4,2*numnode);
-    W0 = new Epetra_SerialDenseMatrix(4,2*numnode);
+    boplin0 = new Epetra_SerialDenseMatrix(4,edof);
+    W0 = new Epetra_SerialDenseMatrix(4,edof);
     G = new Epetra_SerialDenseMatrix(4,Wall1::neas_);
-    Z = new Epetra_SerialDenseMatrix(2*numnode,Wall1::neas_);
+    Z = new Epetra_SerialDenseMatrix(edof,Wall1::neas_);
     FCF = new Epetra_SerialDenseMatrix(4,4);
-    Kda = new Epetra_SerialDenseMatrix(2*numnode,Wall1::neas_);
+    Kda = new Epetra_SerialDenseMatrix(edof,Wall1::neas_);
     Kaa = new Epetra_SerialDenseMatrix(Wall1::neas_,Wall1::neas_);
     feas = new Epetra_SerialDenseVector(Wall1::neas_);
+
+    // Get quantities of last converged step
+    Ftoto = new Epetra_SerialDenseMatrix(4,3);
 
     // EAS Update of alphas:
     // the current alphas are (re-)evaluated out of
@@ -134,8 +146,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(2*numnode);
-    for (int i = 0; i < (2*numnode); ++i) {
+    Epetra_SerialDenseVector res_d(edof);
+    for (int i = 0; i < edof; ++i) {
       res_d(i) = residual[i];
     }
 
@@ -148,11 +160,11 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
     // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
     // -> T0^{-T}
-    w1_eassetup((*boplin0), (*F0), (*xjm0), detJ0, xrefe, xcure, distype);
+    w1_eassetup(*boplin0, *F0, *xjm0, detJ0, Xe, xe, distype);
   }
 
 
-  /*=================================================== integration loops */
+  //=================================================== integration loops
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     // Gaussian point and weight at it
@@ -165,7 +177,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
 
     // compute jacobian Matrix
-    w1_jacobianmatrix(xrefe, deriv, xjm, &det, numnode);
+    w1_jacobianmatrix(Xe, deriv, xjm, &det, numnode);
 
     // integration factor
     double fac = wgt * det * thickness_;
@@ -188,31 +200,31 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     // calculate operator Blin
     w1_boplin(boplin, deriv, xjm, det, numnode);
 
-    // calculate defgrad F^u, Green-Lagrange-strain E^u
-    w1_defgrad(F, strain, xrefe, xcure, boplin, numnode);
+    // calculate defgrad Fuv^u, Green-Lagrange-strain E^u
+    w1_defgrad(Fuv, Ev, Xe, xe, boplin, numnode);
 
-    // calculate defgrad F in matrix notation and Blin in current conf.
-    w1_boplin_cure(b_cure, boplin, F, numeps, nd);
+    // calculate defgrad Fuv in matrix notation and Blin in current conf.
+    w1_boplin_cure(b_cure, boplin, Fuv, Wall1::numstr_, edof);
 
     // EAS technology: "enhance the deformation gradient"
     if (iseas_)
     {
       // calculate the enhanced deformation gradient and
       // also the operators G, W0 and Z
-      w1_call_defgrad_enh((*F_enh), (*xjm0), xjm, detJ0, det, (*F0), *alpha, e1, e2, (*G), (*W0), (*boplin0), (*Z));
+      w1_call_defgrad_enh(*Fenh, *xjm0, xjm, detJ0, det, *F0, *alpha, e1, e2, *G, *W0, *boplin0, *Z);
 
-      // total deformation gradient, Green-Lagrange-strain E^F
-      w1_call_defgrad_tot((*F_enh), (*F_tot), F, strain);
+      // total deformation gradient, Green-Lagrange-strain E^Fuv
+      w1_call_defgrad_tot(*Fenh, *Ftot, Fuv, Ev);
     }
 
     // call material law
-    w1_call_matgeononl(strain, stress, C, numeps, material);
+    w1_call_matgeononl(Ev, stress, C, Wall1::numstr_, material);
 
     // return gp strains (only in case of stress/strain output)
     if (elestrain)
     {
       for (int i = 0; i < Wall1::numstr_; ++i)
-        (*elestrain)(ip,i) = strain(i);
+        (*elestrain)(ip,i) = Ev(i);
     }
 
     // return gp stresses (only in case of stress/strain output)
@@ -221,9 +233,11 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       if (cauchy)
       {
         if (iseas_)
-          StressCauchy(ip, (*F_tot)(0,0), (*F_tot)(1,1), (*F_tot)(1,1), (*F_tot)(1,2), stress, elestress);
+          StressCauchy(ip, 
+                       (*Ftot)(0,0), (*Ftot)(1,1), (*Ftot)(1,1), (*Ftot)(1,2), 
+                       stress, elestress);
         else
-          StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+          StressCauchy(ip, Fuv[0], Fuv[1], Fuv[2], Fuv[3], stress, elestress);
       }
       else
       {
@@ -237,25 +251,25 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     if (iseas_)
     {
       // first Piola-Kirchhoff stress vector
-      w1_stress_eas(stress, (*F_tot), (*p_stress));
+      w1_stress_eas(stress, (*Ftot), (*pk1sts));
 
       // stiffness matrix kdd
-      if (stiffmatrix) w1_kdd(boplin, (*W0), (*F_tot), C, stress, (*FCF), *stiffmatrix, fac);
+      if (stiffmatrix) w1_kdd(boplin, (*W0), (*Ftot), C, stress, (*FCF), *stiffmatrix, fac);
       // matrix kda
-      w1_kda((*FCF), (*W0), boplin, stress, (*G), (*Z), (*Kda), (*p_stress), fac);
+      w1_kda((*FCF), (*W0), boplin, stress, (*G), (*Z), (*Kda), (*pk1sts), fac);
       // matrix kaa
       w1_kaa((*FCF), stress, (*G), (*Kaa), fac);
       // nodal forces
-      if (force) w1_fint_eas((*W0), boplin, (*G), (*p_stress), *force, (*feas), fac);
+      if (force) w1_fint_eas((*W0), boplin, (*G), (*pk1sts), *force, (*feas), fac);
     }
     else
     {
       // geometric part of stiffness matrix kg
-      if (stiffmatrix) w1_kg(*stiffmatrix, boplin, stress, fac, nd, numeps);
+      if (stiffmatrix) w1_kg(*stiffmatrix, boplin, stress, fac, edof, Wall1::numstr_);
       // elastic+displacement stiffness matrix keu
-      if (stiffmatrix) w1_keu(*stiffmatrix, b_cure, C, fac, nd, numeps);
+      if (stiffmatrix) w1_keu(*stiffmatrix, b_cure, C, fac, edof, Wall1::numstr_);
       // nodal forces fi from integration of stresses
-      if (force) w1_fint(stress, b_cure, *force, fac, nd);
+      if (force) w1_fint(stress, b_cure, *force, fac, edof);
     }
 
   } // for (int ip=0; ip<totngp; ++ip)
@@ -272,9 +286,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       solve_for_inverseKaa.SetMatrix((*Kaa));
       solve_for_inverseKaa.Invert();
 
-      Epetra_SerialDenseMatrix KdaKaa(nd,Wall1::neas_); // temporary Kda.Kaa^{-1}
+      Epetra_SerialDenseMatrix KdaKaa(edof,Wall1::neas_); // temporary Kda.Kaa^{-1}
       KdaKaa.Multiply('N', 'N', 1.0, (*Kda), (*Kaa), 1.0);
-
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
       if (stiffmatrix) (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, (*Kda), 1.0);
@@ -287,7 +300,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
         for (int j=0; j<Wall1::neas_; ++j)
           (*oldKaainv)(i,j) = (*Kaa)(i,j);
 
-      for (int i=0; i<nd; ++i)
+      for (int i=0; i<edof; ++i)
         for (int j=0; j<Wall1::neas_; ++j)
         {
           (*oldKda)(i,j) = (*Kda)(i,j);
@@ -299,9 +312,9 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   // clean EAS data
   if (iseas_)
   {
-    delete F_enh;
-    delete F_tot;
-    delete p_stress;
+    delete Fenh;
+    delete Ftot;
+    delete pk1sts;
     delete xjm0;
     delete F0;
     delete boplin0;

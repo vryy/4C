@@ -194,7 +194,8 @@ namespace STR
     (
       const double time,  //!< evaluation time
       const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state at t_n
+      const Teuchos::RCP<Epetra_Vector> disn,  //!< displacement state at t_{n+1}
       const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force

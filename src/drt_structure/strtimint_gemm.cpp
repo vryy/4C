@@ -156,7 +156,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
 
   // ordinary internal force and stiffness
   disi_->Scale(1.-alphaf_);  // CHECK THIS
-  ApplyForceStiffInternalMid(timen_, (*dt_)[0], dism_, disi_, velm_,
+  ApplyForceStiffInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_,
                              fintm_, stiff_);
 
   // apply forces and stiffness due to constraints
@@ -395,7 +395,8 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
 (
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
+  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state at t_n
+  const Teuchos::RCP<Epetra_Vector> disn,  // displacement state at t_{n+1}
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
   const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint,  // internal force
@@ -405,16 +406,18 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
-  const std::string action = "calc_struct_nlnstiff";
+  const std::string action = "calc_struct_nlnstiff_gemm";
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
   p.set("alpha f", alphaf_);
+  p.set("xsi", xsi_);
   // set vector values needed by elements
   discret_->ClearState();
+  discret_->SetState("old displacement", dis);
+  discret_->SetState("displacement", disn);
   discret_->SetState("residual displacement", disi);
-  discret_->SetState("displacement", dis);
   if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, null, fint, null, null);
