@@ -1917,25 +1917,34 @@ void DRT::ELEMENTS::Wall1::w1_stresscauchy(
 )
 {
   double detf = F11*F22 - F12*F21;
+  // Def.grad. tensor in Cartesian matrix notation
   Epetra_SerialDenseMatrix defgrad(2,2);
   defgrad(0,0) = F11;
   defgrad(0,1) = F12;
   defgrad(1,0) = F21;
   defgrad(1,1) = F22;
+  // PK2 stress tensor in Cartesian matrix notation
   Epetra_SerialDenseMatrix pkstress(2,2);
   pkstress(0,0) = stress(0,0);
   pkstress(0,1) = stress(0,2);
   pkstress(1,0) = stress(0,2);
   pkstress(1,1) = stress(1,1);
 
+  // something like the PK1 stress, but attached to current volume
   Epetra_SerialDenseMatrix temp(2,2);
-  Epetra_SerialDenseMatrix cauchy(2,2);
   temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
-  cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
-  (*elestress)(ip,0) = cauchy(0,0);
-  (*elestress)(ip,1) = cauchy(1,1);
-  (*elestress)(ip,2) = cauchy(0,1);
-}
 
+  // Cauchy stress tensor in Cartesian matrix notation
+  Epetra_SerialDenseMatrix cauchystress(2,2);
+  cauchystress.Multiply('N','N',1/detf,defgrad,temp,0.0);
+
+  // copy results to array for output
+  (*elestress)(ip,0) = cauchystress(0,0);
+  (*elestress)(ip,1) = cauchystress(1,1);
+  (*elestress)(ip,2) = cauchystress(0,1);
+}  // w1_stresscauchy
+
+
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1
