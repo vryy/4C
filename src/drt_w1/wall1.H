@@ -65,15 +65,19 @@ class Wall1Line;
  *
  * <b>Typical quantities and their storage pattern</b>
  * - Green-Lagrange strain vector 
- *   \f$E = \left[\begin{array}{c} E_{11} \\ E_{22} \\ E_{12} \end{array}\right]\f$
+ *   \f$E = \left[\begin{array}{c} E_{11} \\ E_{22} \\ 2E_{12} \end{array}\right]\f$
  * - Deformation gradient vector
  *   \f$\tilde{F} = \left[\begin{array}{c} F_{11} \\ F_{22} \\ F_{12} \\ F_{21} \end{array}\right]\f$
  * - Constitutive matrix
- *   \f$C = \left[\begin{array}{ccc} C & C & C \\ C & C & C \\ C & C & C \end{array}\right]\f$
+ *   \f$C = \left[\begin{array}{ccc} C_{11} & C_{12} & C_{13} \\ C_{21} & C_{22} & C_{23} \\ C_{31} & C_{32} & C_{33} \end{array}\right]\f$
  * - Second Piola--Kirchhoff stress vector
  *   \f$S = \left[\begin{array}{c} S_{11} \\ S_{22} \\ S_{12} \end{array}\right]\f$
  * - First Piola-Kirchhoff stress vector
  *   \f$\tilde{P} = \left[\begin{array}{c} P_{11} \\ P_{22} \\ P_{12} \\ P_{21} \end{array}\right]\f$
+ *
+ * <b>References</b>
+ * - [1] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
+ *   Vorlesungsskript, Lehrstuhl fuer Numerische Mechanik, SS 2007.
  */
 class Wall1 : public DRT::Element
 {
@@ -245,6 +249,8 @@ private:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_nlnstifflmass,
+    calc_struct_nlnstiffmass_gemm,  ///< internal force, stiffness and mass 
+                                    ///< for generalised energy-momentum method (GEMM)
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -258,7 +264,7 @@ private:
   enum DimensionalReduction
   {
     plane_none,  ///< undetermined
-    plane_stress,  ///< plane stres, i.e. lateral stress is zero \f$S_{33}=S_{13}=S_{23}=0\f$
+    plane_stress,  ///< plane stress, i.e. lateral stress is zero \f$S_{33}=S_{13}=S_{23}=0\f$
     plane_strain  ///< plane strain, i.e. lateral strain is zero \f$E_{33}=E_{13}=E_{23}=0\f$
   };
 
@@ -500,6 +506,27 @@ private:
   /// lump mass matrix
   void w1_lumpmass(
     Epetra_SerialDenseMatrix* emass  ///< (in/out) element mass matrix
+  );
+
+  /// (constant) density
+  /// \return density
+  double w1_density(
+    const struct _MATERIAL* material  ///< material pointer
+  );
+
+  /// evaluate the element forces and stiffness and mass for GEMM
+  /// \author bborn \date 08/08
+  void FintStiffMassGEMM(
+    const std::vector<int>& lm,  ///< location vector
+    const std::vector<double>& disp,  ///< element displacements
+    const std::vector<double>& residual,  ///< residual displacements 
+    Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
+    Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix
+    Epetra_SerialDenseVector* force,  ///< element internal force vector
+    Epetra_SerialDenseMatrix* elestress,  ///< element stresses
+    Epetra_SerialDenseMatrix* elestrain,  ///< element strains
+    struct _MATERIAL* material,  ///< element material
+    const bool cauchy = false  ///< if true calculate Cauchy instead of PK2 stresses
   );
 
   /// don't want = operator

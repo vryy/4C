@@ -404,37 +404,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
 
   // ------------------------------------ check calculation of mass matrix
-  int imass=0;
-  double density=0.0;
-  if (massmatrix)
-  {
-    imass=1;
-    /*------------------------------------------------ switch material type */
-    switch (material->mattyp)
-    {
-    case m_stvenant:/*-------------------------------------- linear elastic */
-      density = material->m.stvenant->density;
-      break;
-    case m_neohooke:/*------------------------------ kompressible neo-hooke */
-      density = material->m.neohooke->density;
-      break;
-    case m_stvenpor:/*------------------------ porous linear elastic ---*/
-      density = material->m.stvenpor->density;
-      break;
-    case m_pl_mises:/*--------------------------- von mises material law ---*/
-      dserror("Ilegal typ of material for this element");
-      break;
-    case m_pl_mises_3D:/*-------------Stefan's von mises 3D material law ---*/
-      dserror("Ilegal typ of material for this element");
-      break;
-    case m_pl_dp:/*------------------------- drucker prager material law ---*/
-      dserror("Ilegal typ of material for this element");
-      break;
-    default:
-      dserror("Ilegal typ of material for this element");
-      break;
-    }
-  }
+  double density = 0.0;
+  if (massmatrix) density = w1_density(material);
 
   /*------- get integraton data ---------------------------------------- */
 
@@ -519,7 +490,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
 
 
     /*------------------------------compute mass matrix if imass-----*/
-    if (imass)
+    if (massmatrix)
     {
      double facm = fac * density;
      for (int a=0; a<iel; a++)
@@ -1895,7 +1866,6 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const Epetra_SerialDenseMatrix& W0,
 /*-----------------------------------------------------------------------------*
 | lump mass matrix                                                  bborn 07/08|
 *-----------------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
 {
   // lump mass matrix
@@ -1914,6 +1884,45 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
     }
   }
 }
+
+
+/*-----------------------------------------------------------------------------*
+| deliver density                                                   bborn 08/08|
+*-----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Wall1::w1_density(
+  const struct _MATERIAL* material
+)
+{
+  // switch material type
+  switch (material->mattyp)
+  {
+  case m_stvenant :  // linear elastic
+    return material->m.stvenant->density;
+    break;
+  case m_neohooke : // kompressible neo-Hooke
+    return material->m.neohooke->density;
+    break;
+  case m_stvenpor :  //porous linear elastic
+    return material->m.stvenpor->density;
+    break;
+  case m_pl_mises: // von Mises material law
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  case m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  case m_pl_dp :  // Drucker-Prager material law
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  default:
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  }
+}  // w1_density
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1
