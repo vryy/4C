@@ -304,7 +304,7 @@ private:
   {
     w1_none,  ///< undetermined
     w1_xy,  ///< Cartesian
-    w1_rs  ///< cylindrical
+    w1_rs  ///< local
   };
 
 //  //! couptyp for thermo-structure-interaction
@@ -340,8 +340,7 @@ private:
 
   /// evaluate the element forces and stiffness and mass
   /// \author mgit \date 03/07
-  void w1_nlnstiffmass
-  (
+  void w1_nlnstiffmass(
     const vector<int>& lm,  ///< location vector
     const vector<double>& disp,  ///< element displacements
     const vector<double>& residual,  ///< residual displacements 
@@ -367,8 +366,7 @@ private:
   /// Jacobian matrix for mapping from parameter space in physical material space
   /// at point parameter space
   /// \author mgit \date 04/07
-  void w1_jacobianmatrix
-  (
+  void w1_jacobianmatrix(
     double xrefe[2][MAXNOD_WALL1],  ///< reference/material co-ordinates of element nodes
     const Epetra_SerialDenseMatrix& deriv,  ///< derivatives of shape functions at parameter point
     Epetra_SerialDenseMatrix& xjm,  ///< Jacobi matrix
@@ -378,8 +376,7 @@ private:
 
   /// Linear B-operator in reference configuration at point parameter space
   /// \author mgit \date 04/07
-  void w1_boplin
-  (
+  void w1_boplin(
     Epetra_SerialDenseMatrix& boplin,  ///< the B-operator
     Epetra_SerialDenseMatrix& deriv,  ///< derivatives of shape functions at parameter point
     Epetra_SerialDenseMatrix& xjm,  ///< Jacobian at parameter point
@@ -390,8 +387,7 @@ private:
   /// (Material) Deformation gradient \f$F\f$ and Green-Lagrange strains \f$E\f$
   /// at parameter point
   /// \author mgit \date 04/07
-  void w1_defgrad
-  (
+  void w1_defgrad(
     Epetra_SerialDenseVector& F,  ///< deformation gradient
     Epetra_SerialDenseVector& strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
     const double xrefe[][MAXNOD_WALL1],  ///< reference/material co-ordinates of element nodes
@@ -402,8 +398,7 @@ private:
 
   /// Non-linear B-operator in reference configuration
   /// \author mgit \date 04/07
-  void w1_boplin_cure
-  (
+  void w1_boplin_cure(
     Epetra_SerialDenseMatrix& b_cure,  ///< non-linear B-operator
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const Epetra_SerialDenseVector& F,  ///< deformation gradient as Voigt-vector
@@ -413,8 +408,7 @@ private:
 
   /// Constitutive matrix \f$C\f$ and stresses
   /// \author mgit \date 05/07
-  void w1_call_matgeononl
-  (
+  void w1_call_matgeononl(
     const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
     Epetra_SerialDenseMatrix& stress,  ///< stress vector
     Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
@@ -424,8 +418,7 @@ private:
 
   /// Geometric stiffness constribution (total Lagrange) 
   /// \author mgit \date 05/07
-  void w1_kg
-  (
+  void w1_kg(
     Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix 
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
@@ -436,8 +429,7 @@ private:
   
   /// elastic and initial displacement stiffness contribution (total Lagrange)
   /// \author mgit \date 05/07
-  void w1_keu
-  (
+  void w1_keu(
     Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix 
     const Epetra_SerialDenseMatrix& b_cure,  ///< non-linear B-operator
     const Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
@@ -448,8 +440,7 @@ private:
 
   /// Evaluate internal element forces for large def (total Lagr)
   /// \author mgit \date 05/07
-  void w1_fint
-  (
+  void w1_fint(
     const Epetra_SerialDenseMatrix& stress, ///< PK2 stress vector
     const Epetra_SerialDenseMatrix& b_cure,  ///< non-linear B-op
     Epetra_SerialDenseVector& intforce,  ///< internal force vector
@@ -458,8 +449,7 @@ private:
   );
 
   /// setup of constant EAS data
-  void w1_eassetup
-  (
+  void w1_eassetup(
     Epetra_SerialDenseMatrix& boplin0,  ///< linear B-op at origin
     Epetra_SerialDenseVector& F0,  ///< deformation gradient at origin
     Epetra_SerialDenseMatrix& xjm0,  ///< jacobian matrix at origin
@@ -473,8 +463,7 @@ private:
   /// also the operators G,W0 and Z
   /// at point in parameter space
   /// \author mgit \date 01/08
-  void w1_call_defgrad_enh
-  (
+  void w1_call_defgrad_enh(
     Epetra_SerialDenseMatrix& F_enh,  ///< enhanced deformation gradient
     const Epetra_SerialDenseMatrix xjm0,  ///< Jacobian at origin
     const Epetra_SerialDenseMatrix xjm,  ///< Jacobian at parameter point
@@ -492,8 +481,7 @@ private:
 
   /// Total deformation gradient and (enhanced) Green-Lagrange strain
   /// \author mgit \date 01/08
-  void w1_call_defgrad_tot
-  (
+  void w1_call_defgrad_tot(
     const Epetra_SerialDenseMatrix F_enh,  ///< enhanced def.grad.
     Epetra_SerialDenseMatrix& F_tot,  ///< total def.grad.
     const Epetra_SerialDenseVector F,  ///< displ.-based def.grad.
@@ -502,8 +490,7 @@ private:
   
   /// first Piola-Kirchhoff stress vector  
   /// \author mgit \author 02/08
-  void w1_stress_eas
-  (
+  void w1_stress_eas(
     const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
     const Epetra_SerialDenseMatrix& F_tot,  ///< total def.grad.
     Epetra_SerialDenseMatrix& p_stress  ///< PK1 stress vector
@@ -511,8 +498,7 @@ private:
   
   /// calculate stiffness matrix kdd \f$\partial f_{int}/\partial d\f$
   /// \author mgit \date 03/08
-  void w1_kdd
-  (
+  void w1_kdd(
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-op
     const Epetra_SerialDenseMatrix& W0,  ///< W-operator at origin
     const Epetra_SerialDenseMatrix& F,  ///< total def.grad.
@@ -525,8 +511,7 @@ private:
 
   /// calculate tangential matrix kda \f$\partial f_{int}/\partial \alpha\f$
   /// \author mgit \date 03/08
-  void w1_kda
-  (
+  void w1_kda(
     const Epetra_SerialDenseMatrix& FCF,  ///< a product
     const Epetra_SerialDenseMatrix& W0,  ///< W-operator at origin
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-op
@@ -540,8 +525,7 @@ private:
   
   /// calculate tangential matrix kaa \f$\partial s/\partial \alpha\f$
   /// \author mgit \date 03/08
-  void w1_kaa
-  (
+  void w1_kaa(
     const Epetra_SerialDenseMatrix& FCF,  ///< a product \f$F^T \dot C \dot F\f$
     const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress
     const Epetra_SerialDenseMatrix& G,  ///< G-op
@@ -550,8 +534,7 @@ private:
   );
   
   /// calculate internal forces fint(displacements u) and feas
-  void w1_fint_eas
-  (
+  void w1_fint_eas(
     const Epetra_SerialDenseMatrix& W0,  ///< W-op at origin
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-op
     const Epetra_SerialDenseMatrix& G,  ///< G-op
@@ -562,8 +545,7 @@ private:
   );
 
   /// lump mass matrix
-  void w1_lumpmass
-  (
+  void w1_lumpmass(
     Epetra_SerialDenseMatrix* emass  ///< (in/out) element mass matrix
   );
 
