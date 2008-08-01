@@ -232,25 +232,40 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
 {
-
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
+  BlitzVec6 xcurr;
   
-  //current position of nodal degrees of freedom
-  BlitzMat6x2 xcurr;
+  //Green-Lagrange strain
+  double epsilon;
   
-  //difference between coordinates of both nodes in current configuration, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
-  BlitzVec3 x21;
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  BlitzVec6 aux;
 
-
-  //nodal coordinates in current position
-  for (int k=0; k<2; ++k) //looping over number of nodes
+  //current nodal position (first
+  for (int j=0; j<3; ++j) 
   {
-    for (int j=0; j<3; ++j) 
-    {
-      xcurr(j,k)   = Nodes()[k]->X()[j] + disp[k*6+j]; //translational DOF
-      xcurr(j+3,k) = disp[k*6+j+3]; //rotational DOF
-    }
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
   }
-
+  
+  //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
+  aux(0) = 0.25 * (xcurr[0] - xcurr[3]);
+  aux(1) = 0.25 * (xcurr[1] - xcurr[4]);
+  aux(2) = 0.25 * (xcurr[2] - xcurr[5]);
+  aux(3) = 0.25 * (xcurr[3] - xcurr[0]);
+  aux(4) = 0.25 * (xcurr[4] - xcurr[1]);
+  aux(5) = 0.25 * (xcurr[5] - xcurr[2]);
+  
+  //calculating strain epsilon from node position by scalar product:
+  //epsilon = (xrefe + 0.5*disp)^T * N_{,s}^T * N_{,s} * d
+  epsilon = 0;
+  epsilon += (Nodes()[0]->X()[0] + 0.5*disp[0]) * (disp[0] - disp[3]);
+  epsilon += (Nodes()[0]->X()[1] + 0.5*disp[1]) * (disp[1] - disp[4]);
+  epsilon += (Nodes()[0]->X()[2] + 0.5*disp[2]) * (disp[2] - disp[5]);
+  epsilon += (Nodes()[1]->X()[0] + 0.5*disp[3]) * (disp[3] - disp[0]);
+  epsilon += (Nodes()[1]->X()[1] + 0.5*disp[4]) * (disp[4] - disp[1]);
+  epsilon += (Nodes()[1]->X()[2] + 0.5*disp[5]) * (disp[5] - disp[2]);
+  epsilon /= lrefe_*lrefe_;
 
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
@@ -261,9 +276,9 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
 
   // get the material law
   MATERIAL* currmat = &(mat[material_-1]);
-  double ym;
-  double sm;
-  double density;
+  double ym = 0;
+  double sm = 0;
+  double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss 
   switch(currmat->mattyp)
@@ -278,17 +293,16 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }
-  
 
 
-  //computing global internal forces, Crisfield Vol. 2, equation (17.79)
-  //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
+
+  //computing global internal forces
   if (force != NULL)
   {
     (*force).Size(6);
     for (int i=0; i<6; ++i)
     {
-      (*force)(i)   += 0;
+      (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
     }
   }
 
@@ -296,7 +310,26 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
   if (stiffmatrix != NULL)
   {   
     //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
-    (*stiffmatrix).Shape(6,6);  
+    (*stiffmatrix).Shape(6,6); 
+    
+    for (int i=0; i<3; ++i)
+    {
+        (*stiffmatrix)(i,i)   =  (ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i,i+3) = -(ym*crosssec_*epsilon/lrefe_);
+    }
+    for (int i=3; i<6; ++i)
+    {
+        (*stiffmatrix)(i,i)   =  (ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i,i-3) = -(ym*crosssec_*epsilon/lrefe_);
+    }
+    
+    for (int i=0; i<6; ++i)
+    {
+      for (int j=0; j<6; ++j)
+      {
+        (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+      }     
+    }
 
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
@@ -351,18 +384,19 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
    
   }
   
-  /*calculating mass matrix; this truss3 element includes only a lumped mass matrix where for torsion and
-   * bending the same moments of inertia are assumed; for slender trusss the influence of rotational moments
-   * of inertia is dilute so that often rotational inertia is just set to zero; since within this code at one
-   * point an LU-decomposition of the mass matrix is carried out this was avoided in the here implemented truss3
-   * element and instead the above described simplification was assumed; Iyy_ = Izz_ was assumed for similar 
-   * reasons */
+  //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
     (*massmatrix).Shape(6,6);
-    for (int i=0; i<6; ++i)
+    for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i,i) = 0.5*density*lrefe_*crosssec_;
+      (*massmatrix)(i  ,i  ) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 6;
+    }
+    for (int i=3; i<5; ++i)
+    {
+      (*massmatrix)(i  ,i  ) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i-3,i-3) = density*lrefe_*crosssec_ / 6;
     }
   }
   

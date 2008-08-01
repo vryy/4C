@@ -268,7 +268,7 @@ void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
 int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
 {		
   //variable for nodal point coordinates in reference configuration
-  BlitzMat3x2 xrefe;
+  BlitzVec6 xrefe;
   
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
@@ -284,13 +284,13 @@ int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
       //getting element's reference coordinates     
       for (int k=0; k<2; ++k) //element has two nodes
         {
-          xrefe(0,k) = currele->Nodes()[k]->X()[0];
-          xrefe(1,k) = currele->Nodes()[k]->X()[1];
-          xrefe(2,k) = currele->Nodes()[k]->X()[2];
+          xrefe(3*k + 0) = currele->Nodes()[k]->X()[0];
+          xrefe(3*k + 1) = currele->Nodes()[k]->X()[1];
+          xrefe(3*k + 2) = currele->Nodes()[k]->X()[2];
         }
       
       //length in reference configuration
-      currele->lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
+      currele->lrefe_ = pow(pow(xrefe(3)-xrefe(0),2)+pow(xrefe(4)-xrefe(1),2)+pow(xrefe(5)-xrefe(2),2),0.5);  
           
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 	

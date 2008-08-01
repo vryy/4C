@@ -39,12 +39,7 @@ using namespace Teuchos;
 #include "../drt_xfem/blitz_tiny_operation.H"
 
 //! generally usefull typedefs, when working with Blitz arrays
-typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
 typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
-typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
-typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
-typedef blitz::TinyMatrix<double,6,6> BlitzMat6x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x6
-typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
 // forward declarations
@@ -166,7 +161,7 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const { return 6;}
+  virtual int NumDofPerNode(const DRT::Node& node) const { return 3;}
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
