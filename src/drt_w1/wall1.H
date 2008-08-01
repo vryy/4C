@@ -269,7 +269,7 @@ private:
   {
     w1_none,  ///< undetermined
     w1_xy,  ///< Cartesian
-    w1_rs  ///< local
+    w1_rs  ///< local/parametric/natural
   };
 
   /// container containing all kind of wall1 thisandthat
