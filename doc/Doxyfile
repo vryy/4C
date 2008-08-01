@@ -471,6 +471,7 @@ INPUT                  = index.doc \
                          ../src/drt_so3 \
                          ../src/drt_beam2 \
                          ../src/drt_beam3 \
+                         ../src/drt_truss3 \
                          ../src/io \
                          ../src/drt_adapter \
                          ../src/drt_fsi \
@@ -1061,6 +1062,7 @@ PREDEFINED             = __cplusplus \
                          D_SHELL8 \
                          D_BEAM2 \
                          D_BEAM3 \
+                         D_TRUSS3 \
                          D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \
