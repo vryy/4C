@@ -25,21 +25,22 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3Line::Evaluate(        ParameterList&            params,
-                                                DRT::Discretization&      discretization,
-                                                vector<int>&              lm,
-                                                Epetra_SerialDenseMatrix& elemat1,
-                                                Epetra_SerialDenseMatrix& elemat2,
-                                                Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseVector& elevec2,
-                                                Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Bele3Line::Evaluate(
+    ParameterList&            params,
+    DRT::Discretization&      discretization,
+    vector<int>&              lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
 {
     DRT::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = Bele3Line::integrate_Shapefunction;
-    else dserror("Unknown type of action for Fluid3_Surface");
+    else dserror("Unknown type of action for Bele3Line");
 
     switch(act)
     {
