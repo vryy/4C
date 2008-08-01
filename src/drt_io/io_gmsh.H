@@ -29,7 +29,7 @@ namespace IO
   //! routines to transform results (elements, nodes, integrationcells, whole discretizations...) to Gmsh output
   namespace GMSH
   {
-    //! for each DRT::Element::DiscretizationType find the apropriate Gmsh file type
+    //! for each DRT::Element::DiscretizationType find the appropriate Gmsh file type
     inline std::string distypeToGmshElementHeader(
         const DRT::Element::DiscretizationType distype)
     {
