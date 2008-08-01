@@ -511,12 +511,12 @@ private:
 
   /// (constant) density
   /// \return density
-  double w1_density(
+  double Density(
     const struct _MATERIAL* material  ///< material pointer
   );
 
   /// determine cauchy stress and store it
-  void w1_stresscauchy(
+  void StressCauchy(
     const int ip,  ///< Gauss point index
     const double& F11,  ///< F_{11} component of def.grad.
     const double& F22,  ///< F_{22} component of def.grad.

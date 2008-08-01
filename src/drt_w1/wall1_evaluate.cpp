@@ -418,19 +418,16 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
-  if (massmatrix) density = w1_density(material);
+  if (massmatrix) density = Density(material);
 
   /*------- get integraton data ---------------------------------------- */
-
-  const int iel = numnode;
-
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
-  for (int k=0; k<iel; ++k)
+  for (int k=0; k<numnode; ++k)
   {
 
     xrefe(0,k) = Nodes()[k]->X()[0];
@@ -494,7 +491,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
 
     /*--------------------------------------- compute jacobian Matrix */
-    w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
+    w1_jacobianmatrix(xrefe,deriv,xjm,&det,numnode);
 
     /*------------------------------------ integration factor  -------*/
     double fac = wgt * det * thickness_;
@@ -503,9 +500,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     if (massmatrix)
     {
       double facm = fac * density;
-      for (int a=0; a<iel; a++)
+      for (int a=0; a<numnode; a++)
       {
-        for (int b=0; b<iel; b++)
+        for (int b=0; b<numnode; b++)
         {
           (*massmatrix)(2*a,2*b)     += facm * funct(a) * funct(b); /* a,b even */
           (*massmatrix)(2*a+1,2*b+1) += facm * funct(a) * funct(b); /* a,b odd  */
@@ -514,10 +511,10 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     }
 
     /*----------------------------------- calculate operator Blin  ---*/
-    w1_boplin(boplin,deriv,xjm,det,iel);
+    w1_boplin(boplin,deriv,xjm,det,numnode);
     //cout.precision(16);
     /*------------ calculate defgrad F^u, Green-Lagrange-strain E^u --*/
-    w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
+    w1_defgrad(F,strain,xrefe,xcure,boplin,numnode);
 
     /*-calculate defgrad F in matrix notation and Blin in current conf.*/
     w1_boplin_cure(b_cure,boplin,F,numeps,nd);
@@ -547,7 +544,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
        {
          if (cauchy)
          {
-           w1_stresscauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
+           StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
          }
          else
          {
@@ -586,7 +583,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
      {
        if (cauchy)
        {
-         w1_stresscauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+         StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
        }
        else
        {
@@ -1863,7 +1860,7 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
 /*-----------------------------------------------------------------------------*
 | deliver density                                                   bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::w1_density(
+double DRT::ELEMENTS::Wall1::Density(
   const struct _MATERIAL* material
 )
 {
@@ -1901,7 +1898,7 @@ double DRT::ELEMENTS::Wall1::w1_density(
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_stresscauchy(
+void DRT::ELEMENTS::Wall1::StressCauchy(
   const int ip,
   const double& F11,
   const double& F22,

@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
 
   // ------------------------------------ check calculation of mass matrix
-  double density = (massmatrix) ? w1_density(material) : 0.0;
+  double density = (massmatrix) ? Density(material) : 0.0;
 
   // element co-ordinates
   for (int k=0; k<numnode; ++k)
@@ -221,9 +221,9 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       if (cauchy)
       {
         if (iseas_)
-          w1_stresscauchy(ip, (*F_tot)(0,0), (*F_tot)(1,1), (*F_tot)(1,1), (*F_tot)(1,2), stress, elestress);
+          StressCauchy(ip, (*F_tot)(0,0), (*F_tot)(1,1), (*F_tot)(1,1), (*F_tot)(1,2), stress, elestress);
         else
-          w1_stresscauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+          StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
       }
       else
       {
