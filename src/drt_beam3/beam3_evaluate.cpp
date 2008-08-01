@@ -575,6 +575,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
   BlitzMat3x3 spinx21;
   computespin(spinx21,x21,0.5);
+  
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
