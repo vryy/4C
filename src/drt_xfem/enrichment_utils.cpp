@@ -407,17 +407,17 @@ void XFEM::computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const XFEM::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,2>& elementvalues,
-  blitz::Array<double,2>&      cellvalues
+  const BlitzMat& elementvalues,
+  BlitzMat&      cellvalues
   )
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
   
-  blitz::Array<double,2> xyz_cell(3,nen_cell);
+  BlitzMat xyz_cell(3,nen_cell);
   cell.NodalPosXYZ(ele, xyz_cell);
 
   // if cell node is on the interface, the value is not defined for a jump.
@@ -475,15 +475,15 @@ void XFEM::computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const XFEM::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,2>& elementvalues,
-  blitz::Array<double,2>&      cellvalues
+  const BlitzMat& elementvalues,
+  BlitzMat&      cellvalues
   )
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
