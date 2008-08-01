@@ -282,7 +282,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   RefCountPtr<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
   proc0map_=proc0map; // update the internal map
   WriteCells(file, field_->discretization(), proc0map);
-
+  
   Write(file, "END TIME STEP");
   return;
 }
@@ -431,9 +431,6 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       vector<int> ele_cart_id(dim);
       int np=-1;
       knots->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
-
-      // get nurbs dis' knotvector sizes
-      vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
 
       // get nurbs dis' element numbers
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
@@ -847,6 +844,12 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	int idv;
 	int idw;
 
+	// number of visualisation points in u direction
+	int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(np))[0]+1;
+	
+	// number of visualisation points in v direction
+	int nvpv=2*(nurbsdis->Return_nele_x_mele_x_lele(np))[1]+1;
+
 	{
 	  // standard
 
@@ -868,43 +871,43 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 8 points
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 
@@ -1094,23 +1097,23 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 4 additional points
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 
@@ -1220,23 +1223,23 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 4 additional points
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 
@@ -1348,13 +1351,13 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 2 additional points
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]  )*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+1)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  // temporary x vector
@@ -1423,23 +1426,23 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 4 additional points
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 
@@ -1554,13 +1557,13 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 2 additional points
 
 	  idu=(2*ele_cart_id[0]  );
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+1);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 	  // temporary x vector
 	  std::vector<double> x(3);
@@ -1631,13 +1634,13 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  // append 2 additional points
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]  )*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  // temporary x vector
@@ -1711,8 +1714,8 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 
 	  idu=(2*ele_cart_id[0]+2);
-	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*nvpu;
+	  idw=(2*ele_cart_id[2]+2)*nvpu*nvpv;
 	  local_vis_point_ids.push_back(vpoff[np]+idu+idv+idw);
 
 	  // temporary x vector
@@ -1748,33 +1751,31 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
     // construct map for visualisation points. Store it in 
     // class variable for access in data interpolation
-  int numvispoints = 0;
-  
-  for(int np=0;np<npatches;++np)
-  {
-    int numvisp=1;
-
-    // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
-     
-    // get nurbs dis' knotvector sizes
-    vector<int> degree(nurbsdis->Return_degree(np));
+    int numvispoints = 0;
     
-    for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
+    // loop all patches
+    for(int np=0;np<npatches;++np)
     {
-      numvisp*=2*(n_x_m_x_l[rr]-2*degree[rr])-1;
+      // get nurbs dis' knotvector sizes
+      vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+    
+      int numvisp=1;
+
+      for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
+      {
+	numvisp*=2*(nele_x_mele_x_lele[rr])+1;
+      }
+      numvispoints+=numvisp;
     }
-    numvispoints+=numvisp;
-  } // end loop over patches 
 
-  vispointmap_ = Teuchos::rcp(new Epetra_Map(numvispoints,
-					     local_vis_point_ids.size(),
-					     &local_vis_point_ids[0],
-					     0,
-					     nurbsdis->Comm()));
+    vispointmap_ = Teuchos::rcp(new Epetra_Map(numvispoints,
+					       local_vis_point_ids.size(),
+					       &local_vis_point_ids[0],
+					       0,
+					       nurbsdis->Comm()));
 
-  // allocate the coordinates of the vizualisation points
-  nodecoords = rcp(new Epetra_MultiVector(*vispointmap_,3));
+    // allocate the coordinates of the vizualisation points
+    nodecoords = rcp(new Epetra_MultiVector(*vispointmap_,3));
 
     // loop over the nodes on this proc and store the coordinate information
     for (int inode=0; inode<(int)local_vis_point_x.size(); inode++)
@@ -2170,173 +2171,165 @@ void EnsightWriter::WriteCells(
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // bottom, right front
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // bottom, left rear  
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+		
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+		    
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // bottom, right rear
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+		
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    //-------------------------------------------------------------------------------
 
@@ -2344,173 +2337,166 @@ void EnsightWriter::WriteCells(
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
 	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // top, right front
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // top, left rear  
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // top, right rear
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
-	    Write(geofile,vpoff[npatch]+proc0map->LID(i)+1);
+	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	  }
 	  else // elements on other procs have to store their global node ids
