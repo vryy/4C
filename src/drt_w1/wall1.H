@@ -81,7 +81,7 @@ public:
 
   /// @name object-wide constants
   //@{
-  static const inr maxnod_ = 9;  ///< maximally permitted number of nodes
+  static const int maxnod_ = 9;  ///< maximally permitted number of nodes
   static const int numdim_ = 2;  ///< 2-dimensional/planar element
   static const int noddof_ = 2;  ///< number of nodal DOFs
   static const int numstr_ = 4;  ///< number of (symmetric) strain/stress components --- THIS SHOULD BE 3
