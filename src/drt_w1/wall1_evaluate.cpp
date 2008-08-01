@@ -66,6 +66,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
   else if (action=="calc_struct_linstiffmass")  act = Wall1::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = Wall1::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_nlnstifflmass") act = Wall1::calc_struct_nlnstifflmass;
+  else if (action=="calc_struct_nlnstiff_gemm") act = Wall1::calc_struct_nlnstiff_gemm;
   else if (action=="calc_struct_stress")        act = Wall1::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
@@ -132,6 +133,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       // onto the internal force vector.
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
       w1_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
+    }
+    break;
+    case Wall1::calc_struct_nlnstiff_gemm:
+    {
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      FintStiffMassGEMM(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
     case calc_struct_update_istep:
@@ -534,33 +548,15 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
        // return gp stresses (only in case of stress/strain output)
        if (elestress != NULL)
        {
-         if (!cauchy)
+         if (cauchy)
+         {
+           w1_stresscauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
+         }
+         else
          {
            (*elestress)(ip,0) = stress(0,0);
            (*elestress)(ip,1) = stress(1,1);
            (*elestress)(ip,2) = stress(0,2);
-         }
-         else
-         {
-           double detf = F_tot(0,0)*F_tot(1,1)-F_tot(0,2)*F_tot(1,2);
-           Epetra_SerialDenseMatrix defgrad(2,2);
-           Epetra_SerialDenseMatrix pkstress(2,2);
-           defgrad(0,0) = F_tot(0,0);
-           defgrad(0,1) = F_tot(0,2);
-           defgrad(1,0) = F_tot(1,2);
-           defgrad(1,1) = F_tot(1,1);
-           pkstress(0,0)= stress(0,0);
-           pkstress(0,1)= stress(0,2);
-           pkstress(1,0)= stress(0,2);
-           pkstress(1,1)= stress(1,1);
-
-           Epetra_SerialDenseMatrix temp(2,2);
-           Epetra_SerialDenseMatrix cauchy(2,2);
-           temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
-           cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
-           (*elestress)(ip,0) = cauchy(0,0);
-           (*elestress)(ip,1) = cauchy(1,1);
-           (*elestress)(ip,2) = cauchy(0,1);
          }
        }
 
@@ -591,33 +587,15 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
      // return gp stresses (only in case of stress/strain output)
      if (elestress != NULL)
      {
-       if (!cauchy)
+       if (cauchy)
+       {
+         w1_stresscauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+       }
+       else
        {
          (*elestress)(ip,0) = stress(0,0);
          (*elestress)(ip,1) = stress(1,1);
          (*elestress)(ip,2) = stress(0,2);
-       }
-       else
-       {
-         double detf = F[0]*F[1]-F[2]*F[3];
-         Epetra_SerialDenseMatrix defgrad(2,2);
-         Epetra_SerialDenseMatrix pkstress(2,2);
-         defgrad(0,0) = F[0];
-         defgrad(0,1) = F[2];
-         defgrad(1,0) = F[3];
-         defgrad(1,1) = F[1];
-         pkstress(0,0)= stress(0,0);
-         pkstress(0,1)= stress(0,2);
-         pkstress(1,0)= stress(0,2);
-         pkstress(1,1)= stress(1,1);
-
-         Epetra_SerialDenseMatrix temp(2,2);
-         Epetra_SerialDenseMatrix cauchy(2,2);
-         temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
-         cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
-         (*elestress)(ip,0) = cauchy(0,0);
-         (*elestress)(ip,1) = cauchy(1,1);
-         (*elestress)(ip,2) = cauchy(0,1);
        }
      }
 
@@ -1924,6 +1902,40 @@ double DRT::ELEMENTS::Wall1::w1_density(
     break;
   }
 }  // w1_density
+
+/*-----------------------------------------------------------------------------*
+| deliver Cauchy stress                                             bborn 08/08|
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::w1_stresscauchy(
+  const int ip,
+  const double& F11,
+  const double& F22,
+  const double& F12,
+  const double& F21,
+  const Epetra_SerialDenseMatrix& stress,
+  Epetra_SerialDenseMatrix* elestress
+)
+{
+  double detf = F11*F22 - F12*F21;
+  Epetra_SerialDenseMatrix defgrad(2,2);
+  defgrad(0,0) = F11;
+  defgrad(0,1) = F12;
+  defgrad(1,0) = F21;
+  defgrad(1,1) = F22;
+  Epetra_SerialDenseMatrix pkstress(2,2);
+  pkstress(0,0) = stress(0,0);
+  pkstress(0,1) = stress(0,2);
+  pkstress(1,0) = stress(0,2);
+  pkstress(1,1) = stress(1,1);
+
+  Epetra_SerialDenseMatrix temp(2,2);
+  Epetra_SerialDenseMatrix cauchy(2,2);
+  temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
+  cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
+  (*elestress)(ip,0) = cauchy(0,0);
+  (*elestress)(ip,1) = cauchy(1,1);
+  (*elestress)(ip,2) = cauchy(0,1);
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

@@ -250,8 +250,8 @@ private:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_nlnstifflmass,
-    calc_struct_nlnstiffmass_gemm,  ///< internal force, stiffness and mass 
-                                    ///< for generalised energy-momentum method (GEMM)
+    calc_struct_nlnstiff_gemm,  ///< internal force, stiffness and mass 
+                                ///< for generalised energy-momentum method (GEMM)
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -513,6 +513,17 @@ private:
   /// \return density
   double w1_density(
     const struct _MATERIAL* material  ///< material pointer
+  );
+
+  /// determine cauchy stress and store it
+  void w1_stresscauchy(
+    const int ip,  ///< Gauss point index
+    const double& F11,  ///< F_{11} component of def.grad.
+    const double& F22,  ///< F_{22} component of def.grad.
+    const double& F12,  ///< F_{12} component of def.grad.
+    const double& F21,  ///< F_{21} component of def.grad.
+    const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress matrix
+    Epetra_SerialDenseMatrix* elestress  ///< element stress array
   );
 
   /// evaluate the element forces and stiffness and mass for GEMM
