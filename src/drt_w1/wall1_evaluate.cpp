@@ -357,7 +357,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
 {
   const int numnode = NumNode();
   const int numdf   = 2;
-  int       ngauss  = 0;
   const int nd      = numnode*numdf;
 
 
@@ -486,11 +485,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     /*================================== gaussian point and weight at it */
-
-
-  const double e1 = intpoints.qxg[ip][0];
-  const double e2 = intpoints.qxg[ip][1];
-  const double wgt = intpoints.qwgt[ip];
+    const double e1 = intpoints.qxg[ip][0];
+    const double e2 = intpoints.qxg[ip][1];
+    const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
     DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
@@ -502,20 +499,20 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     /*------------------------------------ integration factor  -------*/
     double fac = wgt * det * thickness_;
 
-
     /*------------------------------compute mass matrix if imass-----*/
     if (massmatrix)
     {
-     double facm = fac * density;
-     for (int a=0; a<iel; a++)
-     {
-      for (int b=0; b<iel; b++)
+      double facm = fac * density;
+      for (int a=0; a<iel; a++)
       {
-       (*massmatrix)(2*a,2*b)     += facm * funct(a) * funct(b); /* a,b even */
-       (*massmatrix)(2*a+1,2*b+1) += facm * funct(a) * funct(b); /* a,b odd  */
+        for (int b=0; b<iel; b++)
+        {
+          (*massmatrix)(2*a,2*b)     += facm * funct(a) * funct(b); /* a,b even */
+          (*massmatrix)(2*a+1,2*b+1) += facm * funct(a) * funct(b); /* a,b odd  */
+        }
       }
-     }
     }
+
     /*----------------------------------- calculate operator Blin  ---*/
     w1_boplin(boplin,deriv,xjm,det,iel);
     //cout.precision(16);
@@ -608,8 +605,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
      /*--------------- nodal forces fi from integration of stresses ---*/
      if (force) w1_fint(stress,b_cure,*force,fac,nd);
    }
-
-     ngauss++;
 
   } // for (int ip=0; ip<totngp; ++ip)
 
