@@ -189,8 +189,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
-      Epetra_SerialDenseMatrix stress(intpoints.nquad,NUMSTR_W1);
-      Epetra_SerialDenseMatrix strain(intpoints.nquad,NUMSTR_W1);
+      Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
+      Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       if (iostrain!="euler_almansi") w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
@@ -387,17 +387,17 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   Epetra_SerialDenseMatrix W0;      // W operator (origin)
   W0.Shape(4,2*numnode);
   Epetra_SerialDenseMatrix G;       // G operator
-  G.Shape(4,neas);
+  G.Shape(4,Wall1::neas_);
   Epetra_SerialDenseMatrix Z;        // Z operator
-  Z.Shape(2*numnode,neas);
+  Z.Shape(2*numnode,Wall1::neas_);
   Epetra_SerialDenseMatrix FCF;     // FCF^T
   FCF.Shape(4,4);
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
-  Kda.Shape(2*numnode,neas);
+  Kda.Shape(2*numnode,Wall1::neas_);
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
-  Kaa.Shape(neas,neas);
+  Kaa.Shape(Wall1::neas_,Wall1::neas_);
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
-  feas.Size(neas);
+  feas.Size(Wall1::neas_);
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix* oldfeas;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
@@ -527,7 +527,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
        // return gp strains (only in case of stress/strain output)
        if (elestrain != NULL)
        {
-         for (int i = 0; i < NUMSTR_W1; ++i)
+         for (int i = 0; i < Wall1::numstr_; ++i)
            (*elestrain)(ip,i) = strain(i);
        }
 
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
      // return gp strains (only in case of stress/strain output)
      if (elestress != NULL)
      {
-       for (int i = 0; i < NUMSTR_W1; ++i)
+       for (int i = 0; i < Wall1::numstr_; ++i)
          (*elestrain)(ip,i) = strain(i);
      }
 
@@ -649,7 +649,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
       solve_for_inverseKaa.Invert();
 
 
-      Epetra_SerialDenseMatrix KdaKaa(2*NumNode(),neas); // temporary Kda.Kaa^{-1}
+      Epetra_SerialDenseMatrix KdaKaa(2*NumNode(),Wall1::neas_); // temporary Kda.Kaa^{-1}
       KdaKaa.Multiply('N', 'N', 1.0, Kda, Kaa, 1.0);
 
 
@@ -660,12 +660,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
       if (force) (*force).Multiply('N', 'N', -1.0, KdaKaa, feas, 1.0);
 
       // store current EAS data in history
-      for (int i=0; i<neas; ++i)
-        for (int j=0; j<neas; ++j)
+      for (int i=0; i<Wall1::neas_; ++i)
+        for (int j=0; j<Wall1::neas_; ++j)
           (*oldKaainv)(i,j) = Kaa(i,j);
 
       for (int i=0; i<(2*NumNode()); ++i)
-        for (int j=0; j<neas; ++j)
+        for (int j=0; j<Wall1::neas_; ++j)
         {
           (*oldKda)(i,j) = Kda(i,j);
           (*oldfeas)(j,0) = feas(j);
@@ -1493,12 +1493,12 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   // without alphas
 
   // vector M_ges, includes the matrices M1 to M4
-  vector <Epetra_SerialDenseMatrix> M_ges(neas);
+  vector <Epetra_SerialDenseMatrix> M_ges(Wall1::neas_);
 
   // vector A_ges, includes the matrices A1 to A4
     vector <Epetra_SerialDenseMatrix> A_ges(4);
 
-   for (int ieas=0; ieas<neas; ieas++)
+   for (int ieas=0; ieas<Wall1::neas_; ieas++)
    {
      (M_ges[ieas]).Shape(2,2);
 
@@ -1525,7 +1525,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   W0wa.Shape(4,2*NumNode());
 
 
-  for (int i=0; i<neas; i++)  // loop over eas-parameter
+  for (int i=0; i<Wall1::neas_; i++)  // loop over eas-parameter
   {
     M_temp.Multiply('N','T',1.0,M_ges[i],xjm_inv0,0.0);
     A_ges[i].Multiply('T','N',detJ0/det,xjm0,M_temp,0.0);
@@ -1725,19 +1725,19 @@ void DRT::ELEMENTS::Wall1::w1_kda(const Epetra_SerialDenseMatrix& FCF,
       BplusW (i,j)=boplin(i,j)+W0(i,j);
 
   Epetra_SerialDenseMatrix Temp1;
-  Temp1.Shape(4,neas);
+  Temp1.Shape(4,Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp2;
-  Temp2.Shape(2*NumNode(),neas);
+  Temp2.Shape(2*NumNode(),Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp3;
-  Temp3.Shape(4,neas);
+  Temp3.Shape(4,Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp4;
-  Temp4.Shape(2*NumNode(),neas);
+  Temp4.Shape(2*NumNode(),Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp5;
-  Temp5.Shape(2*NumNode(),neas);
+  Temp5.Shape(2*NumNode(),Wall1::neas_);
 
   // Temp1 = FCF^T*G
   Temp1.Multiply('N','N',1.0,FCF,G,0.0);
@@ -1754,7 +1754,7 @@ void DRT::ELEMENTS::Wall1::w1_kda(const Epetra_SerialDenseMatrix& FCF,
   // Temp5 = fac * P*Z
   for (int i=0; i<NumNode(); i++)
   {
-    for (int ieas=0; ieas<neas; ieas++)
+    for (int ieas=0; ieas<Wall1::neas_; ieas++)
     {
   Temp5(i*2,ieas)= (p_stress(0,0)*Z(i*2,ieas)+p_stress(2,0)*Z(i*2+1,ieas))*fac;
   Temp5(i*2+1,ieas)= (p_stress(3,0)*Z(i*2,ieas)+p_stress(1,0)*Z(i*2+1,ieas))*fac;
@@ -1783,16 +1783,16 @@ void DRT::ELEMENTS::Wall1::w1_kaa(const Epetra_SerialDenseMatrix& FCF,
                                   const double fac)
 {
   Epetra_SerialDenseMatrix Temp1;
-  Temp1.Shape(4,neas);
+  Temp1.Shape(4,Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp2;
-  Temp2.Shape(neas,neas);
+  Temp2.Shape(Wall1::neas_,Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp3;
-  Temp3.Shape(4,neas);
+  Temp3.Shape(4,Wall1::neas_);
 
   Epetra_SerialDenseMatrix Temp4;
-  Temp4.Shape(neas,neas);
+  Temp4.Shape(Wall1::neas_,Wall1::neas_);
 
   // Temp1 = FCF*G
   Temp1.Multiply('N','N',1.0,FCF,G,0.0);
@@ -1807,8 +1807,8 @@ void DRT::ELEMENTS::Wall1::w1_kaa(const Epetra_SerialDenseMatrix& FCF,
   Temp4.Multiply('T','N',fac,G,Temp3,0.0);
 
   // Kaa = G^T*FCF^T*G + G^T*S*G
-  for (int i=0; i<neas; i++)
-    for (int j=0; j<neas; j++)
+  for (int i=0; i<Wall1::neas_; i++)
+    for (int j=0; j<Wall1::neas_; j++)
       Kaa(i,j) += Temp2(i,j) + Temp4(i,j);
 
   return;
@@ -1843,7 +1843,7 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const Epetra_SerialDenseMatrix& W0,
   Temp1.Shape(2*NumNode(),1);
 
   Epetra_SerialDenseMatrix Temp2;
-  Temp2.Shape(neas,1);
+  Temp2.Shape(Wall1::neas_,1);
 
    // Temp1 (8x1) = (BL+W0)^T*p_stress
   Temp1.Multiply('T','N',1.0,BplusW,p_stress,0.0);
@@ -1854,7 +1854,7 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const Epetra_SerialDenseMatrix& W0,
   // Temp2 = G^T*p_stress
   Temp2.Multiply('T','N',1.0,G,p_stress,0.0);
 
-  for (int i=0; i<neas; i++)
+  for (int i=0; i<Wall1::neas_; i++)
      feas(i) += fac*Temp2(i,0);
 
   return;

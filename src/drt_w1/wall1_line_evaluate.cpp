@@ -81,15 +81,15 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-  LINALG::SerialDenseMatrix xye(NUMDIM_W1,numnod);  // material coord. of element
-  LINALG::SerialDenseMatrix xyecurr(NUMDIM_W1,numnod);  // spatial coord. of element
+  LINALG::SerialDenseMatrix xye(Wall1::numdim_,numnod);  // material coord. of element
+  LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_,numnod);  // spatial coord. of element
   for (int i=0; i<numnod; ++i)
   {
     xye(0,i)=Nodes()[i]->X()[0]; 
     xye(1,i)=Nodes()[i]->X()[1];
     
-    xyecurr(0,i) = xye(0,i) + mydisp[i*NODDOF_W1+0];
-    xyecurr(1,i) = xye(1,i) + mydisp[i*NODDOF_W1+1];
+    xyecurr(0,i) = xye(0,i) + mydisp[i*Wall1::noddof_+0];
+    xyecurr(1,i) = xye(1,i) + mydisp[i*Wall1::noddof_+1];
     
   }
  
@@ -110,17 +110,17 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          const double dr = w1_substitution(xye,deriv,NULL,numnod);
          
          // load vector ar
-         double ar[NODDOF_W1];
+         vector<double> ar(Wall1::noddof_);
             
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-         for (int i=0; i<NODDOF_W1; ++i)
+         for (int i=0; i<Wall1::noddof_; ++i)
            ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
 
          // add load components
          for (int node=0; node<numnod; ++node)
-           for (int j=0; j<NODDOF_W1; ++j)
-             elevec1[node*NODDOF_W1+j] += funct[node]*ar[j];
+           for (int j=0; j<Wall1::noddof_; ++j)
+             elevec1[node*Wall1::noddof_+j] += funct[node]*ar[j];
          
          break;
        }
@@ -135,23 +135,23 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          if (!ortho_value) dserror("no orthopressure value given!");
          
          // outward normal vector (unit vector)
-         vector<double> unrm(NUMDIM_W1);
+         vector<double> unrm(Wall1::numdim_);
           
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xyecurr,deriv,&unrm,numnod);
          
          // load vector ar
-         double ar[NODDOF_W1];
+         vector<double> ar(Wall1::noddof_);
            
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-         for (int i=0; i<NODDOF_W1; ++i)
+         for (int i=0; i<Wall1::noddof_; ++i)
            ar[i] = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
 
          // add load components
            for (int node=0; node<numnod; ++node)
-             for (int j=0; j<NODDOF_W1; ++j)
-               elevec1[node*NODDOF_W1+j] += funct[node] * ar[j] * unrm[j];
+             for (int j=0; j<Wall1::noddof_; ++j)
+               elevec1[node*Wall1::noddof_+j] += funct[node] * ar[j] * unrm[j];
           
          break;
        }
@@ -269,15 +269,15 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         const int numnod = NumNode();
-        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_W1);  // material coord. of element
-        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_W1);  // material coord. of element
+        Epetra_SerialDenseMatrix xsrefe(numnod,Wall1::numdim_);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(numnod,Wall1::numdim_);  // material coord. of element
         for (int i=0; i<numnod; ++i)
         {
           xsrefe(i,0) = Nodes()[i]->X()[0];
           xsrefe(i,1) = Nodes()[i]->X()[1];
           
-          xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_W1];
-          xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_W1+1];
+          xscurr(i,0) = xsrefe(i,0) + mydisp[i*Wall1::noddof_];
+          xscurr(i,1) = xsrefe(i,1) + mydisp[i*Wall1::noddof_+1];
         }
         //compute area between line and x-Axis
         double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
@@ -302,15 +302,15 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
-      Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_W1);  // material coord. of element
-      Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_W1);  // material coord. of element
+      Epetra_SerialDenseMatrix xsrefe(numnod,Wall1::numdim_);  // material coord. of element
+      Epetra_SerialDenseMatrix xscurr(numnod,Wall1::numdim_);  // material coord. of element
       for (int i=0; i<numnod; ++i)
       {
         xsrefe(i,0) = Nodes()[i]->X()[0];
         xsrefe(i,1) = Nodes()[i]->X()[1];
         
-        xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_W1];
-        xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_W1+1];
+        xscurr(i,0) = xsrefe(i,0) + mydisp[i*Wall1::noddof_];
+        xscurr(i,1) = xsrefe(i,1) + mydisp[i*Wall1::noddof_+1];
       }
       //call submethods
       ComputeAreaConstrStiff(xscurr,elematrix1);

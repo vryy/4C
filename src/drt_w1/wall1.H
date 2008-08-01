@@ -36,10 +36,10 @@ Maintainer: Markus Gitterle
 #endif
 
 // parameters which are fixed for Wall1
-const int NUMDIM_W1 = 2;   ///< number of dimensions
-const int NODDOF_W1 = 2;   ///< number od DOFs at each node
-const int NUMSTR_W1 = 3;   ///< number of strains/stresses
-const int neas = 4;        ///< number of eas parameters
+//const int NUMDIM_W1 = 2;   ///< number of dimensions
+//const int NODDOF_W1 = 2;   ///< number od DOFs at each node
+//const int NUMSTR_W1 = 3;   ///< number of strains/stresses
+//const int neas = 4;        ///< number of eas parameters
 
 // forward declarations
 struct _MATERIAL;  ///< material data
@@ -84,10 +84,20 @@ class Wall1 : public DRT::Element
 public:
 
   /// @name Friends
+  //@{
   friend class Wall1Register;
   friend class Wall1Line;
-
   //@}
+
+  /// @name object-wide constants
+  //@{
+  static const int numdim_ = 2;  ///< 2-dimensional/planar element
+  static const int noddof_ = 2;  ///< number of nodal DOFs
+  static const int numstr_ = 4;  ///< number of symmetric strain/stress components --- THIS SHOULD BE 3
+  static const int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
+  static const int neas_ = 4;  ///< number of EAS parameters --- THIS SHOULD BE TEMPLATED
+  //@}
+
   /// @name Constructors and destructors and related methods
 
   /// Standard Constructor
@@ -158,7 +168,7 @@ public:
   /// As this may vary along a simulation, the element can redecide the
   /// number of degrees of freedom per node along the way for each of it's nodes
   /// separately.
-  virtual int NumDofPerNode(const DRT::Node& node) const { return NODDOF_W1; }
+  virtual int NumDofPerNode(const DRT::Node& node) const { return Wall1::noddof_; }
 
   /// Get number of degrees of freedom per element
   /// (implements pure virtual DRT::Element)
