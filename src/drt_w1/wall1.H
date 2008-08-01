@@ -289,20 +289,22 @@ private:
                              //!< during iteration to last converged state
   };
 
-  /// 
+  /// type of 2D dimension reduction
   enum DimensionalReduction
   {
-    plane_none,
-    plane_stress,
-    plane_strain
+    plane_none,  ///< undetermined
+    plane_stress,  ///< plane stres, i.e. lateral stress is zero \f$S_{33}=S_{13}=S_{23}=0\f$
+    plane_strain  ///< plane strain, i.e. lateral strain is zero \f$E_{33}=E_{13}=E_{23}=0\f$
   };
 
-  //! type of stresses to be calculatecd in postprocessing
+  /// type of stresses to be calculatecd in postprocessing
+  ///
+  /// describes in co-ordinate system the stress components are expressed
   enum StressType
   {
-    w1_none,
-    w1_xy,
-    w1_rs
+    w1_none,  ///< undetermined
+    w1_xy,  ///< Cartesian
+    w1_rs  ///< cylindrical
   };
 
 //  //! couptyp for thermo-structure-interaction
@@ -509,7 +511,8 @@ private:
   
   /// calculate stiffness matrix kdd \f$\partial f_{int}/\partial d\f$
   /// \author mgit \date 03/08
-  void w1_kdd(
+  void w1_kdd
+  (
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-op
     const Epetra_SerialDenseMatrix& W0,  ///< W-operator at origin
     const Epetra_SerialDenseMatrix& F,  ///< total def.grad.
@@ -519,7 +522,7 @@ private:
     Epetra_SerialDenseMatrix& estif,  ///< element stiff matrix
     const double fac  ///< integration factor
   );
-  
+
   /// calculate tangential matrix kda \f$\partial f_{int}/\partial \alpha\f$
   /// \author mgit \date 03/08
   void w1_kda
