@@ -994,8 +994,9 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
   {
     startnode=startnode/3;
   }
-  
-  double intpointinparent[intpoints.nquad][2];
+  // or maybe use a sweet blitz array/Epetra vector here? ;-) greetings Axel
+  vector<vector<double> > intpointinparent(intpoints.nquad, std::vector<double>(2,0.0));
+  //double intpointinparent[intpoints.nquad][2];
   switch(startnode)
   {
   case 0:
