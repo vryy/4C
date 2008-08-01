@@ -227,7 +227,7 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
   return dr;
 }
 
-
+/*======================================================================*/
 int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
                                 DRT::Discretization&      discretization,
                                 vector<int>&              lm,
