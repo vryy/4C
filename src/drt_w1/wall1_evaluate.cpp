@@ -1893,7 +1893,7 @@ double DRT::ELEMENTS::Wall1::Density(
     return 0;
     break;
   }
-}  // w1_density
+}  // Density
 
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
@@ -1908,6 +1908,8 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
   Epetra_SerialDenseMatrix* elestress
 )
 {
+  // Question: Is this true for plane stress and/or plane strain mode?
+
   double detf = F11*F22 - F12*F21;
   // Def.grad. tensor in Cartesian matrix notation
   Epetra_SerialDenseMatrix defgrad(2,2);
@@ -1916,25 +1918,25 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
   defgrad(1,0) = F21;
   defgrad(1,1) = F22;
   // PK2 stress tensor in Cartesian matrix notation
-  Epetra_SerialDenseMatrix pkstress(2,2);
-  pkstress(0,0) = stress(0,0);
-  pkstress(0,1) = stress(0,2);
-  pkstress(1,0) = stress(0,2);
-  pkstress(1,1) = stress(1,1);
+  Epetra_SerialDenseMatrix pk2stress(2,2);
+  pk2stress(0,0) = stress(0,0);
+  pk2stress(0,1) = stress(0,2);
+  pk2stress(1,0) = stress(0,2);
+  pk2stress(1,1) = stress(1,1);
 
-  // something like the PK1 stress, but attached to current volume
-  Epetra_SerialDenseMatrix temp(2,2);
-  temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
+  // PK1 stress tensor in Cartesian matrix notation
+  Epetra_SerialDenseMatrix pk1stress(2,2);
+  pk1stress.Multiply('N','T',1.0/detf,pk2stress,defgrad,0.0);
 
   // Cauchy stress tensor in Cartesian matrix notation
   Epetra_SerialDenseMatrix cauchystress(2,2);
-  cauchystress.Multiply('N','N',1/detf,defgrad,temp,0.0);
+  cauchystress.Multiply('N','N',1.0,defgrad,pk1stress,0.0);
 
   // copy results to array for output
   (*elestress)(ip,0) = cauchystress(0,0);
   (*elestress)(ip,1) = cauchystress(1,1);
   (*elestress)(ip,2) = cauchystress(0,1);
-}  // w1_stresscauchy
+}  // StressCauchy
 
 
 /*----------------------------------------------------------------------*/

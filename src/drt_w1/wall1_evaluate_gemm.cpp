@@ -216,7 +216,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     }
 
     // return gp stresses (only in case of stress/strain output)
-    if (elestress != NULL)
+    if (elestress)
     {
       if (cauchy)
       {
