@@ -1534,7 +1534,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
 
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
-        blitz::Array<double,2> elementvalues(3, numparam);
+        BlitzMat elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
           elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
