@@ -11,25 +11,26 @@ Maintainer: Markus Gitterle
 */
 
 /*----------------------------------------------------------------------*/
+/* macros */
 #ifdef D_WALL1
 #ifdef CCADISCRET
 #ifndef WALL1_H
 #define WALL1_H
 
-
+/*----------------------------------------------------------------------*/
+/* headers */
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-// element constants
+/*----------------------------------------------------------------------*/
+/* element constants */
 #ifndef MAXNOD_WALL1
 #define MAXNOD_WALL1 (9)  /* maximum of element nodes : max quad9 */
 #endif
@@ -41,8 +42,8 @@ const int NUMSTR_W1 = 3;   ///< number of strains/stresses
 const int neas = 4;        ///< number of eas parameters
 
 // forward declarations
-struct _MATERIAL;
-struct _W1_DATA;
+struct _MATERIAL;  ///< material data
+struct _W1_DATA;  ///< additional wall element data
 
 
 namespace DRT
@@ -56,11 +57,24 @@ namespace ELEMENTS
 // forward declarations
 class Wall1Line;
 
+/*======================================================================*/
 /*!
-\brief A C++ wrapper for the wall1 element
-
-\author gitterle (gitterle@lnm.mw.tum.de)
-*/
+ * \brief A C++ wrapper for the wall1 element
+ *
+ * \author gitterle (gitterle@lnm.mw.tum.de)
+ *
+ * <b>Typical quantities and their storage pattern</b>
+ * - Green-Lagrange strain vector 
+ *   \f$E = \left[\begin{array}{c} E_{11} \\ E_{22} \\ E_{12} \end{array}\right]\f$
+ * - Deformation gradient vector
+ *   \f$\tilde{F} = \left[\begin{array}{c} F_{11} \\ F_{22} \\ F_{12} \\ F_{21} \end{array}\right]\f$
+ * - Constitutive matrix
+ *   \f$C = \left[\begin{array}{ccc} C & C & C \\ C & C & C \\ C & C & C \end{array}\right]\f$
+ * - Second Piola--Kirchhoff stress vector
+ *   \f$S = \left[\begin{array}{c} S_{11} \\ S_{22} \\ S_{12} \end{array}\right]\f$
+ * - First Piola-Kirchhoff stress vector
+ *   \f$\tilde{P} = \left[\begin{array}{c} P_{11} \\ P_{22} \\ P_{12} \\ P_{21} \end{array}\right]\f$
+ */
 class Wall1 : public DRT::Element
 {
 public:
@@ -104,10 +118,10 @@ public:
   virtual int NumSurface() const { return 1; }
 
   /// Get vector of RefCountPtrs to the lines of this element
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /// Get vector of RefCountPtrs to the surfaces of this element
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /// Return unique ParObject id
   ///
@@ -118,12 +132,12 @@ public:
   /// Pack this class so it can be communicated
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(std::vector<char>& data) const;
 
   /// Unpack data from a char vector into this class
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /// Destructor
   virtual ~Wall1();
@@ -161,7 +175,7 @@ public:
   /// Every implementation of DRT::Element must also implement
   /// an DRT::ElementRegister. This method allocates and returns
   /// an instance of a matching DRT::ElementRegister.
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -185,7 +199,7 @@ public:
     ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///< and elements
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
-    vector<int>& lm,  ///< location vector of this element
+    std::vector<int>& lm,  ///< location vector of this element
     Epetra_SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If NULL on input,
                                         ///< the controling method does not epxect the element to fill
                                         ///< this matrix.
@@ -213,7 +227,7 @@ public:
                              ///< and elements
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
     DRT::Condition& condition,  ///<  The condition to be evaluated
-    vector<int>& lm,  ///< location vector of this element
+    std::vector<int>& lm,  ///< location vector of this element
     Epetra_SerialDenseVector& elevec1  ///< vector to be filled by element. If NULL on input
   );
 
@@ -280,9 +294,9 @@ private:
   /// evaluate the element forces and stiffness and mass
   /// \author mgit \date 03/07
   void w1_nlnstiffmass(
-    const vector<int>& lm,  ///< location vector
-    const vector<double>& disp,  ///< element displacements
-    const vector<double>& residual,  ///< residual displacements 
+    const std::vector<int>& lm,  ///< location vector
+    const std::vector<double>& disp,  ///< element displacements
+    const std::vector<double>& residual,  ///< residual displacements 
     Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
     Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix
     Epetra_SerialDenseVector* force,  ///< element internal force vector
@@ -298,7 +312,7 @@ private:
  //               double** gpcr, double** gpcs,
  //               double** gpwr);
 
-//  void w1_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
+//  void w1_shapefunctions(std::vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
 //                               const double r, const double s, const int numnode,
 //                               const int doderiv) const;
 
@@ -547,12 +561,12 @@ public:
   /// Pack this class so it can be communicated
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(std::vector<char>& data) const;
 
   /// Unpack data from a char vector into this class
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /// Destructor
   ///
@@ -646,12 +660,12 @@ public:
   /// Pack this class so it can be communicated
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(std::vector<char>& data) const;
 
   /// Unpack data from a char vector into this class
   ///
   /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /// Destructor
   virtual ~Wall1Line();
@@ -689,7 +703,7 @@ public:
   /// Every implementation of DRT::Element must also implement
   /// an DRT::ElementRegister. This method allocates and returns
   /// an instance of a matching DRT::ElementRegister.
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return Teuchos::null; }
 
   //@}
 
@@ -706,7 +720,7 @@ public:
                             ///<   and elements
     DRT::Discretization& discretization,  ///< (in) A reference to the underlying discretization
     DRT::Condition& condition,  ///< (in) The condition to be evaluated
-    vector<int>& lm,  ///< (in) location vector of this element
+    std::vector<int>& lm,  ///< (in) location vector of this element
     Epetra_SerialDenseVector& elevec1  ///< (out) vector to be filled by element. If NULL on input
   );
   
@@ -719,7 +733,7 @@ public:
     ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///< and elements
     DRT::Discretization& discretization,  ///< (in) A reference to the underlying discretization
-    vector<int>& lm,  ///< (in) location vector of this element
+    std::vector<int>& lm,  ///< (in) location vector of this element
     Epetra_SerialDenseMatrix& elematrix1,
     Epetra_SerialDenseMatrix& elematrix2,
     Epetra_SerialDenseVector& elevector1,
@@ -764,7 +778,7 @@ private:
   double w1_substitution(
     const Epetra_SerialDenseMatrix& xyze,
     const Epetra_SerialDenseMatrix& deriv,
-    vector<double>* unrm,
+    std::vector<double>* unrm,
     const int iel
   );
 
