@@ -414,7 +414,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
         // set up matrices and parameters needed for the evaluation of current
         // interfacial area and its derivatives w.r.t. the displacements
 
-        int ngp = intpoints.nquad;                                // number of Gauss points
         int ndof = 3*numnode;                                     // overall number of surface dofs
         double A = 0.;                                            // interfacial area
         // we really want to zero out the following matrices -> no LINALG::SerialDenseMatrix
@@ -459,10 +458,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
       case calc_potential_stiff:
       {
         dserror("not yet fully  implemented");
-        
+
         if (distype!=quad4)
           cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
-   
+
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -490,9 +489,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
         // set up matrices and parameters needed for the evaluation of current
         // interfacial area
         //int ngp = intpoints.nquad;                                // number of Gauss points
-        int ndof = 3*numnode;                                     // overall number of surface dofs
+        //int ndof = 3*numnode;                                     // overall number of surface dofs
         double A = 0.;                                            // interfacial area
-        
+
         if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
         {
           const int curvenum = cond->Getint("curve");
@@ -500,7 +499,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           const double depth = cond->GetDouble("depth");
           const double rootDist = cond->GetDouble("rootDist");
           const double cutOff = cond->GetDouble("cutOff");
- 
+
           potentialmanager->StiffnessAndInternalForces(curvenum, A, elevector1, elematrix1, this->Id(),
                                                        time, dt, label, depth, rootDist, cutOff);
         }
@@ -508,7 +507,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           dserror("Unknown condition type %d",cond->Type());
       }
       break;
-      
+
       //compute the area (e.g. for initialization)
       case calc_struct_monitarea:
       {
