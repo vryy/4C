@@ -29,17 +29,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-/*----------------------------------------------------------------------*/
-/* element constants */
-#ifndef MAXNOD_WALL1
-#define MAXNOD_WALL1 (9)  /* maximum of element nodes : max quad9 */
-#endif
 
-// parameters which are fixed for Wall1
-//const int NUMDIM_W1 = 2;   ///< number of dimensions
-//const int NODDOF_W1 = 2;   ///< number od DOFs at each node
-//const int NUMSTR_W1 = 3;   ///< number of strains/stresses
-//const int neas = 4;        ///< number of eas parameters
 
 // forward declarations
 struct _MATERIAL;  ///< material data
@@ -91,9 +81,10 @@ public:
 
   /// @name object-wide constants
   //@{
+  static const inr maxnod_ = 9;  ///< maximally permitted number of nodes
   static const int numdim_ = 2;  ///< 2-dimensional/planar element
   static const int noddof_ = 2;  ///< number of nodal DOFs
-  static const int numstr_ = 4;  ///< number of symmetric strain/stress components --- THIS SHOULD BE 3
+  static const int numstr_ = 4;  ///< number of (symmetric) strain/stress components --- THIS SHOULD BE 3
   static const int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
   static const int neas_ = 4;  ///< number of EAS parameters --- THIS SHOULD BE TEMPLATED
   //@}
@@ -336,7 +327,7 @@ private:
   /// at point parameter space
   /// \author mgit \date 04/07
   void w1_jacobianmatrix(
-    double xrefe[2][MAXNOD_WALL1],  ///< reference/material co-ordinates of element nodes
+    const Epetra_SerialDenseMatrix& xrefe,  ///< reference/material co-ordinates of element nodes
     const Epetra_SerialDenseMatrix& deriv,  ///< derivatives of shape functions at parameter point
     Epetra_SerialDenseMatrix& xjm,  ///< Jacobi matrix
     double* det,  ///< determinant of Jacobi matrix
@@ -359,8 +350,8 @@ private:
   void w1_defgrad(
     Epetra_SerialDenseVector& F,  ///< deformation gradient
     Epetra_SerialDenseVector& strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
-    const double xrefe[][MAXNOD_WALL1],  ///< reference/material co-ordinates of element nodes
-    const double xcure[][MAXNOD_WALL1], ///< current/spatial co-ordinates of element nodes
+    const Epetra_SerialDenseMatrix& xrefe,  ///< reference/material co-ordinates of element nodes
+    const Epetra_SerialDenseMatrix& xcure, ///< current/spatial co-ordinates of element nodes
     Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const int iel  ///< number of element nodes
   );
@@ -423,8 +414,8 @@ private:
     Epetra_SerialDenseVector& F0,  ///< deformation gradient at origin
     Epetra_SerialDenseMatrix& xjm0,  ///< jacobian matrix at origin
     double& detJ0,  ///< det of Jacobian at origin
-    double xrefe[2][MAXNOD_WALL1],  ///< material element coords
-    double xcure[2][MAXNOD_WALL1],  ///< current element coords
+    const Epetra_SerialDenseMatrix& xrefe,  ///< material element coords
+    const Epetra_SerialDenseMatrix& xcure,  ///< current element coords
     const DRT::Element::DiscretizationType& distype  ///< discretisation type
   );
 

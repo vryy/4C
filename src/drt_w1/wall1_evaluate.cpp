@@ -265,19 +265,19 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   Epetra_SerialDenseMatrix deriv(2,iel);
 
   // reference co-ordinates of element nodes
-  double xrefe[2][MAXNOD_WALL1];
+  Epetra_SerialDenseMatrix xrefe(2,iel);
   // current co-ordinates of element nodes
-  double xcure[2][MAXNOD_WALL1];
+  Epetra_SerialDenseMatrix xcure(2,iel);
 
 
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
-    xrefe[0][k] = Nodes()[k]->X()[0];
-    xrefe[1][k] = Nodes()[k]->X()[1];
+    xrefe(0,k) = Nodes()[k]->X()[0];
+    xrefe(1,k) = Nodes()[k]->X()[1];
 
-    xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
-    xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
+    xcure(0,k) = xrefe(0,k) + mydisp[k*numdf+0];
+    xcure(1,k) = xrefe(1,k) + mydisp[k*numdf+1];
   }
 
 
@@ -360,8 +360,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   Epetra_SerialDenseVector strain;
   strain.Size(4);
   double det;
-  double xrefe[2][MAXNOD_WALL1];
-  double xcure[2][MAXNOD_WALL1];
+  Epetra_SerialDenseMatrix xrefe(2,numnode);
+  Epetra_SerialDenseMatrix xcure(2,numnode);
   const int numeps = 4;
   Epetra_SerialDenseMatrix b_cure;
   b_cure.Shape(numeps,nd);
@@ -420,11 +420,11 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   for (int k=0; k<iel; ++k)
   {
 
-    xrefe[0][k] = Nodes()[k]->X()[0];
-    xrefe[1][k] = Nodes()[k]->X()[1];
+    xrefe(0,k) = Nodes()[k]->X()[0];
+    xrefe(1,k) = Nodes()[k]->X()[1];
 
-    xcure[0][k] = xrefe[0][k] + disp[k*numdf+0];
-    xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
+    xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
+    xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
 
   }
 
@@ -682,21 +682,23 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
-                          const Epetra_SerialDenseMatrix& deriv,
-                          Epetra_SerialDenseMatrix& xjm,
-                          double* det,
-                          const int iel)
+void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(
+  const Epetra_SerialDenseMatrix& xrefe,
+  const Epetra_SerialDenseMatrix& deriv,
+  Epetra_SerialDenseMatrix& xjm,
+  double* det,
+  const int iel
+)
 {
 
    memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double));
 
    for (int k=0; k<iel; k++)
    {
-        xjm(0,0) += deriv(0,k) * xrefe[0][k];
-        xjm(0,1) += deriv(0,k) * xrefe[1][k];
-        xjm(1,0) += deriv(1,k) * xrefe[0][k];
-        xjm(1,1) += deriv(1,k) * xrefe[1][k];
+        xjm(0,0) += deriv(0,k) * xrefe(0,k);
+        xjm(0,1) += deriv(0,k) * xrefe(1,k);
+        xjm(1,0) += deriv(1,k) * xrefe(0,k);
+        xjm(1,1) += deriv(1,k) * xrefe(1,k);
    }
 
 /*------------------------------------------ determinant of jacobian ---*/
@@ -753,11 +755,10 @@ void DRT::ELEMENTS::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
 /*----------------------------------------------------------------------*
  | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
  *----------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
                            Epetra_SerialDenseVector& strain,
-                           const double xrefe[][MAXNOD_WALL1],
-                           const double xcure[][MAXNOD_WALL1],
+                           const Epetra_SerialDenseMatrix& xrefe,
+                           const Epetra_SerialDenseMatrix& xcure,
                            Epetra_SerialDenseMatrix& boplin,
                            const int iel)
 {
@@ -776,10 +777,10 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
   F[1] = 1;
   for (int inode=0; inode<iel; inode++)
   {
-     F[0] += boplin(0,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);  // F_11
-     F[1] += boplin(1,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);  // F_22
-     F[2] += boplin(2,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);  // F_12
-     F[3] += boplin(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);  // F_21
+     F[0] += boplin(0,2*inode)   * (xcure(0,inode) - xrefe(0,inode));  // F_11
+     F[1] += boplin(1,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));  // F_22
+     F[2] += boplin(2,2*inode)   * (xcure(0,inode) - xrefe(0,inode));  // F_12
+     F[3] += boplin(3,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));  // F_21
   } /* end of loop over nodes */
 
   /*-----------------------calculate Green-Lagrange strain E -------------*/
@@ -1317,8 +1318,8 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
       Epetra_SerialDenseVector& F0,       // deformation gradient at origin
       Epetra_SerialDenseMatrix& xjm0,     // jacobian matrix at origin
       double& detJ0,                      // det of Jacobian at origin
-      double xrefe[2][MAXNOD_WALL1],      // material element coords
-      double xcure[2][MAXNOD_WALL1],      // current element coords
+      const Epetra_SerialDenseMatrix& xrefe,      // material element coords
+      const Epetra_SerialDenseMatrix& xcure,      // current element coords
       const DRT::Element::DiscretizationType& distype)
 
 {
@@ -1332,10 +1333,10 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
   memset(xjm0.A(),0,xjm0.N()*xjm0.M()*sizeof(double));
   for (int k=0; k<NumNode(); k++)
   {
-    xjm0(0,0) += deriv0(0,k) * xrefe[0][k];  // X,r += (X,r)^k
-    xjm0(0,1) += deriv0(0,k) * xrefe[1][k];  // Y,r += (Y,r)^k
-    xjm0(1,0) += deriv0(1,k) * xrefe[0][k];  // X,s += (X,s)^k
-    xjm0(1,1) += deriv0(1,k) * xrefe[1][k];  // Y,s += (Y,s)^k
+    xjm0(0,0) += deriv0(0,k) * xrefe(0,k);  // X,r += (X,r)^k
+    xjm0(0,1) += deriv0(0,k) * xrefe(1,k);  // Y,r += (Y,r)^k
+    xjm0(1,0) += deriv0(1,k) * xrefe(0,k);  // X,s += (X,s)^k
+    xjm0(1,1) += deriv0(1,k) * xrefe(1,k);  // Y,s += (Y,s)^k
   }
 
   /*------------------------------------------ determinant of jacobian ---*/
@@ -1391,10 +1392,10 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
   F0[1]=1;
   for (int inode=0; inode<NumNode(); inode++)
   {
-     F0[0] += boplin0(0,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);
-     F0[1] += boplin0(1,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
-     F0[2] += boplin0(2,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);
-     F0[3] += boplin0(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
+     F0[0] += boplin0(0,2*inode)   * (xcure(0,inode) - xrefe(0,inode));
+     F0[1] += boplin0(1,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));
+     F0[2] += boplin0(2,2*inode)   * (xcure(0,inode) - xrefe(0,inode));
+     F0[3] += boplin0(3,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));
   } /* end of loop over nodes */
 
 
