@@ -2208,7 +2208,6 @@ bool XFEM::Intersection::checkIfSegmentPointsOnSameXfemLine(
 void XFEM::Intersection::removeDegenerateInterfacePoints(
     vector<int>&              positions)
 {
-  bool degenerate = false;
   vector<int> removePoints;
 
   for(int i = 0; i < (int) positions.size()-1; i++)

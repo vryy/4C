@@ -257,16 +257,15 @@ bool XFEM::isPositionWithinXAABB(
     const BlitzVec3&                   pos,
     const BlitzMat3x2&                 XAABB)
 {
-    const int nsd = 3;
     bool isWithin = true;
-    for (int isd=0; isd<nsd; isd++)
+    for (int i=0; i<3; i++)
     {
-        const double diffMin = XAABB(isd,0) - TOL7;
-        const double diffMax = XAABB(isd,1) + TOL7;
+        const double diffMin = XAABB(i,0) - TOL7;
+        const double diffMax = XAABB(i,1) + TOL7;
         
        // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
         
-        if((pos(isd) < diffMin)||(pos(isd) > diffMax)) //check again !!!!!   
+        if((pos(i) < diffMin)||(pos(i) > diffMax)) //check again !!!!!   
         {
             isWithin = false;
             break;

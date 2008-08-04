@@ -53,7 +53,9 @@ namespace XFEM
     //! named tolerance for easy search/grep
     const double                 TOLPLUS8 = 1e8;
     //! named tolerance for easy search/grep
-    const double                 TOLPLUS15 = 1e15;
+    const double                 TOLPLUS15 = 1e15;   
+    //! large number to start computations of nearest distance in tree
+    const double                 LARGENUMBER = 1e18;
     
     /*!
      * \brief calculate a*a
@@ -417,7 +419,6 @@ namespace XFEM
     
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
-           The nonlinear system of equation is solved with help of the Newton-method.
     
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
@@ -565,32 +566,32 @@ namespace XFEM
     bool checkPositionWithinElementParameterSpace(
             const V&                               eleCoord, ///< position in element coordinates
             const DRT::Element::DiscretizationType distype   ///< shape of the surface element
-            )
+    )
     {
-        if (distype != DRT::Element::line2 and
-                distype != DRT::Element::line3 and
-                distype != DRT::Element::quad4 and 
-                distype != DRT::Element::quad8 and 
-                distype != DRT::Element::quad9 and
-                distype != DRT::Element::hex8 and
-                distype != DRT::Element::hex20 and 
-                distype != DRT::Element::hex27)
-            dserror("function only defined for rectangular element types at the moment");
-        
-        bool nodeWithinElement = true;
-        
-        // loop over r and s (local coordinates)
-        for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
-            if( (fabs(eleCoord(i))-1.0) > TOL7)     
-            {    
-                nodeWithinElement = false;
-                break;
+      bool nodeWithinElement = true;
+      switch(distype)
+      {
+
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
+        case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
+        case DRT::Element::line2: case DRT::Element::line3:    
+        {
+          for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
+            if(eleCoord(i) > (1.0+XFEM::TOL7) || eleCoord(i) < (-1)*(1.0+XFEM::TOL7) ) 
+            {
+              nodeWithinElement = false;
+              break;
             }
+          break;
+        }
+        default:
+          dserror("distype not yet implemented");
+        }   
         
-        return nodeWithinElement;
+      return nodeWithinElement;
     }
-    
-    
+
+
     /*!
     \brief Computes a rough overestimating extended  
            axis-aligned bounding box for an element (XAABB)
