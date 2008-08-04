@@ -14,15 +14,10 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "condif3.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 01/07|
+ |  ctor (public)                                             gjb 06/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif3Surface::Condif3Surface(int id, int owner,
                               int nnode, const int* nodeids,
@@ -39,7 +34,7 @@ lsurface_(lsurface)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 01/07|
+ |  copy-ctor (public)                                        gjb 06/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif3Surface::Condif3Surface(const DRT::ELEMENTS::Condif3Surface& old) :
 DRT::Element(old),
@@ -50,8 +45,7 @@ lsurface_(old.lsurface_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 01/07 |
+ |  Deep copy this instance return pointer to it     (public) gjb 06/08 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Condif3Surface::Clone() const
 {
@@ -60,8 +54,7 @@ DRT::Element* DRT::ELEMENTS::Condif3Surface::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          u.kue 03/07 |
+ |  Return shape of this element                    (public)  gjb 06/08 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Condif3Surface::Shape() const
 {
@@ -79,8 +72,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Condif3Surface::Shape() const
 }
 
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |  Pack data (public)                                        gjb 06/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif3Surface::Pack(vector<char>& data) const
 {
@@ -91,8 +83,7 @@ void DRT::ELEMENTS::Condif3Surface::Pack(vector<char>& data) const
 }
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |  Unpack data (public)                                      gjb 06/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif3Surface::Unpack(const vector<char>& data)
 {
@@ -101,7 +92,7 @@ void DRT::ELEMENTS::Condif3Surface::Unpack(const vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 01/07|
+ |  dtor (public)                                             gjb 06/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif3Surface::~Condif3Surface()
 {
@@ -110,7 +101,7 @@ DRT::ELEMENTS::Condif3Surface::~Condif3Surface()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 01/07|
+ |  print this element (public)                               gjb 06/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif3Surface::Print(ostream& os) const
 {
@@ -120,7 +111,7 @@ void DRT::ELEMENTS::Condif3Surface::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                             gammi 04/07|
+ |  get vector of lines (public)                              gjb 06/08 |
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3Surface::Lines()
 {
