@@ -108,7 +108,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
   }
 
 
-  //compute deformation gradient at origin (F0)
+  // compute displacement-based deformation gradient at origin (F0)
 
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
   defgrad looks like:
@@ -118,11 +118,10 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
         |      Ux,Y  |
         |      Uy,X  |
   */
-
-  memset(F0.A(),0,F0.N()*F0.M()*sizeof(double));
-
-  F0[0]=1;
-  F0[1]=1;
+  F0[0] = 1;
+  F0[1] = 1;
+  F0[2] = 0;
+  F0[3] = 0;
   for (int inode=0; inode<NumNode(); inode++)
   {
      F0[0] += boplin0(0,2*inode)   * (xcure(0,inode) - xrefe(0,inode));
