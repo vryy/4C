@@ -139,10 +139,10 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // grid displacements and velocities for the ale case
   if (alefluid_)
   {
-    dispnp_     = LINALG::CreateVector(*dofrowmap,true);;
-    dispn_      = LINALG::CreateVector(*dofrowmap,true);;
-    gridveln_   = LINALG::CreateVector(*dofrowmap,true);;
-    gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);;
+    dispnp_     = LINALG::CreateVector(*dofrowmap,true);
+    dispn_      = LINALG::CreateVector(*dofrowmap,true);
+    gridveln_   = LINALG::CreateVector(*dofrowmap,true);
+    gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);
   }
 
 
