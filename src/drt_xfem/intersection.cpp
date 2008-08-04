@@ -208,6 +208,7 @@ void XFEM::Intersection::computeIntersection(
 
   std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << domainintcells.size();
   std::cout << endl;
+  flush(cout);
 }
 
 
@@ -1544,7 +1545,7 @@ void XFEM::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pnnQR";    //o2 Y R
+  char switches[] = "pnnQ";    //o2 Y R
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
