@@ -538,12 +538,12 @@ private:
   void FintStiffMassGEMM(
     const ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
-    const std::vector<double>& dispo,  ///< element displacements at \f$t_{n}\f$
-    const std::vector<double>& disp,  ///< element displacements at \f$t_{n+1}\f$
-    const std::vector<double>& residual,  ///< residual displacements 
-    Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
-    Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix
-    Epetra_SerialDenseVector* force,  ///< element internal force vector
+    const std::vector<double>& dispo,  ///< element displacements \f$d_{n+1}^{(e)}\f$ at \f$t_{n}\f$
+    const std::vector<double>& disp,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n+1}\f$
+    const std::vector<double>& residual,  ///< residual displacements \f$\Delta d_{n+1}^{<k>(e)}\f$
+    Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix \f$k^{(e)}\f$
+    Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix \f$m^{(e)}\f$
+    Epetra_SerialDenseVector* force,  ///< element internal mid-force vector \f$f_{int;m}^{(e)}\f$
     Epetra_SerialDenseMatrix* elestress,  ///< element stresses
     Epetra_SerialDenseMatrix* elestrain,  ///< element strains
     struct _MATERIAL* material,  ///< element material
@@ -558,7 +558,7 @@ private:
     const double& fac,  ///< integration factor
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
     const Epetra_SerialDenseMatrix& W0m,  ///< mid-W-operator \f$W_{0;m}\f$
-    const Epetra_SerialDenseMatrix& W0,  ///< mid-W-operator \f$W_{0;n+1}\f$
+    const Epetra_SerialDenseMatrix& W0,  ///< W-operator \f$W_{0;n+1}\f$
     const Epetra_SerialDenseMatrix& Fmm,  ///< mid def.grad. matrix \f$\bar{F}_m\f$
     const Epetra_SerialDenseMatrix& Fm,  ///< def.grad. matrix \f$\bar{F}_{n+1}\f$
     const Epetra_SerialDenseMatrix& C,  ///< constititive matrix \f$C\f$
