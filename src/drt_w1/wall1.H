@@ -66,7 +66,14 @@ class Wall1Line;
  *   \f$\tilde{P} = \left[\begin{array}{c} P_{11} \\ P_{22} \\ P_{12} \\ P_{21} \end{array}\right]\f$
  *
  * <b>References</b>
- * - [1] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
+ * - [1] JC Simo and F Armero, Geometrically non-linear enhanced strain 
+ *   mixed methods and the method of incompatible modes, International 
+ *   Journal for Numerical Methods in Engineering, 33:1413-1449, 1992.
+ * - [2] S Glaser and F Armero, On the formulation of enhanced strain finite 
+ *   elements in finite deformations, Engineering Computations, 14:759-791,
+ *   1997.
+ * - [3] P Wriggers, Nichtlineare Finite-Element-Methoden, Springer, 2001.
+ * - [4] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
  *   Vorlesungsskript, Lehrstuhl fuer Numerische Mechanik, SS 2007.
  */
 class Wall1 : public DRT::Element
