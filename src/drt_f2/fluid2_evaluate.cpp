@@ -1761,8 +1761,8 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-  rhsint[0] = histvec[0]+ edeadng[0]*timefac;;
-  rhsint[1] = histvec[1]+ edeadng[1]*timefac;;
+  rhsint[0] = histvec[0]+ edeadng[0]*timefac;
+  rhsint[1] = histvec[1]+ edeadng[1]*timefac;
 
 /*----------------- get numerical representation of single operators ---*/
 /* Convective term  u_old * grad u_old: */
