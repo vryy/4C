@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+ /*!----------------------------------------------------------------------
 \file scatra_dyn.cpp
 \brief entry point for (passive) scalar transport problems
 
@@ -85,6 +85,12 @@ void scatra_dyn()
 
       // create instance of convection diffusion basis algorithm (empty fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> condifonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
+
+      if (genprob.restart)
+      {
+        // read the restart information, set vectors and variables
+        condifonly->ScaTraField().ReadRestart(genprob.restart);
+      }
 
       // set velocity field 
       //(this is done only once. Time-dependent velocity fields are not supported)
