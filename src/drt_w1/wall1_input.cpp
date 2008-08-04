@@ -145,6 +145,8 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       Epetra_SerialDenseMatrix invKaa(Wall1::neas_,Wall1::neas_);
       // EAS matrix K_{d alpha}
       Epetra_SerialDenseMatrix Kda(2*NumNode(),Wall1::neas_);
+      // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMEMTUM METHOD
+      Epetra_SerialDenseMatrix Kad(Wall1::neas_,2*NumNode());
     
       // save EAS data into element container easdata_
       data_.Add("alpha",alpha);
@@ -152,6 +154,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       data_.Add("feas",feas);
       data_.Add("invKaa",invKaa);
       data_.Add("Kda",Kda);
+      data_.Add("Kad",Kad); // ONLY NEEDED FOR GENERALISED ENERGY-MOMEMTUM METHOD
     }
   }
 

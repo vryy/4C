@@ -359,7 +359,6 @@ void DRT::ELEMENTS::Wall1::w1_stress_eas(
 /*-----------------------------------------------------------------------------*
 | calculate stiffness matrix kdd                                     mgit 03/08|
 *-----------------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Wall1::w1_kdd(const Epetra_SerialDenseMatrix& boplin,
                                   const Epetra_SerialDenseMatrix& W0,
                                   const Epetra_SerialDenseMatrix& F_tot,

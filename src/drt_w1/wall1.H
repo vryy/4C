@@ -550,6 +550,65 @@ private:
     const bool cauchy = false  ///< if true calculate Cauchy instead of PK2 stresses
   );
 
+  /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements \f$d_{n+1}\f$
+  void TangFintByDispGEMM
+  (
+    const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
+    const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
+    const double& fac,  ///< integration factor
+    const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+    const Epetra_SerialDenseMatrix& W0m,  ///< mid-W-operator \f$W_{0;m}\f$
+    const Epetra_SerialDenseMatrix& W0,  ///< mid-W-operator \f$W_{0;n+1}\f$
+    const Epetra_SerialDenseMatrix& Fmm,  ///< mid def.grad. matrix \f$\bar{F}_m\f$
+    const Epetra_SerialDenseMatrix& Fm,  ///< def.grad. matrix \f$\bar{F}_{n+1}\f$
+    const Epetra_SerialDenseMatrix& C,  ///< constititive matrix \f$C\f$
+    const Epetra_SerialDenseMatrix& pk2mm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
+    Epetra_SerialDenseMatrix& FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
+    Epetra_SerialDenseMatrix& estif  ///< (in/out) element stiffness matrix
+  );
+
+  /// Tangent of internal force vector \f$f_{int,m}\f$ with respect to enhanced strain parameters \f$\alpha_{n+1}\f$
+  void TangFintByEnhGEMM(
+    const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
+    const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
+    const double& fac,  ///< integration factor
+    const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+    const Epetra_SerialDenseMatrix& W0m,  ///< mid-W-operator \f$W_{0;m}\f$
+    const Epetra_SerialDenseMatrix& FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
+    const Epetra_SerialDenseMatrix& pk2mm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
+    const Epetra_SerialDenseMatrix& G,  ///< G-operator \f$G_{n+1}\f$
+    const Epetra_SerialDenseMatrix& Z,  ///< Z-operator \f$Z_{n+1}\f$
+    const Epetra_SerialDenseMatrix& pk1vmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
+    Epetra_SerialDenseMatrix& kda  ///< (in/out) tangent \f$\partial f_{int;m}/\partial \alpha_{n+1}\f$
+  );
+
+  // Tangent of enhancemed constraint vector \f$s_m\f$ with respect to displacements \f$d_{n+1}\f$
+  void TangEconByDispGEMM(
+    const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
+    const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
+    const double& fac,  ///< integration factor
+    const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+    const Epetra_SerialDenseMatrix& W0,  ///< W-operator \f$W_{0;n+1}\f$
+    const Epetra_SerialDenseMatrix& FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
+    const Epetra_SerialDenseMatrix& pk2mm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
+    const Epetra_SerialDenseMatrix& Gm,  ///< mid-G-operator \f$G_{m}\f$
+    const Epetra_SerialDenseMatrix& Z,  ///< Z-operator \f$Z_{n+1}\f$
+    const Epetra_SerialDenseMatrix& pk1vmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
+    Epetra_SerialDenseMatrix& kad  ///< (in/out) tangent \f$\partial s_{m}/\partial d_{n+1}\f$
+  );
+
+  // Tangent of enhancemed constraint vector \f$s_m\f$ with respect to enhanced strain parameters \f$\alpha_{n+1}\f$
+  void TangEconByEnhGEMM(
+    const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
+    const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
+    const double& fac,  ///< integration factor
+    const Epetra_SerialDenseMatrix& FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
+    const Epetra_SerialDenseMatrix& pk2mm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
+    const Epetra_SerialDenseMatrix& G,  ///< G-operator \f$G_{n+1}\f$
+    const Epetra_SerialDenseMatrix& Gm,  ///< mid-G-operator \f$G_{m}\f$
+    Epetra_SerialDenseMatrix& kaa  ///< (in/out) tangent \f$\partial s_{m}/\partial \alpha_{n+1}\f$
+  );
+
   /// don't want = operator
   Wall1& operator = (const Wall1& old);
 
