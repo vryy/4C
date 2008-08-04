@@ -551,8 +551,7 @@ private:
   );
 
   /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements \f$d_{n+1}\f$
-  void TangFintByDispGEMM
-  (
+  void TangFintByDispGEMM(
     const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
     const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
     const double& fac,  ///< integration factor
