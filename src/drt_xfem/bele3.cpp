@@ -21,10 +21,10 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
-DRT::Element(id,element_fluid2,owner),
-data_()
+DRT::Element(id,element_bele3,owner),
+data_(),
+is_moving_(true)
 {
-  gaussrule_ = DRT::UTILS::intrule2D_undefined;
   return;
 }
 
@@ -34,10 +34,9 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old) :
 DRT::Element(old),
-gaussrule_(old.gaussrule_),
-data_(old.data_)
+data_(old.data_),
+is_moving_(old.is_moving_)
 {
-  gaussrule_ = old.gaussrule_;
   return;
 }
 
@@ -85,8 +84,6 @@ void DRT::ELEMENTS::Bele3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Gaussrule
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
 
   // data_
   vector<char> tmp(0);
@@ -112,10 +109,6 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = DRT::UTILS::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
 
   // data_
   vector<char> tmp(0);

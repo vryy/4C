@@ -22,21 +22,14 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
-// forward declarations
-struct _MATERIAL;
-struct _FLUID_DATA;
-
-
 namespace DRT
 {
 // forward declarations
 class Discretization;
-class Bele3Register;
+
 
 namespace ELEMENTS
 {
-// forward declarations
-class Bele3Line;
 
 /*!
 \brief A 3D boundary element with no physics attached
@@ -46,10 +39,6 @@ class Bele3Line;
 class Bele3 : public DRT::Element
 {
 public:
-
-  //! @name Friends
-  friend class Bele3Register;
-  friend class Bele3Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -103,7 +92,7 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -153,9 +142,7 @@ private:
   //! action parameters recognized by bele3
   enum ActionType
   {
-    none,
-    calc_fluid_systemmat_and_residual,
-    calc_fluid_stationary_systemmat_and_residual
+    none
   };
 
   /*!
@@ -180,35 +167,15 @@ private:
       }
       return hoel;
     };
-
-  //! Gaussrule
-  DRT::UTILS::GaussRule2D                         gaussrule_;
+  
+  //! container containing all kind of this and that
+  DRT::Container                                  data_;
   
   //! flag for fixed or moving boundary
   bool                                            is_moving_;
 
-  //! container containing all kind of this and that
-  DRT::Container                                  data_;
-
-
   //! don't want = operator
   Bele3& operator = (const Bele3& old);
-
-  //! calculate Jacobian matrix and it's determinant
-  void f2_jaco(const Epetra_SerialDenseMatrix& xyze,
-	       const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-	       double* 		det,
-               const int 	iel
-	       );
-
-  //! calculate global derivatives w.r.t. x,y,z at point r,s,t are
-    void f2_gder(Epetra_SerialDenseMatrix& derxy,
-		 const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-		 double& det,
-                 const int iel
-		 );
   
   //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
