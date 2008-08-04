@@ -57,12 +57,12 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
 
 {
   // derivatives at origin
-   Epetra_SerialDenseMatrix deriv0;
-   deriv0.Shape(2,NumNode());
+  Epetra_SerialDenseMatrix deriv0;
+  deriv0.Shape(2,NumNode());
+  
+  DRT::UTILS::shape_function_2D_deriv1(deriv0,0.0,0.0,distype);
 
-   DRT::UTILS::shape_function_2D_deriv1(deriv0,0.0,0.0,distype);
-
-  // compute jacobian matrix at origin
+   // compute jacobian matrix at origin
   memset(xjm0.A(),0,xjm0.N()*xjm0.M()*sizeof(double));
   for (int k=0; k<NumNode(); k++)
   {

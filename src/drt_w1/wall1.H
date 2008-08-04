@@ -431,7 +431,7 @@ private:
   /// at point in parameter space
   /// \author mgit \date 01/08
   void w1_call_defgrad_enh(
-    Epetra_SerialDenseMatrix& F_enh,  ///< enhanced deformation gradient
+    Epetra_SerialDenseMatrix& F_enh,  ///< enhanced deformation gradient vector
     const Epetra_SerialDenseMatrix xjm0,  ///< Jacobian at origin
     const Epetra_SerialDenseMatrix xjm,  ///< Jacobian at parameter point
     const double detJ0,  ///< det of Jacobian at origin

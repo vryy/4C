@@ -412,7 +412,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   p.set("total time", time);
   p.set("delta time", dt);
   p.set("alpha f", alphaf_);
-  p.set("xsi", xi_);
+  p.set("xi", xi_);
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("old displacement", dis);
