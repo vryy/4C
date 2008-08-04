@@ -165,9 +165,7 @@ void combust_dyn()
     if (genprob.restart)
     {
       // read the restart information, set vectors and variables
-      //combust->ReadRestart(genprob.restart);
-      dserror("restart not yet available");
-      exit(1);
+      combust->ReadRestart(genprob.restart);
     }
     
     // solve the whole combustion problem

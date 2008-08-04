@@ -21,7 +21,6 @@ Maintainer: Georg Bauer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "scatra_timint_implicit.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/vm3_solver.H"
@@ -35,13 +34,6 @@ Maintainer: Georg Bauer
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 */
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
@@ -60,10 +52,10 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   time_(0.0),
   step_(0),
   restartstep_(0),
-  uprestart_(params->get("write restart every", -1)),
+  uprestart_(params->get<int>("write restart every")),
   writestep_(0),
-  upres_(params->get("write solution every", -1)),
-  writeflux_(params->get("write flux","No"))
+  upres_(params->get<int>("write solution every")),
+  writeflux_(params->get<string>("write flux"))
 {
 
   // -------------------------------------------------------------------
@@ -113,6 +105,7 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -277,8 +270,7 @@ void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
     //
     // One-step-Theta: (step>1)
     //
-    //  phidtn_  = (phinp_-phin_) / (Theta * dt) - (1/Theta -1) * phin_
-    //  "(n+1)"
+    //  phidtn_  = (phinp_-phin_)/(Theta * dt) - (1/Theta -1) * phin_"(n+1)"
     //
     //  phinm_ =phin_
     //  phin_  =phinp_
@@ -373,7 +365,7 @@ void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
 
-  // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
+  // for bdf2 theta is set by the timestepsizes, 2/3 for const. dt
   if (timealgo_==INPUTPARAMS::timeint_bdf2)
   {
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -500,9 +492,10 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
+    // zero out matrix entries
     sysmat_->Zero();
 
-      // add Neumann loads and reset the residual vector
+    // reset the residual vector and add Neumann loads
     residual_->Update(1.0,*neumann_loads_,0.0);
 
     // create the parameters for the discretization
@@ -519,6 +512,7 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
     eleparams.set("using stationary formulation",is_stat);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
+    //SetState cannot be used since this Multivector is nodebased and not dofbased
     const Epetra_Map* nodecolmap = discret_->NodeColMap();
     RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
     LINALG::Export(*convel_,*tmp);
@@ -703,22 +697,20 @@ void SCATRA::ScaTraImplicitTimeInt::Update()
     phidtnm_->Update(1.0,*phidtn_,0.0);
 
     /*
-
     One-step-Theta:
 
-    phi(n+1) = (phi(n+1)-phi(n)) / (Theta * dt(n)) - (1/Theta -1) * phidt(n)
+      phidt(n+1) = (phi(n+1)-phi(n)) / (Theta * dt(n)) - (1/Theta -1) * phidt(n)
 
 
     BDF2:
 
-                   2*dt(n)+dt(n-1)		    dt(n)+dt(n-1)
+                   2*dt(n)+dt(n-1)                   dt(n)+dt(n-1)
       phidt(n+1) = --------------------- phi(n+1) - --------------- phi(n)
-                 dt(n)*[dt(n)+dt(n-1)]	            dt(n)*dt(n-1)
+                   dt(n)*[dt(n)+dt(n-1)]             dt(n)*dt(n-1)
 
                          dt(n)
                + ----------------------- phi(n-1)
                  dt(n-1)*[dt(n)+dt(n-1)]
-
       */
 
       switch (timealgo_)
@@ -726,7 +718,7 @@ void SCATRA::ScaTraImplicitTimeInt::Update()
           case INPUTPARAMS::timeint_one_step_theta: /* One step Theta time integration */
           {
             double fact1 = 1.0/(theta_*dta_);
-            double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1		*/
+            double fact2 = (-1.0/theta_) +1.0;
 
             phidtn_->Update( fact1,*phinp_,0.0);
             phidtn_->Update(-fact1,*phin_ ,1.0);
@@ -763,15 +755,8 @@ void SCATRA::ScaTraImplicitTimeInt::Update()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraImplicitTimeInt::Output()
 {
-  //-------------------------------------------- output of solution
-  //increase counters
-  restartstep_ += 1;
-  writestep_ += 1;
-
-  if (writestep_ == upres_)  //write solution
+  if (step_%upres_==0)  //write solution
     {
-      writestep_= 0;
-
       output_->NewStep    (step_,time_);
       output_->WriteVector("phinp", phinp_);
       output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
@@ -811,10 +796,8 @@ void SCATRA::ScaTraImplicitTimeInt::Output()
       if (step_==upres_)
        output_->WriteElementData();
 
-      if (restartstep_ == uprestart_) //add restart data
+      if (step_%uprestart_==0) //add restart data
       {
-        restartstep_ = 0;
-
         output_->WriteVector("phidtn", phidtn_);
         output_->WriteVector("phin", phin_);
         output_->WriteVector("phinm", phinm_);
@@ -822,10 +805,8 @@ void SCATRA::ScaTraImplicitTimeInt::Output()
     }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  if ((step_%uprestart_== 0) && (step_%upres_!=0))
   {
-    restartstep_ = 0;
-
     output_->NewStep    (step_,time_);
     output_->WriteVector("phinp", phinp_);
     output_->WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);

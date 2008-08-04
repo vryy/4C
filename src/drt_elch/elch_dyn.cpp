@@ -76,9 +76,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
   if (restart)
   {
     // read the restart information, set vectors and variables
-    //elch->ReadRestart(genprob.restart);
-    dserror("restart not yet available");
-    exit(1);
+    elch->ReadRestart(restart);
   }
   
   // solve the whole electrochemistry problem

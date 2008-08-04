@@ -126,12 +126,10 @@ void scatra_dyn()
       if (genprob.restart)
       {
         // read the restart information, set vectors and variables
-        //algo->ReadRestart(genprob.restart);
-        dserror("restart not yet available");
-        exit(1);
+        algo->ReadRestart(genprob.restart);
       }
 
-      // solve the whole electrochemistry problem
+      // solve the whole (one-way-coupled) problem
       algo->TimeLoop();
 
       // summarize the performance measurements

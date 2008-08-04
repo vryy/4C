@@ -60,6 +60,11 @@ namespace ADAPTER
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
+    /// read restart data
+    void ReadRestart(
+        int step ///< step number where the calculation is continued
+        );
+
   protected:
 
 	/// time step size
