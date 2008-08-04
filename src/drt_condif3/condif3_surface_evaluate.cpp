@@ -149,10 +149,10 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
+ |  Integrate a Surface Neumann boundary condition (public)   gjb 06/08 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
-    ParameterList& params,
+    ParameterList&            params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,
