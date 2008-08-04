@@ -29,7 +29,7 @@ DRT::ELEMENTS::Condif3Surface::Condif3Surface(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Condif3* parent,
                               const int lsurface) :
-DRT::Element(id,element_fluid3surface,owner),
+DRT::Element(id,element_condif3surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
