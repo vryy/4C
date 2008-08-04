@@ -43,7 +43,7 @@ STR::TimIntGEMM::TimIntGEMM
   gamma_(0.5),
   alphaf_(sdynparams.sublist("GEMM").get<double>("ALPHA_F")),
   alpham_(sdynparams.sublist("GEMM").get<double>("ALPHA_M")),
-  xsi_(sdynparams.sublist("GEMM").get<double>("XSI")),
+  xi_(sdynparams.sublist("GEMM").get<double>("XI")),
   dism_(Teuchos::null),
   velm_(Teuchos::null),
   accm_(Teuchos::null),
@@ -412,7 +412,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   p.set("total time", time);
   p.set("delta time", dt);
   p.set("alpha f", alphaf_);
-  p.set("xsi", xsi_);
+  p.set("xsi", xi_);
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("old displacement", dis);

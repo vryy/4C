@@ -28,7 +28,7 @@ namespace STR
   /*!
    * \brief Generalised energy-momentum method (GEMM)
    *
-   * References
+   * <b>References</b>
    * - [1] D Kuhl and MA Crisfield, Energy-conserving and decaying algorithms
    *   in non-linear structural dynamics, International Journal for
    *   Numerical Methods in Engineering, 45(5):569-599, 1999.
@@ -233,7 +233,7 @@ namespace STR
     const double gamma_;  //!< factor (0,1]
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [0,1)
-    double xsi_;  //!< factor [0,1)
+    double xi_;  //!< factor [0,1)
     //@}
 
     //! @name Global mid-state vectors
