@@ -449,9 +449,9 @@ private:
   /// Total deformation gradient and (enhanced) Green-Lagrange strain
   /// \author mgit \date 01/08
   void w1_call_defgrad_tot(
-    const Epetra_SerialDenseMatrix F_enh,  ///< enhanced def.grad.
+    const Epetra_SerialDenseMatrix& F_enh,  ///< enhanced def.grad.
     Epetra_SerialDenseMatrix& F_tot,  ///< total def.grad.
-    const Epetra_SerialDenseVector F,  ///< displ.-based def.grad.
+    const Epetra_SerialDenseVector& F,  ///< displ.-based def.grad.
     Epetra_SerialDenseVector& strain  ///< GL strains
   ); 
   
@@ -535,7 +535,7 @@ private:
 
   /// evaluate the element forces and stiffness and mass for GEMM
   /// \author bborn \date 08/08
-  void GEMMFintStiffMass(
+  void FintStiffMassGEMM(
     const ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dispo,  ///< element displacements at \f$t_{n}\f$
