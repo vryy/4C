@@ -197,14 +197,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     // displ.-based def.grad. at origin
     w1_defgrad(*Fuv0o, Ev, Xe, xeo, *boplin0, numnode);  // at t_{n}
     w1_defgrad(*Fuv0, Ev, Xe, xe, *boplin0, numnode);  // at t_{n+1}
-
-    // evaluation of EAS variables (which are constant for the following):
-    // -> M defining interpoxlation of enhanced strains alpha, evaluated at GPs
-    // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
-    // -> T0^{-T}
-    //w1_eassetup(*boplin0, *Fuv0, *Xjm0, Xjdet0, Xe, xe, distype);
   }
-
 
   // integration loops over element domain
   for (int ip=0; ip<intpoints.nquad; ++ip)
