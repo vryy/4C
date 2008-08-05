@@ -278,7 +278,8 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       //elevec1(i+3) += normalGenRot.random();
       elevec1(i+6) += normalGenTrans.random();
       //elevec1(i+9) += normalGenRot.random();
-    }   
+    }  
+  
   }
   
   return 0;
