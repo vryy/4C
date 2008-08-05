@@ -82,7 +82,10 @@ namespace EXODUS
   vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
   
   enum ExtrusionType{eblock,sideset};
-  
+
+  map<int,vector<int> > ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
+      const set<int>& doneles, const map<int,vector<int> >& ele_conn, const set<int>& todo_eleset);
+
   void PlotStartEleGmsh(const int eleid, const vector<int> elenodes, 
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
   
@@ -90,7 +93,8 @@ namespace EXODUS
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal,
       const map<int,set<int> >& node_conn, const map<int,vector<double> >avg_nn);
   
-  void PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes);
+  void PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes, const int plot_eleid=-1);
+  void PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes, const map<int,vector<int> >& leftovers);
 
 } // of namespace EXODUS
 

@@ -167,18 +167,15 @@ EXODUS::Mesh::Mesh(string exofilename)
     error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
 
     // Add prop names to final Mesh NodeSet if available
+    map<int,NodeSet>::const_iterator i_ns;
     if ((num_props-1) == num_node_sets){
-      for (int i = 1; i < num_props; ++i) {
-        string propname(prop_names[i], int(MAX_STR_LENGTH));
-
-        map<int,NodeSet>::const_iterator blub = prelimNodeSets.find(i-1);
-        if (blub == prelimNodeSets.end())
-          dserror("impossible");
-        const NodeSet actNodeSet = blub->second;
-        //NodeSet actNodeSet = nodeSets_[i-1];
-        const NodeSet newNodeSet(actNodeSet.GetNodeSet(),actNodeSet.GetName(),propname);
-        //nodeSets_[i-1] = newNodeSet;
-        nodeSets_.insert(std::pair<int,NodeSet>(blub->first,newNodeSet));
+      for(i_ns=prelimNodeSets.begin(); i_ns != prelimNodeSets.end(); ++i_ns){
+        for (int i = 1; i < num_props; ++i) {
+          string propname(prop_names[i], int(MAX_STR_LENGTH));
+          const NodeSet actNodeSet = i_ns->second;
+          const NodeSet newNodeSet(actNodeSet.GetNodeSet(),actNodeSet.GetName(),propname);
+          nodeSets_.insert(std::pair<int,NodeSet>(i_ns->first,newNodeSet));
+        }
       }
     } else {
       // this is the standard case without prop names

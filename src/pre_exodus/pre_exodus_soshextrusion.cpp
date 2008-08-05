@@ -314,9 +314,20 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
           /* the new elements orientation is opposite the current one
            * therefore the FIRST node is secedgenode and it does exist */
           for (int i_layer = 0; i_layer <= layers; ++i_layer) {
-            newid = node_pair.find(secedgenode)->second[i_layer];
-            // finally store this node where it will be connected to an ele
-            layer_nodes[i_layer].push_back(newid);
+            if (node_pair.find(secedgenode)==node_pair.end()){
+              map<int,vector<int> > leftovers = EXODUS::ExtrusionErrorOutput(secedgenode,todo_counter,doneles,ele_conn,todo_eleset);
+              //EXODUS::PlotEleConnGmsh(leftovers,*basemesh.GetNodes());
+              cout << "Check the gmsh-file 'extrusionproblems.gmsh' " << endl;
+              EXODUS::PlotEleConnGmsh(ele_conn,*basemesh.GetNodes(),leftovers);
+              cout << "Check the gmsh-file 'neighbors.gmsh' " << endl;
+              vector<double> normal(3,1.0); // = node_normals.find(firstedgenode)->second; // alternatively use normal at firstedgenode
+              EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,secedgenode,normal,node_conn,node_normals);
+              dserror("Mesh problem!");
+            } else {
+              newid = node_pair.find(secedgenode)->second[i_layer];
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
           }
           
           
@@ -509,7 +520,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }// end of this "center" - element ///////////////////////////////////////
       todo_counter ++;
       
-      if (gmsh == todo_counter) PlotEleConnGmsh(*newconn,*newnodes);
+      if (gmsh == todo_counter) PlotEleConnGmsh(*newconn,*newnodes,todo_counter);
       
     }// end of extruding all elements in connectivity
     
@@ -1289,6 +1300,24 @@ vector<int> EXODUS::FindNodeNeighbors(const vector<int> nodes,const int actnode)
   return neighbors;
 }
 
+map<int,vector<int> > EXODUS::ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
+    const set<int>& doneles, const map<int,vector<int> >& ele_conn, const set<int>& todo_eleset)
+{
+  map<int,vector<int> >leftovers;
+  cout << "There is a problem with neighbor nodes at node: "<<secedgenode<<endl;
+  cout << "Current element to extrude is: " << todo_counter << endl;
+  cout << "doneles.size: " << doneles.size() <<", ele_conn.size: " << ele_conn.size();
+  cout << ", this means that " << ele_conn.size()-doneles.size() << " left to extrude." << endl;
+  cout << "todo-eleset: "; PrintSet(cout,todo_eleset);
+  
+  set<int>::const_iterator it;
+  for(it=todo_eleset.begin(); it!= todo_eleset.end(); ++it){
+    leftovers.insert(pair<int,vector<int> >(ele_conn.find(*it)->first,ele_conn.find(*it)->second));
+  }
+  
+  return leftovers;
+}
+
 void EXODUS::PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
     const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal)
 {
@@ -1341,8 +1370,8 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
     const EXODUS::Mesh& basemesh,const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn,
     const map<int,vector<double> >avg_nn)
 {
-  PrintVec(cout,centerele);
-  PrintVec(cout,nbrs);
+  cout << "centerele: "; PrintVec(cout,centerele);
+  cout << "neighboreles: "; PrintVec(cout,nbrs);
   set<int> patchnodes;
   ofstream f_system("neighbors.gmsh");
   stringstream gmshfilecontent;
@@ -1359,13 +1388,13 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
     else gmshfilecontent << ",";
   }
   gmshfilecontent << "{";
-  for(unsigned int i=0; i<(centerele.size()-1); ++i) gmshfilecontent << -1 << ",";
-  gmshfilecontent << -1 << "};" << endl;
+  for(unsigned int i=0; i<(centerele.size()-1); ++i) gmshfilecontent << 100 << ",";
+  gmshfilecontent << 100 << "};" << endl;
   vector<int>::const_iterator i_nbr;
   for(unsigned int i_nbr = 0; i_nbr < nbrs.size(); ++i_nbr){
     int eleid = nbrs.at(i_nbr);
     const vector<int> elenodes = baseconn.find(eleid)->second;
-    PrintVec(cout,elenodes);
+    cout << i_nbr << "th neighbor elenodes: "; PrintVec(cout,elenodes);
     int numnodes = elenodes.size();
     if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
@@ -1421,7 +1450,6 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
   }
   gmshfilecontent << "};" << endl;
  
-  gmshfilecontent << "};" << endl;
   gmshfilecontent <<"View \" Normal \" {" << endl;
   gmshfilecontent << "VP(" <<
   basemesh.GetNodeExo(nodeid)[0] << "," <<
@@ -1435,7 +1463,7 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
 }
 
 
-void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes)
+void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes, const int plot_eleid)
 {
   ofstream f_system("extrusionmesh.gmsh");
   stringstream gmshfilecontent;
@@ -1443,10 +1471,15 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
   map<int,vector<int> >::const_iterator it;
   for(it = conn.begin(); it != conn.end(); ++it){
     int eleid = it->first;
+    if(eleid >= plot_eleid-5){
+      eleid = -1; // will turn plot_eleid into dark blue in gmsh
+    }
     const vector<int> elenodes = it->second;
     int numnodes = elenodes.size();
     if (numnodes==6) gmshfilecontent << "SI(";
     else if (numnodes==8) gmshfilecontent << "SH(";
+    else if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
       // node map starts with 0 but exodus with 1!
       gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
@@ -1460,6 +1493,57 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     gmshfilecontent << eleid << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+}
+
+void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes, const map<int,vector<int> >& leftovers)
+{
+  ofstream f_system("extrusionproblems.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" base connectivity \" {" << endl;
+  map<int,vector<int> >::const_iterator it;
+  for(it = conn.begin(); it != conn.end(); ++it){
+    const vector<int> elenodes = it->second;
+    int numnodes = elenodes.size();
+    if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      // node map starts with 0 but exodus with 1!
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << 0 << ",";
+    gmshfilecontent << 0 << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  
+  gmshfilecontent << "View \" leftovers \" {" << endl;
+  for(it=leftovers.begin();it!=leftovers.end();++it){
+    const vector<int> elenodes = it->second;
+    int eleid = it->first;
+    int numnodes = elenodes.size();
+    if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      // node map starts with 0 but exodus with 1!
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
+    gmshfilecontent << eleid << "};" << endl;
+    
+  }
+  gmshfilecontent << "};" << endl;
+
   f_system << gmshfilecontent.str();
   f_system.close();
 }
