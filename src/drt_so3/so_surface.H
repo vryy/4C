@@ -221,6 +221,19 @@ protected:
                           const Epetra_SerialDenseMatrix& deriv);
 
   /*!
+  \brief Evaluate a Neumann boundary condition
+
+  this method evaluates the normal at gaussian point
+
+  \param normal (out) : The normal at gaussian point, length is detA!
+  \param x      (in)  : nodal coords in either material or spatial frame
+  \param deriv  (in)  : derivatives of shape functions
+  */
+  void SurfaceIntegration(vector<double>& normal,
+                          const Epetra_SerialDenseMatrix& x,
+                          const Epetra_SerialDenseMatrix& deriv);
+
+  /*!
   \brief Create matrix with material configuration
 
   \param x  (out)  : nodal coords in material frame

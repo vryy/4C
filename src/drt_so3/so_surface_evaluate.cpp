@@ -159,14 +159,13 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     case neum_orthopressure:
     {
      if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
-      for (int checkdof = 1; checkdof < 3; ++checkdof) {
+      for (int checkdof = 1; checkdof < 3; ++checkdof) 
         if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
-      }
       double ortho_value = (*val)[0];
       if (!ortho_value) dserror("no orthopressure value given!");
       vector<double> normal(3);
-      double detA;
-      SurfaceIntegration(detA,normal,xc,deriv);
+      double detA = 0.0;
+      SurfaceIntegration(normal,xc,deriv);
       const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
@@ -181,6 +180,26 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   } /* end of loop over integration points gp */
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * Evaluate normal at gp (private)                             gee 08/08|
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal,
+                                                          const Epetra_SerialDenseMatrix& x,
+                                                          const Epetra_SerialDenseMatrix& deriv)
+{
+  // note that the length of this normal is the area dA
+
+  // compute dXYZ / drs
+  LINALG::SerialDenseMatrix dxyzdrs(2,3);
+  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+
+  normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+  normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+  normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
