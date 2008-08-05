@@ -15,18 +15,7 @@ Maintainer: Thomas Kloeppel
 #ifndef MPCONSTRAINT_H
 #define MPCONSTRAINT_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
-
-
-#include <Teuchos_ParameterList.hpp>
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_systemmatrix.H"
-
+#include "constraint.H"
 
 using namespace std;
 using namespace Teuchos;

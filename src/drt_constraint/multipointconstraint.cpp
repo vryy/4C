@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file multipointconstraint.cpp
 
-\brief Basic constraint class, dealing with constraints living on boundaries
+\brief Basic constraint class, dealing with multi point constraints
 <pre>
 Maintainer: Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
@@ -12,14 +12,19 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraint.H"
+
 #include "multipointconstraint.H"
-#include "constraint_element.H"
 #include "mpcdofset.H"
+#include "constraint_element.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -137,7 +142,6 @@ RCP<DRT::Discretization> UTILS::MPConstraint::CreateDiscretizationFromCondition
   // Loop all conditions in constrcondvec
   for (unsigned int j=0;j<constrcondvec.size();j++)
   {
-
     vector<int> ngid=*(constrcondvec[j]->Nodes());
     const int numnodes=ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
@@ -340,10 +344,11 @@ void UTILS::MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    elematrix1.Shape(eledim,eledim);
-    elematrix2.Shape(eledim,eledim);
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
+    if (assemblemat1) elematrix1.Shape(eledim,eledim);
+    if (assemblemat2) elematrix2.Shape(eledim,eledim);
+    if (assemblevec1) elevector1.Size(eledim);
+    if (assemblevec2) elevector2.Size(eledim);        
+    if (assemblevec3) elevector3.Size(systemvector3->MyLength());
     elevector3.Size(systemvector3->MyLength());
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
