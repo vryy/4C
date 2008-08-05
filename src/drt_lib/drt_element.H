@@ -79,8 +79,6 @@ public:
     element_bele3,
     element_bele3line,
     element_so_hex8,
-    element_soh8surface,
-    element_soh8line,
     element_sosh8,
     element_ale2,
     element_ale2line,
