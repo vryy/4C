@@ -329,59 +329,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
       {
         (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
       }     
-    }
-
-
-      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
-      //finite differences and finally the relative error is printed; in case that there is no significant error in any
-      //element no printout is thrown
-      //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Truss3.H
-      //and Truss3_evaluate.cpp
-      /*
-      if(Id() == 8) //limiting the following tests to certain element numbers
-      {
-       Epetra_SerialDenseMatrix stiff_approx;
-       Epetra_SerialDenseMatrix stiff_relerr;
-       stiff_approx.Shape(12,12);
-       stiff_relerr.Shape(12,12);      
-       double h_rel = 1e-7;
-       int outputflag = 0;
-       stiff_approx = b3_nlnstiff_approx(xcurr, h_rel, *force);
-       
-       for(int line=0; line<12; line++)
-       {
-         for(int col=0; col<12; col++)
-         {
-           if( fabs( (*stiffmatrix)(line,col) ) > h_rel)
-             stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-           else
-           {
-             if( fabs( stiff_approx(line,col) ) < h_rel*1000)
-               stiff_relerr(line,col) = 0;
-             else
-               stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-           }
-           //suppressing small entries whose effect is only confusing
-           if (stiff_relerr(line,col)<h_rel*100)
-             stiff_relerr(line,col)=0;
-           //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-           if ( isnan( stiff_relerr(line,col) ) )
-             stiff_relerr(line,col)=0;
-           if (stiff_relerr(line,col)>0)
-             outputflag = 1;  
-          }
-       
-           if(outputflag ==1)
-           {
-             std::cout<<"\n\n acutally calculated stiffness matrix"<< *stiffmatrix;
-             std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-             std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-           }    
-         }
-        } 
-        */
-   
+    }  
   }
   
   //calculating consistent mass matrix
@@ -423,41 +371,6 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
     }
   }
 }
-
-//the following function can be activated in order to find bugs; it calculates a finite difference
-//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
-/*
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Truss3::t3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force)
-{
-      //computing global internal forces, Crisfield Vol. 2, equation (17.79)
-      //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
-      force_aux.Size(12);
-      for (int u=0; u<3; ++u)
-      {
-        force_aux(u)   -= stressn_aux(u);
-        force_aux(u+3) -= stressm_aux(u);
-        force_aux(u+6) += stressn_aux(u);
-        force_aux(u+9) += stressm_aux(u);
-        
-        for (int j=0; j<3; ++j)
-        {      
-          force_aux(u+3) -= stressn_aux(j)*spinx21_aux(u,j);      
-          force_aux(u+9) -= stressn_aux(j)*spinx21_aux(u,j);       
-        }
-      }
-      
-      for(int u = 0;u<12;u++)
-      {
-        stiff_approx(u,i+k*6)= ( force_aux(u) - force(u) )/h_rel;
-      }
-   
-    }
-  }
-   
-  return stiff_approx;
-} // DRT::ELEMENTS::Truss3::b3_nlnstiff_approx
-
-*/
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TRUSS3
