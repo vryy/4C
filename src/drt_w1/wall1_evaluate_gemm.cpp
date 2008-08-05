@@ -339,9 +339,9 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       }
       else
       {
-        (*elestress)(ip,0) = Smm(0,0);  // 2nd Piola-Kirchhoff stress P_{11}
-        (*elestress)(ip,1) = Smm(1,1);  // 2nd Piola-Kirchhoff stress P_{22}
-        (*elestress)(ip,2) = Smm(0,2);  // 2nd Piola-Kirchhoff stress P_{12}
+        (*elestress)(ip,0) = Smm(0,0);  // 2nd Piola-Kirchhoff stress S_{11}
+        (*elestress)(ip,1) = Smm(1,1);  // 2nd Piola-Kirchhoff stress S_{22}
+        (*elestress)(ip,2) = Smm(0,2);  // 2nd Piola-Kirchhoff stress S_{12}
       }
     }
 
