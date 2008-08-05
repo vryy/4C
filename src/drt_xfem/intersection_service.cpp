@@ -884,6 +884,85 @@ void XFEM::CurrentToSurfaceElementCoordinates(
 
 
 
+/*!
+\brief compute element coordinates from a given point
+       in the 3-dim physical space lies on a given line element
+       Template version 
+\param xyze_lineElement         (in) :  element nodal coordinates 
+\param physCoord                (in) :  physical coordinates (x,y,z)
+\param eleCoord                 (in) :  element coordinates (r)
+
+ RQI
+ */
+template<DRT::Element::DiscretizationType DISTYPE> 
+static void currentToLineElementCoordinatesT(
+    const BlitzMat&   xyze_lineElement,  
+    const BlitzVec3&  physCoord,             
+    BlitzVec1&        eleCoord               
+    )
+{
+  const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  
+  const int maxiter = 20;
+  int iter = 0;
+  double residual = 1.0;
+  // starting value
+  eleCoord = 0.0;
+  
+  while (residual > XFEM::TOL13 || iter < maxiter)
+  {
+    iter++;
+ 
+    // determine shapefunction, 1. and 2. derivative at current solutiom
+    static blitz::TinyVector<double,numNodes> funct;
+    DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
+      
+    static blitz::TinyMatrix<double,1,numNodes> deriv1;
+    DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
+    
+    static blitz::TinyMatrix<double,1,numNodes> deriv2;
+    DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
+      
+    // compute nonlinear system
+    static BlitzVec3 F = 0.0;
+    // compute first derivative of r  
+    static BlitzVec3 F_deriv1 = 0.0;
+    // compute first derivative of r  
+    static BlitzVec3 F_deriv2 = 0.0;
+        
+    for(int i = 0; i < 3; i++)
+    {
+      for(int inode = 0; inode < numNodes; inode++)
+      {
+        F(i) += xyze_lineElement(i,inode) * funct(inode);
+        F_deriv1(i) += xyze_lineElement(i,inode) * deriv1(0,inode);
+        F_deriv2(i) += xyze_lineElement(i,inode) * deriv2(0,inode);
+      }
+      F -= physCoord;
+    }
+    
+    // determine system matrix A and rhs b
+    double A = 0.0;
+    double b = 0.0;
+    // update system matrix A and rhs b
+    for(int i=0; i<3; i++)
+    {
+      A += F(i)*F_deriv2(i) + F_deriv1(i)*F_deriv1(i);   
+      b += F_deriv1(i)*F(i);
+    }
+  
+    if(fabs(A) < XFEM::TOL14)
+      dserror("A is equal to 0");
+  
+    // solve scalar linear equation 
+    eleCoord(0) = (-1)*b/A;
+  
+    residual = fabs(b); 
+  }
+}
+
+
+
 
 /*----------------------------------------------------------------------*
  |  RQI:    compute element coordinates from a given point              |
@@ -899,10 +978,10 @@ void XFEM::CurrentToLineElementCoordinates(
     switch (lineElement->Shape())
     {
         case DRT::Element::line2:
-            //currentToLineElementCoordinatesT<DRT::Element::line2>(xyze_lineElement,physCoord,eleCoord);
+            currentToLineElementCoordinatesT<DRT::Element::line2>(xyze_lineElement,physCoord,eleCoord);
             break;
         case DRT::Element::line3:
-            //currentToLineElementCoordinatesT<DRT::Element::line3>(xyze_lineElement,physCoord,eleCoord);
+            currentToLineElementCoordinatesT<DRT::Element::line3>(xyze_lineElement,physCoord,eleCoord);
             break;
         default:
             dserror("please add your line element type here");
