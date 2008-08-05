@@ -391,21 +391,27 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   // watch out! stress matrix will temporarily hold eigenvectors!
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
   
+#if debug
+  cout << "eigenvectors: " << stresses_->at(gp);
+  cout << "eigenvalues: " << lambda << endl;
+#endif
+  
   // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
   double newgamma = atan(lambda(1)/lambda(2));
   
   // check whether delta gamma is larger than tolerance
-  const double gammatol = 0.001;
-  if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
-    //remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
-    return; // get out here
-  }
+//  const double gammatol = 0.001;
+//  if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
+//    //remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
+//    remtime_->at(gp) = time; // no remodelling, but update time
+//    return; // get out here
+//  }
   
   EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
   
   // update
   gamma_->at(gp) = newgamma;
-  remtime_->at(gp) = time; // we remodel only once pre timestep, not during iteration
+  remtime_->at(gp) = time; // we remodel only once per timestep, not during iteration
   
   // debug/plotting storage
   phi_->at(gp) = stresses_->at(gp);
@@ -557,6 +563,21 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
         << "};" << endl;
 
       }
+      
+//      Epetra_SerialDenseMatrix Phi= remo->Getphis()->at(gp);
+//      vector<double> lambda = remo->Getlambdas()->at(gp);
+//      const double scale = 100.0;
+//      for (int k=0; k<3; ++k){
+//        gmshfilecontent << "VP(" << scientific << point[0] << ",";
+//        gmshfilecontent << scientific << point[1] << ",";
+//        gmshfilecontent << scientific << point[2] << ")";
+//        gmshfilecontent << "{" << scientific
+//        <<        scale*lambda[k]*Phi(0,k) 
+//        << "," << scale*lambda[k]*Phi(1,k) 
+//        << "," << scale*lambda[k]*Phi(2,k)
+//        << "};" << endl;
+//      }
+
     }
   }
   gmshfilecontent << "};" << endl;
