@@ -79,14 +79,14 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
   Epetra_SerialDenseVector Evo(4);  // Green-Lagrange strain vector at t_{n}
   Epetra_SerialDenseVector Ev(4);  // Green-Lagrange strain vector at t_{n+1}
-  Epetra_SerialDenseVector Evm(4);  // Green-Lagrange mid-strain vector
+  Epetra_SerialDenseVector& Evm = Evo;  // Green-Lagrange mid-strain vector
 
   Epetra_SerialDenseMatrix Xe(Wall1::numdim_,numnode);  // material/initial element co-ordinates
   Epetra_SerialDenseMatrix xeo(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n}
   Epetra_SerialDenseMatrix xe(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n+1}
   Epetra_SerialDenseMatrix bopo(Wall1::numstr_,edof);  // non-linear B-op at t_{n}
   Epetra_SerialDenseMatrix bop(Wall1::numstr_,edof);  // non-linear B-op at t_{n+1}
-  Epetra_SerialDenseMatrix bopm(Wall1::numstr_,edof);  // non-linear mid-B-op
+  Epetra_SerialDenseMatrix& bopm = bopo;  // non-linear mid-B-op
   Epetra_SerialDenseMatrix pk2mm(4,4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS: STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
   Epetra_SerialDenseMatrix C(4,4);
 
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     Fenhv = new Epetra_SerialDenseMatrix(4,1);
     Fmo = new Epetra_SerialDenseMatrix(4,3);
     Fm = new Epetra_SerialDenseMatrix(4,3);
-    Fmm = new Epetra_SerialDenseMatrix(4,3);
+    Fmm = Fmo;  // convenience
     pk1vmm = new Epetra_SerialDenseMatrix(4,1);
     Xjm0 = new Epetra_SerialDenseMatrix(2,2);
     Fuv0o = new Epetra_SerialDenseVector(4);
@@ -151,10 +151,10 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     boplin0 = new Epetra_SerialDenseMatrix(4,edof);
     W0o = new Epetra_SerialDenseMatrix(4,edof);
     W0 = new Epetra_SerialDenseMatrix(4,edof);
-    W0m = new Epetra_SerialDenseMatrix(4,edof);
+    W0m = W0o;  // convenience pointer
     Go = new Epetra_SerialDenseMatrix(4,Wall1::neas_); 
     G = new Epetra_SerialDenseMatrix(4,Wall1::neas_); 
-    Gm = new Epetra_SerialDenseMatrix(4,Wall1::neas_); 
+    Gm = Go;  // convenience pointer
     Z = new Epetra_SerialDenseMatrix(edof,Wall1::neas_);
     FmCF = new Epetra_SerialDenseMatrix(4,4);
     Kda = new Epetra_SerialDenseMatrix(edof,Wall1::neas_);
@@ -266,47 +266,49 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     // mid-def.grad.
     // F_m = (1.0-gemmalphaf)*F_{n+1} + gemmalphaf*F_{n}
     {
-      const int  totdim = (*Fmm).M() * (*Fmm).N();
-      blas.SCAL(totdim, 0.0, (*Fmm).A());  // F_m *= 0.0
+      const int totdim = (*Fmm).M() * (*Fmm).N();
+      // remember same pointer: F_m = F_{n}
+      blas.SCAL(totdim, gemmalphaf, (*Fmm).A());  // F_m *= gemmalphaf = gemmalphaf*F_{n}
       blas.AXPY(totdim, (1.0-gemmalphaf), (*Fm).A(), (*Fmm).A());  // F_m += (1.0-gemmalphaf)*F_{n+1}
-      blas.AXPY(totdim, gemmalphaf, (*Fmo).A(), (*Fmm).A());  // F_m += gemmalphaf*F_{n}
     }
 
     // non-linear mid-B-operator
     // B_m = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
     {
       const int totdim = bopm.M() * bopm.N();
-      blas.SCAL(totdim, 0.0, bopm.A());  // B_m *= 0.0;
+      // remember same pointer B_m = B_{n}
+      blas.SCAL(totdim, gemmalphaf, bopm.A());  // B_m *= gemmalphaf = gemmalphaf*B_{n}
       blas.AXPY(totdim, (1.0-gemmalphaf), bop.A(), bopm.A());  // B_m += (1.0-gemmalphaf)*B_{n+1}
-      blas.AXPY(totdim, gemmalphaf, bopo.A(), bopm.A());  // B_m += gemmalphaf*B_{n}
     }
 
     // mid-strain GL vector
     // E_m = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_n
     {
       const int totdim = Evm.M() * Evm.N();
-      blas.SCAL(totdim, 0.0, Evm.A());  // E_m *= 0.0
+      // remember same pointer: E_m = E_{n}
+      blas.SCAL(totdim, (gemmalphaf-gemmxi), Evm.A());  // E_m *= (gemmalphaf-gemmxi) = (gemmalphaf-gemmxi)*E_n
       blas.AXPY(totdim, (1.0-gemmalphaf+gemmxi), Ev.A(), Evm.A());  // E_m += (1.0-gemmalphaf+gemmxi)*E_{n+1}
-      blas.AXPY(totdim, (gemmalphaf-gemmxi), Evo.A(), Evm.A());  // E_m += (gemmalphaf-gemmxi)*E_n
     }
 
-    // create algorithmic mid-strain ... after all it's GEMM
+    // extra mid-quantities for case of EAS
     if (iseas_)
     {
       // mid-G-operator
+      // G_m = 0.5*G_{n+1} + 0.5*G_{n}
       {
         const int totdim = (*Gm).M() * (*Gm).N();
-        blas.SCAL(totdim, 0.0, (*Gm).A());
+        // remember same pointer: G_m = G_{n}
+        blas.SCAL(totdim, 0.5, (*Gm).A());  // G_m *= 0.5 = 0.5*G_{n}
         blas.AXPY(totdim, 0.5, (*G).A(), (*Gm).A());  // G_m += 0.5*G_{n+1}
-        blas.AXPY(totdim, 0.5, (*G).A(), (*Go).A());  // G_m += 0.5*G_{n}
       }
 
       // mid-W0-operator
+      // W_{0;m} = 0.5*W_{0;n+1} + 0.5*W_{0;n}
       {
         const int totdim = (*W0m).M() * (*W0m).N();
-        blas.SCAL(totdim, 0.0, (*W0m).A());
+        // remember same pointer: W0_m = W0_{n}
+        blas.SCAL(totdim, 0.5, (*W0m).A());   // W0_m *= 0.5 = 0.5*W0_{n}
         blas.AXPY(totdim, 0.5, (*W0).A(), (*W0m).A());  // W0_m += 0.5*W0_{n+1}
-        blas.AXPY(totdim, 0.5, (*W0o).A(), (*W0m).A());  // W0_m += 0.5*W0_{n}
       }
     }
 
@@ -431,7 +433,6 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     delete Fenhv;
     delete Fmo;
     delete Fm;
-    delete Fmm;
     delete pk1vmm;
     delete Xjm0;
     delete Fuv0o;
@@ -439,10 +440,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     delete boplin0;
     delete W0o;
     delete W0;
-    delete W0m;
     delete Go;
     delete G;
-    delete Gm;
     delete Z;
     delete FmCF;
     delete Kda;
