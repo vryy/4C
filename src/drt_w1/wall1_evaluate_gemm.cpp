@@ -87,7 +87,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix bopo(Wall1::numstr_,edof);  // non-linear B-op at t_{n}
   Epetra_SerialDenseMatrix bop(Wall1::numstr_,edof);  // non-linear B-op at t_{n+1}
   Epetra_SerialDenseMatrix& bopm = bopo;  // non-linear mid-B-op
-  Epetra_SerialDenseMatrix pk2mm(4,4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS: STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
+  Epetra_SerialDenseMatrix Smm(4,4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS: STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
   Epetra_SerialDenseMatrix C(4,4);
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix* Fmo;  // total def.grad. matrix at t_{n}
   Epetra_SerialDenseMatrix* Fm;  // total def.grad. matrix at t_{n+1}
   Epetra_SerialDenseMatrix* Fmm;  // total mid-def.grad. matrix
-  Epetra_SerialDenseMatrix* pk1vmm;  // first Piola-Kirchhoff stress vector
+  Epetra_SerialDenseMatrix* Pvmm;  // first Piola-Kirchhoff stress vector
   Epetra_SerialDenseMatrix* Xjm0;  // Jacobian Matrix (origin)
   double Xjdet0;  // determinant of #Xjm0
   Epetra_SerialDenseVector* Fuv0o;  // deformation gradient at origin at t_{n}
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     Fmo = new Epetra_SerialDenseMatrix(4,3);
     Fm = new Epetra_SerialDenseMatrix(4,3);
     Fmm = Fmo;  // convenience
-    pk1vmm = new Epetra_SerialDenseMatrix(4,1);
+    Pvmm = new Epetra_SerialDenseMatrix(4,1);
     Xjm0 = new Epetra_SerialDenseMatrix(2,2);
     Fuv0o = new Epetra_SerialDenseVector(4);
     Fuv0 = new Epetra_SerialDenseVector(4);
@@ -314,18 +314,18 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
     // call material law
     if (material->mattyp == m_stvenant)
-      w1_call_matgeononl(Evm, pk2mm, C, Wall1::numstr_, material);
+      w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material);
     else
       dserror("It must be St.Venant-Kirchhoff material.");
 
-    // return Gauss point strains (only in case of pk2mm/strain output)
+    // return Gauss point strains (only in case of stress/strain output)
     if (elestrain)
     {
       for (int i = 0; i < Wall1::numstr_; ++i)
         (*elestrain)(ip,i) = Ev(i);
     }
 
-    // return stresses at Gauss points (only in case of pk2mm/strain output)
+    // return stresses at Gauss points (only in case of stress/strain output)
     if (elestress)
     {
       if (cauchy)
@@ -333,15 +333,15 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
         if (iseas_)
           StressCauchy(ip, 
                        (*Fm)(0,0), (*Fm)(1,1), (*Fm)(1,1), (*Fm)(1,2), 
-                       pk2mm, elestress);
+                       Smm, elestress);
         else
-          StressCauchy(ip, Fuv[0], Fuv[1], Fuv[2], Fuv[3], pk2mm, elestress);
+          StressCauchy(ip, Fuv[0], Fuv[1], Fuv[2], Fuv[3], Smm, elestress);
       }
       else
       {
-        (*elestress)(ip,0) = pk2mm(0,0);
-        (*elestress)(ip,1) = pk2mm(1,1);
-        (*elestress)(ip,2) = pk2mm(0,2);
+        (*elestress)(ip,0) = Smm(0,0);  // 2nd Piola-Kirchhoff stress P_{11}
+        (*elestress)(ip,1) = Smm(1,1);  // 2nd Piola-Kirchhoff stress P_{22}
+        (*elestress)(ip,2) = Smm(0,2);  // 2nd Piola-Kirchhoff stress P_{12}
       }
     }
 
@@ -349,47 +349,47 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     if (iseas_)
     {
       // first mid-mid Piola-Kirchhoff stress vector P_{mm} = F_m . S_m
-      w1_stress_eas(pk2mm, (*Fmm), (*pk1vmm));
+      w1_stress_eas(Smm, (*Fmm), (*Pvmm));
 
       // stiffness matrix kdd
       if (stiffmatrix)
         TangFintByDispGEMM(gemmalphaf, gemmxi, fac, 
                            boplin, (*W0m), (*W0),
-                           (*Fmm), (*Fm), C, pk2mm,
+                           (*Fmm), (*Fm), C, Smm,
                            (*FmCF), *stiffmatrix);
       // matrix kda
       TangFintByEnhGEMM(gemmalphaf, gemmxi, fac,
                         boplin, (*W0m), 
-                        (*FmCF), pk2mm, (*G),
-                        (*Z), (*pk1vmm), 
+                        (*FmCF), Smm, (*G),
+                        (*Z), (*Pvmm), 
                         (*Kda));
       // matrix kad
       TangEconByDispGEMM(gemmalphaf, gemmxi, fac,
                          boplin, (*W0), 
-                         (*FmCF), pk2mm, (*Gm),
-                         (*Z), (*pk1vmm), 
+                         (*FmCF), Smm, (*Gm),
+                         (*Z), (*Pvmm), 
                          (*Kad));
       // matrix kaa
-      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac, (*FmCF), pk2mm, (*G), (*Gm), (*Kaa));
+      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac, (*FmCF), Smm, (*G), (*Gm), (*Kaa));
       // nodal forces
-      if (force) w1_fint_eas((*W0m), boplin, (*Gm), (*pk1vmm), *force, (*feas), fac);
+      if (force) w1_fint_eas((*W0m), boplin, (*Gm), (*Pvmm), *force, (*feas), fac);
     }
     else
     {
       // geometric part of stiffness matrix kg
       if (stiffmatrix)
       {
-        const double facgemm = fac * (1.0-gemmalphaf);
-        w1_kg(*stiffmatrix, boplin, pk2mm, facgemm, edof, Wall1::numstr_);
+        const double gemmfac = fac * (1.0-gemmalphaf);
+        w1_kg(*stiffmatrix, boplin, Smm, gemmfac, edof, Wall1::numstr_);
       }
       // elastic+displacement stiffness matrix keu
       if (stiffmatrix)
       {
-        const double facgemm = fac * (1.0-gemmalphaf+gemmxi);
-        w1_keu(*stiffmatrix, bopm, C, facgemm, edof, Wall1::numstr_);
+        const double gemmfac = fac * (1.0-gemmalphaf+gemmxi);
+        w1_keu(*stiffmatrix, bopm, C, gemmfac, edof, Wall1::numstr_);
       }
       // nodal forces fi from integration of stresses
-      if (force) w1_fint(pk2mm, bop, *force, fac, edof);
+      if (force) w1_fint(Smm, bop, *force, fac, edof);
     }
 
   } // for (int ip=0; ip<totngp; ++ip)
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     delete Fenhv;
     delete Fmo;
     delete Fm;
-    delete pk1vmm;
+    delete Pvmm;
     delete Xjm0;
     delete Fuv0o;
     delete Fuv0;
@@ -456,8 +456,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
 /*======================================================================*/
 /* calcuate tangent (f_{int;m}),d */
-void DRT::ELEMENTS::Wall1::TangFintByDispGEMM
-(
+void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   const double& alphafgemm,
   const double& xigemm,
   const double& fac,
@@ -467,7 +466,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM
   const Epetra_SerialDenseMatrix& Fmm,
   const Epetra_SerialDenseMatrix& Fm,
   const Epetra_SerialDenseMatrix& C,
-  const Epetra_SerialDenseMatrix& pk2mm,
+  const Epetra_SerialDenseMatrix& Smm,
   Epetra_SerialDenseMatrix& FmCF,
   Epetra_SerialDenseMatrix& estif
 )
@@ -502,7 +501,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM
 
   // Temp3 (4 x 8) : S_m . (B_L + W0_{n+1})
   Epetra_SerialDenseMatrix temp3(4,2*NumNode());
-  temp3.Multiply('N', 'N', 1.0, pk2mm, BplusW, 0.0);
+  temp3.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
   {
@@ -534,47 +533,47 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(
   const Epetra_SerialDenseMatrix& boplin,
   const Epetra_SerialDenseMatrix& W0m,
   const Epetra_SerialDenseMatrix& FmCF,
-  const Epetra_SerialDenseMatrix& pk2mm,
+  const Epetra_SerialDenseMatrix& Smm,
   const Epetra_SerialDenseMatrix& G,
   const Epetra_SerialDenseMatrix& Z,
-  const Epetra_SerialDenseMatrix& pk1vmm,
+  const Epetra_SerialDenseMatrix& Pvmm,
   Epetra_SerialDenseMatrix& kda
 )
 {
   // BLAS dummy
   Epetra_BLAS::Epetra_BLAS blas;
 
-  // temp1 (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
-  Epetra_SerialDenseMatrix temp1(4,Wall1::neas_);
-  temp1.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
+  // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
+  Epetra_SerialDenseMatrix FmCFG(4,Wall1::neas_);
+  FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
-  // temp3 (4 x 4) : S_m . G_{n+1}
-  Epetra_SerialDenseMatrix temp3(4,Wall1::neas_);
-  temp3.Multiply('N', 'N', 1.0, pk2mm, G, 0.0);
+  // SmG (4 x 4) : S_m . G_{n+1}
+  Epetra_SerialDenseMatrix SmG(4,Wall1::neas_);
+  SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
   Epetra_SerialDenseMatrix BplusW(4,2*NumNode());
   BplusW += boplin;
   BplusW += W0m;
 
-  // temp5 (8 x 4) : \bar{\bar{P}}_{mm} . Z_{n+1}
-  Epetra_SerialDenseMatrix temp5(2*NumNode(),Wall1::neas_);
+  // PZ (8 x 4) : \bar{\bar{P}}_{mm} . Z_{n+1}
+  Epetra_SerialDenseMatrix PZ(2*NumNode(),Wall1::neas_);
   for (int i=0; i<NumNode(); i++)
   {
     for (int ieas=0; ieas<Wall1::neas_; ieas++)
     {
-      temp5(i*2,ieas) = pk1vmm(0,0)*Z(i*2,ieas) + pk1vmm(2,0)*Z(i*2+1,ieas);
-      temp5(i*2+1,ieas) = pk1vmm(3,0)*Z(i*2,ieas) + pk1vmm(1,0)*Z(i*2+1,ieas);
+      PZ(i*2,ieas) = Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas);
+      PZ(i*2+1,ieas) = Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas);
     }
   }
 
   // k_{da} (8 x 4) :
   // k_{da} += fac * (B_l+W0_m)^T . (F_m . C . F_{n+1}^T) . G_{n+1}
-  kda.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, BplusW, temp1, 1.0);
+  kda.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, BplusW, FmCFG, 1.0);
   // k_{da} += fac * (B_l+W0_m)^T . S_m . G_{n+1}
-  kda.Multiply('T', 'N', (1.0-alphafgemm)*fac, BplusW, temp3, 1.0);
+  kda.Multiply('T', 'N', (1.0-alphafgemm)*fac, BplusW, SmG, 1.0);
   // k_{da} += fac * \bar{\bar{P}}_{mm} . Z_{n+1}
-  blas.AXPY(kda.N()*kda.M(), 0.5*fac, temp5.A(), kda.A());
+  blas.AXPY(kda.N()*kda.M(), 0.5*fac, PZ.A(), kda.A());
 
   // ciao
   return;
@@ -590,10 +589,10 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   const Epetra_SerialDenseMatrix& boplin,
   const Epetra_SerialDenseMatrix& W0,
   const Epetra_SerialDenseMatrix& FmCF,
-  const Epetra_SerialDenseMatrix& pk2mm,
+  const Epetra_SerialDenseMatrix& Smm,
   const Epetra_SerialDenseMatrix& Gm,
   const Epetra_SerialDenseMatrix& Z,
-  const Epetra_SerialDenseMatrix& pk1vmm,
+  const Epetra_SerialDenseMatrix& Pvmm,
   Epetra_SerialDenseMatrix& kad
 )
 {
@@ -605,32 +604,32 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   BplusW += boplin;
   BplusW += W0;
 
-  // temp1 (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W_{n=1})
-  Epetra_SerialDenseMatrix temp1(4,Wall1::neas_);
-  temp1.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
+  // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
+  Epetra_SerialDenseMatrix FmCFBW(4,Wall1::neas_);
+  FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
-  // temp2 (4 x 8) : S_m . G_{n+1} . (B_L + W_{n=1})
-  Epetra_SerialDenseMatrix temp2(4,Wall1::neas_);
-  temp2.Multiply('N', 'N', 1.0, pk2mm, BplusW, 0.0);
+  // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
+  Epetra_SerialDenseMatrix SmGBW(4,Wall1::neas_);
+  SmGBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
-  // temp3 (4 x 8) : (\bar{\bar{P}}_{mm} . Z_{n+1})^T
-  Epetra_SerialDenseMatrix temp3(Wall1::neas_,2*NumNode());
+  // ZP (4 x 8) : (\bar{\bar{P}}_{mm} . Z_{n+1})^T
+  Epetra_SerialDenseMatrix ZP(Wall1::neas_,2*NumNode());
   for (int i=0; i<NumNode(); i++)
   {
     for (int ieas=0; ieas<Wall1::neas_; ieas++)
     {
-      temp3(ieas,i*2) = pk1vmm(0,0)*Z(i*2,ieas) + pk1vmm(2,0)*Z(i*2+1,ieas);
-      temp3(ieas,i*2+1) = pk1vmm(3,0)*Z(i*2,ieas) + pk1vmm(1,0)*Z(i*2+1,ieas);
+      ZP(ieas,i*2) = Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas);
+      ZP(ieas,i*2+1) = Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas);
     }
   }
 
   // k_{ad} (4 x 8) :
-  // k_{ad} += fac * G_{m}^T . (F_m . C . F_{n+1}^T) . (B_l+W0_{n+1})
-  kad.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, Gm, temp1, 1.0);
+  // k_{ad} += fac * G_{m}^T . (F_m . C . F_{n+1}^T) . (B_lin+W0_{n+1})
+  kad.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, Gm, FmCFBW, 1.0);
   // k_{ad} += fac *  G_{m}^T . S_m . (B_l+W0_{n+1})^T
-  kad.Multiply('T', 'N', (1.0-alphafgemm)*fac, Gm, temp2, 1.0);
+  kad.Multiply('T', 'N', (1.0-alphafgemm)*fac, Gm, SmGBW, 1.0);
   // k_{ad} += fac * (\bar{\bar{P}}_{mm} . Z_{n+1})^T
-  blas.AXPY(kad.N()*kad.M(), 0.5*fac, temp3.A(), kad.A());
+  blas.AXPY(kad.N()*kad.M(), 0.5*fac, ZP.A(), kad.A());
 
   // ciao
   return;
@@ -643,25 +642,25 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(
   const double& xigemm,
   const double& fac,
   const Epetra_SerialDenseMatrix& FmCF,
-  const Epetra_SerialDenseMatrix& pk2mm,
+  const Epetra_SerialDenseMatrix& Smm,
   const Epetra_SerialDenseMatrix& G,
   const Epetra_SerialDenseMatrix& Gm,
   Epetra_SerialDenseMatrix& kaa
 )
 {
-  // Temp1 = FCF*G
-  Epetra_SerialDenseMatrix temp1(4,Wall1::neas_);
-  temp1.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
+  // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
+  Epetra_SerialDenseMatrix FmCFG(4,Wall1::neas_);
+  FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
-  // Temp2 = S*G
-  Epetra_SerialDenseMatrix temp2(4,Wall1::neas_);
-  temp2.Multiply('N', 'N', 1.0, pk2mm, G, 0.0);
+  // SmG : S_m  . G_{n+1}
+  Epetra_SerialDenseMatrix SmG(4,Wall1::neas_);
+  SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // k_{aa} (4 x 4) :
   // k_{aa} += fac * G_m^T . (F_m . C . F_{n+1}^T) . G_{n+1}
-  kaa.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, Gm, temp1, 1.0);
+  kaa.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, Gm, FmCFG, 1.0);
   // k_{aa} += fac * G_m^T . S_m . G_{n+1}
-  kaa.Multiply('T', 'N', (1.0-alphafgemm)*fac, Gm, temp2, 1.0);
+  kaa.Multiply('T', 'N', (1.0-alphafgemm)*fac, Gm, SmG, 1.0);
 
   return;
 }
