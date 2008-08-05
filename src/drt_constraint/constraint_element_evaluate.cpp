@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
       //const int ID =params.get("ConditionID",-1);
       
-      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       double normaldistance =ComputeNormalDist2D(xscurr,elementnormal);
       ComputeFirstDerivDist2D(xscurr,elevec1,elementnormal);
       ComputeSecondDerivDist2D(xscurr,elemat1,elementnormal);
-      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeFirstDerivAngle2D(xscurr,elevec1);
       ComputeSecondDerivAngle2D(xscurr,elemat1);
       
-      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);

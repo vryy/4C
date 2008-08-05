@@ -317,7 +317,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       ComputeAreaConstrDeriv(xscurr,elevector1);
       //apply the right lagrange multiplier and right signs to matrix and vectors
       const int ID =params.get("ConditionID",-1);
-      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
       if (ID<0)
       {
         dserror("Condition ID for area constraint missing!");
