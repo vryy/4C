@@ -1,8 +1,7 @@
 /*!
 \file intersection_service.H
 
-\brief collection of math tools for the interface computation of two
-       curved meshes
+\brief collection of service methods for intersection computations
 
 <pre>
 Maintainer: Ursula Mayer
@@ -58,15 +57,16 @@ namespace XFEM
     const double                 LARGENUMBER = 1e18;
     
     /*!
-     * \brief calculate a*a
-     * \param a
-     * \return a^2
+    \brief calculate a*a
+    \param a
+    \return a^2
      */
     template <typename T>
     inline T sqr(const T a)
     {
         return a * a;
     }
+    
     
     /*!
     \brief computes the cross product of two BlitzVecs a x b
@@ -92,6 +92,7 @@ namespace XFEM
         return std::sqrt(blitz::sum(v(i)*v(i)));
     }
      
+    
     /*!
     \brief calculate quadratic norm
     \param v (in) : BlitzVec
@@ -103,6 +104,7 @@ namespace XFEM
         return abs(v(0));
     }
 
+    
     /*!
     \brief calculate quadratic norm
     \param v (in) : BlitzVec
@@ -114,24 +116,27 @@ namespace XFEM
         return sqrt(v(0)*v(0) + v(1)*v(1) + v(2)*v(2));
     }
     
+    
     /*!
     \brief normalizes a vector, such that the resulting length is 1
-    \return normalized BlitzVec 
+    \param v (in/out) : BlitzVec
     */   
     inline void normalizeVectorInPLace(
-        BlitzVec&     v ///< vector to normalize
+        BlitzVec&     v 
         )
     {
         v /= Norm2(v);
         return;
     }
     
+    
     /*!
-    \brief sum up the absulte value of all entries of a vector
+    \brief sum up the absolute value of all entries of a vector
+    \param v (in) : BlitzVec
     \return sum
     */   
     inline double SumOfFabsEntries(
-        const BlitzVec3&     v  ///< vector 
+        const BlitzVec3&     v  
         )
     {
         return abs(v(0)) + abs(v(1)) + abs(v(2));
@@ -159,114 +164,15 @@ namespace XFEM
     
     
     /*!
-    \brief transforms a point in element coordinates to a point
-           in current coordinates with respect to a given element
-    */
-    template <class V>
-    void elementToCurrentCoordinates(   
-        const DRT::Element*  element,  ///< element
-        const BlitzMat&      xyze,     ///< nodal positions of element
-        const V&             xsi,      ///< position in element coordinates (r), (r, s) or (r, s, t)
-        BlitzVec3&           x         ///< position in physical coordinates (x, y, z)
-        )
-    {
-        const int numNodes = element->NumNode();
-        BlitzVec funct(numNodes);
-        
-        switch(DRT::UTILS::getDimension(element->Shape()))
-        {
-            case 1:
-            {
-                DRT::UTILS::shape_function_1D(funct, xsi(0), element->Shape());
-                break;
-            }
-            case 2:
-            {
-                DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), element->Shape());
-                break;
-            }
-            case 3:
-            {
-                DRT::UTILS::shape_function_3D(funct, xsi(0), xsi(1), xsi(2), element->Shape());
-                break;
-            }
-            default:
-                dserror("dimension of the element is not correct");
-        }          
-            
-        x = 0.0;
-        for(int i=0; i<numNodes; i++)
-        {
-            for(int j=0; j<3; j++)
-              x(j) += xyze(j,i) * funct(i);
-        }
-        
-        return;
-    }
-    
-    /*!
-    \brief transforms a point in element coordinates to a point
-           in current coordinates with respect to a given element
-    */
-    void elementToCurrentCoordinatesInPlace(   
-        const DRT::Element*  element,    ///< element
-        const BlitzMat&      xyze,       ///< nodal positions of element
-        BlitzVec&            eleCoord    ///< vector of element/current coordinates
-        );
-
-    
-    /*!
-    \brief transforms a point in current coordinates to a point
-           in element coordinates with respect to a given element       
-           The nonlinear system of equation is solved with help of the Newton-method.
-
-    \param element              (in)        : element 
-    \param x                    (in)        : node in current coordinates (x, y, z)
-    \param xsi                  (out)       : node in element coordinates (r, s, t)
-    \return bool, indicates, whether positions was found within element coordinates
-    */  
-    bool currentToVolumeElementCoordinates(
-        const DRT::Element*                 element,
-        const BlitzVec3&                    x,
-        BlitzVec3&                          xsi
-        );
-    
-    
-    /*!
-    \brief transforms a point in current coordinates to a point
-           in element coordinates with respect to a given element
-
-    \return                               vector of element coordinates
-    */
-    inline BlitzVec3 currentToVolumeElementCoordinatesExact(
-            const DRT::Element*         element,  ///< element, where one seeks the local coordinates for x
-            const BlitzVec3&            x,        ///< physical position (x,y,z)
-            const double                tol       ///< tolerance to define "exact on boundary of element"
-            )
-    {
-        static BlitzVec3 xsi;
-        currentToVolumeElementCoordinates(element, x, xsi);
-       
-        // rounding 1 and -1 to be exact for the CDT
-        for(int j = 0; j < 3; j++)
-        {
-            if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
-            if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
-        }
-        return xsi;
-    } 
-    
-    
-    /*!
     \brief compares two points (overloaded method)
-
-    \tparam length       (in)    : length of arrays
+    \param point1       (in)    : first point   (double*)
+    \param point2       (in)    : second point  (double*)
     \return true if both points equal each other, false otherwise
     */
     template<int length>
     bool comparePoints(
-        const double*     point1,   ///< first point
-        const double*     point2    ///< second point
+        const double*     point1,   
+        const double*     point2   
         ) 
     {   
         for(int i = 0; i < length; i++)
@@ -322,6 +228,7 @@ namespace XFEM
          return true;
      }
      
+     
      /*!
      \brief compares two points (overloaded method)
      
@@ -371,6 +278,7 @@ namespace XFEM
          return true;
      }
      
+     
      /*!
      \brief compares two points (overloaded method)
  
@@ -396,26 +304,72 @@ namespace XFEM
     \brief Checks if a node is within an 
            extended axis-aligned bounding box (XAABB)
 
+    \param pos        (in)    : node to be checked
+    \param XAABB      (in)    : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(
-            const BlitzVec3&                   pos,    ///< node to be checked
-            const BlitzMat3x2&                 XAABB   ///< extended axis-aligned bouning box
+            const BlitzVec3&                   pos,    
+            const BlitzMat3x2&                 XAABB   
             );
     
     
     /*!
     \brief Checks if a straightline with 2 nodes is within an 
            extended axis-aligned bounding box (XAABB)
-
+    \param pos1       (in)    : node to be checked
+    \param pos2       (in)    : node to be checked
+    \param XAABB      (in)    : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(
-            const BlitzVec3&                   pos1, ///< node to be checked
-            const BlitzVec3&                   pos2, ///< node to be checked
-            const BlitzMat3x2&                 XAABB ///< extended axis-aligned bouning box
+            const BlitzVec3&                   pos1, 
+            const BlitzVec3&                   pos2, 
+            const BlitzMat3x2&                 XAABB 
             );
     
+    
+    /*!
+    \brief Computes a rough overestimating extended  
+           axis-aligned bounding box for an element (XAABB)
+    \param element        (in)  element
+    \param xyze           (in)  nodal position array (3,numnode)
+    \param eleGeoType     (in)  element geometric type CARTESIAN LINEAR or HIGHERORDER
+    \return extended axis-aligned bounding box  (XAABB) for an element
+     */
+    BlitzMat3x2 computeFastXAABB( 
+        const DRT::Element*   element,    ///< element for which one wants to have a boundaing box
+        const BlitzMat&       xyze,       ///< nodal position array (3,numnode)
+        const EleGeoType      eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
+        );
+
+
+    /*!
+    \brief checks if two extended axis aligned bounding boxes intersect
+
+    \param cutterXAABB (in)         : XAABB of the cutting element
+    \param xfemXAABB   (in)         : XAABB of the xfem element
+    \return true if the XAABB's intersect or false otherwise
+     */
+    bool intersectionOfXAABB(
+        const BlitzMat3x2&    cutterXAABB,
+        const BlitzMat3x2&    xfemXAABB
+        );
+
+
+    /*!
+    \brief checks if an element is Cartesian, linear or higherorder
+
+    \param element        (in)         : element
+    \param xyze_element   (in)         : coordinates of the element
+    \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
+     */
+    void checkGeoType(
+        DRT::Element*                element,
+        const BlitzMat               xyze_element,
+        EleGeoType&                  eleGeoType
+        );
+
     
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
@@ -429,19 +383,167 @@ namespace XFEM
         );   
     
     
-    //! calculate element normal vector in gausspoint (r,s)
+    /*!
+    \brief checks if a position in element coordinates lies within a certain Element parameter space
+    \param eleCoord              (out)  node in element coordinates (r,s,t)
+    \param distype               (in)   shape of the element
+    \return  true if point lies in the element, false otherwise
+    */
+    template <class V>
+    bool checkPositionWithinElementParameterSpace(
+            const V&                               eleCoord, 
+            const DRT::Element::DiscretizationType distype)
+    {
+      bool nodeWithinElement = true;
+      switch(distype)
+      {
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
+        case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
+        case DRT::Element::line2: case DRT::Element::line3:    
+        {
+          for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
+            if(eleCoord(i) > (1.0+XFEM::TOL7) || eleCoord(i) < (-1)*(1.0+XFEM::TOL7) ) 
+            {
+              nodeWithinElement = false;
+              break;
+            }
+          break;
+        }
+        default:
+          dserror("distype not yet implemented");
+        }   
+        
+      return nodeWithinElement;
+    }
+    
+    
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given element
+    \param element              (in)        : element 
+    \param xyze                 (in)        : nodal positions of element
+    \param xsi                  (in)        : element coordinates
+    \param x                    (out)       : position in physical coordinates (x, y, z)
+    */
+    template <class V>
+    void elementToCurrentCoordinates(   
+        const DRT::Element*  element,  
+        const BlitzMat&      xyze,    
+        const V&             xsi,      
+        BlitzVec3&           x      )
+    {
+        const int numNodes = element->NumNode();
+        BlitzVec funct(numNodes);
+        
+        switch(DRT::UTILS::getDimension(element->Shape()))
+        {
+            case 1:
+            {
+                DRT::UTILS::shape_function_1D(funct, xsi(0), element->Shape());
+                break;
+            }
+            case 2:
+            {
+                DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), element->Shape());
+                break;
+            }
+            case 3:
+            {
+                DRT::UTILS::shape_function_3D(funct, xsi(0), xsi(1), xsi(2), element->Shape());
+                break;
+            }
+            default:
+                dserror("dimension of the element is not correct");
+        }          
+            
+        x = 0.0;
+        for(int i=0; i<numNodes; i++)
+        {
+            for(int j=0; j<3; j++)
+              x(j) += xyze(j,i) * funct(i);
+        }
+        
+        return;
+    }
+    
+    
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given element
+    \param element              (in)        : element 
+    \param xyze                 (in)        : nodal positions of element
+    \param eleCoord             (out)       : element coordinates
+    */
+    void elementToCurrentCoordinatesInPlace(   
+        const DRT::Element*  element,   
+        const BlitzMat&      xyze,       
+        BlitzVec&            eleCoord   
+        );
+
+    
+    /*!
+    \brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element       
+           The nonlinear system of equation is solved with help of the Newton-method.
+
+    \param element              (in)        : element 
+    \param x                    (in)        : node in current coordinates (x, y, z)
+    \param xsi                  (out)       : node in element coordinates (r, s, t)
+    \return bool, indicates, whether positions was found within element coordinates
+    */  
+    bool currentToVolumeElementCoordinates(
+        const DRT::Element*                 element,
+        const BlitzVec3&                    x,
+        BlitzVec3&                          xsi
+        );
+    
+    
+    /*!
+    \brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element
+           rounds point within a tolerance around 1 and -1 to 1.0 and -1.0 (required by tetgen)
+    \param element              (in)        : element 
+    \param x                    (in)        : node in current coordinates (x, y, z)
+    \param tol                  (out)       : tolerance
+    \return                                   vector of element coordinates
+    */
+    inline BlitzVec3 currentToVolumeElementCoordinatesExact(
+            const DRT::Element*         element,  
+            const BlitzVec3&            x,        
+            const double                tol       
+            )
+    {
+      static BlitzVec3 xsi;
+      currentToVolumeElementCoordinates(element, x, xsi);
+     
+      // rounding 1 and -1 to be exact for the CDT
+      // TODO extend for triangles
+      for(int j = 0; j < 3; j++)
+      {
+          if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
+          if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
+      }
+      return xsi;
+    } 
+    
+   
+    /*!
+    \brief calculate surface element normal vector in gausspoint (r,s)         
+    
+    \param deriv              (in)        : shape functions derivative in (r,s) -> (2,numnode)
+    \param xyze               (in)        : element nodal coordinates in (x,y,z) space -> (3,numnode)
+    \param unrm               (out)       : unit normal vector at (r,s)
+    */  
     template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
     inline void computeNormalToSurfaceElementViaShape(
-            const M1&       deriv,  ///< shape functions derivative in (r,s) -> (2,numnode)
-            const M2&       xs,     ///< boundary element nodal coordinates in (x,y,z) space -> (3,numnode)
-            BlitzVec3&      unrm    ///< unit normal vector at (r,s)
-            )
+            const M1&       deriv,  
+            const M2&       xyze,     
+            BlitzVec3&      unrm)
     {
         const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
           
         // compute dXYZ / drs
         static BlitzMat3x2 dxyzdrs;
-        //dxyzdrs = blitz::sum(xs(i,k)*deriv(j,k),k);
         for (int i = 0; i < 3; ++i)
         {
             for (int j = 0; j < 2; ++j)
@@ -449,7 +551,7 @@ namespace XFEM
                 dxyzdrs(i,j) = 0.0;
                 for (int k = 0; k < numnode; ++k)
                 {
-                    dxyzdrs(i,j) += xs(i,k)*deriv(j,k);
+                    dxyzdrs(i,j) += xyze(i,k)*deriv(j,k);
                 }
             }
         }
@@ -480,44 +582,54 @@ namespace XFEM
         return;
     }
     
-    //! calculate element normal in gausspoint (r,s)
+    
+    /*!
+    \brief calculate element normal in gausspoint (r,s)
+    \param xyze_surfaceElement   (in)   nodal position array (3,numnode)
+    \param eleCoord              (in)   node in element coordinates (r, s)
+    \param unitnormalvec         (out)  unit normal vector
+    */
     template<DRT::Element::DiscretizationType DISTYPE>
     inline void computeNormalToSurfaceElement(
-        const BlitzMat&          xs,                ///< surface element nodal coordinates in (x,y,z) space
-        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
-        BlitzVec3&               unitnormalvec      ///< return unit normal vector in (x,y,z)
-            )
+        const BlitzMat&          xyze_surfaceElement,               
+        const BlitzVec2&         eleCoord,               
+        BlitzVec3&               unitnormalvec)
     {
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       static blitz::TinyMatrix<double,2,numnode> deriv_boundary;
-      DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,xsi(0),xsi(1),DISTYPE);
+      DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,eleCoord(0),eleCoord(1),DISTYPE);
       
-      computeNormalToSurfaceElementViaShape<DISTYPE>(deriv_boundary, xs, unitnormalvec);
+      computeNormalToSurfaceElementViaShape<DISTYPE>(deriv_boundary, xyze_surfaceElement, unitnormalvec);
       return;
     }
     
     
-    //! calculate element normal in gausspoint (r,s)
+    /*!
+    \brief calculate element normal in gausspoint (r,s)
+    \param surfaceElement        (in) :  surface element
+    \param xyze_surfaceElement   (in) :  nodal position array (3,numnode)
+    \param eleCoord              (in) :  node in element coordinates (r, s)
+    \param unitnormalvec         (out):  unit normal vector
+    */
     inline void computeNormalToSurfaceElement(
-        const DRT::Element*      surfaceElement,    ///< surface element
-        const BlitzMat&          xs,                ///< surface element nodal coordinates in (x,y,z) space
-        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
-        BlitzVec3&               unitnormalvec
-            )
+        const DRT::Element*      surfaceElement,    
+        const BlitzMat&          xyze_surfaceElement,                
+        const BlitzVec2&         eleCoord,               
+        BlitzVec3&               unitnormalvec)
     {
       switch (surfaceElement->Shape())
       {
           case DRT::Element::quad4:
-              computeNormalToSurfaceElement<DRT::Element::quad4>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::quad8:
-              computeNormalToSurfaceElement<DRT::Element::quad8>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad8>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::quad9:
-              computeNormalToSurfaceElement<DRT::Element::quad9>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::quad9>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::tri3:
-              computeNormalToSurfaceElement<DRT::Element::tri3>(xs, xsi, unitnormalvec);
+              computeNormalToSurfaceElement<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           default:
               cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
@@ -526,112 +638,63 @@ namespace XFEM
       return;
     }
     
+    
     /*!
     \brief  finds the nearest point for a given point on a surface element
-            
-        the element coordinates of this point are stored in eleCoord, the normal
-        point from the given point to the nearest point on the surface,
-        distance returns the absolut length of the normal. 
-        If the computed point lies outside the element , the distance which is retuned equals -1
-        and the normal is set to zero.
+            the element coordinates of this point are stored in eleCoord, the normal
+            point from the given point to the nearest point on the surface,
+            distance returns the absolut length of the normal. 
+            If the computed point lies outside the element , the distance which is retuned equals -1
+            and the normal is set to zero.
+    \param surfaceElement        (in) :   surface element
+    \param xyze_surfaceElement   (in) :   nodal position array (3,numnode)
+    \param physCoord             (in) :   node in physical coordinates (x, y, z)
+    \param eleCoord              (out):   node in element coordinates (r, s)
+    \param normal                (out):   normal point from a given point to the surface point
+    \param distance              (out):   length of the normal
     */         
     bool searchForNearestPointOnSurface(
-            const DRT::Element*                     surfaceElement,  ///< surface element
-            const BlitzMat&                         xyze_cutter,     ///< nodal position array (3,numnode)
-            const BlitzVec3&                        physCoord,       ///< physical coordinates
-            BlitzVec2&                              eleCoord,        ///< element coordinates
-            BlitzVec3&                              normal,          ///< normal point from a given point to the surface point
-            double&                                 distance         ///< length of the normal
+            const DRT::Element*                     surfaceElement,  
+            const BlitzMat&                         xyze_surfaceElement,     
+            const BlitzVec3&                        physCoord,       
+            BlitzVec2&                              eleCoord,        
+            BlitzVec3&                              normal,          
+            double&                                 distance        
             );
     
     
     /*!
-       \brief checks if a position in current coordinates lies within a certain surfaceElement           
-          The nonlinear system of equation is solved with help of the Newton-method.
-    */  
+     \brief checks if a position in current coordinates lies within a certain surfaceElement           
+            The nonlinear system of equation is solved with help of the Newton-method.
+     \param surfaceElement        (in) :  surface element
+     \param xyze_surfaceElement   (in) :  nodal position array (3,numnode)
+     \param physCoord             (in) :  node in physical coordinates (x, y, z)
+     \param eleCoord              (out):  node in element coordinates (r, s)
+     */  
     void CurrentToSurfaceElementCoordinates(
-        const DRT::Element*      surfaceElement,        ///< surface element
-        const BlitzMat&          xyze_surfaceElement,   ///< nodal position array (3,numnode)
-        const BlitzVec3&         physCoord,             ///< node in physical coordinates (x, y, z)
-        BlitzVec2&               xsi                    ///< node in element coordinates (r, s)
+        const DRT::Element*      surfaceElement,        
+        const BlitzMat&          xyze_surfaceElement,   
+        const BlitzVec3&         physCoord,             
+        BlitzVec2&               eleCoord                  
         );
-    
-    
-    /*!
-    \brief checks if a position in element coordinates lies within a certain Element parameter space
-
-    \return  true if point lies on the surface element, false otherwise
-    */
-    template <class V>
-    bool checkPositionWithinElementParameterSpace(
-            const V&                               eleCoord, ///< position in element coordinates
-            const DRT::Element::DiscretizationType distype   ///< shape of the surface element
-    )
-    {
-      bool nodeWithinElement = true;
-      switch(distype)
-      {
-
-        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
-        case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
-        case DRT::Element::line2: case DRT::Element::line3:    
-        {
-          for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
-            if(eleCoord(i) > (1.0+XFEM::TOL7) || eleCoord(i) < (-1)*(1.0+XFEM::TOL7) ) 
-            {
-              nodeWithinElement = false;
-              break;
-            }
-          break;
-        }
-        default:
-          dserror("distype not yet implemented");
-        }   
-        
-      return nodeWithinElement;
-    }
 
 
     /*!
-    \brief Computes a rough overestimating extended  
-           axis-aligned bounding box for an element (XAABB)
-
-    \return extended axis-aligned bounding box  (XAABB) for an element
+    \brief checks if a position in current coordinates lies within a certain lineElement           
+           The nonlinear system of equation is solved with help of the Newton-method.
+    \param lineElement            (in)  : line element
+    \param xyze_surfaceElement    (in)  : nodal position array (3,numnode)
+    \param physCoord              (in)  : node in physical coordinates (x, y, z)
+    \param eleCoord               (out) : node in element coordinates (r)
     */
-    BlitzMat3x2 computeFastXAABB( 
-            const DRT::Element*   element,    ///< element for which one wants to have a boundaing box
-            const BlitzMat&       xyze,       ///< nodal position array (3,numnode)
-            const EleGeoType      eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
+    void CurrentToLineElementCoordinates(
+            const DRT::Element*         lineElement,
+            const BlitzMat&             xyze_lineElement,
+            const BlitzVec3&            physCoord,
+            BlitzVec1&                  eleCoord
             );
     
-    
-    /*!
-    \brief checks if two extended axis aligned bounding boxes intersect
 
-    \param cutterXAABB (in)         : XAABB of the cutting element
-    \param xfemXAABB   (in)         : XAABB of the xfem element
-    \return true if the XAABB's intersect or false otherwise
-    */
-    bool intersectionOfXAABB(
-            const BlitzMat3x2&    cutterXAABB,
-            const BlitzMat3x2&    xfemXAABB
-            );
-    
-   
-    
-    /*!
-    \brief checks if an element is Cartesian, linear or higherorder
-
-    \param element        (in)         : element
-    \param xyze_element   (in)         : coordinates of the element
-    \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
-    */
-    void checkGeoType(
-             DRT::Element*                element,
-             const BlitzMat               xyze_element,
-             EleGeoType&                  eleGeoType
-             );
-        
 }
 
 
