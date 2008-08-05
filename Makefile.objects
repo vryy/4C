@@ -132,6 +132,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_systemmatrix.o \
                 src/drt_fluid/drt_pbcdofset.o \
                 src/drt_fluid/drt_periodicbc.o \
+                src/drt_geometry/octtree_nearestobject.o \
                 src/drt_geometry/octtree_geometry_service.o \
                 src/drt_geometry/octtree.o 
 OBJS_DRT      = \
