@@ -68,6 +68,7 @@ void DRT::ELEMENTS::Ptet::InitElement(DRT::ELEMENTS::PtetRegister* myregister)
     for (int row=0;row<3;row++)
       for (int col=0;col<4;col++)
         J(row+1,col)=tmp(row,col);
+    
     Epetra_SerialDenseMatrix Iaug(NUMCOORD_PTET,NUMDIM_PTET);
     Iaug(1,0)=1;
     Iaug(2,1)=1;
