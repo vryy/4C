@@ -140,24 +140,22 @@ GEO::OctTree::TreeNode::TreeNode(
 }
                   
 
-
-
 /*====================================================================*/
-  /* bounding box topology*/
+  /* octtree */
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (x,y,z) of nodes
-   * child 0: (minX, minY, minZ)
-   * child 1: (maxX, minY, minZ)
-   * child 2: (maxX, maxY, minZ)
-   * child 3: (minX, maxY, minZ)
-   * child 4: (minX, minY, maxZ)
-   * child 5: (maxX, minY, maxZ)
-   * child 6: (maxX, maxY, maxZ)
-   * child 7: (minX, maxY, maxZ)
+  /* numbering of children
+   * child 0: 
+   * child 1: 
+   * child 2: 
+   * child 3: 
+   * child 4:
+   * child 5: 
+   * child 6: 
+   * child 7: 
    * 
    *                      z
    *                      |           
-   *             4========|================7
+   *             1========|================3
    *           //|        |               /||
    *          // |        |              //||
    *         //  |        |             // ||
@@ -165,11 +163,11 @@ GEO::OctTree::TreeNode::TreeNode(
    *       //    |        |           //   ||
    *      //     |        |          //    ||
    *     //      |        |         //     ||
-   *     5=========================6       ||
+   *     5=========================7       ||
    *    ||       |        |        ||      ||
    *    ||       |        o--------||---------y
    *    ||       |       /         ||      ||
-   *    ||       0------/----------||------3
+   *    ||       0------/----------||------2
    *    ||      /      /           ||     //
    *    ||     /      /            ||    //
    *    ||    /      /             ||   //
@@ -177,14 +175,23 @@ GEO::OctTree::TreeNode::TreeNode(
    *    ||  /      /               || //
    *    || /      x                ||//
    *    ||/                        ||/
-   *     1=========================2
+   *     4=========================6
    *
    */
   /*====================================================================*/
 
 
+/*  int index = 0;
+    if (point(0) > xPlaneCoordinate_)
+      index += 4;
+    if (point(1) > yPlaneCoordinate_)
+      octIdx += 2;
+    if (point(2) > zPlaneCoordinate_)
+      index += 1;
+*/
 
-
+    
+    
 
 /*----------------------------------------------------------------------*
  | d-tor TreeNode                                            u.may 07/08|
@@ -298,8 +305,6 @@ const BlitzMat3x2& GEO::OctTree::TreeNode::getNodeBox() const
 Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
     const int index) const
 {
-  //TODO change to index
-  // was index-1 before
   return children_[index];
 }
 
@@ -312,7 +317,10 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
   BlitzMat3x2 childNodeBox;
-  if (index>3){
+  
+  // determine z-coordinates
+  if (index>3)
+  {
     childNodeBox(0,0) = xPlaneCoordinate_;
     childNodeBox(0,1) = nodeBox_(0,1);
   }
@@ -322,6 +330,7 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
     childNodeBox(0,1) = xPlaneCoordinate_;
   }
 
+  // determine y-coordinates
   if ((index==2) || (index==3) || (index==6) || (index==7))
   {
     childNodeBox(1,0) = yPlaneCoordinate_;
@@ -333,7 +342,9 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
     childNodeBox(1,1) = yPlaneCoordinate_;
   }
 
-  if ((index%2)==1){
+  // determine z-coordinates
+  if ((index==1) || (index==3) || (index==5) || (index==7))
+  {
     childNodeBox(2,0) = zPlaneCoordinate_;
     childNodeBox(2,1) = nodeBox_(2,1);
   }
@@ -342,8 +353,7 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
     childNodeBox(2,0) = nodeBox_(2,0);
     childNodeBox(2,1) = zPlaneCoordinate_;
   }    
-  //  printf("created chldAABB(%f\t%f\t%f\t%f\t%f\t%f)\n",
-  //  chldAABB(0,0),chldAABB(0,1),chldAABB(1,0),chldAABB(1,1),chldAABB(2,0),chldAABB(2,1));
+  //  printf("created chldAABB(%f\t%f\t%f\t%f\t%f\t%f)\n", childNodeBox(0,0),childNodeBox(0,1),childNodeBox(1,0),childNodeBox(1,1),childNodeBox(2,0),childNodeBox(2,1));
   return childNodeBox;
   
 }
@@ -384,7 +394,7 @@ void GEO::OctTree::TreeNode::createChildren(
             children_[index]->insertElement(labelIter->first,*eleIter);
       }
   
-    // if one of the created children is empty, set label
+    // if one of the created children is empty, set label immediately
     if ((children_[index]->getElementList()).empty())
     {
       const BlitzVec3 childNodeCenter(children_[index]->getCenterCoord());
@@ -396,13 +406,14 @@ void GEO::OctTree::TreeNode::createChildren(
 }
 
 
-// TODO child IDS fixed here
+
 /*----------------------------------------------------------------------*
  | classifiy point in node                                  peder   07/08|
  *----------------------------------------------------------------------*/
 int GEO::OctTree::TreeNode::classifyPoint(
     const BlitzVec3&   point) const
 {
+  
   int childIndex = 0;
   if (point(0) > xPlaneCoordinate_)
     childIndex += 4;
@@ -410,60 +421,80 @@ int GEO::OctTree::TreeNode::classifyPoint(
     childIndex += 2;
   if (point(2) > zPlaneCoordinate_)
     childIndex += 1;
+  
   return childIndex;
 }
 
 
-// TODO child IDS fixed here
+
 /*----------------------------------------------------------------------*
- | classifiy AABB in node                                  peder   07/08|
+ | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
     const BlitzMat3x2&   AABB
     ) const 
 {
+  
+  // collect all children the XAABB is lying in
+  // use tolerances such that it is ensured that no child is left behind :-) 
+  // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
+  
   std::vector<int> octants;
 
-  if (AABB(0, 1) > xPlaneCoordinate_) 
+  // check max_x greater than x-plane
+  if (AABB(0, 1) > (xPlaneCoordinate_ - XFEM::TOL7) ) 
   {
-    if (AABB(1, 1) > yPlaneCoordinate_) 
+    // check max_y greater than y-plane
+    if (AABB(1, 1) > (yPlaneCoordinate_ - XFEM::TOL7) ) 
     {
-      if (AABB(2, 1) > zPlaneCoordinate_)
+      // check max_z greater than z-plane
+      if (AABB(2, 1) > (zPlaneCoordinate_ - XFEM::TOL7) )
         octants.push_back(7);
 
-      if (AABB(2, 0) <= zPlaneCoordinate_)
+      // check min_z less than z-plane
+      if (AABB(2, 0) < (zPlaneCoordinate_ + XFEM::TOL7) )
         octants.push_back(6);
-
     }
-    if (AABB(1, 0) <= yPlaneCoordinate_) 
+    
+    // check min_y less than y-plane
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + XFEM::TOL7) ) 
     {
-      if (AABB(2, 1) > zPlaneCoordinate_)
-        octants.push_back(5);
-
-      if (AABB(2, 0) <= zPlaneCoordinate_)
+      // check min_z less than z-plane
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
         octants.push_back(4);
+      
+      // check max_z greater than z-plane
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+        octants.push_back(5);
 
     }
   }
 
-  if (AABB(0, 0) <= xPlaneCoordinate_) 
+  // check min_x less than x-plane
+  if (AABB(0, 0) < ( xPlaneCoordinate_ + XFEM::TOL7) ) 
   {
-    if (AABB(1, 1) > yPlaneCoordinate_) 
+    // check min_y less than y-plane
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + XFEM::TOL7) ) 
     {
-      if (AABB(2, 1) > zPlaneCoordinate_)
-        octants.push_back(3);
-
-      if (AABB(2, 0) <= zPlaneCoordinate_)
-        octants.push_back(2);
-
-    }
-    if (AABB(1, 0) <= yPlaneCoordinate_) 
-    {
-      if (AABB(2, 1) > zPlaneCoordinate_)
-        octants.push_back(1);
-
-      if (AABB(2, 0) <= zPlaneCoordinate_)
+      // check min_z less than z-plane
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
         octants.push_back(0);
+      
+      // check max_z greater than z-plane
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+        octants.push_back(1);
+    }
+    
+    // check max_y greater than y-plane
+    if (AABB(1, 1) > ( yPlaneCoordinate_ - XFEM::TOL7) ) 
+    {
+      // check max_z greater than z-plane
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+        octants.push_back(3);
+      
+      // check min_z less than z-plane
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
+        octants.push_back(2);
 
     }
   }
@@ -511,7 +542,7 @@ void GEO::OctTree::TreeNode::updateTreeNode(
 
 
 /*----------------------------------------------------------------------*
- | return xfem label for point (interface method)          peder   07/08|
+ | return xfem label for point (interface method)          u.may   07/08|
  *----------------------------------------------------------------------*/
 int GEO::OctTree::TreeNode::queryPointType(
     const DRT::Discretization& 	     dis,

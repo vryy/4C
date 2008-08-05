@@ -1,7 +1,7 @@
 /*!
-\file geometry_service.H
+\file octtree_geometry_service.H
 
-\brief provides service functions for algorithmic geometry
+\brief provides geometry methods for oct tree
 
 <pre>
 Maintainer: Ursula Mayer
@@ -21,14 +21,11 @@ Maintainer: Ursula Mayer
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/blitz_tiny_operation.H"
 #include "../drt_xfem/xfem.H"
+#include "../drt_geometry/octtree_nearestobject.H"
 #include "Teuchos_RefCountPtr.hpp"
 
 namespace GEO
 {
-
-
-//! this proporty decides which distance algorithm is used
-enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
 
   /*!
   \brief Returns the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
@@ -81,7 +78,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
   \param point                point to be examined
   \param xsi                  basis point in element coordinates
   \param x_surface_phys       basis point in current coordinates
-  \param closestObject        info about closest object
+  \param nearestObject        info about nearest object
   \return label of nearest object
    */
   int nearestObjectInNode(
@@ -91,7 +88,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const BlitzVec3&                            point,
       BlitzVec2&                                  xsi,
       BlitzVec3&                                  minDistanceVec,
-      std::map<DistanceType, std::vector<int> >&  closestObject
+      GEO::NearestObject&                         nearestObject
       );
 
 
@@ -102,8 +99,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
   \param point                point to be examined
   \param xsi                  basis point in element coordinates
   \param x_surface_phys       basis point in current coordinates
-  \param closestObject        info about closest object
-  \param distance             distance to closest element if found other wise -1
+  \param distance             distance to nearest element if found other wise -1
   \return true if closest surface element found
    */
   bool getDistanceToSurface(
@@ -112,7 +108,6 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const BlitzVec3&                            point,
       BlitzVec2&                                  xsi,
       BlitzVec3&                                  x_surface_phys,
-      std::map<DistanceType, std::vector<int> >&  closestObject,
       double&                                     distance
       );
 
@@ -124,8 +119,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
   \param point                point to be examined
   \param xsi                  basis point in element coordinates
   \param x_line_phys          basis point in element coordinates
-  \param closestObject        info about closest object
-  \param distance             distance to closest point
+  \param distance             distance to nearest point
   */
   bool getDistanceToLine(
       const DRT::Element*                         lineElement,
@@ -133,7 +127,6 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const BlitzVec3&                            point,
       BlitzVec2&                                  xsi,
       BlitzVec3&                                  x_line_phys,
-      std::map<DistanceType, std::vector<int> >&  closestObject,
       double&                                     distance
       );
 
@@ -145,8 +138,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
   \param point                point to be examined
   \param xsi                  basis point in element coordinates
   \param x_node               physical coordinates of tree node
-  \param closestObject        info about closest object
-  \param distance             distance to closest point
+  \param distance             distance to nearest point
    */
   void getDistanceToPoint(
       const DRT::Node*                            node,
@@ -154,7 +146,6 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const BlitzVec3&                            point,
       BlitzVec2&                                  xsi,
       BlitzVec3&                                  x_node,
-      std::map<DistanceType, std::vector<int> >&  closestObject,
       double&                                     distance
       );
 
@@ -165,7 +156,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
   \param currentpositions     current nodal positions in discretization
   \param point                point to be examined
   \param xsi                  basis point in element coordinates
-  \param closestObject        info about closest object
+  \param nearestObject        info about nearest object
   \return normal vector in physical coordinates 
    */
   BlitzVec3 getNormalAtXsi(
@@ -173,7 +164,7 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const std::map<int,BlitzVec3>&              currentpositions,
       const BlitzVec3&                            point,
       const BlitzVec2&                            xsi,
-      std::map<DistanceType, std::vector<int> >&  closestObject
+      GEO::NearestObject&                         nearestObject
       );
 
   
@@ -211,17 +202,6 @@ enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
       const BlitzMat3x2&  AABB_old, 
       const BlitzMat3x2&  AABB_new,
       const BlitzMat3x2&  nodeBox
-      );
-  
-  /*!
-  \brief  checks if point X is within AABB
-  \param AABB          axis - aligned bounding box
-  \param point         point coords
-  \return true if point in AABB, false otherwise
-  */
-  bool isPointContainedInAABB(
-      const BlitzMat3x2&  AABB,   
-      const BlitzVec3&    point       
       );
 
   

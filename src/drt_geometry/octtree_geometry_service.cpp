@@ -36,7 +36,6 @@ BlitzMat3x2 GEO::getXAABBofDis(
   }
 
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
-  //BlitzMat curr = BlitzMat(3, currentpositions.size());
   for (int j=0; j< dis.NumMyColElements(); ++j) 
   {
     const DRT::Element* element = dis.lColElement(j);
@@ -108,8 +107,8 @@ int GEO::getXFEMLabel(
 
   BlitzVec2 xsi = 0.0;
   BlitzVec3 minDistanceVec = 0.0;
-  // distance type, node: node gid, line: surface ele id and line lid, surface: surface element gid
-  std::map<DistanceType, std::vector<int> > nearestObject;
+ 
+  GEO::NearestObject nearestObject;
 
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   int label = nearestObjectInNode(dis, currentpositions, elementList, point, xsi, minDistanceVec, nearestObject);  	
@@ -138,82 +137,76 @@ int GEO::nearestObjectInNode(
     const BlitzVec3&                            point,
     BlitzVec2&                                  xsi,
     BlitzVec3&                                  minDistanceVec,
-    std::map<DistanceType, std::vector<int> >&  closestObject)
+    GEO::NearestObject&                         nearestObject)
 {
   bool pointFound = false;
-  int label = -1;
   double min_distance = XFEM::LARGENUMBER;
   double distance = XFEM::LARGENUMBER;
   BlitzVec3 normal = 0.0;
   BlitzVec3 x_surface = 0.0;
 
-  std::map<DistanceType, std::vector<int> > closestObject_ob;
   BlitzVec2 xsi_ob = 0.0;
   BlitzVec3 x_ob = 0.0;
 
   std::map< int, std::set<int> > nodeList;
 
+  // run over all surface elements
   for (std::map<int, set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
     {    
       // not const because other wise no lines can be obtained
       DRT::Element* element = dis.gElement(*eleIter);
-      pointFound = GEO::getDistanceToSurface(element, currentpositions, point, xsi_ob, x_ob, closestObject_ob, distance);
+      pointFound = GEO::getDistanceToSurface(element, currentpositions, point, xsi_ob, x_ob, distance);
 
       if(pointFound && distance < min_distance)
       {
         pointFound = false;
-        label = labelIter->first;
         xsi =  xsi_ob;
         x_surface =  x_ob;
         min_distance = distance;
-        closestObject = closestObject_ob;
+        nearestObject.setSurfaceObjectType(*eleIter, labelIter->first);
       }
 
-      // check lines
+      // run over all line elements
       const std::vector<Teuchos::RCP< DRT::Element> > eleLines = element->Lines();
       for(int i = 0; i < element->NumLine(); i++)
       {
-        pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, xsi_ob, x_ob, closestObject_ob, distance);
+        pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, xsi_ob, x_ob, distance);
         if(pointFound && distance < min_distance)
         {
           pointFound = false;
-          label = labelIter->first;
           xsi =  xsi_ob;
           x_surface =  x_ob;
           min_distance = distance;
-          closestObject = closestObject_ob;
+          nearestObject.setLineObjectType(*eleIter, i, labelIter->first);
         }
       }
-
       // collect nodes
       for(int i = 0; i < element->NumNode(); i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
-  // check node
+  // run over all nodes
   for (std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const DRT::Node* node = dis.gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, xsi_ob, x_ob, closestObject_ob, distance);
+      GEO::getDistanceToPoint(node, currentpositions, point, xsi_ob, x_ob, distance);
       if (distance < min_distance)
       {
-        label = labelIter->first;
         xsi =  xsi_ob;
         x_surface =  x_ob;
         min_distance = distance;
-        closestObject = closestObject_ob;
+        nearestObject.setNodeObjectType(*nodeIter, labelIter->first);
       }
     }
 
-  // if not found
   // compute vector
   minDistanceVec(0) = point(0) - x_surface(0);
   minDistanceVec(1) = point(1) - x_surface(1);
   minDistanceVec(2) = point(2) - x_surface(2);
 
-  return label;
+  return nearestObject.getLabel();
 }
 
 
@@ -228,7 +221,6 @@ bool GEO::getDistanceToSurface(
     const BlitzVec3&                            point,
     BlitzVec2&                                  xsi,
     BlitzVec3&                                  x_surface_phys,
-    std::map<DistanceType, std::vector<int> >&  closestObject,
     double&                                     distance)
 {
   bool pointFound = false;
@@ -296,7 +288,6 @@ bool GEO::getDistanceToLine(
     const BlitzVec3&                            point,
     BlitzVec2&                                  xsi,
     BlitzVec3&                                  x_line_phys,
-    std::map<DistanceType, std::vector<int> >&  closestObject,
     double&                                     distance)
 {
   bool pointFound = false;
@@ -367,7 +358,6 @@ void GEO::getDistanceToPoint(
     const BlitzVec3&                            point,
     BlitzVec2&                                  xsi,
     BlitzVec3&                                  x_node,
-    std::map<DistanceType, std::vector<int> >&  closestObject,
     double&                                     distance)
 {
 
@@ -376,7 +366,7 @@ void GEO::getDistanceToPoint(
 
   x_node = currentpositions.find(node->Id())->second;
 
-  // node defined element coordinates available
+  // no defined element coordinates available, set to -2 -2 
   xsi(0) = -2;
   xsi(1) = -2;
 
@@ -411,6 +401,9 @@ std::vector<int> GEO::getAdjacentSurfaceElementsToLine(
 
   if(adjacentElements.size() > 2)
     dserror("a surface line cannot have more than 2 adjacent surface elements");
+  
+  if(adjacentElements.size() == 0)
+      dserror("no adjacent surface elements found");
 
   return adjacentElements;
 }
@@ -427,26 +420,26 @@ BlitzVec3 GEO::getNormalAtXsi(
     const std::map<int,BlitzVec3>&              currentpositions,
     const BlitzVec3&                            point,
     const BlitzVec2&                            xsi,
-    std::map<DistanceType, std::vector<int> >&  closestObject)
+    GEO::NearestObject&                         nearestObject)
 {
   BlitzVec3 normal = 0.0;
-  DistanceType distanceType = (closestObject.begin())->first;
+  GEO::ObjectType objectType = nearestObject.getObjectType();
 
   // TODO not yet correct
-  switch (distanceType) 
+  switch (objectType) 
   {
-  case ELEMENT_SURFACE:
+  case GEO::SURFACE:
   { 
-    const int eleId = (closestObject.begin())->second[0];
+    const int eleId = nearestObject.getSurfaceId();
     const DRT::Element* surfaceElement = dis.gElement(eleId);
     const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
     XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi, normal);
     break;
   }
-  case ELEMENT_LINE:
+  case GEO::LINE:
   {
-    const int eleId = (closestObject.begin())->second[0];
-    const int lineId = (closestObject.begin())->second[1];
+    const int eleId = nearestObject.getSurfaceId();
+    const int lineId = nearestObject.getLineId();
     DRT::Element* surfaceElement = dis.gElement(eleId);
     const std::vector<Teuchos::RCP<DRT::Element> > eleLines = surfaceElement->Lines();
     const DRT::Element* lineElement = eleLines[lineId].get();
@@ -455,23 +448,25 @@ BlitzVec3 GEO::getNormalAtXsi(
 
     for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
     {
-      BlitzVec2 xsi_start = 0.0;
+      BlitzVec1 xsi_start = 0.0;
+      BlitzVec2 xsi_normal = 0.0;
       BlitzVec3 tmp_normal = 0.0;
       const DRT::Element* surfaceElement = dis.gElement(*eleIter);
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
 
       // T0ODO finish line
-      //XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, x_surface_phys, xsi_start);
-      //XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi_start, tmp_normal);
+      BlitzVec3 x_surface_phys = 0.0;
+      XFEM::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, x_surface_phys, xsi_start);
+      XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, xsi_normal, tmp_normal);
       //TODO might be safer to scale normal ?
       normal += tmp_normal;
     }
     normal /= ((double) adjacentElements.size()); 
     break;
   }
-  case ELEMENT_POINT:
+  case GEO::NODE:
   {
-    const int nodeId            = (closestObject.begin())->second[0];
+    const int nodeId            = nearestObject.getNodeId();
     const DRT::Node* node       = dis.gNode(nodeId);
     const BlitzVec3 x_node      = currentpositions.find(nodeId)->second;
 
@@ -541,23 +536,6 @@ bool GEO::inSameNodeBox(
   }
   return inSameNode;
 } 
-
-
-
-/*----------------------------------------------------------------------*
- | checks if a given point lies in an AABB                   peder 07/08|
- *----------------------------------------------------------------------*/
-bool GEO::isPointContainedInAABB(
-    const BlitzMat3x2&  AABB,
-    const BlitzVec3&    point)
-{
-  for(int dim=0; dim<3; dim++)
-  {
-    if ( (point(dim) < (AABB(dim,0)-XFEM::TOL7) ) || ( point(dim)> (AABB(dim,1) + XFEM::TOL7) ) )
-      return false;
-  }
-  return true;
-}
 
 
 
