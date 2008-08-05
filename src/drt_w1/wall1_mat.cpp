@@ -56,13 +56,13 @@ extern struct _MATERIAL  *mat;
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Wall1::w1_call_matgeononl(const Epetra_SerialDenseVector& 
-,
-                                              Epetra_SerialDenseMatrix& stress,
-                                              Epetra_SerialDenseMatrix& C,
-                                              const int numeps,
-                                              const struct _MATERIAL* material)
-
+void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
+		const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+    Epetra_SerialDenseMatrix& stress,  ///< stress vector
+    Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
+    const int numeps,  ///< number of strains
+    const struct _MATERIAL* material  ///< the material data
+)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
   switch(material->mattyp)
