@@ -414,40 +414,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
 
-/*
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix F_enh;   // EAS matrix F_enh
-  F_enh.Shape(4,1);
-  Epetra_SerialDenseMatrix F_tot;   // EAS vector F_tot
-  F_tot.Shape(4,3);
-  Epetra_SerialDenseMatrix p_stress;// first piola-kirchhoff stress vector
-  p_stress.Shape(4,1);
-  Epetra_SerialDenseMatrix xjm0;    // Jacobian Matrix (origin)
-  xjm0.Shape(2,2);
-  Epetra_SerialDenseVector F0;      // Deformation Gradient (origin)
-  F0.Size(4);
-  Epetra_SerialDenseMatrix boplin0; // B operator (origin)
-  boplin0.Shape(4,2*numnode);
-  Epetra_SerialDenseMatrix W0;      // W operator (origin)
-  W0.Shape(4,2*numnode);
-  Epetra_SerialDenseMatrix G;       // G operator
-  G.Shape(4,Wall1::neas_);
-  Epetra_SerialDenseMatrix Z;        // Z operator
-  Z.Shape(2*numnode,Wall1::neas_);
-  Epetra_SerialDenseMatrix FCF;     // FCF^T
-  FCF.Shape(4,4);
-  Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
-  Kda.Shape(2*numnode,Wall1::neas_);
-  Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
-  Kaa.Shape(Wall1::neas_,Wall1::neas_);
-  Epetra_SerialDenseVector feas;    // EAS portion of internal forces
-  feas.Size(Wall1::neas_);
-  double detJ0;                     // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
-  Epetra_SerialDenseMatrix* oldKda;    // EAS history
-*/
-
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
   if (massmatrix) density = Density(material);
