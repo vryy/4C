@@ -166,7 +166,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        Epetra_BLAS::Epetra_BLAS blas;
+        Epetra_BLAS::Epetra_BLAS blas;  // BLAS front-end dummy
         blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
       }
     }
@@ -181,7 +181,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        Epetra_BLAS::Epetra_BLAS blas;
+        Epetra_BLAS::Epetra_BLAS blas;  // BLAS front-end dummy
         blas.SCAL((*alphao).M()*(*alphao).N(), -alphaf/(1.0-alphaf), (*alphao).A());  // alphao *= -alphaf/(1.0-alphaf)
         blas.AXPY((*alphao).M()*(*alphao).N(), 1.0/(1.0-alphaf), (*alpha).A(), (*alphao).A());  // alphao += 1.0/(1.0-alphaf) * alpha
         blas.COPY((*alpha).M()*(*alpha).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao

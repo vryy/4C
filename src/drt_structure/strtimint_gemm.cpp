@@ -371,10 +371,10 @@ void STR::TimIntGEMM::UpdateStep()
     ParameterList p;
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
-    p.set("delta time", (*dt_)[0]);
+    //p.set("delta time", (*dt_)[0]);
     // action for elements
-    p.set("alpha f", alphaf_);
-    p.set("action", "calc_struct_update_imrlike");
+    //p.set("alpha f", alphaf_);
+    p.set("action", "calc_struct_update_isptep");
     // go to elements
     discret_->Evaluate(p, null, null, null, null, null);
   }
