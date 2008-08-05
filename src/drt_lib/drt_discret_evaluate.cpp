@@ -480,49 +480,49 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       DRT::Condition& cond = *(fool->second);
       if (condid == -1 || condid ==cond.Getint("ConditionID"))
       {
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-      // no check for empty geometry here since in parallel computations
-      // can exist processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+        map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+        // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+        // no check for empty geometry here since in parallel computations
+        // can exist processors which do not own a portion of the elements belonging
+        // to the condition geometry
+        map<int,RefCountPtr<DRT::Element> >::iterator curr;
 
-      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
-      double curvefac = 1.0;
-      if (curvenum>=0 && usetime)
-        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        // Evaluate Loadcurve if defined. Put current load factor in parameterlist
+        const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+        int curvenum = -1;
+        if (curve) curvenum = (*curve)[0];
+        double curvefac = 1.0;
+        if (curvenum>=0 && usetime)
+          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-      if (CondIDVec)
-      {
-        params.set("ConditionID",(*CondIDVec)[0]);
-        char factorname[30];
-        sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
-        params.set(factorname,curvefac);
-      }
-      else
-      {
-        params.set("LoadCurveFactor",curvefac);
-      }
-      params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
+        // Get ConditionID of current condition if defined and write value in parameterlist
+        const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+        if (CondIDVec)
+        {
+          params.set("ConditionID",(*CondIDVec)[0]);
+          char factorname[30];
+          sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+          params.set(factorname,curvefac);
+        }
+        else
+        {
+          params.set("LoadCurveFactor",curvefac);
+        }
+        params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
 
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+        // define element matrices and vectors
+        Epetra_SerialDenseMatrix elematrix1;
+        Epetra_SerialDenseMatrix elematrix2;
+        Epetra_SerialDenseVector elevector1;
+        Epetra_SerialDenseVector elevector2;
+        Epetra_SerialDenseVector elevector3;
 
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*this,lm,lmowner);
+        for (curr=geom.begin(); curr!=geom.end(); ++curr)
+        {
+          // get element location vector and ownerships
+          vector<int> lm;
+          vector<int> lmowner;
+          curr->second->LocationVector(*this,lm,lmowner);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -533,19 +533,19 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         if (assemblevec2) elevector2.Size(eledim);
         if (assemblevec3) elevector3.Size(eledim);
 
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
+          // call the element specific evaluate method
+          int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
+                                           elevector1,elevector2,elevector3);
+          if (err) dserror("error while evaluating elements");
 
-        // assembly
-        int eid = curr->second->Id();
-        if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
-        if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-      }
+          // assembly
+          int eid = curr->second->Id();
+          if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+          if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
+          if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+          if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+          if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+        }
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
