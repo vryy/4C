@@ -33,12 +33,6 @@ activesetconv_(false),
 activesetsteps_(0),
 isincontact_(false)
 {
-#ifdef CONTACTMESHTYING
-#ifndef CONTACTSTICKING
-  dserror("ERROR: Contact_Manager: Mesh Tying option only in combination with sticking!");
-#endif
-#endif
-  
   // read and check contact input parameters
   ReadAndCheckInput();
   
