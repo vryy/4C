@@ -190,7 +190,10 @@ protected:
     calc_surfstress_stiff,
     calc_potential_stiff,
     calc_struct_areaconstrstiff,
-    calc_struct_monitarea
+    calc_struct_monitarea,
+    prestress_update,
+    prestress_writerestart,
+    prestress_readrestart
   };
 
   // don't want = operator
@@ -199,11 +202,15 @@ protected:
   // variables
 
   //! The parent element of this surface
-  DRT::Element*           parent_;
+  DRT::Element*               parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
-  int                     lsurface_;
+  int                         lsurface_;
   //! gaussian integration to be used
-  DRT::UTILS::GaussRule2D gaussrule_;
+  DRT::UTILS::GaussRule2D     gaussrule_;
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  LINALG::SerialDenseMatrix   xrefehist_;
+#endif
 
   /*!
   \brief Evaluate a Neumann boundary condition
@@ -265,6 +272,27 @@ protected:
       x(i,0) = Nodes()[i]->X()[0] + disp[i*3+0];
       x(i,1) = Nodes()[i]->X()[1] + disp[i*3+1];
       x(i,2) = Nodes()[i]->X()[2] + disp[i*3+2];
+    }
+    return;
+  }
+
+  /*!
+  \brief Create matrix with spatial configuration
+
+  \param x     (out)  : nodal coords in spatial frame
+  \param xrefe (out)  : nodal coords in material frame
+  \param disp  (int)  : displacements
+  */
+  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
+                                   LINALG::SerialDenseMatrix& xrefe,
+                                   const vector<double> disp) const
+  {
+    const int numnode = NumNode();
+    for (int i=0; i<numnode; ++i)
+    {
+      x(i,0) = xrefe(i,0) + disp[i*3+0];
+      x(i,1) = xrefe(i,1) + disp[i*3+1];
+      x(i,2) = xrefe(i,2) + disp[i*3+2];
     }
     return;
   }

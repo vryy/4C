@@ -55,6 +55,11 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
       dserror("shape type unknown!\n");
   }
   
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  xrefehist_.LightShape(NumNode(),3);
+  MaterialConfiguration(xrefehist_);
+#endif
+
   return;
 }
 
@@ -67,6 +72,10 @@ parent_(old.parent_),
 lsurface_(old.lsurface_),
 gaussrule_(old.gaussrule_)
 {
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  xrefehist_.LightShape(NumNode(),3);
+  xrefehist_ = old.xrefehist_;
+#endif
   return;
 }
 

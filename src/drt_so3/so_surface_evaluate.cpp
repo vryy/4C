@@ -90,7 +90,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   // element geometry update
   const int numnode = NumNode();
   const int numdf=3;
-  LINALG::SerialDenseMatrix x(numnode,3);
+  LINALG::SerialDenseMatrix x(numnode,numdf);
   LINALG::SerialDenseMatrix xc;
   switch (config)
   {
@@ -99,12 +99,16 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   break;
   case config_spatial:
   {
-    xc.LightShape(numnode,3);
+    xc.LightShape(numnode,numdf);
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==null) dserror("Cannot get state vector 'displacement'");
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     SpatialConfiguration(xc,mydisp);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (ltype == neum_orthopressure)
+      SpatialConfiguration(xc,xrefehist_,mydisp);
+#endif
   }
   break;
   case config_both:
@@ -164,7 +168,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       double ortho_value = (*val)[0];
       if (!ortho_value) dserror("no orthopressure value given!");
       vector<double> normal(3);
-      double detA = 0.0;
       SurfaceIntegration(normal,xc,deriv);
       const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
@@ -236,16 +239,16 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA,
 }
 
 /*----------------------------------------------------------------------*
- * Evaluate method for StructuralSurface-Elements                     tk 10/07*
+ * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
-        DRT::Discretization&      discretization,
-        vector<int>&              lm,
-        Epetra_SerialDenseMatrix& elematrix1,
-        Epetra_SerialDenseMatrix& elematrix2,
-        Epetra_SerialDenseVector& elevector1,
-        Epetra_SerialDenseVector& elevector2,
-        Epetra_SerialDenseVector& elevector3)
+int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
+                                               DRT::Discretization&      discretization,
+                                               vector<int>&              lm,
+                                               Epetra_SerialDenseMatrix& elematrix1,
+                                               Epetra_SerialDenseMatrix& elematrix2,
+                                               Epetra_SerialDenseVector& elevector1,
+                                               Epetra_SerialDenseVector& elevector2,
+                                               Epetra_SerialDenseVector& elevector3)
 {
   const DiscretizationType distype = Shape();
 
@@ -255,15 +258,23 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_constrvol")       act = StructuralSurface::calc_struct_constrvol;
-  else if (action=="calc_struct_volconstrstiff")  act = StructuralSurface::calc_struct_volconstrstiff;
-  else if (action=="calc_struct_monitarea")       act = StructuralSurface::calc_struct_monitarea;
+  else if (action=="calc_struct_constrvol")        act = StructuralSurface::calc_struct_constrvol;
+  else if (action=="calc_struct_volconstrstiff")   act = StructuralSurface::calc_struct_volconstrstiff;
+  else if (action=="calc_struct_monitarea")        act = StructuralSurface::calc_struct_monitarea;
   else if (action=="calc_struct_constrarea")       act = StructuralSurface::calc_struct_constrarea;
-  else if (action=="calc_struct_areaconstrstiff") act = StructuralSurface::calc_struct_areaconstrstiff;
-  else if (action=="calc_init_vol")               act = StructuralSurface::calc_init_vol;
-  else if (action=="calc_surfstress_stiff")       act = StructuralSurface::calc_surfstress_stiff;
-  else if (action=="calc_potential_stiff")       act = StructuralSurface::calc_potential_stiff;
+  else if (action=="calc_struct_areaconstrstiff")  act = StructuralSurface::calc_struct_areaconstrstiff;
+  else if (action=="calc_init_vol")                act = StructuralSurface::calc_init_vol;
+  else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
+  else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
+#ifdef PRESTRESS
+  else if (action=="calc_struct_prestress_update") act = StructuralSurface::prestress_update;
+#endif
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  else if (action=="prestress_writerestart")       act = StructuralSurface::prestress_writerestart;
+  else if (action=="prestress_readrestart")        act = StructuralSurface::prestress_readrestart;
+#endif
   else dserror("Unknown type of action for StructuralSurface");
+  
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -619,6 +630,47 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
 
       }
       break;
+#ifdef PRESTRESS
+      case prestress_update:
+      {
+        // get condition
+        RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition");
+        // check whether the type of condition is neum_orthopressure. If not, do nothing
+        const string* type = cond->Get<string>("type");
+        // we care for orthopressure only
+        if (*type != "neum_orthopressure") return 0;
+        // update the history configuration
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        SpatialConfiguration(xrefehist_,xrefehist_,mydisp);
+        return 0;
+      }
+      break;
+#endif
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+      case prestress_writerestart:
+      {
+        Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
+        if (!xhis) dserror("No prestress restart vector set");
+        if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
+        const int lid = xhis->Map().LID(Id());
+        for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
+          (*(*xhis)(i))[lid] = xrefehist_.A()[i];
+      }
+      break;
+      case prestress_readrestart:
+      {
+        Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
+        if (!xhis) dserror("No prestress restart vector set");
+        if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
+        const int lid = xhis->Map().LID(Id());
+        for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
+          xrefehist_.A()[i] = (*(*xhis)(i))[lid];
+      }
+      break;
+#endif
       case calc_struct_constrarea:
       {
         dserror("Element routines for area constraint in 3D not implemented yet!");
