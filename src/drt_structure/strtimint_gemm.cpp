@@ -58,11 +58,10 @@ STR::TimIntGEMM::TimIntGEMM
   // info to user : OST --- your oriental scheme
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha" << std::endl
-              << "   beta = " << beta_ << std::endl
-              << "   gamma = " << gamma_ << std::endl
+    std::cout << "with generalised energy-momentum method" << std::endl
               << "   alpha_f = " << alphaf_ << std::endl
               << "   alpha_m = " << alpham_ << std::endl
+              << "   xi = " << xi_ << std::endl
               << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
@@ -193,8 +192,8 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
   //                + (1 - alpha_f)*y/(beta*dt) C     
-  //                + (1 - alpha_f) K_{T}
-  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
+  //                + K_{T;m}
+  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.0);
   if (damping_ == damp_rayleigh)
   {
     stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
@@ -374,7 +373,7 @@ void STR::TimIntGEMM::UpdateStep()
     //p.set("delta time", (*dt_)[0]);
     // action for elements
     //p.set("alpha f", alphaf_);
-    p.set("action", "calc_struct_update_isptep");
+    p.set("action", "calc_struct_update_istep");
     // go to elements
     discret_->Evaluate(p, null, null, null, null, null);
   }

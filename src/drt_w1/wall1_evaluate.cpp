@@ -80,7 +80,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Wall1::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Wall1::calc_struct_reset_istep;
-  else dserror("Unknown type of action for Wall1");
+  else dserror("Unknown type of action %s for Wall1", action.c_str());
 
   // get the material law
   MATERIAL* actmat = &(mat[material_-1]);
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (dispo==Teuchos::null or disp==Teuchos::null or res==Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        dserror("Cannot get state vectors");
       std::vector<double> mydispo(lm.size());
       DRT::UTILS::ExtractMyValues(*dispo,mydispo,lm);
       std::vector<double> mydisp(lm.size());

@@ -232,7 +232,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     w1_boplin(boplin, shpdrv, Xjm, Xjdet, numnode);
 
     // calculate defgrad F^u, Green-Lagrange-strain E^u
-    w1_defgrad(Fuvo, Evo, Xe, xeo, boplin, numnode);  // at t_{n+1}
+    w1_defgrad(Fuvo, Evo, Xe, xeo, boplin, numnode);  // at t_{n}
     w1_defgrad(Fuv, Ev, Xe, xe, boplin, numnode);  // at t_{n+1}
 
     // calculate non-linear B-operator in current configuration
@@ -257,8 +257,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     {
       const int totdim = Fmm.M() * Fmm.N();
       // remember same pointer: F_m = F_{n}
-      blas.SCAL(totdim, gemmalphaf, (Fmm).A());  // F_m *= gemmalphaf = gemmalphaf*F_{n}
-      blas.AXPY(totdim, (1.0-gemmalphaf), Fm.A(), (Fmm).A());  // F_m += (1.0-gemmalphaf)*F_{n+1}
+      blas.SCAL(totdim, gemmalphaf, Fmm.A());  // F_m *= gemmalphaf = gemmalphaf*F_{n}
+      blas.AXPY(totdim, (1.0-gemmalphaf), Fm.A(), Fmm.A());  // F_m += (1.0-gemmalphaf)*F_{n+1}
     }
 
     // non-linear mid-B-operator
@@ -339,44 +339,33 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       w1_stress_eas(Smm, (Fmm), Pvmm);
 
       // stiffness matrix kdd
-      if (stiffmatrix)
-        TangFintByDispGEMM(gemmalphaf, gemmxi, fac, 
-                           boplin, W0m, W0,
-                           (Fmm), Fm, C, Smm,
-                           FmCF, *stiffmatrix);
+      if (stiffmatrix) TangFintByDispGEMM(gemmalphaf, gemmxi, fac, 
+                                          boplin, W0m, W0, Fmm, Fm, C, Smm, 
+                                          FmCF, *stiffmatrix);
       // matrix kda
       TangFintByEnhGEMM(gemmalphaf, gemmxi, fac,
-                        boplin, W0m, 
-                        FmCF, Smm, G,
-                        Z, Pvmm, 
+                        boplin, W0m, FmCF, Smm, G, Z, Pvmm, 
                         Kda);
-      // matrix kad
+      // matrix kad (this is NOT kda, because GEMM produces non-symmetric tangent!)
       TangEconByDispGEMM(gemmalphaf, gemmxi, fac,
-                         boplin, W0, 
-                         FmCF, Smm, (Gm),
-                         Z, Pvmm, 
+                         boplin, W0, FmCF, Smm, Gm, Z, Pvmm, 
                          Kad);
       // matrix kaa
-      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac, FmCF, Smm, G, Gm, Kaa);
+      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac, 
+                        FmCF, Smm, G, Gm, 
+                        Kaa);
       // nodal forces
       if (force) w1_fint_eas(W0m, boplin, Gm, Pvmm, *force, feas, fac);
     }
     else
     {
-      // geometric part of stiffness matrix kg
+      // element stiffness matrix constribution at current Gauss point
       if (stiffmatrix)
-      {
-        const double gemmfac = fac * (1.0-gemmalphaf);
-        w1_kg(*stiffmatrix, boplin, Smm, gemmfac, edof, Wall1::numstr_);
-      }
-      // elastic+displacement stiffness matrix keu
-      if (stiffmatrix)
-      {
-        const double gemmfac = fac * (1.0-gemmalphaf+gemmxi);
-        w1_keu(*stiffmatrix, bopm, C, gemmfac, edof, Wall1::numstr_);
-      }
+        TangFintByDispGEMM(gemmalphaf, gemmxi, fac,
+                           bopm, bop, C, boplin, Smm, *stiffmatrix);
+
       // nodal forces fi from integration of stresses
-      if (force) w1_fint(Smm, bop, *force, fac, edof);
+      if (force) w1_fint(Smm, bopm, *force, fac, edof);
     }
 
   } // for (int ip=0; ip<totngp; ++ip)
@@ -416,6 +405,50 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   // good Bye
   return;
 }
+
+/*======================================================================*/
+/* elastic and initial displacement stiffness */
+void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
+  const double& alphafgemm,
+  const double& xigemm,
+  const double& fac,
+  const Epetra_SerialDenseMatrix& bopm,
+  const Epetra_SerialDenseMatrix& bopn,
+  const Epetra_SerialDenseMatrix& C,
+  const Epetra_SerialDenseMatrix& boplin,
+  const Epetra_SerialDenseMatrix& Smm,
+  Epetra_SerialDenseMatrix& estif
+)
+{
+  // constants
+  const int nd = Wall1::noddof_ * NumNode();  // number of element DOFs
+  const int numeps = Wall1::numnstr_;
+
+  // elastic and initial displacement stiffness
+  // perform B_m^T . C . B_{n+1}, whereas B_{n+1} = F_{n+1}^T . B_L */
+  {
+    const double faceu = (1.0-alphafgemm+xigemm) * fac;
+    for(int i=0; i<nd; i++)
+      for(int j=0; j<nd; j++)
+        for(int k=0; k<numeps; k++)
+          for(int m=0; m<numeps; m++)
+            estif(i,j) += bopm(k,i) * C(k,m) * bopn(m,j) * faceu;
+  }
+
+  // geometric stiffness part
+  // perform B_L^T * S_m * B_L
+  {
+    const double fackg = (1.0-alphafgemm) * fac;
+    for(int i=0; i<nd; i++)
+      for(int j=0; j<nd; j++)
+        for(int r=0; r<numeps; r++)
+          for(int m=0; m<numeps; m++)
+            estif(i,j) += boplin(r,i) * Smm(r,m) * boplin(m,j) * fackg;
+  }  
+
+  // see you
+  return;
+}  // TangFintByDispGEMM
 
 /*======================================================================*/
 /* calcuate tangent (f_{int;m}),d */

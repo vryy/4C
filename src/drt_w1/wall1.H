@@ -551,6 +551,21 @@ private:
   );
 
   /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements \f$d_{n+1}\f$
+  /// in pure displacement-based approach
+  void TangFintByDispGEMM(
+    const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
+    const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
+    const double& fac,  ///< integration factor
+    const Epetra_SerialDenseMatrix& bopm,  ///< non-lin. mid-B-op. \f$B_{m}\f$
+    const Epetra_SerialDenseMatrix& bop,  ///< non-linear B-operator \f$B_{n+1}\f$ at \f$t_{n+1}\f$
+    const Epetra_SerialDenseMatrix& C,  ///< constitutive matrix
+    const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
+    const Epetra_SerialDenseMatrix& Smm,  ///< PK2 mid-stress matrix \f$\bar{S}_{m}\f$
+    Epetra_SerialDenseMatrix& estif  ///< (in/out) element stiffness matrix
+  );
+
+  /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements \f$d_{n+1}\f$
+  /// in EAS approach
   void TangFintByDispGEMM(
     const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
     const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
@@ -581,7 +596,7 @@ private:
     Epetra_SerialDenseMatrix& kda  ///< (in/out) tangent \f$\partial f_{int;m}/\partial \alpha_{n+1}\f$
   );
 
-  // Tangent of enhancemed constraint vector \f$s_m\f$ with respect to displacements \f$d_{n+1}\f$
+  /// Tangent of enhancemed constraint vector \f$s_m\f$ with respect to displacements \f$d_{n+1}\f$
   void TangEconByDispGEMM(
     const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
     const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
@@ -596,7 +611,7 @@ private:
     Epetra_SerialDenseMatrix& kad  ///< (in/out) tangent \f$\partial s_{m}/\partial d_{n+1}\f$
   );
 
-  // Tangent of enhancemed constraint vector \f$s_m\f$ with respect to enhanced strain parameters \f$\alpha_{n+1}\f$
+  /// Tangent of enhancemed constraint vector \f$s_m\f$ with respect to enhanced strain parameters \f$\alpha_{n+1}\f$
   void TangEconByEnhGEMM(
     const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
     const double& xigemm,  ///< GEMM's \f$\xi\f$ coefficient
