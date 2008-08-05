@@ -2773,6 +2773,7 @@ void StruGenAlpha::Update()
     discret_.SetState("velocity",vel_);
     discret_.SetState("residual displacement",zeros_);
     discret_.Evaluate(p,null,null,null,null,null);
+    discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
   }
 
   //----------------------------- reset the current disp/vel/acc to zero
@@ -2866,6 +2867,20 @@ void StruGenAlpha::Output()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
+      RCP<Epetra_Map> snrowmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",false);
+      Epetra_MultiVector xhiscol(*sncolmap,12,true);
+      Epetra_MultiVector xhisrow(*snrowmap,12,true);
+      ParameterList p;
+      p.set("action","prestress_writerestart");
+      p.set<Epetra_MultiVector*>("prestress_restartvector",&xhiscol);
+      discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
+      LINALG::Export(xhiscol,xhisrow);
+      output_.WriteVector("prestress_surfaceneumann",rcp(&xhisrow,false));
+    }
+#endif
     isdatawritten = true;
 
     if (surf_stress_man_!=null)
@@ -3260,6 +3275,21 @@ void StruGenAlpha::ReadRestart(int step)
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
+      RCP<Epetra_Map> snrowmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",false);
+      Epetra_MultiVector xhiscol(*sncolmap,12,true);
+      Epetra_MultiVector xhisrow(*snrowmap,12,true);
+      reader.ReadMultiVector(rcp(&xhisrow,false),"prestress_surfaceneumann");
+      LINALG::Export(xhisrow,xhiscol);
+      ParameterList p;
+      p.set("action","prestress_readrestart");
+      p.set<Epetra_MultiVector*>("prestress_restartvector",&xhiscol);
+      discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
+    }
+#endif
 
   if (surf_stress_man_!=null)
   {
