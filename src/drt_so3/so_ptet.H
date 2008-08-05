@@ -508,7 +508,8 @@ protected:
   inline void ShapeFunctionDerivatives(LINALG::SerialDenseMatrix& deriv)
   {
     // Ni,j = 1.0 for i==j, otherwise 0.0
-    deriv.Scale(0.0);
+    const int size = deriv.M()*deriv.N();
+    for (int i=0; i<size; ++i) deriv.A()[i] = 0.0;
     deriv(0,0) = 1.0;
     deriv(1,1) = 1.0;
     deriv(2,2) = 1.0;
