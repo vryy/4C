@@ -63,6 +63,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   // GEMM coefficients
   const double gemmalphaf = params.get<double>("alpha f");
   const double gemmxi = params.get<double>("xi");
+  // density if mass is calculated
+  const double density = (massmatrix) ? Density(material) : 0.0;
 
   // BLAS dummy
   Epetra_BLAS::Epetra_BLAS blas;
@@ -120,9 +122,6 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix* oldKaainv;  // EAS history
   Epetra_SerialDenseMatrix* oldKda;  // EAS history
   Epetra_SerialDenseMatrix* oldKad;  // EAS history
-
-  // ------------------------------------ check calculation of mass matrix
-  double density = (massmatrix) ? Density(material) : 0.0;
 
   // element co-ordinates
   for (int k=0; k<numnode; ++k)
@@ -495,13 +494,13 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
     blas.AXPY(totdim, 1.0, W0.A(), BplusW.A());  // += W0_{n+1}
   }
 
-  // Temp1 (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix temp1(4,2*NumNode());
-  temp1.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
+  // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
+  Epetra_SerialDenseMatrix FmCFBW(4,2*NumNode());
+  FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
-  // Temp3 (4 x 8) : S_m . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix temp3(4,2*NumNode());
-  temp3.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
+  // SmBW (4 x 8) : S_m . (B_L + W0_{n+1})
+  Epetra_SerialDenseMatrix SmBW(4,2*NumNode());
+  SmBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
   {
@@ -516,9 +515,9 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
 
   // k_{dd} (8 x 8) :
   // k_{dd} += fac * (B_L + W0_m)^T . (Fm . C . F_{n+1}^T) . (B_L + W0_m)
-  estif.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, BplusW, temp1, 1.0);
+  estif.Multiply('T', 'N', (1.0-alphafgemm+xigemm)*fac, BplusW, FmCFBW, 1.0);
   // k_{dd} += fac * (B_L+W0_m)^T . S_m . (B_L+W0_{n+1})
-  estif.Multiply('T', 'N', (1.0-alphafgemm)*fac, BplusW, temp3, 1.0);
+  estif.Multiply('T', 'N', (1.0-alphafgemm)*fac, BplusW, SmBW, 1.0);
 
   // that's it
   return;
