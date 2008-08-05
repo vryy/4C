@@ -396,19 +396,19 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
 
   // for EAS, in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix* F_enh;  // EAS matrix F_enh
-  Epetra_SerialDenseMatrix* F_tot;  // EAS vector F_tot
-  Epetra_SerialDenseMatrix* p_stress;  // first piola-kirchhoff stress vector
-  Epetra_SerialDenseMatrix* xjm0;  // Jacobian Matrix (origin)
-  Epetra_SerialDenseVector* F0;  // Deformation Gradient (origin)
-  Epetra_SerialDenseMatrix* boplin0; // B operator (origin)
-  Epetra_SerialDenseMatrix* W0;  // W operator (origin)
-  Epetra_SerialDenseMatrix* G;  // G operator
-  Epetra_SerialDenseMatrix* Z;  // Z operator
-  Epetra_SerialDenseMatrix* FCF;  // FCF^T
-  Epetra_SerialDenseMatrix* Kda;  // EAS matrix Kda
-  Epetra_SerialDenseMatrix* Kaa;  // EAS matrix Kaa
-  Epetra_SerialDenseVector* feas; // EAS portion of internal forces
+  Epetra_SerialDenseMatrix F_enh;  // EAS matrix F_enh
+  Epetra_SerialDenseMatrix F_tot;  // EAS vector F_tot
+  Epetra_SerialDenseMatrix p_stress;  // first piola-kirchhoff stress vector
+  Epetra_SerialDenseMatrix xjm0;  // Jacobian Matrix (origin)
+  Epetra_SerialDenseVector F0;  // Deformation Gradient (origin)
+  Epetra_SerialDenseMatrix boplin0; // B operator (origin)
+  Epetra_SerialDenseMatrix W0;  // W operator (origin)
+  Epetra_SerialDenseMatrix G;  // G operator
+  Epetra_SerialDenseMatrix Z;  // Z operator
+  Epetra_SerialDenseMatrix FCF;  // FCF^T
+  Epetra_SerialDenseMatrix Kda;  // EAS matrix Kda
+  Epetra_SerialDenseMatrix Kaa;  // EAS matrix Kaa
+  Epetra_SerialDenseVector feas; // EAS portion of internal forces
   double detJ0;  // detJ(origin)
   Epetra_SerialDenseMatrix* oldfeas;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
@@ -436,19 +436,19 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   if (iseas_ == true)
   {
     // allocate EAS quantities
-    F_enh = new Epetra_SerialDenseMatrix(4,1);
-    F_tot = new Epetra_SerialDenseMatrix(4,3);
-    p_stress = new Epetra_SerialDenseMatrix(4,1);
-    xjm0 = new Epetra_SerialDenseMatrix(2,2);
-    F0 = new Epetra_SerialDenseVector(4);
-    boplin0 = new Epetra_SerialDenseMatrix(4,2*numnode);
-    W0 = new Epetra_SerialDenseMatrix(4,2*numnode);
-    G = new Epetra_SerialDenseMatrix(4,Wall1::neas_);
-    Z = new Epetra_SerialDenseMatrix(2*numnode,Wall1::neas_);
-    FCF = new Epetra_SerialDenseMatrix(4,4);
-    Kda = new Epetra_SerialDenseMatrix(2*numnode,Wall1::neas_);
-    Kaa = new Epetra_SerialDenseMatrix(Wall1::neas_,Wall1::neas_);
-    feas = new Epetra_SerialDenseVector(Wall1::neas_);
+    F_enh.Shape(4,1);
+    F_tot.Shape(4,3);
+    p_stress.Shape(4,1);
+    xjm0.Shape(2,2);
+    F0.Size(4);
+    boplin0.Shape(4,2*numnode);
+    W0.Shape(4,2*numnode);
+    G.Shape(4,Wall1::neas_);
+    Z.Shape(2*numnode,Wall1::neas_);
+    FCF.Shape(4,4);
+    Kda.Shape(2*numnode,Wall1::neas_);
+    Kaa.Shape(Wall1::neas_,Wall1::neas_);
+    feas.Size(Wall1::neas_);
 
     /*
     ** EAS Update of alphas:
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
     ** -> T0^{-T}
     */
-    w1_eassetup(*boplin0,*F0,*xjm0,detJ0,xrefe,xcure,distype);
+    w1_eassetup(boplin0,F0,xjm0,detJ0,xrefe,xcure,distype);
   }
 
   /*=================================================== integration loops */
@@ -532,10 +532,10 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
       /*-----calculate the enhanced deformation gradient and--------------------
       -----alsoe the operators G, W0 and Z------------------------------------*/
 
-      w1_call_defgrad_enh(*F_enh,*xjm0,xjm,detJ0,det,*F0,*alpha,e1,e2,*G,*W0,*boplin0,*Z);
+      w1_call_defgrad_enh(F_enh,xjm0,xjm,detJ0,det,F0,*alpha,e1,e2,G,W0,boplin0,Z);
 
       /*-----total deformation gradient, Green-Lagrange-strain E^F -----------*/
-      w1_call_defgrad_tot(*F_enh,*F_tot,F,strain);
+      w1_call_defgrad_tot(F_enh,F_tot,F,strain);
       /* call material law----------------------------------------------------*/
       w1_call_matgeononl(strain,stress,C,numeps,material);
 
@@ -551,7 +551,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
        {
          if (cauchy)
          {
-           StressCauchy(ip, (*F_tot)(0,0), (*F_tot)(1,1), (*F_tot)(0,2), (*F_tot)(1,2), stress, elestress);
+           StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
          }
          else
          {
@@ -562,16 +562,16 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
        }
 
       /*-----first piola-kirchhoff stress vector------------------------------*/
-      w1_stress_eas(stress,(*F_tot),(*p_stress));
+      w1_stress_eas(stress,F_tot,p_stress);
 
       /*-----stiffness matrix kdd---------------------------------------------*/
-      if (stiffmatrix) w1_kdd(boplin,*W0,*F_tot,C,stress,*FCF,*stiffmatrix,fac);
+      if (stiffmatrix) w1_kdd(boplin,W0,F_tot,C,stress,FCF,*stiffmatrix,fac);
       /*-----matrix kda-------------------------------------------------------*/
-      w1_kda(*FCF,*W0,boplin,stress,*G,*Z,*Kda,*p_stress,fac);
+      w1_kda(FCF,W0,boplin,stress,G,Z,Kda,p_stress,fac);
       /*-----matrix kaa-------------------------------------------------------*/
-      w1_kaa(*FCF,stress,(*G),(*Kaa),fac);
+      w1_kaa(FCF,stress,G,Kaa,fac);
       /*-----nodal forces ----------------------------------------------------*/
-      if (force) w1_fint_eas(*W0,boplin,*G,*p_stress,*force,*feas,fac);
+      if (force) w1_fint_eas(W0,boplin,G,p_stress,*force,feas,fac);
 
    }
    else
@@ -622,53 +622,35 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     {
       // we need the inverse of Kaa
       Epetra_SerialDenseSolver solve_for_inverseKaa;
-      solve_for_inverseKaa.SetMatrix(*Kaa);
+      solve_for_inverseKaa.SetMatrix(Kaa);
       solve_for_inverseKaa.Invert();
 
 
       Epetra_SerialDenseMatrix KdaKaa(2*NumNode(),Wall1::neas_); // temporary Kda.Kaa^{-1}
-      KdaKaa.Multiply('N', 'N', 1.0, (*Kda), (*Kaa), 1.0);
+      KdaKaa.Multiply('N', 'N', 1.0, Kda, Kaa, 1.0);
 
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      if (stiffmatrix) (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, *Kda, 1.0);
+      if (stiffmatrix) (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, Kda, 1.0);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      if (force) (*force).Multiply('N', 'N', -1.0, KdaKaa, (*feas), 1.0);
+      if (force) (*force).Multiply('N', 'N', -1.0, KdaKaa, feas, 1.0);
 
       // store current EAS data in history
       for (int i=0; i<Wall1::neas_; ++i)
         for (int j=0; j<Wall1::neas_; ++j)
-          (*oldKaainv)(i,j) = (*Kaa)(i,j);
+          (*oldKaainv)(i,j) = Kaa(i,j);
 
       for (int i=0; i<(2*NumNode()); ++i)
         for (int j=0; j<Wall1::neas_; ++j)
         {
-          (*oldKda)(i,j) = (*Kda)(i,j);
-          (*oldfeas)(j,0) = (*feas)(j);
+          (*oldKda)(i,j) = Kda(i,j);
+          (*oldfeas)(j,0) = feas(j);
         }
 
     }
   }
   // -------------------------------------------------------------------- EAS
-
-  // clean EAS data
-  if (iseas_)
-  {
-    delete F_enh;
-    delete F_tot;
-    delete p_stress;
-    delete xjm0;
-    delete F0;
-    delete boplin0;
-    delete W0;
-    delete G;
-    delete Z;
-    delete FCF;
-    delete Kda;
-    delete Kaa;
-    delete feas;
-  }
 
   return;
 }
