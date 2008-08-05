@@ -467,20 +467,20 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   Epetra_BLAS::Epetra_BLAS blas;
 
   // contitutive matrix (3x3)
-  Epetra_SerialDenseMatrix C_red(3,3);
+  LINALG::SerialDenseMatrix C_red(3,3,false);
   C_red(0,0) = C(0,0);  C_red(0,1) = C(0,1);  C_red(0,2) = C(0,2);
   C_red(1,0) = C(1,0);  C_red(1,1) = C(1,1);  C_red(1,2) = C(1,2);
   C_red(2,0) = C(2,0);  C_red(2,1) = C(2,1);  C_red(2,2) = C(2,2);
 
   // FdotC (4 x 3) : F_m . C 
-  Epetra_SerialDenseMatrix FmC(4,3);
+  LINALG::SerialDenseMatrix FmC(4,3,false);
   FmC.Multiply('N', 'N', 1.0, Fmm, C_red, 0.0);
 
   // FmCF (4 x 4) : ( F_m . C ) . F_{n+1}^T
   FmCF.Multiply('N', 'T', 1.0, FmC, Fm, 0.0);
 
   // BplusW (4 x edof) :  B_L + W0_{n+1}
-  Epetra_SerialDenseMatrix BplusW(4,2*NumNode());
+  LINALG::SerialDenseMatrix BplusW(4,2*NumNode(),true);
   {
     const int totdim = BplusW.M() * BplusW.N();
     blas.AXPY(totdim, 1.0, boplin.A(), BplusW.A());  // += B_L
@@ -488,11 +488,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   }
 
   // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix FmCFBW(4,2*NumNode());
+  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),false);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmBW (4 x 8) : S_m . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix SmBW(4,2*NumNode());
+  LINALG::SerialDenseMatrix SmBW(4,2*NumNode(),false);
   SmBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
@@ -532,32 +532,18 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(
   Epetra_SerialDenseMatrix& kda
 )
 {
-  // BLAS dummy
-  Epetra_BLAS::Epetra_BLAS blas;
-
   // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
-  Epetra_SerialDenseMatrix FmCFG(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,false);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG (4 x 4) : S_m . G_{n+1}
-  Epetra_SerialDenseMatrix SmG(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,false);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
-  Epetra_SerialDenseMatrix BplusW(4,2*NumNode());
+  LINALG::SerialDenseMatrix BplusW(4,2*NumNode(),true);
   BplusW += boplin;
   BplusW += W0m;
-
-  // PZ (8 x 4) : \bar{\bar{P}}_{mm} . Z_{n+1}
-  Epetra_SerialDenseMatrix PZ(2*NumNode(),Wall1::neas_);
-  for (int i=0; i<NumNode(); i++)
-  {
-    for (int ieas=0; ieas<Wall1::neas_; ieas++)
-    {
-      PZ(i*2,ieas) = Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas);
-      PZ(i*2+1,ieas) = Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas);
-    }
-  }
 
   // k_{da} (8 x 4) :
   // k_{da} += fac * (B_l+W0_m)^T . (F_m . C . F_{n+1}^T) . G_{n+1}
@@ -565,7 +551,14 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(
   // k_{da} += fac * (B_l+W0_m)^T . S_m . G_{n+1}
   kda.Multiply('T', 'N', (1.0-alphafgemm)*fac, BplusW, SmG, 1.0);
   // k_{da} += fac * \bar{\bar{P}}_{mm} . Z_{n+1}
-  blas.AXPY(kda.N()*kda.M(), 0.5*fac, PZ.A(), kda.A());
+  for (int i=0; i<NumNode(); i++)
+  {
+    for (int ieas=0; ieas<Wall1::neas_; ieas++)
+    {
+      kda(i*2,ieas) += 0.5*fac * (Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas));
+      kda(i*2+1,ieas) += 0.5*fac * (Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas));
+    }
+  }
 
   // ciao
   return;
@@ -588,32 +581,18 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   Epetra_SerialDenseMatrix& kad
 )
 {
-  // BLAS dummy
-  Epetra_BLAS::Epetra_BLAS blas;
-
   // BplusW (4 x 8) :  B_L + W0_{n+1}
-  Epetra_SerialDenseMatrix BplusW(4,2*NumNode());
+  LINALG::SerialDenseMatrix BplusW(4,2*NumNode(),true);
   BplusW += boplin;
   BplusW += W0;
 
   // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix FmCFBW(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix FmCFBW(4,Wall1::neas_,false);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
-  Epetra_SerialDenseMatrix SmGBW(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix SmGBW(4,Wall1::neas_,false);
   SmGBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
-
-  // ZP (4 x 8) : (\bar{\bar{P}}_{mm} . Z_{n+1})^T
-  Epetra_SerialDenseMatrix ZP(Wall1::neas_,2*NumNode());
-  for (int i=0; i<NumNode(); i++)
-  {
-    for (int ieas=0; ieas<Wall1::neas_; ieas++)
-    {
-      ZP(ieas,i*2) = Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas);
-      ZP(ieas,i*2+1) = Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas);
-    }
-  }
 
   // k_{ad} (4 x 8) :
   // k_{ad} += fac * G_{m}^T . (F_m . C . F_{n+1}^T) . (B_lin+W0_{n+1})
@@ -621,7 +600,14 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   // k_{ad} += fac *  G_{m}^T . S_m . (B_l+W0_{n+1})^T
   kad.Multiply('T', 'N', (1.0-alphafgemm)*fac, Gm, SmGBW, 1.0);
   // k_{ad} += fac * (\bar{\bar{P}}_{mm} . Z_{n+1})^T
-  blas.AXPY(kad.N()*kad.M(), 0.5*fac, ZP.A(), kad.A());
+  for (int i=0; i<NumNode(); i++)
+  {
+    for (int ieas=0; ieas<Wall1::neas_; ieas++)
+    {
+      kad(ieas,i*2) +=  0.5*fac * (Pvmm(0,0)*Z(i*2,ieas) + Pvmm(2,0)*Z(i*2+1,ieas));
+      kad(ieas,i*2+1) += 0.5*fac * (Pvmm(3,0)*Z(i*2,ieas) + Pvmm(1,0)*Z(i*2+1,ieas));
+    }
+  }
 
   // ciao
   return;
@@ -641,11 +627,11 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(
 )
 {
   // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
-  Epetra_SerialDenseMatrix FmCFG(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,false);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG : S_m  . G_{n+1}
-  Epetra_SerialDenseMatrix SmG(4,Wall1::neas_);
+  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,false);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // k_{aa} (4 x 4) :
