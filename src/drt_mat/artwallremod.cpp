@@ -138,7 +138,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   a2_ = rcp(new vector<vector<double> > (numgp));
   int initflag = matdata_->m.artwallremod->init;
   double gamma = matdata_->m.artwallremod->gamma;
-  gamma = gamma * PI/180.0;  // convert to radians
+  gamma = (gamma * PI)/180.0;  // convert to radians
   // switch how to setup/initialize fiber directions
   if (initflag==0){
   // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -185,7 +185,6 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
     lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
     phi_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
     stresses_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
-    remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
     for (int gp = 0; gp < numgp; ++gp) {
       gamma_->at(gp) = gamma;
       lambda_->at(gp).resize(3);
@@ -193,9 +192,10 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
       Epetra_SerialDenseMatrix emptymat(3,3);
       phi_->at(gp) = emptymat;
       stresses_->at(gp) = emptymat;
-      remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
     }
   }
+  remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
+  for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
 
   return;
 }
@@ -277,7 +277,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   //AddtoCmatHolzapfelProduct((*cmat),Cinv,fac);  // fac Cinv o Cinv
 
   Epetra_SerialDenseMatrix Psl(6,6);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // Cinv o Cinv 
+  AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
   
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -313,10 +313,11 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
   // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
+  // however factor 2 for shear terms is already in C
   const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2) 
-                    + 2.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
+                    + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
   const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2) 
-                    + 2.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
+                    + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
   
@@ -336,7 +337,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Sfiso += Stemp;
   
   const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2) 
-                 + 2.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
+                 + 1.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
   // compute Sfiso = J^{-2/3} * (Sfbar - 1/3 trace(Sfbar C) Cinv
   for (int i = 0; i < 6; ++i) {
     Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
@@ -380,7 +381,6 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   }
 
-
   return;
 }
 
@@ -391,7 +391,7 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   // watch out! stress matrix will temporarily hold eigenvectors!
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
   
-#if debug
+#if DEBUG
   cout << "eigenvectors: " << stresses_->at(gp);
   cout << "eigenvalues: " << lambda << endl;
 #endif

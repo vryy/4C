@@ -424,7 +424,7 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     if(elescli.size()!=0){
       // write local cosy from centerline to each element
       vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
-      dat << " RAD " << fixed << setprecision(5) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
+      dat << " RAD " << fixed << setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
       dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
       dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
     }
