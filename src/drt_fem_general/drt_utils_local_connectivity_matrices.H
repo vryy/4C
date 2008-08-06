@@ -577,7 +577,9 @@ namespace UTILS
       const DRT::Element::DiscretizationType distype///< element-discretization type
   );
   /*!
-   * \brief    Returns the geometric center of the element in local coordinates
+   * Returns the geometric center of the element in local coordinates
+   * 
+   * \tparam   dim  dimension of the element space (e.g. dim=2 for quad4)
    */
   template<int dim>
   blitz::TinyVector<double,dim> getLocalCenterPosition(
