@@ -129,6 +129,7 @@ STR::TimInt::TimInt
   writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
   writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
   writeenergyevery_(sdynparams.get<int>("RESEVRYENERGY")),
+  energyfile_(),
   damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
@@ -182,6 +183,15 @@ STR::TimInt::TimInt
   timen_ = (*time_)[0];  // set target time to initial time
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
   step_ = 0;
+
+  // output file for energy
+  if (writeenergyevery_ != 0)
+  {
+    Teuchos::RCP<DRT::Problem> prob = DRT::Problem::Instance();
+    std::string energyname = prob->OutputControlFile()->FileName() + ".energy";
+    energyfile_ = new std::ofstream(energyname.c_str());
+    *energyfile_ << "# timestep       time total_energy kinetic_energy internal_energy external_energy" << std::endl;
+  }
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -444,7 +454,7 @@ void STR::TimInt::OutputStep()
   // output energy
   if ( writeenergyevery_ and (step_%writeenergyevery_ == 0) )
   {
-    //OutputEnergies();
+    OutputEnergy();
   }
 
   // what's next?
@@ -475,7 +485,7 @@ void STR::TimInt::OutputRestart
   {
     Teuchos::RCP<Epetra_Map> surfrowmap 
       = surfstressman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A 
+    Teuchos::RCP<Epetra_Vector> A
       = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
     Teuchos::RCP<Epetra_Vector> con 
       = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
@@ -639,6 +649,54 @@ void STR::TimInt::OutputStressStrain
   }
 
   // leave me alone
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output system energies */
+void STR::TimInt::OutputEnergy()
+{
+  // calc kin & int energy
+  double kinergy = 0.0;  // total kinetic energy
+  double intergy = 0.0;  // total internal energy
+  {
+    ParameterList p;
+    // other parameters needed by the elements
+    p.set("action", "calc_struct_energy");
+    
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("displacement", (*dis_)(0));
+    discret_->SetState("velocity", (*vel_)(0));
+    // get energies
+    discret_->EvaluateEnergy(p, kinergy, intergy);
+    discret_->ClearState();
+  }
+
+  // external energy
+  double extergy = 0.0;  // total external energy
+  {
+    // WARNING: This will only work with dead loads!!!
+    Teuchos::RCP<Epetra_Vector> fext = Fext();
+    fext->Dot((*dis_)[0], &extergy);
+  }
+
+  // total energy
+  double totergy = kinergy + intergy - extergy;
+
+  // the output
+  if (myrank_ == 0)
+  {
+    *energyfile_ << " " << std::setw(9) << step_
+                 << " " << std::setw(21-10-1) << (*time_)[0]
+                 << " " << std::setw(34-21-1) << totergy
+                 << " " << std::setw(49-34-1) << kinergy
+                 << " " << std::setw(65-49-1) << intergy
+                 << " " << std::setw(81-65-1) << extergy
+                 << std::endl;
+  }
+
+  // in god we trust
   return;
 }
 

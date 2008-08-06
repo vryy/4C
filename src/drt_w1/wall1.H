@@ -374,16 +374,6 @@ private:
     const int nd  ///< number of element nodes
   );
 
-  /// Constitutive matrix \f$C\f$ and stresses
-  /// \author mgit \date 05/07
-  void w1_call_matgeononl(
-    const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-    Epetra_SerialDenseMatrix& stress,  ///< stress vector
-    Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
-    const int numeps,  ///< number of strains
-    const struct _MATERIAL* material  ///< the material data
-  );
-
   /// Geometric stiffness constribution (total Lagrange) 
   /// \author mgit \date 05/07
   void w1_kg(
@@ -415,6 +405,37 @@ private:
     const double fac,  ///< integration factor
     const int nd  ///< number of element DOFs
   );
+
+  /// lump mass matrix
+  void w1_lumpmass(
+    Epetra_SerialDenseMatrix* emass  ///< (in/out) element mass matrix
+  );
+
+  /// determine cauchy stress and store it
+  void StressCauchy(
+    const int ip,  ///< Gauss point index
+    const double& F11,  ///< F_{11} component of def.grad.
+    const double& F22,  ///< F_{22} component of def.grad.
+    const double& F12,  ///< F_{12} component of def.grad.
+    const double& F21,  ///< F_{21} component of def.grad.
+    const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress matrix
+    Epetra_SerialDenseMatrix* elestress  ///< element stress array
+  );
+
+  /// determine internal energy
+  void Energy(
+    const ParameterList& params,  ///<  a list containing GEMM coefficients
+    const std::vector<int>& lm,  ///< location vector
+    const std::vector<double>& dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
+    const std::vector<double>& vel,  ///< element velocities \f$v_{n}^{(e)}\f$ at \f$t_{n}\f$
+    Epetra_SerialDenseVector* energies,  ///< (in/out) energies
+    struct _MATERIAL* material  ///< element material
+  );
+
+  //@}
+
+  /// @name EAS tools
+  //@{
 
   /// setup of constant EAS data
   void w1_eassetup(
@@ -512,9 +533,19 @@ private:
     const double fac  ///< integration factor
   );
 
-  /// lump mass matrix
-  void w1_lumpmass(
-    Epetra_SerialDenseMatrix* emass  ///< (in/out) element mass matrix
+  //@}
+
+  /// @name Material matters
+  //@{
+
+  /// Constitutive matrix \f$C\f$ and stresses
+  /// \author mgit \date 05/07
+  void w1_call_matgeononl(
+    const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+    Epetra_SerialDenseMatrix& stress,  ///< stress vector
+    Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
+    const int numeps,  ///< number of strains
+    const struct _MATERIAL* material  ///< the material data
   );
 
   /// (constant) density
@@ -523,16 +554,26 @@ private:
     const struct _MATERIAL* material  ///< material pointer
   );
 
-  /// determine cauchy stress and store it
-  void StressCauchy(
-    const int ip,  ///< Gauss point index
-    const double& F11,  ///< F_{11} component of def.grad.
-    const double& F22,  ///< F_{22} component of def.grad.
-    const double& F12,  ///< F_{12} component of def.grad.
-    const double& F21,  ///< F_{21} component of def.grad.
-    const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress matrix
-    Epetra_SerialDenseMatrix* elestress  ///< element stress array
+  /// Internal/strain energy
+  double EnergyInternal(
+    const struct _MATERIAL* material,  ///< element material
+    const double& fac,  ///< integration factor 
+    const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
   );
+
+  /// Kinetic Energy
+  /// \return kinetic energy of element
+  double EnergyKinetic(
+    const Epetra_SerialDenseMatrix& mass,  ///< element mass matrix
+    const std::vector<double>& vel  ///< element velocity vector
+  );
+
+  //@}
+
+
+
+  /// @name Tools for generalised energy-momentum method
+  //@{
 
   /// evaluate the element forces and stiffness and mass for GEMM
   /// \author bborn \date 08/08
@@ -624,6 +665,8 @@ private:
     Epetra_SerialDenseMatrix& kaa  ///< (in/out) tangent \f$\partial s_{m}/\partial \alpha_{n+1}\f$
   );
 
+  //@}
+
   /// don't want = operator
   Wall1& operator = (const Wall1& old);
 
@@ -633,8 +676,6 @@ private:
   (
     int* ngp  ///< number of Gauss points
   );
-
-  //@}
 
 
 }; // class Wall1

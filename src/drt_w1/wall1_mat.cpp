@@ -450,6 +450,52 @@ double DRT::ELEMENTS::Wall1::Density(
   }
 }  // Density
 
+/*-----------------------------------------------------------------------------*
+| deliver internal/strain energy                                    bborn 08/08|
+*-----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Wall1:: EnergyInternal(
+  const struct _MATERIAL* material,
+  const double& fac,
+  const Epetra_SerialDenseVector& Ev
+)
+{
+  // switch material type
+  switch (material->mattyp)
+  {
+  case m_stvenant :  // linear elastic
+  {
+    Epetra_SerialDenseMatrix Cm(Wall1::numnstr_,Wall1::numnstr_);  // elasticity matrix
+    Epetra_SerialDenseMatrix Sm(Wall1::numnstr_,Wall1::numnstr_);  // 2nd PK stress matrix
+    w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material);
+    Epetra_SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
+    Sv(0) = Sm(0,0);
+    Sv(1) = Sm(1,1);
+    Sv(2) = Sv(3) = Sm(0,2);
+    return fac * 0.5 * Sv.Dot(Ev);
+  }
+  break;
+  default :
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+| deliver kinetic energy                                            bborn 08/08|
+*-----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Wall1:: EnergyKinetic(
+  const Epetra_SerialDenseMatrix& mass,
+  const std::vector<double>& vel
+)
+{
+  double kin = 0.0;
+  for (int i=0; i<2*NumNode(); ++i)
+    for (int j=0; j<2*NumNode(); ++j)
+      kin += 0.5 * vel[i] * mass(i,j) * vel[j];
+  return kin;
+}
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

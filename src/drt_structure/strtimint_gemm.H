@@ -183,6 +183,17 @@ namespace STR
 
     //@}
 
+    //! @name System vectors
+    //@{
+
+    //! Return external force \f$F_{ext,n}\f$
+    Teuchos::RCP<Epetra_Vector> Fext()
+    {
+      return fext_;
+    }
+
+    //@}
+
     //! @name GEMM-specific methods
     //@{
 

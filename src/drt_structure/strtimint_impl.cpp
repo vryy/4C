@@ -515,7 +515,7 @@ void STR::TimIntImpl::NewtonFull()
   {
     dserror("Newton unconverged in %d iterations", iter_);
   }
-  else if (Converged())
+  else if ( (Converged()) and (myrank_ == 0) )
   {
     PrintNewtonConv();
   }
@@ -544,8 +544,11 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
   // ... and its norm
   normcon_ = conman_->GetErrorNorm();
   // talk to user
-  std::cout << "Constraint error for Newton solution: " << normcon_
-            << std::endl;
+  if (myrank_ == 0)
+  {
+    std::cout << "Constraint error for Newton solution: " << normcon_
+              << std::endl;
+  }
 
   // Uzawa iteration loop
   int uziter = 0;
@@ -569,8 +572,11 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
     // ... and its norm
     normcon_ = conman_->GetErrorNorm();
     // talk to user
-    std::cout << "Constraint error for computed displacement: " << normcon_
-              << std::endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "Constraint error for computed displacement: " << normcon_
+                << std::endl;
+    }
     
     // increment loop counter
     uziter += 1;
@@ -673,7 +679,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     }
 
     // print message
-    if (Converged())
+    if ( Converged() and (myrank_ == 0) )
     {
       PrintNewtonConv();
     }

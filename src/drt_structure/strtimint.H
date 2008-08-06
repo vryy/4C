@@ -19,9 +19,23 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <iostream>
+#include <fstream>
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "Epetra_Vector.h"
+#include "Epetra_Operator.h"
+#include "Epetra_RowMatrix.h"
+#include <NOX.H>
+#include <NOX_Epetra.H>
+#include "ml_common.h"
+#include "ml_include.h"
+#include "nlnml_preconditioner.H"
+#include "nlnml_linearsystem.H"
+#include "nlnml_finelevelnoxinterface.H"
+
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
@@ -34,16 +48,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_contact/drt_contact_manager.H"
 
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-#include <NOX.H>
-#include <NOX_Epetra.H>
-#include "ml_common.h"
-#include "ml_include.h"
-#include "nlnml_preconditioner.H"
-#include "nlnml_linearsystem.H"
-#include "nlnml_finelevelnoxinterface.H"
+
 
 #include "strtimint_vector.H"
 #include "strtimint_mstep.H"
@@ -164,7 +169,10 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~TimInt() { ; }
+    virtual ~TimInt()
+    { 
+      delete energyfile_;
+    }
 
     //! Empty constructor
     TimInt() { ; }
@@ -274,6 +282,9 @@ namespace STR
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
     );
+    
+    //! Energy output
+    void OutputEnergy();
 
     //@}
 
@@ -392,7 +403,7 @@ namespace STR
 
     //@}
 
-    //! @name Phase states
+    //! @name System vectors
     //@{
 
     //! Return displacements \f$D_{n}\f$
@@ -412,6 +423,9 @@ namespace STR
 
     //! Return accelerations \f$A_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
+
+    //! Return external force \f$F_{ext,n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
 
     //@}
 
@@ -444,6 +458,7 @@ namespace STR
     enum StressEnum writestress_;  //!< stress output type
     enum StrainEnum writestrain_;  //!< strain output type
     int writeenergyevery_;  //!< write system energy every given step
+    std::ofstream* energyfile_;  //!< outputfile for energy
     //@}
 
     //! @name Damping

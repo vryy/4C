@@ -227,7 +227,16 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     break;
     case Wall1::calc_struct_energy:
     {
-      dserror("Not implemented");
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      if ( (disp==Teuchos::null) or (vel==Teuchos::null) )
+        dserror("Cannot get state vectors");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      Energy(params,lm,mydisp,myvel,&elevec1,actmat);
     }
     break;
     case Wall1::calc_struct_eleload:
@@ -990,6 +999,151 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
   (*elestress)(ip,2) = cauchystress(0,1);
 }  // StressCauchy
 
+
+/*-----------------------------------------------------------------------------*
+| deliver Cauchy stress                                             bborn 08/08|
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::Energy(
+  const ParameterList& params,
+  const std::vector<int>& lm,
+  const std::vector<double>& dis,
+  const std::vector<double>& vel,
+  Epetra_SerialDenseVector* energies,
+  struct _MATERIAL* material
+)
+{
+  // constants
+  // element porperties
+  const int numnode = NumNode();
+  const int edof = numnode * Wall1::noddof_;
+  const DiscretizationType distype = Shape();
+  // Gaussian points
+  const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule_);
+  // density if mass is calculated
+  const double density = Density(material);
+
+  // general arrays
+  Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
+  Epetra_SerialDenseMatrix shpdrv(Wall1::numdim_,numnode);  // parametric derivatives of shape funct. at Gauss point
+  Epetra_SerialDenseMatrix Xjm(Wall1::numdim_,Wall1::numdim_);  // material-to-parameter-space Jacobian
+  double Xjdet;  // determinant of #Xjm
+  Epetra_SerialDenseMatrix boplin(4,edof);
+  Epetra_SerialDenseVector Fuv(4);  // disp-based def.grad. vector at t_{n}
+  Epetra_SerialDenseVector Ev(4);  // Green-Lagrange strain vector at t_{n}
+  Epetra_SerialDenseMatrix Xe(Wall1::numdim_,numnode);  // material/initial element co-ordinates
+  Epetra_SerialDenseMatrix xe(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n}
+  Epetra_SerialDenseMatrix bop(Wall1::numstr_,edof);  // non-linear B-op at t_{n}
+
+  Epetra_SerialDenseMatrix massmatrix(lm.size(),lm.size());
+
+  // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
+  Epetra_SerialDenseMatrix* alphao;  // EAS alphas at t_{n}
+  Epetra_SerialDenseMatrix Fenhv;  // EAS matrix Fenhv
+  Epetra_SerialDenseMatrix Fm;  // total def.grad. matrix at t_{n}
+  Epetra_SerialDenseMatrix Xjm0;  // Jacobian Matrix (origin)
+  double Xjdet0;  // determinant of #Xjm0
+  Epetra_SerialDenseVector Fuv0;  // deformation gradient at origin at t_{n}
+  Epetra_SerialDenseMatrix boplin0; // B-operator (origin)
+  Epetra_SerialDenseMatrix W0;  // W-operator (origin) at t_{n}
+  Epetra_SerialDenseMatrix G;  // G-operator at t_{n}
+  Epetra_SerialDenseMatrix Z;  // Z-operator
+
+  // element co-ordinates
+  for (int k=0; k<numnode; ++k)
+  {
+    Xe(0,k) = Nodes()[k]->X()[0];
+    Xe(1,k) = Nodes()[k]->X()[1];
+    xe(0,k) = Xe(0,k) + dis[k*Wall1::noddof_+0];
+    xe(1,k) = Xe(1,k) + dis[k*Wall1::noddof_+1];
+  }
+
+  // set-up EAS parameters
+  if (iseas_)
+  {
+    // allocate EAS quantities
+    Fenhv.Shape(4,1);
+    Fm.Shape(4,3);
+    Xjm0.Shape(2,2);
+    Fuv0.Size(4);
+    boplin0.Shape(4,edof);
+    W0.Shape(4,edof);
+    G.Shape(4,Wall1::neas_); 
+    Z.Shape(edof,Wall1::neas_);
+
+    // get alpha of last converged state
+    alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");
+
+    // derivatives at origin
+    DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    // material-to-parameter space Jacobian at origin
+    w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
+    // calculate linear B-operator at origin
+    w1_boplin(boplin0, shpdrv, Xjm0, Xjdet0, numnode);
+    // displ.-based def.grad. at origin
+    w1_defgrad(Fuv0, Ev, Xe, xe, boplin0, numnode);  // at t_{n}
+  }
+
+  // integration loops over element domain
+  for (int ip=0; ip<intpoints.nquad; ++ip)
+  {
+    // Gaussian point and weight at it
+    const double xi1 = intpoints.qxg[ip][0];
+    const double xi2 = intpoints.qxg[ip][1];
+    const double wgt = intpoints.qwgt[ip];
+
+    // shape functions and their derivatives
+    DRT::UTILS::shape_function_2D(shpfct, xi1, xi2, distype);
+    DRT::UTILS::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
+
+    // compute Jacobian matrix
+    w1_jacobianmatrix(Xe, shpdrv, Xjm, &Xjdet, numnode);
+
+    // integration factor
+    double fac = wgt * Xjdet * thickness_;
+
+    // compute mass matrix
+    {
+      double facm = fac * density;
+      for (int a=0; a<numnode; a++)
+      {
+        for (int b=0; b<numnode; b++)
+        {
+          massmatrix(2*a,2*b) += facm * shpfct(a) * shpfct(b); /* a,b even */
+          massmatrix(2*a+1,2*b+1) += facm * shpfct(a) * shpfct(b); /* a,b odd  */
+        }
+      }
+    }
+
+    // calculate linear B-operator
+    w1_boplin(boplin, shpdrv, Xjm, Xjdet, numnode);
+
+    // calculate defgrad F^u, Green-Lagrange-strain E^u
+    w1_defgrad(Fuv, Ev, Xe, xe, boplin, numnode);  // at t_{n}
+
+    // calculate non-linear B-operator in current configuration
+    w1_boplin_cure(bop, boplin, Fuv, Wall1::numstr_, edof);  // at t_{n} // CHECK THIS: NOT SURE IF bopo NEEDED
+
+    // EAS: The deformation gradient is enhanced
+    if (iseas_)
+    {
+      // calculate the enhanced deformation gradient and
+      // also the operators G, W0 and Z
+      w1_call_defgrad_enh(Fenhv, Xjm0, Xjm, Xjdet0, Xjdet, Fuv0, *alphao, xi1, xi2, G, W0, boplin0, Z); // at t_{n}
+
+      // total deformation gradient F, and total Green-Lagrange-strain E
+      w1_call_defgrad_tot(Fenhv, Fm, Fuv, Ev);  // at t_{n}
+    }
+
+    // internal/strain energy
+    if (energies) (*energies)(1) += EnergyInternal(material, fac, Ev);
+  }  // end loop Gauss points
+
+  // kinetic energy
+  if (energies) (*energies)(0) += EnergyKinetic(massmatrix, vel);
+
+  // bye
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

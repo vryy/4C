@@ -374,6 +374,14 @@ namespace STR
 
     //@}
 
+    //! @name System vectors
+    //@{
+
+    //! Return external force \f$F_{ext,n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+
+    //@}
+
   protected:
 
     //! copy constructor is NOT wanted

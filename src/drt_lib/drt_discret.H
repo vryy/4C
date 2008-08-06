@@ -1045,6 +1045,16 @@ public:
   virtual void ComputeNullSpaceIfNecessary(ParameterList& solveparams,
                                            bool recompute = false);
 
+  /*!
+   * \brief Compute internal/strain and kinetic energy across elements
+   *
+   * \author bborn \date 08/08
+   */
+  void EvaluateEnergy(Teuchos::ParameterList& params,  /*!< parameters */
+                      double& energykin,               /*!< kinetic energy */
+                      double& energyint                /*!< internal energy */
+  );
+
   //@}
 
   //! @name IO methods

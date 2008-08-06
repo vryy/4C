@@ -115,6 +115,17 @@ namespace STR
 
     //@}
 
+    //! @name System vectors
+    //@{
+
+    //! Return external force \f$F_{ext,n}\f$
+    Teuchos::RCP<Epetra_Vector> Fext()
+    {
+      return fextn_;
+    }
+
+    //@}
+
   protected:
 
     //! Initialise
