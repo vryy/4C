@@ -111,8 +111,8 @@ public:
   long double Det_long();
 
   /*!
-  \brief Update matrix components with scaled values of A,
-         this = ScalarThis * this + ScalarA * A
+  \brief Update matrix components with scaled values of B,
+         this = ScalarThis * this + ScalarB * B
   \author bborn \date 08/08
   */
   void Update(
