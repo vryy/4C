@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file linalg_serialdensevector.cpp
 \brief A class that wraps Epetra_SerialDenseVector with minor modifications
        in the constructor
@@ -9,8 +10,8 @@ Maintainer: Michael Gee
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "linalg_serialdensevector.H"
@@ -136,5 +137,18 @@ int LINALG::SerialDenseVector::LightResize(int Length)
 }
 
 
+/*----------------------------------------------------------------------*
+ |   Update vector components with scaled values of B,                  |
+ |   this = ScalarThis * this + ScalarB * B         (public) bborn 08/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SerialDenseVector::Update(
+  const double& ScalarB,  /*!< scale for input vector */
+  const Epetra_SerialDenseVector& B,  /*!< input vector */
+  const double& ScalarThis  /*!< scale for this vector */
+)
+{
+  Scale(ScalarThis);
+  AXPY(M()*N(), ScalarB, B.A(), A());
+}
 
 #endif  // #ifdef CCADISCRET

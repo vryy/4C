@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file linalg_serialdensevector.H
 
 <pre>
@@ -7,8 +8,8 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef SERIALDENSEVECTOR_H
 #define SERIALDENSEVECTOR_H
@@ -31,6 +32,7 @@ class SerialDenseVector : public Epetra_SerialDenseVector
 public:
 
   //! @name Constructors and destructors and related methods
+  //@{
 
   /*!
   \brief Standard Constructor wrapping
@@ -90,6 +92,21 @@ public:
   */
   virtual ~SerialDenseVector();
 
+  //@}
+
+  //! @name Mathematical methods
+  //@{
+
+  /*!
+  \brief Update vector components with scaled values of B,
+         this = ScalarThis * this + ScalarB * B
+  \author bborn \date 08/08
+  */
+  void Update(
+    const double& ScalarB,  /*!< scale input vector with */
+    const Epetra_SerialDenseVector& B,  /*!< input vector */
+    const double& ScalarThis  /*!< scale this vector with */
+  );
 
   //@}
 
