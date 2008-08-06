@@ -925,12 +925,16 @@ static void currentToLineElementCoordinatesT(
     DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
       
     // compute nonlinear system
-    static BlitzVec3 F = 0.0;
+    static BlitzVec3 F;
     // compute first derivative of r  
-    static BlitzVec3 F_deriv1 = 0.0;
+    static BlitzVec3 F_deriv1;
     // compute first derivative of r  
-    static BlitzVec3 F_deriv2 = 0.0;
+    static BlitzVec3 F_deriv2;
         
+    F = 0.0;
+    F_deriv1 = 0.0;
+    F_deriv2 = 0.0;
+    
     for(int i = 0; i < 3; i++)
       for(int inode = 0; inode < numNodes; inode++)
       {

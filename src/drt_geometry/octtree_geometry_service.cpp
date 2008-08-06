@@ -409,7 +409,7 @@ std::vector<int> GEO::getAdjacentSurfaceElementsToLine(
     }
 
   if(adjacentElements.size() > 2)
-    dserror("a surface line cannot have more than 2 adjacent surface elements");
+    dserror("more than two surfaces adjacent to a line - xfem coupling conditions might be not correct");
   
   if(adjacentElements.size() == 0)
       dserror("no adjacent surface elements found");

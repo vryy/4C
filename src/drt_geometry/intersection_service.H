@@ -53,7 +53,7 @@ namespace GEO
     //! named tolerance for easy search/grep
     const double                 TOLPLUS15 = 1e15;   
     //! large number to start computations of nearest distance in tree
-    const double                 LARGENUMBER = 1e18;
+    const double                 LARGENUMBER = 1e30;
     
     /*!
     \brief calculate a*a
