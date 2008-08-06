@@ -15,11 +15,10 @@ Maintainer: Ursula Mayer
 #ifndef OCTTREE_GEOMETRY_SERVICE_H_
 #define OCTTREE_GEOMETRY_SERVICE_H_
 
-#include <blitz/array.h>
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_xfem/intersection_service.H"
-#include "../drt_xfem/blitz_tiny_operation.H"
+#include "../drt_geometry/intersection_service.H"
+#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_geometry/vector_definitions.H"
 #include "../drt_geometry/octtree_nearestobject.H"
 #include "Teuchos_RefCountPtr.hpp"

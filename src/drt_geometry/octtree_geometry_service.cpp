@@ -11,8 +11,8 @@ Maintainer: Ursula Mayer
 </pre>
  */
 #ifdef CCADISCRET
-#include "../drt_geometry/octtree_geometry_service.H"
-#include "../drt_xfem/intersection_service.H"
+#include "octtree_geometry_service.H"
+#include "intersection_service.H"
 #include "../drt_lib/drt_utils.H"
 
 

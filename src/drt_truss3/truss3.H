@@ -36,7 +36,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 
 #include <blitz/array.h>
-#include "../drt_xfem/blitz_tiny_operation.H"
+#include "../drt_geometry/blitz_tiny_operation.H"
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6

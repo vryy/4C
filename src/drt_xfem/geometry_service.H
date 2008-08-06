@@ -15,10 +15,10 @@ Maintainer: Ursula Mayer
 #ifndef GEOMETRY_SERVICE_H_
 #define GEOMETRY_SERVICE_H_
 
-#include "blitz_tiny_operation.H"
+#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_geometry/vector_definitions.H"
 #include "../drt_lib/drt_discret.H"
-#include "intersection_service.H"
+#include "../drt_geometry/intersection_service.H"
 
 namespace XFEM
 {

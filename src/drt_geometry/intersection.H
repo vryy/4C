@@ -16,13 +16,13 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_H
 
 
-#include "../drt_xfem/intersection_interfacepoint.H"
-#include "../drt_xfem/intersection_service.H"
-#include "../drt_xfem/intersection_math.H"
-#include "../drt_xfem/integrationcell.H"
+#include "intersection_interfacepoint.H"
+#include "intersection_service.H"
+#include "intersection_math.H"
+#include "integrationcell.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
-#include "tetgen.h"
+#include "../drt_tetgen/tetgen.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 

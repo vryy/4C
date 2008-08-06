@@ -37,7 +37,7 @@ using namespace Teuchos;
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
 #include <blitz/array.h>
-#include "../drt_xfem/blitz_tiny_operation.H"
+#include "../drt_geometry/blitz_tiny_operation.H"
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3

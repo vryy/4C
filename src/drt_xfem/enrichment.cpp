@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "enrichment.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
-#include "intersection_service.H"
+#include "../drt_geometry/intersection_service.H"
 #include "interface.H"
 #include <string>
 #include <sstream>

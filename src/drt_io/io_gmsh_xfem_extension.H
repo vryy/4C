@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "../drt_xfem/integrationcell.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"

@@ -12,7 +12,7 @@ Maintainer: Ursula Mayer
  */
 #ifdef CCADISCRET
 #include "octtree.H"
-#include "../drt_xfem/intersection_service.H"
+#include "intersection_service.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
 #include <Teuchos_TimeMonitor.hpp>

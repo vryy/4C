@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
-#include "integrationcell.H"
+#include "../drt_geometry/integrationcell.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {

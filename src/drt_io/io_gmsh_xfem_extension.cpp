@@ -18,8 +18,8 @@ Maintainer: Axel Gerstenberger
 
 #include "io_gmsh.H"
 #include "io_gmsh_xfem_extension.H"
-#include "../drt_xfem/integrationcell.H"
-#include "../drt_xfem/intersection_service.H"
+#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/intersection_service.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 

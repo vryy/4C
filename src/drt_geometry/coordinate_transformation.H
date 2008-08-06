@@ -20,9 +20,9 @@ Maintainer: Axel Gerstenberger
 #define COORDINATE_TRANSFORMATION_H
 
 #include <math.h>
-#include "../drt_geometry/vector_definitions.H"
-#include "../drt_xfem/integrationcell.H"
-#include "../drt_xfem/blitz_tiny_operation.H"
+#include "vector_definitions.H"
+#include "integrationcell.H"
+#include "blitz_tiny_operation.H"
 
 
 namespace XFEM

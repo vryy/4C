@@ -17,10 +17,10 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/dofkey.H"
-#include "../drt_xfem/blitz_tiny_operation.H"
+#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Epetra_SerialDenseSolver.h>
-#include "../drt_xfem/coordinate_transformation.H"
+#include "../drt_geometry/coordinate_transformation.H"
 
 
 class DRT::Discretization;

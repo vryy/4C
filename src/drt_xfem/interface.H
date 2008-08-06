@@ -19,8 +19,8 @@ Maintainer: Axel Gerstenberger
 #include <set>
 #include <string>
 
-#include "integrationcell.H"
-#include "intersection.H"
+#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/intersection.H"
 #include "xfsi_searchtree.H"
 #include "../drt_geometry/octtree.H"
 #include "../drt_geometry/octtree_geometry_service.H"

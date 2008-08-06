@@ -12,7 +12,7 @@ Maintainer: Ursula Mayer
  */
 #ifdef CCADISCRET
 #include "geometry_service.H"
-#include "intersection_service.H"
+#include "../drt_geometry/intersection_service.H"
 #include "../drt_lib/drt_utils.H"
 
 using namespace std;

@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "enrichment.H"
 #include "field_enriched.H"
 #include "dofkey.H"
-#include "integrationcell.H"
+#include "../drt_geometry/integrationcell.H"
 
 class DRT::Discretization;
 class XFEM::InterfaceHandle;
