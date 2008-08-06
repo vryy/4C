@@ -36,9 +36,10 @@ extern struct _FILES  allfiles;
  |  Visualize node projections with gmsh                      popp 01/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
-                                       const int step, const int iter)
+                                       const int step, const int iter, const bool fric)
 {
   // construct unique filename for gmsh output
+  // first index = time step index
   std::ostringstream filename;
   filename << "o/gmsh_output/" << allfiles.outputfile_kenner << "_";
   if (step<10)
@@ -53,6 +54,8 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
     dserror("Gmsh output implemented for a maximum of 99.999 time steps");
   filename << step;
   
+  // construct unique filename for gmsh output
+  // second index = Newton iteration index
 #ifdef CONTACTGMSH2
   filename << "_";
   if (iter<10)
@@ -85,7 +88,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
-        double area = element->Area();
+        //double area = element->Area();
 
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
@@ -95,7 +98,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
           gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << ")";
-          gmshfilecontent << "{" << scientific << area << "," << area << "};" << endl;
+          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
         }
 
         // 2D quadratic case (3noded line elements)
@@ -107,14 +110,14 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                               << coord(2,2) << ")";
-          gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
+          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
         }
       }
 
       // plot normal vectors
-      for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
+      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
-        int gid = snodecolmap_->GID(i);
+        int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         CNode* cnode = static_cast<CNode*>(node);
@@ -126,7 +129,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
          for (int j=0;j<3;++j)
          {
            nc[j]=cnode->xspatial()[j];
-           nn[j]=3*cnode->n()[j]; // 2.9 because of gmsh color bar (3 procs(
+           nn[j]=cnode->n()[j];
          }
 
          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
@@ -157,6 +160,47 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         }
       }
 
+      // plot contact status of slave nodes (inactive, active, stick, slip)
+      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+      {
+        int gid = snoderowmap_->GID(i);
+        DRT::Node* node = idiscret_->gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cnode = static_cast<CNode*>(node);
+        if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
+        
+        double nc[3];
+        for (int j=0;j<3;++j)
+          nc[j]=cnode->xspatial()[j];
+        
+        // frictionless contact, active node = {A}
+        if (!fric && cnode->Active())
+        {
+          gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+          gmshfilecontent << "{" << "A" << "};" << endl;
+        }
+        
+        // frictionless contact, inactive node = { }
+        else if (!fric && !cnode->Active())
+        {
+          //do nothing
+        }
+        
+        // frictional contact, slip node = {G}
+        else if (fric && cnode->Active() && cnode->Slip())
+        {
+          gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+          gmshfilecontent << "{" << "G" << "};" << endl;
+        }
+        
+        //frictional contact, stick node = {H}
+        else if (fric && cnode->Active() && !cnode->Slip())
+        {
+          gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+          gmshfilecontent << "{" << "H" << "};" << endl;
+        }
+      }
+      
       if (proc==comm_.NumProc()-1) gmshfilecontent << "};" << endl;
 
       // move everything to gmsh post-processing file and close it

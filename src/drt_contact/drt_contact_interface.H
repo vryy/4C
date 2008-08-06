@@ -562,7 +562,7 @@ public:
           
   */
   virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
-                             const int step, const int iter);
+                             const int step, const int iter, const bool fric);
   
   /*!
   \brief Return matrix of contact segment coordinates

@@ -3894,9 +3894,14 @@ void CONTACT::Manager::PrintActiveSet()
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::VisualizeGmsh(const int step, const int iter)
 {
+  //check for frictional contact
+  bool fric = false;
+  string ftype   = scontact_.get<string>("friction type","none");
+  if (ftype == "tresca" || ftype == "coulomb") fric=true;
+  
   // visualization with gmsh
   for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->VisualizeGmsh(interface_[i]->CSegs(),step,iter);
+    interface_[i]->VisualizeGmsh(interface_[i]->CSegs(),step,iter,fric);
 }
 
 #endif  // #ifdef CCADISCRET
