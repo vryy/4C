@@ -64,6 +64,12 @@ namespace FSI
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x);
+
   protected:
 
     /// setup solver for global block system
@@ -116,6 +122,15 @@ namespace FSI
     UTILS::MatrixRowColTransform fmgitransform_;
 
     ///@}
+
+    /// @name infnorm scaling
+
+    Teuchos::RCP<Epetra_Vector> srowsum_;
+    Teuchos::RCP<Epetra_Vector> scolsum_;
+    Teuchos::RCP<Epetra_Vector> arowsum_;
+    Teuchos::RCP<Epetra_Vector> acolsum_;
+
+    //@}
   };
 }
 

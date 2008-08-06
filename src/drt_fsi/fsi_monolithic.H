@@ -216,6 +216,12 @@ namespace UTILS
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x) {}
+
   protected:
 
     /// setup solver for global block system

@@ -29,6 +29,8 @@ namespace FSI
 
     virtual NOX::Abstract::Group::ReturnType computeJacobian();
 
+    NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
+
   private:
 
     ::FSI::Monolithic& mfsi_;

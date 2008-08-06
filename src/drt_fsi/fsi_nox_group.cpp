@@ -66,4 +66,14 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeJacobian()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::ParameterList& p)
+{
+  mfsi_.ScaleSystem(*mfsi_.SystemMatrix(),RHSVector.getEpetraVector());
+  NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
+  mfsi_.UnscaleSolution(*mfsi_.SystemMatrix(),NewtonVector.getEpetraVector());
+  return status;
+}
+
 #endif

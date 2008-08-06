@@ -85,6 +85,7 @@ namespace FSI
 
     //@}
 
+    /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
   };
 }

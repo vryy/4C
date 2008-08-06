@@ -4,6 +4,7 @@
 #include <Epetra_Time.h>
 
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
@@ -103,9 +104,9 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
     if (structuresplit_)
     {
-      const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
-      aleBoundOp.Multiply(false,*fy,*tmpax);
-      ax->Update(-1.0,*tmpax,1.0);
+//       const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
+//       aleBoundOp.Multiply(false,*fy,*tmpax);
+//       ax->Update(-1.0,*tmpax,1.0);
     }
     else
     {
@@ -142,23 +143,13 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
   if (Comm().MyPID()==0)
     std::cout << "\n";
 
-#if 0
-  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
-  Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-
-  structInnerOp.EpetraMatrix()->Apply(*sy,*tmpsx);
-  aleInnerOp.EpetraMatrix()->Apply(*ay,*tmpax);
-  fluidInnerOp.EpetraMatrix()->Apply(*fy,*tmpfx);
-
-  sx->Update(-1,*tmpsx,1);
-  ax->Update(-1,*tmpax,1);
-  fx->Update(-1,*tmpfx,1);
+#if 1
 
   double sn,an,fn;
-  sx->Norm2(&sn);
-  ax->Norm2(&an);
-  fx->Norm2(&fn);
+
+  sx->Dot(*sy,&sn);
+  ax->Dot(*ay,&an);
+  fx->Dot(*fy,&fn);
 
   if (Comm().MyPID()==0)
     std::cout << "    structural |res|: " << std::scientific << sn

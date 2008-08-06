@@ -7,6 +7,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
+#define scaling_infnorm true
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
@@ -224,6 +227,97 @@ void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
               FluidField().InitialGuess(),
               AleField().InitialGuess(),
               0.0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicOverlap::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+{
+  if (scaling_infnorm)
+  {
+    // The matrices are modified here. Do we have to change them back later on?
+
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*srowsum_);
+    A->InvColSums(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(2,2).EpetraMatrix();
+    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*arowsum_);
+    A->InvColSums(*acolsum_);
+    if (A->LeftScale(*arowsum_) or
+        A->RightScale(*acolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
+
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx,0,b);
+    Extractor().InsertVector(*ax,2,b);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x)
+{
+  if (scaling_infnorm)
+  {
+    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x,0);
+    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x,2);
+
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0))
+      dserror("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sy,0,x);
+    Extractor().InsertVector(*ay,2,x);
+
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_->Reciprocal(*srowsum_);
+    scolsum_->Reciprocal(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(2,2).EpetraMatrix();
+    arowsum_->Reciprocal(*arowsum_);
+    acolsum_->Reciprocal(*acolsum_);
+    if (A->LeftScale(*arowsum_) or
+        A->RightScale(*acolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+
+  }
 }
 
 
