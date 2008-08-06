@@ -36,9 +36,6 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_interpolation.H"
 
 
-// forward declarations
-struct _MATERIAL;
-
 namespace DRT
 {
   // forward declarations
@@ -46,22 +43,12 @@ namespace DRT
   
   namespace ELEMENTS
   {
-    // forward declarations
-    class XFluid3Surface;
-    class XFluid3Line;
-    class XFluid3Register;
     
     //! A fluid3 element with XFEM capabilities
     class XFluid3 : public DRT::Element
     {
       public:
         
-        //! @name Friends
-        friend class XFluid3Register;
-        friend class XFluid3Surface;
-        friend class XFluid3Line;
-        
-        //@}
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
@@ -331,8 +318,6 @@ namespace DRT
     class XFluid3Surface : public DRT::Element
     {
       public:
-        
-        friend class XFluid3Line;
         
         //! @name Constructors and destructors and related methods
         
