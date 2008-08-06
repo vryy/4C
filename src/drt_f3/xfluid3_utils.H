@@ -18,11 +18,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/dofkey.H"
 #include "../drt_xfem/blitz_tiny_operation.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "../drt_xfem/coordinate_transformation.H"
 
+
+class DRT::Discretization;
 
 namespace XFEM
 {

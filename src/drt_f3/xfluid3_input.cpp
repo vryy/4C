@@ -21,6 +21,10 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3.H"
 #include "../drt_lib/drt_utils.H"
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h" // for use of frchk,...
+}
 
 
 /*----------------------------------------------------------------------*
