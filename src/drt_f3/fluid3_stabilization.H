@@ -19,8 +19,7 @@
 #ifndef XFLUID3_STABILIZATION_H
 #define XFLUID3_STABILIZATION_H
 
-#include <blitz/array.h>
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 
 
 namespace XFLUID

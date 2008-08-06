@@ -12,7 +12,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_UTILS_H
 #define XFLUID3_UTILS_H
 
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"

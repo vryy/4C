@@ -22,10 +22,9 @@ Maintainer: Axel Gerstenberger
 #include <math.h>
 #include "xfluid3.H"
 #include "xfluid3_utils.H"
-#include <blitz/array.h>
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/coordinate_transformation.H"
@@ -133,10 +132,10 @@ static void Sysmat3(
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const Teuchos::RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-        const Teuchos::RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        EpMat&                         estif,         ///< element matrix to calculate
-        EpVec&                         eforce,        ///< element rhs to calculate
+        const Teuchos::RCP<Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+        const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
+        Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
+        Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
         const double                      ,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
@@ -1882,8 +1881,8 @@ void callSysmat3(
         const std::vector<double>&        locval_hist,
         const Teuchos::RCP<Epetra_Vector> ivelcol,
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
-        EpMat&                            estif,
-        EpVec&                            eforce,
+        Epetra_SerialDenseMatrix&         estif,
+        Epetra_SerialDenseVector&         eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt

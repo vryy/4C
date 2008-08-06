@@ -18,8 +18,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_LOCAL_ASSEMBLER_H
 #define XFLUID3_LOCAL_ASSEMBLER_H
 
-#include <blitz/array.h>
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 //#include "xfluid3_shapefunction_handle.H"
 
 
@@ -103,8 +102,8 @@ public:
     
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
-            EpMat& estif,
-            EpVec& eforce
+            Epetra_SerialDenseMatrix& estif,
+            Epetra_SerialDenseVector& eforce
             ) :
         dofman_(dofman),
         estif_(estif),
@@ -215,8 +214,8 @@ private:
     LocalAssembler(const LocalAssembler& old);
     
     const XFEM::ElementDofManager& dofman_;
-    EpMat& estif_;
-    EpVec& eforce_;
+    Epetra_SerialDenseMatrix& estif_;
+    Epetra_SerialDenseVector& eforce_;
 };
 
 /*!
@@ -231,8 +230,8 @@ public:
     
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
-            EpMat&                         estif,
-            EpVec&                         eforce
+            Epetra_SerialDenseMatrix&                         estif,
+            Epetra_SerialDenseVector&                         eforce
             ) :
         dofman_(dofman),
         estif_(estif),
@@ -292,8 +291,8 @@ private:
     LocalAssembler(const LocalAssembler& old);
     
     const XFEM::ElementDofManager& dofman_;
-    EpMat& estif_;
-    EpVec& eforce_;
+    Epetra_SerialDenseMatrix& estif_;
+    Epetra_SerialDenseVector& eforce_;
 };
 
   
