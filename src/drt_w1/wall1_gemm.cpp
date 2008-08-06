@@ -449,10 +449,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   C_red(2,0) = C(2,0);  C_red(2,1) = C(2,1);  C_red(2,2) = C(2,2);
 
   // FdotC (4 x 3) : F_m . C 
-  LINALG::SerialDenseMatrix FmC(4,3,false);
+  LINALG::SerialDenseMatrix FmC(4,3,true);
   FmC.Multiply('N', 'N', 1.0, Fmm, C_red, 0.0);
 
   // FmCF (4 x 4) : ( F_m . C ) . F_{n+1}^T
+  memset(FmCF.A(), 0, FmCF.N()*FmCF.M()*sizeof(double));
   FmCF.Multiply('N', 'T', 1.0, FmC, Fm, 0.0);
 
   // BplusW (4 x edof) :  B_L + W0_{n+1}
@@ -461,11 +462,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   BplusW += W0;  // += W0_{n+1}
 
   // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),true);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmBW (4 x 8) : S_m . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix SmBW(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix SmBW(4,2*NumNode(),true);
   SmBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
@@ -499,11 +500,11 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(
 )
 {
   // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
-  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,true);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG (4 x 4) : S_m . G_{n+1}
-  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,true);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
@@ -553,11 +554,11 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   BplusW += W0;
 
   // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),true);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix SmGBW(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix SmGBW(4,2*NumNode(),true);
   SmGBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // k_{ad} (4 x 8) :
@@ -593,11 +594,11 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(
 )
 {
   // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
-  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix FmCFG(4,Wall1::neas_,true);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG : S_m  . G_{n+1}
-  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix SmG(4,Wall1::neas_,true);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // k_{aa} (4 x 4) :

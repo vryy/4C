@@ -397,6 +397,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
   IntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
+  IntParameter("RESEVRYENERGY",1,"write system energies every requested step",&sdyn);
   // Time loop control
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
   IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);

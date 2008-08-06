@@ -387,18 +387,19 @@ void DRT::ELEMENTS::Wall1::w1_kdd(const Epetra_SerialDenseMatrix& boplin,
       BplusW(i,j) = boplin(i,j) + W0(i,j);
 
   // Temp (4x3) = F*C
-  LINALG::SerialDenseMatrix Temp(4,3,false);
+  LINALG::SerialDenseMatrix Temp(4,3,true);
   Temp.Multiply('N','N',1.0,F_tot,C_red,0.0);
 
   // FCF^T (4x4) = Temp*F^T
+  memset(FCF.A(), 0, FCF.N()*FCF.M()*sizeof(double));
   FCF.Multiply('N','T',1.0,Temp,F_tot,0.0);
 
   // Temp1 (4x8) = FCF^T * (B+W0)
-  LINALG::SerialDenseMatrix Temp1(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix Temp1(4,2*NumNode(),true);
   Temp1.Multiply('N','N',1.0,FCF,BplusW,0.0);
 
   // Temp3 (4x8) = S*(B+W0)
-  LINALG::SerialDenseMatrix Temp3(4,2*NumNode(),false);
+  LINALG::SerialDenseMatrix Temp3(4,2*NumNode(),true);
   Temp3.Multiply('N','N',1.0,stress,BplusW,0.0);
 
   // Kdd = (B+W0)^T*FCF^T*(B+W0) + (B+W0)^T*S*(B+W0)
@@ -430,11 +431,11 @@ void DRT::ELEMENTS::Wall1::w1_kda(const Epetra_SerialDenseMatrix& FCF,
       BplusW(i,j) = boplin(i,j)+W0(i,j);
 
   // Temp1 = FCF^T*G
-  LINALG::SerialDenseMatrix Temp1(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix Temp1(4,Wall1::neas_,true);
   Temp1.Multiply('N','N',1.0,FCF,G,0.0);
 
   // Temp3 = S*(G)
-  LINALG::SerialDenseMatrix Temp3(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix Temp3(4,Wall1::neas_,true);
   Temp3.Multiply('N','N',1.0,stress,G,0.0);
 
   // Kda (8x4) = (B+W0)^T*FCF^T*G) + (B+W0)^T*S*G + PZ
@@ -464,11 +465,11 @@ void DRT::ELEMENTS::Wall1::w1_kaa(const Epetra_SerialDenseMatrix& FCF,
                                   const double fac)
 {
   // Temp1 = FCF*G
-  LINALG::SerialDenseMatrix Temp1(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix Temp1(4,Wall1::neas_,true);
   Temp1.Multiply('N','N',1.0,FCF,G,0.0);
 
   // Temp3 = S*G
-  LINALG::SerialDenseMatrix Temp3(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix Temp3(4,Wall1::neas_,true);
   Temp3.Multiply('N','N',1.0,stress,G,0.0);
 
   // Kaa = G^T*FCF^T*G + G^T*S*G
@@ -498,14 +499,14 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const Epetra_SerialDenseMatrix& W0,
       BplusW(i,j) = boplin(i,j) + W0(i,j);
 
   // Temp1 (8x1) = (BL+W0)^T*p_stress
-  LINALG::SerialDenseMatrix Temp1(2*NumNode(),1,false);
+  LINALG::SerialDenseMatrix Temp1(2*NumNode(),1,true);
   Temp1.Multiply('T','N',1.0,BplusW,p_stress,0.0);
 
   for (int i=0; i<2*NumNode(); i++)
     intforce(i) += fac*Temp1(i,0);
 
   // Temp2 = G^T*p_stress
-  LINALG::SerialDenseMatrix Temp2(Wall1::neas_,1,false);
+  LINALG::SerialDenseMatrix Temp2(Wall1::neas_,1,true);
   Temp2.Multiply('T','N',1.0,G,p_stress,0.0);
 
   for (int i=0; i<Wall1::neas_; i++)

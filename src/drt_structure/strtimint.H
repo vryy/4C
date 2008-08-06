@@ -443,6 +443,7 @@ namespace STR
     int writestrevery_;  //!< write stress/strain every given step
     enum StressEnum writestress_;  //!< stress output type
     enum StrainEnum writestrain_;  //!< strain output type
+    int writeenergyevery_;  //!< write system energy every given step
     //@}
 
     //! @name Damping

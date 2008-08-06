@@ -128,6 +128,7 @@ STR::TimInt::TimInt
   writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
   writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
   writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
+  writeenergyevery_(sdynparams.get<int>("RESEVRYENERGY")),
   damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
@@ -438,6 +439,12 @@ void STR::TimInt::OutputStep()
        and (step_%writestrevery_ == 0) )
   {
     OutputStressStrain(datawritten);
+  }
+
+  // output energy
+  if ( writeenergyevery_ and (step_%writeenergyevery_ == 0) )
+  {
+    //OutputEnergies();
   }
 
   // what's next?
