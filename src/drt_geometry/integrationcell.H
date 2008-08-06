@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/vector_definitions.H"
 
 
-namespace XFEM
+namespace GEO
 {
 
 /*!
@@ -162,9 +162,9 @@ private:
 };
 
 //! shortcut for a vector of DomainIntCells
-typedef std::vector<XFEM::DomainIntCell > DomainIntCells;
+typedef std::vector<GEO::DomainIntCell > DomainIntCells;
 //! shortcut for a set of DomainIntCells
-typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
+typedef std::set<GEO::DomainIntCell > DomainIntCellSet;
 
 
 /*!
@@ -255,9 +255,9 @@ private:
 };
 
 //! shortcut for a vector of BoundaryIntCells
-typedef std::vector<XFEM::BoundaryIntCell > BoundaryIntCells;
+typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
 //! shortcut for a set of BoundaryIntCells
-typedef std::set<XFEM::BoundaryIntCell > BoundaryIntCellSet;
+typedef std::set<GEO::BoundaryIntCell > BoundaryIntCellSet;
 
 }
 

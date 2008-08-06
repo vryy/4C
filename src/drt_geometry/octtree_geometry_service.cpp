@@ -31,8 +31,8 @@ BlitzMat3x2 GEO::getXAABBofDis(
   const BlitzVec3 pos = currentpositions.find(nodeid)->second;
   for(int dim=0; dim<3; ++dim)
   {
-    XAABB(dim, 0) = pos[dim] - XFEM::TOL7;
-    XAABB(dim, 1) = pos[dim] + XFEM::TOL7;
+    XAABB(dim, 0) = pos[dim] - GEO::TOL7;
+    XAABB(dim, 1) = pos[dim] + GEO::TOL7;
   }
 
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
@@ -40,9 +40,9 @@ BlitzMat3x2 GEO::getXAABBofDis(
   {
     const DRT::Element* element = dis.lColElement(j);
     const BlitzMat xyze_element(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
-    XFEM::EleGeoType eleGeoType(XFEM::HIGHERORDER);
+    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
-    BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(element, xyze_element, eleGeoType);
+    BlitzMat3x2 xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   
@@ -95,17 +95,17 @@ std::vector< BlitzMat3x2 > GEO::computeXAABBForLabeledStructures(
     const BlitzVec3 pos = currentpositions.find(nodeId)->second;
     for(int dim=0; dim<3; ++dim)
     {
-      xaabb_label(dim, 0) = pos[dim] - XFEM::TOL7;
-      xaabb_label(dim, 1) = pos[dim] + XFEM::TOL7;
+      xaabb_label(dim, 0) = pos[dim] - GEO::TOL7;
+      xaabb_label(dim, 1) = pos[dim] + GEO::TOL7;
     }
     // run over set elements
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
     {   
       const DRT::Element* element = dis.gElement(*eleIter);
       const BlitzMat xyze_element(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
-      XFEM::EleGeoType eleGeoType(XFEM::HIGHERORDER);
+      GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
       GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
-      BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(element, xyze_element, eleGeoType);
+      BlitzMat3x2 xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
       xaabb_label = mergeAABB(xaabb_label, xaabbEle);
     }
     XAABBs.push_back(xaabb_label);
@@ -140,7 +140,7 @@ int GEO::getXFEMLabel(
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
   
   // if fluid
-  if(scalarproduct > (-1)*XFEM::TOL7)
+  if(scalarproduct > (-1)*GEO::TOL7)
     label = 0;
 
   return label;
@@ -161,8 +161,8 @@ int GEO::nearestObjectInNode(
     GEO::NearestObject&                         nearestObject)
 {
   bool pointFound = false;
-  double min_distance = XFEM::LARGENUMBER;
-  double distance = XFEM::LARGENUMBER;
+  double min_distance = GEO::LARGENUMBER;
+  double distance = GEO::LARGENUMBER;
   BlitzVec3 normal = 0.0;
   BlitzVec3 x_surface = 0.0;
   std::map< int, std::set<int> > nodeList;
@@ -235,31 +235,31 @@ bool GEO::getDistanceToSurface(
     double&                                     distance)
 {
   bool pointFound = false;
-  double min_distance = XFEM::LARGENUMBER;
+  double min_distance = GEO::LARGENUMBER;
   BlitzVec3 distance_vector = 0.0;
   BlitzVec2 elecoord = 0.0; // starting value at element center
 
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
-  XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
+  GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
 
-  if(XFEM::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
+  if(GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
   { 
-    XFEM::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, x_surface_phys);
+    GEO::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
     distance_vector(0) = point(0) - x_surface_phys(0);
     distance_vector(1) = point(1) - x_surface_phys(1);
     distance_vector(2) = point(2) - x_surface_phys(2);
-    distance = XFEM::Norm2(distance_vector);
+    distance = GEO::Norm2(distance_vector);
     min_distance = distance;
     pointFound = true;
   }
 
   // if the element is curved
-  XFEM::EleGeoType eleGeoType = XFEM::HIGHERORDER;
+  GEO::EleGeoType eleGeoType = GEO::HIGHERORDER;
   checkRoughGeoType(surfaceElement, xyze_surfaceElement, eleGeoType);
 
   // TODO fix check if deformed in the linear case
-  if(eleGeoType == XFEM::HIGHERORDER)
+  if(eleGeoType == GEO::HIGHERORDER)
   {
     for(int i = 0; i < surfaceElement->NumNode(); i++)
     { 
@@ -267,17 +267,17 @@ bool GEO::getDistanceToSurface(
       for(int j = 0; j < 2; j++)
         elecoord(j) = DRT::UTILS::getEleNodeNumbering_nodes_reference(surfaceElement->Shape())[i][j];
 
-      XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
 
-      if( XFEM::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()) )
+      if( GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()) )
       { 
         BlitzVec3 physcoord = 0.0;
-        XFEM::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, physcoord);
+        GEO::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
         distance_vector(0) = point(0) - physcoord(0);
         distance_vector(1) = point(1) - physcoord(1);
         distance_vector(2) = point(2) - physcoord(2);
-        distance = XFEM::Norm2(distance_vector);
+        distance = GEO::Norm2(distance_vector);
         if(distance < min_distance)
         {
           x_surface_phys = physcoord;
@@ -304,31 +304,31 @@ bool GEO::getDistanceToLine(
     double&                                     distance)
 {
   bool pointFound = false;
-  double min_distance = XFEM::LARGENUMBER;
+  double min_distance = GEO::LARGENUMBER;
   BlitzVec3 distance_vector = 0.0;
   BlitzVec1 elecoord = 0.0; // starting value at element center  
 
   const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineElement, currentpositions));
   
-  XFEM::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
+  GEO::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
   
-  if(XFEM::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
+  if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
   { 
-    XFEM::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, x_line_phys);
+    GEO::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
     distance_vector(0) = point(0) - x_line_phys(0);
     distance_vector(1) = point(1) - x_line_phys(1);
     distance_vector(2) = point(2) - x_line_phys(2);
-    distance = XFEM::Norm2(distance_vector);
+    distance = GEO::Norm2(distance_vector);
     min_distance = distance;
     pointFound = true;
   }
 
   // if the element is curved
-  XFEM::EleGeoType eleGeoType = XFEM::HIGHERORDER;
+  GEO::EleGeoType eleGeoType = GEO::HIGHERORDER;
   checkRoughGeoType(lineElement, xyze_lineElement, eleGeoType);
 
-  if(eleGeoType == XFEM::HIGHERORDER)
+  if(eleGeoType == GEO::HIGHERORDER)
   {
     // use end nodes as starting values in addition
     for(int i = 0; i < 2; i++)
@@ -336,17 +336,17 @@ bool GEO::getDistanceToLine(
       // use end nodes as starting values in addition
       elecoord(0) = DRT::UTILS::getEleNodeNumbering_nodes_reference(lineElement->Shape())[i][0];
 
-      XFEM::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
+      GEO::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
 
-      if(XFEM::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()) )
+      if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()) )
       { 
         BlitzVec3 physcoord = 0.0;
-        XFEM::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, physcoord);
+        GEO::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
         distance_vector(0) = point(0) - physcoord(0);
         distance_vector(1) = point(1) - physcoord(1);
         distance_vector(2) = point(2) - physcoord(2);
-        distance = XFEM::Norm2(distance_vector);
+        distance = GEO::Norm2(distance_vector);
         if(distance < min_distance)
         {
           x_line_phys = physcoord;
@@ -384,7 +384,7 @@ void GEO::getDistanceToPoint(
   distance_vector(2) = point(2) - x_node(2);
 
   // absolute distance between point and node
-  distance = XFEM::Norm2(distance_vector);
+  distance = GEO::Norm2(distance_vector);
 }
 
 
@@ -433,16 +433,16 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
 
   switch (nearestObject.getObjectType()) 
   {
-  case GEO::SURFACE:
+  case GEO::SURFACE_OBJECT:
   { 
     BlitzVec2 elecoord = 0.0;
     const DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
     const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
-    XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
-    XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, normal);
+    GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
+    GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, normal);
     break;
   }
-  case GEO::LINE:
+  case GEO::LINE_OBJECT:
   {
     DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
     const std::vector<Teuchos::RCP<DRT::Element> > eleLines = surfaceElement->Lines();
@@ -457,14 +457,14 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
       BlitzVec2 eleCoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
       
-      XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), eleCoord);
-      XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, eleCoord, surface_normal);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), eleCoord);
+      GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, eleCoord, surface_normal);
       normal += surface_normal;
     }
     normal /= ((double) adjacentElements.size()); 
     break;
   }
-  case GEO::NODE:
+  case GEO::NODE_OBJECT:
   {
     const DRT::Node* node       = dis.gNode(nearestObject.getNodeId());
     // run over all elements adjacent ot a node
@@ -474,8 +474,8 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec2 elecoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
-      XFEM::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
-      XFEM::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, surface_normal);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
+      GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, surface_normal);
       normal += surface_normal;
     }
     normal /= ((double) node->NumElement()); 
@@ -519,8 +519,8 @@ bool GEO::inSameNodeBox(
   bool inSameNode = true;
   for(int i = 0; i < 3; i++)
   {
-    if( AABB_old(i,0) < (nodeBox(i,0)-XFEM::TOL7) || AABB_old(i,1) > (nodeBox(i,1)+XFEM::TOL7) ||
-        AABB_new(i,0) < (nodeBox(i,0)-XFEM::TOL7) || AABB_new(i,1) > (nodeBox(i,1)+XFEM::TOL7)  )
+    if( AABB_old(i,0) < (nodeBox(i,0)-GEO::TOL7) || AABB_old(i,1) > (nodeBox(i,1)+GEO::TOL7) ||
+        AABB_new(i,0) < (nodeBox(i,0)-GEO::TOL7) || AABB_new(i,1) > (nodeBox(i,1)+GEO::TOL7)  )
     {
       inSameNode = false;
       break;
@@ -539,14 +539,14 @@ bool GEO::inSameNodeBox(
 void GEO::checkRoughGeoType(
     const DRT::Element*          element,
     const BlitzMat               xyze_element,
-    XFEM::EleGeoType&            eleGeoType)
+    GEO::EleGeoType&            eleGeoType)
 {
   const DRT::Element::DiscretizationType distype = element->Shape();
 
   if(DRT::UTILS::getOrder(distype) ==1)
-    eleGeoType = XFEM::LINEAR;  //TODO check for bilinear elements in the tree they count as higerorder fix it
+    eleGeoType = GEO::LINEAR;  //TODO check for bilinear elements in the tree they count as higerorder fix it
   else if(DRT::UTILS::getOrder(distype)==2)
-    eleGeoType = XFEM::HIGHERORDER;
+    eleGeoType = GEO::HIGHERORDER;
   else
     dserror("order of element is not correct");
 

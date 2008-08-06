@@ -1198,9 +1198,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
-        const XFEM::DomainIntCells& domainintcells =
+        const GEO::DomainIntCells& domainintcells =
           ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
-        for (XFEM::DomainIntCells::const_iterator cell =
+        for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -1544,9 +1544,9 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         if (!ihForOutput_->ElementIntersected(elegid))
         {
-          const XFEM::DomainIntCells& domainintcells =
+          const GEO::DomainIntCells& domainintcells =
             ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
-          for (XFEM::DomainIntCells::const_iterator cell =
+          for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
             BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -1561,10 +1561,10 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
         else
         {
-          const XFEM::BoundaryIntCells& boundaryintcells =
+          const GEO::BoundaryIntCells& boundaryintcells =
             ihForOutput_->GetBoundaryIntCells(elegid);
           // draw boundary integration cells with values
-          for (XFEM::BoundaryIntCells::const_iterator cell =
+          for (GEO::BoundaryIntCells::const_iterator cell =
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
             {
@@ -1582,7 +1582,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           // draw uncutted element
           {
             BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
-            const XFEM::DomainIntCell cell(actele->Shape());
+            const GEO::DomainIntCell cell(actele->Shape());
             elevalues = 0.0;
 //            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
 //                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);

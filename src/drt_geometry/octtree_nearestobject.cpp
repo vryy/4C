@@ -19,7 +19,7 @@ Maintainer: Ursula Mayer
  |  ctor (public)                                            u.may 08/08|
  *----------------------------------------------------------------------*/
 GEO::NearestObject::NearestObject():
-objectType_(NOTYPE),
+objectType_(NOTYPE_OBJECT),
 nodeId_(-1),
 lineId_(-1),
 surfId_(-1),
@@ -54,7 +54,7 @@ void GEO::NearestObject::setNodeObjectType(
       const int label,
       const BlitzVec3& physcoord)
 {
-  objectType_ = NODE;
+  objectType_ = NODE_OBJECT;
   nodeId_ = nodeId;
   label_ = label;
   physcoord_ = physcoord;
@@ -74,7 +74,7 @@ void GEO::NearestObject::setLineObjectType(
       const int label,
       const BlitzVec3& physcoord)
 {
-  objectType_ = LINE;
+  objectType_ = LINE_OBJECT;
   lineId_ = lineId;
   surfId_ = surfId;
   label_ = label;
@@ -94,7 +94,7 @@ void GEO::NearestObject::setSurfaceObjectType(
       const int label,
       const BlitzVec3& physcoord)
 {
-  objectType_ = SURFACE;
+  objectType_ = SURFACE_OBJECT;
   surfId_ = surfId;
   label_ = label;
   physcoord_ = physcoord;

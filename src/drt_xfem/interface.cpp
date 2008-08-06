@@ -42,7 +42,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
-  XFEM::Intersection is;
+  GEO::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, currentcutterpositions_,elementalDomainIntCells_, elementalBoundaryIntCells_);
   
 //  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
@@ -53,7 +53,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   }
   
   // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,DomainIntCells>::const_iterator 
+  for (std::map<int,GEO::DomainIntCells>::const_iterator 
       tmp = elementalDomainIntCells_.begin();
       tmp != elementalDomainIntCells_.end();
       ++tmp)
@@ -62,7 +62,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   }
   
   // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,BoundaryIntCells>::const_iterator 
+  for (std::map<int,GEO::BoundaryIntCells>::const_iterator 
       tmp = elementalBoundaryIntCells_.begin();
       tmp != elementalBoundaryIntCells_.end();
       ++tmp)
@@ -131,12 +131,12 @@ std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() cons
   std::set<int> ele_to_delete;
 
   // find unintersected elements and put their Id them in aboves set
-  std::map<int, DomainIntCells >::const_iterator entry;
+  std::map<int,GEO::DomainIntCells >::const_iterator entry;
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
-    const DomainIntCells cells = entry->second;
+    const GEO::DomainIntCells cells = entry->second;
     DRT::Element* xfemele = xfemdis_->gElement(entry->first);
-    DomainIntCells::const_iterator cell;
+    GEO::DomainIntCells::const_iterator cell;
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
     for (cell = cells.begin(); cell != cells.end(); ++cell)
@@ -209,8 +209,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         DRT::Element* actele = xfemdis_->lColElement(i);
-        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-        XFEM::DomainIntCells::const_iterator cell;
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
           
@@ -248,8 +248,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         DRT::Element* actele = xfemdis_->lColElement(i);
-        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-        XFEM::DomainIntCells::const_iterator cell;
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
           
@@ -283,17 +283,17 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
+GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
     const int gid,
     const DRT::Element::DiscretizationType distype
 ) const
 {
-  std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
   if (tmp == elementalDomainIntCells_.end())
   {   
     // create default set with one dummy DomainIntCell of proper size
-    XFEM::DomainIntCells cells;
-    cells.push_back(XFEM::DomainIntCell(distype));
+    GEO::DomainIntCells cells;
+    cells.push_back(GEO::DomainIntCell(distype));
     return cells;
   }
   return tmp->second;
@@ -302,15 +302,15 @@ XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
+GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
     const int gid
 ) const
 {
-  std::map<int,XFEM::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
+  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
   if (tmp == elementalBoundaryIntCells_.end())
   {   
     // return empty list
-    return XFEM::BoundaryIntCells();
+    return GEO::BoundaryIntCells();
   }
   return tmp->second;
 }
@@ -395,7 +395,7 @@ int XFEM::PositionWithinConditionBruteForce(
       double distance = 0.0;
       BlitzVec2 eleCoord;
       BlitzVec3 normal;
-      in_element = searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
+      in_element = GEO::searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
       if (in_element)
       {
         if (abs(distance) < abs(min_ele_distance))

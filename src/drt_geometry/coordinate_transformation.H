@@ -24,8 +24,8 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "blitz_tiny_operation.H"
 
-
-namespace XFEM
+//! geometry related things
+namespace GEO
 {
   
   typedef BlitzVec3 PosX;             ///< position in physical coordinates (x,y,z)
@@ -38,7 +38,7 @@ namespace XFEM
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>
   inline void mapEtaToXi3D(
-      const XFEM::DomainIntCell& cell,
+      const GEO::DomainIntCell& cell,
       const PosEtaDomain&  pos_eta_domain,
       PosXiDomain&  pos_xsi_domain
       )
@@ -66,7 +66,7 @@ namespace XFEM
   //! map position from eta to xi space
   template<> 
   inline void mapEtaToXi3D<XFEM::standard_assembly>(
-      const XFEM::DomainIntCell&,
+      const GEO::DomainIntCell&,
       const PosEtaDomain&  pos_eta_domain,
       PosXiDomain&  pos_xsi_domain
       )
@@ -81,8 +81,8 @@ namespace XFEM
   //! get determinante between eta and xi space
   template<XFEM::AssemblyType ASSTYPE>
   inline double detEtaToXi3D(
-      const XFEM::DomainIntCell& cell,
-      const XFEM::PosEtaDomain&  pos_eta
+      const GEO::DomainIntCell& cell,
+      const GEO::PosEtaDomain&  pos_eta
       )
   {   
     // get node coordinates
@@ -120,8 +120,8 @@ namespace XFEM
   //! get determinante between eta and xi space
   template<>
   inline double detEtaToXi3D<XFEM::standard_assembly>(
-      const XFEM::DomainIntCell&,
-      const XFEM::PosEtaDomain&
+      const GEO::DomainIntCell&,
+      const GEO::PosEtaDomain&
       )
   {   
     return 1.0;
@@ -132,9 +132,9 @@ namespace XFEM
   //
   //! map position from eta^boundary to xi^boundary space
   inline void mapEtaBToXiB(
-      const XFEM::BoundaryIntCell& cell,
-      const XFEM::PosEtaBoundary&  pos_eta,
-      XFEM::PosXiBoundary&         pos_xsi_boundary
+      const GEO::BoundaryIntCell& cell,
+      const GEO::PosEtaBoundary&  pos_eta,
+      GEO::PosXiBoundary&         pos_xsi_boundary
   )
   {   
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
@@ -149,16 +149,16 @@ namespace XFEM
     // translate position into from cell coordinates to element coordinates
     //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
-    //XFEM::PosXiBoundary pos_xsi_boundary;
+    //GEO::PosXiBoundary pos_xsi_boundary;
     BLITZTINY::MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
     return;
   }
   
   //! map position from eta^boundary to xi^domain space
   inline void mapEtaBToXiD(
-      const XFEM::BoundaryIntCell&  cell,
-      const XFEM::PosEtaBoundary&   pos_eta,
-      XFEM::PosXiDomain&            pos_xsi_domain
+      const GEO::BoundaryIntCell&  cell,
+      const GEO::PosEtaBoundary&   pos_eta,
+      GEO::PosXiDomain&            pos_xsi_domain
   )
   {   
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
@@ -182,8 +182,8 @@ namespace XFEM
   
   //! get determinante between \f$\eta^{\Gamma (e)}\f$ and \f$\xi^{\Gamma (e)}\f$ space
   inline double detEtaBToXiB(
-      const XFEM::BoundaryIntCell& cell,
-      const XFEM::PosEtaBoundary&  pos_eta)
+      const GEO::BoundaryIntCell& cell,
+      const GEO::PosEtaBoundary&  pos_eta)
   {   
     // get node coordinates
     const BlitzMat* xiBe_cell(cell.NodalPosXiBoundaryBlitz());

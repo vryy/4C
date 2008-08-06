@@ -244,7 +244,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzVec& elementvalues,
   BlitzVec&      cellvalues
@@ -291,7 +291,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzVec& elementvalues,
   BlitzVec&      cellvalues
@@ -347,7 +347,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&      cellvalues
@@ -406,7 +406,7 @@ void XFEM::computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&      cellvalues
@@ -474,7 +474,7 @@ void XFEM::computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::BoundaryIntCell& cell,
+  const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&      cellvalues
@@ -551,9 +551,9 @@ double DomainCoverageRatioT(
     double area_fict = 0.0;
     
     // information about domain integration cells
-    const XFEM::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
+    const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
     // loop over integration cells
-    for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
       DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
@@ -583,15 +583,15 @@ double DomainCoverageRatioT(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static XFEM::PosEtaDomain pos_eta_domain;
+            static GEO::PosEtaDomain pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiDomain posXiDomain;
-            XFEM::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
-            const double detcell = XFEM::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
+            static GEO::PosXiDomain posXiDomain;
+            GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
             static blitz::TinyVector<double,numnode> funct;
@@ -601,13 +601,13 @@ double DomainCoverageRatioT(
       
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            XFEM::BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -624,7 +624,7 @@ double DomainCoverageRatioT(
 
             // inverse of jacobian
             static BlitzMat3x3 xji;
-            XFEM::Inverse3x3(xjm, det, xji);
+            GEO::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
             static blitz::TinyMatrix<double,nsd,numnode> derxy;

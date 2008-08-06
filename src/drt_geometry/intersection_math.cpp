@@ -29,7 +29,7 @@ Maintainer: Ursula Mayer
 
 
 
-void XFEM::test_svdcmp(
+void GEO::test_svdcmp(
     BlitzMat&   A,
     BlitzMat&   U,
     BlitzVec&   W,

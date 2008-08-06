@@ -331,9 +331,9 @@ void XFEM::XSearchTree::TreeNode::doOverlapCheck(const std::map<int,BlitzVec3>& 
   AABBs.push_back(AABB_);
   for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
     const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(*myIt,currentpositions));
-    XFEM::EleGeoType eleGeoType(HIGHERORDER);
-    XFEM::checkRoughGeoType(*myIt, xyze, eleGeoType);
-    AABBs.push_back(XFEM::computeFastXAABB(*myIt, xyze, eleGeoType));
+    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+    checkRoughGeoType(*myIt, xyze, eleGeoType);
+    AABBs.push_back(GEO::computeFastXAABB(*myIt, xyze, eleGeoType));
   }
   const double AABBcoverage = XFEM::getOverlapArea(AABBs)/XFEM::getVolume(AABB_);
   if (AABBcoverage > tree_->MAX_OVERLAP_ALLOWED_){
@@ -502,9 +502,9 @@ list<int> XFEM::XSearchTree::TreeNode::classifyElement(
 {
   
   const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(elem,currentpositions));
-  XFEM::EleGeoType eleGeoType(HIGHERORDER);
-  XFEM::checkRoughGeoType(elem, xyze, eleGeoType);
-  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze, eleGeoType));  
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+  checkRoughGeoType(elem, xyze, eleGeoType);
+  const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(elem, xyze, eleGeoType));  
   return classifyAABB(elemXAABB);
   
 }

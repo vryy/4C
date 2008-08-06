@@ -369,7 +369,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew_, co
 //computing spin matrix out of a rotation vector
 inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale)
 {
-  XFEM::BLITZTINY::V_scale<3>(rotationangle,spinscale);
+  BLITZTINY::V_scale<3>(rotationangle,spinscale);
   spin(0,0) = 0;
   spin(0,1) = -rotationangle(2);
   spin(0,2) = rotationangle(1);
@@ -430,7 +430,7 @@ inline void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, 
   
   computespin(Sn,stressn, 0.5); 
   computespin(Sx21,x21, 0.25);
-  XFEM::BLITZTINY::MM_product<3,3,3>(Sx21,Sn,Y);
+  BLITZTINY::MM_product<3,3,3>(Sx21,Sn,Y);
 
   for (int i=0; i<3; ++i)
   {
@@ -516,21 +516,21 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
   computespin(Saux,deltabetaplusalpha, 0.5);
   computerotation(Raux,Saux);
-  XFEM::BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tnew_);
+  BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tnew_);
 
   //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
   computespin(Saux,deltabetaplusalpha, 0.25);
   computerotation(Raux,Saux);
-  XFEM::BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tmid_);
+  BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tmid_);
 
   //updating curvature, Crisfield, Vol. 2, equation (17.72)
-  XFEM::BLITZTINY::MtV_product<3,3>(Tmid_,deltabetaminusalpha,curvnew_);
-  XFEM::BLITZTINY::V_scale<3>(curvnew_,1/lrefe_);
+  BLITZTINY::MtV_product<3,3>(Tmid_,deltabetaminusalpha,curvnew_);
+  BLITZTINY::V_scale<3>(curvnew_,1/lrefe_);
   curvnew_ += curvold_;
 
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
-  XFEM::BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
-  XFEM::BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
+  BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
+  BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
   epsilonn(0) -=  1;
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
@@ -564,14 +564,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   epsilonn(0) *= ym*crosssec_;
   epsilonn(1) *= sm*crosssecshear_;
   epsilonn(2) *= sm*crosssecshear_;
-  XFEM::BLITZTINY::MV_product<3,3>(Tnew_,epsilonn,stressn);  
+  BLITZTINY::MV_product<3,3>(Tnew_,epsilonn,stressn);  
 
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
   epsilonm(0) *= sm*Irr_;
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
-  XFEM::BLITZTINY::MV_product<3,3>(Tnew_,epsilonm,stressm); 
+  BLITZTINY::MV_product<3,3>(Tnew_,epsilonm,stressm); 
   
   //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
   BlitzMat3x3 spinx21;

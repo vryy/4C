@@ -15,7 +15,6 @@ Maintainer: Ursula Mayer
 #ifndef GEOMETRY_SERVICE_H_
 #define GEOMETRY_SERVICE_H_
 
-#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_geometry/vector_definitions.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/intersection_service.H"
@@ -23,7 +22,7 @@ Maintainer: Ursula Mayer
 namespace XFEM
 {
 
-  //! this proporty decides which distance algorithm is used
+  //! this property decides which distance algorithm is used
   enum DistanceType {ELEMENT_SURFACE, ELEMENT_LINE, ELEMENT_POINT};
 
   /*!
@@ -140,7 +139,7 @@ namespace XFEM
   void checkRoughGeoType(
       const DRT::Element*                     element, ///< element
       const BlitzMat                          xyze_element,///< actual point positions in element
-      XFEM::EleGeoType&                       eleGeoType ///> geometry type
+      GEO::EleGeoType&                       eleGeoType ///> geometry type
       );
   
   

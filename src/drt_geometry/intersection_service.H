@@ -25,11 +25,11 @@ Maintainer: Ursula Mayer
 #include "blitz_tiny_operation.H"
 
 
-namespace XFEM
+namespace GEO
 {
 
-  //! based on this element property, one can speed up geometry algorithms 
-  enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
+    //! based on this element property, one can speed up geometry algorithms 
+    enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
 
     //! tolerance used for residuals in Newton-methods
     const double                 TOL14 = 1e-14;
@@ -401,7 +401,7 @@ namespace XFEM
         case DRT::Element::line2: case DRT::Element::line3:    
         {
           for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
-            if(eleCoord(i) > (1.0+XFEM::TOL7) || eleCoord(i) < (-1)*(1.0+XFEM::TOL7) ) 
+            if(eleCoord(i) > (1.0+GEO::TOL7) || eleCoord(i) < (-1)*(1.0+GEO::TOL7) ) 
             {
               nodeWithinElement = false;
               break;

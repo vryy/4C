@@ -484,58 +484,58 @@ std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
   std::vector<int> octants;
 
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - XFEM::TOL7) ) 
+  if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - XFEM::TOL7) ) 
+    if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
     {
       // check max_z greater than z-plane
-      if (AABB(2, 1) > (zPlaneCoordinate_ - XFEM::TOL7) )
+      if (AABB(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
         octants.push_back(7);
 
       // check min_z less than z-plane
-      if (AABB(2, 0) < (zPlaneCoordinate_ + XFEM::TOL7) )
+      if (AABB(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
         octants.push_back(6);
     }
     
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + XFEM::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
     {
       // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         octants.push_back(4);
       
       // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
         octants.push_back(5);
 
     }
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < ( xPlaneCoordinate_ + XFEM::TOL7) ) 
+  if (AABB(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < ( yPlaneCoordinate_ + XFEM::TOL7) ) 
+    if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
     {
       // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         octants.push_back(0);
       
       // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
         octants.push_back(1);
     }
     
     // check max_y greater than y-plane
-    if (AABB(1, 1) > ( yPlaneCoordinate_ - XFEM::TOL7) ) 
+    if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
     {
       // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - XFEM::TOL7) )
+      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
         octants.push_back(3);
       
       // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + XFEM::TOL7) )
+      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
         octants.push_back(2);
 
     }
@@ -554,9 +554,9 @@ std::vector<int> GEO::OctTree::TreeNode::classifyElement(
     ) const
 {
   const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
-  XFEM::EleGeoType eleGeoType(XFEM::HIGHERORDER);
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze, eleGeoType);
-  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(element, xyze, eleGeoType));  
+  const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(element, xyze, eleGeoType));  
   return classifyXAABB(elemXAABB);
 }
 

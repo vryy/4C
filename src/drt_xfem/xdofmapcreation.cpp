@@ -51,9 +51,9 @@ void XFEM::createDofMap(
 
       if (ih.ElementIntersected(element_gid))
       {
-        const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
+        const GEO::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
         bool has_label = false;
-        for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+        for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
         {
           const int surface_ele_gid = bcell->GetSurfaceEleGid();
           const int label_for_current_bele = labelPerElementId.find(surface_ele_gid)->second;

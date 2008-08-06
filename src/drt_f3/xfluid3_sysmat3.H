@@ -223,10 +223,10 @@ static void Sysmat3(
     const double mk = XFLUID::MK<DISTYPE>();
     
     // information about domain integration cells
-    const XFEM::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele->Id(),DISTYPE));
+    const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele->Id(),DISTYPE));
     //cout << "Element "<< ele->Id() << ": ";
     // loop over integration cells
-    for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
         TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
@@ -249,15 +249,15 @@ static void Sysmat3(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static XFEM::PosEtaDomain pos_eta_domain;
+            static GEO::PosEtaDomain pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiDomain posXiDomain;
-            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
-            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+            static GEO::PosXiDomain posXiDomain;
+            GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
             static BlitzVec funct(numnode);
@@ -300,13 +300,13 @@ static void Sysmat3(
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            XFEM::BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            XFEM::BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -323,7 +323,7 @@ static void Sysmat3(
 
             // inverse of jacobian
             static BlitzMat3x3 xji;
-            XFEM::Inverse3x3(xjm, det, xji);
+            GEO::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
             static BlitzMat derxy(3, numnode);
@@ -754,7 +754,7 @@ static void Sysmat3(
             /* Convective term  u_old * grad u_old: */
             static BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
-            XFEM::BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
+            BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
             static BlitzVec3 visc_old;
@@ -1466,11 +1466,11 @@ static void Sysmat3(
         if (tauele_unknowns_present){
     
     // information about boundary integration cells
-    const XFEM::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+    const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
     
     
     // loop over boundary integration cells
-    for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
+    for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
 
         TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
@@ -1511,21 +1511,21 @@ static void Sysmat3(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            static XFEM::PosEtaBoundary pos_eta_boundary;
+            static GEO::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
 //            cout << pos_eta_boundary << endl;
             
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiBoundary posXiBoundary;
+            static GEO::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             //cout << posXiBoundary << endl;
             
-            static XFEM::PosXiDomain posXiDomain;
+            static GEO::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 //            cout << cell->toString() << endl;
 //            cout << posXiDomain << endl;
-            const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
+            const double detcell = fabs(GEO::detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
             if (detcell <= 0.0)
             {
               cout << "detcel :  " << detcell << endl;
@@ -1582,7 +1582,7 @@ static void Sysmat3(
             // compute covariant metric tensor G for surface element (2x2)
             static BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            XFEM::BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1683,7 +1683,7 @@ static void Sysmat3(
             
             // get normal vector (in x coordinates) to surface element at integration point
             static BlitzVec3 normalvec_solid;
-            XFEM::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
+            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             static BlitzVec3 normalvec_fluid;
             normalvec_fluid = -normalvec_solid;
@@ -1813,7 +1813,7 @@ static void Sysmat3(
             
             static BlitzVec3 disctau_times_n;
             //tau_times_n = blitz::sum(tau(i,j)*normalvec_fluid(j),j);
-            XFEM::BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
+            BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
             assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));

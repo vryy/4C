@@ -23,7 +23,7 @@ namespace GEO
 {
 
 //! possible positions of a point with respect to an element
-enum ObjectType {NOTYPE, SURFACE, LINE, NODE};
+enum ObjectType {NOTYPE_OBJECT, SURFACE_OBJECT, LINE_OBJECT, NODE_OBJECT};
 
 
 /*!
@@ -93,7 +93,7 @@ class NearestObject
     \brief Return node Id of object
      */
     inline int getNodeId() const { 
-      if(objectType_ != NODE || nodeId_ == -1)
+      if(objectType_ != NODE_OBJECT || nodeId_ == -1)
         dserror("objecttype is not correct (nodeId) or nodeId not set");
       return nodeId_;}   
     
@@ -101,7 +101,7 @@ class NearestObject
     \brief Return line Id of object
      */
     inline int getLineId() const { 
-      if(objectType_ != LINE || lineId_ == -1)
+      if(objectType_ != LINE_OBJECT || lineId_ == -1)
         dserror("objecttype is not correct (lineId) or line id not set");
       return lineId_;}
        
@@ -109,7 +109,7 @@ class NearestObject
     \brief Return surface Id of object
      */
     inline int getSurfaceId() const { 
-      if( (objectType_ != LINE && objectType_ != SURFACE) || ( lineId_ == -1 && surfId_ == -1)  )
+      if( (objectType_ != LINE_OBJECT && objectType_ != SURFACE_OBJECT) || ( lineId_ == -1 && surfId_ == -1)  )
         dserror("objecttype is not correct (surfId) or ids are not set");
       return surfId_;}
        
@@ -122,7 +122,7 @@ class NearestObject
     \brief Return vector of physical coordinates
      */
     inline BlitzVec3 getPhysCoord() const {
-      if(objectType_ == NOTYPE)
+      if(objectType_ == NOTYPE_OBJECT)
         dserror("no object type and physical coordinates are set");
       return physcoord_;}
     

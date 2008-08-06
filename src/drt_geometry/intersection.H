@@ -46,7 +46,7 @@ extern "C"
 
 class DRT::Discretization;
 
-namespace XFEM
+namespace GEO
 {
 
 //! possible positions of a Stainer point
@@ -673,7 +673,7 @@ class Intersection
   \param positions           (in)        : vector of positions
   \return returns the midpoint (type InterfacePoint)
   */
-  XFEM::InterfacePoint computeMidpoint(
+  GEO::InterfacePoint computeMidpoint(
       const vector<int>&  positions
       ) const;
      
@@ -884,7 +884,7 @@ class Intersection
   \param out                      (in)     :   output data structure of TetGen
   \return steiner type S_SURAFCE S_EDGE S_BOUNDARY
   */
-  XFEM::SteinerType decideSteinerCase(
+  GEO::SteinerType decideSteinerCase(
     const int                         steinerIndex,
     int&                              lineIndex,
     int&                              cutterIndex,

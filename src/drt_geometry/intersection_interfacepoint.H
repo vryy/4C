@@ -24,7 +24,7 @@ Maintainer: Ursula Mayer
 #include <vector>
 
 
-namespace XFEM
+namespace GEO
 {
 
 //! possible positions of a point with respect to an element
@@ -55,7 +55,7 @@ class InterfacePoint
     \param coordinates          (in)        : coordinates of the interface points
     */
     InterfacePoint(
-      XFEM::pointType     pType,
+      GEO::pointType     pType,
       int                 nodeId,
       std::vector<int>    lineId,
       std::vector<int>    surfId,
@@ -67,7 +67,7 @@ class InterfacePoint
     \brief copy constructor
     */
     InterfacePoint(
-        const XFEM::InterfacePoint& old
+        const GEO::InterfacePoint& old
         );
 
     /*!
@@ -76,7 +76,7 @@ class InterfacePoint
     \param pType            (in)        : point Type of interface point
     */
     void setNodeLineSurfNumbers(
-      const XFEM::pointType pType
+      const GEO::pointType pType
       );
     
     
@@ -86,7 +86,7 @@ class InterfacePoint
     \param pType            (in)        : point Type of interface point
     */
     void setPointType(
-      const XFEM::pointType   pType
+      const GEO::pointType   pType
       );
       
     /*!
@@ -201,7 +201,7 @@ class InterfacePoint
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
      */
-    inline XFEM::pointType getPointType() const { return pType_;}
+    inline GEO::pointType getPointType() const { return pType_;}
     
     
 
@@ -209,7 +209,7 @@ class InterfacePoint
   private:
   
     //! pointType NOTYPE INTERNAL SURFACE LINE NODE 
-    XFEM::pointType       pType_;
+    GEO::pointType       pType_;
         
     //! number of xfem nodes the point is lying on
     int                   nnode_;

@@ -17,15 +17,13 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_MATH_H_
 
 #include "intersection_service.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseSolver.h"
 
 
-namespace XFEM
+namespace GEO
 {
 
 
@@ -219,7 +217,7 @@ static void svdcmp(
                     if ((double)(fabs(f)+anorm) == anorm)
                         break;
                     const double g=W(i);
-                    const double h=XFEM::pythagoras(f,g);
+                    const double h=GEO::pythagoras(f,g);
                     W(i)=h;
                     const double h_inv=1.0/h;
                     c=g*h_inv;
@@ -255,7 +253,7 @@ static void svdcmp(
             double g=rv1(km);
             double h=rv1(k);
             double f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
-            g=XFEM::pythagoras(f,1.0);
+            g=GEO::pythagoras(f,1.0);
             f=((x-z)*(x+z)+h*((y/(f+XSIGN(g,f)))-h))/x;
             //Next QR transformation:
             double c = 1.0;
@@ -267,7 +265,7 @@ static void svdcmp(
                 double y=W(i);
                 double h=s*g;
                 g=c*g;
-                double z=XFEM::pythagoras(f,h);
+                double z=GEO::pythagoras(f,h);
                 rv1(j)=z;
                 c=f/z;
                 s=h/z;
@@ -282,7 +280,7 @@ static void svdcmp(
                     V(jj,j)=x*c+z*s;
                     V(jj,i)=z*c-x*s;
                 }
-                z=XFEM::pythagoras(f,h);
+                z=GEO::pythagoras(f,h);
                 //Rotation can be arbitrary if z = 0.
                 W(j)=z;
                 if (z)

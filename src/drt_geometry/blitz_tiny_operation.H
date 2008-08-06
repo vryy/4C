@@ -19,14 +19,14 @@ Maintainer: Axel Gerstenberger
 #ifndef BLITZ_TINY_OPERATION_H
 #define BLITZ_TINY_OPERATION_H
 
-namespace XFEM
-{
   
   /*!
    * \brief routines to work with epetra dense objects and variable + fixed sized blitz arrays
    * 
    * These routines are primarily intended for debugging in the XFEM and XFluid3 code.
    * Their performance for various array sizes is not garantiert.
+   * 
+   * Discussion about tiny objects is still open...
    */
   namespace BLITZTINY
   {    
@@ -127,5 +127,5 @@ namespace XFEM
       }
     }    
   }
-}
+
 #endif /*BLITZ_TINY_OPERATION_H_*/

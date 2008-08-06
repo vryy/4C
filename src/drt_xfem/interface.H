@@ -62,9 +62,9 @@ public:
     const std::map<int,BlitzVec3>* currentcutterpositions() const {return &currentcutterpositions_;};
 
     //! get pointer to map with all domain integration cells on this proc
-    const std::map<int,DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;};
+    const std::map<int,GEO::DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;};
     //! get pointer to map with all boundary integration cells on this proc
-    const std::map<int,BoundaryIntCells>* elementalBoundaryIntCells() const {return &elementalBoundaryIntCells_;};
+    const std::map<int,GEO::BoundaryIntCells>* elementalBoundaryIntCells() const {return &elementalBoundaryIntCells_;};
     
     //! get pointer to elementsByLabel_
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
@@ -74,13 +74,13 @@ public:
  
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
-    DomainIntCells GetDomainIntCells(
+    GEO::DomainIntCells GetDomainIntCells(
             const int                              gid,     ///< unique global element id
             const DRT::Element::DiscretizationType distype  ///< shape of thefinite element
             ) const;
 
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
-    BoundaryIntCells GetBoundaryIntCells(
+    GEO::BoundaryIntCells GetBoundaryIntCells(
             const int                              gid      ///< unique global element id
             ) const;
 
@@ -138,10 +138,10 @@ private:
     std::map<int,BlitzVec3>                 currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
-    std::map<int, DomainIntCells >          elementalDomainIntCells_;
+    std::map<int,GEO::DomainIntCells >          elementalDomainIntCells_;
 
     //! integration cells for boundary
-    std::map<int, BoundaryIntCells >        elementalBoundaryIntCells_;
+    std::map<int,GEO::BoundaryIntCells >        elementalBoundaryIntCells_;
     
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >            elementsByLabel_;

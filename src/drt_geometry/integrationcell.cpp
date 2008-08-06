@@ -90,7 +90,7 @@ static void ComputePhysicalCoordinates(
 //
 //  ctor
 //
-XFEM::IntCell::IntCell(
+GEO::IntCell::IntCell(
         const DRT::Element::DiscretizationType distype) :
             distype_(distype)
 {
@@ -100,7 +100,7 @@ XFEM::IntCell::IntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-XFEM::IntCell::IntCell(
+GEO::IntCell::IntCell(
         const IntCell& old) : 
             distype_(old.distype_)
 {
@@ -110,7 +110,7 @@ XFEM::IntCell::IntCell(
 //
 // Print method
 //
-std::string XFEM::IntCell::toString() const
+std::string GEO::IntCell::toString() const
 {
   return "";
 }
@@ -119,7 +119,7 @@ std::string XFEM::IntCell::toString() const
 //
 //  ctor
 //
-XFEM::DomainIntCell::DomainIntCell(
+GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
@@ -132,7 +132,7 @@ XFEM::DomainIntCell::DomainIntCell(
 //
 //  ctor
 //
-XFEM::DomainIntCell::DomainIntCell(
+GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const BlitzMat&                        domainCoordinates) :
             IntCell(distype),
@@ -145,7 +145,7 @@ XFEM::DomainIntCell::DomainIntCell(
 //
 //  ctor for dummy cells
 //
-XFEM::DomainIntCell::DomainIntCell(
+GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
             nodalpos_xi_domain_blitz_(GetDefaultCoordinates(distype))
@@ -156,7 +156,7 @@ XFEM::DomainIntCell::DomainIntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-XFEM::DomainIntCell::DomainIntCell(
+GEO::DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
             nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_)
@@ -164,7 +164,7 @@ XFEM::DomainIntCell::DomainIntCell(
     return;   
 }
      
-std::string XFEM::DomainIntCell::toString() const
+std::string GEO::DomainIntCell::toString() const
 {
     std::stringstream s;
     s << "DomainIntCell" << endl;
@@ -183,14 +183,14 @@ std::string XFEM::DomainIntCell::toString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+void GEO::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
 {
     ComputePhysicalCoordinates(ele, (*this), xyz_cell);
     return;
 }
 
 // set element nodal coordinates according to given distype
-BlitzMat XFEM::DomainIntCell::GetDefaultCoordinates(
+BlitzMat GEO::DomainIntCell::GetDefaultCoordinates(
         const DRT::Element::DiscretizationType distype) const
 {
     const int nsd = 3;
@@ -230,7 +230,7 @@ BlitzMat XFEM::DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-BlitzVec3 XFEM::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     //const int nsd = 3;
@@ -269,7 +269,7 @@ BlitzVec3 XFEM::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele
 //
 //  ctor
 //
-XFEM::BoundaryIntCell::BoundaryIntCell(
+GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
         const vector< vector<double> >&           domainCoordinates,
@@ -294,7 +294,7 @@ XFEM::BoundaryIntCell::BoundaryIntCell(
 //
 //  ctor
 //
-XFEM::BoundaryIntCell::BoundaryIntCell(
+GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
         const BlitzMat&                           domainCoordinates,
@@ -315,7 +315,7 @@ XFEM::BoundaryIntCell::BoundaryIntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-XFEM::BoundaryIntCell::BoundaryIntCell(
+GEO::BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
             surface_ele_gid_(old.surface_ele_gid_),
@@ -325,7 +325,7 @@ XFEM::BoundaryIntCell::BoundaryIntCell(
     return;   
 }
      
-std::string XFEM::BoundaryIntCell::toString() const
+std::string GEO::BoundaryIntCell::toString() const
 {
     std::stringstream s;
     s << "BoundaryIntCell" << endl;
@@ -345,7 +345,7 @@ std::string XFEM::BoundaryIntCell::toString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+void GEO::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
 {
     ComputePhysicalCoordinates(ele, (*this), xyz_cell);
     return;
@@ -354,7 +354,7 @@ void XFEM::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BlitzVec3 XFEM::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec3 GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     //const int nsd = 3;

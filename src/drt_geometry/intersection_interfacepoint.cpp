@@ -28,7 +28,7 @@ Maintainer: Ursula Mayer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePoint::InterfacePoint():
+GEO::InterfacePoint::InterfacePoint():
 pType_(NOTYPE),
 nnode_(0),
 nline_(0),
@@ -41,8 +41,8 @@ nsurf_(0)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePoint::InterfacePoint(
-  XFEM::pointType     pType,
+GEO::InterfacePoint::InterfacePoint(
+  GEO::pointType     pType,
   int                 nodeId,
   std::vector<int>    lineId,
   std::vector<int>    surfId,
@@ -62,8 +62,8 @@ coord_(coordinates)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePoint::InterfacePoint(
-    const XFEM::InterfacePoint& old) :
+GEO::InterfacePoint::InterfacePoint(
+    const GEO::InterfacePoint& old) :
 pType_(old.pType_),
 nnode_(old.nnode_),
 nline_(old.nline_),
@@ -82,8 +82,8 @@ coord_(old.coord_)
  |  set xfem number of nodes, lines, surfaces the interface  u.may 07/08|
  |  point is lying on according to point type                           |                                          
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setNodeLineSurfNumbers(
-  const XFEM::pointType pType)
+void GEO::InterfacePoint::setNodeLineSurfNumbers(
+  const GEO::pointType pType)
 {
   switch(pType)
   {
@@ -124,8 +124,8 @@ void XFEM::InterfacePoint::setNodeLineSurfNumbers(
 /*----------------------------------------------------------------------*
  |  set point type the interface point                       u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setPointType(
-      const XFEM::pointType   pType
+void GEO::InterfacePoint::setPointType(
+      const GEO::pointType   pType
       )
 {
   pType_ = pType;
@@ -136,7 +136,7 @@ void XFEM::InterfacePoint::setPointType(
 /*----------------------------------------------------------------------*
  |  set xfem node ids the interface point is lying on        u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setNodeId(
+void GEO::InterfacePoint::setNodeId(
       const int    nodeId
       )
 {
@@ -150,7 +150,7 @@ void XFEM::InterfacePoint::setNodeId(
 /*----------------------------------------------------------------------*
  |  set xfem line ids the interface point is lying on        u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setLineId(
+void GEO::InterfacePoint::setLineId(
       const std::vector<int>&    lineId
       )
 {
@@ -167,7 +167,7 @@ void XFEM::InterfacePoint::setLineId(
 /*----------------------------------------------------------------------*
  |  set xfem surface ids the interface point is lying on     u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setSurfaceId(
+void GEO::InterfacePoint::setSurfaceId(
       const std::vector<int>&    surfId
       )
 {
@@ -184,7 +184,7 @@ void XFEM::InterfacePoint::setSurfaceId(
 /*----------------------------------------------------------------------*
  |  set coordinates of the interface point                   u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setCoord(
+void GEO::InterfacePoint::setCoord(
       const std::vector<double>&    coordinates
       )
 {
@@ -202,7 +202,7 @@ void XFEM::InterfacePoint::setCoord(
 /*----------------------------------------------------------------------*
  |  set X-coordinates of the interface point                 u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setCoordX(
+void GEO::InterfacePoint::setCoordX(
       const double    coordX
       )
 {
@@ -217,7 +217,7 @@ void XFEM::InterfacePoint::setCoordX(
 /*----------------------------------------------------------------------*
  |  set Y-coordinates of the interface point                 u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setCoordY(
+void GEO::InterfacePoint::setCoordY(
       const double    coordY
       )
 {
@@ -232,7 +232,7 @@ void XFEM::InterfacePoint::setCoordY(
 /*----------------------------------------------------------------------*
  |  set Z-coordinates of the interface point                 u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setCoordZ(
+void GEO::InterfacePoint::setCoordZ(
       const double    coordZ
       )
 {
@@ -246,7 +246,7 @@ void XFEM::InterfacePoint::setCoordZ(
 /*----------------------------------------------------------------------*
  |  set single coordinates of the interface point            u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePoint::setSingleCoord(
+void GEO::InterfacePoint::setSingleCoord(
       const int	      index,
       const double    coord
       )

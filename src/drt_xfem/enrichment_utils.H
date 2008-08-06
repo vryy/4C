@@ -140,7 +140,7 @@ void computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzVec& elementvalues,
   BlitzVec&     cellvalues
@@ -151,7 +151,7 @@ void computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzVec& elementvalues,
   BlitzVec&     cellvalues
@@ -162,7 +162,7 @@ void computeTensorCellNodeValuesFromElementUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&     cellvalues
@@ -173,7 +173,7 @@ void computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
+  const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&     cellvalues
@@ -184,7 +184,7 @@ void computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
-  const XFEM::BoundaryIntCell& cell,
+  const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
   const BlitzMat& elementvalues,
   BlitzMat&     cellvalues

@@ -457,7 +457,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
       aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
       aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
     }
-    XFEM::BLITZTINY::MtM_product<6,6,3>(aux_CB,Bcurr,*stiffmatrix);
+    BLITZTINY::MtM_product<6,6,3>(aux_CB,Bcurr,*stiffmatrix);
   
     //adding geometric stiffness by shear force 
     double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
   //calculation of global internal forces from force = B_transposed*force_loc 
   if (force != NULL)
   {
-    XFEM::BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
+    BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
   }
   
    

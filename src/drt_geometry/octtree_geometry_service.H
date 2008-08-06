@@ -216,7 +216,7 @@ namespace GEO
   void checkRoughGeoType(
       const DRT::Element*                     element,      
       const BlitzMat                          xyze_element, 
-      XFEM::EleGeoType&                       eleGeoType  
+      GEO::EleGeoType&                       eleGeoType  
       );
 
 

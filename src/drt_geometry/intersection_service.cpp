@@ -28,7 +28,7 @@ Maintainer: Ursula Mayer
  |  ML:     computes the cross product                       u.may 08/07|
  |          of 2 vectors c = a x b                                      |
  *----------------------------------------------------------------------*/  
-BlitzVec XFEM::computeCrossProduct(
+BlitzVec GEO::computeCrossProduct(
     const BlitzVec& a,
     const BlitzVec& b)
 {
@@ -47,7 +47,7 @@ BlitzVec XFEM::computeCrossProduct(
  |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
  |          XAABB for a given element                                   |
  *----------------------------------------------------------------------*/
-BlitzMat3x2 XFEM::computeFastXAABB( 
+BlitzMat3x2 GEO::computeFastXAABB( 
     const DRT::Element* element,
     const BlitzMat&     xyze,
     const EleGeoType    eleGeoType)
@@ -100,7 +100,7 @@ BlitzMat3x2 XFEM::computeFastXAABB(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if two XAABB's intersect                  u.may 06/07|
  *----------------------------------------------------------------------*/
-bool XFEM::intersectionOfXAABB(  
+bool GEO::intersectionOfXAABB(  
     const BlitzMat3x2&     cutterXAABB, 
     const BlitzMat3x2&     xfemXAABB)
 {
@@ -219,7 +219,7 @@ bool XFEM::intersectionOfXAABB(
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void XFEM::checkGeoType(
+void GEO::checkGeoType(
            DRT::Element*                element,
            const BlitzMat               xyze_element,
            EleGeoType&                  eleGeoType)
@@ -300,7 +300,7 @@ void XFEM::checkGeoType(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
-bool XFEM::isPositionWithinXAABB(    
+bool GEO::isPositionWithinXAABB(    
     const BlitzVec3&                   pos,
     const BlitzMat3x2&                 XAABB)
 {
@@ -326,7 +326,7 @@ bool XFEM::isPositionWithinXAABB(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
  *----------------------------------------------------------------------*/
-bool XFEM::isLineWithinXAABB(    
+bool GEO::isLineWithinXAABB(    
     const BlitzVec3&                   pos1,
     const BlitzVec3&                   pos2,
     const BlitzMat3x2&                 XAABB)
@@ -371,7 +371,7 @@ bool XFEM::isLineWithinXAABB(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within a given element   u.may 06/07|   
  *----------------------------------------------------------------------*/
-bool XFEM::checkPositionWithinElement(  
+bool GEO::checkPositionWithinElement(  
     const DRT::Element*                 element,
     const BlitzVec3&                    x)
 {
@@ -465,7 +465,7 @@ static inline void updateRHSForNWE(
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void XFEM::elementToCurrentCoordinatesInPlace(   
+void GEO::elementToCurrentCoordinatesInPlace(   
         const DRT::Element* element,
         const BlitzMat&     xyze,
         BlitzVec&           eleCoord) 
@@ -542,11 +542,11 @@ static inline bool currentToVolumeElementCoordinatesT(
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
     
     int iter = 0;
-    while(residual > XFEM::TOL14)
+    while(residual > GEO::TOL14)
     {   
         updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
    
-        if(!XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL14))
+        if(!GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14))
         {
             nodeWithinElement = false;
             break;
@@ -555,10 +555,10 @@ static inline bool currentToVolumeElementCoordinatesT(
         xsi += dx;
         updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
         
-        residual = XFEM::Norm2(b);
+        residual = GEO::Norm2(b);
         iter++; 
         
-        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
+        if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8)
         {   
             nodeWithinElement = false;
             break;
@@ -574,7 +574,7 @@ static inline bool currentToVolumeElementCoordinatesT(
  | GM:  transforms a node in current coordinates            u.may 12/07 |
  |      into element coordinates                                        | 
  *----------------------------------------------------------------------*/
-bool XFEM::currentToVolumeElementCoordinates(  
+bool GEO::currentToVolumeElementCoordinates(  
     const DRT::Element*                 element,
     const BlitzVec3&                    x,
     BlitzVec3&                          xsi)
@@ -607,7 +607,7 @@ bool XFEM::currentToVolumeElementCoordinates(
  |  RQI:    searches the nearest point on a surface          u.may 02/08|
  |          element for a given point in physical coordinates           |
  *----------------------------------------------------------------------*/
-bool XFEM::searchForNearestPointOnSurface(
+bool GEO::searchForNearestPointOnSurface(
     const DRT::Element*                     surfaceElement,
     const BlitzMat&                         xyze_surfaceElement,
     const BlitzVec3&                        physCoord,
@@ -636,7 +636,7 @@ bool XFEM::searchForNearestPointOnSurface(
   distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
   
   // because normal may equal zero !!!
-  if(fabs(distance) > XFEM::TOL7)
+  if(fabs(distance) > GEO::TOL7)
   {
     // compute distance with sign
     // TODO fix computation alot of these computations are unnecessary
@@ -826,7 +826,7 @@ static void currentToSurfaceElementCoordinatesT(
     }
     
     const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
-    if (residual < XFEM::TOL14)
+    if (residual < GEO::TOL14)
     {
       break;
     }
@@ -837,7 +837,7 @@ static void currentToSurfaceElementCoordinatesT(
 
     static BlitzVec2 dx;
     dx = 0.0;
-    if(!XFEM::gaussElimination<true,2>(A, b, dx, XFEM::TOL14))
+    if(!GEO::gaussElimination<true,2>(A, b, dx, GEO::TOL14))
     {
       nodeWithinElement = false;
       break;
@@ -848,7 +848,7 @@ static void currentToSurfaceElementCoordinatesT(
   
 //  cout << "nodeWithinElement: " << nodeWithinElement << endl;
 //  printf("iter = %d\n", iter);
-//  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", eleCoord(0),eleCoord(1), residual, XFEM::TOL14);
+//  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", eleCoord(0),eleCoord(1), residual, GEO::TOL14);
 //  exit(1);
   return;
 }
@@ -859,7 +859,7 @@ static void currentToSurfaceElementCoordinatesT(
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-void XFEM::CurrentToSurfaceElementCoordinates(
+void GEO::CurrentToSurfaceElementCoordinates(
         const DRT::Element*         surfaceElement,
         const BlitzMat&             xyze_surfaceElement,
         const BlitzVec3&            physCoord,
@@ -910,7 +910,7 @@ static void currentToLineElementCoordinatesT(
   eleCoord = 0.0;
   
   
-  while(residual > XFEM::TOL13 && iter < maxiter)
+  while(residual > GEO::TOL13 && iter < maxiter)
   {
     iter++;
     
@@ -955,7 +955,7 @@ static void currentToLineElementCoordinatesT(
       b += F_deriv1(i)*F(i);
     }
   
-    if(fabs(A) < XFEM::TOL14)
+    if(fabs(A) < GEO::TOL14)
     {
       //printf("A is equal to zero 0");
       break;
@@ -967,7 +967,7 @@ static void currentToLineElementCoordinatesT(
     //cout << " b = " << b << endl;
     //cout << " x = " << eleCoord(0) << endl;
     
-    if(iter >= maxiter || fabs(eleCoord(0)) > XFEM::TOLPLUS8)
+    if(iter >= maxiter || fabs(eleCoord(0)) > GEO::TOLPLUS8)
       break;
 
     residual = fabs(b); 
@@ -981,7 +981,7 @@ static void currentToLineElementCoordinatesT(
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given line element    |
  *----------------------------------------------------------------------*/
-void XFEM::CurrentToLineElementCoordinates(
+void GEO::CurrentToLineElementCoordinates(
         const DRT::Element*         lineElement,
         const BlitzMat&             xyze_lineElement,
         const BlitzVec3&            physCoord,
