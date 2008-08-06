@@ -44,6 +44,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/biocell.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -205,6 +206,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::HyperPolyOgden* hpo = static_cast <MAT::HyperPolyOgden*>(mat.get());
       hpo->Evaluate(glstrain,cmat,stress);
       *density = hpo->Density();
+      break;
+    }
+    case m_biocell: /*----------------- Biological Cell Material */
+    {
+      MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
+      biocell->Evaluate(glstrain,cmat,stress);
+      *density = biocell->Density();
+
       break;
     }
     default:

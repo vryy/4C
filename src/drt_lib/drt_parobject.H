@@ -128,6 +128,7 @@ using namespace std;
 #define ParObject_MatList               (int)115
 #define ParObject_Truss3                (int)116
 #define ParObject_Truss3Register        (int)117
+#define ParObject_BioCell               (int)118
 
 namespace DRT
 {

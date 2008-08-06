@@ -162,6 +162,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"  ,&(localmat.m.neohooke->possionratio),&ierr);
       frdouble("DENS" ,&(localmat.m.aaaneohooke->density)  ,&ierr);
    }
+   // Biological cell material model
+   frchk("MAT_BioCell",&ierr);
+   if (ierr==1)
+   {
+     localmat.mattyp = m_biocell;
+     localmat.m.biocell = new BIOCELL();
+     frdouble("DENS"   ,&(localmat.m.biocell->density)    ,&ierr);
+   }
    frchk("MAT_MFOC",&ierr);
    if (ierr==1)
    {

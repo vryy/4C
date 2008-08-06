@@ -64,6 +64,7 @@ typedef struct _MATERIAL
      struct _VP_ROBINSON      *vp_robinson;   /* viscoplastic Robinson material */
      struct _STRUCT_MULTISCALE *struct_multiscale;     /* material parameters are calculated from microscale simulation */
      struct _MATLIST          *matlist;       /* collection of any single materials (used for scalar transport problems)*/
+     struct _BIOCELL          *biocell;       /* Biological Cell model */
      }                         m;             /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -716,6 +717,13 @@ typedef struct _ARTWALLREMOD
      INT                       init;
      DOUBLE                    rembegt;
 } ARTWALLREMOD;
+/*----------------------------------------------------------------------*
+ | Biological Cell model                                       rm 08/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _BIOCELL
+{
+     DOUBLE                    density;
+} BIOCELL;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |

@@ -1,0 +1,321 @@
+/*!----------------------------------------------------------------------
+\file bio_cell.cpp
+\brief contains the all shiny cool bio cell model with contraction
+<pre>
+Maintainer: Robert Metzke
+            metzke@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15244
+</pre>
+\param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
+\param  Epetra_SerialDenseVector* stress        (o) ele stress vector
+\param  Epetra_SerialDenseMatrix* cmat          (o) constitutive matrix
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
+#include <vector>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include "biocell.H"
+
+extern struct _MATERIAL *mat;
+
+/*---------------------------------------------------------------------*/
+MAT::BioCell::BioCell()
+  : matdata_(NULL)
+{
+}
+
+
+/*---------------------------------------------------------------------*/
+MAT::BioCell::BioCell(MATERIAL* matdata)
+  : matdata_(matdata)
+{
+}
+
+/*---------------------------------------------------------------------*/
+void MAT::BioCell::Pack(vector<char>& data) const
+{
+  data.resize(0);
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // matdata
+  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
+  AddtoPack(data,matdata);
+}
+
+
+/*---------------------------------------------------------------------*/
+void MAT::BioCell::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matdata
+  int matdata;
+  ExtractfromPack(position,data,matdata);
+  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate stress and constitutive tensor (BioCell)          rm 08/08|
+ *----------------------------------------------------------------------*/
+void MAT::BioCell::Evaluate(const Epetra_SerialDenseVector* glstrain,
+                                      Epetra_SerialDenseMatrix* cmat,
+                                      Epetra_SerialDenseVector* stress)
+{
+  // set material parameters ///////////////////////////////////////////////////
+  bool AN = true; // AN = Actin Network (NeoHookean) on/off = 1/0
+  bool AF = false; // AF = Actin Stress Fibers on/off = 1/0
+  // Neo Hookean (Yamada et al.; Karcher at al.) for cell G = 100 Pa = 1.0 e-3 uN/um^2
+  // Stamenovic2004 HASM cells (related to U above) G = 60 kPa = 60 10^3 Pa = 6.0 e+0 un/um^2
+  const double c1 = 0.5 * 6.0e-0;
+  const double beta = 0.35/(1-2*0.35);
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // Preparation of several tensors ////////////////////////////////////////////
+  // Identy Tensor
+  LINALG::SerialDenseMatrix I(3,3);
+  I(0,0) = 1.0;
+  I(1,1) = 1.0;
+  I(2,2) = 1.0;
+  I(0,1) = 0.0; I(1,0) = 0.0;
+  I(1,2) = 0.0; I(2,1) = 0.0;
+  I(0,2) = 0.0; I(2,0) = 0.0;
+  
+  // Green-Lagrange Strain Tensor
+  LINALG::SerialDenseMatrix E(3,3);
+  E(0,0) = (*glstrain)(0);
+  E(1,1) = (*glstrain)(1);
+  E(2,2) = (*glstrain)(2);
+  E(0,1) = 0.5 * (*glstrain)(3);  E(1,0) = 0.5 * (*glstrain)(3);
+  E(1,2) = 0.5 * (*glstrain)(4);  E(2,1) = 0.5 * (*glstrain)(4);
+  E(0,2) = 0.5 * (*glstrain)(5);  E(2,0) = 0.5 * (*glstrain)(5);
+  
+  // Right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::SerialDenseMatrix C(E);
+  C.Scale(2.0);
+  C(0,0) += 1.0;
+  C(1,1) += 1.0;
+  C(2,2) += 1.0;
+  
+  // Principal Invariants I1 = tr(C) and I3 = det(C)
+  const double I1 = C(0,0)+C(1,1)+C(2,2); // Necessary only for energy
+  const double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
+                  + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
+                  + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
+  
+  // Calculation of C^-1 (Cinv)
+  LINALG::SerialDenseMatrix Cinv(3,3); 
+  InverseTensor(C,Cinv,I3);
+  
+  
+  // Strain Energy /////////////////////////////////////////////////////////////
+  if (AN) { double Wneo = c1 * (I1 - 3) + (c1/beta) * (pow(I3,-beta) - 1); }
+  
+  // PK2 Stresses //////////////////////////////////////////////////////////////
+  LINALG::SerialDenseMatrix PK2(3,3);
+  LINALG::SerialDenseMatrix PK2neo(3,3);
+  int i,j;  
+  for (i=0; i<3; i++)
+    for (j=0; j<3; j++)
+    {
+        if (AN) {
+            PK2neo(i,j) = 2.0 * c1 * ( I(i,j) - pow(I3,-beta) * Cinv(i,j) ); /*2.0*c1*(pow(I3,(-drittel)))*(I[i][j]- drittel*I1*Cinv[j][i]);*/
+        } else { PK2neo(i,j) = 0.0; }  
+        
+      PK2(i,j)= PK2neo(i,j);
+    }
+  
+  // Transfer PK2 tensor to stress vector
+  (*stress)(0) = PK2(0,0);
+  (*stress)(1) = PK2(1,1);
+  (*stress)(2) = PK2(2,2);
+  (*stress)(3) = PK2(0,1);
+  (*stress)(4) = PK2(1,2);
+  (*stress)(5) = PK2(0,2);
+  
+  // Constitutive Tensor ///////////////////////////////////////////////////////
+  // deltas
+  vector<double> delta_AN(8);
+  // Actin Network
+  if (AN) {
+      delta_AN[0] = 0.0;
+      delta_AN[1] = 0.0;
+      delta_AN[2] = 0.0; /*-c1 * 4.0 * drittel * pow(I3,-drittel);*/
+      delta_AN[3] = 0.0;
+      delta_AN[4] = 0.0;
+      delta_AN[5] = 4.0 * c1 * pow(I3,-beta) * beta; /*(4.0/9.0) * c1 * I1 * pow(I3,-drittel);*/
+      delta_AN[6] = 4.0 * c1 * pow(I3,-beta); /*4.0 * drittel * c1 * I1 * pow(I3,-drittel);*/
+      delta_AN[7] = 0.0;
+  } else if (!AN) {
+      for (i=0;i<8;i++) { delta_AN[i]=0.0; }
+  } else { exit(1); }
+  
+  // Calculate Tensorproducts for all cases (slow, but makes things very flexible)
+  int k,l;
+  LINALG::SerialDenseMatrix I9(9,9);
+  LINALG::SerialDenseMatrix IC(9,9);
+  LINALG::SerialDenseMatrix CI(9,9);
+  LINALG::SerialDenseMatrix ICinv(9,9);
+  LINALG::SerialDenseMatrix CinvI(9,9);
+  LINALG::SerialDenseMatrix CC(9,9);
+  LINALG::SerialDenseMatrix CCinv(9,9);
+  LINALG::SerialDenseMatrix CinvC(9,9);
+  LINALG::SerialDenseMatrix CinvCinv(9,9);
+  LINALG::SerialDenseMatrix CinvoCinv(9,9);
+  LINALG::SerialDenseMatrix II(9,9);
+  LINALG::SerialDenseMatrix H_H(9,9);
+  LINALG::SerialDenseMatrix H_C(9,9);
+  LINALG::SerialDenseMatrix C_H(9,9);
+  LINALG::SerialDenseMatrix H_Cinv(9,9);
+  LINALG::SerialDenseMatrix Cinv_H(9,9);
+  
+  TensorProduct(I,I,I9);
+  TensorProduct(I,C,IC);
+  TensorProduct(C,I,CI);
+  TensorProduct(I,Cinv,ICinv);
+  TensorProduct(Cinv,I,CinvI);
+  TensorProduct(C,C,CC);
+  TensorProduct(C,Cinv,CCinv);
+  TensorProduct(Cinv,C,CinvC);
+  TensorProduct(Cinv,Cinv,CinvCinv);
+  
+  for (k=0; k<9; k+=3) {
+	for (l=0; l<9; l+=3) {
+		for (i=0; i<3; i++) {
+			for (j=0; j<3; j++) {
+				CinvoCinv[i+k][j+l]= 0.5*(Cinv[k/3][i]*Cinv[l/3][j]+Cinv[k/3][j]*Cinv[l/3][i]);
+                        }}}}
+  for (k=0; k<9; k+=3) {
+	for (l=0; l<9; l+=3) {
+		for (i=0; i<3; i++) {
+			for (j=0; j<3; j++) {
+				if (i==k/3 && j==l/3) {
+					II[i+k][j+l]=1;
+                                } else {
+                                    II[i+k][j+l]=0;
+                                }}}}}
+  //TensorProduct(H,H,H_H);
+  //TensorProduct(H,C,H_C);
+  //TensorProduct(C,H,C_H);
+  //TensorProduct(H,Cinv,H_Cinv);
+  //TensorProduct(Cinv,H,Cinv_H);
+  
+  // Assemble Constitutive Tensor
+  LINALG::SerialDenseMatrix Celasticity(9,9); // Elasticity Tensor
+  vector<double> Celas_ap(8); // additive parts of the elasticity tensor in its most general form
+  for (k=0; k<9; k+=3) {
+      for (l=0; l<9; l+=3) {
+          for (i=0; i<3; i++) {
+              for (j=0; j<3; j++) {
+                  Celas_ap[0] = delta_AN[0] * I9(i+k,j+l);
+                  Celas_ap[1] = delta_AN[1] * ( IC(i+k,j+l)+CI(i+k,j+l) );
+                  Celas_ap[2] = delta_AN[2] * ( ICinv(i+k,j+l)+CinvI(i+k,j+l) );
+                  Celas_ap[3] = delta_AN[3] * CC(i+k,j+l);
+                  Celas_ap[4] = delta_AN[4] * ( CCinv(i+k,j+l)+CinvC(i+k,j+l));
+                  Celas_ap[5] = delta_AN[5] * CinvCinv(i+k,j+l);
+                  Celas_ap[6] = delta_AN[6] * CinvoCinv(i+k,j+l);
+                  Celas_ap[7] = delta_AN[7] * II(i+k,j+l);
+                  Celasticity(i+k,j+l) = Celas_ap[0]+Celas_ap[1]+Celas_ap[2]+Celas_ap[3]+Celas_ap[4]+Celas_ap[5]+Celas_ap[6]+Celas_ap[7];
+              } } } }	
+  
+  // copy to Voigt notation
+  (*cmat)(0,0)=Celasticity(0,0);
+  (*cmat)(0,1)=Celasticity(1,1);
+  (*cmat)(0,2)=Celasticity(2,2);
+  (*cmat)(0,3)=Celasticity(1,0);
+  (*cmat)(0,4)=Celasticity(2,1);
+  (*cmat)(0,5)=Celasticity(2,0);
+  
+  (*cmat)(1,0)=Celasticity(3,3);
+  (*cmat)(1,1)=Celasticity(4,4);
+  (*cmat)(1,2)=Celasticity(5,5);
+  (*cmat)(1,3)=Celasticity(4,3);
+  (*cmat)(1,4)=Celasticity(5,4);
+  (*cmat)(1,5)=Celasticity(5,3);
+  
+  (*cmat)(2,0)=Celasticity(6,6);
+  (*cmat)(2,1)=Celasticity(7,7);
+  (*cmat)(2,2)=Celasticity(8,8);
+  (*cmat)(2,3)=Celasticity(7,6);
+  (*cmat)(2,4)=Celasticity(8,7);
+  (*cmat)(2,5)=Celasticity(8,6);
+  
+  (*cmat)(3,0)=Celasticity(3,0);
+  (*cmat)(3,1)=Celasticity(4,1);
+  (*cmat)(3,2)=Celasticity(5,2);
+  (*cmat)(3,3)=Celasticity(4,0);
+  (*cmat)(3,4)=Celasticity(5,1);
+  (*cmat)(3,5)=Celasticity(5,0);
+  
+  (*cmat)(4,0)=Celasticity(6,3);
+  (*cmat)(4,1)=Celasticity(7,4);
+  (*cmat)(4,2)=Celasticity(8,5);
+  (*cmat)(4,3)=Celasticity(7,3);
+  (*cmat)(4,4)=Celasticity(8,4);
+  (*cmat)(4,5)=Celasticity(8,3);
+  
+  (*cmat)(5,0)=Celasticity(6,0);
+  (*cmat)(5,1)=Celasticity(7,1);
+  (*cmat)(5,2)=Celasticity(8,2);
+  (*cmat)(5,3)=Celasticity(7,0);
+  (*cmat)(5,4)=Celasticity(8,1);
+  (*cmat)(5,5)=Celasticity(8,0);
+  
+  return;
+} // end of biological cell model
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate the inverse of a 2nd order tensor                 rm 08/07|
+ *----------------------------------------------------------------------*/
+void MAT::BioCell::InverseTensor(
+	  			  const Epetra_SerialDenseMatrix& M,
+                                  Epetra_SerialDenseMatrix& Minv,
+				  const double I3)
+{
+  if (I3==0.0) {
+  	dserror("Right Cauchy Green not invertable in BioCell material law");
+  } else {
+  	Minv(0,0)= 1/I3 * (M(1,1)*M(2,2) - M(2,1)*M(1,2));
+	Minv(1,0)=-1/I3 * (M(0,1)*M(2,2) - M(2,1)*M(0,2));
+	Minv(2,0)= 1/I3 * (M(0,1)*M(1,2) - M(1,1)*M(0,2));
+	Minv(0,1)=-1/I3 * (M(1,0)*M(2,2) - M(2,0)*M(1,2));
+	Minv(1,1)= 1/I3 * (M(0,0)*M(2,2) - M(2,0)*M(0,2));
+	Minv(2,1)=-1/I3 * (M(0,0)*M(1,2) - M(1,0)*M(0,2));
+	Minv(0,2)= 1/I3 * (M(1,0)*M(2,1) - M(2,0)*M(1,1));
+	Minv(1,2)=-1/I3 * (M(0,0)*M(2,1) - M(2,0)*M(0,1));
+	Minv(2,2)= 1/I3 * (M(0,0)*M(1,1) - M(1,0)*M(0,1));
+   }
+return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate the tensorproduct of a 2nd order tensor           rm 08/08|
+ *----------------------------------------------------------------------*/
+void MAT::BioCell::TensorProduct (
+                                const LINALG::SerialDenseMatrix& A,
+                                const LINALG::SerialDenseMatrix& B,
+                                LINALG::SerialDenseMatrix& AB)
+{
+    int i,j,k,l;
+    for (k=0; k<9; k+=3) {
+        for (l=0; l<9; l+=3) {
+            for (i=0; i<3; i++) {
+                for (j=0; j<3; j++) {
+                    AB(i+k,j+l)= A(k/3,l/3)*B(i,j);
+                } } } }
+return;
+} /*end of: c1_calc_tensorproduct*/
+
+#endif

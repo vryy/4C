@@ -31,6 +31,7 @@ Maintainer: Lena Wiechert
 #include "modpowerlaw.H"
 #include "hyperpolyconvex_ogden.H"
 #include "matlist.H"
+#include "biocell.H"
 
 extern struct _MATERIAL *mat;
 
@@ -95,6 +96,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new ModPowerLaw(actmat));
   case m_matlist:
     return Teuchos::rcp(new MatList(actmat));
+ case m_biocell:
+    return Teuchos::rcp(new BioCell(actmat));    
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
