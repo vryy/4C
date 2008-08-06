@@ -28,7 +28,6 @@
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
-#include <blitz/array.h>
 
 #include "../drt_lib/drt_element.H"
 #include "drt_utils_local_connectivity_matrices.H"

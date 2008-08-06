@@ -28,8 +28,7 @@
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
-#include <blitz/array.h>
-
+#include "../drt_geometry/vector_definitions.H"
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -429,7 +428,7 @@ namespace UTILS
   \      is lying on for each discretization type
   */
   vector<int> getSurfaces(
-    const blitz::TinyVector<double,3>&          rst,        ///< point in reference coordinates
+    const BlitzVec3&                            rst,        ///< point in reference coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
   
@@ -439,7 +438,7 @@ namespace UTILS
    \      is lying on for each discretization type
    */
   vector<int> getLines(
-      const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
+      const BlitzVec3&                            rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
   
@@ -448,7 +447,7 @@ namespace UTILS
    \      is lying on for each discretization type
    */
   int getNode(
-      const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
+      const BlitzVec3&                            rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
     
