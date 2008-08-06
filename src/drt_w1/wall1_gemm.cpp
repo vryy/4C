@@ -245,7 +245,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     {
       // calculate the enhanced deformation gradient and
       // also the operators G, W0 and Z
-      w1_call_defgrad_enh(Fenhvo, Xjm0, Xjm, Xjdet0, Xjdet, Fuv0, *alphao, xi1, xi2, Go, W0o, boplin0, Z); // at t_{n}
+      w1_call_defgrad_enh(Fenhvo, Xjm0, Xjm, Xjdet0, Xjdet, Fuv0o, *alphao, xi1, xi2, Go, W0o, boplin0, Z); // at t_{n}
       w1_call_defgrad_enh(Fenhv, Xjm0, Xjm, Xjdet0, Xjdet, Fuv0, *alpha, xi1, xi2, G, W0, boplin0, Z); // at t_{n+1}
 
       // total deformation gradient F, and total Green-Lagrange-strain E
