@@ -42,6 +42,11 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h" // for use of ds_cputime()
+}
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
