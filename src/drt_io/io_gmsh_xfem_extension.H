@@ -34,8 +34,8 @@ namespace IO
         const std::string& s,
         const double scalar,
         const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
-        const std::map<int,XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap);
+        const std::map<int,GEO::DomainIntCells >& elementDomainIntCellsMap,
+        const std::map<int,GEO::BoundaryIntCells >& elementBoundaryIntCellsMap);
 
   }
 }

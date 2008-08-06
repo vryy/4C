@@ -27,8 +27,8 @@ std::string IO::GMSH::XdisToString(
     const std::string& s,
     const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
-    const std::map<int, XFEM::DomainIntCells >& elementDomainIntCellsMap,
-    const std::map<int, XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap)
+    const std::map<int, GEO::DomainIntCells >& elementDomainIntCellsMap,
+    const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap)
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {"
@@ -41,8 +41,8 @@ std::string IO::GMSH::XdisToString(
     // print integration cells, if available
     if (elementDomainIntCellsMap.count(id) > 0)
     {
-      const XFEM::DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
-      for (XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell
+      const GEO::DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
+      for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell
           != cells.end(); ++cell)
       {
         static BlitzMat dxyz_ele(3, 27);
@@ -50,8 +50,8 @@ std::string IO::GMSH::XdisToString(
         gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
             scalar, dxyz_ele) << endl;
       }
-      const XFEM::BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
-      for (XFEM::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
+      const GEO::BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
+      for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
           != bcells.end(); ++bcell)
       {
         static BlitzMat bxyz_ele(3, 9);
