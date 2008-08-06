@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_dofset.H"
 
-#include "xfem.H"
 #include "physics.H"
 #include "enrichment.H"
 #include "field_enriched.H"
@@ -31,7 +30,7 @@ class XFEM::InterfaceHandle;
 namespace XFEM
 {
   
-  //! Allows to distuingish between normal assembly and xfem assembly
+  //! Allows to distinguish between normal assembly and xfem assembly
   enum AssemblyType
   {
     standard_assembly,
