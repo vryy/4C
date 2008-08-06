@@ -77,7 +77,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
 
       // write output to temporary stringstream
       std::stringstream gmshfilecontent;
-      if (proc==0) gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
+      if (proc==0) gmshfilecontent << "View \" Step " << step << " Iter " << iter << " \" {" << endl;
 
       // plot elements
       for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
