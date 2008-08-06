@@ -31,6 +31,7 @@ class SerialDenseMatrix : public Epetra_SerialDenseMatrix
 public:
 
   //! @name Constructors and destructors and related methods
+  //@{
 
   /*!
   \brief Standard Constructor wrapping
@@ -69,15 +70,7 @@ public:
   */
   SerialDenseMatrix(const SerialDenseMatrix& Source);
   
-  /*!
-  \brief Determinant Computation using the Sarrus rule.
-  Internal computation is based on the long double data type (80/128 bit depending on platform)
-  this allows for higher precision when used on a bigger matrix. Long double is also used for output,
-  therefore it has to be expicitly casted to a double if used in a "double only" context.
-  
-  \author volf (alexander.volf@mytum.de)
-  */
-  long double Det_long();
+
   
   /*!
   \brief Shape dimensions of this matrix but do NOT initialize to zero
@@ -101,6 +94,32 @@ public:
   */
   virtual ~SerialDenseMatrix();
 
+
+  //@}
+
+  //! @name Mathematical methods
+  //@{
+
+  /*!
+  \brief Determinant Computation using the Sarrus rule.
+  Internal computation is based on the long double data type (80/128 bit depending on platform)
+  this allows for higher precision when used on a bigger matrix. Long double is also used for output,
+  therefore it has to be expicitly casted to a double if used in a "double only" context.
+  
+  \author volf (alexander.volf@mytum.de)
+  */
+  long double Det_long();
+
+  /*!
+  \brief Update matrix components with scaled values of A,
+         this = ScalarThis * this + ScalarA * A
+  \author bborn \date 08/08
+  */
+  void Update(
+    const double& ScalarB,  /*!< scale input matrix with */
+    const Epetra_SerialDenseMatrix& B,  /*!< input matrix */
+    const double& ScalarThis  /*!< scale this matrix with */
+  );
 
   //@}
 
