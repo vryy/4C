@@ -2108,8 +2108,8 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
                      xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
   const double vol = wquad*det;
 
-  if (det==0)
-    dserror("zero determinant in caltau");
+  if (det<=0)
+    dserror("negative Jacobian determinant %f in caltau", det);
 
   double idet = 1./det;
 
@@ -2557,7 +2557,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     tau_(1)/=timefac;
     // same division for tau_C
     tau_(2)/=timefac;
-    
+
   }
   else if(whichtau == Fluid3::codina)
   {
