@@ -582,8 +582,8 @@ OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
                 src/drt_w1/wall1_line.o \
                 src/drt_w1/wall1_evaluate.o \
                 src/drt_w1/wall1_mat.o \
-                src/drt_w1/wall1_evaluate_eas.o \
-                src/drt_w1/wall1_evaluate_gemm.o \
+                src/drt_w1/wall1_eas.o \
+                src/drt_w1/wall1_gemm.o \
                 src/drt_w1/wall1_input.o \
                 src/drt_w1/wall1_line_evaluate.o
 OBJS_DRT_W1   = 
