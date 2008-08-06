@@ -178,7 +178,7 @@ int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 }
 
 /*----------------------------------------------------------------------*
- |   Update matrix components with scaled values of A,                  |
+ |   Update matrix components with scaled values of B,                  |
  |   this = ScalarThis * this + ScalarB * B         (public) bborn 08/08|
  *----------------------------------------------------------------------*/
 void LINALG::SerialDenseMatrix::Update(
