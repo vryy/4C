@@ -189,6 +189,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
     // derivatives at origin
     DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    // material-to-parameter space Jacobian at origin
+    w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
     // calculate linear B-operator at origin
     w1_boplin(boplin0, shpdrv, Xjm0, Xjdet0, numnode);
     // displ.-based def.grad. at origin
@@ -297,7 +299,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
         const int totdim = W0m.M() * W0m.N();
         // remember same pointer: W0_m = W0_{n}
         blas.SCAL(totdim, 0.5, W0m.A());   // W0_m *= 0.5 = 0.5*W0_{n}
-        blas.AXPY(totdim, 0.5, W0.A(), W0m.A());  // W0_m += 0.5*W0_{n+1}
+        W0m.AXPY(totdim, 0.5, W0.A(), W0m.A());  // W0_m += 0.5*W0_{n+1}
       }
     }
 
@@ -467,8 +469,6 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   Epetra_SerialDenseMatrix& estif
 )
 {
-  // BLAS dummy
-  Epetra_BLAS::Epetra_BLAS blas;
 
   // contitutive matrix (3x3)
   LINALG::SerialDenseMatrix C_red(3,3,false);
@@ -485,11 +485,8 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
 
   // BplusW (4 x edof) :  B_L + W0_{n+1}
   LINALG::SerialDenseMatrix BplusW(4,2*NumNode(),true);
-  {
-    const int totdim = BplusW.M() * BplusW.N();
-    blas.AXPY(totdim, 1.0, boplin.A(), BplusW.A());  // += B_L
-    blas.AXPY(totdim, 1.0, W0.A(), BplusW.A());  // += W0_{n+1}
-  }
+  BplusW += boplin;  // += B_L
+  BplusW += W0;  // += W0_{n+1}
 
   // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
   LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),false);
@@ -500,15 +497,8 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   SmBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
-  {
-    //const int totdim = BplusW.M() * BplusW.N();
-    //blas.SCAL(totdim, 0.0, BplusW.A());  // BplusW *= 0.0
-    //blas.AXPY(totdim, 1.0, boplin.A(), BplusW.A());  // BplusW += B_L
-    //blas.AXPY(totdim, 1.0, W0m.A(), BplusW.A());  // BplusW += W0_{m}
-    BplusW.Scale(0.0);
-    BplusW += boplin;
-    BplusW += W0m;
-  } 
+  BplusW.Update(1.0, boplin, 0.0);
+  BplusW.Update(1.0, W0m, 1.0);
 
   // k_{dd} (8 x 8) :
   // k_{dd} += fac * (B_L + W0_m)^T . (Fm . C . F_{n+1}^T) . (B_L + W0_m)
@@ -591,11 +581,11 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(
   BplusW += W0;
 
   // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix FmCFBW(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix FmCFBW(4,2*NumNode(),false);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix SmGBW(4,Wall1::neas_,false);
+  LINALG::SerialDenseMatrix SmGBW(4,2*NumNode(),false);
   SmGBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // k_{ad} (4 x 8) :
