@@ -33,7 +33,7 @@ GEO::OctTree::OctTree(
     const BlitzMat3x2&  nodeBox): 
       max_depth_(max_depth),
       rootNodeBox_(nodeBox),
-      treeRoot_(null)
+      treeRoot_(Teuchos::null)      
 {}
     
 
@@ -52,16 +52,17 @@ GEO::OctTree::~OctTree(){}
 void GEO::OctTree::initializeTree(
     const std::map<int,std::set<int> >&  elementsByLabel) 
 {
-  if (treeRoot_ != Teuchos::null)
-    treeRoot_ = Teuchos::null;
-
-  treeRoot_ = rcp(new TreeNode(Teuchos::null, max_depth_, rootNodeBox_)); 
-
-  if(elementsByLabel.size()==0)
-    dserror("please provide a filled elemens by label list or use overloaded method without elementsByLabel");
+  
+  
+  treeRoot_ = Teuchos::null;
+ 
+  // TODO initialize if map is empty
+  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, rootNodeBox_)); 
 
   // insert element map into tree root node
-  treeRoot_->setElementList(elementsByLabel);
+  if(elementsByLabel.size()>0)
+    treeRoot_->setElementList(elementsByLabel);
+  
 }
 
 
@@ -73,10 +74,8 @@ void GEO::OctTree::initializeTree(
 void GEO::OctTree::initializeTree(
     const DRT::Discretization&      dis) 
 {
-  if (treeRoot_ != Teuchos::null)
-    treeRoot_ = Teuchos::null;
 
-  treeRoot_ = rcp( new TreeNode(Teuchos::null, max_depth_, rootNodeBox_)); 
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, rootNodeBox_)); 
 
   // inserts all elements in a map with key -1
   for (int i=0; i<dis.NumMyColElements(); ++i) 
@@ -93,7 +92,9 @@ void GEO::OctTree::updateTree(
     const std::map<int,BlitzVec3>& 	currentpositions_old, 
     const std::map<int,BlitzVec3>& 	currentpositions_new) 
 {
-
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+  
   std::vector< BlitzMat3x2 > AABBs_old = GEO::computeXAABBForLabeledStructures(dis, currentpositions_old, treeRoot_->getElementList());
   std::vector< BlitzMat3x2 > AABBs_new = GEO::computeXAABBForLabeledStructures(dis, currentpositions_new, treeRoot_->getElementList());
 
@@ -112,9 +113,47 @@ int GEO::OctTree::queryXFEMFSIPointType(
     const BlitzVec3& 		             point) 
 {
   //  cout << " ASKING THE TREE" << endl;
-  TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime"); 
+  TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime");
+  
+  if(treeRoot_ == Teuchos::null)
+      dserror("tree is not yet initialized !!!");
 
-  return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point);
+  if(!treeRoot_->getElementList().empty())
+    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point);
+  else 
+    return 0;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | print tree to gmsh file                                 peder   07/08|
+ *----------------------------------------------------------------------*/
+void GEO::OctTree::printTree(
+    const string  prefix, 
+    const int     step) const
+{
+  cout << endl << "writing... ";
+  if (treeRoot_ == Teuchos::null) {
+    cout << "nothing to write, tree not initialized yet -> done" << endl;
+    return;
+  }
+  if (treeRoot_->getElementList().empty()){ 
+    cout << "nothing to write, tree empty -> done" << endl;
+    return;
+  }
+  
+  std::stringstream filename;
+  std::stringstream node_string;
+  filename << prefix << "_octtree" << std::setw(5) << setfill('0') << step << ".pos";
+  cout << " " << filename.str() << " ...";
+  node_string << "View \" " << "XFEM_FSI_Octree \" {" << endl;  
+  treeRoot_->printTreeNode(max_depth_,node_string);
+  node_string << "};" << endl;
+  std::ofstream f_system(filename.str().c_str());
+  f_system << node_string.str();
+  f_system.close();
+  cout << " done" << endl;
 }
 
 
@@ -123,7 +162,7 @@ int GEO::OctTree::queryXFEMFSIPointType(
  | c-tor TreeNode                                            u.may 07/08|
  *----------------------------------------------------------------------*/
 GEO::OctTree::TreeNode::TreeNode(
-    const Teuchos::RCP<GEO::OctTree::TreeNode>  parent,
+    const TreeNode* const                       parent,
     const int                                   depth, 
     const BlitzMat3x2&                          nodeBox):
     parent_(parent),
@@ -135,7 +174,7 @@ GEO::OctTree::TreeNode::TreeNode(
     yPlaneCoordinate_( (nodeBox_(1,0)+0.5*(nodeBox_(1,1)-nodeBox_(1,0))) ),
     zPlaneCoordinate_( (nodeBox_(2,0)+0.5*(nodeBox_(2,1)-nodeBox_(2,0))) )
 {    
-  std::vector< Teuchos::RCP<TreeNode> > children_(8, Teuchos::null);
+  children_.assign(8, Teuchos::null);
   
 }
                   
@@ -218,7 +257,7 @@ void GEO::OctTree::TreeNode::clear()
  *----------------------------------------------------------------------*/
 bool GEO::OctTree::TreeNode::hasParent() const 
 {
-  if (parent_!=Teuchos::null)
+  if (parent_!=NULL)
     return true;
   return false;
 }
@@ -250,11 +289,12 @@ void GEO::OctTree::TreeNode::setLabel(
 /*----------------------------------------------------------------------*
  | returns pointer to parent element                         peder 07/08|
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getParent() const
+const GEO::OctTree::TreeNode* const GEO::OctTree::TreeNode::getParent() const
 {
   if (this->hasParent())
     return parent_;
-  return null;
+  
+  return NULL;
 }
 
 
@@ -313,7 +353,7 @@ const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
 /*----------------------------------------------------------------------*
  | get node box of a child specified by index              peder   07/08|
  *----------------------------------------------------------------------*/
-const BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
+BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
   BlitzMat3x2 childNodeBox;
@@ -379,21 +419,22 @@ void GEO::OctTree::TreeNode::createChildren(
     const DRT::Discretization&      dis,
     const std::map<int,BlitzVec3>& 	currentpositions)
 {
+  // create empty children
+  for(int index = 0; index < 8; index++)
+    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index) ));
+  
+  
+  // insert elements into child node
+  for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
+    for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+    {
+      std::vector<int> elementClassification = classifyElement(dis.gElement(*eleIter),currentpositions);
+      for(unsigned int count = 0; count < elementClassification.size(); count++)
+        children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
+    }
+  
   for(int index = 0; index < 8; index++)
   {
-    
-    children_[index] = rcp(new TreeNode(rcp(this), (treedepth_-1), getChildNodeBox(index)));
-
-    // insert elements into child node
-    for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
-      for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-      {
-        std::vector<int> elementClassification = classifyElement(dis.gElement(*eleIter),currentpositions);
-        for(unsigned int count = 0; count < elementClassification.size(); count++)
-          if(elementClassification[count] == index)
-            children_[index]->insertElement(labelIter->first,*eleIter);
-      }
-  
     // if one of the created children is empty, set label immediately
     if ((children_[index]->getElementList()).empty())
     {
@@ -563,7 +604,7 @@ int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
         return label_;
 
       // max depth reached, counts reverse
-      if (treedepth_ <= 0 || elementList_.size()==1)
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
         return GEO::getXFEMLabel(dis, currentpositions, point, elementList_); 
 
       // dynamically grow tree otherwise, create children and set label for empty children
@@ -576,6 +617,58 @@ int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
       dserror("should not get here\n");
   }
   return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ | print tree node to gmsh file                            peder   07/08|
+ *----------------------------------------------------------------------*/
+void GEO::OctTree::TreeNode::printTreeNode(
+    const int       max_depth,
+    stringstream&   fc) const
+{
+  if(treedepth_== max_depth)
+  {
+    BlitzMat printBox(3,8);
+    printBox(0,0) = nodeBox_(0,0); printBox(1,0) = nodeBox_(1,0); printBox(2,0) = nodeBox_(2,0);
+    printBox(0,1) = nodeBox_(0,0); printBox(1,1) = nodeBox_(1,1); printBox(2,1) = nodeBox_(2,0);
+    printBox(0,2) = nodeBox_(0,0); printBox(1,2) = nodeBox_(1,1); printBox(2,2) = nodeBox_(2,1);
+    printBox(0,3) = nodeBox_(0,0); printBox(1,3) = nodeBox_(1,0); printBox(2,3) = nodeBox_(2,1);
+    printBox(0,4) = nodeBox_(0,1); printBox(1,4) = nodeBox_(1,0); printBox(2,4) = nodeBox_(2,0);
+    printBox(0,5) = nodeBox_(0,1); printBox(1,5) = nodeBox_(1,1); printBox(2,5) = nodeBox_(2,0);
+    printBox(0,6) = nodeBox_(0,1); printBox(1,6) = nodeBox_(1,1); printBox(2,6) = nodeBox_(2,1);
+    printBox(0,7) = nodeBox_(0,1); printBox(1,7) = nodeBox_(1,0); printBox(2,7) = nodeBox_(2,1);
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, 0, printBox)<< endl;
+  }
+
+  if(treeNodeType_== GEO::INNER_NODE)
+  {
+    for (int i=0; i<8; i++)
+      if (children_[i] != Teuchos::null)
+        children_[i]->printTreeNode(max_depth, fc);
+   
+  }
+  else if (treeNodeType_== GEO::LEAF_NODE)
+  {
+    int factor = -1;
+    
+    if (label_ < 0)
+      factor = 0; // more than one candidate in this octant
+    else if (label_ == 0)
+      factor = 1; // fluid octant
+    else
+      factor = 2; // solid octant
+    BlitzMat printBox(3,8);
+    printBox(0,0) = nodeBox_(0,0); printBox(1,0) = nodeBox_(1,0); printBox(2,0) = nodeBox_(2,0);
+    printBox(0,1) = nodeBox_(0,0); printBox(1,1) = nodeBox_(1,1); printBox(2,1) = nodeBox_(2,0);
+    printBox(0,2) = nodeBox_(0,0); printBox(1,2) = nodeBox_(1,1); printBox(2,2) = nodeBox_(2,1);
+    printBox(0,3) = nodeBox_(0,0); printBox(1,3) = nodeBox_(1,0); printBox(2,3) = nodeBox_(2,1);
+    printBox(0,4) = nodeBox_(0,1); printBox(1,4) = nodeBox_(1,0); printBox(2,4) = nodeBox_(2,0);
+    printBox(0,5) = nodeBox_(0,1); printBox(1,5) = nodeBox_(1,1); printBox(2,5) = nodeBox_(2,0);
+    printBox(0,6) = nodeBox_(0,1); printBox(1,6) = nodeBox_(1,1); printBox(2,6) = nodeBox_(2,1);
+    printBox(0,7) = nodeBox_(0,1); printBox(1,7) = nodeBox_(1,0); printBox(2,7) = nodeBox_(2,1);
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor + treedepth_ + max_depth, printBox)<< endl;
+  }
 }
 
 

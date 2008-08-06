@@ -22,6 +22,8 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "intersection.H"
 #include "xfsi_searchtree.H"
+#include "../drt_geometry/octtree.H"
+#include "../drt_geometry/octtree_geometry_service.H"
 
 namespace XFEM
 {
@@ -40,7 +42,7 @@ public:
     explicit InterfaceHandle(
             const Teuchos::RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
             const Teuchos::RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
-            const Epetra_Vector&                  idispcol      ///< interface displacements for current position of interface
+            const Epetra_Vector&                           idispcol      ///< interface displacements for current position of interface
             );
     //! destructor
     ~InterfaceHandle();
@@ -67,8 +69,8 @@ public:
     //! get pointer to elementsByLabel_
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
-    //! get pointer to search tree
-    Teuchos::RCP<XSearchTree> getSearchTree() const {return xTree_;};
+    //! get pointer to oct tree
+    Teuchos::RCP<GEO::OctTree> getOctTree() const {return octTree_;};
  
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
@@ -103,7 +105,8 @@ public:
     /// Print Information about the contained search tree
     void PrintTreeInformation(const int step) const
     {
-        xTree_->printTreeMetrics(step);
+        printf("tree metrics is not yet implemented");
+        octTree_->printTree("TREE", step);
         return;
     }
     
@@ -124,14 +127,6 @@ private:
     
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
-   
-    //! read Input file for search tree parameters (tree.cfg)
-    void readTreeParameters(
-        int& MAX_TREEDEPTH, ///> max tree depth
-        int& ELEMENTS_USED_FOR_OVERLAP_CHECK, ///> value for elements used for overlap check
-        double& MAX_OVERLAP_ALLOWED, ///> threshold for overlap 
-        const string filename="tree.cfg" ///< filename of file containing parameters 
-        ) const;
   
     //! intersected domain
     const Teuchos::RCP<DRT::Discretization> xfemdis_;
@@ -140,19 +135,19 @@ private:
     const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
     //! current positions of all cutter nodes
-    std::map<int,BlitzVec3>        currentcutterpositions_;
+    std::map<int,BlitzVec3>                 currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
-    std::map<int, DomainIntCells > elementalDomainIntCells_;
+    std::map<int, DomainIntCells >          elementalDomainIntCells_;
 
     //! integration cells for boundary
-    std::map<int, BoundaryIntCells > elementalBoundaryIntCells_;
+    std::map<int, BoundaryIntCells >        elementalBoundaryIntCells_;
     
     //! for each xfem condition label there is a set of boundary elements
-    std::map<int,std::set<int> >          elementsByLabel_;
+    std::map<int,std::set<int> >            elementsByLabel_;
     
-    //! XSearchTree xTree_
-    Teuchos::RCP<XFEM::XSearchTree>  xTree_;
+    //! OctTree octtree
+    Teuchos::RCP<GEO::OctTree>              octTree_;
 
 };
 
@@ -164,15 +159,15 @@ int PositionWithinCondition(
         const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
     );
 
+
 /*!
-\brief checks if a position in current coordinates lies within a certain condition region           
-*/  
-int PositionWithinCondition(
-        const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
-        int& closestElementId, 
-        double& distance
+\brief checks if a position in current coordinates lies within a certain condition region using an octree
+*/
+int PositionWithinConditionOctTree(
+    const BlitzVec3&                  x_in, ///< node in physical coordinates
+    const XFEM::InterfaceHandle&      ih    ///< the ubiquitious interface handle with all geometry information
     );
+
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region           
@@ -183,15 +178,6 @@ bool PositionWithinAnyInfluencingCondition(
         const std::set<int>&              xlabelset       ///< influencing enrichment labels
     );
 
-/*!
-\brief checks if a position in current coordinates lies within a certain condition region using an octree
-*/
-int PositionWithinConditionTree(
-        const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
-        int& closestElementId, 
-        double& distance
-    );
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region: example brute force implementation

@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #define XFSI_OCTTREE_H
 
 #include "../drt_geometry/octtree_geometry_service.H"
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 
 namespace GEO
 {
@@ -38,7 +38,7 @@ private: class TreeNode{
 private:
 
   //! pointer to the parent node
-  Teuchos::RCP<TreeNode > parent_; 
+  const TreeNode* const parent_; 
     
   //! treedepth of this node
   const int treedepth_;
@@ -46,7 +46,7 @@ private:
   //! is either STATE_LEAF_NODE or STATE_INNER_NODE
   TreeNodeType treeNodeType_;
 
-  //! if treenode is completly FLUID or SOLID it stores the label of the XFEM condition or 0 for fluid
+  //! stores the label of the XFEM condition or 0 for fluid
   int label_;
   
   //! axis aligned bounding box of this tree node 
@@ -73,7 +73,7 @@ private:
    \param childIndex           index of child node
    \return returns node box
    */
-  const BlitzMat3x2 getChildNodeBox(
+  BlitzMat3x2 getChildNodeBox(
       const int childIndex                      
       ) const;
 
@@ -128,7 +128,7 @@ public:
    \param parent     pointer to parent element
    */
   TreeNode(
-      const Teuchos::RCP<TreeNode> parent,
+      const TreeNode* const parent,
       const int depth,              
       const BlitzMat3x2& nodeBox
       );
@@ -190,7 +190,7 @@ public:
    \brief return pointer to the parent node 
    \return pointer to parent tree node
    */
-  const Teuchos::RCP<TreeNode> getParent() const;
+  const TreeNode* const getParent() const;
 
 
   /*!
@@ -248,6 +248,18 @@ public:
       const std::map<int,BlitzVec3>&    currentpositions,  
       const BlitzVec3&                  point                               
       );
+  
+  
+  /*!
+  \brief print tree node
+  \param max_depth           maximum depth of tree
+  \param fc                  prefix node stream
+   */
+  void printTreeNode(
+      const int       max_depth,
+      stringstream&   fc
+      ) const;
+  
 
 }; // class TreeNode
   
@@ -315,6 +327,18 @@ public:
       const BlitzVec3&                point
       );
 
+  
+  /*!
+  \brief prints entire tree to gmsh file
+  \param prefix               prefix
+  \param step                 time step
+   */
+  void printTree(
+      const string  prefix, 
+      const int     step
+      ) const;
+  
+  
 
 private:
   //! maximum search depth

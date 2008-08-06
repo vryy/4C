@@ -132,6 +132,7 @@ int GEO::getXFEMLabel(
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   // returns the label of the surface element structure the projection of the query point is lying on
   int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);  	
+ 
   // compute normal in the point found on or in the object 
   BlitzVec3 normal= getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
 
@@ -173,7 +174,6 @@ int GEO::nearestObjectInNode(
       // not const because otherwise no lines can be obtained
       DRT::Element* element = dis.gElement(*eleIter);
       pointFound = GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
-
       if(pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -185,16 +185,17 @@ int GEO::nearestObjectInNode(
       const std::vector<Teuchos::RCP< DRT::Element> > eleLines = element->Lines();
       for(int i = 0; i < element->NumLine(); i++)
       {
-        pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
+        pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);     
         if(pointFound && distance < min_distance)
         {
           pointFound = false;
           min_distance = distance;
-          nearestObject.setLineObjectType(*eleIter, i, labelIter->first, x_surface);
+          nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
         }
       }
       // collect nodes
-      for(int i = 0; i < element->NumNode(); i++)
+      // 4 is correct because only the 4 corner nodes have to checked
+      for(int i = 0; i < 4; i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
@@ -308,8 +309,9 @@ bool GEO::getDistanceToLine(
   BlitzVec1 elecoord = 0.0; // starting value at element center  
 
   const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineElement, currentpositions));
+  
   XFEM::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
-
+  
   if(XFEM::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
   { 
     XFEM::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, x_line_phys);

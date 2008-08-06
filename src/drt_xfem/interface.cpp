@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "xfsi_searchtree.H"
+
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
@@ -72,16 +73,14 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  //cout << "create new xTree_ object" << endl;
+  
   const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,currentcutterpositions_);
   const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
-  int MAX_TREEDEPTH;
-  int ELEMENTS_USED_FOR_OVERLAP_CHECK;
-  double MAX_OVERLAP_ALLOWED; 
-  readTreeParameters(MAX_TREEDEPTH, ELEMENTS_USED_FOR_OVERLAP_CHECK, MAX_OVERLAP_ALLOWED);
-  xTree_ = rcp(new XSearchTree(AABB, MAX_TREEDEPTH, ELEMENTS_USED_FOR_OVERLAP_CHECK, MAX_OVERLAP_ALLOWED) );
-  
+  const int max_treedepth = 5;
+  octTree_ = rcp( new GEO::OctTree(max_treedepth, AABB ) );
+  octTree_->initializeTree(elementsByLabel_); 
+ 
   // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
   
@@ -218,9 +217,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           BlitzMat cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-          int closestElementId;
-          double distance;
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
+          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
           gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
@@ -260,10 +257,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           
-          int closestElementId;
-          double distance;
- 
-          //const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
+          //const int domain_id = PositionWithinCondition(cellcenterpos, *this);
           
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
@@ -278,58 +272,12 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     }
     f_systemP.close();
     cout << " done" << endl;
-    xTree_->printTree(allfiles.outputfile_kenner, step);
+    
+    octTree_->printTree(allfiles.outputfile_kenner, step);
   }
-  xTree_->printTreeMetrics(step);
-  xTree_->printTreeMetricsFile(step);
+  // TODO implement for octtree xTree_->printTreeMetrics(step);
+  // TODO implement for octtree xTree_->printTreeMetricsFile(step);
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandle::readTreeParameters(
-    int& MAX_TREEDEPTH, ///> max tree depth
-    int& ELEMENTS_USED_FOR_OVERLAP_CHECK, ///> value for elements used for overlap check
-    double& MAX_OVERLAP_ALLOWED, ///> threshold for overlap 
-    const string filename ///< filename of file containing parameters 
-    ) const{
- 
-  std::fstream fin(filename.c_str(),ios::in);
-  if( !fin.is_open() )
-  { // if file cannot be opened return standard values
-    cout << "using standard parameters for tree because input file cannot be read!" <<endl;
-    MAX_TREEDEPTH = 5;
-    ELEMENTS_USED_FOR_OVERLAP_CHECK = 1;
-    MAX_OVERLAP_ALLOWED = 0.875;
-    return;
-  }
-  MAX_TREEDEPTH = -1;
-  ELEMENTS_USED_FOR_OVERLAP_CHECK = -1;
-  MAX_OVERLAP_ALLOWED = -1.0;
-  string line;
-  while (!fin.eof()){
-    getline(fin,line);
-//    cout << line << endl;
-    if(line.find("MAX_TREEDEPTH")!=string::npos){
-//      cout << "set MAX_TREEDEPTH to " << atoi(line.substr((line.find("=")+1)).c_str())<< endl;
-      MAX_TREEDEPTH=atoi(line.substr((line.find("=")+1)).c_str());
-    }
-    if(line.find("ELEMENTS_USED_FOR_OVERLAP_CHECK")!=string::npos){
-//      cout << "set ELEMENTS_USED_FOR_OVERLAP_CHECK to " << atoi(line.substr((line.find("=")+1)).c_str()) << endl;
-      ELEMENTS_USED_FOR_OVERLAP_CHECK=atoi(line.substr((line.find("=")+1)).c_str());
-    }
-    if(line.find("MAX_OVERLAP_ALLOWED")!=string::npos){
-//      cout << "set ELEMENTS_USED_FOR_OVERLAP_CHECK to " << atof(line.substr((line.find("=")+1)).c_str())<< endl;
-      ELEMENTS_USED_FOR_OVERLAP_CHECK = atoi(line.substr((line.find("=")+1)).c_str());
-    }
-  } 
-  fin.close();
-  if (MAX_TREEDEPTH<0)
-    MAX_TREEDEPTH=5;
-  if (ELEMENTS_USED_FOR_OVERLAP_CHECK<0)
-    ELEMENTS_USED_FOR_OVERLAP_CHECK=1;
-  if (MAX_OVERLAP_ALLOWED<0)
-    MAX_OVERLAP_ALLOWED=0.875;
 }
 
 
@@ -392,43 +340,25 @@ int XFEM::PositionWithinCondition(
     const XFEM::InterfaceHandle&      ih
 )
 {
-  int closestElementId;
-  double distance; 
-  return PositionWithinCondition(x_in,ih,closestElementId, distance);
+  return PositionWithinConditionOctTree(x_in, ih);
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::PositionWithinCondition(
+int XFEM::PositionWithinConditionOctTree(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
-    int& closestElementId, 
-    double& distance
-)
+    const XFEM::InterfaceHandle&      ih)
 {
-  //PositionWithinConditionBruteForce(x_in, ih, posInCondition);
-  const int label = PositionWithinConditionTree(x_in, ih, closestElementId,distance);
-//  const std::map<int,std::set<int> >& elementsByLabel = *(ih.elementsByLabel());
-//  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-//   {
-//     const int label = conditer->first;
-//     if (posInCondition1[label]!=posInCondition2[label])
-//     {
-////       cout << " bruteforce posInCondition[" << label <<"] = "<< posInCondition1[label] << endl;    
-////       cout << "xsearchtree posInCondition[" << label <<"] = "<< posInCondition2[label] << endl;
-//       //cout <<  posInCondition1[label] << " " << posInCondition2[label] << endl;
-//       flush(cout);  
-//       dserror("results for searchtree and brute force do not match");
-//     }
-//   }
-  //posInCondition = posInCondition1;
-    
-  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-#ifdef PARALLEL
-  dserror("not implemented, yet");
-#endif
-  return label;
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionOctTree");
+  Teuchos::RCP<GEO::OctTree> xt = ih.getOctTree(); // pointer is constant, object is not!
+  const int XFEMlabel = xt->queryXFEMFSIPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
+
+  // for parallel : there is nothing to be extended for parallel execution
+
+  return XFEMlabel;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -494,25 +424,6 @@ int XFEM::PositionWithinConditionBruteForce(
   return label;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::PositionWithinConditionTree(
-    const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
-    int& closestElementId, 
-    double& distance
-)
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionTree");
-  Teuchos::RCP<XSearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
-  int l = xt->queryPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in, closestElementId, distance);
-
-  #ifdef PARALLEL
-  dserror("not implemented, yet");
-#endif
-
-  return l;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -525,9 +436,8 @@ bool XFEM::PositionWithinAnyInfluencingCondition(
 {
   
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
-  int closestElementId; 
-  double distance;
-  const int label = PositionWithinCondition(x_in, ih,closestElementId, distance);
+ 
+  const int label = PositionWithinCondition(x_in, ih);
   
   bool compute = false;
   if (label == 0) // fluid
@@ -551,6 +461,5 @@ bool XFEM::PositionWithinAnyInfluencingCondition(
 }
 
 
-//const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);
 
 #endif  // #ifdef CCADISCRET

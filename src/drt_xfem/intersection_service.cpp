@@ -909,10 +909,11 @@ static void currentToLineElementCoordinatesT(
   // starting value
   eleCoord = 0.0;
   
-  while (residual > XFEM::TOL13 || iter < maxiter)
+  
+  while(residual > XFEM::TOL13 && iter < maxiter)
   {
     iter++;
- 
+    
     // determine shapefunction, 1. and 2. derivative at current solutiom
     static blitz::TinyVector<double,numNodes> funct;
     DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
@@ -931,15 +932,18 @@ static void currentToLineElementCoordinatesT(
     static BlitzVec3 F_deriv2 = 0.0;
         
     for(int i = 0; i < 3; i++)
-    {
       for(int inode = 0; inode < numNodes; inode++)
       {
         F(i) += xyze_lineElement(i,inode) * funct(inode);
         F_deriv1(i) += xyze_lineElement(i,inode) * deriv1(0,inode);
         F_deriv2(i) += xyze_lineElement(i,inode) * deriv2(0,inode);
       }
-      F -= physCoord;
-    }
+      
+    F -= physCoord;
+    
+    //cout << "F " << F << endl;
+    //cout << "F_deriv1 " << F_deriv1 << endl;
+    //cout << "F_deriv2 " << F_deriv2 << endl;
     
     // determine system matrix A and rhs b
     double A = 0.0;
@@ -952,11 +956,20 @@ static void currentToLineElementCoordinatesT(
     }
   
     if(fabs(A) < XFEM::TOL14)
-      dserror("A is equal to 0");
-  
-    // solve scalar linear equation 
-    eleCoord(0) = (-1)*b/A;
-  
+    {
+      //printf("A is equal to zero 0");
+      break;
+    }
+    // solve scalar linear equation  Delta_x = -b/A
+    eleCoord(0) += (-1)*b/A;
+    
+    //cout << " A = " << A << endl;
+    //cout << " b = " << b << endl;
+    //cout << " x = " << eleCoord(0) << endl;
+    
+    if(iter >= maxiter || fabs(eleCoord(0)) > XFEM::TOLPLUS8)
+      break;
+
     residual = fabs(b); 
   }
 }

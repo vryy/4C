@@ -109,8 +109,8 @@ class NearestObject
     \brief Return surface Id of object
      */
     inline int getSurfaceId() const { 
-      if(objectType_ != LINE || objectType_ != SURFACE || lineId_ == -1 || surfId_ == -1 )
-        dserror("objecttype is not correct (surfeId) or ids are not set");
+      if( (objectType_ != LINE && objectType_ != SURFACE) || ( lineId_ == -1 && surfId_ == -1)  )
+        dserror("objecttype is not correct (surfId) or ids are not set");
       return surfId_;}
        
     /*!
