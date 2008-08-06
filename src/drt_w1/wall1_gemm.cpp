@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wall1_evaluate_gemm.cpp
+\file wall1_gemm.cpp
 \brief Routines for generalised energy-momentum method
 
 <pre>
@@ -27,6 +27,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -66,9 +68,6 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   // density if mass is calculated
   const double density = (massmatrix) ? Density(material) : 0.0;
 
-  // BLAS dummy
-  Epetra_BLAS::Epetra_BLAS blas;
-
   // general arrays
   Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
   Epetra_SerialDenseMatrix shpdrv(Wall1::numdim_,numnode);  // parametric derivatives of shape funct. at Gauss point
@@ -79,16 +78,16 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseVector Fuvo(4);  // disp-based def.grad. vector at t_{n}
   Epetra_SerialDenseVector Fuv(4);  // disp-based def.grad. vector at t_{n+1}
 
-  Epetra_SerialDenseVector Evo(4);  // Green-Lagrange strain vector at t_{n}
-  Epetra_SerialDenseVector Ev(4);  // Green-Lagrange strain vector at t_{n+1}
-  Epetra_SerialDenseVector& Evm = Evo;  // Green-Lagrange mid-strain vector
+  LINALG::SerialDenseVector Evo(4,false);  // Green-Lagrange strain vector at t_{n}
+  LINALG::SerialDenseVector Ev(4,false);  // Green-Lagrange strain vector at t_{n+1}
+  LINALG::SerialDenseVector& Evm = Evo;  // Green-Lagrange mid-strain vector
 
   Epetra_SerialDenseMatrix Xe(Wall1::numdim_,numnode);  // material/initial element co-ordinates
   Epetra_SerialDenseMatrix xeo(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n}
   Epetra_SerialDenseMatrix xe(Wall1::numdim_,numnode);  // spatial/current element co-ordinates at t_{n+1}
-  Epetra_SerialDenseMatrix bopo(Wall1::numstr_,edof);  // non-linear B-op at t_{n}
-  Epetra_SerialDenseMatrix bop(Wall1::numstr_,edof);  // non-linear B-op at t_{n+1}
-  Epetra_SerialDenseMatrix& bopm = bopo;  // non-linear mid-B-op
+  LINALG::SerialDenseMatrix bopo(Wall1::numstr_,edof,false);  // non-linear B-op at t_{n}
+  LINALG::SerialDenseMatrix bop(Wall1::numstr_,edof,false);  // non-linear B-op at t_{n+1}
+  LINALG::SerialDenseMatrix& bopm = bopo;  // non-linear mid-B-op
   Epetra_SerialDenseMatrix Smm(4,4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS: STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
   Epetra_SerialDenseMatrix C(4,4);
 
@@ -101,21 +100,21 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix* oldKad;  // EAS history
   Epetra_SerialDenseMatrix Fenhvo;  // EAS matrix Fenhv
   Epetra_SerialDenseMatrix Fenhv;  // EAS matrix Fenhv
-  Epetra_SerialDenseMatrix Fmo;  // total def.grad. matrix at t_{n}
-  Epetra_SerialDenseMatrix Fm;  // total def.grad. matrix at t_{n+1}
-  Epetra_SerialDenseMatrix& Fmm = Fmo;  // total mid-def.grad. matrix
+  LINALG::SerialDenseMatrix Fmo;  // total def.grad. matrix at t_{n}
+  LINALG::SerialDenseMatrix Fm;  // total def.grad. matrix at t_{n+1}
+  LINALG::SerialDenseMatrix& Fmm = Fmo;  // total mid-def.grad. matrix
   Epetra_SerialDenseMatrix Pvmm;  // first Piola-Kirchhoff stress vector
   Epetra_SerialDenseMatrix Xjm0;  // Jacobian Matrix (origin)
   double Xjdet0;  // determinant of #Xjm0
   Epetra_SerialDenseVector Fuv0o;  // deformation gradient at origin at t_{n}
   Epetra_SerialDenseVector Fuv0;  // deformation gradient at origin at t_{n+1}
   Epetra_SerialDenseMatrix boplin0; // B-operator (origin)
-  Epetra_SerialDenseMatrix W0o;  // W-operator (origin) at t_{n}
-  Epetra_SerialDenseMatrix W0;  // W-operator (origin) at t_{n+1}
-  Epetra_SerialDenseMatrix& W0m = W0o;  // mid-W-operator (origin)
-  Epetra_SerialDenseMatrix Go;  // G-operator at t_{n}
-  Epetra_SerialDenseMatrix G;  // G-operator at t_{n+1}
-  Epetra_SerialDenseMatrix& Gm = Go;  // mid-G-operator
+  LINALG::SerialDenseMatrix W0o;  // W-operator (origin) at t_{n}
+  LINALG::SerialDenseMatrix W0;  // W-operator (origin) at t_{n+1}
+  LINALG::SerialDenseMatrix& W0m = W0o;  // mid-W-operator (origin)
+  LINALG::SerialDenseMatrix Go;  // G-operator at t_{n}
+  LINALG::SerialDenseMatrix G;  // G-operator at t_{n+1}
+  LINALG::SerialDenseMatrix& Gm = Go;  // mid-G-operator
   Epetra_SerialDenseMatrix Z;  // Z-operator
   Epetra_SerialDenseMatrix FmCF;  // FCF^T
   Epetra_SerialDenseMatrix Kda;  // EAS matrix Kda
@@ -256,51 +255,24 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
     // mid-def.grad.
     // F_m = (1.0-gemmalphaf)*F_{n+1} + gemmalphaf*F_{n}
-    {
-      const int totdim = Fmm.M() * Fmm.N();
-      // remember same pointer: F_m = F_{n}
-      blas.SCAL(totdim, gemmalphaf, Fmm.A());  // F_m *= gemmalphaf = gemmalphaf*F_{n}
-      blas.AXPY(totdim, (1.0-gemmalphaf), Fm.A(), Fmm.A());  // F_m += (1.0-gemmalphaf)*F_{n+1}
-    }
+    Fmm.Update((1.0-gemmalphaf), Fm, gemmalphaf);  // remember same pointer: F_m = F_{n}
 
     // non-linear mid-B-operator
     // B_m = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
-    {
-      const int totdim = bopm.M() * bopm.N();
-      // remember same pointer B_m = B_{n}
-      blas.SCAL(totdim, gemmalphaf, bopm.A());  // B_m *= gemmalphaf = gemmalphaf*B_{n}
-      blas.AXPY(totdim, (1.0-gemmalphaf), bop.A(), bopm.A());  // B_m += (1.0-gemmalphaf)*B_{n+1}
-    }
+    bopm.Update((1.0-gemmalphaf), bop, gemmalphaf);  // remember same pointer B_m = B_{n}
 
     // mid-strain GL vector
     // E_m = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_n
-    {
-      const int totdim = Evm.M() * Evm.N();
-      // remember same pointer: E_m = E_{n}
-      blas.SCAL(totdim, (gemmalphaf-gemmxi), Evm.A());  // E_m *= (gemmalphaf-gemmxi) = (gemmalphaf-gemmxi)*E_n
-      blas.AXPY(totdim, (1.0-gemmalphaf+gemmxi), Ev.A(), Evm.A());  // E_m += (1.0-gemmalphaf+gemmxi)*E_{n+1}
-    }
+    Evm.Update((1.0-gemmalphaf+gemmxi), Ev, (gemmalphaf-gemmxi));  // remember same pointer: E_m = E_{n}
 
     // extra mid-quantities for case of EAS
     if (iseas_)
     {
-      // mid-G-operator
-      // G_m = 0.5*G_{n+1} + 0.5*G_{n}
-      {
-        const int totdim = Gm.M() * Gm.N();
-        // remember same pointer: G_m = G_{n}
-        blas.SCAL(totdim, 0.5, Gm.A());  // G_m *= 0.5 = 0.5*G_{n}
-        blas.AXPY(totdim, 0.5, G.A(), Gm.A());  // G_m += 0.5*G_{n+1}
-      }
+      // mid-G-operator : G_m = 0.5*G_{n+1} + 0.5*G_{n}
+      Gm.Update(0.5, G, 0.5);  // remember same pointer: G_m = G_{n}
 
-      // mid-W0-operator
-      // W_{0;m} = 0.5*W_{0;n+1} + 0.5*W_{0;n}
-      {
-        const int totdim = W0m.M() * W0m.N();
-        // remember same pointer: W0_m = W0_{n}
-        blas.SCAL(totdim, 0.5, W0m.A());   // W0_m *= 0.5 = 0.5*W0_{n}
-        W0m.AXPY(totdim, 0.5, W0.A(), W0m.A());  // W0_m += 0.5*W0_{n+1}
-      }
+      // mid-W0-operator : W_{0;m} = 0.5*W_{0;n+1} + 0.5*W_{0;n}
+      W0m.Update(0.5, W0, 0.5);  // remember same pointer: W0_m = W0_{n}
     }
 
     // call material law
