@@ -120,7 +120,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
       }
 
       //******************************************************************
-      // plot normal, tangent, contact status and mutlipliers
+      // plot normal, tangent, contact status and Lagr. mutlipliers
       //******************************************************************
       for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
@@ -132,13 +132,19 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
 
         double nc[3];
         double nn[3];
+        double nt[3];
+        nt[0] = -cnode->n()[1];
+        nt[1] =  cnode->n()[0];
+        nt[2] = 0.0;
         double lmn = 0.0;
-
+        double lmt = 0.0;
+        
         for (int j=0;j<3;++j)
         {
           nc[j]=cnode->xspatial()[j];
           nn[j]=cnode->n()[j];
-          lmn +=  (cnode->Active())*cnode->n()[j]* cnode->lm()[j];
+          lmn +=  (cnode->Active())*nn[j]* cnode->lm()[j];
+          lmt +=  (cnode->Active())*nt[j]* cnode->lm()[j];
         }
 
         //******************************************************************
@@ -184,10 +190,16 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         }
         
         //******************************************************************
-        // plot Lagrange multipliers (normal contact stresses)
+        // plot Lagrange multipliers (normal+tang. contact stresses)
         //******************************************************************
         gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
         gmshfilecontent << "{" << scientific << lmn*nn[0] << "," << lmn*nn[1] << "," << lmn*nn[2] << "};" << endl;
+        
+        if (fric)
+        {
+          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontent << "{" << scientific << lmt*nn[0] << "," << lmt*nn[1] << "," << lmt*nn[2] << "};" << endl;
+        }
       }
       
       //******************************************************************
