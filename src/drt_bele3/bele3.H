@@ -32,10 +32,16 @@ namespace ELEMENTS
 {
 
 /*!
-\brief A 3D boundary element with no physics attached
-
-\author axelchen (gerstenberger@lnm.mw.tum.de)
-*/
+ * A 3D boundary element with no physics attached
+ * 
+ * This element is meant to have no physics. It can be used to have a boundary discretization
+ * of surface/boundary elements. They can be of any 2d shape (quad4,quad9,tri3,...)
+ * 
+ * The number of dof per node is set to 3, so we can define displacement vectors by
+ * using FillComplete on the boundary discretization.
+ * 
+ * \author axelchen (gerstenberger@lnm.mw.tum.de)
+ */
 class Bele3 : public DRT::Element
 {
 public:

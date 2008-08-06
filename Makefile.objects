@@ -1197,10 +1197,6 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/interface.o \
                     src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
-                    src/drt_xfem/bele3.o \
-                    src/drt_xfem/bele3_line.o \
-                    src/drt_xfem/bele3_line_evaluate.o \
-                    src/drt_xfem/bele3_evaluate.o \
                     src/drt_xfem/xdofmapcreation.o \
                     src/drt_xfem/xfsi_searchtree.o \
                     src/drt_xfem/geometry_service.o
@@ -1216,3 +1212,8 @@ OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
 OBJS_DRT_COMBUST = src/drt_combust/combust_dyn.o \
                 src/drt_combust/combust_algorithm.o \
                 src/drt_combust/combust_utils.o
+# boundary elements
+OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
+                  src/drt_bele3/bele3_line.o \
+                  src/drt_bele3/bele3_line_evaluate.o \
+                  src/drt_bele3/bele3_evaluate.o
