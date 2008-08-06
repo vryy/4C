@@ -70,6 +70,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
   // do output to file in c-style
   FILE* fp = NULL;
 
+  //**********************************************************************
+  // Start GMSH output
+  //**********************************************************************
   for (int proc=0;proc<comm_.NumProc();++proc)
   {
     if (proc==comm_.MyPID())
@@ -82,7 +85,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
       std::stringstream gmshfilecontent;
       if (proc==0) gmshfilecontent << "View \" Step " << step << " Iter " << iter << " \" {" << endl;
 
+      //******************************************************************
       // plot elements
+      //******************************************************************
       for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
       {
         CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
@@ -114,7 +119,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         }
       }
 
-      // plot normal vectors
+      //******************************************************************
+      // plot normal, tangent, contact status and mutlipliers
+      //******************************************************************
       for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
         int gid = snoderowmap_->GID(i);
@@ -123,56 +130,32 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         CNode* cnode = static_cast<CNode*>(node);
         if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
 
-         double nc[3];
-         double nn[3];
-
-         for (int j=0;j<3;++j)
-         {
-           nc[j]=cnode->xspatial()[j];
-           nn[j]=cnode->n()[j];
-         }
-
-         gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-         gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
-      }
-
-      // plot contact segments (slave and master projections)
-      if (csegs.M()!=0)
-      {
-        for (int i=0; i<csegs.M(); ++i)
-        {
-          gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-                                   << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-                                   << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
-                                   << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-                                   << csegs(i,11) << ")";
-          gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "," << proc << "};" << endl;
-
-          gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-                          << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-                          << csegs(i,5) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-
-          gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
-                          << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-                          << csegs(i,11) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-        }
-      }
-
-      // plot contact status of slave nodes (inactive, active, stick, slip)
-      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
-      {
-        int gid = snoderowmap_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CNode* cnode = static_cast<CNode*>(node);
-        if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
-        
         double nc[3];
+        double nn[3];
+        double lmn = 0.0;
+
         for (int j=0;j<3;++j)
+        {
           nc[j]=cnode->xspatial()[j];
-        
+          nn[j]=cnode->n()[j];
+          lmn +=  (cnode->Active())*cnode->n()[j]* cnode->lm()[j];
+        }
+
+        //******************************************************************
+        // plot normal and tangent vectors (only 2D)
+        //******************************************************************
+        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+         
+        if (fric)
+        {
+          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontent << "{" << scientific << -nn[1] << "," << nn[0] << "," << nn[2] << "};" << endl;
+        }
+         
+        //******************************************************************
+        // plot contact status of slave nodes (inactive, active, stick, slip)
+        //******************************************************************
         // frictionless contact, active node = {A}
         if (!fric && cnode->Active())
         {
@@ -198,6 +181,38 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         {
           gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "H" << "};" << endl;
+        }
+        
+        //******************************************************************
+        // plot Lagrange multipliers (normal contact stresses)
+        //******************************************************************
+        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontent << "{" << scientific << lmn*nn[0] << "," << lmn*nn[1] << "," << lmn*nn[2] << "};" << endl;
+      }
+      
+      //******************************************************************
+      // plot contact segments (search + projections)
+      //******************************************************************
+      if (csegs.M()!=0)
+      {
+        for (int i=0; i<csegs.M(); ++i)
+        {
+          gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+                                   << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+                                   << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
+                                   << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+                                   << csegs(i,11) << ")";
+          gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "," << proc << "};" << endl;
+
+          gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+                          << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+                          << csegs(i,5) << ")";
+          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+
+          gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
+                          << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+                          << csegs(i,11) << ")";
+          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
         }
       }
       
