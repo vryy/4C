@@ -134,7 +134,14 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_fluid/drt_periodicbc.o \
                 src/drt_geometry/octtree_nearestobject.o \
                 src/drt_geometry/octtree_geometry_service.o \
-                src/drt_geometry/octtree.o 
+                src/drt_geometry/octtree.o \
+                src/drt_geometry/intersection_interfacepoint.o \
+                src/drt_geometry/intersection_service.o \
+                src/drt_geometry/intersection_math.o \
+                src/drt_geometry/intersection.o \
+                src/drt_tetgen/predicates.o \
+                src/drt_tetgen/tetgen.o \
+                src/drt_geometry/integrationcell.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \
@@ -1181,19 +1188,12 @@ OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
 OBJS_POST_CMP = src/post_cmp/post_cmp.o
 
 #               test_intersection
-OBJS_INTERSECTION = src/drt_xfem/predicates.o \
-                    src/drt_xfem/tetgen.o \
-                    src/drt_xfem/physics.o \
-                    src/drt_xfem/integrationcell.o \
+OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/field_enriched.o \
                     src/drt_xfem/dof_management.o \
                     src/drt_xfem/dof_management_element.o \
                     src/drt_xfem/dof_distribution_switcher.o \
                     src/drt_xfem/enrichment.o \
-                    src/drt_xfem/intersection_interfacepoint.o \
-                    src/drt_xfem/intersection_service.o \
-                    src/drt_xfem/intersection_math.o \
-                    src/drt_xfem/intersection.o \
                     src/drt_xfem/interface.o \
                     src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
