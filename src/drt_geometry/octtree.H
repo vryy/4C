@@ -73,7 +73,7 @@ private:
    \param childIndex           index of child node
    \return returns node box
    */
-  BlitzMat3x2 getChildNodeBox(
+  const BlitzMat3x2 getChildNodeBox(
       const int childIndex                      
       ) const;
 
@@ -82,7 +82,7 @@ private:
    \param point                point
    \return index
    */ 
-  int classifyPoint(
+  const int classifyPoint(
       const BlitzVec3&    point
       ) const;
 
@@ -173,14 +173,7 @@ public:
    \brief returns tree node type INNER_NODE or LEAF_NODE
    \return returns tree node type INNER_NODE or LEAF_NODE
    */
-  TreeNodeType getTreeNodeType() const;
-
-
-  /*!
-   \brief returns tree depth
-   \return tree depth
-   */
-  int getDepth() const;
+  const TreeNodeType getTreeNodeType() const;
 
 
   /*!
@@ -188,7 +181,7 @@ public:
    \param index   child node index
    \return retruns pointer to child node
    */
-  Teuchos::RCP<TreeNode> getChild(
+  const Teuchos::RCP<TreeNode> getChild(
       const int index           
       ) const;
 
@@ -197,14 +190,14 @@ public:
    \brief return pointer to the parent node 
    \return pointer to parent tree node
    */
-  Teuchos::RCP<TreeNode> getParent() const;
+  const Teuchos::RCP<TreeNode> getParent() const;
 
 
   /*!
    \brief returns the center of this tree node
    \return returns the center of this tree node
    */
-  BlitzVec3 getCenterCoord() const;
+  const BlitzVec3 getCenterCoord() const;
 
 
   /*!
@@ -218,7 +211,7 @@ public:
    \brief returns elementList
    \return element list
    */
-  std::map<int,std::set<int> > getElementList() const;
+  const std::map<int,std::set<int> > getElementList() const;
 
 
   /*!
@@ -250,7 +243,7 @@ public:
   \param point                point to be examined
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
-  int queryPointType(
+  int queryXFEMFSIPointType(
       const DRT::Discretization&        dis,                   
       const std::map<int,BlitzVec3>&    currentpositions,  
       const BlitzVec3&                  point                               
@@ -316,7 +309,7 @@ public:
   \param point                point to be examined
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
-  int queryPointType(
+  int queryXFEMFSIPointType(
       const DRT::Discretization&      dis,  			
       const std::map<int,BlitzVec3>&  currentpositions, 
       const BlitzVec3&                point

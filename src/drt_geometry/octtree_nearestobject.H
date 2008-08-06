@@ -16,6 +16,7 @@ Maintainer: Ursula Mayer
 #define OCTTREE_NEARESTOBJECT_H_
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_xfem/xfem.H"
 
 
 namespace GEO
@@ -46,72 +47,42 @@ class NearestObject
         );
 
     /*!
-    \brief  set node object type
+    \brief Set node object type
     \param nodeId       (in)        : node gid
     \param label        (in)        : label
+    \param physcoord    (in)        : physical coordinates of point on object
     */
     void setNodeObjectType(
           const int nodeId, 
-          const int label
+          const int label,
+          const BlitzVec3& physcoord
           );
    
     /*!
-    \brief  set line object type 
+    \brief Set line object type 
     \param lineId       (in)        : line gid
     \param surfId       (in)        : surf gid
     \param label        (in)        : label
+    \param physcoord    (in)        : physical coordinates of point on object
     */
     void setLineObjectType(
           const int lineId,
           const int surfId, 
-          const int label
+          const int label,
+          const BlitzVec3& physcoord
           );
     
     /*!
-    \brief  set surface object type 
+    \brief Set surface object type 
     \param surfId       (in)        : surf gid
     \param label        (in)        : label
+    \param physcoord    (in)        : physical coordinates of point on object
     */
     void setSurfaceObjectType(
           const int surfId, 
-          const int label
+          const int label,
+          const BlitzVec3& physcoord
           );  
-    
-    /*!
-    \brief  set node gId of object
-    \param nodeId            (in)        : node gId of object
-    */
-    void setNodeId(
-      const int    nodeId
-      ); 
-       
-    /*!
-    \brief  set line Id of object 
-            (note:: lineId is a local id with respect to a surface element, 
-            whose id has to be provided in addition)
-    \param lineId            (in)        : line lId of object of a surface element
-    \param surfId            (in)        : surf gId of object 
-    */
-    void setLineId(
-      const int    lineId,
-      const int    surfId
-      );  
-         
-    /*!
-    \brief  set surf gId of object
-    \param surfId            (in)        : surf gId of object
-    */
-    void setSurfaceId(
-      const int    surfId
-      );      
-    
-    /*!
-    \brief  set label
-    \param label           (in)        : label
-    */
-    void setLabel(
-      const int    label
-      );      
     
     /*!
     \brief Return object type 
@@ -147,6 +118,14 @@ class NearestObject
      */
     inline int getLabel() const { return label_;}
     
+    /*!
+    \brief Return vector of physical coordinates
+     */
+    inline BlitzVec3 getPhysCoord() const {
+      if(objectType_ == NOTYPE)
+        dserror("no object type and physical coordinates are set");
+      return physcoord_;}
+    
     
 
   private:
@@ -165,6 +144,9 @@ class NearestObject
     
     //! label of object
     int                   label_;
+    
+    //! physical coordinates of point on nearest object
+    BlitzVec3             physcoord_;
 
 };
 

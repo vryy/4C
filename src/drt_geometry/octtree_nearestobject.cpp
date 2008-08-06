@@ -1,7 +1,7 @@
 /*!
-\file octtree_geometry_service.cpp
+\file octtree_nearestobject.cpp
 
-\brief provides geometry methods for oct tree
+\brief stores data about nearest object in oct tree
 
 <pre>
 Maintainer: Ursula Mayer
@@ -25,12 +25,13 @@ lineId_(-1),
 surfId_(-1),
 label_(-1)
 {
+  physcoord_ = 0.0;
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            u.may 08/08|
+ |  copy-ctor (public)                                       u.may 08/08|
  *----------------------------------------------------------------------*/
 GEO::NearestObject::NearestObject(
     const GEO::NearestObject& old) :
@@ -38,22 +39,25 @@ objectType_(old.objectType_),
 nodeId_(old.nodeId_),
 lineId_(old.lineId_),
 surfId_(old.surfId_),
-label_(old.label_)
-{
+label_(old.label_),
+physcoord_(old.physcoord_)
+{ 
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  set node object type and node id                         u.may 08/08|                                         
+ |  set node object type                                     u.may 08/08|                                         
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setNodeObjectType(
       const int nodeId, 
-      const int label)
+      const int label,
+      const BlitzVec3& physcoord)
 {
   objectType_ = NODE;
   nodeId_ = nodeId;
   label_ = label;
+  physcoord_ = physcoord;
   
   // reset unused variables
   lineId_ = -1;
@@ -62,17 +66,19 @@ void GEO::NearestObject::setNodeObjectType(
 
 
 /*----------------------------------------------------------------------*
- |  set object type resets all ids and labels                u.may 08/08|                                         
+ |  set line object type                                     u.may 08/08|                                         
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setLineObjectType(
       const int lineId,
       const int surfId, 
-      const int label)
+      const int label,
+      const BlitzVec3& physcoord)
 {
   objectType_ = LINE;
   lineId_ = lineId;
   surfId_ = surfId;
   label_ = label;
+  physcoord_ = physcoord;
   
   // reset unused variables
   nodeId_ = -1;
@@ -81,73 +87,23 @@ void GEO::NearestObject::setLineObjectType(
 
 
 /*----------------------------------------------------------------------*
- |  set object type resets all ids and labels                u.may 08/08|                                         
+ |  set surface object type                                  u.may 08/08|                                         
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setSurfaceObjectType(
       const int surfId, 
-      const int label)
+      const int label,
+      const BlitzVec3& physcoord)
 {
   objectType_ = SURFACE;
   surfId_ = surfId;
   label_ = label;
+  physcoord_ = physcoord;
   
   // reset unused variables
   nodeId_ = -1;
   lineId_ = -1;
 }
     
-
-/*----------------------------------------------------------------------*
- |  set xfem node ids the interface point is lying on        u.may 08/08|                                         
- *----------------------------------------------------------------------*/
-void GEO::NearestObject::setNodeId(
-      const int    nodeId)
-{
-  if(objectType_ != NODE)
-    dserror("object type is not correct (nodeId)");
-  
-  nodeId_ = nodeId;
-}
-       
-
-/*----------------------------------------------------------------------*
- |  set xfem line ids the interface point is lying on        u.may 08/08|                                         
- *----------------------------------------------------------------------*/
-void GEO::NearestObject::setLineId(
-      const int    lineId,
-      const int    surfId)
-{
-  if(objectType_ != LINE)
-    dserror("objecttype is not correct (lineId)");
-  
-  lineId_ = lineId;
-  surfId_ = surfId;
-} 
-  
-
-/*----------------------------------------------------------------------*
- |  set xfem surface ids the interface point is lying on     u.may 08/08|                                         
- *----------------------------------------------------------------------*/
-void GEO::NearestObject::setSurfaceId(
-      const int    surfId)
-{
-  if(objectType_ != SURFACE)
-    dserror("object type is not correct (surfId)");
-  
-  surfId_ = surfId;
-}  
-    
-
-/*----------------------------------------------------------------------*
- |  set xfem surface ids the interface point is lying on     u.may 08/08|                                         
- *----------------------------------------------------------------------*/
-void GEO::NearestObject::setLabel(
-      const int    label)
-{
-  label_ = label;
-}  
-    
-
 
 
 #endif  // #ifdef CCADISCRET

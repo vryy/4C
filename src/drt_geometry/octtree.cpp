@@ -34,8 +34,7 @@ GEO::OctTree::OctTree(
       max_depth_(max_depth),
       rootNodeBox_(nodeBox),
       treeRoot_(null)
-{
-}
+{}
     
 
 
@@ -79,8 +78,9 @@ void GEO::OctTree::initializeTree(
 
   treeRoot_ = rcp( new TreeNode(Teuchos::null, max_depth_, rootNodeBox_)); 
 
+  // inserts all elements in a map with key -1
   for (int i=0; i<dis.NumMyColElements(); ++i) 
-    treeRoot_->insertElement(0,dis.lRowElement(i)->Id());
+    treeRoot_->insertElement(-1, dis.lRowElement(i)->Id());
 }
 
 
@@ -106,7 +106,7 @@ void GEO::OctTree::updateTree(
 /*----------------------------------------------------------------------*
  | returns xfem label of point                               u.may 07/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::queryPointType(
+int GEO::OctTree::queryXFEMFSIPointType(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>& 	 currentpositions, 
     const BlitzVec3& 		             point) 
@@ -114,7 +114,7 @@ int GEO::OctTree::queryPointType(
   //  cout << " ASKING THE TREE" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime"); 
 
-  return treeRoot_->queryPointType(dis, currentpositions, point);
+  return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point);
 }
 
 
@@ -250,7 +250,7 @@ void GEO::OctTree::TreeNode::setLabel(
 /*----------------------------------------------------------------------*
  | returns pointer to parent element                         peder 07/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getParent() const
+const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getParent() const
 {
   if (this->hasParent())
     return parent_;
@@ -262,7 +262,7 @@ Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getParent() const
 /*----------------------------------------------------------------------*
  | get center of treenode                                  peder   07/08|
  *----------------------------------------------------------------------*/
-BlitzVec3 GEO::OctTree::TreeNode::getCenterCoord() const
+const BlitzVec3 GEO::OctTree::TreeNode::getCenterCoord() const
 {
   return BlitzVec3(this->xPlaneCoordinate_, this->yPlaneCoordinate_, this->zPlaneCoordinate_);
 }
@@ -272,7 +272,7 @@ BlitzVec3 GEO::OctTree::TreeNode::getCenterCoord() const
 /*----------------------------------------------------------------------*
  | get map of elements                                     peder   07/08|
  *----------------------------------------------------------------------*/
-std::map<int,std::set<int> > GEO::OctTree::TreeNode::getElementList() const
+const std::map<int,std::set<int> > GEO::OctTree::TreeNode::getElementList() const
 {
   return elementList_;
 }
@@ -282,7 +282,7 @@ std::map<int,std::set<int> > GEO::OctTree::TreeNode::getElementList() const
 /*----------------------------------------------------------------------*
  | get type of tree node                                   peder   07/08|
  *----------------------------------------------------------------------*/
-GEO::TreeNodeType GEO::OctTree::TreeNode::getTreeNodeType() const
+const GEO::TreeNodeType GEO::OctTree::TreeNode::getTreeNodeType() const
 {
   return treeNodeType_;
 }
@@ -302,7 +302,7 @@ const BlitzMat3x2& GEO::OctTree::TreeNode::getNodeBox() const
 /*----------------------------------------------------------------------*
  | get child                                               peder   07/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
+const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
     const int index) const
 {
   return children_[index];
@@ -313,7 +313,7 @@ Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
 /*----------------------------------------------------------------------*
  | get node box of a child specified by index              peder   07/08|
  *----------------------------------------------------------------------*/
-BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
+const BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
   BlitzMat3x2 childNodeBox;
@@ -398,6 +398,7 @@ void GEO::OctTree::TreeNode::createChildren(
     if ((children_[index]->getElementList()).empty())
     {
       const BlitzVec3 childNodeCenter(children_[index]->getCenterCoord());
+      // xfem label has to be computed on this level because child is empty
       children_[index]->setLabel(getXFEMLabel(dis, currentpositions, childNodeCenter, elementList_));
     }
   }
@@ -410,7 +411,7 @@ void GEO::OctTree::TreeNode::createChildren(
 /*----------------------------------------------------------------------*
  | classifiy point in node                                  peder   07/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::TreeNode::classifyPoint(
+const int GEO::OctTree::TreeNode::classifyPoint(
     const BlitzVec3&   point) const
 {
   
@@ -544,7 +545,7 @@ void GEO::OctTree::TreeNode::updateTreeNode(
 /*----------------------------------------------------------------------*
  | return xfem label for point (interface method)          u.may   07/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::TreeNode::queryPointType(
+int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>& 	 currentpositions, 
     const BlitzVec3& 		             point) 
@@ -553,7 +554,7 @@ int GEO::OctTree::TreeNode::queryPointType(
   {
     case INNER_NODE:
     {       
-      return children_[classifyPoint(point)]->queryPointType(dis, currentpositions, point);
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
       break;
     }
     case LEAF_NODE:   
@@ -568,7 +569,7 @@ int GEO::OctTree::TreeNode::queryPointType(
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(dis, currentpositions);
       // search in apropriate child node
-      return children_[classifyPoint(point)]->queryPointType(dis, currentpositions, point);
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
       break;
     }
     default:
