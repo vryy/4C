@@ -443,7 +443,16 @@ public:
   
   */
   void PrintActiveSet();
+  
+  /*!
+  \brief Visualize node normals and projections with gmsh
+  
+  \param step (in): current time step index
+  \param iter (in): current iteration index
     
+  */
+  void VisualizeGmsh(const int step, const int iter = 0);
+  
   //@}
   
   

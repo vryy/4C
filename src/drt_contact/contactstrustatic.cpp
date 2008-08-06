@@ -432,7 +432,11 @@ void contact_stru_static_drt()
     // (no resetting of LM necessary for semi-smooth Newton, as there
     // will never be a repetition of a time / load step!)
     contactmanager->ContactForces(fresmcopy);
-        
+    
+#ifdef CONTACTGMSH2
+    contactmanager->VisualizeGmsh(istep+1,0);
+#endif // #ifdef CONTACTGMSH2
+    
     //----------------------------------------------- build res/disi norm
     double norm;
     fresm->Norm2(&norm);
@@ -530,7 +534,11 @@ void contact_stru_static_drt()
           
       //--------------------------------------------------- contact forces
       contactmanager->ContactForces(fresmcopy);
-            
+      
+#ifdef CONTACTGMSH2
+    contactmanager->VisualizeGmsh(istep+1,numiter+1);
+#endif // #ifdef CONTACTGMSH2
+    
       //for (int k=0;k<fint->MyLength();++k)
       //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
 
@@ -648,7 +656,11 @@ void contact_stru_static_drt()
           
       //---------------------------------------------------- contact forces
       contactmanager->ContactForces(fresmcopy);
-          
+      
+#ifdef CONTACTGMSH2
+    dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
+#endif // #ifdef CONTACTGMSH2
+    
       //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);
@@ -797,7 +809,11 @@ void contact_stru_static_drt()
 
     //-------------------------------------------- print contact to screen
     contactmanager->PrintActiveSet();      
-        
+    
+#ifdef CONTACTGMSH1
+    contactmanager->VisualizeGmsh(istep);
+#endif // #ifdef CONTACTGMSH1
+  
     //-------------------------------- update contact Lagrange multipliers
     RCP<Epetra_Vector> stepz = contactmanager->LagrMult();
     RCP<Epetra_Vector> stepzold = contactmanager->LagrMultOld();

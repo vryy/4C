@@ -334,6 +334,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
   
+#ifdef CONTACTGMSH2
+  int step  = params_.get<int>("step",0);
+  int istep = step + 1;
+  contactmanager_->VisualizeGmsh(istep,0);
+#endif // #ifdef CONTACTGMSH2
+  
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -562,6 +568,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
   
+#ifdef CONTACTGMSH2
+  int step  = params_.get<int>("step",0);
+  int istep = step + 1;
+  contactmanager_->VisualizeGmsh(istep,0);
+#endif // #ifdef CONTACTGMSH2
+  
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -614,6 +626,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
+  
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -846,6 +859,10 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
     
+#ifdef CONTACTGMSH2
+    dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
+#endif // #ifdef CONTACTGMSH2
+  
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
@@ -917,6 +934,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
+  
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1160,6 +1178,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
     
+#ifdef CONTACTGMSH2
+    int step  = params_.get<int>("step",0);
+    int istep = step + 1;
+    contactmanager_->VisualizeGmsh(istep,numiter+1);
+#endif // #ifdef CONTACTGMSH2
+  
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
@@ -1265,6 +1289,10 @@ void CONTACT::ContactStruGenAlpha::Update()
 
   //---------------------------------------------- print contact to screen
   contactmanager_->PrintActiveSet();
+  
+#ifdef CONTACTGMSH1
+  contactmanager_->VisualizeGmsh(istep);
+#endif // #ifdef CONTACTGMSH1
     
   //---------------------------------- store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)

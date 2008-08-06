@@ -561,7 +561,8 @@ public:
   \brief Visualize node normals and projections with gmsh
           
   */
-  virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs);
+  virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
+                             const int step, const int iter);
   
   /*!
   \brief Return matrix of contact segment coordinates
@@ -646,7 +647,6 @@ protected:
   RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
   
   Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
-  int                         counter_;       // counts the number of calls to this interface (gmsh)
   
 }; // class Interface
 } // namespace CONTACT

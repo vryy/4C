@@ -3388,14 +3388,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  /*
-#ifdef DEBUG
-  // visualization with gmsh
-  if (activesetconv_)
-    for (int i=0;i<(int)interface_.size();++i)
-      interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
-#endif // #ifdef DEBUG
-  */
+  
   return;
 }
 
@@ -3614,15 +3607,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  /*
-#ifdef DEBUG
-  // visualization with gmsh
-  if (activesetconv_)
-    for (int i=0;i<(int)interface_.size();++i)
-      interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
-#endif // #ifdef DEBUG
-  */
-
+  
   return;
 }
 /*----------------------------------------------------------------------*
@@ -3902,6 +3887,16 @@ void CONTACT::Manager::PrintActiveSet()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Visualization of contact segments with gmsh                popp 08/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::VisualizeGmsh(const int step, const int iter)
+{
+  // visualization with gmsh
+  for (int i=0;i<(int)interface_.size();++i)
+    interface_[i]->VisualizeGmsh(interface_[i]->CSegs(),step,iter);
 }
 
 #endif  // #ifdef CCADISCRET

@@ -31,7 +31,7 @@ comm_(comm)
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
   contactsegs_.Reshape(0,0);
-  counter_ = 0;
+  
   return;
 }
 
@@ -539,11 +539,6 @@ void CONTACT::Interface::Evaluate()
   FDCheckMortarMDeriv();
 #endif // #ifdef CONTACTFDMORTARM
   
-#ifdef DEBUG
-  // Visualize every iteration with gmsh
-  // VisualizeGmsh(CSegs());
-#endif // #ifdef DEBUG
-
   return;
 }
 

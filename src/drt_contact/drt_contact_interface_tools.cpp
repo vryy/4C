@@ -35,24 +35,34 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  Visualize node projections with gmsh                      popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
+void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
+                                       const int step, const int iter)
 {
-  // increase counter variable by one
-  counter_+=1;
-
   // construct unique filename for gmsh output
   std::ostringstream filename;
-  filename << allfiles.outputfile_kenner << "_";
-  if (counter_<10)
+  filename << "o/gmsh_output/" << allfiles.outputfile_kenner << "_";
+  if (step<10)
     filename << 0 << 0 << 0 << 0;
-  else if (counter_<100)
+  else if (step<100)
     filename << 0 << 0 << 0;
-  else if (counter_<1000)
+  else if (step<1000)
     filename << 0 << 0;
-  else if (counter_<10000)
+  else if (step<10000)
     filename << 0;
-
-  filename << counter_ << ".pos";
+  else if (step>99999)
+    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+  filename << step;
+  
+#ifdef CONTACTGMSH2
+  filename << "_";
+  if (iter<10)
+    filename << 0;
+  else if (iter>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filename << iter;
+#endif // #ifdef CONTACTGMSH2
+  
+  filename << ".pos";
 
   // do output to file in c-style
   FILE* fp = NULL;
