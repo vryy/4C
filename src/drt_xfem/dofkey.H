@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 #include <string>
 
 #include "../drt_lib/drt_dserror.H"
-#include "xfem.H"
 #include "field_enriched.H"
 
 

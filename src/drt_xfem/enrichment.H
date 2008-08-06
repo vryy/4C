@@ -14,7 +14,6 @@
 #ifndef ENRICHMENT_H
 #define ENRICHMENT_H
 
-#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "xfem.H"
 

@@ -20,7 +20,6 @@ Maintainer: Axel Gerstenberger
 #define COORDINATE_TRANSFORMATION_H
 
 #include <math.h>
-#include <blitz/array.h>
 #include "../drt_xfem/xfem.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/blitz_tiny_operation.H"

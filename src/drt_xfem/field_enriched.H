@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifndef FIELD_ENRICHED_H
 #define FIELD_ENRICHED_H
 
-#include "xfem.H"
 #include "physics.H"
 #include "enrichment.H"
 
