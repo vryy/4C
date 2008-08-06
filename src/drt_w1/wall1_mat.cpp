@@ -55,13 +55,12 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
-		const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-    Epetra_SerialDenseMatrix& stress,  ///< stress vector
-    Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
-    const int numeps,  ///< number of strains
-    const struct _MATERIAL* material  ///< the material data
+  const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+  Epetra_SerialDenseMatrix& stress,  ///< stress vector
+  Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
+  const int numeps,  ///< number of strains
+  const struct _MATERIAL* material  ///< the material data
 )
 {
   /*--------------------------- call material law -> get tangent modulus--*/
@@ -411,9 +410,45 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   } // switch(material->mattyp)
     
   return;
-}
+}  // DRT::ELEMENTS::Wall1::w1_call_matgeononl
 
-/* DRT::ELEMENTS::Wall1::w1_call_matgeononl */
+/*-----------------------------------------------------------------------------*
+| deliver density                                                   bborn 08/08|
+*-----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Wall1::Density(
+  const struct _MATERIAL* material
+)
+{
+  // switch material type
+  switch (material->mattyp)
+  {
+  case m_stvenant :  // linear elastic
+    return material->m.stvenant->density;
+    break;
+  case m_neohooke : // kompressible neo-Hooke
+    return material->m.neohooke->density;
+    break;
+  case m_stvenpor :  //porous linear elastic
+    return material->m.stvenpor->density;
+    break;
+  case m_pl_mises: // von Mises material law
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  case m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  case m_pl_dp :  // Drucker-Prager material law
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  default:
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  }
+}  // Density
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

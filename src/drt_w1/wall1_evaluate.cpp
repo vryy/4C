@@ -80,6 +80,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Wall1::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Wall1::calc_struct_reset_istep;
+  else if (action=="calc_struct_energy")        act = Wall1::calc_struct_energy;
   else dserror("Unknown type of action %s for Wall1", action.c_str());
 
   // get the material law
@@ -222,6 +223,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       else dserror("requested strain output option not yet available for wall1");
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
+    }
+    break;
+    case Wall1::calc_struct_energy:
+    {
+      dserror("Not implemented");
     }
     break;
     case Wall1::calc_struct_eleload:
@@ -940,45 +946,6 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
     }
   }
 }  // w1_lumpmass
-
-
-/*-----------------------------------------------------------------------------*
-| deliver density                                                   bborn 08/08|
-*-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::Density(
-  const struct _MATERIAL* material
-)
-{
-  // switch material type
-  switch (material->mattyp)
-  {
-  case m_stvenant :  // linear elastic
-    return material->m.stvenant->density;
-    break;
-  case m_neohooke : // kompressible neo-Hooke
-    return material->m.neohooke->density;
-    break;
-  case m_stvenpor :  //porous linear elastic
-    return material->m.stvenpor->density;
-    break;
-  case m_pl_mises: // von Mises material law
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  case m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  case m_pl_dp :  // Drucker-Prager material law
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  default:
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  }
-}  // Density
 
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
