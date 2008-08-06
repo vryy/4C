@@ -1,5 +1,5 @@
 /*!
-\file xfem.H
+\file vector_definitions.H
 
 \brief definitions used in geometry contexts
 
@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 
 
-//! generally usefull typedefs, when working with Blitz arrays
+//! generally useful typedefs, when working with Blitz arrays
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
