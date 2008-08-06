@@ -38,7 +38,7 @@ Maintainer: Georg Bauer
 
 
 /*----------------------------------------------------------------------*/
-// create scalar transport discretization parallel to the fluid one
+//! create scalar transport discretization parallel to the fluid one
 /*----------------------------------------------------------------------*/
 void SCATRA::CreateScaTraDiscretization(
     Teuchos::RefCountPtr<DRT::Discretization>& fluiddis,

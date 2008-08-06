@@ -37,7 +37,7 @@ public:
   /*!
   \brief constructor
   */
-  ScaTraResultTest(ScaTraImplicitTimeInt& scatra);
+  ScaTraResultTest(ScaTraTimIntImpl& scatra);
 
 
   /// our version of nodal value tests

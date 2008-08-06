@@ -59,6 +59,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 using namespace std;
 using namespace Teuchos;
 
+/// Algorithm and time integration classes for scalar transport problems
 namespace SCATRA{
 
 /*!
@@ -66,7 +67,7 @@ namespace SCATRA{
 
 \author vg (vgravem@lnm.mw.tum.de)
 */
-class ScaTraImplicitTimeInt
+class ScaTraTimIntImpl
 {
   friend class ScaTraResultTest;
 
@@ -77,7 +78,7 @@ public:
   \brief Standard Constructor
 
   */
-  ScaTraImplicitTimeInt(RCP<DRT::Discretization>       dis,
+  ScaTraTimIntImpl(RCP<DRT::Discretization>       dis,
                         RCP<LINALG::Solver>            solver,
                         RCP<ParameterList>             params,
                         RCP<IO::DiscretizationWriter>  output);
@@ -87,14 +88,14 @@ public:
   \brief Destructor
 
   */
-  virtual ~ScaTraImplicitTimeInt();
+  virtual ~ScaTraTimIntImpl();
 
 
   /*!
   \brief Set the part of the righthandside belonging to the last
          timestep.
   */
-  void SetOldPartOfRighthandside();
+  virtual void SetOldPartOfRighthandside() = 0;
 
 
   /*!
@@ -148,7 +149,7 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   */
-  void Update();
+  virtual void Update() = 0;
 
   /*!
   \brief update configuration and output to file/screen
@@ -157,10 +158,16 @@ public:
   void Output();
 
   /*!
+  \brief write additional data required for restart
+
+  */
+  virtual void OutputRestart()=0;
+
+  /*!
   \brief read restart data
 
   */
-  void ReadRestart(int step);
+  virtual void ReadRestart(int step)=0;
 
   /*!
   \brief set the velocity field
@@ -189,9 +196,9 @@ public:
 protected:
 
   // don't want = operator and cctor
-  ScaTraImplicitTimeInt operator = (const ScaTraImplicitTimeInt& old);
+  //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
   //! copy constructor
-  ScaTraImplicitTimeInt (const ScaTraImplicitTimeInt& old);
+  ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
 
   RCP<DRT::Discretization>   discret_;
   RCP<LINALG::Solver>        solver_;
@@ -206,10 +213,8 @@ protected:
 
   INPUTPARAMS::ScaTraTimeIntegrationScheme timealgo_;
 
-  int restartstep_;
-  int uprestart_;
-  int writestep_;
   int upres_;
+  int uprestart_;
   string writeflux_;
 
   double dta_;
@@ -238,13 +243,12 @@ protected:
   /// The residual vector
   RCP<Epetra_Vector>    residual_;
 
-  /// time derivatives of phi at time n and n-1
-  RCP<Epetra_Vector>    phidtn_;
-  RCP<Epetra_Vector>    phidtnm_;
-  /// phi at time n+1, n and n-1
+  /// phi at time n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
-  RCP<Epetra_Vector>    phinm_;
+  
+  RCP<Epetra_Vector>    phinm_; // this has to go away!!
+
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
@@ -265,26 +269,10 @@ protected:
 
   // time measurement
   // ----------------
-  RCP<Teuchos::Time> timetotal_   ;
-  RCP<Teuchos::Time> timeinit_    ;
-  RCP<Teuchos::Time> timetimeloop_;
-  RCP<Teuchos::Time> timeelement_ ;
-  RCP<Teuchos::Time> timeavm3_    ;
-  RCP<Teuchos::Time> timeapplydbc_;
-  RCP<Teuchos::Time> timesolver_  ;
-
-  RCP<TimeMonitor> tm0_ref_ ;
-  RCP<TimeMonitor> tm1_ref_ ;
-  RCP<TimeMonitor> tm2_ref_ ;
-  RCP<TimeMonitor> tm3_ref_ ;
-  RCP<TimeMonitor> tm4_ref_ ;
-  RCP<TimeMonitor> tm5_ref_ ;
-  RCP<TimeMonitor> tm6_ref_ ;
-
   double dtele_;
   double dtsolve_;
 
-}; // class ScaTraImplicitTimeInt
+}; // class ScaTraTimIntImpl
 
 } // namespace SCATRA
 

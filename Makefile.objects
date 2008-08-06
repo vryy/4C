@@ -218,6 +218,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
 # ---------------------------------------------- scalar transport problems
 OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \
+                src/drt_scatra/scatra_timint_ost.o \
+                src/drt_scatra/scatra_timint_bdf2.o \
                 src/drt_scatra/scatra_resulttest.o \
                 src/drt_scatra/scatra_utils.o \
                 src/drt_scatra/passive_scatra_algorithm.o

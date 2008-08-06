@@ -15,14 +15,11 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "adapter_scatra_base_algorithm.H"
-// further includes for ScaTraBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
-
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_ost.H"
+#include "../drt_scatra/scatra_timint_bdf2.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -79,11 +76,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // set some pointers and variables
   // -------------------------------------------------------------------
 
-  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  //const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  //const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  //const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& scatradyn     = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = 
+    DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // print out default parameters of scalar tranport parameter list
   if (actdis->Comm().MyPID()==0)
@@ -105,7 +99,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
 
-  // -------------------------------------------------- time integration
+  // --------------------type of time-integration (or stationary) scheme
+  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme = 
+    Teuchos::getIntegralValue<INPUTPARAMS::ScaTraTimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+  scatratimeparams->set<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo",timintscheme);
+
+  // --------------------------------------- time integration parameters
   // the default time step size
   scatratimeparams->set<double>   ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
@@ -141,23 +140,18 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   {
     scatratimeparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
-    
+
   // -------------------------------------------------------------------
-  // additional parameters and algorithm call depending on respective
-  // time-integration (or stationary) scheme
+  // additional parameters and algorithm construction depending on 
+  // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme = 
-    Teuchos::getIntegralValue<INPUTPARAMS::ScaTraTimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
   if(timintscheme == INPUTPARAMS::timeint_stationary or
-     timintscheme == INPUTPARAMS::timeint_one_step_theta or
-     timintscheme == INPUTPARAMS::timeint_bdf2
-  )
+     timintscheme == INPUTPARAMS::timeint_one_step_theta)
   {
     // -----------------------------------------------------------------
-    // set additional parameters in list for OST/BDF2/stationary scheme
+    // set additional parameters in list for OST/stationary scheme
     // -----------------------------------------------------------------
-    // type of time-integration (or stationary) scheme
-    scatratimeparams->set<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo",timintscheme);
+
     // parameter theta for time-integration schemes
     scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
     // number of steps for potential start algorithm
@@ -166,15 +160,31 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     //scatratimeparams->set<double>         ("start theta"              ,scatradyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor)
+    // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
+    scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, output));
+  }
+  else if (timintscheme == INPUTPARAMS::timeint_bdf2)
+  {
+    // -----------------------------------------------------------------
+    // set additional parameters in list for BDF2 scheme
+    // -----------------------------------------------------------------
 
+    // parameter theta for time-integration schemes
+    scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
+    // number of steps for potential start algorithm
+    scatratimeparams->set<int>              ("number of start steps"    ,0); //hack!
+    // parameter theta for potential start algorithm
+    //scatratimeparams->set<double>         ("start theta"              ,scatradyn.get<double>("START_THETA"));
+
+    //------------------------------------------------------------------
+    // create instance of time integration class (call the constructor)
+    //------------------------------------------------------------------
+    scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams, output));
+  
   }
   else if (timintscheme == INPUTPARAMS::timeint_gen_alpha)
   {
-    dserror("no adapter for generalized alpha scalar transport dynamic routine implemented.");
     // -------------------------------------------------------------------
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
@@ -184,11 +194,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     scatratimeparams->set<double>           ("alpha_F"                  ,scatradyn.get<double>("ALPHA_F"));
 
     //------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor)
+    // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
-    scatra_ = rcp(new SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
-
+    dserror("no adapter for generalized alpha scalar transport dynamic routine implemented.");
   }
   else
   {

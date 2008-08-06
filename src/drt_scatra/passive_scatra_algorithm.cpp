@@ -36,7 +36,7 @@ SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm::TimeLoop()
+void SCATRA::PassiveScaTraAlgorithm::TimeLoop()
 {
   // time loop (no-subcycling at the moment)
   while (NotFinished())

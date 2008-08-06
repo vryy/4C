@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraImplicitTimeInt& scatra)
+SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
 {
   dis_    = scatra.discret_;
   mysol_  = scatra.phinp_ ;

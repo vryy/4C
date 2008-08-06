@@ -39,7 +39,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                        vg 05/07|
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
+SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     RCP<DRT::Discretization>      actdis,
     RCP<LINALG::Solver>           solver,
     RCP<ParameterList>            params,
@@ -51,51 +51,20 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   output_ (output),
   time_(0.0),
   step_(0),
-  restartstep_(0),
-  uprestart_(params->get<int>("write restart every")),
-  writestep_(0),
-  upres_(params->get<int>("write solution every")),
-  writeflux_(params->get<string>("write flux"))
+  stepmax_  (params_->get<int>("max number timesteps")),
+  maxtime_  (params_->get<double>("total time")),
+  timealgo_ (params_->get<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo")),
+  upres_    (params_->get<int>("write solution every")),
+  uprestart_(params_->get<int>("write restart every")),
+  writeflux_(params_->get<string>("write flux")),
+  dta_      (params_->get<double>("time step size")),
+  dtp_      (params_->get<double>("time step size")),
+  theta_    (params_->get<double>("theta")),
+  cdvel_    (params_->get<int>("velocity field")),
+  fssgd_    (params_->get<string>("fs subgrid diffusivity","No"))
 {
-
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timetotal_    = TimeMonitor::getNewTimer("dynamic routine total");
-  timeinit_     = TimeMonitor::getNewTimer(" + initialization"    );
-  timetimeloop_ = TimeMonitor::getNewTimer(" + time loop"         );
-  timeelement_  = TimeMonitor::getNewTimer("      + element calls");
-  timeavm3_     = TimeMonitor::getNewTimer("           + avm3"    );
-  timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"    );
-  timesolver_   = TimeMonitor::getNewTimer("      + solver calls" );
-
-  // time measurement: total --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
-
-  // time measurement: initialization --- start TimeMonitor tm7
-  tm1_ref_        = rcp(new TimeMonitor(*timeinit_ ));
-
-  // -------------------------------------------------------------------
-  // get the basic parameters first
-  // -------------------------------------------------------------------
-
-  // bound for the number of timesteps
-  stepmax_                   =params_->get<int>   ("max number timesteps");
-  // max. sim. time
-  maxtime_                   =params_->get<double>("total time");
-
-  // parameter for time-integration
-  theta_                     =params_->get<double>("theta");
-  // which kind of time-integration
-  timealgo_                  =params_->get<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo");
-
-  dtp_ = dta_  =params_->get<double>("time step size");
-
-  // (fine-scale) subgrid diffusivity?
-  fssgd_  =params_->get<string>("fs subgrid diffusivity","No");
-
-  // type of convective velocity field
-  cdvel_  =params_->get<int>("velocity field");
+  // time measurement: initialization
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + initialization");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -107,16 +76,16 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   if (!discret_->Filled()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
+  // get the processor ID from the communicator
+  // -------------------------------------------------------------------
+  myrank_  = discret_->Comm().MyPID();
+
+  // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -139,14 +108,9 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   // Vectors passed to the element
   // -----------------------------
 
-  // temporal solution derivatives at time n and n-1
-  phidtn_       = LINALG::CreateVector(*dofrowmap,true);
-  phidtnm_      = LINALG::CreateVector(*dofrowmap,true);
-
-  // solutions at time n+1, n and n-1
+  // solutions at time n+1 and n
   phinp_        = LINALG::CreateVector(*dofrowmap,true);
   phin_         = LINALG::CreateVector(*dofrowmap,true);
-  phinm_        = LINALG::CreateVector(*dofrowmap,true);
 
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta)
@@ -171,7 +135,7 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
-  // The residual vector --- more or less the rhs
+  // the residual vector --- more or less the rhs
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
@@ -195,12 +159,9 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
   // set initial field
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
 
-  // end time measurement for initialization
-  tm1_ref_ = null;
-
   return;
 
-} // ScaTraImplicitTimeInt::ScaTraImplicitTimeInt
+} // ScaTraTimIntImpl::ScaTraTimIntImpl
 
 
 /*----------------------------------------------------------------------*
@@ -210,7 +171,7 @@ SCATRA::ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(
  |  o the "standard" time integration                                   |
  |                                                              vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::Integrate()
+void SCATRA::ScaTraTimIntImpl::Integrate()
 {
   // bound for the number of startsteps
   int    numstasteps         =params_->get<int>   ("number of start steps");
@@ -234,25 +195,21 @@ void SCATRA::ScaTraImplicitTimeInt::Integrate()
     TimeLoop();
   }
 
-  // end total time measurement
-  tm0_ref_ = null;
-
   // print the results of time measurements
-  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
-} // ScaTraImplicitTimeInt::Integrate
+} // ScaTraTimIntImpl::Integrate
 
 
 
 /*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
+void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
-  // time measurement: time loop --- start TimeMonitor tm2
-  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
+  // time measurement: time loop
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -311,55 +268,20 @@ void SCATRA::ScaTraImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     dtp_ = dta_;
 
-  }
-
-  // end time measurement for timeloop
-  tm2_ref_ = null;
+  } // while
 
   return;
-} // ScaTraImplicitTimeInt::TimeLoop
-
-
-/*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                              vg 05/07|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::SetOldPartOfRighthandside()
-{
-  /*
-
-  One-step-Theta:
-
-                 hist_ = phin_ + dt*(1-Theta)*phidtn_
-
-
-  BDF2: for constant time step:
-
-                 hist_ = 4/3 phin_ - 1/3 phinm_
-
-  */
-  switch (timealgo_)
-  {
-  case INPUTPARAMS::timeint_one_step_theta: /* One step Theta time integration */
-    hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
-    break;
-
-  case INPUTPARAMS::timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
-    hist_->Update(4./3., *phin_, -1./3., *phinm_, 0.0);
-    break;
-
-  default:
-    dserror("Time integration scheme unknown!");
-  }
-  return;
-} // ScaTraImplicitTimeInt::SetOldPartOfRighthandside
+} // ScaTraTimIntImpl::TimeLoop
 
 
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step                    vg 08/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
+void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 {
+  // time measurement: prepare time step
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + prepare time step");
+
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -387,44 +309,38 @@ void SCATRA::ScaTraImplicitTimeInt::PrepareTimeStep()
              time_,maxtime_,dta_,step_,stepmax_);
       break;
     default:
-      dserror("parameter out of range: IOP\n");
-    } /* end of switch(timealgo_) */
+      dserror("unknown time integration scheme");
+    }
   }
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
-  //
-  //
-  //         One-step-Theta:
-  //
-  //                 hist_ = phin_ + dta*(1-Theta)*phidtn_
-  //
-  //
-  //         BDF2: for constant time step:
-  //
-  //                   hist_ = 4/3 phin_ - 1/3 phinm_
-  //
   // -------------------------------------------------------------------
   SetOldPartOfRighthandside();
 
   // -------------------------------------------------------------------
-  //         evaluate dirichlet and neumann boundary conditions
+  //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   ApplyDirichletBC(time_,phinp_);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
-} // ScaTraImplicitTimeInt::PrepareTimeStep
+  return;
+
+} // ScaTraTimIntImpl::PrepareTimeStep
 
 
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}           gjb 07/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::ApplyDirichletBC
+void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 (
   const double time,
   Teuchos::RCP<Epetra_Vector> phinp
 )
 {
+  // time measurement: apply Dirichlet conditions
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:      + apply dirich cond.");
+
   // apply DBCs
   // needed parameters
   ParameterList p;
@@ -448,7 +364,7 @@ void SCATRA::ScaTraImplicitTimeInt::ApplyDirichletBC
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions at t_{n+1}             gjb 07/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::ApplyNeumannBC
+void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 (
   const double time,
   const Teuchos::RCP<Epetra_Vector> phinp,
@@ -465,7 +381,7 @@ void SCATRA::ScaTraImplicitTimeInt::ApplyNeumannBC
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp);
-  // evaluate Neumann conditions
+  // evaluate Neumann conditions at actual time t_{n+1}
   discret_->EvaluateNeumann(p,*neumann_loads);
   discret_->ClearState();
 
@@ -476,7 +392,7 @@ void SCATRA::ScaTraImplicitTimeInt::ApplyNeumannBC
 /*----------------------------------------------------------------------*
  | contains the solver                                          vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::Solve(
+void SCATRA::ScaTraTimIntImpl::Solve(
   bool is_stat //if true, stationary formulations are used in the element
   )
 {
@@ -487,16 +403,17 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
   {
-    // time measurement: element --- start TimeMonitor tm3
-    tm3_ref_ = rcp(new TimeMonitor(*timeelement_));
+    // time measurement: element calls
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
     // get cpu time
     tcpu=ds_cputime();
 
     // zero out matrix entries
     sysmat_->Zero();
 
-    // reset the residual vector and add Neumann loads
-    residual_->Update(1.0,*neumann_loads_,0.0);
+    // reset the residual vector and add actual Neumann loads 
+    // scaled with a factor resulting from time discretization
+    residual_->Update(theta_*dta_,*neumann_loads_,0.0);
 
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -507,7 +424,6 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
-    eleparams.set("condif velocity field",cdvel_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
 
@@ -542,29 +458,30 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
     // begin encapsulation of direct algebraic VM3 solution approach
     if (fssgd_ != "No")
     {
-      // time measurement: avm3 --- start TimeMonitor tm4
-      tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
-
-      // extract the ML parameters
-      ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
+      {// time measurement: avm3
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
       // subgrid-viscosity-scaling vector
       sugrvisc_ = LINALG::CreateVector(*dofrowmap,true);
 
+      }// time measurement: avm3
+
       if (step_ == 1)
       {
+        {// time measurement: avm3
+        TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
         // create normalized all-scale subgrid-diffusivity matrix
         sysmat_sd_->Zero();
 
-        // end time measurement for avm3 evaluation
-        tm4_ref_=null;
+        }// time measurement: avm3
 
         // call loop over elements (two matrices + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
         discret_->ClearState();
 
-        // time measurement: avm3 --- start TimeMonitor tm4
-        tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
+        {// time measurement: avm3
+        TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
         // finalize the normalized all-scale subgrid-diffusivity matrix
         sysmat_sd_->Complete();
@@ -572,21 +489,24 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
         // apply DBC to normalized all-scale subgrid-diffusivity matrix
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
+        // extract the ML parameters
+        ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
+
         // call the VM3 constructor
         vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
+
+        }// time measurement: avm3
       }
       else
       {
-        // end time measurement for avm3 evaluation
-        tm4_ref_=null;
-
         // call loop over elements (one matrix + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
         discret_->ClearState();
-
-        // time measurement: avm3 --- start TimeMonitor tm4
-        tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
       }
+
+      // time measurement: avm3
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
       // check whether VM3 solver exists
       if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
@@ -594,8 +514,6 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
       // scale precomputed matrix product by subgrid-viscosity-scaling vector
       vm3_solver_->Scale(sysmat_sd_,sysmat_,zeros_,zeros_,sugrvisc_,zeros_,false );
 
-      // end time measurement for avm3 evaluation
-      tm4_ref_=null;
     }
     // end encapsulation of direct algebraic VM3 solution approach
     else
@@ -609,25 +527,20 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
     sysmat_->Complete();
 
     // end time measurement for element
-    tm3_ref_=null;
     dtele_=ds_cputime()-tcpu;
   }
 
   // Apply dirichlet boundary conditions to system matrix
   {
-    // time measurement: application of dbc --- start TimeMonitor tm5
-    tm5_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
+    // time measurement: application of DBC to system
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,dirichtoggle_);
-
-    // end time measurement for application of dbc
-    tm5_ref_=null;
   }
 
   //-------solve
   {
-    // time measurement: solver --- start TimeMonitor tm6
-    tm6_ref_ = rcp(new TimeMonitor(*timesolver_));
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
     // get cpu time
     tcpu=ds_cputime();
 
@@ -661,100 +574,21 @@ void SCATRA::ScaTraImplicitTimeInt::Solve(
       solver_->Solve(sysmat_->EpetraMatrix(),phinp_,residual_,true,true);
 
     // end time measurement for solver
-    tm6_ref_=null;
     dtsolve_=ds_cputime()-tcpu;
   }
 
   return;
-} // ScaTraImplicitTimeInt::Solve
-
-
-/*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                              vg 05/07|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::Update()
-{
-
-  // update time derivative of phi
-  if (step_ == 1)
-  {
-    phidtnm_->PutScalar(0.0);
-
-    // do just a linear interpolation within the first timestep
-    phidtn_->Update( 1.0/dta_,*phinp_,1.0);
-
-    phidtn_->Update(-1.0/dta_,*phin_ ,1.0);
-
-    // ???
-    phidtnm_->Update(1.0,*phidtn_,0.0);
-
-  }
-  else
-  {
-    // prev. time derivative of phi becomes (n-1)-time derivative of phi
-    // of next time step
-    phidtnm_->Update(1.0,*phidtn_,0.0);
-
-    /*
-    One-step-Theta:
-
-      phidt(n+1) = (phi(n+1)-phi(n)) / (Theta * dt(n)) - (1/Theta -1) * phidt(n)
-
-
-    BDF2:
-
-                   2*dt(n)+dt(n-1)                   dt(n)+dt(n-1)
-      phidt(n+1) = --------------------- phi(n+1) - --------------- phi(n)
-                   dt(n)*[dt(n)+dt(n-1)]             dt(n)*dt(n-1)
-
-                         dt(n)
-               + ----------------------- phi(n-1)
-                 dt(n-1)*[dt(n)+dt(n-1)]
-      */
-
-      switch (timealgo_)
-      {
-          case INPUTPARAMS::timeint_one_step_theta: /* One step Theta time integration */
-          {
-            double fact1 = 1.0/(theta_*dta_);
-            double fact2 = (-1.0/theta_) +1.0;
-
-            phidtn_->Update( fact1,*phinp_,0.0);
-            phidtn_->Update(-fact1,*phin_ ,1.0);
-            phidtn_->Update( fact2,*phidtnm_ ,1.0);
-
-            break;
-          }
-          case INPUTPARAMS::timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
-          {
-            if (dta_*dtp_ < EPS15)
-              dserror("Zero time step size!!!!!");
-            double sum = dta_ + dtp_;
-
-            phidtn_->Update((2.0*dta_+dtp_)/(dta_*sum),*phinp_,
-                                 - sum /(dta_*dtp_),*phin_ ,0.0);
-            phidtn_->Update(dta_/(dtp_*sum),*phinm_,1.0);
-          }
-          break;
-          default:
-            dserror("Time integration scheme unknown for mass rhs!");
-      }
-    }
-
-  // solution of this step becomes most recent solution of the last step
-  phinm_->Update(1.0,*phin_ ,0.0);
-  phin_ ->Update(1.0,*phinp_,0.0);
-
-  return;
-}// ScaTraImplicitTimeInt::TimeUpdate
+} // ScaTraTimIntImpl::Solve
 
 
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                           vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::Output()
+void SCATRA::ScaTraTimIntImpl::Output()
 {
+  // time measurement: output of solution
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
+
   if (step_%upres_==0)  //write solution
     {
       output_->NewStep    (step_,time_);
@@ -798,9 +632,7 @@ void SCATRA::ScaTraImplicitTimeInt::Output()
 
       if (step_%uprestart_==0) //add restart data
       {
-        output_->WriteVector("phidtn", phidtn_);
-        output_->WriteVector("phin", phin_);
-        output_->WriteVector("phinm", phinm_);
+        OutputRestart();
       }
     }
 
@@ -810,7 +642,6 @@ void SCATRA::ScaTraImplicitTimeInt::Output()
     output_->NewStep    (step_,time_);
     output_->WriteVector("phinp", phinp_);
     output_->WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
-    //output_->WriteVector("residual", residual_);
 
     if (writeflux_!="No")
     {
@@ -818,105 +649,20 @@ void SCATRA::ScaTraImplicitTimeInt::Output()
     output_->WriteVector("flux", flux, IO::DiscretizationWriter::dofvector);
     }
 
-    output_->WriteVector("phidtn", phidtn_);
-    output_->WriteVector("phin", phin_);
-    output_->WriteVector("phinm", phinm_);
+    OutputRestart(); //add restart data
   }
-
-
-#if 0  // DEBUG IO --- the whole systemmatrix
-  {
-    int rr;
-    int mm;
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      int NumEntries;
-
-      vector<double> Values(27);
-      vector<int> Indices(27);
-
-      sysmat_->ExtractGlobalRowCopy(rr,27,NumEntries,&Values[0],&Indices[0]);
-      printf("Row %4d\n",rr);
-
-      for(mm=0;mm<NumEntries;mm++)
-      {
-        printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-      }
-    }
-  }
-#endif
-
-#if 0  // DEBUG IO  --- rhs of linear system
-  {
-    int rr;
-    double* data = residual_->Values();
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      printf("rhs [%4d] %22.15e\n",rr,data[rr]);
-    }
-  }
-#endif
-
-#if 0  // DEBUG IO --- neumann_loads
-  {
-    int rr;
-    double* data = neumann_loads_->Values();
-    for(rr=0;rr<phinp_->MyLength();rr++)
-    {
-      printf("neum[%4d] %26.19e\n",rr,data[rr]);
-    }
-  }
-
-#endif
-
-
-#if 0  //DEBUG IO --- incremental solution
-  for (int proc=0; proc<phinp_->Comm().NumProc(); ++proc)
-  {
-    if (proc==myrank_)
-    {
-      printf("Proc %d\n",myrank_); fflush(stdout);
-      for(int rr=0;rr<phinp_->MyLength();++rr)
-      {
-        printf("sol[%4d] %26.19e\n",phinp_->Map().GID(rr),(*phinp_)[rr]);
-      }
-    }
-    fflush(stdout);
-    phinp_->Comm().Barrier();
-  }
-#endif
-
-#if 0  //DEBUG IO --- convective velocity
-convel_->Print(cout);
-#endif
 
   return;
-} // ScaTraImplicitTimeInt::Output
+} // ScaTraTimIntImpl::Output
 
 
 /*----------------------------------------------------------------------*
- |                                                             kue 04/07|
- -----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::ReadRestart(int step)
-{
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  reader.ReadVector(phinp_,"phinp");
-  reader.ReadVector(phin_, "phin");
-  reader.ReadVector(phinm_,"phinm");
-  reader.ReadVector(phidtn_, "phidtn");
-}
-
-
-/*----------------------------------------------------------------------*
- | solve stationary convection-diffusion problem                vg 05/07|
+ | solve stationary convection-diffusion problem               vg 05/07 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
+void SCATRA::ScaTraTimIntImpl::SolveStationaryProblem()
 {
-  // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
+  // time measurement: time loop (stationary) 
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
   // -------------------------------------------------------------------
   //                         out to screen
@@ -940,18 +686,14 @@ void SCATRA::ScaTraImplicitTimeInt::SolveStationaryProblem()
   // -------------------------------------------------------------------
   Output();
 
-
-  // end time measurement for time loop (stationary)
-  tm2_ref_ = null;
-
   return;
-} // ScaTraImplicitTimeInt::SolveStationaryProblem
+} // ScaTraTimIntImpl::SolveStationaryProblem
 
 
 /*----------------------------------------------------------------------*
- | update the velocity field                                   gjb 04/08|
+ | update the velocity field                                  gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, int velfuncno)
 {
     if (veltype != cdvel_)
         dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
@@ -982,9 +724,9 @@ void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 
 
 /*----------------------------------------------------------------------*
- | update the velocity field                                   gjb 04/08|
+ | update the velocity field                                  gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel)
 {
   if (veltype != cdvel_)
     dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
@@ -1015,13 +757,13 @@ void SCATRA::ScaTraImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<c
 
   return;
 
-} // ScaTraImplicitTimeInt::SetVelocityField
+} // ScaTraTimIntImpl::SetVelocityField
 
 
 /*----------------------------------------------------------------------*
- |  set initial field for phi                                gjb   04/08|
+ |  set initial field for phi                                 gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
+void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
   { // just to be sure!
@@ -1051,7 +793,10 @@ void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 
         phinp_->ReplaceMyValues(1,&initialval,&doflid);
         phin_->ReplaceMyValues(1,&initialval,&doflid);
+        if (timealgo_==INPUTPARAMS::timeint_bdf2)
+        {
         phinm_->ReplaceMyValues(1,&initialval,&doflid);
+        }
       }
     }
   }
@@ -1092,7 +837,10 @@ void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
             int doflid = dofrowmap->LID(dofgid);
             phinp_->ReplaceMyValues(1,&phi0,&doflid);
             phin_->ReplaceMyValues(1,&phi0,&doflid);
+            if (timealgo_==INPUTPARAMS::timeint_bdf2)
+            {
             phinm_->ReplaceMyValues(1,&phi0,&doflid);
+            }
           }
         }
       }
@@ -1102,13 +850,13 @@ void SCATRA::ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
     dserror("unknown option for initial field: %d", init);
 
   return;
-} // ScaTraImplicitTimeInt::SetInitialField
+} // ScaTraTimIntImpl::SetInitialField
 
 
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraImplicitTimeInt::CalcFlux()
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 {
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -1176,12 +924,12 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraImplicitTimeInt::CalcFlux()
 } // ScaTraImplicitTimeInt::CalcNormalFlux
 
 /*----------------------------------------------------------------------*
- | Destructor dtor (public)                                     vg 05/07|
+ | Destructor dtor (public)                                   gjb 04/08 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraImplicitTimeInt::~ScaTraImplicitTimeInt()
+SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 {
   return;
-}// ScaTraImplicitTimeInt::~ScaTraImplicitTimeInt::
+}
 
 
 #endif /* CCADISCRET       */
