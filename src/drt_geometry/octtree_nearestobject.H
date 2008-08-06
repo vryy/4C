@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #define OCTTREE_NEARESTOBJECT_H_
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 
 
 namespace GEO

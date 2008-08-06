@@ -20,7 +20,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_element.H"
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/blitz_tiny_operation.H"
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "../drt_geometry/octtree_nearestobject.H"
 #include "Teuchos_RefCountPtr.hpp"
 

@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 
 
 namespace XFEM

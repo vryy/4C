@@ -15,14 +15,13 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_SERVICE_H_
 #define INTERSECTION_SERVICE_H_
 
-#include <blitz/array.h>
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "Teuchos_RefCountPtr.hpp"
-#include "xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "blitz_tiny_operation.H"
 
 

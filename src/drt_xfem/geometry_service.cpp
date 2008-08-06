@@ -231,7 +231,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
     if (commonElements.size() > 2 or commonElements.size() == 0){
       // note that 1 is ok if quasi-2d(thin 3d) problems are calculated, where in z-direction we have no closed surface
       // it would be also ok, for adaptivity with hanging nodes and hence hanging lines
-      dserror("a line should be bounded by 2 surface elements");
+      //dserror("a line should be bounded by 2 surface elements");
       }
     for(list< const DRT::Element* >::const_iterator myIt = commonElements.begin(); myIt != commonElements.end(); ++myIt ){
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(*myIt, currentpositions));

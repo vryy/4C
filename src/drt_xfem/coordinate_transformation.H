@@ -20,13 +20,20 @@ Maintainer: Axel Gerstenberger
 #define COORDINATE_TRANSFORMATION_H
 
 #include <math.h>
-#include "../drt_xfem/xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/blitz_tiny_operation.H"
 
 
 namespace XFEM
 {
+  
+  typedef BlitzVec3 PosX;             ///< position in physical coordinates (x,y,z)
+  typedef BlitzVec3 PosXiDomain;      ///< position in element coordinates of domain element (r,s,t)
+  typedef BlitzVec2 PosXiBoundary;    ///< position in element coordinates of boundary element (r,s)
+  typedef BlitzVec3 PosEtaDomain;     ///< position in local coordinates of a domain integrationcell (r,s,t)
+  typedef BlitzVec2 PosEtaBoundary;   ///< position in local coordinates of a boundary integrationcell (r,s)
+  
   
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>

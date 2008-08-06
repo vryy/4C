@@ -15,9 +15,10 @@
 #define ENRICHMENT_H
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 
 
+//! namespace for all XFEM related stuff
 namespace XFEM
 {
 

@@ -14,13 +14,10 @@ Maintainer: Axel Gerstenberger
 #ifndef ENRICHMENT_UTILS_H
 #define ENRICHMENT_UTILS_H
 
-#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
-//#include "../drt_lib/drt_element.H"
-#include "xfem.H"
+#include "../drt_geometry/vector_definitions.H"
 #include "physics.H"
 #include "dof_management.H"
-//#include "interface.H"
 #include "coordinate_transformation.H"
 
 
