@@ -14,15 +14,19 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
+#include "Epetra_Vector.h"
+
+#include "../drt_lib/drt_dofset.H"
+
 #include "xfem.H"
 #include "physics.H"
 #include "enrichment.H"
 #include "field_enriched.H"
 #include "dofkey.H"
 #include "integrationcell.H"
-#include "interface.H"
-#include "../drt_lib/drt_discret.H"
 
+class DRT::Discretization;
+class XFEM::InterfaceHandle;
 
 namespace XFEM
 {

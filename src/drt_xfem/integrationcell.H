@@ -19,60 +19,12 @@ Maintainer: Axel Gerstenberger
 #include <set>
 #include <string>
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "xfem.H"
 
 
 namespace XFEM
 {
-
-/*!
- * \brief create array with physical coordinates based an local coordinates of a parent element
- */
-template<class Cell>
-static void ComputePhysicalCoordinates(
-        const DRT::Element&  ele,  ///< parent element
-        const Cell&          cell, ///< integration cell whose coordinates we'd like to transform
-        BlitzMat&            physicalCoordinates
-        )
-{
-    const BlitzMat eleCoord(DRT::UTILS::InitialPositionArrayBlitz(&ele));
-    //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-    const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
-    
-    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
-    // return value
-    //BlitzMat physicalCoordinates(3, nen_cell);
-    physicalCoordinates = 0.0;
-    // for each cell node, compute physical position
-    const int nen_ele = ele.NumNode();
-    BlitzVec funct(nen_ele);
-    for (int inen = 0; inen < nen_cell; ++inen)
-    {
-        // shape functions
-        DRT::UTILS::shape_function_3D(funct,
-                (*nodalPosXiDomain)(0, inen),
-                (*nodalPosXiDomain)(1, inen),
-                (*nodalPosXiDomain)(2, inen),
-                ele.Shape());
-
-        for (int i = 0; i < 3; ++i)
-        {
-            for (int j = 0; j < nen_ele; ++j)
-            {
-              physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
-            }
-        }
-    };
-    return;
-}
-
-
 
 /*!
  * \brief An integration cell is used for specialized element integration routines 
@@ -183,16 +135,11 @@ public:
      */
     const BlitzMat* NodalPosXiDomainBlitz() const {return &nodalpos_xi_domain_blitz_;};
     
-    /*!
-     \brief returns the coordinates of the integration cell in physical coordinates
-
-     \return cells nodal coordinates  
-     */
-    void NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
-    {
-        ComputePhysicalCoordinates(ele, (*this), xyz_cell);
-        return;
-    };
+    //! fills an array with the coordinates of the integration cell in physical coordinates
+    void NodalPosXYZ(
+        const DRT::Element&  ele,     ///< parent element
+        BlitzMat&            xyz_cell ///< fill with nodal positions
+        ) const;
     
     //! return string representation of the DomainIntCell
     std::string toString() const;
@@ -262,19 +209,11 @@ public:
         return ref;
     };
     
-    /*!
-     \brief returns the coordinates of the integration cell in physical coordinates
-
-     \return cells nodal coordinates  
-     */
+    //! fills an array with the coordinates of the integration cell in physical coordinates
     void NodalPosXYZ(
-            const DRT::Element& ele,  ///< parent element, where the integration cell is located in
-            BlitzMat&           xyz_cell
-            ) const
-    {
-        ComputePhysicalCoordinates(ele, (*this), xyz_cell);
-        return;
-    };
+        const DRT::Element&  ele,     ///< parent element
+        BlitzMat&            xyz_cell ///< fill with nodal positions
+        ) const;
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates

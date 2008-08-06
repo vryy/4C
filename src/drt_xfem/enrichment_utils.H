@@ -16,18 +16,21 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
+//#include "../drt_lib/drt_element.H"
 #include "xfem.H"
 #include "physics.H"
 #include "dof_management.H"
-#include "interface.H"
+//#include "interface.H"
 #include "coordinate_transformation.H"
 
 
+class DRT::Element;
+class DRT::Discretization;
+
 namespace XFEM
 {
+
+  class InterfaceHandle;
 
   /*!
    * \brief for each given Enrichment in enrset, compute the enrichment value at actpos

@@ -20,7 +20,6 @@ Maintainer: Axel Gerstenberger
 #include <string>
 
 #include "integrationcell.H"
-//#include "../drt_lib/drt_discret.H"
 #include "intersection.H"
 #include "xfsi_searchtree.H"
 
@@ -162,7 +161,7 @@ private:
 */  
 int PositionWithinCondition(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
     );
 
 /*!
@@ -170,7 +169,7 @@ int PositionWithinCondition(
 */  
 int PositionWithinCondition(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
         int& closestElementId, 
         double& distance
     );
@@ -180,7 +179,7 @@ int PositionWithinCondition(
 */  
 bool PositionWithinAnyInfluencingCondition(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
         const std::set<int>&              xlabelset       ///< influencing enrichment labels
     );
 
@@ -189,7 +188,7 @@ bool PositionWithinAnyInfluencingCondition(
 */
 int PositionWithinConditionTree(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
         int& closestElementId, 
         double& distance
     );
@@ -200,7 +199,7 @@ int PositionWithinConditionTree(
 */
 int PositionWithinConditionBruteForce(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
     );
 
 }

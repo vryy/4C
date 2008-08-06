@@ -17,21 +17,22 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 #include <blitz/array.h>
-#include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
+//#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 //! little helper function
+template <int dim>
 static BlitzMat ConvertPosArrayToBlitz(
         const vector<vector<double> >&         pos_array,
-        const DRT::Element::DiscretizationType distype,
-        const int                              dim
+        const DRT::Element::DiscretizationType distype
         )
 {
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    BlitzMat pos_array_blitz(dim,numnode,blitz::ColumnMajorArray<2>());
+    BlitzMat pos_array_blitz(dim,numnode);
     for (int inode=0; inode<numnode; ++inode)
     {
         for (int isd=0; isd<dim; ++isd)
@@ -40,6 +41,49 @@ static BlitzMat ConvertPosArrayToBlitz(
         }
     }    
     return pos_array_blitz;
+}
+
+
+/*!
+ * \brief create array with physical coordinates based an local coordinates of a parent element
+ */
+template<class Cell>
+static void ComputePhysicalCoordinates(
+        const DRT::Element&  ele,  ///< parent element
+        const Cell&          cell, ///< integration cell whose coordinates we'd like to transform
+        BlitzMat&            physicalCoordinates
+        )
+{
+    const BlitzMat eleCoord(DRT::UTILS::InitialPositionArrayBlitz(&ele));
+    //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
+    const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
+    
+    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    
+    // return value
+    //BlitzMat physicalCoordinates(3, nen_cell);
+    physicalCoordinates = 0.0;
+    // for each cell node, compute physical position
+    const int nen_ele = ele.NumNode();
+    BlitzVec funct(nen_ele);
+    for (int inen = 0; inen < nen_cell; ++inen)
+    {
+        // shape functions
+        DRT::UTILS::shape_function_3D(funct,
+                (*nodalPosXiDomain)(0, inen),
+                (*nodalPosXiDomain)(1, inen),
+                (*nodalPosXiDomain)(2, inen),
+                ele.Shape());
+
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < nen_ele; ++j)
+            {
+              physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
+            }
+        }
+    };
+    return;
 }
 
 
@@ -79,7 +123,7 @@ XFEM::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
-            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3))
+            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype))
 {
     return;
 }
@@ -135,6 +179,14 @@ std::string XFEM::DomainIntCell::toString() const
 //        s << "]" << endl;
 //    };
     return s.str();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+{
+    ComputePhysicalCoordinates(ele, (*this), xyz_cell);
+    return;
 }
 
 // set element nodal coordinates according to given distype
@@ -224,8 +276,8 @@ XFEM::BoundaryIntCell::BoundaryIntCell(
         const vector< vector<double> >&           boundaryCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
-            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3)),
-            nodalpos_xi_boundary_blitz_(ConvertPosArrayToBlitz(boundaryCoordinates, distype, 2))
+            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype)),
+            nodalpos_xi_boundary_blitz_(ConvertPosArrayToBlitz<2>(boundaryCoordinates, distype))
 {
 //    if (abs(blitz::sum(nodalpos_xi_boundary_blitz_)) < 1.0e-7 )
 //    {
@@ -290,21 +342,29 @@ std::string XFEM::BoundaryIntCell::toString() const
     return s.str();
 }
 
-//
-// return the center of the cell in physical coordinates
-//
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+{
+    ComputePhysicalCoordinates(ele, (*this), xyz_cell);
+    return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 BlitzVec3 XFEM::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     //const int nsd = 3;
     
     // physical positions of cell nodes
-    BlitzMat physcoord(3,27);
+    static BlitzMat physcoord(3,27);
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
-    BlitzVec2 localcenterpos;
-    localcenterpos = DRT::UTILS::getLocalCenterPosition<2>(this->Shape());
+    const BlitzVec2 localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
 
     // shape functions
     BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));

@@ -15,8 +15,10 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 #include <blitz/array.h>
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_discret.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 #include "intersection_service.H"
 #include "xfem.H"
 #include "physics.H"
@@ -26,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "blitz_tiny_operation.H"
 
 
+class DRT::Discretization;
 
 
 std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(

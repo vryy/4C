@@ -14,6 +14,9 @@ Maintainer: Axel Gerstenberger
 #ifndef DOFKEY_H
 #define DOFKEY_H
 
+#include <string>
+
+#include "../drt_lib/drt_dserror.H"
 #include "xfem.H"
 #include "field_enriched.H"
 
@@ -24,7 +27,7 @@ namespace XFEM
   //! global Position in Epetra vector 
   typedef int DofPos; 
   
-  //! Allows to distuingish between nodal and elemental dofs
+  //! Allows to distinguish between nodal and elemental dofs
   enum DofType
   {
     onNode,
@@ -82,7 +85,7 @@ namespace XFEM
       //! return string representation of this class
       std::string toString() const
       {
-        stringstream s;
+        std::stringstream s;
         s << "Dofkey: <" << dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
         return s.str();
       };
@@ -155,9 +158,9 @@ namespace XFEM
   };
   
   //! connects each dofkey on Node with a specific position in an solution vector
-  typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
+  typedef std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
   //! connects each dofkey on Element with a specific position in an solution vector
-  typedef map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
+  typedef std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
   
 } // namespace XFEM
 
