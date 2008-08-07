@@ -329,7 +329,7 @@ namespace XFEM
           const int step ///< file postfix 
           ) const;
 
-      //! dumps a visualization of the tree in a gmsh file (<prefix>_tree0000<step>.pos)
+      //! dumps a visualization of the tree in a gmsh file ("prefix"_tree0000"step".pos)
       void printTree(
           const string prefix, ///< file prefix
           const int step ///< file postfix
