@@ -159,9 +159,11 @@ namespace STR
 
       // integrate
       sta_->IntegrateStep();
-      sta_->ResetStep();
       // copy onto target
       locerrdisn_->Update(1.0, *(sta_->disn_), 0.0);
+      // reset
+      // remember: sta_ and sti_ are merged and work on the same vectors
+      sta_->ResetStep();
       
       // provide local discretisation error vector
       // l_{n+1}^{A2} = D_{n+1}^{Joint} - D_{n+1}^{A1}

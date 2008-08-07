@@ -408,6 +408,11 @@ void STR::TimInt::ApplyDirichletBC
 /* Reset configuration after time step */
 void STR::TimInt::ResetStep()
 {
+  // reset state vectors
+  disn_->Update(1.0, (*dis_)[0], 0.0);
+  veln_->Update(1.0, (*vel_)[0], 0.0);
+  accn_->Update(1.0, (*acc_)[0], 0.0);
+
   // reset anything that needs to be reset at the element level
   {
     // create the parameters for the discretization
