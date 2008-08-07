@@ -1,5 +1,8 @@
 #ifdef CCADISCRET
 #include "drt_utils_bspline.H"
+#include "../drt_lib/drt_dserror.H"
+
+using namespace std;
 
 //--------------------------------------------------
 // Constructor
@@ -1132,6 +1135,18 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
     bsplineder=0;
   }
   
+  return;
+}
+
+void DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const string errormessage)
+{
+  // give some information on bspline
+  PrintBspline();
+
+  // and the throw the error and exit with a
+  // sigsegv
+  dserror(errormessage);
+
   return;
 }
 

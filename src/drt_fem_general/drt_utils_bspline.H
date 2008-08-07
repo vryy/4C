@@ -10,9 +10,7 @@
 #include<fstream>
 
 #include <blitz/array.h>
-#include "../drt_lib/drt_dserror.H"
 
-using namespace std;
 
 
 namespace DRT
@@ -495,18 +493,18 @@ public:
   //--------------------------------------------------
   void   PrintBspline()
     {
-      cout << "------------------\n";
-      cout << "Bspline knotvector\n";
-      cout << myknotvector_;
-      cout << &endl;
-      cout << "Bspline degree: " << degree_ <<"\n";
-      cout << &endl;
-      cout << "Allows to evaluate bsplines at positions ";
-      cout << "in interval [";
-      cout << myknotvector_(degree_  );
-      cout << ",";
-      cout << myknotvector_(degree_+1);
-      cout << "]\n";
+      std::cout << "------------------\n";
+      std::cout << "Bspline knotvector\n";
+      std::cout << myknotvector_;
+      std::cout << std::endl;
+      std::cout << "Bspline degree: " << degree_ <<"\n";
+      std::cout << std::endl;
+      std::cout << "Allows to evaluate bsplines at positions ";
+      std::cout << "in interval [";
+      std::cout << myknotvector_(degree_  );
+      std::cout << ",";
+      std::cout << myknotvector_(degree_+1);
+      std::cout << "]\n";
 
       return;
     };
@@ -518,7 +516,7 @@ private:
   blitz::Array<double,1> myknotvector_;
 
   //! a working array for the construction of bsplines
-  vector<double>         bspline_;
+  std::vector<double>    bspline_;
 
   //! the degree of the bspline-polynomial under
   //! consideration
@@ -536,17 +534,7 @@ private:
   //--------------------------------------------------
   //! \brief throw an errormessage
   //--------------------------------------------------
-  void Throwerror(const string errormessage)
-    {
-      // give some information on bspline
-      PrintBspline();
-
-      // and the throw the error and exit with a
-      // sigsegv
-      dserror(errormessage.c_str());
-
-      return;
-    };
+  void Throwerror(const std::string errormessage);
 
 };
 

@@ -28,7 +28,6 @@ Maintainer: Ulrich Kuettler
 #include <mpi.h>
 #endif
 
-#include "../drt_lib/drt_discret.H"
 #include "Teuchos_RefCountPtr.hpp"
 
 extern "C" {
@@ -66,7 +65,7 @@ class HDFReader
 public:
 
   //! Construct with the directory where the files can be found.
-  explicit HDFReader(string dir);
+  explicit HDFReader(std::string dir);
   ~HDFReader();
 
   //! Open a new set of input files.
@@ -76,7 +75,7 @@ public:
     files of all processors, by appending .p<proc_num> to the
     basename.
   */
-  void Open(string basename,int num_output_procs);
+  void Open(std::string basename,int num_output_procs);
   //!
   void Close();
 
@@ -85,7 +84,7 @@ public:
    * \note  this function should only be called while the HDFReader reads
    *        mesh files
    */
-  RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num, int my_id) const;
+  Teuchos::RCP<std::vector<char> > ReadElementData(int step, int new_proc_num, int my_id) const;
 
   //!
   /*!
@@ -93,18 +92,20 @@ public:
    * \note: this function should only be called while the HDFReader reads
    *         mesh files
    */
-  RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num, int my_id) const;
+  Teuchos::RCP<std::vector<char> > ReadNodeData(int step, int new_proc_num, int my_id) const;
 
-  /*!reads the packed periodic boundary condition data from the mesh files
-   *!
-    Note: this function should only be called when the HDFReader opened
-    the mesh files
-   *----------------------------------------------------------------------*/
-  RefCountPtr<std::vector<char> > ReadCondition(
+  /*!
+   * \brief reads the packed periodic boundary condition data from the mesh files
+   *
+   *
+   * \note this function should only be called when the HDFReader opened
+   *       the mesh files
+   */
+  Teuchos::RCP<std::vector<char> > ReadCondition(
         const int step,
         const int new_proc_num,
         const int my_id,
-        const string condname) const;
+        const std::string condname) const;
 
   /*!
   //  \brief reads the packed knotvector data from the mesh files
@@ -113,7 +114,7 @@ public:
   //
   //      \return  The whole knotvector data in a char vector
   //      */
-  RefCountPtr<std::vector<char> > ReadKnotvector(
+  Teuchos::RCP<std::vector<char> > ReadKnotvector(
     const int step) const;
   
   
@@ -129,7 +130,12 @@ public:
     \param columns      (in): number of vector columns
     \param Comm         (in): the communicator
    */
-  RefCountPtr<Epetra_MultiVector> ReadResultData(string id_path, string value_path, int columns, const Epetra_Comm& Comm) const;
+  Teuchos::RCP<Epetra_MultiVector> ReadResultData(
+      std::string id_path,
+      std::string value_path,
+      int columns,
+      const Epetra_Comm& Comm
+      ) const;
 
   //! read a std::vector<char> from the result files
   /*!
@@ -142,13 +148,19 @@ public:
     \param Comm         (in): the communicator
     \param elemap      (out): element map
    */
-  RefCountPtr<std::vector<char> >
-  ReadResultDataVecChar(string id_path, string value_path, int columns, const Epetra_Comm& Comm, RefCountPtr<Epetra_Map>& elemap) const;
+  Teuchos::RCP<std::vector<char> >
+  ReadResultDataVecChar(
+      std::string id_path,
+      std::string value_path,
+      int columns,
+      const Epetra_Comm& Comm,
+      Teuchos::RCP<Epetra_Map>& elemap
+      ) const;
 
-  RefCountPtr<std::vector<double> > ReadDoubleVector(std::string path)
+  Teuchos::RCP<std::vector<double> > ReadDoubleVector(std::string path) const
   {
     std::vector<int> length;
-    RCP<std::vector<double> > values = ReadDoubleData(path,0,1,length);
+    Teuchos::RCP<std::vector<double> > values = ReadDoubleData(path,0,1,length);
     return values;
   };
 
@@ -159,7 +171,7 @@ private:
     Here we finally loop all the files the local processor has to read.
     returns all the data in one vector. The data is assumed to by of type char.
    */
-  RefCountPtr<std::vector<char> > ReadCharData(std::string path,
+  Teuchos::RCP<std::vector<char> > ReadCharData(std::string path,
                                                int start, int end) const;
 
   /// reads the dataset 'path' in all the files in the range [start,end)
@@ -167,7 +179,7 @@ private:
     Here we finally loop all the files the local processor has to read.
     returns all the data in one vector<int>
   */
-  RefCountPtr<std::vector<int> > ReadIntData(std::string path,
+  Teuchos::RCP<std::vector<int> > ReadIntData(std::string path,
                                              int start, int end) const;
 
   /// reads the dataset 'path' in all the files in the range [start,end)
@@ -175,7 +187,7 @@ private:
     Here we finally loop all the files the local processor has to
     read.
   */
-  RefCountPtr<std::vector<double> > ReadDoubleData(std::string path,
+  Teuchos::RCP<std::vector<double> > ReadDoubleData(std::string path,
                                                    int start, int end,
                                                    std::vector<int>& lengths) const;
 
@@ -204,7 +216,7 @@ private:
   std::vector<hid_t> files_;
 
   //! directory where to find the files
-  string input_dir_;
+  std::string input_dir_;
 
   //! number of processors that wrote this set of files
   int num_output_proc_;
