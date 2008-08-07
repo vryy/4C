@@ -220,7 +220,7 @@ public:
 
     \param name : control file entry name
     \param vec  : the result data vector
-    \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
+    \param vt   : vector type
   */
   virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
 
@@ -232,7 +232,7 @@ public:
     \param name : control file entry name
     \param vec  : the result data vector
     \param elemap: element map of discretization
-    \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
+    \param vt   : vector type
   */
   virtual void WriteVector(const string name, const std::vector<char>& vec, const Epetra_Map& elemap, VectorType vt=dofvector);
 
