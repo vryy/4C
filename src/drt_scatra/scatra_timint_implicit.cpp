@@ -111,6 +111,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_        = LINALG::CreateVector(*dofrowmap,true);
   phin_         = LINALG::CreateVector(*dofrowmap,true);
+  
+  // state vector for solution at time n-1
+  if (timealgo_==INPUTPARAMS::timeint_bdf2)
+  {phinm_      = LINALG::CreateVector(*dofrowmap,true);}
+
 
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta)
@@ -768,8 +773,11 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
   if (init == 0) // zero_field
   { // just to be sure!
     phinp_->PutScalar(0);
+    phin_-> PutScalar(0);
+    if (timealgo_==INPUTPARAMS::timeint_bdf2)
+    {
     phinm_->PutScalar(0);
-    phin_->PutScalar(0);
+    }
   }
   else if (init == 1)  // field_by_function
   {
