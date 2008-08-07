@@ -149,6 +149,50 @@ int GEO::getXFEMLabel(
 
 
 /*----------------------------------------------------------------------*
+ | a set of nodes in a given radius                          u.may 07/08|
+ | from a query point                                                   |
+ *----------------------------------------------------------------------*/
+std::set<int> GEO::getNodeSetInRadius(
+    const DRT::Discretization&              dis, 		
+    const std::map<int,BlitzVec3>&          currentpositions, 	
+    const BlitzVec3&                        querypoint,
+    const double		                        radius,
+    const int                               label,
+    std::map<int, std::set<int> >&          elementList)  
+{
+  std::map< int, std::set<int> > nodeList;
+  std::set<int> nodeSet;
+  
+  // collect all nodes with different label
+  for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
+  {
+    if(label != labelIter->first) // don t collect nodes which belong to the same label
+    {
+      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      {
+        DRT::Element* element = dis.gElement(*eleIter);
+        // run over all corner points of the element
+        for(int i = 0; i < 4; i++)
+          nodeList[labelIter->first].insert(element->NodeIds()[i]);
+      }
+    }
+  }
+  
+  for(std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+    for(std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
+    {
+      double distance = GEO::LARGENUMBER;
+      const DRT::Node* node = dis.gNode(*nodeIter);
+      GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
+      if(distance < (radius + GEO::TOL7) )
+        nodeSet.insert(node->Id());
+    }
+  
+  return nodeSet;
+}
+
+
+/*----------------------------------------------------------------------*
  | searches a nearest object in tree node                    u.may 07/08|
  | object is either a node, line or surface element                     |
  *----------------------------------------------------------------------*/
@@ -204,11 +248,11 @@ int GEO::nearestObjectInNode(
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const DRT::Node* node = dis.gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, point, x_surface, distance);
+      GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
-        nearestObject.setNodeObjectType(*nodeIter, labelIter->first, x_surface);
+        nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
       }
     }
 
@@ -369,14 +413,13 @@ void GEO::getDistanceToPoint(
     const DRT::Node*                            node,
     const std::map<int,BlitzVec3>&              currentpositions,
     const BlitzVec3&                            point,
-    BlitzVec3&                                  x_node,
     double&                                     distance)
 {
 
   BlitzVec3 distance_vector = 0.0;
   // node position in physical coordinates
 
-  x_node = currentpositions.find(node->Id())->second;
+  const BlitzVec3 x_node = currentpositions.find(node->Id())->second;
 
   // vector pointing away from the node towards physCoord
   distance_vector(0) = point(0) - x_node(0);
@@ -537,9 +580,9 @@ bool GEO::inSameNodeBox(
  | expected                                                             |
  *----------------------------------------------------------------------*/
 void GEO::checkRoughGeoType(
-    const DRT::Element*          element,
-    const BlitzMat               xyze_element,
-    GEO::EleGeoType&            eleGeoType)
+    const DRT::Element*           element,
+    const BlitzMat                xyze_element,
+    GEO::EleGeoType&              eleGeoType)
 {
   const DRT::Element::DiscretizationType distype = element->Shape();
 

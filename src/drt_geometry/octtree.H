@@ -106,6 +106,28 @@ private:
       const DRT::Element*               element,
       const std::map< int,BlitzVec3 >&  currentpositions
       ) const; 
+  
+  
+  /*!
+   \brief return child, whose node box completely encloses the circle with the given midpoint and radius
+   \param radius              radius
+   \param point               point
+   \return child index
+   */
+  int classifyRadius(
+      const double        radius,
+      const BlitzVec3&    point
+      ) const;
+  
+  
+  /*!
+  \brief returns the child node index which completely contains a given AABB
+  \param AABB                AABB
+  \return child index
+   */
+  int classifyAABBCompletelyInNodeBox(
+      const   BlitzMat3x2&  AABB
+      ) const;
 
 
   /*!
@@ -250,6 +272,24 @@ public:
   
   
   /*!
+  \brief returns a set of gids of nodes lying in a radius around a given point
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param radius               radius
+  \param label                label of structure the query point belongs to
+  \return set of node gids
+   */
+  std::set<int> searchNodesInRadius(
+      const DRT::Discretization&       dis,
+      const std::map<int,BlitzVec3>&   currentpositions, 
+      const BlitzVec3&                 point,
+      const double                     radius,
+      const int                        label
+      );
+  
+  
+  /*!
   \brief print tree node
   \param max_depth           maximum depth of tree
   \param fc                  prefix node stream
@@ -267,10 +307,12 @@ public:
   // class Tree
 public:
 
-  //! tree constructor 
+  /*!
+  \brief tree constructor
+  \param max_depth                  max_depth
+   */
   OctTree(
-      const int           max_depth,
-      const BlitzMat3x2&  nodeBox
+      const int           max_depth
       );
 
   //! destructor
@@ -281,10 +323,12 @@ public:
   \brief destroys the old tree if its exists and builds the root 
          node of a new tree with a possibly different discretization
 
+  \param nodebox      	      nodeBox
   \param elementsByLabel      elementsByLabel
    */
   void initializeTree(
-      const std::map<int,std::set<int> >& elementsByLabel  	
+      const BlitzMat3x2&                    nodeBox,
+      const std::map<int,std::set<int> >&   elementsByLabel  	
       );
 
 
@@ -292,9 +336,11 @@ public:
   \brief destroys the old tree if its exists and builds the root node of a 
          new tree with a possibly different discretization
          no label sorting
+  \param nodebox      	      nodeBox
   \param dis                  discretization
    */
   void initializeTree(
+      const BlitzMat3x2&  		          nodeBox,
       const DRT::Discretization&        dis
       );
 
@@ -310,7 +356,7 @@ public:
       const DRT::Discretization& 	      dis,
       const std::map<int,BlitzVec3>& 	  currentpositions_old, 
       const std::map<int,BlitzVec3>& 	  currentpositions_new
-  ); 
+      ); 
 
 
   /*!
@@ -328,6 +374,24 @@ public:
 
   
   /*!
+  \brief returns a set of gids of nodes lying in a radius around a given point
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param radius               radius
+  \param label                label
+  \return set of node gids
+   */
+  std::set<int> searchNodesInRadius(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      const BlitzVec3&                  point,
+      const double                      radius,
+      const int                         label
+      );
+  
+  
+  /*!
   \brief prints entire tree to gmsh file
   \param prefix               prefix
   \param step                 time step
@@ -341,10 +405,7 @@ public:
 
 private:
   //! maximum search depth
-  const int max_depth_;
-
-  //! bounding box of the whole tree
-  const BlitzMat3x2 rootNodeBox_;      
+  const int max_depth_;   
 
   //! pointer to the root of the tree
   Teuchos::RCP< GEO::OctTree::TreeNode > treeRoot_;

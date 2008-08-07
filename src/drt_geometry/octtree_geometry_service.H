@@ -74,6 +74,26 @@ namespace GEO
       std::map<int, std::set<int> >&          elementList
       );  	
 
+  
+  /*!
+  \brief Returns a set of node ids lying in a circle of a given querypoint and a radius
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param radius               radius
+  \param label                label
+  \param elementList          map of elements label gid
+  \return                     label
+   */
+  std::set<int> getNodeSetInRadius(
+      const DRT::Discretization&              dis,    
+      const std::map<int,BlitzVec3>&          currentpositions,   
+      const BlitzVec3&                        querypoint,
+      const double                            radius,
+      const int                               label,
+      std::map<int, std::set<int> >&          elementList
+      );
+  
 
   /*!
   \brief Returns the nearest object to a point 
@@ -136,14 +156,12 @@ namespace GEO
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param point                point to be examined
-  \param x_node               physical coordinates of tree node
   \param distance             distance to nearest point
    */
   void getDistanceToPoint(
       const DRT::Node*                            node,
       const std::map<int,BlitzVec3>&              currentpositions,
       const BlitzVec3&                            point,
-      BlitzVec3&                                  x_node,
       double&                                     distance
       );
 
@@ -175,6 +193,28 @@ namespace GEO
       );
 
   
+
+  /*!
+  \brief Returns a set of nodes within a the radius of a given point
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param radius               radius
+  \param label                label
+  \param elementList          map of elements label gid
+  \return                     node set
+   */
+  std::set<int> getNodeSetInRadius(
+    const DRT::Discretization&              dis, 		
+    const std::map<int,BlitzVec3>&          currentpositions, 	
+    const BlitzVec3&                        querypoint,
+    const int				    radius,
+    const int				    label,
+    std::map<int, std::set<int> >&          elementList
+    );  
+
+
+
   /*!
   \brief Merges two axis-aligned bounding boxes
   \param AABB1          axis - aligned bounding box 1

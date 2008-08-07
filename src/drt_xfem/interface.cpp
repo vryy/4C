@@ -78,8 +78,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
   const int max_treedepth = 5;
-  octTree_ = rcp( new GEO::OctTree(max_treedepth, AABB ) );
-  octTree_->initializeTree(elementsByLabel_); 
+  octTree_ = rcp( new GEO::OctTree(max_treedepth) );
+  octTree_->initializeTree(AABB, elementsByLabel_); 
  
   // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();

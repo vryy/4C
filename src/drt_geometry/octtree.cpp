@@ -29,10 +29,8 @@ extern struct _FILES  allfiles;
  | constructor OctTree                                       u.may 07/08|
  *----------------------------------------------------------------------*/
 GEO::OctTree::OctTree(
-    const int           max_depth,
-    const BlitzMat3x2&  nodeBox): 
+    const int           max_depth): 
       max_depth_(max_depth),
-      rootNodeBox_(nodeBox),
       treeRoot_(Teuchos::null)      
 {}
     
@@ -50,14 +48,15 @@ GEO::OctTree::~OctTree(){}
  | discretization, elements are sorted according to the given map       |
  *----------------------------------------------------------------------*/
 void GEO::OctTree::initializeTree(
-    const std::map<int,std::set<int> >&  elementsByLabel) 
+    const BlitzMat3x2&                    nodeBox,
+    const std::map<int,std::set<int> >&   elementsByLabel) 
 {
   
   
   treeRoot_ = Teuchos::null;
  
   // TODO initialize if map is empty
-  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, rootNodeBox_)); 
+  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox)); 
 
   // insert element map into tree root node
   if(elementsByLabel.size()>0)
@@ -72,15 +71,17 @@ void GEO::OctTree::initializeTree(
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
 void GEO::OctTree::initializeTree(
+    const BlitzMat3x2&              nodeBox,
     const DRT::Discretization&      dis) 
 {
 
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, rootNodeBox_)); 
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox)); 
 
   // inserts all elements in a map with key -1
   for (int i=0; i<dis.NumMyColElements(); ++i) 
     treeRoot_->insertElement(-1, dis.lRowElement(i)->Id());
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -124,6 +125,33 @@ int GEO::OctTree::queryXFEMFSIPointType(
     return 0;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ | returns nodes in the radius of a given point              u.may 07/08|
+ *----------------------------------------------------------------------*/
+std::set<int> GEO::OctTree::searchNodesInRadius(
+    const DRT::Discretization& 	     dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    const BlitzVec3& 		             point,
+    const double                     radius, 
+    const int                        label) 
+{
+  //  cout << " ASKING THE TREE" << endl;
+  TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime");
+
+  std::set<int> nodeset;
+
+  if(treeRoot_ == Teuchos::null)
+      dserror("tree is not yet initialized !!!");
+
+  if(!treeRoot_->getElementList().empty())
+    nodeset = treeRoot_->searchNodesInRadius(dis, currentpositions, point, radius, label);
+  else
+    dserror("element list is empty");
+
+  return nodeset;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -404,8 +432,8 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
  | insert element in tree node                              u.may  07/08|
  *----------------------------------------------------------------------*/
 void GEO::OctTree::TreeNode::insertElement(
-    const int label,
-    const int eleId) 
+    const int   label,
+    const int   eleId) 
 {
     elementList_[label].insert(eleId);
 }
@@ -416,8 +444,8 @@ void GEO::OctTree::TreeNode::insertElement(
  | create children                                         u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::OctTree::TreeNode::createChildren(
-    const DRT::Discretization&      dis,
-    const std::map<int,BlitzVec3>& 	currentpositions)
+    const DRT::Discretization&      	dis,
+    const std::map<int,BlitzVec3>& 	  currentpositions)
 {
   // create empty children
   for(int index = 0; index < 8; index++)
@@ -562,6 +590,61 @@ std::vector<int> GEO::OctTree::TreeNode::classifyElement(
 
 
 
+
+/*----------------------------------------------------------------------*
+ | classifiy element in node                               u.may   08/08|
+ *----------------------------------------------------------------------*/
+int GEO::OctTree::TreeNode::classifyRadius(
+    const double      radius,
+    const BlitzVec3&	point
+    ) const
+{
+  BlitzMat3x2 radiusXAABB;  
+
+  for(int dim = 0; dim < 3; dim++)
+  {
+    radiusXAABB(dim,0) = ( point(dim) - radius) - GEO::TOL7;
+    radiusXAABB(dim,1) = ( point(dim) + radius) + GEO::TOL7;
+  }
+  return classifyAABBCompletelyInNodeBox(radiusXAABB);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | checks if a AABB is completely in a child node          u.may   08/08|
+ *----------------------------------------------------------------------*/
+int GEO::OctTree::TreeNode::classifyAABBCompletelyInNodeBox(
+    const BlitzMat3x2&  AABB
+    ) const
+{
+  int childindex = -1;
+  
+  int indexMin = 0;
+  if(AABB(0,0) > xPlaneCoordinate_)
+    indexMin += 4;
+  if(AABB(1,0) > yPlaneCoordinate_)
+    indexMin += 2;
+  if(AABB(2,0) > zPlaneCoordinate_)
+    indexMin += 1;
+  
+  int indexMax = 0;
+  if(AABB(0,1) > xPlaneCoordinate_)
+    indexMax += 4;
+  if(AABB(1,1) > yPlaneCoordinate_)
+    indexMax += 2;
+  if(AABB(2,1) > zPlaneCoordinate_)
+    indexMax += 1;
+    
+  
+  if(indexMin == indexMax)
+    childindex = indexMin;
+  
+  return childindex;
+}
+
+
+
 /*----------------------------------------------------------------------*
  | update tree node                                        u.may   08/08|
  *----------------------------------------------------------------------*/
@@ -618,6 +701,62 @@ int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
   }
   return -1;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | returns nodes in the radius of a given point              u.may 08/08|
+ *----------------------------------------------------------------------*/
+std::set<int> GEO::OctTree::TreeNode::searchNodesInRadius(
+    const DRT::Discretization& 	     dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    const BlitzVec3& 		             point,
+    const double                     radius, 
+    const int 			                 label) 
+{
+  
+  std::set<int> nodeset;
+
+  switch (treeNodeType_) 
+  {
+    case INNER_NODE:
+    {       
+      const int childindex = classifyRadius(radius, point);
+      if(childindex != -1) // child node found which encloses AABB so step down
+        return children_[childindex]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+      else
+        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        
+      break;
+    }
+    case LEAF_NODE:   
+    {
+      if(elementList_.empty())
+        return nodeset;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
+        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node     
+      const int childindex = classifyRadius(radius, point);
+      if(childindex != -1)  // child node found
+      {
+        createChildren(dis, currentpositions);
+        return children_[childindex]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+      }
+      else // AABB does not fit into a single child node box anymore so don t refine any further
+        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return nodeset;
+
+}
+
 
 
 /*----------------------------------------------------------------------*
