@@ -128,7 +128,7 @@ STR::TimInt::TimInt
   writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
   writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
   writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
-  writeenergyevery_(sdynparams.get<int>("RESEVRYENERGY")),
+  writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   energyfile_(),
   damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
   dampk_(sdynparams.get<double>("K_DAMP")),
@@ -185,10 +185,11 @@ STR::TimInt::TimInt
   step_ = 0;
 
   // output file for energy
-  if (writeenergyevery_ != 0)
+  if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
   {
-    Teuchos::RCP<DRT::Problem> prob = DRT::Problem::Instance();
-    std::string energyname = prob->OutputControlFile()->FileName() + ".energy";
+    std::string energyname 
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()
+      + ".energy";
     energyfile_ = new std::ofstream(energyname.c_str());
     *energyfile_ << "# timestep       time total_energy kinetic_energy internal_energy external_energy" << std::endl;
   }
@@ -672,6 +673,16 @@ void STR::TimInt::OutputEnergy()
     discret_->EvaluateEnergy(p, kinergy, intergy);
     discret_->ClearState();
   }
+
+  // global calculation of kinetic energy
+  //double kinergy = 0.0;  // total kinetic energy
+  //{
+  //  Teuchos::RCP<Epetra_Vector> linmom 
+  //    = LINALG::CreateVector(*dofrowmap_, true);
+  //  mass_->Multiply(false, (*vel_)[0], *linmom);
+  //  linmom->Dot((*vel_)[0], &kinergy);
+  //  kinergy *= 0.5;
+  //}
 
   // external energy
   double extergy = 0.0;  // total external energy

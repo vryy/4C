@@ -236,6 +236,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      // check if length suffices
+      if (elevec1.Length() < 2) dserror("Result vector must be at least of size 2");
+      // determine energies
       Energy(params,lm,mydisp,myvel,&elevec1,actmat);
     }
     break;
