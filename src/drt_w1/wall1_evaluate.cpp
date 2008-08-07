@@ -229,17 +229,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      if ( (disp==Teuchos::null) or (vel==Teuchos::null) )
-        dserror("Cannot get state vectors");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       // check if length suffices
-      if (elevec1.Length() < 2) dserror("Result vector must be at least of size 2");
+      if (elevec1.Length() < 1) dserror("Result vector too short");
       // determine energies
-      Energy(params,lm,mydisp,myvel,&elevec1,actmat);
+      Energy(params,lm,mydisp,&elevec1,actmat);
     }
     break;
     case Wall1::calc_struct_eleload:
@@ -1010,7 +1006,6 @@ void DRT::ELEMENTS::Wall1::Energy(
   const ParameterList& params,
   const std::vector<int>& lm,
   const std::vector<double>& dis,
-  const std::vector<double>& vel,
   Epetra_SerialDenseVector* energies,
   struct _MATERIAL* material
 )
@@ -1022,8 +1017,6 @@ void DRT::ELEMENTS::Wall1::Energy(
   const DiscretizationType distype = Shape();
   // Gaussian points
   const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule_);
-  // density if mass is calculated
-  const double density = Density(material);
 
   // general arrays
   Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
@@ -1104,19 +1097,6 @@ void DRT::ELEMENTS::Wall1::Energy(
     // integration factor
     double fac = wgt * Xjdet * thickness_;
 
-    // compute mass matrix
-    {
-      double facm = fac * density;
-      for (int a=0; a<numnode; a++)
-      {
-        for (int b=0; b<numnode; b++)
-        {
-          massmatrix(2*a,2*b) += facm * shpfct(a) * shpfct(b); /* a,b even */
-          massmatrix(2*a+1,2*b+1) += facm * shpfct(a) * shpfct(b); /* a,b odd  */
-        }
-      }
-    }
-
     // calculate linear B-operator
     w1_boplin(boplin, shpdrv, Xjm, Xjdet, numnode);
 
@@ -1138,11 +1118,8 @@ void DRT::ELEMENTS::Wall1::Energy(
     }
 
     // internal/strain energy
-    if (energies) (*energies)(1) += EnergyInternal(material, fac, Ev);
+    if (energies) (*energies)(0) += EnergyInternal(material, fac, Ev);
   }  // end loop Gauss points
-
-  // kinetic energy
-  if (energies) (*energies)(0) += EnergyKinetic(massmatrix, vel);
 
   // bye
   return;

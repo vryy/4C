@@ -427,7 +427,6 @@ private:
     const ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
-    const std::vector<double>& vel,  ///< element velocities \f$v_{n}^{(e)}\f$ at \f$t_{n}\f$
     Epetra_SerialDenseVector* energies,  ///< (in/out) energies
     struct _MATERIAL* material  ///< element material
   );

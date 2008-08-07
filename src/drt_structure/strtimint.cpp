@@ -661,8 +661,7 @@ void STR::TimInt::OutputStressStrain
 /* output system energies */
 void STR::TimInt::OutputEnergy()
 {
-  // calc kin & int energy
-  double kinergy = 0.0;  // total kinetic energy
+  // internal/strain energy
   double intergy = 0.0;  // total internal energy
   {
     ParameterList p;
@@ -672,25 +671,23 @@ void STR::TimInt::OutputEnergy()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
-    discret_->SetState("velocity", (*vel_)(0));
     // get energies
     Teuchos::RCP<Epetra_SerialDenseVector> energies 
-      = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+      = Teuchos::rcp(new Epetra_SerialDenseVector(1));
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
-    kinergy = (*energies)(0);
-    intergy = (*energies)(1);
+    intergy = (*energies)(0);
   }
 
   // global calculation of kinetic energy
-  //double kinergy = 0.0;  // total kinetic energy
-  //{
-  //  Teuchos::RCP<Epetra_Vector> linmom 
-  //    = LINALG::CreateVector(*dofrowmap_, true);
-  //  mass_->Multiply(false, (*vel_)[0], *linmom);
-  //  linmom->Dot((*vel_)[0], &kinergy);
-  //  kinergy *= 0.5;
-  //}
+  double kinergy = 0.0;  // total kinetic energy
+  {
+    Teuchos::RCP<Epetra_Vector> linmom 
+      = LINALG::CreateVector(*dofrowmap_, true);
+    mass_->Multiply(false, (*vel_)[0], *linmom);
+    linmom->Dot((*vel_)[0], &kinergy);
+    kinergy *= 0.5;
+  }
 
   // external energy
   double extergy = 0.0;  // total external energy
