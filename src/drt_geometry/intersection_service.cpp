@@ -394,6 +394,104 @@ bool GEO::checkPositionWithinElement(
 
 
 
+//////////////////////////////////////////////////////////////////
+/*!
+\brief Fill vector with with shape function
+*/
+template<DRT::Element::DiscretizationType distype, class T, class V>
+static void shape_function(
+        const T&  xsi,
+        V&        f
+        )
+{
+  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+      case 1:
+      {
+          DRT::UTILS::shape_function_1D(f, xsi(0), distype);
+          break;
+      }
+      case 2:
+      {
+          DRT::UTILS::shape_function_2D(f, xsi(0), xsi(1), distype);
+          break;
+      }
+      case 3:
+      {
+          DRT::UTILS::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+          break;
+      }
+      default:
+          dserror("dimension of the element is not correct");
+  }
+  return;
+}
+
+/*!
+\brief Fill a matrix with with first shape function derivatives
+*/
+template<DRT::Element::DiscretizationType distype, class T, class M>
+static void shape_function_deriv1(
+        const T&  xsi,
+        M&        d
+        )
+{
+  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+      case 1:
+      {
+          DRT::UTILS::shape_function_1D_deriv1(d, xsi(0), distype);
+          break;
+      }
+      case 2:
+      {
+          DRT::UTILS::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+          break;
+      }
+      case 3:
+      {
+          DRT::UTILS::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+          break;
+      }
+      default:
+          dserror("dimension of the element is not correct");
+  }
+  return;
+}
+
+/*!
+\brief Fill a matrix with with second shape function derivatives
+*/
+template<DRT::Element::DiscretizationType distype, class T, class M>
+static void shape_function_deriv2(
+        const T&  xsi,
+        M&        d2
+        )
+{
+  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+      case 1:
+      {
+          DRT::UTILS::shape_function_1D_deriv2(d2, xsi(0), distype);
+          break;
+      }
+      case 2:
+      {
+          DRT::UTILS::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+          break;
+      }
+      case 3:
+      {
+          DRT::UTILS::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+          break;
+      }
+      default:
+          dserror("dimension of the element is not correct");
+  }
+  return;
+}
+
+
 /*!
 \brief updates the system matrix at the corresponding element coordinates for the 
        computation if a node in current coordinates lies within an element 
@@ -410,7 +508,7 @@ static inline void updateAForNWE(
 {   
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static blitz::TinyMatrix<double,dim,numNodes> deriv1;
-    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
     //A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
     for (int isd = 0; isd < 3; ++isd)
@@ -445,7 +543,7 @@ static inline void updateRHSForNWE(
     
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     blitz::TinyVector<double,numNodes> funct;
-    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    shape_function<DISTYPE>(xsi, funct);
     
     //b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
     for (int isd = 0; isd < 3; ++isd)

@@ -15,10 +15,9 @@ Maintainer: Axel Gerstenberger
 #define ENRICHMENT_UTILS_H
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_geometry/vector_definitions.H"
+#include "../drt_geometry/integrationcell.H"
 #include "physics.H"
-#include "dof_management.H"
-#include "../drt_geometry/coordinate_transformation.H"
+#include "dof_management_element.H"
 
 
 class DRT::Element;

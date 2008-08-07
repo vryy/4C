@@ -15,15 +15,9 @@ Maintainer: Axel Gerstenberger
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <vector>
-#include <set>
-#include <string>
-
-#include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/intersection.H"
 #include "xfsi_searchtree.H"
 #include "../drt_geometry/octtree.H"
-#include "../drt_geometry/octtree_geometry_service.H"
 
 namespace XFEM
 {

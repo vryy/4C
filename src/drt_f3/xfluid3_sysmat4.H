@@ -19,24 +19,23 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_SYSMAT4_H
 #define XFLUID3_SYSMAT4_H
 
-#include <math.h>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "xfluid3.H"
 #include "xfluid3_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_geometry/vector_definitions.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/interface.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/coordinate_transformation.H"
-#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
-//#include "xfluid3_shapefunction_handle.H"
 
-#include <Epetra_SerialDenseSolver.h>
-
+class DRT::Discretization;
 
 namespace XFLUID
 {
@@ -557,7 +556,7 @@ static void SysmatDomain4(
               tau = 0.0;
             }
           
-//            BlitzVec3 nabla_dot_tau(3);
+//            BlitzVec3 nabla_dot_tau;
 //            if (stress_unknowns_present)
 //            {
 //                nabla_dot_tau(0) = blitz::sum(shp_tau_dx(_)*etau(0,_)) + blitz::sum(shp_tau_dy(_)*etau(3,_)) + blitz::sum(shp_tau_dz(_)*etau(4,_));

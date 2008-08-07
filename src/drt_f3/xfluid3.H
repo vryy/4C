@@ -24,16 +24,10 @@ Maintainer: Axel Gerstenberger
 #define DRT_XFLUID3_H
 
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-
-#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_xfem/dof_management.H"
-#include "xfluid3_interpolation.H"
+#include "../drt_xfem/dof_management_element.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {

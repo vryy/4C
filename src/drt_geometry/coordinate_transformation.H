@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "vector_definitions.H"
 #include "integrationcell.H"
 #include "blitz_tiny_operation.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 //! geometry related things
 namespace GEO

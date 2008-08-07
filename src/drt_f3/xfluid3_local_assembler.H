@@ -18,8 +18,6 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_LOCAL_ASSEMBLER_H
 #define XFLUID3_LOCAL_ASSEMBLER_H
 
-#include "../drt_geometry/vector_definitions.H"
-//#include "xfluid3_shapefunction_handle.H"
 
 
 enum DerivDir

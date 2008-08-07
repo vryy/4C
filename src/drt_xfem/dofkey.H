@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifndef DOFKEY_H
 #define DOFKEY_H
 
-#include <string>
 
 #include "../drt_lib/drt_dserror.H"
 #include "field_enriched.H"
@@ -62,7 +61,7 @@ namespace XFEM
       //! standard constructor
       explicit DofKey(
           const int             gid,      ///< global id
-          const FieldEnr        fieldenr  ///< enrichmed field
+          const FieldEnr        fieldenr  ///< enriched field
       ) :
         gid_(gid),
         fieldenr_(fieldenr)

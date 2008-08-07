@@ -19,28 +19,28 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_SYSMAT3_H
 #define XFLUID3_SYSMAT3_H
 
-#include <math.h>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "xfluid3.H"
 #include "xfluid3_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_geometry/vector_definitions.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/interface.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/coordinate_transformation.H"
-#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
-//#include "xfluid3_shapefunction_handle.H"
 
-#include <Epetra_SerialDenseSolver.h>
-
-using namespace XFEM::PHYSICS;
+class DRT::Discretization;
 
 namespace XFLUID
 {
+
+  using namespace XFEM::PHYSICS;
 
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
@@ -69,10 +69,10 @@ namespace XFLUID
       const int numparamtauxx = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
       const int numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
       
-      const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
-      const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
-      const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
-      const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
+      const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+      const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+      const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+      const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
       
       for (int iparam=0; iparam<numparamvelx; ++iparam)
       {
@@ -229,8 +229,6 @@ static void Sysmat3(
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
-        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
-        
         // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
         if (ih->ElementIntersected(ele->Id()))
         {
@@ -241,7 +239,16 @@ static void Sysmat3(
               continue;
             }
         }
-      
+
+        const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+              ih,
+              dofman.getUniqueEnrichments(),
+              cellcenter,
+              XFEM::Enrichment::approachUnknown));
+        
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
@@ -249,13 +256,13 @@ static void Sysmat3(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static GEO::PosEtaDomain pos_eta_domain;
+            GEO::PosEtaDomain pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static GEO::PosXiDomain posXiDomain;
+            GEO::PosXiDomain posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
@@ -265,7 +272,7 @@ static void Sysmat3(
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
-            // discontinouos stress shape functions
+            // discontinuous stress shape functions
             static BlitzVec funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
             static BlitzMat deriv_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
@@ -299,11 +306,10 @@ static void Sysmat3(
             }
 
             // position of the gausspoint in physical coordinates
-            static BlitzVec3 gauss_pos_xyz;
+            BlitzVec3 gauss_pos_xyz;
             BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
-            //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
@@ -492,7 +498,7 @@ static void Sysmat3(
             }
 
             // get history data (n) at integration point
-            static BlitzVec3 histvec;
+            BlitzVec3 histvec;
             //histvec = blitz::sum(enr_funct(j)*evelnp_hist(i,j),j);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -618,7 +624,7 @@ static void Sysmat3(
             const double vel_norm = sqrt(velint(0)*velint(0)+velint(1)*velint(1)+velint(2)*velint(2));
 
             // normed velocity at element centre
-            static BlitzVec3 velino;
+            BlitzVec3 velino;
             if (vel_norm>=1e-6)
             {
                 for (int isd = 0; isd < nsd; ++isd)
@@ -742,8 +748,8 @@ static void Sysmat3(
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            static BlitzVec3 rhsint;
-            static BlitzVec3 bodyforce;
+            BlitzVec3 rhsint;
+            BlitzVec3 bodyforce;
             bodyforce = 0.0;
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
@@ -752,18 +758,18 @@ static void Sysmat3(
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            static BlitzVec3 conv_old;
+            BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
             BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
-            static BlitzVec3 visc_old;
+            BlitzVec3 visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            static BlitzVec3 res_old;
+            BlitzVec3 res_old;
             //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
@@ -892,8 +898,7 @@ static void Sysmat3(
                          |       \ /         \  /   |
                           \                        /
             */
-            assembler.template Matrix<Velx,Velx>(shp_dx,     visc*timefacfac, shp_dx);
-            assembler.template Matrix<Velx,Velx>(shp_dx,     visc*timefacfac, shp_dx);
+            assembler.template Matrix<Velx,Velx>(shp_dx,   2*visc*timefacfac, shp_dx);
             assembler.template Matrix<Velx,Velx>(shp_dy,     visc*timefacfac, shp_dy);
             assembler.template Matrix<Velx,Vely>(shp_dy,     visc*timefacfac, shp_dx);
             assembler.template Matrix<Velx,Velx>(shp_dz,     visc*timefacfac, shp_dz);
@@ -901,8 +906,7 @@ static void Sysmat3(
             
             assembler.template Matrix<Vely,Vely>(shp_dx,     visc*timefacfac, shp_dx);
             assembler.template Matrix<Vely,Velx>(shp_dx,     visc*timefacfac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dy,     visc*timefacfac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dy,     visc*timefacfac, shp_dy);
+            assembler.template Matrix<Vely,Vely>(shp_dy,   2*visc*timefacfac, shp_dy);
             assembler.template Matrix<Vely,Vely>(shp_dz,     visc*timefacfac, shp_dz);
             assembler.template Matrix<Vely,Velz>(shp_dz,     visc*timefacfac, shp_dy);
             
@@ -910,8 +914,7 @@ static void Sysmat3(
             assembler.template Matrix<Velz,Velx>(shp_dx,     visc*timefacfac, shp_dz);
             assembler.template Matrix<Velz,Velz>(shp_dy,     visc*timefacfac, shp_dy);
             assembler.template Matrix<Velz,Vely>(shp_dy,     visc*timefacfac, shp_dz);
-            assembler.template Matrix<Velz,Velz>(shp_dz,     visc*timefacfac, shp_dz);
-            assembler.template Matrix<Velz,Velz>(shp_dz,     visc*timefacfac, shp_dz);
+            assembler.template Matrix<Velz,Velz>(shp_dz,   2*visc*timefacfac, shp_dz);
             
             assembler.template Vector<Velx>(shp_dx,     -visc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
             assembler.template Vector<Velx>(shp_dy,     -visc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));

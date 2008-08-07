@@ -18,8 +18,6 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_element.H"
 
-#include "physics.H"
-#include "enrichment.H"
 #include "field_enriched.H"
 
 namespace XFEM

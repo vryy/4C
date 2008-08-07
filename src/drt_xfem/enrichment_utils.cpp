@@ -14,16 +14,15 @@ Maintainer: Axel Gerstenberger
 
 #include <string>
 #include <sstream>
+
+#include "enrichment_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/vector_definitions.H"
-#include "physics.H"
-#include "enrichment_utils.H"
-#include "dof_management.H"
 #include "interface.H"
 #include "../drt_geometry/blitz_tiny_operation.H"
+#include "../drt_geometry/coordinate_transformation.H"
 
 
 class DRT::Discretization;

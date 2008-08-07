@@ -5,18 +5,8 @@
 
  Provided are 1D, 2D and 3D shape functions
 
- The surface mapping gives the node numbers such that the 2D shape functions can be used
- Nodal mappings describe the relation between volume, surface and line node numbering.
- They should be used as the only reference for such relationships.
  The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
- The numbering of lower order elements is included in the higher order element, such that
- e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
-
- !!!!
- The corresponding graphics and a detailed description can be found
- in the Baci guide in the Convention chapter.
- !!!!
-
+ 
  \author Axel Gerstenberger
  gerstenberger@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
@@ -30,7 +20,6 @@
 
 
 #include "../drt_lib/drt_element.H"
-#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -2067,103 +2056,6 @@ namespace UTILS
 
   }
   
-
-  //////////////////////////////////////////////////////////////////
-  /*!
-  \brief Fill vector with with shape function
-  */
-  template<DRT::Element::DiscretizationType distype, class T, class V>
-  void shape_function(
-          const T&  xsi,
-          V&        f
-          )
-  {
-    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-    {
-        case 1:
-        {
-            shape_function_1D(f, xsi(0), distype);
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(f, xsi(0), xsi(1), distype);
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    return;
-  }
-
-  /*!
-  \brief Fill a matrix with with first shape function derivatives
-  */
-  template<DRT::Element::DiscretizationType distype, class T, class M>
-  void shape_function_deriv1(
-          const T&  xsi,
-          M&        d
-          )
-  {
-    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-    {
-        case 1:
-        {
-            shape_function_1D_deriv1(d, xsi(0), distype);
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    return;
-  }
-
-  /*!
-  \brief Fill a matrix with with second shape function derivatives
-  */
-  template<DRT::Element::DiscretizationType distype, class T, class M>
-  void shape_function_deriv2(
-          const T&  xsi,
-          M&        d2
-          )
-  {
-    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-    {
-        case 1:
-        {
-            shape_function_1D_deriv2(d2, xsi(0), distype);
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    return;
-  }
 
 } // namespace UTILS
 } // namespace DRT

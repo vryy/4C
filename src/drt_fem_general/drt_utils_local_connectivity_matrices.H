@@ -3,8 +3,6 @@
 
  \brief Provide a node numbering scheme together with a set of shape functions
 
- Provided are 1D, 2D and 3D shape functions
-
  The surface mapping gives the node numbers such that the 2D shape functions can be used
  Nodal mappings describe the relation between volume, surface and line node numbering.
  They should be used as the only reference for such relationships.

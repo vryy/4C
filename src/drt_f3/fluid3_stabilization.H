@@ -102,7 +102,7 @@ namespace XFLUID
     const double wquad = intpoints.qwgt[0];
     
     blitz::TinyMatrix<double,3,numnode> deriv_;
-    DRT::UTILS::shape_function_deriv1<DISTYPE>(e, deriv_);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_, e(0), e(1), e(2), DISTYPE);
     
     // get Jacobian matrix and determinant
     //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
