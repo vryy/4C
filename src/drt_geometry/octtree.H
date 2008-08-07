@@ -16,7 +16,6 @@ Maintainer: Ursula Mayer
 #define XFSI_OCTTREE_H
 
 #include "../drt_geometry/octtree_geometry_service.H"
-#include "../drt_geometry/vector_definitions.H"
 
 namespace GEO
 {

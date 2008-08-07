@@ -15,12 +15,8 @@ Maintainer: Axel Gerstenberger
 #ifndef INTEGRATIONCELL_H
 #define INTEGRATIONCELL_H
 
-#include <vector>
 #include <set>
-#include <string>
-#include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_geometry/vector_definitions.H"
 
 
 namespace GEO
@@ -42,16 +38,6 @@ public:
     //! Copy Constructor
     explicit IntCell(const IntCell& old);
 
-    /*!  = operator
-     * create true copy -> allows to have constant instance members
-     */
-    IntCell& operator = (const IntCell& old)
-    {
-        IntCell intcell(old.distype_);
-        IntCell& ref = intcell;
-        return ref;
-    };
-    
     /*!
      \brief returns the shape of the integration cell
 
@@ -76,6 +62,16 @@ private:
 
     //! hidden default constructor
     explicit IntCell();
+    
+    /*! hidden = operator
+     * create true copy -> allows to have constant instance members
+     */
+    IntCell& operator = (const IntCell& old)
+    {
+        IntCell intcell(old.distype_);
+        IntCell& ref = intcell;
+        return ref;
+    };
 };
 
 
