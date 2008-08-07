@@ -58,7 +58,7 @@ protected:
 private:
 
   /// solution vector phi at time t_{n-1}
-  RCP<Epetra_Vector>    phinm_;
+  /// RCP<Epetra_Vector>    phinm_; /// inherited from TimIntImplicit
 
 }; // class TimIntBDF2
 

@@ -30,13 +30,14 @@ SCATRA::TimIntBDF2::TimIntBDF2(
     // vectors and matrices
     //                 local <-> global dof numbering
     // -------------------------------------------------------------------
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     // Vectors passed to the element
     // -----------------------------
 
     // state vector for solution at time n-1
-    phinm_      = LINALG::CreateVector(*dofrowmap,true);
+    //phinm_      = LINALG::CreateVector(*dofrowmap,true);
+    // we still have phinm_ in the base class, this has to be changed
 
     return;
 }
