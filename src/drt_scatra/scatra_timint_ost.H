@@ -56,9 +56,8 @@ protected:
 
 private:
 
-  /// time derivatives of phi at time n and n-1
+  /// time derivative of slution vector phi at time t_{n}
   RCP<Epetra_Vector>    phidtn_;
-  RCP<Epetra_Vector>    phidtnm_;
 
 }; // class TimIntOneStepTheta
 

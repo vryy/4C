@@ -35,9 +35,8 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
     // Vectors passed to the element
     // -----------------------------
 
-    // temporal solution derivatives at time n and n-1
+    // temporal solution derivative at time n
     phidtn_       = LINALG::CreateVector(*dofrowmap,true);
-    phidtnm_      = LINALG::CreateVector(*dofrowmap,true);
 
     return;
 }
@@ -80,10 +79,6 @@ void SCATRA::TimIntOneStepTheta::Update()
   }
   else
   {
-    // prev. time derivative of phi becomes (n-1)-time derivative of phi
-    // of next time step
-    phidtnm_->Update(1.0,*phidtn_,0.0);
-
     /*
     One-step-Theta:
 
@@ -95,15 +90,8 @@ void SCATRA::TimIntOneStepTheta::Update()
     double fact2 = (-1.0/theta_) +1.0;
 
     phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
-    //phidtn_->Update( fact1,*phinp_,0.0);
-    //phidtn_->Update(-fact1,*phin_ ,1.0);
-    //phidtn_->Update( fact2,*phidtnm_ ,1.0);
   }
 
-  /*
-  int   Update (double ScalarA, const Epetra_MultiVector &A, double ScalarB, const Epetra_MultiVector &B, double ScalarThis)
-    Update multi-vector with scaled values of A and B, this = ScalarThis*this + ScalarA*A + ScalarB*B. 
-  */
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
