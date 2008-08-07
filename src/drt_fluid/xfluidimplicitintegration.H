@@ -58,7 +58,7 @@ namespace FLD
 /*!
 \brief time integration for fluid problems
 
-\author gammi (gamnitzer@lnm.mw.tum.de)
+\author axelchen (gerstenberger@lnm.mw.tum.de)
 */
 class XFluidImplicitTimeInt
 {
@@ -357,20 +357,9 @@ protected:
   double theta_;
   //@}
 
-  /*! contains connection between elemental DofKey and a position in the global state arrays
-   *  should always fit to the current Epetra_Maps in this class
-   */
-  XFEM::NodalDofPosMap       nodalDofDistributionMap_;
-  /*! contains connection between nodal DofKey and a position in the global state arrays
-   *  should always fit to the current Epetra_Maps in this class
-   */
-  XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
-
-  //! store interface information for output
-  Teuchos::RCP<XFEM::InterfaceHandle> ihForOutput_;
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
-  //! store dof distribution information for output
+  //! store dofset for unintersected domain
   DRT::DofSet                dofset_out_;
 
   /// (standard) system matrix
@@ -405,6 +394,15 @@ protected:
   /// they need to be written for restart
   struct State
   {
+    /*! contains connection between nodal DofKey and a position in the global state arrays
+     *  should always fit to the current Epetra_Maps in this class
+     */
+    XFEM::NodalDofPosMap       nodalDofDistributionMap_;
+    /*! contains connection between elemental DofKey and a position in the global state arrays
+     *  should always fit to the current Epetra_Maps in this class
+     */
+    XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
+    
     //! @name accelerations at time n and n-1
     Teuchos::RCP<Epetra_Vector>    accn_;
     Teuchos::RCP<Epetra_Vector>    accnm_;

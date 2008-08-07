@@ -23,9 +23,8 @@ Maintainer: Axel Gerstenberger
 #include "enrichment.H"
 #include "field_enriched.H"
 #include "dofkey.H"
-#include "../drt_geometry/integrationcell.H"
 
-class DRT::Discretization;
+
 class XFEM::InterfaceHandle;
 
 namespace XFEM
@@ -100,12 +99,16 @@ namespace XFEM
       
       //! for output XFEM is turned of and a uniform field is drawn. This method returns a vector with uniform number of unknowns per node
       Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(
-          const XFEM::InterfaceHandle&     ih,
           const Epetra_Vector&             original_vector,
           const DRT::DofSet&               dofset_out,
           const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
           const std::set<XFEM::PHYSICS::Field>&   fields_out
       ) const;
+      
+      const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const
+      {
+        return ih_;
+      }
       
     private:
       
@@ -113,7 +116,7 @@ namespace XFEM
       std::set<XFEM::Enrichment> GatherUniqueEnrichments() const;
       
       //! pointer to the xfem discretization of which we hold the unknowns
-      const Teuchos::RCP<DRT::Discretization> xfemdis_;
+      const Teuchos::RCP<XFEM::InterfaceHandle> ih_;
       
       /*! unknowns for each global node id (gid) on this processor
        * if it does not contain the key, the number of unknowns is supposed to be zero
@@ -126,9 +129,6 @@ namespace XFEM
        * same as above, see getElementDofSet()
        */
       std::map<int, const std::set<XFEM::FieldEnr> > elementalDofs_;
-      
-      //! set of all enrichments that are available on this proc.
-      std::set<XFEM::Enrichment> unique_enrichments_;
       
   };
   

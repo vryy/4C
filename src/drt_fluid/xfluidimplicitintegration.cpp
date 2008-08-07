@@ -123,8 +123,8 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
 
-  nodalDofDistributionMap_.clear();
-  elementalDofDistributionMap_.clear();
+  state_.nodalDofDistributionMap_.clear();
+  state_.elementalDofDistributionMap_.clear();
   
   // get density from elements
   {
@@ -418,7 +418,6 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //  cout << "tree after interfaceconstructor" << endl;
 //  ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
-  ihForOutput_ = ih;
 
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
@@ -451,9 +450,11 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  XFEM::NodalDofPosMap oldNodalDofDistributionMap(nodalDofDistributionMap_);
-  XFEM::ElementalDofPosMap oldElementalDofDistributionMap(elementalDofDistributionMap_);
-  dofmanager->fillDofDistributionMaps(nodalDofDistributionMap_,elementalDofDistributionMap_);
+  XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  XFEM::ElementalDofPosMap oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  dofmanager->fillDofDistributionMaps(
+      state_.nodalDofDistributionMap_,
+      state_.elementalDofDistributionMap_);
 
   std::cout << "switching " << endl;
 
@@ -461,8 +462,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   const XFEM::DofDistributionSwitcher dofswitch(
           ih, dofmanager,
           olddofrowmap, newdofrowmap,
-          oldNodalDofDistributionMap, nodalDofDistributionMap_,
-          oldElementalDofDistributionMap, elementalDofDistributionMap_
+          oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
+          oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
           );
 
   // --------------------------------------------
@@ -1064,10 +1065,10 @@ void FLD::XFluidImplicitTimeInt::Output()
     fields_out.insert(XFEM::PHYSICS::Velz);
     fields_out.insert(XFEM::PHYSICS::Pres);
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-        *ihForOutput_,*state_.velnp_, dofset_out_, nodalDofDistributionMap_, fields_out);
+        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, fields_out);
     output_.WriteVector("velnp", velnp_out);
 //    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
-//        *ihForOutput_,*state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
+//        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
 //    output_.WriteVector("accn", accn_out);
 
     // output real pressure
@@ -1199,12 +1200,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, ihForOutput_, eledofman,
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1282,12 +1283,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           //cout << elementvalues << endl;
         }
         const XFEM::DomainIntCells& domainintcells =
-          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
         for (XFEM::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1401,7 +1402,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 
 
         const XFEM::DomainIntCells& domainintcells =
-          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
         for (XFEM::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
@@ -1410,39 +1411,39 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 
 //          {
 //          BlitzMat cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
+//          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
 //              *cell, field, elementvalues, cellvalues);
 //          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
 //          }
 
           {
           BlitzVec cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexx, cellvaluexx);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
           gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << endl;
           }
           {
           BlitzVec cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvalueyy, cellvalueyy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
           gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << endl;
           }
           {
           BlitzVec cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluezz, cellvaluezz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
           gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << endl;
           }
           {
           BlitzVec cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexy, cellvaluexy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
           gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << endl;
           }
           {
           BlitzVec cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexz, cellvaluexz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
           gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << endl;
           }
           {
           BlitzVec cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvalueyz, cellvalueyz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
           gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << endl;
           }
         }
@@ -1542,16 +1543,16 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
 
-        if (!ihForOutput_->ElementIntersected(elegid))
+        if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
         {
           const GEO::DomainIntCells& domainintcells =
-            ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+            dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
             BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
             BlitzMat xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1562,7 +1563,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         else
         {
           const GEO::BoundaryIntCells& boundaryintcells =
-            ihForOutput_->GetBoundaryIntCells(elegid);
+            dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(elegid);
           // draw boundary integration cells with values
           for (GEO::BoundaryIntCells::const_iterator cell =
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
@@ -1570,7 +1571,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             {
               BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+              XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
               BlitzMat xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1584,7 +1585,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
             const GEO::DomainIntCell cell(actele->Shape());
             elevalues = 0.0;
-//            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+//            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
 //                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
             const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
@@ -1593,7 +1594,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           }
 
         }
-        //if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
+        //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
         if (elegid == 1 and elementvalues.size() > 0 and plot_to_gnuplot)
         {
           ele_to_textfile = true;
