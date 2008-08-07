@@ -1046,13 +1046,19 @@ public:
                                            bool recompute = false);
 
   /*!
-   * \brief Compute internal/strain and kinetic energy across elements
+   * \brief Assemble scalar quantities across elements
+   *
+   * Every element is only called \b once by its owning processor. (We are 
+   * parsing the element row map.) At this call the element return its value(s), 
+   * i.e. its scalar(s), and contributes to the global
+   * value of the respective scalar quantity(ies).
+   *
+   * Example: strain energy in structures
    *
    * \author bborn \date 08/08
    */
-  void EvaluateEnergy(Teuchos::ParameterList& params,  /*!< parameters */
-                      double& energykin,               /*!< kinetic energy */
-                      double& energyint                /*!< internal energy */
+  void EvaluateScalars(Teuchos::ParameterList&                params,  /*!< parameters */
+                       Teuchos::RCP<Epetra_SerialDenseVector> scalars  /*!< (out) scalars */
   );
 
   //@}

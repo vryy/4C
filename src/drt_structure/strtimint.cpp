@@ -16,6 +16,10 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <iostream>
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+
 #include "strtimint_mstep.H"
 #include "strtimint.H"
 
@@ -670,8 +674,12 @@ void STR::TimInt::OutputEnergy()
     discret_->SetState("displacement", (*dis_)(0));
     discret_->SetState("velocity", (*vel_)(0));
     // get energies
-    discret_->EvaluateEnergy(p, kinergy, intergy);
+    Teuchos::RCP<Epetra_SerialDenseVector> energies 
+      = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+    discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
+    kinergy = (*energies)(0);
+    intergy = (*energies)(1);
   }
 
   // global calculation of kinetic energy
@@ -699,11 +707,12 @@ void STR::TimInt::OutputEnergy()
   if (myrank_ == 0)
   {
     *energyfile_ << " " << std::setw(9) << step_
-                 << " " << std::setw(21-10-1) << (*time_)[0]
-                 << " " << std::setw(34-21-1) << totergy
-                 << " " << std::setw(49-34-1) << kinergy
-                 << " " << std::setw(65-49-1) << intergy
-                 << " " << std::setw(81-65-1) << extergy
+                 << std::scientific  << std::setprecision(16)
+                 << " " << (*time_)[0]
+                 << " " << totergy
+                 << " " << kinergy
+                 << " " << intergy
+                 << " " << extergy
                  << std::endl;
   }
 

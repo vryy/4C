@@ -12,10 +12,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <algorithm>
-#include <numeric>
-#include <vector>
-
 #include "drt_discret.H"
 #include "drt_dserror.H"
 #include "drt_timecurve.H"
@@ -666,25 +662,21 @@ double EvaluateFunction(DRT::Node*      node,
 
 
 /*----------------------------------------------------------------------*
- |  evaluate energy of elements (public)                     bborn 08/08|
+ |  evaluate/assemble scalars across elements (public)       bborn 08/08|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateEnergy(
+void DRT::Discretization::EvaluateScalars(
   Teuchos::ParameterList& params,
-  double&                 energykin,
-  double&                 energyint
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
 )
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  // parallel stuff
-  //const int myrank  = Comm().MyPID();  // my processor ID
-  //const int numproc = Comm().NumProc();  // number of processors
-
-  // number of energies
-  const int numene = 2;
-  double enekin = 0.0;
-  double eneint = 0.0;
+  // number of scalars
+  const int numscalars = scalars->Length();
+  if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
+  // intermediate sum of each scalar on each processor
+  Epetra_SerialDenseVector cpuscalars(numscalars);
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
@@ -693,7 +685,7 @@ void DRT::Discretization::EvaluateEnergy(
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
-  // loop over row elements
+  // loop over _row_ elements
   const int numrowele = NumMyRowElements();
   for (int i=0; i<numrowele; ++i)
   {
@@ -705,31 +697,27 @@ void DRT::Discretization::EvaluateEnergy(
     std::vector<int> lmowner;  // processor which owns DOFs
     actele->LocationVector(*this,lm,lmowner);
 
-    // define element matrices and vectors
-    Epetra_SerialDenseVector eleres(numene);
+    // define element vector
+    Epetra_SerialDenseVector elescalars(numscalars);
 
     // call the element evaluate method
     {
       int err = actele->Evaluate(params,*this,lm,
-                                 elematrix1,elematrix2,eleres,elevector2,elevector3);
+                                 elematrix1,elematrix2,elescalars,elevector2,elevector3);
       if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
     }
 
-    // sum up on each processor
-    enekin += eleres(0);
-    eneint += eleres(1);
-  } // for (int i=0; i<numcolele; ++i)
+    // sum up (on each processor)
+    cpuscalars += elescalars;
+  } // for (int i=0; i<numrowele; ++i)
 
   // reduce
-  energykin = 0.0;
-  Comm().SumAll(&enekin, &energykin, 1);
-
-  energyint = 0.0;
-  Comm().SumAll(&eneint, &energyint, 1);
+  for (int i=0; i<numscalars; ++i) (*scalars)(i) = 0.0;
+  Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
   
   // bye
   return;
-}  // DRT::Discretization::EvaluateEnergy
+}  // DRT::Discretization::EvaluateScalars
 
 
 #endif  // #ifdef CCADISCRET
