@@ -1,5 +1,5 @@
 /*!
-\file octtree_nearestobject.cpp
+\file searchtree_nearestobject.cpp
 
 \brief stores data about nearest object in oct tree
 
@@ -12,7 +12,7 @@ Maintainer: Ursula Mayer
  */
 
 #ifdef CCADISCRET
-#include "../drt_geometry/octtree_nearestobject.H"
+#include "../drt_geometry/searchtree_nearestobject.H"
 
 
 /*----------------------------------------------------------------------*

@@ -16,8 +16,8 @@ Maintainer: Axel Gerstenberger
 #define INTERFACE_H
 
 #include "../drt_geometry/intersection.H"
-#include "xfsi_searchtree.H"
-#include "../drt_geometry/octtree.H"
+#include "../drt_geometry/searchtree.H"
+#include "geometry_service.H"
 
 namespace XFEM
 {
@@ -64,7 +64,7 @@ public:
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
     //! get pointer to oct tree
-    Teuchos::RCP<GEO::OctTree> getOctTree() const {return octTree_;};
+    Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTree_;};
  
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
@@ -140,8 +140,8 @@ private:
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >            elementsByLabel_;
     
-    //! OctTree octtree
-    Teuchos::RCP<GEO::OctTree>              octTree_;
+    //! SearchTree octtree
+    Teuchos::RCP<GEO::SearchTree>              octTree_;
 
 };
 
@@ -157,7 +157,7 @@ int PositionWithinCondition(
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region using an octree
 */
-int PositionWithinConditionOctTree(
+int PositionWithinConditionSearchTree(
     const BlitzVec3&                  x_in, ///< node in physical coordinates
     const XFEM::InterfaceHandle&      ih    ///< the ubiquitious interface handle with all geometry information
     );

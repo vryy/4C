@@ -1,5 +1,5 @@
  /*!
-\file xfsi_searchtree.cpp
+\file searchtree.cpp
 
 \brief provides a class with search tree
 
@@ -11,7 +11,7 @@ Maintainer: Ursula Mayer
 </pre>
  */
 #ifdef CCADISCRET
-#include "octtree.H"
+#include "searchtree.H"
 #include "intersection_service.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
@@ -26,9 +26,9 @@ extern struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*
- | constructor OctTree                                       u.may 07/08|
+ | constructor SearchTree                                    u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::OctTree::OctTree(
+GEO::SearchTree::SearchTree(
     const int           max_depth): 
       max_depth_(max_depth),
       treeRoot_(Teuchos::null)      
@@ -37,9 +37,9 @@ GEO::OctTree::OctTree(
 
 
 /*----------------------------------------------------------------------*
-| destructor OctTree                                        u.may 07/08|
+| destructor SearchTree                                     u.may 07/08|
 *----------------------------------------------------------------------*/
-GEO::OctTree::~OctTree(){}
+GEO::SearchTree::~SearchTree(){}
 
 
 
@@ -47,16 +47,17 @@ GEO::OctTree::~OctTree(){}
  | initialize or rebuild tree with possibly new              u.may 07/08| 
  | discretization, elements are sorted according to the given map       |
  *----------------------------------------------------------------------*/
-void GEO::OctTree::initializeTree(
+void GEO::SearchTree::initializeTree(
     const BlitzMat3x2&                    nodeBox,
-    const std::map<int,std::set<int> >&   elementsByLabel) 
+    const std::map<int,std::set<int> >&   elementsByLabel,
+    const TreeType                        treetype) 
 {
   
   
   treeRoot_ = Teuchos::null;
  
   // TODO initialize if map is empty
-  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox)); 
+  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
 
   // insert element map into tree root node
   if(elementsByLabel.size()>0)
@@ -70,12 +71,14 @@ void GEO::OctTree::initializeTree(
  | initialize or rebuild tree with possibly new              u.may 07/08| 
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
-void GEO::OctTree::initializeTree(
+void GEO::SearchTree::initializeTree(
     const BlitzMat3x2&              nodeBox,
-    const DRT::Discretization&      dis) 
+    const DRT::Discretization&      dis,
+    const TreeType                  treetype) 
 {
 
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox)); 
+  treeRoot_ = Teuchos::null;
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
 
   // inserts all elements in a map with key -1
   for (int i=0; i<dis.NumMyColElements(); ++i) 
@@ -88,7 +91,7 @@ void GEO::OctTree::initializeTree(
  | update tree                                               u.may 08/08|
  | only usefull for labeled structures,for networks use initializeTree  |
  *----------------------------------------------------------------------*/
-void GEO::OctTree::updateTree(
+void GEO::SearchTree::updateTree(
     const DRT::Discretization& 	dis,
     const std::map<int,BlitzVec3>& 	currentpositions_old, 
     const std::map<int,BlitzVec3>& 	currentpositions_new) 
@@ -108,13 +111,13 @@ void GEO::OctTree::updateTree(
 /*----------------------------------------------------------------------*
  | returns xfem label of point                               u.may 07/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::queryXFEMFSIPointType(
+int GEO::SearchTree::queryXFEMFSIPointType(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>& 	 currentpositions, 
     const BlitzVec3& 		             point) 
 {
-  //  cout << " ASKING THE TREE" << endl;
-  TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime");
+  
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
   
   if(treeRoot_ == Teuchos::null)
       dserror("tree is not yet initialized !!!");
@@ -130,15 +133,14 @@ int GEO::OctTree::queryXFEMFSIPointType(
 /*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
-std::set<int> GEO::OctTree::searchNodesInRadius(
+std::set<int> GEO::SearchTree::searchNodesInRadius(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>&   currentpositions, 
     const BlitzVec3& 		             point,
     const double                     radius, 
     const int                        label) 
 {
-  //  cout << " ASKING THE TREE" << endl;
-  TEUCHOS_FUNC_TIME_MONITOR("OctTree - queryTime");
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
   std::set<int> nodeset;
 
@@ -154,10 +156,11 @@ std::set<int> GEO::OctTree::searchNodesInRadius(
 }
 
 
+
 /*----------------------------------------------------------------------*
  | print tree to gmsh file                                 peder   07/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::printTree(
+void GEO::SearchTree::printTree(
     const string  prefix, 
     const int     step) const
 {
@@ -189,21 +192,22 @@ void GEO::OctTree::printTree(
 /*----------------------------------------------------------------------*
  | c-tor TreeNode                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::OctTree::TreeNode::TreeNode(
+GEO::SearchTree::TreeNode::TreeNode(
     const TreeNode* const                       parent,
     const int                                   depth, 
-    const BlitzMat3x2&                          nodeBox):
+    const BlitzMat3x2&                          nodeBox,
+    const TreeType                              treeType):
     parent_(parent),
     treedepth_(depth),
     treeNodeType_(LEAF_NODE),
+    treeType_(treeType),
     label_(-1),
     nodeBox_(nodeBox),
     xPlaneCoordinate_( (nodeBox_(0,0)+0.5*(nodeBox_(0,1)-nodeBox_(0,0))) ),
     yPlaneCoordinate_( (nodeBox_(1,0)+0.5*(nodeBox_(1,1)-nodeBox_(1,0))) ),
     zPlaneCoordinate_( (nodeBox_(2,0)+0.5*(nodeBox_(2,1)-nodeBox_(2,0))) )
 {    
-  children_.assign(8, Teuchos::null);
-  
+  children_.assign(getNumChildren(), Teuchos::null);
 }
                   
 
@@ -222,7 +226,7 @@ GEO::OctTree::TreeNode::TreeNode(
    * 
    *                      z
    *                      |           
-   *             1========|================3
+   *             4========|================6¨
    *           //|        |               /||
    *          // |        |              //||
    *         //  |        |             // ||
@@ -242,7 +246,7 @@ GEO::OctTree::TreeNode::TreeNode(
    *    ||  /      /               || //
    *    || /      x                ||//
    *    ||/                        ||/
-   *     4=========================6
+   *     1=========================3
    *
    */
   /*====================================================================*/
@@ -250,11 +254,11 @@ GEO::OctTree::TreeNode::TreeNode(
 
 /*  int index = 0;
     if (point(0) > xPlaneCoordinate_)
-      index += 4;
+      index += 1;
     if (point(1) > yPlaneCoordinate_)
       octIdx += 2;
     if (point(2) > zPlaneCoordinate_)
-      index += 1;
+      index += 4;
 */
 
     
@@ -263,27 +267,28 @@ GEO::OctTree::TreeNode::TreeNode(
 /*----------------------------------------------------------------------*
  | d-tor TreeNode                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-GEO::OctTree::TreeNode::~TreeNode() {}
+GEO::SearchTree::TreeNode::~TreeNode() {}
 
 
 
 /*----------------------------------------------------------------------*
  | clears node and deletes chlidren                          u.may 08/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::clear()
+void GEO::SearchTree::TreeNode::clear()
 {
   treeNodeType_ = LEAF_NODE;
   label_ = -1; 
 
   children_.clear();
-  children_.assign(8,Teuchos::null);
+  children_.assign(getNumChildren(),Teuchos::null);
 }
+
 
 
 /*----------------------------------------------------------------------*
  | has parent element                                        peder 07/08|
  *----------------------------------------------------------------------*/
-bool GEO::OctTree::TreeNode::hasParent() const 
+bool GEO::SearchTree::TreeNode::hasParent() const 
 {
   if (parent_!=NULL)
     return true;
@@ -295,7 +300,7 @@ bool GEO::OctTree::TreeNode::hasParent() const
 /*----------------------------------------------------------------------*
  | sets element list                                         u.may 07/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::setElementList(
+void GEO::SearchTree::TreeNode::setElementList(
    const std::map<int, std::set<int> >& elementsByLabel)
 {
    elementList_ = elementsByLabel;
@@ -306,7 +311,7 @@ void GEO::OctTree::TreeNode::setElementList(
 /*----------------------------------------------------------------------*
  | set label                                                 peder 07/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::setLabel(
+void GEO::SearchTree::TreeNode::setLabel(
 	const int label)
 {
   label_ = label;
@@ -317,7 +322,7 @@ void GEO::OctTree::TreeNode::setLabel(
 /*----------------------------------------------------------------------*
  | returns pointer to parent element                         peder 07/08|
  *----------------------------------------------------------------------*/
-const GEO::OctTree::TreeNode* const GEO::OctTree::TreeNode::getParent() const
+const GEO::SearchTree::TreeNode* const GEO::SearchTree::TreeNode::getParent() const
 {
   if (this->hasParent())
     return parent_;
@@ -330,7 +335,7 @@ const GEO::OctTree::TreeNode* const GEO::OctTree::TreeNode::getParent() const
 /*----------------------------------------------------------------------*
  | get center of treenode                                  peder   07/08|
  *----------------------------------------------------------------------*/
-const BlitzVec3 GEO::OctTree::TreeNode::getCenterCoord() const
+const BlitzVec3 GEO::SearchTree::TreeNode::getCenterCoord() const
 {
   return BlitzVec3(this->xPlaneCoordinate_, this->yPlaneCoordinate_, this->zPlaneCoordinate_);
 }
@@ -340,7 +345,7 @@ const BlitzVec3 GEO::OctTree::TreeNode::getCenterCoord() const
 /*----------------------------------------------------------------------*
  | get map of elements                                     peder   07/08|
  *----------------------------------------------------------------------*/
-const std::map<int,std::set<int> > GEO::OctTree::TreeNode::getElementList() const
+const std::map<int,std::set<int> > GEO::SearchTree::TreeNode::getElementList() const
 {
   return elementList_;
 }
@@ -350,7 +355,7 @@ const std::map<int,std::set<int> > GEO::OctTree::TreeNode::getElementList() cons
 /*----------------------------------------------------------------------*
  | get type of tree node                                   peder   07/08|
  *----------------------------------------------------------------------*/
-const GEO::TreeNodeType GEO::OctTree::TreeNode::getTreeNodeType() const
+const GEO::TreeNodeType GEO::SearchTree::TreeNode::getTreeNodeType() const
 {
   return treeNodeType_;
 }
@@ -358,9 +363,19 @@ const GEO::TreeNodeType GEO::OctTree::TreeNode::getTreeNodeType() const
 
 
 /*----------------------------------------------------------------------*
+ | get type of tree                                        u.may   08/08|
+ *----------------------------------------------------------------------*/
+const GEO::TreeType GEO::SearchTree::TreeNode::getTreeType() const
+{
+  return treeType_;
+}
+
+
+
+/*----------------------------------------------------------------------*
  | get node box                                            peder   07/08|
  *----------------------------------------------------------------------*/
-const BlitzMat3x2& GEO::OctTree::TreeNode::getNodeBox() const
+const BlitzMat3x2& GEO::SearchTree::TreeNode::getNodeBox() const
 {
   return nodeBox_;
 }
@@ -368,9 +383,27 @@ const BlitzMat3x2& GEO::OctTree::TreeNode::getNodeBox() const
 
 
 /*----------------------------------------------------------------------*
+ | get number of children                                  u.may   08/08|
+ *----------------------------------------------------------------------*/
+int GEO::SearchTree::TreeNode::getNumChildren(
+    ) const
+{
+  if(treeType_ == OCTTREE)
+    return 8;
+  else if(treeType_ == QUADTREE)
+    return 4;
+  else
+    dserror("treetype does not exist");
+  
+  return -1;
+}
+
+
+
+/*----------------------------------------------------------------------*
  | get child                                               peder   07/08|
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
+const Teuchos::RCP<GEO::SearchTree::TreeNode> GEO::SearchTree::TreeNode::getChild(
     const int index) const
 {
   return children_[index];
@@ -381,13 +414,13 @@ const Teuchos::RCP<GEO::OctTree::TreeNode> GEO::OctTree::TreeNode::getChild(
 /*----------------------------------------------------------------------*
  | get node box of a child specified by index              peder   07/08|
  *----------------------------------------------------------------------*/
-BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
+BlitzMat3x2 GEO::SearchTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
   BlitzMat3x2 childNodeBox;
   
-  // determine z-coordinates
-  if (index>3)
+  // determine x-coordinates
+  if ((index==1) || (index==3) || (index==5) || (index==7))
   {
     childNodeBox(0,0) = xPlaneCoordinate_;
     childNodeBox(0,1) = nodeBox_(0,1);
@@ -396,8 +429,8 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
   {
     childNodeBox(0,0) = nodeBox_(0,0);
     childNodeBox(0,1) = xPlaneCoordinate_;
-  }
-
+  }  
+  
   // determine y-coordinates
   if ((index==2) || (index==3) || (index==6) || (index==7))
   {
@@ -409,21 +442,28 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
     childNodeBox(1,0) = nodeBox_(1,0);
     childNodeBox(1,1) = yPlaneCoordinate_;
   }
-
-  // determine z-coordinates
-  if ((index==1) || (index==3) || (index==5) || (index==7))
+  
+  // determine z coordinates
+  if (index>3)
   {
     childNodeBox(2,0) = zPlaneCoordinate_;
     childNodeBox(2,1) = nodeBox_(2,1);
   }
   else 
   {
-    childNodeBox(2,0) = nodeBox_(2,0);
-    childNodeBox(2,1) = zPlaneCoordinate_;
-  }    
+    if(treeType_ == OCTTREE)
+    {
+      childNodeBox(2,0) = nodeBox_(2,0);
+      childNodeBox(2,1) = zPlaneCoordinate_;
+    }
+    else
+    {
+      childNodeBox(2,0) = 0.0;
+      childNodeBox(2,1) = 0.0;
+    }
+  }
   //  printf("created chldAABB(%f\t%f\t%f\t%f\t%f\t%f)\n", childNodeBox(0,0),childNodeBox(0,1),childNodeBox(1,0),childNodeBox(1,1),childNodeBox(2,0),childNodeBox(2,1));
   return childNodeBox;
-  
 }
 
 
@@ -431,7 +471,7 @@ BlitzMat3x2 GEO::OctTree::TreeNode::getChildNodeBox(
 /*----------------------------------------------------------------------*
  | insert element in tree node                              u.may  07/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::insertElement(
+void GEO::SearchTree::TreeNode::insertElement(
     const int   label,
     const int   eleId) 
 {
@@ -443,13 +483,13 @@ void GEO::OctTree::TreeNode::insertElement(
 /*----------------------------------------------------------------------*
  | create children                                         u.may   08/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::createChildren(
+void GEO::SearchTree::TreeNode::createChildren(
     const DRT::Discretization&      	dis,
     const std::map<int,BlitzVec3>& 	  currentpositions)
 {
   // create empty children
-  for(int index = 0; index < 8; index++)
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index) ));
+  for(int index = 0; index < getNumChildren(); index++)
+    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
   
   
   // insert elements into child node
@@ -461,7 +501,7 @@ void GEO::OctTree::TreeNode::createChildren(
         children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
     }
   
-  for(int index = 0; index < 8; index++)
+  for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
     if ((children_[index]->getElementList()).empty())
@@ -480,17 +520,18 @@ void GEO::OctTree::TreeNode::createChildren(
 /*----------------------------------------------------------------------*
  | classifiy point in node                                  peder   07/08|
  *----------------------------------------------------------------------*/
-const int GEO::OctTree::TreeNode::classifyPoint(
+const int GEO::SearchTree::TreeNode::classifyPoint(
     const BlitzVec3&   point) const
 {
   
   int childIndex = 0;
   if (point(0) > xPlaneCoordinate_)
-    childIndex += 4;
+    childIndex += 1;
   if (point(1) > yPlaneCoordinate_)
     childIndex += 2;
-  if (point(2) > zPlaneCoordinate_)
-    childIndex += 1;
+  if(treeType_ == OCTTREE)
+    if (point(2) > zPlaneCoordinate_)
+      childIndex += 4;
   
   return childIndex;
 }
@@ -500,7 +541,7 @@ const int GEO::OctTree::TreeNode::classifyPoint(
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
+std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
     const BlitzMat3x2&   AABB
     ) const 
 {
@@ -510,33 +551,38 @@ std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
   
   std::vector<int> octants;
-
+  
   // check max_x greater than x-plane
   if (AABB(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
   {
     // check max_y greater than y-plane
     if (AABB(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
     {
-      // check max_z greater than z-plane
-      if (AABB(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
-        octants.push_back(7);
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (AABB(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(7);
 
-      // check min_z less than z-plane
-      if (AABB(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
-        octants.push_back(6);
+        // check min_z less than z-plane
+        if (AABB(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(3);
+      }
     }
     
     // check min_y less than y-plane
     if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
     {
-      // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
-        octants.push_back(4);
-      
-      // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
-        octants.push_back(5);
-
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(5);
+              
+        // check min_z less than z-plane
+        if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(1);
+      }
     }
   }
 
@@ -546,26 +592,32 @@ std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
     // check min_y less than y-plane
     if (AABB(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
     {
-      // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
-        octants.push_back(0);
       
-      // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
-        octants.push_back(1);
+      if(treeType_ == OCTTREE)
+      {
+        // check min_z less than z-plane
+        if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(0);
+      
+        // check max_z greater than z-plane
+        if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(4);
+      }
     }
     
     // check max_y greater than y-plane
     if (AABB(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
-    {
-      // check max_z greater than z-plane
-      if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
-        octants.push_back(3);
+    {       
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(6);
       
-      // check min_z less than z-plane
-      if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
-        octants.push_back(2);
-
+        // check min_z less than z-plane
+        if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(2);
+      }
     }
   }
   return octants;
@@ -576,7 +628,7 @@ std::vector<int> GEO::OctTree::TreeNode::classifyXAABB(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::OctTree::TreeNode::classifyElement(
+std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
     const DRT::Element*       		  element,
     const std::map<int,BlitzVec3>& 	currentpositions
     ) const
@@ -594,7 +646,7 @@ std::vector<int> GEO::OctTree::TreeNode::classifyElement(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               u.may   08/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::TreeNode::classifyRadius(
+int GEO::SearchTree::TreeNode::classifyRadius(
     const double      radius,
     const BlitzVec3&	point
     ) const
@@ -606,6 +658,13 @@ int GEO::OctTree::TreeNode::classifyRadius(
     radiusXAABB(dim,0) = ( point(dim) - radius) - GEO::TOL7;
     radiusXAABB(dim,1) = ( point(dim) + radius) + GEO::TOL7;
   }
+  
+  if(treeType_ == QUADTREE)
+  {
+    radiusXAABB(2,0) = 0.0;
+    radiusXAABB(2,1) = 0.0;
+  }
+   
   return classifyAABBCompletelyInNodeBox(radiusXAABB);
 }
 
@@ -614,7 +673,7 @@ int GEO::OctTree::TreeNode::classifyRadius(
 /*----------------------------------------------------------------------*
  | checks if a AABB is completely in a child node          u.may   08/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::TreeNode::classifyAABBCompletelyInNodeBox(
+int GEO::SearchTree::TreeNode::classifyAABBCompletelyInNodeBox(
     const BlitzMat3x2&  AABB
     ) const
 {
@@ -622,19 +681,21 @@ int GEO::OctTree::TreeNode::classifyAABBCompletelyInNodeBox(
   
   int indexMin = 0;
   if(AABB(0,0) > xPlaneCoordinate_)
-    indexMin += 4;
+    indexMin += 1;
   if(AABB(1,0) > yPlaneCoordinate_)
     indexMin += 2;
-  if(AABB(2,0) > zPlaneCoordinate_)
-    indexMin += 1;
+  if(treeType_ == OCTTREE)
+    if(AABB(2,0) > zPlaneCoordinate_)
+      indexMin += 4;
   
   int indexMax = 0;
   if(AABB(0,1) > xPlaneCoordinate_)
-    indexMax += 4;
+    indexMax += 1;
   if(AABB(1,1) > yPlaneCoordinate_)
     indexMax += 2;
-  if(AABB(2,1) > zPlaneCoordinate_)
-    indexMax += 1;
+  if(treeType_ == OCTTREE)
+    if(AABB(2,1) > zPlaneCoordinate_)
+      indexMax += 4;
     
   
   if(indexMin == indexMax)
@@ -648,11 +709,11 @@ int GEO::OctTree::TreeNode::classifyAABBCompletelyInNodeBox(
 /*----------------------------------------------------------------------*
  | update tree node                                        u.may   08/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::updateTreeNode(
+void GEO::SearchTree::TreeNode::updateTreeNode(
    const BlitzMat3x2& AABB_old, 
    const BlitzMat3x2& AABB_new)
 {
-  for(int i = 0; i < 8; i++)
+  for(int i = 0; i < getNumChildren(); i++)
   {
     if(children_[i] != Teuchos::null)
     {
@@ -669,7 +730,7 @@ void GEO::OctTree::TreeNode::updateTreeNode(
 /*----------------------------------------------------------------------*
  | return xfem label for point (interface method)          u.may   07/08|
  *----------------------------------------------------------------------*/
-int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
+int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>& 	 currentpositions, 
     const BlitzVec3& 		             point) 
@@ -707,7 +768,7 @@ int GEO::OctTree::TreeNode::queryXFEMFSIPointType(
 /*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
-std::set<int> GEO::OctTree::TreeNode::searchNodesInRadius(
+std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>&   currentpositions, 
     const BlitzVec3& 		             point,
@@ -762,7 +823,7 @@ std::set<int> GEO::OctTree::TreeNode::searchNodesInRadius(
 /*----------------------------------------------------------------------*
  | print tree node to gmsh file                            peder   07/08|
  *----------------------------------------------------------------------*/
-void GEO::OctTree::TreeNode::printTreeNode(
+void GEO::SearchTree::TreeNode::printTreeNode(
     const int       max_depth,
     stringstream&   fc) const
 {
@@ -782,7 +843,7 @@ void GEO::OctTree::TreeNode::printTreeNode(
 
   if(treeNodeType_== GEO::INNER_NODE)
   {
-    for (int i=0; i<8; i++)
+    for (int i=0; i < getNumChildren(); i++)
       if (children_[i] != Teuchos::null)
         children_[i]->printTreeNode(max_depth, fc);
    

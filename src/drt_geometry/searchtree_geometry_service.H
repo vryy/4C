@@ -1,7 +1,7 @@
 /*!
-\file octtree_geometry_service.H
+\file searchtree_geometry_service.H
 
-\brief provides geometry methods for oct tree
+\brief provides geometry methods for a search tree
 
 <pre>
 Maintainer: Ursula Mayer
@@ -12,11 +12,11 @@ Maintainer: Ursula Mayer
  */
 
 #ifdef CCADISCRET
-#ifndef OCTTREE_GEOMETRY_SERVICE_H_
-#define OCTTREE_GEOMETRY_SERVICE_H_
+#ifndef SEARCHTREE_GEOMETRY_SERVICE_H_
+#define SEARCHTREE_GEOMETRY_SERVICE_H_
 
 #include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/octtree_nearestobject.H"
+#include "../drt_geometry/searchtree_nearestobject.H"
 
 namespace GEO
 {

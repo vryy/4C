@@ -1,7 +1,7 @@
 /*!
-\file octtree_nearestobject.H
+\file searchtree_nearestobject.H
 
-\brief stores data about nearest object in oct tree
+\brief stores data about nearest object in search tree
 
 <pre>
 Maintainer: Ursula Mayer
@@ -12,8 +12,8 @@ Maintainer: Ursula Mayer
  */
 
 #ifdef CCADISCRET
-#ifndef OCTTREE_NEARESTOBJECT_H_
-#define OCTTREE_NEARESTOBJECT_H_
+#ifndef SEARCHTREE_NEARESTOBJECT_H_
+#define SEARCHTREE_NEARESTOBJECT_H_
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_geometry/vector_definitions.H"

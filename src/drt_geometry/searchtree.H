@@ -1,7 +1,7 @@
 /*!
-\file octtree.H
+\file searchtree.H
 
-\brief provides a class with oct tree with various search requests
+\brief provides a class with search tree with various search requests
 
 <pre>
 Maintainer: Ursula Mayer
@@ -12,23 +12,30 @@ Maintainer: Ursula Mayer
  */
 #ifdef CCADISCRET
 
-#ifndef XFSI_OCTTREE_H
-#define XFSI_OCTTREE_H
+#ifndef SEARCHTREE_H
+#define SEARCHTREE_H
 
-#include "../drt_geometry/octtree_geometry_service.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
 
 namespace GEO
 {
+
+//! identifies tree type 
+enum TreeType {
+    OCTTREE,    ///< tree is a three-dimensional octtree
+    QUADTREE    ///< tree is a two-dimensional quadtree
+  };
 
 //! identifies node types in a tree
 enum TreeNodeType {
     LEAF_NODE,    ///< indicates a leaf node (no further children)
     INNER_NODE    ///< indicates an inner node (has children)
   };
+  
 
 
 //! represents the whole data structure
-class OctTree{
+class SearchTree{
   
   
   //! data node for tree
@@ -44,6 +51,9 @@ private:
   
   //! is either STATE_LEAF_NODE or STATE_INNER_NODE
   TreeNodeType treeNodeType_;
+  
+  //! is either a OCTTREE or a QUADTREE
+  const TreeType treeType_;
 
   //! stores the label of the XFEM condition or 0 for fluid
   int label_;
@@ -60,7 +70,7 @@ private:
   //! z-coord of the center of this treenode
   const double zPlaneCoordinate_;
 
-  //! treenode has 8 children (octree)
+  //! treenode has 8 children (octtree) or 4 children (quadtree)
   std::vector<Teuchos::RCP<TreeNode> > children_;  
     
   //! list of elements belonging to this treenode
@@ -149,9 +159,10 @@ public:
    \param parent     pointer to parent element
    */
   TreeNode(
-      const TreeNode* const parent,
-      const int depth,              
-      const BlitzMat3x2& nodeBox
+      const TreeNode* const   parent,
+      const int               depth,              
+      const BlitzMat3x2&      nodeBox,
+      const TreeType          treeType
       );
 
   //! destructor
@@ -195,8 +206,22 @@ public:
    \return returns tree node type INNER_NODE or LEAF_NODE
    */
   const TreeNodeType getTreeNodeType() const;
+  
+  
+  /*!
+  \brief returns tree type OCTTREE or QUADTREE
+  \return returns tree type OCTTREE or QUADTREE
+  */
+  const TreeType getTreeType() const;
 
 
+  /*!
+  \brief return number pf children for tree type
+   \return return number pf children for tree type
+   */
+  int getNumChildren() const;
+  
+  
   /*!
    \brief return pointer to the child node determined by the child index 
    \param index   child node index
@@ -311,12 +336,12 @@ public:
   \brief tree constructor
   \param max_depth                  max_depth
    */
-  OctTree(
+  SearchTree(
       const int           max_depth
       );
 
   //! destructor
-  virtual ~OctTree();
+  virtual ~SearchTree();
 
 
   /*!
@@ -325,10 +350,12 @@ public:
 
   \param nodebox      	      nodeBox
   \param elementsByLabel      elementsByLabel
+  \param treetype             octtree or quadtree
    */
   void initializeTree(
       const BlitzMat3x2&                    nodeBox,
-      const std::map<int,std::set<int> >&   elementsByLabel  	
+      const std::map<int,std::set<int> >&   elementsByLabel,
+      const TreeType                        treetype
       );
 
 
@@ -338,10 +365,12 @@ public:
          no label sorting
   \param nodebox      	      nodeBox
   \param dis                  discretization
+  \param treetype             octtree or quadtree
    */
   void initializeTree(
       const BlitzMat3x2&  		          nodeBox,
-      const DRT::Discretization&        dis
+      const DRT::Discretization&        dis,
+      const TreeType                    treetype
       );
 
 
@@ -408,7 +437,7 @@ private:
   const int max_depth_;   
 
   //! pointer to the root of the tree
-  Teuchos::RCP< GEO::OctTree::TreeNode > treeRoot_;
+  Teuchos::RCP< GEO::SearchTree::TreeNode > treeRoot_;
 
 }; 
 } // namespace GEO

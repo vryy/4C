@@ -1,7 +1,7 @@
 /*!
-\file octtree_geometry_service.cpp
+\file searchtree_geometry_service.cpp
 
-\brief provides geometry methods for oct tree
+\brief provides geometry methods for a search tree
 
 <pre>
 Maintainer: Ursula Mayer
@@ -11,7 +11,7 @@ Maintainer: Ursula Mayer
 </pre>
  */
 #ifdef CCADISCRET
-#include "octtree_geometry_service.H"
+#include "searchtree_geometry_service.H"
 #include "intersection_service.H"
 #include "../drt_lib/drt_utils.H"
 

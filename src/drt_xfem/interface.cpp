@@ -16,7 +16,6 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
-#include "xfsi_searchtree.H"
 
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
@@ -73,14 +72,12 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  
   const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,currentcutterpositions_);
-  const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
+  const BlitzMat3x2 xfemAABB =XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
-  const int max_treedepth = 5;
-  octTree_ = rcp( new GEO::OctTree(max_treedepth) );
-  octTree_->initializeTree(AABB, elementsByLabel_); 
- 
+  octTree_ = rcp( new GEO::SearchTree(10));
+  octTree_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE)); 
+  
   // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
   
@@ -340,18 +337,18 @@ int XFEM::PositionWithinCondition(
     const XFEM::InterfaceHandle&      ih
 )
 {
-  return PositionWithinConditionOctTree(x_in, ih);
+  return PositionWithinConditionSearchTree(x_in, ih);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::PositionWithinConditionOctTree(
+int XFEM::PositionWithinConditionSearchTree(
     const BlitzVec3&                  x_in,
     const XFEM::InterfaceHandle&      ih)
 {
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionOctTree");
-  Teuchos::RCP<GEO::OctTree> xt = ih.getOctTree(); // pointer is constant, object is not!
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionSearchTree");
+  Teuchos::RCP<GEO::SearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
   const int XFEMlabel = xt->queryXFEMFSIPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
 
   // for parallel : there is nothing to be extended for parallel execution
