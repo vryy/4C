@@ -240,9 +240,9 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // we need the 3 by 3 matrix as well later on -> needs improvement
   Epetra_SerialDenseMatrix CG(3,3);
   CG(0,0) = C(0); CG(1,1) = C(1); CG(2,2) = C(2);
-  CG(0,1) = C(3); CG(1,0) = C(3);
-  CG(1,2) = C(4); CG(2,1) = C(4);
-  CG(0,2) = C(5); CG(2,0) = C(5);
+  CG(0,1) = 0.5*C(3); CG(1,0) = 0.5*C(3);
+  CG(1,2) = 0.5*C(4); CG(2,1) = 0.5*C(4);
+  CG(0,2) = 0.5*C(5); CG(2,0) = 0.5*C(5);
 
   // invariants
   const double IC3 = C(0)*C(1)*C(2)
