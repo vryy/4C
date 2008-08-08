@@ -60,9 +60,9 @@ int main(
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
-        PostField* alefield = problem.get_discretization(2);
-        AleEnsightWriter alewriter(alefield, basename);
-        alewriter.WriteFiles();
+        //PostField* alefield = problem.get_discretization(2);
+        //AleEnsightWriter alewriter(alefield, basename);
+        //alewriter.WriteFiles();
         break;
     }
     case prb_structure:
