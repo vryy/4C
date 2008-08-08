@@ -1306,6 +1306,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "to the nonlinear convergance test.",
                   &fsidyn);
 
+  // monolithic preconditioner parameter
+
+  DoubleParameter("STRUCTPCOMEGA",1.,
+                  "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner",
+                  &fsidyn);
+  IntParameter("STRUCTPCITER",0,
+               "Number of Richardson iterations on structural block in MFSI block preconditioner",
+               &fsidyn);
+  DoubleParameter("FLUIDPCOMEGA",1.,
+                  "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner",
+                  &fsidyn);
+  IntParameter("FLUIDPCITER",0,
+               "Number of Richardson iterations on fluid block in MFSI block preconditioner",
+               &fsidyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
 

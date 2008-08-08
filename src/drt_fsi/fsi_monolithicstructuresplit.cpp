@@ -7,6 +7,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
+extern struct _FILES  allfiles;
+
+
 #define scaling_infnorm true
 
 /*----------------------------------------------------------------------*/
@@ -84,7 +87,12 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
                                                           StructureField().LinearSolver(),
                                                           FluidField().LinearSolver(),
                                                           AleField().LinearSolver(),
-                                                          true));
+                                                          true,
+                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                          fsidyn.get<int>("STRUCTPCITER"),
+                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          allfiles.out_err));
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)

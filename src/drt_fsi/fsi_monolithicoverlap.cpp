@@ -7,6 +7,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
+extern struct _FILES  allfiles;
+
+
 #define scaling_infnorm true
 
 
@@ -76,7 +79,13 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
                                                           StructureField().LinearSolver(),
                                                           FluidField().LinearSolver(),
-                                                          AleField().LinearSolver()));
+                                                          AleField().LinearSolver(),
+                                                          false,
+                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                          fsidyn.get<int>("STRUCTPCITER"),
+                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          allfiles.out_err));
 
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix

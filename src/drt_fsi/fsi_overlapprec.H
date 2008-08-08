@@ -24,7 +24,12 @@ namespace FSI
                            Teuchos::RCP<LINALG::Solver> structuresolver,
                            Teuchos::RCP<LINALG::Solver> fluidsolver,
                            Teuchos::RCP<LINALG::Solver> alesolver,
-                           bool structuresplit=false);
+                           bool structuresplit=false,
+                           double somega=1.0,
+                           int siterations=0,
+                           double fomega=1.0,
+                           int fiterations=0,
+                           FILE* err=NULL);
 
     /** \name Mathematical functions */
     //@{
@@ -87,6 +92,19 @@ namespace FSI
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
+
+    /// \name Richardson iteration
+    //@{
+
+    double somega_;
+    int siterations_;
+    double fomega_;
+    int fiterations_;
+
+    //@}
+
+    /// log file
+    FILE* err_;
   };
 }
 
