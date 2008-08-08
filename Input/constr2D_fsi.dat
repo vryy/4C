@@ -190,7 +190,7 @@ FUNCT2 EXPR 0 0 0 FUNCTION -y
 ---------------------------------------------------------------------LOCSYS5
 ----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
 DLINE                           1
-E  3  -  1  none
+E  3  -  1  none 0.0
 ----------------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE                          1
 E  3  -  1

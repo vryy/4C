@@ -36,6 +36,7 @@ actdisc_(discr)
     constrtype_=GetConstrType(conditionname);
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
+      //constrcond_[i]->Print(cout);
       int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
       if (condID>maxID)
       {
@@ -351,7 +352,10 @@ void UTILS::Constraint::InitializeConstraint(
         }
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
       }
-
+      // remember next time, that this condition is already initialized, i.e. active
+      activecons_.erase(condID);
+      activecons_[condID]=true;
+      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
     }
     
   }

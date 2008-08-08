@@ -113,7 +113,7 @@ CURVE2  on  Polygonal  T  0.0  BYABSTIME  Yes  0.0  1  FACTOR  1 0.98
 ---------------------------------------------------------------------LOCSYS5
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           1
-E  4  -  1  2
+E  4  -  1 2 0.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
