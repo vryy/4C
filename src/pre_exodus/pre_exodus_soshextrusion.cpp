@@ -66,6 +66,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   map<int,vector<int> > node_pair; // stores new node id with base node id
   map<int,int> inv_node_pair; // inverse map of above new node (first of layers) -> base node
 
+  // store average node normals for each basemesh node
+  map<int,vector<double> > node_normals;
+  // store average node normals for base node of new extrusion
+  map<int,vector<double> > ext_node_normals;
+  
   // loop through all EBlocks to check for extrusion blocks
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(*i_ebs->second);
@@ -121,7 +126,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     
     map<int,vector<int> > newsideset; // this sideset will become the new extruded out-'side'
     map<int,vector<int> >::iterator i_ss;
-    int ss_id = 0;
     
     // another map is needed for twistfixing: in case of layered extrusion it 
     // consists of elements enclosing the layers, i.e. from most inner to most outer node
@@ -158,11 +162,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     vector<int> actelenodes = ele_conn.find(startele)->second;
     vector<int>::const_iterator i_node;
     int newid;
-    
-    // store average node normals for each basemesh node
-    map<int,vector<double> > node_normals;
-    // store average node normals for base node of new extrusion
-    map<int,vector<double> > ext_node_normals;
     
     // calculate the normal at the first node which defines the "outside" dir
     vector<int> myNodeNbrs = FindNodeNeighbors(actelenodes,actelenodes.front());
@@ -261,8 +260,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
         else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
         else dserror("wrong number of elenodes!");
-        newsideset.insert(pair<int,vector<int> >(ss_id,ss));
-        ++ ss_id; // raise ss_id
+        newsideset.insert(pair<int,vector<int> >(newele,ss));
       }
       
       ++ newele;
@@ -498,8 +496,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
               else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
               else dserror("wrong number of elenodes!");
-              newsideset.insert(pair<int,vector<int> >(ss_id,ss));
-              ++ ss_id; // raise ss_id
+              newsideset.insert(pair<int,vector<int> >(newele,ss));
             }
             
             ++ newele;
@@ -689,6 +686,70 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     }
   }
   
+  // check and make flat extrusion surfaces for symmetry or other boundary conditions
+  // loop through all NodeSets to check for flat extrusion
+  for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
+    bool FlatEx = CheckFlatEx(i_nss->second);
+    if (FlatEx){
+      cout << "Flattening Nodeset " <<  (i_nss->second).GetName().c_str() << "..." <<endl;
+      set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
+      set<int>::iterator it;
+      
+      // ***** compute flat surface from nodeset *****
+      // compute normal
+      set<int>::iterator surfit = nodes_from_nodeset.begin();
+      int origin = *surfit;      // get first set node
+      ++surfit;
+      int head1 = *surfit;  // get second set node
+      ++surfit;
+      
+      set<int>::iterator thirdnode;
+      
+      // find third node such that a proper normal can be computed
+      for(it=surfit;it!=nodes_from_nodeset.end();++it){
+        thirdnode = it;
+        if (Normal(head1,origin,*it,basemesh).size() != 1) break;
+      }
+      vector<double> facenormal = Normal(head1,origin,*thirdnode,basemesh);
+      if (facenormal.size()==1){
+        cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName().c_str() << "', stop flattening" << endl;
+      }
+      else {
+        for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){
+          if (node_pair.find(*it)!=node_pair.end()){
+            const vector<int> nodes2flatten = node_pair.find(*it)->second;
+            vector<int>::const_iterator i_node; 
+            vector<double> normal = node_normals.find(*it)->second;
+            
+            // project orignormal into flat plane
+            double projection = normal[0]*facenormal[0] + normal[1]*facenormal[1] + normal[2]*facenormal[2];
+            double length = 0.0;
+            for(int i=0; i<3; ++i){
+              normal[i] -= projection*facenormal[i];
+              length += normal[i]*normal[i];
+            }
+            length = sqrt(length);
+            for(int i=0; i<3; ++i) normal[i] /= length;
+            
+            // keep this wonderfull flat normal
+            node_normals.find(*it)->second = normal;
+
+            // correct node coords for all layers
+            int i_layer = 1;
+            vector<double> basecoords = newnodes->find(ExoToStore(nodes2flatten[0]))->second;
+            for(i_node=(nodes2flatten.begin()+1);i_node!=nodes2flatten.end();++i_node){
+              int node = *i_node;
+              vector<double> correctcoords = ExtrudeNodeCoords(basecoords,thickness,i_layer,layers,normal);
+              newnodes->find(ExoToStore(node))->second = correctcoords;
+              ++i_layer;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  
 
   // get rid of original extrusion SideSet
   basemesh.EraseSideSet(extrusion_sideset_id);
@@ -727,6 +788,15 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
     return true;
   return false;
 }
+
+bool EXODUS::CheckFlatEx(const EXODUS::NodeSet nodeset)
+{
+  const string myname = nodeset.GetName();
+  if (myname.find("flat") != string::npos)
+    return true;
+  return false;
+}
+
 
 int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thickness
     const int numlayers,    // number of layers in extrusion
@@ -1190,9 +1260,15 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   normal[2] =   ((h1[0]-o[0])*(h2[1]-o[1]) - (h1[1]-o[1])*(h2[0]-o[0]));
   
   double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
-  normal[0] = normal[0]/length;
-  normal[1] = normal[1]/length;
-  normal[2] = normal[2]/length;
+  const double epsilon = 1.E-6;
+  if (length > epsilon){
+    normal[0] = normal[0]/length;
+    normal[1] = normal[1]/length;
+    normal[2] = normal[2]/length;
+  } else { // normal is undefined, vectors seem collinear
+    normal.resize(1);
+    normal[0] = 0.0;
+  }
   
   return normal;
 }

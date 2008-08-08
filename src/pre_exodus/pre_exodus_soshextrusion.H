@@ -41,6 +41,7 @@ namespace EXODUS
   bool CheckExtrusion(const EXODUS::ElementBlock eblock);
   bool CheckExtrusion(const EXODUS::SideSet sideset);
   bool CheckExtrusion(const EXODUS::NodeSet nodeset);
+  bool CheckFlatEx(const EXODUS::NodeSet nodeset);
   
   int RepairTwistedExtrusion(const double thickness,const int numlayers,const int initelesign, int& highestnid,
       const map<int,vector<int> >& encloseconn, const map<int,vector<int> >& layerstack,
