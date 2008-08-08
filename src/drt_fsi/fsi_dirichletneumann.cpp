@@ -24,32 +24,34 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
   if (displacementcoupling_)
   {
     const Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("idispn",*idispn);
 
     const Teuchos::RCP<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("iforce",*iforce);
+
     const Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("idispnp",*idispnp);
 
     F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
-
-    if (MyDebugWriter()!=Teuchos::null)
-    {
-      MyDebugWriter()->WriteVector("idispnp",*idispnp);
-      MyDebugWriter()->WriteVector("iforcen",*iforce);
-    }
   }
   else
   {
     const Teuchos::RCP<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("iforcen",*iforcen);
 
     const Teuchos::RCP<Epetra_Vector> idisp = StructOp(iforcen, fillFlag);
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("idisp",*idisp);
+
     const Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
+    if (MyDebugWriter()!=Teuchos::null)
+      MyDebugWriter()->WriteVector("iforcenp",*iforcenp);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
-
-    if (MyDebugWriter()!=Teuchos::null)
-    {
-      MyDebugWriter()->WriteVector("idispn",*idisp);
-      MyDebugWriter()->WriteVector("iforcenp",*iforcenp);
-    }
   }
 }
 
