@@ -216,11 +216,11 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // apply forces and stiffness due to constraints
   if (midavg_ == midavg_trlike)
   {
-    ApplyForceStiffConstraint(timen_, disn_, fintn_, stiff_);
+    ApplyForceStiffConstraint(timen_, (*dis_)(0),disn_, fintn_, stiff_);
   }
   else if (midavg_ == midavg_imrlike)
   {
-    ApplyForceStiffConstraint(timen_, disn_, fintm_, stiff_);
+    ApplyForceStiffConstraint(timen_,(*dis_)(0), disn_, fintm_, stiff_);
   }
 
   // surface stress force

@@ -1313,7 +1313,7 @@ void StruGenAlpha::FullNewton()
 
       if (constrMan_->HaveConstraint())
       {
-        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1435,7 +1435,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
     double time        = params_.get<double>("total time"             ,0.0);
     double dt          = params_.get<double>("delta time"             ,0.01);
 
-    constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+    constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
     FullNewton();
     //--------------------update end configuration
     disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
@@ -1507,7 +1507,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   //=================================================== equilibrium loop
   constrMan_->ScaleLagrMult(0.0);
-  constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+  constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
   RCP<LINALG::SparseMatrix> constrMatrix = rcp(new  LINALG::SparseMatrix(*(constrMan_->GetConstrMatrix())));
   RCP<Epetra_Vector> constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
 
@@ -1621,7 +1621,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
 
-      constrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
+      constrMan_->StiffnessAndInternalForces(timen,dis_,disn_,fint_,stiff_);
       constrMatrix = constrMan_->GetConstrMatrix();
       constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
       constrnorm=constrMan_->GetErrorNorm();
@@ -2904,6 +2904,9 @@ void StruGenAlpha::Output()
     if (constrMan_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
+      //output_.WriteVector("refconval",constrMan_->GetInitialValues());
+      //output_.WriteVector("activcons",constrMan_)
+      
     }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
@@ -3323,6 +3326,10 @@ void StruGenAlpha::ReadRestart(int step)
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     uzawaSolv_->SetUzawaParameter(uzawatemp);
+    //RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
+    //RCP<Epetra_Vector> initvals = LINALG::CreateVector(*constrmap,true);
+    //reader.ReadVector(initvals, "refconval");
+    //constrMan_->ResetInitial(initvals,dis_,time);
   }
 
   return;

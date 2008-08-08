@@ -69,6 +69,7 @@ namespace UTILS
     void StiffnessAndInternalForces
     (
       const double time,  ///< time at end of time step
+      RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
       RCP<Epetra_Vector> disp,  ///< displacement at end of time step
       RCP<Epetra_Vector> fint,  ///< vector of internal forces
       RCP<LINALG::SparseMatrix> stiff  ///< stiffness matrix
@@ -254,9 +255,9 @@ namespace UTILS
   
     RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
     RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
-    RCP<Epetra_Map> redconstrmap_;   ///< fully redundant vector of constraint values
+    RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
     RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
-    RCP<Epetra_Map> redmonmap_;  ///< fully redundant vector of monitor values
+    RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
     RCP<Epetra_Vector> referencevalues_;  ///< reference to constrain values to
     RCP<Epetra_Vector> initialvalues_;   ///< initial values of constrained structures
     RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures

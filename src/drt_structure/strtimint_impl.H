@@ -163,7 +163,8 @@ namespace STR
     void ApplyForceStiffConstraint
     (
       const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< evalaution displacements
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
+      const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
       Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
       Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness is added onto
     );

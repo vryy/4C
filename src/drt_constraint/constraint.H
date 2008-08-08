@@ -99,15 +99,21 @@ namespace UTILS
       actdisc_->SetState(state,V);
     };
     
+    void Initialize
+    (
+      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+    );
+    
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
     void Evaluate
     ( 
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     ); 
     
     /*
@@ -126,12 +132,11 @@ namespace UTILS
 
   protected:
     
-    /// standard discretization
-    RCP<DRT::Discretization> actdisc_;
-    /// conditions, that define the constraint (all of the same kind)
-    vector<DRT::Condition*> constrcond_;
-    /// constraint type
-    ConstrType constrtype_;
+    RCP<DRT::Discretization> actdisc_; /// standard discretization
+    vector<DRT::Condition*> constrcond_; /// conditions, that define the constraint (all of the same kind)
+    ConstrType constrtype_; /// constraint type
+    map<int,double>  inittimes_; /// map with times at which constraint is supposed to become active
+    map<int,bool> activecons_; /// map with indicator if constraints are active
       
   private:
     
@@ -147,15 +152,22 @@ namespace UTILS
     );
     
     //! Evaluate constraint conditions and assemble the results
-    void EvaluateConstraint( 
-        RCP<DRT::Discretization> disc,  ///< discretization to evaluate
-        Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by aasembly of element contributions
-  
+    void EvaluateConstraint
+    ( 
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by aasembly of element contributions
+      );
+    
+    //! Compute and assemble initial constraint values (depending on user specific activation times)
+    void InitializeConstraint
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
+    ); 
   }; //class
 } //namespace
 

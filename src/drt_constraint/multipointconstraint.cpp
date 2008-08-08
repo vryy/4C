@@ -53,9 +53,51 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
     newdofset = null;
     constraintdis_->FillComplete();
   }
+
   return;
 }
 
+/*-----------------------------------------------------------------------*
+|(public)                                                        tk 07/08|
+|Evaluate Constraints, choose the right action based on type             |
+*-----------------------------------------------------------------------*/
+void UTILS::MPConstraint::Initialize(
+    ParameterList&        params,
+    RCP<Epetra_Vector>    systemvector)
+{ 
+  const double time = params.get("total time",-1.0);
+  // in case init is set to true we want to set systemvector1 to the amplitudes defined 
+  // in the input file
+  // allocate vectors for amplitudes and IDs
+ 
+
+  vector<double> amplit(constrcond_.size());
+  vector<int> IDs(constrcond_.size());
+  // read data of the input files
+  for (unsigned int i=0;i<constrcond_.size();i++)
+  {
+    DRT::Condition& cond = *(constrcond_[i]);
+    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+    int condID=(*CondIDVec)[0];
+    if(inittimes_.find(condID)->second<=time)
+    {
+      const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
+      const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
+      amplit[i]=(*MPCampl)[0];
+      const int mid=params.get("MinID",0);
+      IDs[i]=(*MPCcondID)[0]-mid;
+      // remember next time, that this condition is already initialized, i.e. active
+      activecons_.erase(condID);
+      activecons_[condID]=true;
+      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+    }
+  }
+  // replace systemvector by the given amplitude values
+  // systemvector is supposed to be the vector with initial values of the constraints
+  systemvector->ReplaceGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
+  
+  return;
+}
 
 /*-----------------------------------------------------------------------*
 |(public)                                                        tk 07/08|
@@ -67,45 +109,22 @@ void UTILS::MPConstraint::Evaluate(
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3,
-    bool                  init)
+    RCP<Epetra_Vector>    systemvector3)
 { 
-  // in case init is set to true we want to set systemvector1 to the amplitudes defined 
-  // in the input file
-  if (init)
+  
+  switch (Type())
   {
-    //allocate vectors for amplitudes and IDs
-    vector<double> amplit(constrcond_.size());
-    vector<int> IDs(constrcond_.size());
-    
-    //read data of the input files
-    for (unsigned int i=0;i<constrcond_.size();i++)
-    {
-      const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("Amplitude");
-      const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
-      amplit[i]=(*MPCampl)[0];
-      const int mid=params.get("MinID",0);
-      IDs[i]=(*MPCcondID)[0]-mid;
-    }
-    // replace systemvector1 by the given amplitude values
-    // systemvector1 is supposed to be the vector with initial values of the constraints
-    systemvector1->ReplaceGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
+    case mpcnodeonplane3d: 
+    case mpcnodeonline2d:
+      params.set("action","calc_MPC_stiff");
+    break;
+    case none:
+      return;
+    default:
+      dserror("Constraint/monitor is not an multi point constraint!");
   }
-  else 
-  {
-    switch (Type())
-    {
-      case mpcnodeonplane3d: 
-      case mpcnodeonline2d:
-        params.set("action","calc_MPC_stiff");
-      break;
-      case none:
-        return;
-      default:
-        dserror("Constraint/monitor is not an multi point constraint!");
-    }
-    EvaluateConstraint(constraintdis_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
-  }
+  EvaluateConstraint(constraintdis_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
+  
   return;
 }
 
@@ -219,15 +238,15 @@ void UTILS::MPConstraint::ReorderConstraintNodes
   vector<int> temp=nodeids;
   if (nodeids.size()==4)
   {
-    const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
+    const vector<int>*    constrNode  = cond->Get<vector<int> >("constrNode");
     nodeids[(*constrNode)[0]-1]=temp[3];
     nodeids[3]=temp[(*constrNode)[0]-1];
   }
   else if (nodeids.size()==3)
   {
-    const vector<int>*    constrNode1  = cond->Get<vector<int> >("ConstrNode 1");
-    const vector<int>*    constrNode2  = cond->Get<vector<int> >("ConstrNode 2");
-    const vector<int>*    constrNode3  = cond->Get<vector<int> >("ConstrNode 3");
+    const vector<int>*    constrNode1  = cond->Get<vector<int> >("constrNode 1");
+    const vector<int>*    constrNode2  = cond->Get<vector<int> >("constrNode 2");
+    const vector<int>*    constrNode3  = cond->Get<vector<int> >("constrNode 3");
     nodeids[0]=temp[(*constrNode1)[0]-1];
     nodeids[1]=temp[(*constrNode2)[0]-1];
     nodeids[2]=temp[(*constrNode3)[0]-1];
@@ -300,6 +319,7 @@ RCP<Epetra_Map> UTILS::MPConstraint::ComputeNodeColMap(
     return newcolnodemap;
 }
 
+
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
  |Evaluate method, calling element evaluates of a condition and          |
@@ -332,72 +352,83 @@ void UTILS::MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
   Epetra_SerialDenseVector elevector3;
 
   // loop over column elements
+  const double time = params.get("total time",-1.0);
   const int numcolele = disc->NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
     DRT::Element* actele = disc->lColElement(i);
-
-    // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    actele->LocationVector(*disc,lm,lmowner);
-    // get dimension of element matrices and vectors
-    // Reshape element matrices and vectors and init to zero
-    const int eledim = (int)lm.size();
-    if (assemblemat1) elematrix1.Shape(eledim,eledim);
-    if (assemblemat2) elematrix2.Shape(eledim,eledim);
-    if (assemblevec1) elevector1.Size(eledim);
-    if (assemblevec2) elevector2.Size(eledim);        
-    if (assemblevec3) elevector3.Size(systemvector3->MyLength());
-    elevector3.Size(systemvector3->MyLength());
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
-    params.set("ConditionID",condID);
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
-    // call the element evaluate method
-    int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
-                               elevector1,elevector2,elevector3);
-    if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
-
-    int eid = actele->Id();
-    if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-    if (assemblemat2)
+    
+    if(inittimes_.find(condID)->second<=time)
     {
-      int minID=params.get("MinID",0);
-      vector<int> colvec(1);
-      colvec[0]=condID-minID;
-      systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
-    }
-    if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-    if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-    if (assemblevec3) 
-    {
-      vector<int> constrlm;
-      vector<int> constrowner;
-      for (int i=0; i<elevector3.Length();i++)
+      if(activecons_.find(condID)->second==false)
       {
-        constrlm.push_back(i);
-        constrowner.push_back(actele->Owner());
-      }
-      LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
-    }
-    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    bool usetime = true;
-    const double time = params.get("total time",-1.0);
-    if (time<0.0) usetime = false;
-    if (curvenum>=0 && usetime)
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
-    // Get ConditionID of current condition if defined and write value in parameterlist
-    char factorname[30];
-    sprintf(factorname,"LoadCurveFactor %d",condID);
-    params.set(factorname,curvefac);
-  }
+        const string action = params.get<string>("action"); 
+        Initialize(params,systemvector2);
+        params.set("action",action);
+      }   
   
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      actele->LocationVector(*disc,lm,lmowner);
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+      if (assemblemat1) elematrix1.Shape(eledim,eledim);
+      if (assemblemat2) elematrix2.Shape(eledim,eledim);
+      if (assemblevec1) elevector1.Size(eledim);
+      if (assemblevec2) elevector2.Size(eledim);        
+      if (assemblevec3) elevector3.Size(systemvector3->MyLength());
+      DRT::Condition& cond = *(constrcond_[actele->Id()]);
+      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+      int condID=(*CondIDVec)[0];
+      params.set("ConditionID",condID);
+      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      // call the element evaluate method
+      int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
+                                 elevector1,elevector2,elevector3);
+      if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
+  
+      int eid = actele->Id();
+      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+      if (assemblemat2)
+      {
+        int minID=params.get("MinID",0);
+        vector<int> colvec(1);
+        colvec[0]=condID-minID;
+        systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
+      }
+      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+      //if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+      if (assemblevec3) 
+      {
+        vector<int> constrlm;
+        vector<int> constrowner;
+        for (int i=0; i<elevector3.Length();i++)
+        {
+          constrlm.push_back(i);
+          constrowner.push_back(actele->Owner());
+        }
+        LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
+      }
+      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0];
+      double curvefac = 1.0;
+      bool usetime = true;
+      if (time<0.0) usetime = false;
+      if (curvenum>=0 && usetime)
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  
+      // Get ConditionID of current condition if defined and write value in parameterlist
+      char factorname[30];
+      sprintf(factorname,"LoadCurveFactor %d",condID);
+      params.set(factorname,curvefac);
+    }
+  }
   return;
 } // end of EvaluateCondition
 

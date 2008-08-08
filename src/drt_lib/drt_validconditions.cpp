@@ -604,6 +604,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   volumeconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   volumeconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  volumeconstraint->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
 
   condlist.push_back(volumeconstraint);
 
@@ -620,7 +621,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-
+  areaconstraint->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+  
   condlist.push_back(areaconstraint);
 
   /*--------------------------------------------------------------------*/
@@ -670,6 +672,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  areaconstraint2D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   condlist.push_back(areaconstraint2D);
 
   /*--------------------------------------------------------------------*/
@@ -722,9 +725,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Volume));
 
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("amplitude")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("constrNode")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   condlist.push_back(nodeonplaneconst3D);
 
   /*--------------------------------------------------------------------*/
@@ -738,16 +742,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                            DRT::Condition::Line));
 
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("amplitude")));
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 1")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 2")));
-  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 3")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("constrNode 1")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("constrNode 2")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("constrNode 3")));
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new StringConditionComponent("control value","dist",
         Teuchos::tuple<std::string>("dist","angle"),
         Teuchos::tuple<std::string>("dist","angle"),
         true)));
-    condlist.push_back(nodeonlineconst2D);
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+  condlist.push_back(nodeonlineconst2D);
 
   return vc;
 }

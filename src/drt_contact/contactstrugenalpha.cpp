@@ -763,7 +763,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
       if (constrMan_->HaveConstraint())
       {
-        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -1075,7 +1075,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
       if (constrMan_->HaveConstraint())
       {
-        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later

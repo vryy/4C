@@ -341,13 +341,14 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 (
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,
+  const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
   Teuchos::RCP<LINALG::SparseMatrix>& stiff
 )
 {
   if (conman_->HaveConstraint())
   {
-    conman_->StiffnessAndInternalForces(time, dis, fint, stiff);
+    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff);
   }
 
   // wotcha

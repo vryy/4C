@@ -149,7 +149,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
 
   // apply forces and stiffness due to constraints
-  ApplyForceStiffConstraint(timen_, disn_, fint_, stiff_);
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fint_, stiff_);
 
   // surface stress force
   ApplyForceStiffSurfstress(disn_, fintn_, stiff_);

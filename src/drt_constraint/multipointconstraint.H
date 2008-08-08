@@ -76,16 +76,22 @@ namespace UTILS
   
     //! @name Public Member Functions
   
+    //! Initialize routine, to compute the right initial values, all constraints are based on
+    void Initialize
+    ( 
+      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by assembly of element contributions
+    ); 
+    
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
     void Evaluate
     ( 
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector3,  ///< distributed vector that may be filled by aasembly of element contributions
-      bool initstep=false ///< indicates if systemvector1 is to be filled with amplitudes as given in the input file
+      Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     ); 
     
     bool HaveConstraint()

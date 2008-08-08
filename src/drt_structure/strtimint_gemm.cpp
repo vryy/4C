@@ -159,7 +159,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
                              fintm_, stiff_);
 
   // apply forces and stiffness due to constraints
-  ApplyForceStiffConstraint(timen_, disn_, fintm_, stiff_);
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_);
 
   // surface stress force
   ApplyForceStiffSurfstress(dism_, fintm_, stiff_);

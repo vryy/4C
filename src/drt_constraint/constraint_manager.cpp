@@ -29,12 +29,15 @@ UTILS::ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
         ParameterList params):
 actdisc_(discr)
 {
+  //----------------------------------------------------------------------------
+  //---------------------------------------------------------Constraint Conditions!
+
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
   // Keep ParameterList p alive during initialization, so global information
   // over IDs as well as element results stored here can be used after all
   // constraints are evaluated
-  ParameterList p;
+  
   actdisc_->SetState("displacement",disp);
   minConstrID_=10000;
   int maxConstrID=0;
@@ -53,7 +56,9 @@ actdisc_(discr)
         (areaconstr2d_->HaveConstraint())||(mpconplane3d_->HaveConstraint())||(mpconline2d_->HaveConstraint());
   if (haveconstraint_)
   {
+    ParameterList p;
     uzawaparam_=params.get<double>("uzawa parameter",1);
+    double time =params.get<double>("total time"      ,0.0);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constrMatrix
@@ -70,14 +75,15 @@ actdisc_(discr)
     //Compute initial values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
-    volconstr3d_->Evaluate(p,null,null,null,null,initialredundant);
-    areaconstr3d_->Evaluate(p,null,null,null,null,initialredundant);
-    areaconstr2d_->Evaluate(p,null,null,null,null,initialredundant);
+    p.set("total time",time);
+    volconstr3d_->Initialize(p,initialredundant);
+    areaconstr3d_->Initialize(p,initialredundant);
+    areaconstr2d_->Initialize(p,initialredundant);
     
     ImportResults(initialvalues_,initialredundant);
     
-    mpconplane3d_->Evaluate(p,null,null,initialvalues_,null,null,true);
-    mpconplane3d_->Evaluate(p,null,null,initialvalues_,null,null,true);
+    mpconplane3d_->Initialize(p,initialvalues_);
+    mpconline2d_->Initialize(p,initialvalues_);
 
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
@@ -91,7 +97,6 @@ actdisc_(discr)
   }
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Monitor Conditions!
-  ParameterList p1;
   actdisc_->SetState("displacement",disp);
   minMonitorID_=10000;
   int maxMonitorID=0;
@@ -105,6 +110,8 @@ actdisc_(discr)
   havemonitor_= (areamonitor3d_->HaveConstraint())||(volmonitor3d_->HaveConstraint())||(areamonitor2d_->HaveConstraint());
   if (havemonitor_)
   {
+
+    ParameterList p1;
     //monitor values are only stored on processor zero since they are needed for output
     int nummyele=0;
     if (!actdisc_->Comm().MyPID())
@@ -120,7 +127,7 @@ actdisc_(discr)
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
     LINALG::Export(*initialmonvalues_,*initialmonredundant);
     p1.set("MinID",minMonitorID_);
-    
+    p1.set("total time",time);
     volmonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
     areamonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
     areamonitor2d_->Evaluate(p1,null,null,null,null,initialmonredundant);
@@ -138,6 +145,7 @@ actdisc_(discr)
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::StiffnessAndInternalForces(
         const double time,
+        RCP<Epetra_Vector> displast,
         RCP<Epetra_Vector> disp,
         RCP<Epetra_Vector> fint,
         RCP<LINALG::SparseMatrix> stiff)
@@ -146,42 +154,47 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
   actvalues_->Scale(0.0);
-  constrMatrix_->PutScalar(0.0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  
+  constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+    
   // other parameters that might be needed by the elements
   p.set("total time",time);
   p.set("MinID",minConstrID_);
   p.set("NumberofID",numConstrID_);
+  p.set("old disp",displast);
+  p.set("new disp",disp);
   // Convert Epetra_Vector constaining lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*redconstrmap_));
   LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
   p.set("LagrMultVector",lagrMultVecDense);
   
-  actdisc_->ClearState();
-  actdisc_->SetState("displacement",disp);
- 
   RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
   LINALG::Export(*actvalues_,*actredundant);
+  
+  RCP<Epetra_Vector> initialredundant = rcp(new Epetra_Vector(*redconstrmap_));
+  LINALG::Export(*initialvalues_,*initialredundant);
 
-  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
-  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
-  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  actdisc_->ClearState();
+  actdisc_->SetState("displacement",disp);
+  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
+  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
+  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
   
   mpconplane3d_->SetConstrState("displacement",disp);
-  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
-  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
   
   ImportResults(actvalues_,actredundant);
-  
-  //----------------------------------------------------
-  //-----------include possible further constraints here
-  //----------------------------------------------------
+  ImportResults(initialvalues_,initialredundant);
+  // ----------------------------------------------------
+  // -----------include possible further constraints here
+  // ----------------------------------------------------
   SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
-  //Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
-  referencevalues_->Multiply(1.0,*fact_,*initialvalues_,0.0);
+  // Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
+  
+  referencevalues_->Multiply(1.0,*fact_,*initialvalues_,0.0);  
   constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
@@ -193,7 +206,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
 |(public)                                                       tk 01/08|
 |Compute difference between current and prescribed values.              |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
+void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
 {
     vector<DRT::Condition*> constrcond(0);
     actvalues_->Scale(0.0);
@@ -289,6 +302,7 @@ void UTILS::ConstrManager::ImportResults
   RCP<Epetra_Vector>& vect_redu
 )
 {
+  vect_dist->Scale(0.0);
   vector<int> gids;
   for (int i = 0; i < (vect_redu->MyLength()); ++i)
   {
