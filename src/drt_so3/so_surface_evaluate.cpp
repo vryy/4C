@@ -106,8 +106,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     SpatialConfiguration(xc,mydisp);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
+#if PRESTRESS_ORTHOPRESSURE
     if (ltype == neum_orthopressure)
       SpatialConfiguration(xc,xrefehist_,mydisp);
+#endif
 #endif
   }
   break;
@@ -633,6 +635,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 #ifdef PRESTRESS
       case prestress_update:
       {
+#if PRESTRESS_ORTHOPRESSURE
         // get condition
         RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition");
         // check whether the type of condition is neum_orthopressure. If not, do nothing
@@ -645,6 +648,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         SpatialConfiguration(xrefehist_,xrefehist_,mydisp);
+#endif
         return 0;
       }
       break;
@@ -652,22 +656,26 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 #if defined(PRESTRESS) || defined(POSTSTRESS)
       case prestress_writerestart:
       {
+#if PRESTRESS_ORTHOPRESSURE
         Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
         if (!xhis) dserror("No prestress restart vector set");
         if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
         const int lid = xhis->Map().LID(Id());
         for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
           (*(*xhis)(i))[lid] = xrefehist_.A()[i];
+#endif
       }
       break;
       case prestress_readrestart:
       {
+#if PRESTRESS_ORTHOPRESSURE
         Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
         if (!xhis) dserror("No prestress restart vector set");
         if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
         const int lid = xhis->Map().LID(Id());
         for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
           xrefehist_.A()[i] = (*(*xhis)(i))[lid];
+#endif
       }
       break;
 #endif

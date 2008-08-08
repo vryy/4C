@@ -23,6 +23,11 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+// define whether orthopressure shall respect prestressing or not
+#define PRESTRESS_ORTHOPRESSURE 0  // 0: off  1: on
+#endif
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -209,7 +214,9 @@ protected:
   DRT::UTILS::GaussRule2D     gaussrule_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
+#if PRESTRESS_ORTHOPRESSURE
   LINALG::SerialDenseMatrix   xrefehist_;
+#endif
 #endif
 
   /*!
