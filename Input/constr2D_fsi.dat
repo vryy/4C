@@ -192,8 +192,8 @@ FUNCT2 EXPR 0 0 0 FUNCTION -y
 DLINE                           1
 E  3  -  1  none 0.0
 ----------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                          1
-E  3  -  1
+DLINE                          0
+//E  3  -  1
 ---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 4
