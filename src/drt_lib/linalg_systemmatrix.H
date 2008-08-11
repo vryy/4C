@@ -524,6 +524,9 @@ namespace LINALG
     template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
       Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps);
 
+    /// binary dump of matrix for debugging
+    void Dump(std::string filename);
+
     //@}
 
   private:

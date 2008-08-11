@@ -774,6 +774,58 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
 
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Dump(std::string filename)
+{
+  int MyRow;
+  int NumEntries;
+  std::string offsetname = filename + ".off";
+  std::string indicesname = filename + ".idx";
+  std::string valuesname = filename + ".val";
+
+  std::ofstream off(offsetname.c_str());
+  std::ofstream idx(indicesname.c_str());
+  std::ofstream val(valuesname.c_str());
+
+  if (sysmat_->Filled())
+  {
+    for (MyRow=0; MyRow<sysmat_->NumMyRows(); ++MyRow)
+    {
+      double *Values;
+      int *Indices;
+
+      int err = sysmat_->ExtractMyRowView(MyRow, NumEntries, Values, Indices);
+      if (err)
+        dserror("ExtractMyRowView failed: err=%d", err);
+      off << NumEntries << "\n";
+      std::copy(Indices,Indices+NumEntries,
+                std::ostream_iterator<int>(idx," "));
+      idx << "\n";
+      val.write(reinterpret_cast<char*>(Values),NumEntries*sizeof(double));
+    }
+  }
+  else
+  {
+    const Epetra_Map& rowmap = RowMap();
+    for (MyRow=0; MyRow<sysmat_->NumMyRows(); ++MyRow)
+    {
+      std::vector<double> Values(sysmat_->MaxNumEntries());
+      std::vector<int> Indices(sysmat_->MaxNumEntries());
+
+      int err = sysmat_->ExtractGlobalRowCopy(rowmap.GID(MyRow), sysmat_->MaxNumEntries(), NumEntries, &Values[0], &Indices[0]);
+      if (err)
+        dserror("ExtractGlobalRowCopy failed: err=%d", err);
+      off << NumEntries << "\n";
+      std::copy(&Indices[0],&Indices[NumEntries],
+                std::ostream_iterator<int>(idx," "));
+      idx << "\n";
+      val.write(reinterpret_cast<char*>(&Values[0]),NumEntries*sizeof(double));
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
   (private)
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
