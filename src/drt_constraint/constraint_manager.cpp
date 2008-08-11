@@ -100,14 +100,14 @@ actdisc_(discr)
   actdisc_->SetState("displacement",disp);
   minMonitorID_=10000;
   int maxMonitorID=0;
-  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",minMonitorID_,maxMonitorID));
-  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",minMonitorID_,maxMonitorID));
-  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",minMonitorID_,maxMonitorID));
+  volmonitor3d_=rcp(new Monitor(actdisc_,"VolumeMonitor_3D",minMonitorID_,maxMonitorID));
+  areamonitor3d_=rcp(new Monitor(actdisc_,"AreaMonitor_3D",minMonitorID_,maxMonitorID));
+  areamonitor2d_=rcp(new Monitor(actdisc_,"AreaMonitor_2D",minMonitorID_,maxMonitorID));
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
   numMonitorID_=max(maxMonitorID-minMonitorID_+1,0);
-  havemonitor_= (areamonitor3d_->HaveConstraint())||(volmonitor3d_->HaveConstraint())||(areamonitor2d_->HaveConstraint());
+  havemonitor_= (areamonitor3d_->HaveMonitor())||(volmonitor3d_->HaveMonitor())||(areamonitor2d_->HaveMonitor());
   if (havemonitor_)
   {
 
@@ -127,10 +127,9 @@ actdisc_(discr)
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
     LINALG::Export(*initialmonvalues_,*initialmonredundant);
     p1.set("MinID",minMonitorID_);
-    p1.set("total time",time);
-    volmonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
-    areamonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
-    areamonitor2d_->Evaluate(p1,null,null,null,null,initialmonredundant);
+    volmonitor3d_->Evaluate(p1,initialmonredundant);
+    areamonitor3d_->Evaluate(p1,initialmonredundant);
+    areamonitor2d_->Evaluate(p1,initialmonredundant);
 
     ImportResults(initialmonvalues_,initialmonredundant);
     
@@ -277,12 +276,12 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   actdisc_->SetState("displacement",disp);
   
   RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
-  LINALG::Export(*monitorvalues_,*actmonredundant);
   p.set("MinID",minMonitorID_);
   
-  volmonitor3d_->Evaluate(p,null,null,null,null,actmonredundant);
-  areamonitor3d_->Evaluate(p,null,null,null,null,actmonredundant);
-  areamonitor2d_->Evaluate(p,null,null,null,null,actmonredundant);
+  
+  volmonitor3d_->Evaluate(p,actmonredundant);
+  areamonitor3d_->Evaluate(p,actmonredundant);
+  areamonitor2d_->Evaluate(p,actmonredundant);
   
   ImportResults(monitorvalues_,actmonredundant);
   

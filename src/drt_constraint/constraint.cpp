@@ -13,8 +13,6 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint.H"
-#include "constraint_element.H"
-#include "mpcdofset.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -78,12 +76,6 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& nam
     return areaconstr3d;
   else if (name=="AreaConstraint_2D")
     return areaconstr2d;
-  else if (name=="VolumeMonitor_3D")
-    return volmonitor3d;
-  else if (name=="AreaMonitor_3D")
-    return areamonitor3d;
-  else if (name=="AreaMonitor_2D")
-    return areamonitor2d;
   else if (name=="MPC_NodeOnPlane_3D")
     return mpcnodeonplane3d;
   else if (name=="MPC_NodeOnLine_2D")
@@ -110,15 +102,6 @@ void UTILS::Constraint::Initialize(
       params.set("action","calc_struct_constrarea");
     break;
     case areaconstr2d:
-      params.set("action","calc_struct_constrarea");
-    break;
-    case volmonitor3d:
-      params.set("action","calc_struct_constrvol");
-    break;
-    case areamonitor3d:
-      params.set("action","calc_struct_monitarea");
-    break;
-    case areamonitor2d:
       params.set("action","calc_struct_constrarea");
     break;
     case none:
@@ -183,7 +166,7 @@ void UTILS::Constraint::Evaluate(
     case none:
       return;  
     default:
-      dserror("Wrong constraint/monitor type to evaluate systemvector!");
+      dserror("Wrong constraint type to evaluate systemvector!");
   }
   EvaluateConstraint(params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
   return;
@@ -205,9 +188,7 @@ void UTILS::Constraint::EvaluateConstraint(
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
@@ -227,7 +208,7 @@ void UTILS::Constraint::EvaluateConstraint(
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
-    if (curvenum>=0 && usetime)
+    if (curvenum>=0 )
       curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
@@ -235,9 +216,10 @@ void UTILS::Constraint::EvaluateConstraint(
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
     params.set("ConditionID",condID);
-
+    // is conditions supposed to be active?
     if(inittimes_.find(condID)->second<=time)
     {
+      // is conditions already labelled as active?
       if(activecons_.find(condID)->second==false)
       {
         const string action = params.get<string>("action"); 
@@ -323,9 +305,7 @@ void UTILS::Constraint::InitializeConstraint(
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

@@ -52,9 +52,6 @@ namespace UTILS
       volconstr3d,
       areaconstr3d,
       areaconstr2d,
-      volmonitor3d,
-      areamonitor3d,
-      areamonitor2d,
       mpcnodeonplane3d,
       mpcnodeonline2d
     };
@@ -122,14 +119,6 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     ); 
-    
-    /*
-       \brief Compute values described by a monitor boundary condition
-    */
-    void ComputeMonitorValues
-    (
-      RCP<Epetra_Vector> disp ///< current displacement
-    );
     
     ///Return type of constraint
     ConstrType Type()
