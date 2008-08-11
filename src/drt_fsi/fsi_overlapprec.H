@@ -7,6 +7,10 @@
 #include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 
+// debug flag to merge the MFSI block matrix to one sparse matrix
+// and use the fluid solver to solve for it
+//#define BLOCKMATRIXMERGE
+
 namespace FSI
 {
 
@@ -105,6 +109,11 @@ namespace FSI
 
     /// log file
     FILE* err_;
+
+#ifdef BLOCKMATRIXMERGE
+    /// debug merged sparse
+    Teuchos::RCP<LINALG::SparseMatrix> sparse_;
+#endif
   };
 }
 

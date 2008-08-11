@@ -35,12 +35,11 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
  *----------------------------------------------------------------------*/
 int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-#if 0
-  if (structuresplit_)
-    FSALowerGS(X, Y);
-  else
+#ifdef BLOCKMATRIXMERGE
+  MergeSolve(X, Y);
+#else
+  SAFLowerGS(X, Y);
 #endif
-    SAFLowerGS(X, Y);
 
   return 0;
 }
@@ -50,16 +49,15 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrix::MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-  // this is really evil :)
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = Merge();
-
+#ifdef BLOCKMATRIXMERGE
   const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
   Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  fluidsolver_->Solve(sparse->EpetraMatrix(),
+  fluidsolver_->Solve(sparse_->EpetraMatrix(),
                       Teuchos::rcp(&y,false),
                       Teuchos::rcp(new Epetra_Vector(x)),
                       true);
+#endif
 }
 
 
@@ -564,6 +562,22 @@ const char* FSI::OverlappingBlockMatrix::Label() const
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrix::SetupPreconditioner()
 {
+#ifdef BLOCKMATRIXMERGE
+
+  // this is really evil :)
+  sparse_ = Merge();
+  fluidsolver_    ->Setup(sparse_->EpetraMatrix());
+
+#if 0
+  static int count;
+  count++;
+  std::stringstream s;
+  s << "dump-" << count;
+  cout << "write: " << s.str() << "\n";
+  sparse_->Dump(s.str());
+#endif
+
+#else
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
@@ -571,6 +585,7 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
   alesolver_      ->Setup(aleInnerOp   .EpetraMatrix());
+#endif
 }
 
 
