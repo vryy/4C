@@ -76,12 +76,18 @@ namespace UTILS
   
     //! @name Public Member Functions
   
-    //! Initialize routine, to compute the right initial values, all constraints are based on
+    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     void Initialize
-    ( 
-      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by assembly of element contributions
-    ); 
+    (
+      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+    );
+    
+    /// initialization routine called at restart to activate the right conditions
+    void Initialize
+    (
+      const double& time  ///< current time
+    );
     
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
     void Evaluate

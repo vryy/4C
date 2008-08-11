@@ -69,22 +69,22 @@ actdisc_(discr)
     //have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);
     // sum up initial values
-    initialvalues_=rcp(new Epetra_Vector(*constrmap_));
-    RCP<Epetra_Vector> initialredundant = rcp(new Epetra_Vector(*redconstrmap_));
-    LINALG::Export(*initialvalues_,*initialredundant);
+    refbasevalues_=rcp(new Epetra_Vector(*constrmap_));
+    RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
+    LINALG::Export(*refbasevalues_,*refbaseredundant);
     //Compute initial values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
     p.set("total time",time);
-    volconstr3d_->Initialize(p,initialredundant);
-    areaconstr3d_->Initialize(p,initialredundant);
-    areaconstr2d_->Initialize(p,initialredundant);
+    volconstr3d_->Initialize(p,refbaseredundant);
+    areaconstr3d_->Initialize(p,refbaseredundant);
+    areaconstr2d_->Initialize(p,refbaseredundant);
     
-    ImportResults(initialvalues_,initialredundant);
+    ImportResults(refbasevalues_,refbaseredundant);
     
-    mpconplane3d_->Initialize(p,initialvalues_);
-    mpconline2d_->Initialize(p,initialvalues_);
-
+    mpconplane3d_->Initialize(p,refbasevalues_);
+    mpconline2d_->Initialize(p,refbasevalues_);
+    
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
@@ -170,31 +170,28 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   p.set("LagrMultVector",lagrMultVecDense);
   
   RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
-  LINALG::Export(*actvalues_,*actredundant);
-  
-  RCP<Epetra_Vector> initialredundant = rcp(new Epetra_Vector(*redconstrmap_));
-  LINALG::Export(*initialvalues_,*initialredundant);
+  RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
-  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
-  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
-  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
+  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
+  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
+  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   
   mpconplane3d_->SetConstrState("displacement",disp);
-  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
+  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
-  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,initialredundant,actredundant);
+  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   
   ImportResults(actvalues_,actredundant);
-  ImportResults(initialvalues_,initialredundant);
+  ImportResults(refbasevalues_,refbaseredundant,false);
   // ----------------------------------------------------
   // -----------include possible further constraints here
   // ----------------------------------------------------
   SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
   // Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
   
-  referencevalues_->Multiply(1.0,*fact_,*initialvalues_,0.0);  
+  referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);  
   constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
@@ -232,6 +229,21 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)                                                       tk 08/08|
+|Reset reference base values for restart                                |
+*-----------------------------------------------------------------------*/
+void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const double& time)
+{
+  volconstr3d_->Initialize(time);
+  areaconstr3d_->Initialize(time);
+  areaconstr2d_->Initialize(time);
+  mpconplane3d_->Initialize(time);
+  mpconline2d_->Initialize(time);
+
+  refbasevalues_=newrefval;
+  return;
+}
 
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
@@ -299,10 +311,14 @@ void UTILS::ConstrManager::PrintMonitorValues()
 void UTILS::ConstrManager::ImportResults
 (
   RCP<Epetra_Vector>& vect_dist,
-  RCP<Epetra_Vector>& vect_redu
+  RCP<Epetra_Vector>& vect_redu,
+  bool zero
 )
 {
-  vect_dist->Scale(0.0);
+  if (zero)
+  {
+    vect_dist->Scale(0.0);
+  }
   vector<int> gids;
   for (int i = 0; i < (vect_redu->MyLength()); ++i)
   {
@@ -311,7 +327,6 @@ void UTILS::ConstrManager::ImportResults
   vector<double> currval(vect_redu->MyLength(),0);
   actdisc_->Comm().SumAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
   vect_dist->SumIntoGlobalValues(vect_redu->MyLength(),&(currval[0]),&(gids[0]));
-
   return;
 }
 

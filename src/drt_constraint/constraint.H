@@ -99,10 +99,17 @@ namespace UTILS
       actdisc_->SetState(state,V);
     };
     
+    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     void Initialize
     (
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+    );
+    
+    /// initialization routine called at restart to activate the right conditions
+    void Initialize
+    (
+      const double& time  ///< current time
     );
     
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
@@ -124,6 +131,7 @@ namespace UTILS
       RCP<Epetra_Vector> disp ///< current displacement
     );
     
+    ///Return type of constraint
     ConstrType Type()
     {
       return constrtype_;

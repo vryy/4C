@@ -57,6 +57,32 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
   return;
 }
 
+/*------------------------------------------------------------------------*
+|(public)                                                       tk 08/08  |
+|Initialization routine activates conditions (restart)                    |
+*------------------------------------------------------------------------*/
+void UTILS::MPConstraint::Initialize
+(
+  const double& time
+)
+{
+  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(constrcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+    int condID=(*CondIDVec)[0];
+   
+    // if current time (at) is larger than activation time of the condition, activate it 
+    if(inittimes_.find(condID)->second<=time)
+    {     
+      activecons_.erase(condID);
+      activecons_[condID]=true;
+    }
+  }
+}
+
 /*-----------------------------------------------------------------------*
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |

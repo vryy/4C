@@ -2904,9 +2904,7 @@ void StruGenAlpha::Output()
     if (constrMan_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
-      //output_.WriteVector("refconval",constrMan_->GetInitialValues());
-      //output_.WriteVector("activcons",constrMan_)
-      
+      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());  
     }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
@@ -3326,10 +3324,10 @@ void StruGenAlpha::ReadRestart(int step)
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     uzawaSolv_->SetUzawaParameter(uzawatemp);
-    //RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
-    //RCP<Epetra_Vector> initvals = LINALG::CreateVector(*constrmap,true);
-    //reader.ReadVector(initvals, "refconval");
-    //constrMan_->ResetInitial(initvals,dis_,time);
+    RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
+    RCP<Epetra_Vector> refvals = LINALG::CreateVector(*constrmap,true);
+    reader.ReadVector(refvals, "refconval");
+    constrMan_->SetRefBaseValues(refvals,time);
   }
 
   return;

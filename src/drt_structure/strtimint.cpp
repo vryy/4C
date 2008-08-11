@@ -519,8 +519,8 @@ void STR::TimInt::OutputRestart
   {
     output_->WriteDouble("uzawaparameter",
                         uzawasolv_->GetUzawaParameter());
-//    output_->WriteVector("refconstraints",
-//                        conman_->GetInitialValues());
+    output_->WriteVector("refconval",
+                        conman_->GetRefBaseValues());
   }
 
   // info dedicated to user's eyes staring at standard out

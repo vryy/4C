@@ -92,37 +92,69 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& nam
   return none;
 }
 
+/*------------------------------------------------------------------------*
+|(public)                                                       tk 08/08  |
+|Initialization routine computes ref base values and activates conditions |
+*------------------------------------------------------------------------*/
 void UTILS::Constraint::Initialize(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector3)
 {
-    switch (constrtype_)
-    {
-      case volconstr3d: 
-        params.set("action","calc_struct_constrvol");
-      break;
-      case areaconstr3d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case areaconstr2d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case volmonitor3d:
-        params.set("action","calc_struct_constrvol");
-      break;
-      case areamonitor3d:
-        params.set("action","calc_struct_monitarea");
-      break;
-      case areamonitor2d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case none:
-        return;
-      default:
-        dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
-    }
+  // choose action
+  switch (constrtype_)
+  {
+    case volconstr3d: 
+      params.set("action","calc_struct_constrvol");
+    break;
+    case areaconstr3d:
+      params.set("action","calc_struct_constrarea");
+    break;
+    case areaconstr2d:
+      params.set("action","calc_struct_constrarea");
+    break;
+    case volmonitor3d:
+      params.set("action","calc_struct_constrvol");
+    break;
+    case areamonitor3d:
+      params.set("action","calc_struct_monitarea");
+    break;
+    case areamonitor2d:
+      params.set("action","calc_struct_constrarea");
+    break;
+    case none:
+      return;
+    default:
+      dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
+  }
+  // start computing 
   InitializeConstraint(params,systemvector3);
   return;
+}
+
+/*------------------------------------------------------------------------*
+|(public)                                                       tk 08/08  |
+|Initialization routine activates conditions (restart)                    |
+*------------------------------------------------------------------------*/
+void UTILS::Constraint::Initialize
+(
+  const double& time
+)
+{
+  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(constrcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+    int condID=(*CondIDVec)[0];
+   
+    // if current time (at) is larger than activation time of the condition, activate it 
+    if(inittimes_.find(condID)->second<=time)
+    {     
+      activecons_.erase(condID);
+      activecons_[condID]=true;
+    }
+  }
 }
 
 /*-----------------------------------------------------------------------*
@@ -265,7 +297,6 @@ void UTILS::Constraint::EvaluateConstraint(
             systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
           }
           if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-          // if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
           if (assemblevec3)
           {
             vector<int> constrlm;

@@ -222,7 +222,19 @@ namespace UTILS
     (
       RCP<Epetra_Vector> disp ///< current diplacement
     );
-    //@}
+    
+    /// Reset reference base values for restart computations
+    void SetRefBaseValues
+    (
+      RCP<Epetra_Vector> newrefvals,  ///< new reference base values
+      const double& time   ///< current time
+    );
+    
+    RCP<Epetra_Vector> GetRefBaseValues()
+    {
+      return refbasevalues_;
+    }
+    
   private:
     
     /*! \brief Sum values of a completely redundant vector into a distributed vector of the same size
@@ -230,7 +242,8 @@ namespace UTILS
     void ImportResults
     (
       RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
-      RCP<Epetra_Vector>& vect_redu  ///< fully redundant and assembled vector containing element reults
+      RCP<Epetra_Vector>& vect_redu,  ///< fully redundant and assembled vector containing element reults
+      bool zero=true ///< is the distributed vector to be set to zero before adding the redundant vector?
     );
   
     /*!
@@ -258,8 +271,8 @@ namespace UTILS
     RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
     RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
     RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
-    RCP<Epetra_Vector> referencevalues_;  ///< reference to constrain values to
-    RCP<Epetra_Vector> initialvalues_;   ///< initial values of constrained structures
+    RCP<Epetra_Vector> referencevalues_;  ///< reference at current time stepto constrain values to
+    RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures 
     RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
     RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
     RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
