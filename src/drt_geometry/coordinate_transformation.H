@@ -217,17 +217,21 @@ namespace GEO
   
   //! Calculate inverse of a 3x3 matrix
   template<class M1, class M2>
-  inline void Inverse3x3(const M1& xjm_, const double det, M2& inverse)
+  inline void Inverse3x3(
+      const M1&     mat,      ///< 3x3 matrix
+      const double  det,      ///< determinante of mat
+      M2&           inverse   ///< inverse 3x3 matrix 
+      )
   {
-    inverse(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-    inverse(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-    inverse(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-    inverse(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-    inverse(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-    inverse(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-    inverse(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-    inverse(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-    inverse(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    inverse(0,0) = (  mat(1,1)*mat(2,2) - mat(2,1)*mat(1,2))/det;
+    inverse(1,0) = (- mat(1,0)*mat(2,2) + mat(2,0)*mat(1,2))/det;
+    inverse(2,0) = (  mat(1,0)*mat(2,1) - mat(2,0)*mat(1,1))/det;
+    inverse(0,1) = (- mat(0,1)*mat(2,2) + mat(2,1)*mat(0,2))/det;
+    inverse(1,1) = (  mat(0,0)*mat(2,2) - mat(2,0)*mat(0,2))/det;
+    inverse(2,1) = (- mat(0,0)*mat(2,1) + mat(2,0)*mat(0,1))/det;
+    inverse(0,2) = (  mat(0,1)*mat(1,2) - mat(1,1)*mat(0,2))/det;
+    inverse(1,2) = (- mat(0,0)*mat(1,2) + mat(1,0)*mat(0,2))/det;
+    inverse(2,2) = (  mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1))/det;
     return;
   }
   
