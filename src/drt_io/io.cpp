@@ -146,11 +146,11 @@ void IO::DiscretizationReader::ReadMesh(int step)
 
 #endif
   return;
-}  
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<double> >& doublevec, 
+void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<double> >& doublevec,
 							  const string name)
 {
 #ifdef BINIO
@@ -897,12 +897,12 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
     // knotvectors for nurbs-discretisation
     WriteKnotvector();
-    
+
     output_->ControlFile()
       << "field:\n"
       << "    field = \"" << dis_->Name() << "\"\n"
-      << "    step = " << step << "\n"
-      << "    time = " << time << "\n\n"
+      << "    time = " << time << "\n"
+      << "    step = " << step << "\n\n"
       << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
       << "    num_ele = " << dis_->NumGlobalElements() << "\n"
       << "    num_dof = " << dis_->DofRowMap()->NumGlobalElements() << "\n\n"
@@ -1036,7 +1036,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
   void IO::DiscretizationWriter::WriteRedundantDoubleVector(const string name,
 							    Teuchos::RCP<vector<double> > doublevec)
 {
-#ifdef BINIO  
+#ifdef BINIO
   if (dis_->Comm().MyPID() == 0)
   {
     // only proc0 writes the vector entities to the binary data
@@ -1063,9 +1063,9 @@ void IO::DiscretizationWriter::WriteKnotvector() const
     // a comment is also added to the control file
     output_->ControlFile()
       << "    " << name << ":\n"
-      << "        values = \"" << valuename.c_str() << "\"\n\n" 
+      << "        values = \"" << valuename.c_str() << "\"\n\n"
       << std::flush;
-  
+
     const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
     if (flush_status < 0)
     {
