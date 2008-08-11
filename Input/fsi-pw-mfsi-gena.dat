@@ -90,9 +90,9 @@ ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
-CONVTOL                         1.0E-6
+CONVTOL                         1.0E-8
 BASETOL                         1.0E-3
-SECONDORDER                     Yes
+//SECONDORDER                     Yes
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200
@@ -112,15 +112,15 @@ AZREUSE     0 // how often to recompute some preconditioners
 AZDROP      0.0 // drop tolerance for ILUT
 AZFILL      1.0 // fill-in for ILUT
 AZGFILL     0 // graph fill for ILU
-AZTOL       1.0E-15 // tolerance in (un)scaled residual
+AZTOL       1.0E-4 // tolerance in (un)scaled residual
 AZITER      1000 // max iterations
-AZSUB       150 // size of krylov space for gmres
+AZSUB       35 // size of krylov space for gmres
 AZOMEGA     1.0 // unused
 AZGRAPH     1 // unused
 AZPOLY      5 // polynomial order for Neumann
 AZOVERLAP   0 // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL      none // none sym infnorm scaling of the system
-AZCONV      AZ_noscaled // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZCONV      AZ_r0 // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 ML_PRINT          0 // ML print-out level (0-10)
 ML_MAXCOARSESIZE  1 // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL       3 // ML max number of levels
@@ -20480,9 +20480,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
 ---------------------------------------------------------------------LOCSYS5
 ------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 0.0020362824601244 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -0.0009690615659993 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -0.0005398790216801 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.4785711620825515 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 0.0020362888204250 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -0.0009690698152669 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -0.0005398875556469 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.4786244879907042 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
 // END
