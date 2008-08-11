@@ -810,9 +810,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     // do restart if we have to
     if (step_%uprestart_ == 0)
     {
-      output_.WriteVector("veln ", veln_ );
+      output_.WriteVector("veln",  veln_ );
       output_.WriteVector("accnp", accnp_);
-      output_.WriteVector("accn ", accn_ );
+      output_.WriteVector("accn",  accn_ );
 
       if (alefluid_)
       {
@@ -839,9 +839,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("velnp", velnp_);
-    output_.WriteVector("veln ", veln_ );
+    output_.WriteVector("veln" , veln_ );
     output_.WriteVector("accnp", accnp_);
-    output_.WriteVector("accn ", accn_ );
+    output_.WriteVector("accn" , accn_ );
 
     if (alefluid_)
     {
@@ -1208,7 +1208,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        Teuchos::null      ,
        Teuchos::null      ,
        "LineWeakDirichlet");
-    
+
     // clear state
     discret_->ClearState();
   }
