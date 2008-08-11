@@ -200,7 +200,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
   }
-  
+
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field
    * which are only relevant for a combustion problem.                 07/08 henke */
@@ -233,6 +233,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
+      if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+        dserror("no second order for MFSI yet");
+
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }
