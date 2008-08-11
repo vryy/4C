@@ -50,6 +50,7 @@ void StruGenAlpha::LineSearchNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -89,18 +90,22 @@ void StruGenAlpha::LineSearchNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-#ifdef STRUGENALPHA_BE
-    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-    if (damping)
+    if (dynkindstat); // do nothing
+    else
     {
 #ifdef STRUGENALPHA_BE
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+      stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+      stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
+      if (damping)
+      {
+#ifdef STRUGENALPHA_BE
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+      }
     }
     stiff_->Complete();
     
@@ -137,6 +142,13 @@ void StruGenAlpha::LineSearchNewton()
                                      dt,alphaf,alpham,beta,gamma);
     
 
+    // zerofy velocity and acceleration in case of quasistatics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
+    
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -178,18 +190,27 @@ void StruGenAlpha::LineSearchNewton()
     }
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // Res = M . A_{n+1-alpha_m}
+      //     + C . V_{n+1-alpha_f}
+      //     + F_int(D_{n+1-alpha_f})
+      //     - F_{ext;n+1-alpha_f}
+      // add inertia mid-forces
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add viscous mid-forces
+      if (damping)
+      {
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -218,7 +239,9 @@ void StruGenAlpha::LineSearchNewton()
     //--------------------------------------------------------------------
     // line searching if the step is bad
     //--------------------------------------------------------------------
-    while(nft >= (1.0-lsalpha*lambda)*nf0)
+    bool dolinesearch = true;
+    if (dynkindstat && numiter==0) dolinesearch = false;
+    while(nft >= (1.0-lsalpha*lambda)*nf0 && dolinesearch)
     {
       //---------------------------- print the rejected step residual norm
       if (!myrank) printf("Bad step                 %15.5e",nft);
@@ -248,6 +271,13 @@ void StruGenAlpha::LineSearchNewton()
       //----------------------------- update with new steplength alpha
       LineSearchUpdateMidConfiguration(lambda,disi_,disno,dismo,velmo,accmo,
                                        dt,alphaf,alpham,beta,gamma);
+      
+      //----- zerofy velocity and acceleration in case of quasistatics
+      if (dynkindstat)
+      {
+        velm_->PutScalar(0.0);
+        accm_->PutScalar(0.0);
+      }
 
       // scale IncD_{n+1} by (1-alphaf) to obtain 
       // mid residual displacements IncD_{n+1-alphaf}
@@ -287,18 +317,27 @@ void StruGenAlpha::LineSearchNewton()
       
       // ----------------------------------------------compute residual
       {
-        // Res = M . A_{n+1-alpha_m}
-        //     + C . V_{n+1-alpha_f}
-        //     + F_int(D_{n+1-alpha_f})
-        //     - F_{ext;n+1-alpha_f}
-        // add inertia mid-forces
-        mass_->Multiply(false,*accm_,*finert_);
-        fresm_->Update(1.0,*finert_,0.0);
-        // add viscous mid-forces
-        if (damping)
+        if (dynkindstat)
         {
-          damp_->Multiply(false,*velm_,*fvisc_);
-          fresm_->Update(1.0,*fvisc_,1.0);
+          // static residual
+          // Res = F_int - F_ext
+          fresm_->PutScalar(0.0);
+        }
+        else
+        {
+          // Res = M . A_{n+1-alpha_m}
+          //     + C . V_{n+1-alpha_f}
+          //     + F_int(D_{n+1-alpha_f})
+          //     - F_{ext;n+1-alpha_f}
+          // add inertia mid-forces
+          mass_->Multiply(false,*accm_,*finert_);
+          fresm_->Update(1.0,*finert_,0.0);
+          // add viscous mid-forces
+          if (damping)
+          {
+            damp_->Multiply(false,*velm_,*fvisc_);
+            fresm_->Update(1.0,*fvisc_,1.0);
+          }
         }
         // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR

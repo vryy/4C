@@ -1170,10 +1170,7 @@ void StruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    if (dynkindstat)
-    {
-      // do nothing, we have the ordinary stiffness matrix ready
-    }
+    if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
     else
     {
 #ifdef STRUGENALPHA_BE
@@ -3107,6 +3104,20 @@ void StruGenAlpha::Integrate()
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
+#if 0
+    for (int i=0; i<discret_.NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = discret_.lRowNode(i);
+      printf("NODE %d COORD ",actnode->Id()+1);
+      for (int j=0; j<discret_.NumDof(actnode); ++j)
+      {
+        const int gdof = discret_.Dof(actnode,j);
+        const int lid  = dis_->Map().LID(gdof);
+        printf("%20.15f ",actnode->X()[j]+(*dis_)[lid]);
+      }
+      printf("\n");
+    }
+#endif    
   }
   else if (equil=="line search newton")
   {
@@ -3119,6 +3130,20 @@ void StruGenAlpha::Integrate()
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
+#if 0
+    for (int i=0; i<discret_.NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = discret_.lRowNode(i);
+      printf("NODE %d COORD ",actnode->Id()+1);
+      for (int j=0; j<discret_.NumDof(actnode); ++j)
+      {
+        const int gdof = discret_.Dof(actnode,j);
+        const int lid  = dis_->Map().LID(gdof);
+        printf("%20.15f ",actnode->X()[j]+(*dis_)[lid]);
+      }
+      printf("\n");
+    }
+#endif    
   }
   else if (equil=="modified newton")
   {
