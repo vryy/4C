@@ -20,18 +20,14 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3_sysmat.H"
 #include "xfluid3_utils.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/interface.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/coordinate_transformation.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
-#include "../drt_fluid/time_integration_scheme.H"
+#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_xfem/enrichment_utils.H"
+#include "../drt_fluid/time_integration_element.H"
 
 class DRT::Discretization;
 

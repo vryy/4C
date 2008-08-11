@@ -75,44 +75,6 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-    const BlitzVec3&                    veln,
-    const BlitzVec3&                    velnm,
-    const BlitzVec3&                    accn,
-    const FLUID_TIMEINTTYPE             timealgo,
-    const double                        dta,
-    const double                        theta
-)
-{
-  const int nsd = 3;
-  BlitzVec3 hist = 0.0;
-  switch (timealgo)
-  {
-  case timeint_stationary:
-    hist = 0.0;
-    break;
-
-  case timeint_one_step_theta:
-    for(int isd = 0; isd < nsd; ++isd)
-    {
-      hist(isd) = veln(isd) + dta*(1.0-theta)*accn(isd);
-    }
-    break;
-
-  case timeint_bdf2:
-    for(int isd = 0; isd < nsd; ++isd)
-    {
-      hist(isd) = (4.0/3.0)*veln(isd) - (1.0/3.0)*velnm(isd);
-    }
-    break;
-  default:
-    dserror("Time integration scheme unknown!");
-  }
-  return hist;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     const Teuchos::RCP<Epetra_Vector>&   veln,
     const Teuchos::RCP<Epetra_Vector>&   velnm,

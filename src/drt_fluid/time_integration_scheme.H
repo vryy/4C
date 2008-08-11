@@ -76,35 +76,6 @@ namespace TIMEINT_THETA_BDF2
   );
   
   /*!
-   * \brief Get the part of the righthandside belonging to the last timestep.
-   * 
-   * set part of the rhs vector belonging to the old timestep
-   * 
-   *   Stationary:
-   *   
-   *     hist = 0.0
-   * 
-   *   One-step-Theta:
-   *            
-   *     hist = veln + dta*(1-Theta)*accn
-   *     
-   *   BDF2: for constant time step:
-   *   
-   *     hist = 4/3 veln - 1/3 velnm
-   *     
-   * \return hist          linear combination of old values
-   * 
-   */
-  BlitzVec3 GetOldPartOfRighthandside(
-      const BlitzVec3&           veln,       ///< velocity      n
-      const BlitzVec3&           velnm,      ///< velocity      n-1
-      const BlitzVec3&           accn,       ///< acceleration  n
-      const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
-      const double               dta,        ///< delta t (time step size)
-      const double               theta       ///< factor for one step theta scheme
-  );
-
-  /*!
   \brief Update the solution after convergence of the nonlinear
          iteration.
   */
@@ -121,36 +92,6 @@ namespace TIMEINT_THETA_BDF2
       Teuchos::RCP<Epetra_Vector>&         accnm
   );
   
-  /*!
-   * Compute constant used in the weak form integration 
-   * \return timefac time integration factor
-   */
-  inline double ComputeTimeFac(
-      const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
-      const double               dt,         ///< delta t (time step size)
-      const double               theta       ///< factor for one step theta scheme
-      )
-  {
-    double timefac = 1.0;
-    switch (timealgo)
-    {
-    case timeint_stationary:
-      timefac = 1.0;
-      break;
-
-    case timeint_one_step_theta:
-      timefac = theta*dt;
-      break;
-
-    case timeint_bdf2:
-      timefac = 2/3 * dt;
-      break;
-      
-    default:
-      dserror("Time integration scheme unknown!");
-    }
-    return timefac;
-  }
 }
 }
 

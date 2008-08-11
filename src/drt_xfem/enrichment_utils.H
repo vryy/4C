@@ -14,9 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef ENRICHMENT_UTILS_H
 #define ENRICHMENT_UTILS_H
 
-#include "Teuchos_RefCountPtr.hpp"
 #include "../drt_geometry/integrationcell.H"
-#include "physics.H"
 #include "dof_management_element.H"
 
 
