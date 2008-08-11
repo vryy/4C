@@ -125,27 +125,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (lm.empty())
             break;
         
-        // need current velocity/pressure and history vector
-        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        if (velnp==null)
-            dserror("Cannot get state vector 'velnp'");
-        Teuchos::RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
-        if (hist==null)
-            dserror("Cannot get state vectors 'hist'");
-
         // extract local values from the global vectors
-        vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-        vector<double> myhist(lm.size());
-        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+        DRT::ELEMENTS::XFluid3::MyState mystate;
+        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+        DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
+        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
+        DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
 
         if (is_ale_)
         {
             dserror("No ALE support within instationary fluid solver.");
         }
-
-        // get control parameter
-        const double time = params.get<double>("total time",-1.0);
 
         const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
@@ -153,19 +143,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const bool supg   = true;
         const bool cstab  = true;
 
-        // One-step-Theta: timefac = theta*dt
-        // BDF2:           timefac = 2/3 * dt
-        const double timefac = params.get<double>("thsl",-1.0);
-        if (timefac < 0.0)
-            dserror("No thsl supplied");
+        // time integration factors
+        const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+        const double            dt       = params.get<double>("dt");
+        const double            theta    = params.get<double>("theta");
         
-        const Teuchos::RCP<Epetra_Vector> ivelcol = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity",null);
-        if (ivelcol==null)
-            dserror("Cannot get interface velocity from parameters");
-        
-        const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force",null);
-        if (iforcecol==null)
-            dserror("Cannot get interface force from parameters");
+        const Teuchos::RCP<Epetra_Vector> ivelcol = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity");
+        const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
 
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 eleDofManager_, NumNode(), NodeIds());
@@ -174,8 +159,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, time, timefac, newton, pstab, supg, cstab, true);
+                this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -222,34 +207,23 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // do no calculation, if not needed
           if (lm.empty())
               break;
-          
-          // need current velocity/pressure 
-          Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          if (velnp==null)
-              dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vector
-          vector<double> locval(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,locval,lm);
-          vector<double> locval_hist(lm.size(),0.0); // zero history vector
+          DRT::ELEMENTS::XFluid3::MyState mystate;
+          DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
           
-          const Teuchos::RCP<Epetra_Vector> ivelcol = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity",null);
-          if (ivelcol==null)
-              dserror("Cannot get interface velocity from parameters");
-          
-          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force",null);
-          if (iforcecol==null)
-              dserror("Cannot get interface force from parameters");
+          const Teuchos::RCP<Epetra_Vector> ivelcol   = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity");
+          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
           
           if (is_ale_)
           {
               dserror("No ALE support within stationary fluid solver.");
           }
           
-          // get control parameter
-          const double pseudotime = params.get<double>("total time",-1.0);
-          if (pseudotime < 0.0)
-        	  dserror("no value for total (pseudo-)time in the parameter list");
+          // time integration factors
+          const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+          const double            dt       = 1.0;
+          const double            theta    = 1.0;
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
@@ -325,8 +299,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat4(assembly_type,
-                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, elemat1, elevec1,
-                  actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+                  this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false);
           }
           break;
       }

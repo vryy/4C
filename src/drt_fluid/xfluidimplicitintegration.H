@@ -418,7 +418,7 @@ protected:
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
-  Teuchos::RCP<Epetra_Vector>    hist_;
+  //Teuchos::RCP<Epetra_Vector>    hist_;
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;

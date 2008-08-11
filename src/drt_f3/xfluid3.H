@@ -47,6 +47,14 @@ namespace DRT
     {
       public:
         
+        struct MyState
+        {
+          vector<double> velnp;
+          vector<double> veln;
+          vector<double> velnm;
+          vector<double> accn;
+        };
+        
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor

@@ -336,10 +336,10 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-      state_.veln_, state_.velnm_, state_.accn_,
-          timealgo_, dta_, theta_,
-          hist_);
+//  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
+//      state_.veln_, state_.velnm_, state_.accn_,
+//          timealgo_, dta_, theta_,
+//          hist_);
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
@@ -508,7 +508,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
-  hist_         = LINALG::CreateVector(newdofrowmap,true);
+  //hist_         = LINALG::CreateVector(newdofrowmap,true);
 
 //  gridv_        = LINALG::CreateVector(newdofrowmap,true);
 
@@ -687,9 +687,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
 
       // other parameters that might be needed by the elements
-      eleparams.set("total time",time_);
-      eleparams.set("thsl",theta_*dta_);
+      //eleparams.set("total time",time_);
+      //eleparams.set("thsl",theta_*dta_);
+      eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
+      eleparams.set("theta",theta_);
       eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
 
       // parameters for stabilization
@@ -701,8 +703,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",state_.velnp_);
-
-      discret_->SetState("hist"  ,hist_ );
+      discret_->SetState("veln" ,state_.veln_);
+      discret_->SetState("velnm",state_.velnm_);
+      discret_->SetState("accn" ,state_.accn_);
+      
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcol);
       //cout << "interface velocity" << endl;
@@ -1011,7 +1015,9 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",state_.velnp_);
-  discret_->SetState("hist" ,hist_ );
+  discret_->SetState("veln" ,state_.veln_);
+  discret_->SetState("velnm",state_.velnm_);
+  discret_->SetState("accn" ,state_.accn_);
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
