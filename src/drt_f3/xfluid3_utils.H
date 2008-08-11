@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management_element.H"
 
 
-class DRT::Discretization;
+//class DRT::Discretization;
 
 namespace XFEM
 {
@@ -29,7 +29,7 @@ namespace XFEM
  * otherwise use a given number numnode
  */
 template<XFEM::AssemblyType>
-int getNumParam(
+inline int getNumParam(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field     field,
         const int)
@@ -37,7 +37,7 @@ int getNumParam(
     return dofman.NumDofPerField(field);
 }
 template<> 
-int getNumParam<XFEM::standard_assembly>(
+inline int getNumParam<XFEM::standard_assembly>(
         const XFEM::ElementDofManager&,
         const XFEM::PHYSICS::Field,
         const int numnode)
@@ -46,13 +46,9 @@ int getNumParam<XFEM::standard_assembly>(
 }
 
 //! determine number of parameter
-template<XFEM::AssemblyType ASSTYPE>
-struct NumParam;
-
-/// determine number of parameter for xfem_assembly
-template<> struct NumParam<XFEM::xfem_assembly>
+template<int NUMNODE, XFEM::AssemblyType ASSTYPE>
+struct NumParam
 {
-  template <int NUMNODE> 
   static int get(
      const XFEM::ElementDofManager& dofman,
      const XFEM::PHYSICS::Field     field
@@ -63,9 +59,8 @@ template<> struct NumParam<XFEM::xfem_assembly>
 };
 
 /// determine number of parameter for standard_assembly
-template<> struct NumParam<XFEM::standard_assembly>
+template<int NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
 {
-  template <int NUMNODE>
   static int get(
       const XFEM::ElementDofManager& dofman,
       const XFEM::PHYSICS::Field     field

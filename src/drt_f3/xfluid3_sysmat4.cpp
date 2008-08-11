@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_sysmat4.H
+\file xfluid3_sysmat4.cpp
 
 \brief element formulations for 3d XFEM fluid element
 
@@ -16,21 +16,20 @@ Maintainer: Axel Gerstenberger
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_SYSMAT4_H
-#define XFLUID3_SYSMAT4_H
-
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "xfluid3_sysmat.H"
 #include "xfluid3.H"
 #include "xfluid3_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_geometry/integrationcell.H"
+#include "../drt_lib/drt_utils.H"
+//#include "../drt_geometry/integrationcell.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/coordinate_transformation.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+//#include "../drt_geometry/coordinate_transformation.H"
+//#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
@@ -41,10 +40,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../headers/standardtypes.h"
 }
 
-class DRT::Discretization;
-
-namespace XFLUID
-{
 
   using namespace XFEM::PHYSICS;
 
@@ -100,14 +95,14 @@ namespace XFLUID
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-      const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
-      const int numparamvely = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Vely);
-      const int numparamvelz = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velz);
-      const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
+      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+      const int numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
+      const int numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
+      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
       //const int numparamtauxx = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 1);
-      const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
+      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
       
       const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
       const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
@@ -236,12 +231,12 @@ static void SysmatDomain4(
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
-    const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
-    const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
+    const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-    const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
+    const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
@@ -1427,12 +1422,12 @@ static void SysmatBoundary4(
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-      const int numparamvelx = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Velx);
-      const int numparampres = XFEM::NumParam<ASSTYPE>::template get<numnode>(dofman, XFEM::PHYSICS::Pres);
+      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
       //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-      const int numparamtauxx = XFEM::NumParam<ASSTYPE>::template get<1>(dofman, XFEM::PHYSICS::Sigmaxx);
+      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
       
       
       const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
@@ -1819,26 +1814,21 @@ static void Sysmat4(
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
     
-    XFLUID::SysmatDomain4<DISTYPE,ASSTYPE>(
+    SysmatDomain4<DISTYPE,ASSTYPE>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ivelcol, iforcecol,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
     
     if (ASSTYPE == XFEM::xfem_assembly)
     {
-      XFLUID::SysmatBoundary4<DISTYPE,ASSTYPE>(
+      SysmatBoundary4<DISTYPE,ASSTYPE>(
           ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ivelcol, iforcecol,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
     }
 }
 
 
-
-
-/*!
- * \brief entry point for Sysmat call
- * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
- * This is the point.
- */
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
@@ -1912,9 +1902,6 @@ void callSysmat4(
         };
     }
 }
-} // end namespace XFLUID
-
-#endif
 
 #endif
 #endif

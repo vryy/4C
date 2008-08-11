@@ -19,8 +19,7 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid3.H"
-#include "xfluid3_sysmat3.H"
-#include "xfluid3_sysmat4.H"
+#include "xfluid3_sysmat.H"
 #include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -31,15 +30,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
 
-#include <blitz/array.h>
-
 
 // converts a string into an Action for this element
 DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToActionType(
               const string& action) const
 {
-  dsassert(action != "none", "No action supplied");
-
   DRT::ELEMENTS::XFluid3::ActionType act = XFluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = XFluid3::calc_fluid_systemmat_and_residual;
@@ -158,7 +153,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
-        XFLUID::callSysmat4(assembly_type,
+        callSysmat4(assembly_type,
                 this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
                 actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true);
 
@@ -298,7 +293,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
           {
           // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat4(assembly_type,
+          callSysmat4(assembly_type,
                   this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
                   actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false);
           }

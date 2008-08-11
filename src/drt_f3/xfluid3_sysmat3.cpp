@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_sysmat3.H
+\file xfluid3_sysmat3.cpp
 
 \brief element formulations for 3d XFEM fluid element
 
@@ -16,12 +16,9 @@ Maintainer: Axel Gerstenberger
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_SYSMAT3_H
-#define XFLUID3_SYSMAT3_H
-
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "xfluid3.H"
+#include "xfluid3_sysmat.H"
 #include "xfluid3_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -34,11 +31,10 @@ Maintainer: Axel Gerstenberger
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
+#include "../drt_fluid/time_integration_scheme.H"
 
 class DRT::Discretization;
 
-namespace XFLUID
-{
 
   using namespace XFEM::PHYSICS;
 
@@ -172,7 +168,7 @@ static void Sysmat3(
     const bool higher_order_ele = XFEM::isHigherOrderElement<DISTYPE>();
     //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
     
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+    //const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
@@ -1868,13 +1864,10 @@ static void Sysmat3(
     }
     } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
-}
 
-/*!
- * \brief entry point for Sysmat call
- * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
- * This is the point.
- */
+}
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void callSysmat3(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
@@ -1948,9 +1941,8 @@ void callSysmat3(
         };
     }
 }
-} // end namespace XFLUID
+
 
 #endif
 
-#endif
 #endif
