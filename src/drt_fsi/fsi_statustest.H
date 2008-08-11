@@ -75,6 +75,7 @@ namespace FSI
 
     GenericNormF(std::string name,
                  double tolerance,
+                 NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
                  ScaleType stype = Scaled);
 
     /// do the check
@@ -163,8 +164,9 @@ namespace FSI
 
     AdaptiveNewtonNormF(std::string name,
                         double tolerance,
+                        NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
                         ScaleType stype = Scaled)
-      : GenericNormF(name,tolerance,stype) {}
+      : GenericNormF(name,tolerance,normType,stype) {}
 
     void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
     { newton_ = newton; }
@@ -195,6 +197,7 @@ namespace FSI
                  const LINALG::MultiMapExtractor& extractor,
                  int blocknum,
                  double tolerance,
+                 NOX::Abstract::Vector::NormType normType = NOX::Abstract::Vector::TwoNorm,
                  ScaleType stype = Scaled);
 
   protected:

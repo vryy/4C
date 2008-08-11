@@ -64,7 +64,7 @@ private:
     InterfaceForceNormF(Robin& algorithm,
                         std::string name,
                         double tolerance)
-      : GenericNormF(name,tolerance,Scaled),
+      : GenericNormF(name,tolerance,NOX::Abstract::Vector::TwoNorm,Scaled),
         algorithm_(algorithm)
     {}
 

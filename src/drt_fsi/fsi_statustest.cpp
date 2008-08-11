@@ -24,9 +24,10 @@
 /*----------------------------------------------------------------------*/
 NOX::FSI::GenericNormF::GenericNormF(std::string name,
                                      double tolerance,
+                                     NOX::Abstract::Vector::NormType normType,
                                      ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
-    normType_(NOX::Abstract::Vector::TwoNorm),
+    normType_(normType),
     scaleType_(stype),
     toleranceType_(Absolute),
     specifiedTolerance_(tolerance),
@@ -219,8 +220,9 @@ NOX::FSI::PartialNormF::PartialNormF(std::string name,
                                      const LINALG::MultiMapExtractor& extractor,
                                      int blocknum,
                                      double tolerance,
+                                     NOX::Abstract::Vector::NormType normType,
                                      ScaleType stype)
-  : AdaptiveNewtonNormF(name,tolerance,stype),
+  : AdaptiveNewtonNormF(name,tolerance,normType,stype),
     extractor_(extractor),
     blocknum_(blocknum)
 {
@@ -264,7 +266,7 @@ NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
                                            Teuchos::RCP<ADAPTER::Coupling::Converter> converter,
                                            double tolerance,
                                            ScaleType stype)
-  : AdaptiveNewtonNormF(name,tolerance,stype),
+  : AdaptiveNewtonNormF(name,tolerance,NOX::Abstract::Vector::TwoNorm,stype),
     extractor1_(extractor1),
     extractor2_(extractor2),
     scale1_(scale1),

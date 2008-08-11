@@ -434,6 +434,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
     Teuchos::rcp(new NOX::FSI::PartialNormF("displacement",
                                             Extractor(),0,
                                             nlParams.get("Norm abs disp", 1.0e-6),
+                                            NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update",
@@ -461,6 +462,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
     Teuchos::rcp(new NOX::FSI::PartialNormF("velocity",
                                             fluidvelextract,0,
                                             nlParams.get("Norm abs vel", 1.0e-6),
+                                            NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update",
@@ -488,6 +490,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
     Teuchos::rcp(new NOX::FSI::PartialNormF("pressure",
                                             fluidpressextract,0,
                                             nlParams.get("Norm abs pres", 1.0e-6),
+                                            NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update",
