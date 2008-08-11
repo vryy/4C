@@ -297,6 +297,7 @@ void StruGenAlpha::ConstantPredictor()
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
+  veln_->Update(1.0,*vel_,0.0);
 
   // apply new displacements at DBCs
   // and get new external force vector
@@ -2901,7 +2902,7 @@ void StruGenAlpha::Output()
     if (constrMan_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
-      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());  
+      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());
     }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
@@ -3117,7 +3118,7 @@ void StruGenAlpha::Integrate()
       }
       printf("\n");
     }
-#endif    
+#endif
   }
   else if (equil=="line search newton")
   {
@@ -3143,7 +3144,7 @@ void StruGenAlpha::Integrate()
       }
       printf("\n");
     }
-#endif    
+#endif
   }
   else if (equil=="modified newton")
   {
