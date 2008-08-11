@@ -179,6 +179,8 @@ OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraint.o \
                 src/drt_constraint/monitor.o \
                 src/drt_constraint/multipointconstraint.o \
+                src/drt_constraint/multipointconstraint2.o \
+                src/drt_constraint/multipointconstraint3.o \
                 src/drt_constraint/mpcdofset.o \
                 src/drt_constraint/uzawasolver.o
 #-------------------------------------------------------constraint elements

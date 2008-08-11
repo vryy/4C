@@ -45,8 +45,8 @@ actdisc_(discr)
   areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID));
   areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID));
   
-  mpconplane3d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
-  mpconline2d_=rcp(new MPConstraint(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
+  mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
+  mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
 
   numConstrID_=max(maxConstrID-minConstrID_+1,0);
   //----------------------------------------------------

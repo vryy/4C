@@ -12,10 +12,10 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef MPCONSTRAINT_H
-#define MPCONSTRAINT_H
+#ifndef MPCONSTRAINT2_H
+#define MPCONSTRAINT2_H
 
-#include "constraint.H"
+#include "multipointconstraint.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -24,12 +24,12 @@ using namespace Teuchos;
 namespace UTILS
 {
   /*!
-  \brief This pure virtual class is the commen interface for multi point constraints. 
-  It is derived from the basic constraint class.
+  \brief This class can handle twodimensional multi point constraints. It is derived from the basic constraint class 
+  and reimplements the evaluate routine.
   
   \author Kloeppel (kloeppel@lnm.mw.tum.de)
   */
-  class MPConstraint : public Constraint
+  class MPConstraint2 : public MPConstraint
   {
   public:
   
@@ -39,7 +39,7 @@ namespace UTILS
     \brief Standard Constructor
     */
   
-    MPConstraint
+    MPConstraint2
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
       const string& CondName, ///< Name of condition to creat constraint from
@@ -49,45 +49,28 @@ namespace UTILS
   
     /*!
         \brief Destructor
-    */
-    virtual ~MPConstraint()
-    {
-      ;
-    };
-    
-    /// Set state of the underlying constraint discretization
-    void SetConstrState
-    (
-      const string& state,  ///< name of state to set
-      RCP<Epetra_Vector> V  ///< values to set
-    )
-    {
-      if (constrtype_!=none)
-      {
-        constraintdis_->ClearState();
-        constraintdis_->SetState(state,V);
-      }
-    };
+  
+     */
       
     //@}
   
     //! @name Public Member Functions
   
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
-    virtual void Initialize
+    void Initialize
     (
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
-    )=0;
+      RCP<Epetra_Vector>    systemvector  ///< distributed vector that may be filled by assembly of element contributions
+    );
     
     /// initialization routine called at restart to activate the right conditions
-    virtual void Initialize
+    void Initialize
     (
       const double& time  ///< current time
-    )=0;
+    );
     
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
-    virtual void Evaluate
+    void Evaluate
     ( 
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
@@ -95,7 +78,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
-    )=0; 
+    ); 
     
     bool HaveConstraint()
     {
@@ -104,53 +87,43 @@ namespace UTILS
   
     //@}
   
-  public:
+  private:
       
     // don't want = operator, cctor and destructor
   
-//    MPConstraint operator = (const MPConstraint& old);
-    MPConstraint(const MPConstraint& old);
+    MPConstraint2 operator = (const MPConstraint2& old);
+    MPConstraint2(const MPConstraint2& old);
   
-  
-    //! additional discretization consisting of constraint elements
-    RCP<DRT::Discretization> constraintdis_;
-  
-    
     //! @name Private Member Functions
       
+    //! Return the ConstrType based on the condition name
+    ConstrType GetConstrType(const string& Name);///<condition name
+    
     //! Evaluate constraint discretization and assemble the results
-    virtual void EvaluateConstraint
-    ( 
+    void EvaluateConstraint( 
         RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by aasembly of element contributions
-    )=0;
+        Teuchos::RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by aasembly of element contributions
+    
     
     //! creating a new discretization based on conditions containing constraint elements
-    virtual RCP<DRT::Discretization> CreateDiscretizationFromCondition
+    RCP<DRT::Discretization> CreateDiscretizationFromCondition
     (
       RCP<DRT::Discretization> actdisc,
       vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
       const string&             discret_name, ///< name of new discretization
       const string&             element_name ///< name of element type to create
-    )=0;
-        
-    ///replace numdofs in elements of constraint discretization
-    void ReplaceNumDof
-    (
-      const RCP<DRT::Discretization> sourcedis,       ///< basis discretization
-      const RCP<DRT::Discretization> constraintdis    ///< discretization with elements to modify
-    ) const;
+    );
      
-    /// find col node map so that we can evaluate the constraint elements
-    RCP<Epetra_Map> ComputeNodeColMap(
-             const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
-             const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
-             ) const;
+    //! Reorder MPC nodes based on condition input 
+    void ReorderConstraintNodes(
+         vector<int>& nodeids,  ///< reordered node ids
+         const DRT::Condition* condname); ///< condition to deal with
+    
   
     //@}
   

@@ -168,6 +168,6 @@ void UTILS::Monitor::EvaluateMonitor(
     
   }
   return;
-} // end of Initialize Monitor
+} 
 
 #endif

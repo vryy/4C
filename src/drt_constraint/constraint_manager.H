@@ -28,7 +28,8 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "constraint.H"
 #include "monitor.H"
-#include "multipointconstraint.H"
+#include "multipointconstraint2.H"
+#include "multipointconstraint3.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -292,8 +293,8 @@ namespace UTILS
     RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces 
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
     RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
-    RCP<MPConstraint> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
-    RCP<MPConstraint> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
+    RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
+    RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
   
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
