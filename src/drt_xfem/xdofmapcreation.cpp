@@ -90,7 +90,7 @@ void XFEM::createDofMap(
             {
               const int node_gid = nodeidptrs[inen];
               const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
-              const int label = PositionWithinCondition(nodalpos, ih);
+              const int label = ih.PositionWithinConditionNP(nodalpos);
               bool in_fluid = false;
               if (label == 0)
               {
@@ -159,7 +159,7 @@ void XFEM::applyStandardEnrichment(
       const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
 
       bool in_fluid = false;
-      const int label = PositionWithinCondition(nodalpos, ih);
+      const int label = ih.PositionWithinConditionNP(nodalpos);
       if (label == 0)
       {
         in_fluid = true;
@@ -244,7 +244,7 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
     if (not voidenrichment_in_set)
     {
       bool in_fluid = false;
-      const int label = PositionWithinCondition(nodalpos, ih);
+      const int label = ih.PositionWithinConditionNP(nodalpos);
       if (label == 0)
       {
         in_fluid = true;

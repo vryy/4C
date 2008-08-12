@@ -74,7 +74,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
   iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   ivelnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  iaccnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
   std::cout << "XFluidImpl constructor done" << endl;
@@ -216,20 +215,31 @@ void ADAPTER::XFluidImpl::Update()
   const double dt = fsidyn.get<double>("TIMESTEP");
 
   // compute acceleration at timestep n
-  Teuchos::RCP<Epetra_Vector> iaccn = rcp(new Epetra_Vector(iaccn_->Map()));
-  iaccn->Update(-1.0,*iaccnm_,0.0);
-  iaccn->Update(1.0/(0.5*dt),*iveln_,-1.0/(0.5*dt),*ivelnm_,1.0);
-//  iaccn->Update(1.0/(dt),*iveln_,-1.0/(dt),*ivelnm_,0.0);
+  Teuchos::RCP<Epetra_Vector> iaccnp = rcp(new Epetra_Vector(iaccn_->Map()));
+//  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
+  const double theta = 1.0;
+  iaccnp->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
+  iaccnp->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
 
-  // update acceleration at timestep n-1
-  iaccnm_->Update(1.0,*iaccn_,0.0);
-  iaccn_->Update(1.0,*iaccn,0.0);
+//  const double beta = 1.0/4.0;
+//  const double gamma = 1.0/2.0;
+//  
+//  iaccnp->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
+//  iaccnp->Update(-1.0/(beta*dt),*iveln_,1.0);
+//  iaccnp->Update(1.0/(beta*dt*dt),*idispnp_,-1.0/(beta*dt*dt),*idispn_,1.0);
+//  
+//  ivelnp->Update(1.0,*iveln_,0.0);
+//  ivelnp->Update(gamma*dt,*iaccnp,(1-gamma)*dt,*iaccn_,1.0);
+  
+  // update acceleration n
+  iaccn_->Update(1.0,*iaccnp,0.0);
 
   // update velocity n-1
   ivelnm_->Update(1.0,*iveln_,0.0);
 
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
+//  iveln_->Update(1.0,*ivelnp,0.0);
   
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
@@ -248,7 +258,6 @@ void ADAPTER::XFluidImpl::Output()
 //  boundaryoutput_->WriteVector("interface velocity (n)", iveln_);
 //  boundaryoutput_->WriteVector("interface velocity (n-1)", ivelnm_);
 //  boundaryoutput_->WriteVector("interface acceleration (n)", iaccn_);
-//  boundaryoutput_->WriteVector("interface acceleration (n-1)", iaccnm_);
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
   // create interface DOF vectors using the fluid parallel distribution
@@ -257,7 +266,6 @@ void ADAPTER::XFluidImpl::Output()
   Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> iaccnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
@@ -267,7 +275,6 @@ void ADAPTER::XFluidImpl::Output()
   LINALG::Export(*iveln_   ,*ivelncol);
   LINALG::Export(*ivelnm_  ,*ivelnmcol);
   LINALG::Export(*iaccn_   ,*iaccncol);
-  LINALG::Export(*iaccnm_  ,*iaccnmcol);
 
   LINALG::Export(*itrueresnp_,*itruerescol);
 
@@ -276,7 +283,6 @@ void ADAPTER::XFluidImpl::Output()
   PrintInterfaceVectorField(idispcol, ivelncol , "_solution_iveln_" , "interface velocity n");
   PrintInterfaceVectorField(idispcol, ivelnmcol, "_solution_ivelnm_", "interface velocity n-1");
   PrintInterfaceVectorField(idispcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
-  PrintInterfaceVectorField(idispcol, iaccnmcol, "_solution_iaccnm_", "interface acceleration n-1");
 
 }
 

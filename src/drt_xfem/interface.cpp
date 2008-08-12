@@ -78,9 +78,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,cutterposnp_);
-  const BlitzMat3x2 xfemAABB =XFEM::getXAABBofDis(*xfemdis);
-  const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
+  const BlitzMat3x2 cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
+  const BlitzMat3x2 xfemAABB =GEO::getXAABBofDis(*xfemdis);
+  const BlitzMat3x2 AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
   octTreenp_ = rcp( new GEO::SearchTree(5));
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   octTreen_ = rcp( new GEO::SearchTree(5));
@@ -147,7 +147,7 @@ std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() cons
     for (cell = cells.begin(); cell != cells.end(); ++cell)
     {
       const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
-      const int current_label = PositionWithinCondition(cellcenter, *this);
+      const int current_label = PositionWithinConditionNP(cellcenter);
       if (current_label == 0)
       {
         one_cell_is_fluid = true;
@@ -222,7 +222,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           BlitzMat cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+          const int domain_id = PositionWithinConditionNP(cellcenterpos);
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
           gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
@@ -262,7 +262,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           
-          //const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+          //const int domain_id = PositionWithinConditionNP(cellcenterpos);
           
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
@@ -341,7 +341,7 @@ bool XFEM::InterfaceHandle::ElementIntersected(
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionNP(
     const BlitzVec3&                  x_in
-)
+) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
   return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);;
@@ -351,36 +351,10 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionN(
     const BlitzVec3&                  x_in
-)
+) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
   return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::PositionWithinCondition(
-    const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih
-)
-{
-  return PositionWithinConditionSearchTree(x_in, ih);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::PositionWithinConditionSearchTree(
-    const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih)
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionSearchTree");
-  Teuchos::RCP<GEO::SearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
-  const int XFEMlabel = xt->queryXFEMFSIPointType(*ih.cutterdis() , *ih.cutterposnp(), x_in);
-
-  // for parallel : there is nothing to be extended for parallel execution
-
-  return XFEMlabel;
 }
 
 
@@ -452,16 +426,15 @@ int XFEM::PositionWithinConditionBruteForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool XFEM::PositionWithinAnyInfluencingCondition(
+bool XFEM::InterfaceHandle::PositionWithinAnyInfluencingCondition(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
     const std::set<int>&              xlabelset
-)
+) const
 {
   
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
  
-  const int label = PositionWithinCondition(x_in, ih);
+  const int label = PositionWithinConditionNP(x_in);
   
   bool compute = false;
   if (label == 0) // fluid

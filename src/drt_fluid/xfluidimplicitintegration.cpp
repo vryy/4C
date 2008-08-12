@@ -134,7 +134,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     eleparams.set("action","get_density");
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 0.0);
-    if (density_ <= 0.0) dserror("received illegal density value");
+    if (density_ <= 0.0) dserror("received negative density value from elements");
   }
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt

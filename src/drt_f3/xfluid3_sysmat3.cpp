@@ -223,7 +223,7 @@ static void Sysmat3(
         if (ih->ElementIntersected(ele->Id()))
         {
             const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
-            const bool compute = PositionWithinAnyInfluencingCondition(cellcenter, *ih, dofman.getUniqueEnrichmentLabels());
+            const bool compute = ih->PositionWithinAnyInfluencingCondition(cellcenter, dofman.getUniqueEnrichmentLabels());
             if (not compute)
             {
               continue;

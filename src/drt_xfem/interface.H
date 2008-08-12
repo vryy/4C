@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/searchtree.H"
-#include "geometry_service.H"
 
 namespace XFEM
 {
@@ -108,12 +107,18 @@ public:
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(
         const BlitzVec3&                  x_in
-    );
+    ) const;
 
     //! get domain information at x_in at timestep n
     int PositionWithinConditionN(
         const BlitzVec3&                  x_in
-    );
+    ) const;
+    
+    //! checks if a position in current coordinates lies within a certain condition region           
+    bool PositionWithinAnyInfluencingCondition(
+        const BlitzVec3&                  x_in,
+        const std::set<int>&              xlabelset
+    ) const;
     
 private:
   
@@ -162,32 +167,32 @@ private:
 
 };
 
-/*!
-\brief checks if a position in current coordinates lies within a certain condition region           
-*/  
-int PositionWithinCondition(
-        const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
-    );
+///*!
+//\brief checks if a position in current coordinates lies within a certain condition region           
+//*/  
+//int PositionWithinCondition(
+//        const BlitzVec3&                  x,              ///< node in physical coordinates
+//        const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
+//    );
+//
+//
+///*!
+//\brief checks if a position in current coordinates lies within a certain condition region using an octree
+//*/
+//int PositionWithinConditionSearchTree(
+//    const BlitzVec3&                  x_in, ///< node in physical coordinates
+//    const XFEM::InterfaceHandle&      ih    ///< the ubiquitous interface handle with all geometry information
+//    );
 
 
-/*!
-\brief checks if a position in current coordinates lies within a certain condition region using an octree
-*/
-int PositionWithinConditionSearchTree(
-    const BlitzVec3&                  x_in, ///< node in physical coordinates
-    const XFEM::InterfaceHandle&      ih    ///< the ubiquitous interface handle with all geometry information
-    );
-
-
-/*!
-\brief checks if a position in current coordinates lies within a certain condition region           
-*/  
-bool PositionWithinAnyInfluencingCondition(
-        const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
-        const std::set<int>&              xlabelset       ///< influencing enrichment labels
-    );
+///*!
+//\brief checks if a position in current coordinates lies within a certain condition region           
+//*/  
+//bool PositionWithinAnyInfluencingCondition(
+//        const BlitzVec3&                  x,              ///< node in physical coordinates
+//        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
+//        const std::set<int>&              xlabelset       ///< influencing enrichment labels
+//    );
 
 
 /*!

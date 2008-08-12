@@ -199,7 +199,6 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
     Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
-    Teuchos::RCP<Epetra_Vector>            iaccnm_;    ///< interface acceleration  n-1
     //@}
 
     /// all velocity dofs not at the interface

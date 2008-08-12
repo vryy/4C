@@ -240,7 +240,7 @@ static void SysmatDomain4(
         if (ih->ElementIntersected(ele->Id()))
         {
             const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
-            const bool compute = PositionWithinAnyInfluencingCondition(cellcenter, *ih, dofman.getUniqueEnrichmentLabels());
+            const bool compute = ih->PositionWithinAnyInfluencingCondition(cellcenter, dofman.getUniqueEnrichmentLabels());
             if (not compute)
             {
               continue;
@@ -478,15 +478,7 @@ static void SysmatDomain4(
             }
             
             // get velocities (n+g,i) at integration point
-            BlitzVec3 gpvelnp;
-            //gpvelnp = blitz::sum(enr_funct(j)*evelnp(i,j),j);
-            for (int isd = 0; isd < nsd; ++isd)
-            {
-                gpvelnp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparampres; ++iparam)
-                    gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
-            }
-            //const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
+            const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
             const BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
             const BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp, numparamvelx);
             const BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);

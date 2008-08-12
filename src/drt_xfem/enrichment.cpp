@@ -81,7 +81,7 @@ double XFEM::Enrichment::EnrValue(
             case approachUnknown:
             {
                 double actpos_enr_val = 0.0;
-                if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
+                if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
                     actpos_enr_val = 0.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -110,7 +110,7 @@ double XFEM::Enrichment::EnrValue(
             case approachUnknown:
             {
                 double actpos_enr_val = 0.0;
-                if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
+                if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
                     actpos_enr_val = -1.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -153,14 +153,14 @@ double XFEM::Enrichment::ModifiedEnrValue(
     case XFEM::Enrichment::typeVoid:
     {
         double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
+        if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
             actpos_enr_val = 0.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
         double nodepos_enr_val = 0.0;
-        if (PositionWithinCondition(nodalpos,ih) == this->XFEMConditionLabel()) {
+        if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -173,14 +173,14 @@ double XFEM::Enrichment::ModifiedEnrValue(
     case XFEM::Enrichment::typeJump:
     {
         double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
+        if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
             actpos_enr_val = -1.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
         double nodepos_enr_val = 0.0;
-        if (PositionWithinCondition(nodalpos,ih) == this->XFEMConditionLabel()) {
+        if (ih.PositionWithinConditionNP(nodalpos) == this->XFEMConditionLabel()) {
             nodepos_enr_val = -1.0;
         } else {
             nodepos_enr_val = 1.0;

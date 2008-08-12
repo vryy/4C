@@ -646,7 +646,7 @@ double DomainCoverageRatioT(
             
             const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(ele));
                         
-            const int label = PositionWithinCondition(cellcenter, ih);
+            const int label = ih.PositionWithinConditionNP(cellcenter);
             
             if (label != 0)
             {

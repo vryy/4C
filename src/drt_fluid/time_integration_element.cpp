@@ -50,6 +50,7 @@ BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     break;
 
   case timeint_bdf2:
+    dserror("BDF2 temporarily not supported");
     for(int isd = 0; isd < nsd; ++isd)
     {
       hist(isd) = (4.0/3.0)*veln(isd) - (1.0/3.0)*velnm(isd);
