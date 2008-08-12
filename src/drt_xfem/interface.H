@@ -101,8 +101,7 @@ public:
     /// Print Information about the contained search tree
     void PrintTreeInformation(const int step) const
     {
-        printf("tree metrics is not yet implemented");
-        octTreenp_->printTree("TREE", step);
+        octTreenp_->evaluateTreeMetrics(step);
         return;
     }
     

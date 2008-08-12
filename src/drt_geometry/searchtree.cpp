@@ -117,7 +117,7 @@ int GEO::SearchTree::queryXFEMFSIPointType(
     const BlitzVec3& 		             point) 
 {
   
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
   
   if(treeRoot_ == Teuchos::null)
       dserror("tree is not yet initialized !!!");
@@ -185,6 +185,29 @@ void GEO::SearchTree::printTree(
   f_system << node_string.str();
   f_system.close();
   cout << " done" << endl;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | evaluate tree metrics (METRICS)                         peder   07/08|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::evaluateTreeMetrics(
+    const int     step) const
+{
+  cout << "\t********************* TREE METRICS ******************" << endl;
+
+  if (treeRoot_ == Teuchos::null)
+  { 
+    cout << "tree root was not initialized yet, nothing to print" << endl;
+    return;
+  }
+  
+  cout.precision(5);
+  cout << "\tnumber tree nodes        : " << treeRoot_->getNumNodesInTree() << endl;
+  cout << "\ttree depth               : " << max_depth_-treeRoot_->getDepth() << " (max: "<< max_depth_<<")"<< endl;
+  cout << "\t***************************************************" << endl;
+  return;
 }
 
 
@@ -869,6 +892,64 @@ void GEO::SearchTree::TreeNode::printTreeNode(
     printBox(0,7) = nodeBox_(0,1); printBox(1,7) = nodeBox_(1,0); printBox(2,7) = nodeBox_(2,1);
     fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor + treedepth_ + max_depth, printBox)<< endl;
   }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | get depth of tree node (METRICS)                        peder   07/08|
+ *----------------------------------------------------------------------*/
+int GEO::SearchTree::TreeNode::getDepth() const
+{
+  int depth = -1;
+  
+  if (treeNodeType_==LEAF_NODE)
+    depth = treedepth_;
+  else 
+  {
+    int tmp_depth = -1;
+    depth = treedepth_;
+    for (int i = 0; i < getNumChildren(); i++)
+    {
+      if (children_[i] != Teuchos::null)
+        tmp_depth = children_[i]->getDepth();
+      else 
+        dserror("inner node has to have leave nodes");
+      
+      if(tmp_depth < depth)
+        depth = tmp_depth;
+    }
+  }
+  return depth;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | get number of tree nodes in tree (METRICS)              u.may   08/08|
+ *----------------------------------------------------------------------*/
+int GEO::SearchTree::TreeNode::getNumNodesInTree() const
+{
+  int numTreeNodes = 0;
+  
+  switch(treeNodeType_)
+  { 
+    case LEAF_NODE:
+    {
+      numTreeNodes = 1;
+      break;
+    }
+    case INNER_NODE:
+    {
+      for(int i = 0; i < getNumChildren(); i++)
+        numTreeNodes += children_[i]->getNumNodesInTree();
+  
+      break;
+    }
+    default:
+      dserror("wrong tree node type");
+  }
+  return numTreeNodes;
 }
 
 

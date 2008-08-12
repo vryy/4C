@@ -324,6 +324,19 @@ public:
       stringstream&   fc
       ) const;
   
+  /*!
+  \brief returns depth of subtree from the  tree node it is called (METRICS)
+  \return tree depth
+   */
+  int getDepth() const;
+  
+  
+  /*!
+  \brief returns number of tree nodes in tree (METRICS)
+  \return tree nodes
+   */
+  int getNumNodesInTree() const;
+  
 
 }; // class TreeNode
   
@@ -431,7 +444,15 @@ public:
       ) const;
   
   
+  /*!
+  \brief evaluates and prints tree metrics
+  \param step                 time step
+   */
+  void evaluateTreeMetrics(
+      const int     step) const;
+  
 
+  
 private:
   //! maximum search depth
   const int max_depth_;   

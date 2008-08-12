@@ -81,9 +81,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,cutterposnp_);
   const BlitzMat3x2 xfemAABB =XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
-  octTreenp_ = rcp( new GEO::SearchTree(10));
+  octTreenp_ = rcp( new GEO::SearchTree(5));
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  octTreen_ = rcp( new GEO::SearchTree(10));
+  octTreen_ = rcp( new GEO::SearchTree(5));
   octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
   // find malicious entries
@@ -279,9 +279,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     cout << " done" << endl;
     
     octTreenp_->printTree(allfiles.outputfile_kenner, step);
+    octTreenp_->evaluateTreeMetrics(step);
   }
-  // TODO implement for octtree xTree_->printTreeMetrics(step);
-  // TODO implement for octtree xTree_->printTreeMetricsFile(step);
+  
   return;
 }
 
