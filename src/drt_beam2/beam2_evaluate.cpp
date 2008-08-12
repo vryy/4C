@@ -254,7 +254,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 		      default:
 		      dserror("unknown or improper type of material law");
 		 }	
-	  
+	  /*
 	  //calculating diagonal entry of damping matrix  
 	  double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/2;
 	  double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_/2;
@@ -274,7 +274,35 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  elevec1[2] += normalGen_rot.random();
   	elevec1[3] += normalGen_trans.random();
   	elevec1[4] += normalGen_trans.random(); 
-  	elevec1[5] += normalGen_rot.random();    	   
+  	elevec1[5] += normalGen_rot.random();    	  
+  	*/
+  	
+  	
+  	
+    //calculating diagonal entry of damping matrix  
+     double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_;
+     double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_;
+     
+     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+     double stand_dev_trans = pow(2 * thermalenergy_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+     double stand_dev_rot   = pow(2 * thermalenergy_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
+
+     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+     //stand_dev; using Blitz namespace "ranlib" for random number generation
+     ranlib::Normal<double> normalGen_trans(0,stand_dev_trans);
+     ranlib::Normal<double> normalGen_rot(0,stand_dev_rot);
+     
+     double f1 = normalGen_trans.random(); 
+     double f2 = normalGen_trans.random(); 
+     double f3 = normalGen_rot.random();
+     
+     //adding statistical forces 
+     elevec1[0] += f1/2;  
+     elevec1[1] += f2/2;
+     elevec1[2] += f3/2;
+     elevec1[3] += f1/2;
+     elevec1[4] += f2/2; 
+     elevec1[5] += f3/2;  
   }   
   return 0;
 }

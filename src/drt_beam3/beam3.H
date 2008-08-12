@@ -337,6 +337,7 @@ private:
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
+  
 
   //! @name Internal calculation methods
 
