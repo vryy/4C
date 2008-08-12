@@ -139,7 +139,7 @@ void XFEM::DofManager::toGmsh(
     std::remove(filenamedel.str().c_str());
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
-    f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->currentcutterpositions());
+    f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
     {
       // draw elements with associated gid
       std::stringstream gmshfilecontent;

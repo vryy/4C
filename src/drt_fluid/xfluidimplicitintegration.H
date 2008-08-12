@@ -121,22 +121,14 @@ public:
 
   */
   void NonlinearSolve(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-      Teuchos::RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution
-      Teuchos::RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
-      Teuchos::RCP<Epetra_Vector>       itruerescol,       ///< interface residual with coloumn distribution
-      Teuchos::RCP<Epetra_Vector>       ivelncol = null,
-      Teuchos::RCP<Epetra_Vector>       iaccncol = null
+      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
       );
 
   /*!
   \brief compute Interface
   */
   void ComputeInterfaceAndSetDOFs(
-      Teuchos::RCP<DRT::Discretization>  cutterdiscret,
-      const Epetra_Vector&      idispcol,
-      Teuchos::RCP<Epetra_Vector>        ivelncol = null,
-      Teuchos::RCP<Epetra_Vector>        iaccncol = null
+      Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );
 
   /*!

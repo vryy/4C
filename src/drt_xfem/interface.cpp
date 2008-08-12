@@ -32,17 +32,23 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
     const Teuchos::RCP<DRT::Discretization>  xfemdis, 
-    const Teuchos::RCP<DRT::Discretization>  cutterdis,
-    const Epetra_Vector&                     idispcol) :
+    const Teuchos::RCP<DRT::Discretization>  cutterdis
+    ) :
       xfemdis_(xfemdis),
       cutterdis_(cutterdis)
 {
-  FillCurrentCutterPositionMap(cutterdis, idispcol, currentcutterpositions_);
+  std::cout << "Constructing InterfaceHandle" << std::endl;
+      
+  const Epetra_Vector& idispcolnp = *cutterdis->GetState("idispcolnp");
+  const Epetra_Vector& idispcoln = *cutterdis->GetState("idispcoln");
+      
+  FillCurrentCutterPositionMap(cutterdis, idispcolnp, cutterposnp_);
+  FillCurrentCutterPositionMap(cutterdis, idispcoln , cutterposn_ );
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
   GEO::Intersection is;
-  is.computeIntersection(xfemdis, cutterdis, currentcutterpositions_,elementalDomainIntCells_, elementalBoundaryIntCells_);
+  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
   
 //  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
 //  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
@@ -72,11 +78,13 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,currentcutterpositions_);
+  const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,cutterposnp_);
   const BlitzMat3x2 xfemAABB =XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
-  octTree_ = rcp( new GEO::SearchTree(10));
-  octTree_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE)); 
+  octTreenp_ = rcp( new GEO::SearchTree(10));
+  octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  octTreen_ = rcp( new GEO::SearchTree(10));
+  octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
   // find malicious entries
   const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
@@ -183,7 +191,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
-    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
     f_system.close();
     cout << " done" << endl;
   }
@@ -270,7 +278,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_systemP.close();
     cout << " done" << endl;
     
-    octTree_->printTree(allfiles.outputfile_kenner, step);
+    octTreenp_->printTree(allfiles.outputfile_kenner, step);
   }
   // TODO implement for octtree xTree_->printTreeMetrics(step);
   // TODO implement for octtree xTree_->printTreeMetricsFile(step);
@@ -329,6 +337,25 @@ bool XFEM::InterfaceHandle::ElementIntersected(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionNP(
+    const BlitzVec3&                  x_in
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionN(
+    const BlitzVec3&                  x_in
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -349,7 +376,7 @@ int XFEM::PositionWithinConditionSearchTree(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionSearchTree");
   Teuchos::RCP<GEO::SearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
-  const int XFEMlabel = xt->queryXFEMFSIPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
+  const int XFEMlabel = xt->queryXFEMFSIPointType(*ih.cutterdis() , *ih.cutterposnp(), x_in);
 
   // for parallel : there is nothing to be extended for parallel execution
 
@@ -388,7 +415,7 @@ int XFEM::PositionWithinConditionBruteForce(
     for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
     {
       const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
-      const BlitzMat xyze_cutter(DRT::UTILS::getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
+      const BlitzMat xyze_cutter(DRT::UTILS::getCurrentNodalPositions(cutterele, *ih.cutterposnp()));
       double distance = 0.0;
       BlitzVec2 eleCoord;
       BlitzVec3 normal;

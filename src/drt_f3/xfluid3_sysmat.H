@@ -36,7 +36,7 @@ Maintainer: Axel Gerstenberger
           const XFEM::ElementDofManager&    eleDofManager,
           const std::vector<double>&        locval,
           const std::vector<double>&        locval_hist,
-          const Teuchos::RCP<Epetra_Vector> ivelcol,
+          const Teuchos::RCP<const Epetra_Vector> ivelcol,
           const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
@@ -61,7 +61,7 @@ Maintainer: Axel Gerstenberger
           const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState  mystate,   ///< element state variables
-          const Teuchos::RCP<Epetra_Vector> ivelcol,
+          const Teuchos::RCP<const Epetra_Vector> ivelcol,
           const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,

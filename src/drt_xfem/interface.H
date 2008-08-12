@@ -35,8 +35,7 @@ public:
     //! constructor
     explicit InterfaceHandle(
             const Teuchos::RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
-            const Teuchos::RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
-            const Epetra_Vector&                           idispcol      ///< interface displacements for current position of interface
+            const Teuchos::RCP<DRT::Discretization>        cutterdis     ///< discretization with boundary elements
             );
     //! destructor
     ~InterfaceHandle();
@@ -53,7 +52,10 @@ public:
     Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,BlitzVec3>* currentcutterpositions() const {return &currentcutterpositions_;};
+    const std::map<int,BlitzVec3>* cutterposnp() const {return &cutterposnp_;};
+    
+    //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
+    const std::map<int,BlitzVec3>* cutterposn()  const {return &cutterposn_;};
 
     //! get pointer to map with all domain integration cells on this proc
     const std::map<int,GEO::DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;};
@@ -64,7 +66,7 @@ public:
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
     //! get pointer to oct tree
-    Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTree_;};
+    Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTreenp_;};
  
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
@@ -100,9 +102,19 @@ public:
     void PrintTreeInformation(const int step) const
     {
         printf("tree metrics is not yet implemented");
-        octTree_->printTree("TREE", step);
+        octTreenp_->printTree("TREE", step);
         return;
     }
+    
+    //! get domain information at x_in at timestep n+1
+    int PositionWithinConditionNP(
+        const BlitzVec3&                  x_in
+    );
+
+    //! get domain information at x_in at timestep n
+    int PositionWithinConditionN(
+        const BlitzVec3&                  x_in
+    );
     
 private:
   
@@ -128,20 +140,26 @@ private:
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
     const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
-    //! current positions of all cutter nodes
-    std::map<int,BlitzVec3>                 currentcutterpositions_;
+    //! current positions of all cutter nodes at n+1
+    std::map<int,BlitzVec3>                 cutterposnp_;
+    
+    //! current positions of all cutter nodes at n
+    std::map<int,BlitzVec3>                 cutterposn_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
-    std::map<int,GEO::DomainIntCells >          elementalDomainIntCells_;
+    std::map<int,GEO::DomainIntCells >      elementalDomainIntCells_;
 
     //! integration cells for boundary
-    std::map<int,GEO::BoundaryIntCells >        elementalBoundaryIntCells_;
+    std::map<int,GEO::BoundaryIntCells >    elementalBoundaryIntCells_;
     
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >            elementsByLabel_;
     
-    //! SearchTree octtree
-    Teuchos::RCP<GEO::SearchTree>              octTree_;
+    //! SearchTree octtree for timestep n+1
+    Teuchos::RCP<GEO::SearchTree>           octTreenp_;  
+    
+    //! SearchTree octtree for timestep n
+    Teuchos::RCP<GEO::SearchTree>           octTreen_;
 
 };
 
@@ -159,7 +177,7 @@ int PositionWithinCondition(
 */
 int PositionWithinConditionSearchTree(
     const BlitzVec3&                  x_in, ///< node in physical coordinates
-    const XFEM::InterfaceHandle&      ih    ///< the ubiquitious interface handle with all geometry information
+    const XFEM::InterfaceHandle&      ih    ///< the ubiquitous interface handle with all geometry information
     );
 
 

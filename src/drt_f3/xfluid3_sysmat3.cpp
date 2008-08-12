@@ -23,8 +23,6 @@ Maintainer: Axel Gerstenberger
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
@@ -124,7 +122,7 @@ static void Sysmat3(
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const Teuchos::RCP<Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+        const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
@@ -1480,7 +1478,7 @@ static void Sysmat3(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
-        const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
+        const std::map<int,blitz::TinyVector<double,3> >* positions = ih->cutterposnp();
         const BlitzMat xyze_boundary(DRT::UTILS::getCurrentNodalPositions(boundaryele, *positions));
         
         // get interface velocities at the boundary element nodes
@@ -1871,7 +1869,7 @@ void callSysmat3(
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
-        const Teuchos::RCP<Epetra_Vector> ivelcol,
+        const Teuchos::RCP<const Epetra_Vector> ivelcol,
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,

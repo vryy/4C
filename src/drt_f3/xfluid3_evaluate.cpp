@@ -143,7 +143,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const double            dt       = params.get<double>("dt");
         const double            theta    = params.get<double>("theta");
         
-        const Teuchos::RCP<Epetra_Vector> ivelcol = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity");
+        const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
         const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
 
@@ -207,7 +207,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           DRT::ELEMENTS::XFluid3::MyState mystate;
           DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
           
-          const Teuchos::RCP<Epetra_Vector> ivelcol   = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity");
+          const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
           const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
           
           if (is_ale_)
