@@ -138,6 +138,18 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   // We assume that all dof sets before this one have been set up. Otherwise
   // we'd have to reorder the list.
+  //
+  // There is no test anymore to make sure that all prior dof sets have been
+  // assigned. It seems people like to manipulate dof sets. People do create
+  // dof sets that do not contain any dofs (on its first assignment), people
+  // even shift dof set numbers to create overlapping dof sets. This is
+  // perfectly fine.
+  //
+  // However if you rely on non-overlapping dof sets, you have to
+  // FillComplete() your discretizations in the order of their creation. This
+  // is guaranteed for all discretizations read from the input file since the
+  // input reader calls FillComplete(). It you create your own discretizations
+  // try to understand what you do.
   for (std::list<DofSet*>::const_iterator i=dofsets_.begin();
        i!=dofsets_.end();
        ++i)
@@ -146,19 +158,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
       break;
 
     // ignore empty (no yet initialized) dof row maps
-    // (This is not supposed to happen... Axel thinks different...)
     if ((*i)->dofrowmap_->NumGlobalElements()>0)
     {
-      if (count > (*i)->dofrowmap_->MinAllGID())
-      {
-        dserror("dof sets numbers not assigned continuously: %d %d",
-                count,(*i)->dofrowmap_->MinAllGID());
-      }
-      count = (*i)->dofrowmap_->MaxAllGID() + 1;
-    }
-    else
-    {
-      cout << " --> We have dofrowmap_->NumGlobalElements() = " << ((*i)->dofrowmap_->NumGlobalElements()) << endl;
+      count = max((*i)->dofrowmap_->MaxAllGID() + 1,count);
     }
   }
 
