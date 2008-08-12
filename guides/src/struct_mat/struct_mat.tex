@@ -67,6 +67,18 @@ case ParObject_BioCell:
 \begin{verbatim}
 src/drt_mat/<material name>.o \
 \end{verbatim}
+
+\item Now it's still necessary to let your element know, that it can use the material. For e.g. the solid 3 you would need to change \textit{src/drt\_so3/so\_material.cpp}.
+\begin{verbatim}
+case m_<material name>: /*----------------- comments are so useful */
+{
+   MAT::<material name>* material = static_cast <MAT::<material name>*>(mat.get());
+   material->Evaluate(glstrain,cmat,stress);
+   *density = material->Density();
+   break;
+}
+\end{verbatim}
+
 \end{itemize}
 
 Reconfigure and compile baci and your material should be fine and running (in case its linear elastic ;-).
