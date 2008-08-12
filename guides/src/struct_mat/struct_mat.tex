@@ -8,6 +8,70 @@
 %%----------------------------materials
 \chapter{Materials}
 
+\section{How to add a material to CCADISCRET}
+Here it's briefly described as a step-by-step guide how to add a material to the new discretization of baci. Please look at already implemented materials to get a better idea of what to do.
+
+\begin{itemize}
+ \item Choose appropriate names for your material model and add new files \textit{$<$material name$>$.cpp} and \textit{$<$material name$>$.H} to the folder \textit{src/drt\_mat/}. Define the necessary object best by looking at other materials.
+
+\item Add a case definiton to the top of \textit{src/drt\_mat/material.cpp} accordingly to other materials there:
+\begin{verbatim}
+  case m_<material name>:
+    return Teuchos::rcp(new <material name>(actmat));
+\end{verbatim}
+
+\item Define the unique parobject number in \textit{src/drt\_lib/drt\_parobject.H.cpp}:
+\begin{verbatim}
+ #define ParObject_<material name>               (int)<next available number>
+\end{verbatim}
+
+\item Add the material structure (all input parameters for the material) to \textit{src/headers/materials.h} to the global materials structure \textit{\_MATERIALS} 
+\begin{verbatim}
+ struct _<material name>          *<material name>;       /* comments are always welcome */
+\end{verbatim}
+and subsequently to the complete structure beneath it:
+\begin{verbatim}
+typedef struct _<material name>
+{
+     DOUBLE	   density;
+} <material name>;
+\end{verbatim}
+
+\item Add your material name to the \textit{enum \_MATERIAL\_TYP} structure at \textit{src/headers/enums.h}:
+\begin{verbatim}
+ m_<material name>        /* coments are really welcome */
+\end{verbatim}
+
+\item Get your material read from the input file at \textit{src/drt\_lib/input\_material\_ccadiscret.cpp} by adding a read block:
+\begin{verbatim}
+frchk("<material name in input file>",&ierr);
+if (ierr==1)
+{
+   localmat.mattyp = m_<material name>;
+   localmat.m.<material name> = new <material name>();
+   frdouble("DENS",&(localmat.m.<material name>->density)        ,&ierr);
+}
+\end{verbatim}
+
+\item Add the parobject for the postprocessing at \textit{src/drt\_lib/drt\_utils.cpp}
+\begin{verbatim}
+case ParObject_BioCell:
+{
+   MAT::<material name>* material = new MAT::<material name>();
+   material->Unpack(data);
+   return material;
+}
+\end{verbatim}
+
+\item Finally let baci know that it should compile the new files at \textit{OBJS\_DRT\_MAT\_LIB} in the file \textit{Makefile.objects}. Add the objectfile to the list:
+\begin{verbatim}
+src/drt_mat/<material name>.o \
+\end{verbatim}
+\end{itemize}
+
+Reconfigure and compile baci and your material should be fine and running (in case its linear elastic ;-).
+
+
 \section{Global Materials}
 
 Some old email
@@ -746,4 +810,5 @@ Implementation only for rotational symmetry.\\
   fixed.
 \item Expand unified material description to all elements, see e-mail
   underneath 
+\item Materials in the new discretization
 \end{enumerate}
