@@ -28,7 +28,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "Ifpack_AdditiveSchwarz.h"
 #include "drt_exporter.H"
-#include "linalg_systemmatrix.H"
+#include "linalg_blocksparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -41,7 +41,6 @@ class DiscretizationWriter;
 namespace LINALG
 {
   // forward declaration
-  class SparseOperator;
   class Solver;
 
   /*!

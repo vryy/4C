@@ -2,7 +2,7 @@
 #ifndef LINALG_PRECOND_H
 #define LINALG_PRECOND_H
 
-#include "linalg_systemmatrix.H"
+#include "linalg_sparsematrix.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>

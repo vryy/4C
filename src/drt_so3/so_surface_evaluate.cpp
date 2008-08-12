@@ -492,7 +492,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         dserror("not yet fully  implemented");
 
         if (distype!=quad4)
-          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
+          cout << "potential stresses were only tested for quad4 surfaces! use with caution!" << endl;
 
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -521,9 +521,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         // set up matrices and parameters needed for the evaluation of current
         // interfacial area
         //int ngp = intpoints.nquad;                                // number of Gauss points
-        //int ndof = 3*numnode;                                     // overall number of surface dofs
+        int ndof = 3*numnode;                                     // overall number of surface dofs
         double A = 0.;                                            // interfacial area
 
+        // we really want to zero out the following matrices -> no LINALG::SerialDenseMatrix
+        Epetra_SerialDenseVector Adiff(ndof);                     // first partial derivatives
+        Epetra_SerialDenseMatrix Adiff2(ndof,ndof);               // second partial derivatives
+
+        ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
+              
         if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
         {
           const int curvenum = cond->Getint("curve");
@@ -532,7 +538,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           const double rootDist = cond->GetDouble("rootDist");
           const double cutOff = cond->GetDouble("cutOff");
 
-          potentialmanager->StiffnessAndInternalForces(curvenum, A, elevector1, elematrix1, this->Id(),
+          potentialmanager->StiffnessAndInternalForces(this,curvenum, A, elevector1, elematrix1, this->Id(),
                                                        time, dt, label, depth, rootDist, cutOff);
         }
         else

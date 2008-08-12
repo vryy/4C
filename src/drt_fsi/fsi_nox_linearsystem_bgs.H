@@ -22,7 +22,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RefCountPtr.hpp>
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
 
 class SparseMatrix;
 class BlockSparseMatrix;

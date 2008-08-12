@@ -1,0 +1,530 @@
+/*!----------------------------------------------------------------------
+\file linalg_blocksparsematrix.H
+
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
+#ifndef LINALG_BLOCKSPARSEMATRIX_H_
+#define LINALG_BLOCKSPARSEMATRIX_H_
+
+
+#include "linalg_sparsematrix.H"
+
+
+namespace LINALG
+{
+/// Internal base class of BlockSparseMatrix that contains the non-template stuff
+/*!
+
+  This is where the bookkeeping of the BlockSparseMatrix happens. We use two
+  MultiMapExtractor objects to store the FullRangeMap() and the
+  FullDomainMap() along with their many partial RangeMap() and
+  DomainMap(). Most of the required SparseOperator methods can simply be
+  implemented in terms of the matrix blocks.
+
+  \author u.kue
+  \date 02/08
+ */
+class BlockSparseMatrixBase : public SparseOperator
+{
+  public:
+
+  /// constructor
+  /*!
+    \param domainmaps domain maps for all blocks
+    \param rangemaps range maps for all blocks
+    \param npr estimated number of entries per row in each block
+    \param explicitdirichlet whether to remove Dirichlet zeros from the
+    matrix graphs in each block
+    \param savegraph whether to save the matrix graphs of each block and
+    recreate filled matrices the next time
+   */
+  BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
+      const MultiMapExtractor& rangemaps,
+      int npr,
+      bool explicitdirichlet=true,
+      bool savegraph=false);
+
+  virtual ~BlockSparseMatrixBase() {}
+
+  /// make a copy of me
+  virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access) = 0;
+
+  /// setup of block preconditioners
+  /*!
+    This method can be implemented by subclasses that implement
+    ApplyInverse() to execute a block preconditioner on the matrix.
+   */
+  virtual void SetupPreconditioner() {}
+
+  /// Merge block matrix into a SparseMatrix
+  Teuchos::RCP<SparseMatrix> Merge() const;
+
+  /** \name Block matrix access */
+  //@{
+
+  /// return block (r,c)
+  const SparseMatrix& Matrix(int r, int c) const { return blocks_[r*Cols()+c]; }
+
+  /// return block (r,c)
+  SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
+
+  /// return block (r,c)
+  inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c); }
+
+  /// return block (r,c)
+  inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c); }
+
+  /// assign SparseMatrix to block (r,c)
+  /*!
+    \note The maps of the block have to match the maps of the given matrix.
+   */
+  void Assign(int r, int c, Epetra_DataAccess access, SparseMatrix& mat);
+
+  //@}
+
+  /** \name FE methods */
+  //@{
+
+  void Zero();
+  void Complete();
+  void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+
+  void UnComplete();
+
+  void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
+
+  //@}
+
+  /** \name Matrix Properties Query Methods */
+  //@{
+
+  /// If Complete() has been called, this query returns true, otherwise it returns false.
+  bool Filled() const;
+
+  //@}
+
+  /** \name Block maps */
+  //@{
+
+  /// number of row blocks
+  int Rows() const { return rangemaps_.NumMaps(); }
+
+  /// number of column blocks
+  int Cols() const { return domainmaps_.NumMaps(); }
+
+  /// range map for given row block
+  const Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
+
+  /// domain map for given column block
+  const Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
+
+  /// total matrix range map with all blocks
+  const Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
+
+  /// total matrix domain map with all blocks
+  const Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
+
+  /// total matrix row map with all blocks
+  /*!
+    \pre Filled()==true
+   */
+  Epetra_Map& FullRowMap() const { return *fullrowmap_; }
+
+  /// total matrix column map with all blocks
+  /*!
+    \pre Filled()==true
+   */
+  Epetra_Map& FullColMap() const { return *fullcolmap_; }
+
+  //@}
+
+  /** \name Attribute set methods */
+  //@{
+
+  /// If set true, transpose of this operator will be applied.
+  virtual int SetUseTranspose(bool UseTranspose);
+
+  //@}
+
+  /** \name Mathematical functions */
+  //@{
+
+  /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
+  virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+  /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
+  virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+  /// Returns the infinity norm of the global matrix.
+  virtual double NormInf() const;
+
+  //@}
+
+  /** \name Attribute access functions */
+  //@{
+
+  /// Returns a character string describing the operator.
+  virtual const char* Label() const;
+
+  /// Returns the current UseTranspose setting.
+  virtual bool UseTranspose() const;
+
+  /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
+  virtual bool HasNormInf() const;
+
+  /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
+  virtual const Epetra_Comm& Comm() const;
+
+  /// Returns the Epetra_Map object associated with the domain of this operator.
+  virtual const Epetra_Map& OperatorDomainMap() const;
+
+  /// Returns the Epetra_Map object associated with the range of this operator.
+  virtual const Epetra_Map& OperatorRangeMap() const;
+
+  //@}
+
+  /// access to domain map extractor in derived classes
+  const MultiMapExtractor& DomainExtractor() const { return domainmaps_; }
+
+  /// access to range map extractor in derived classes
+  const MultiMapExtractor& RangeExtractor() const { return rangemaps_; }
+
+private:
+
+  /// the full domain map together with all partial domain maps
+  MultiMapExtractor domainmaps_;
+
+  /// the full range map together with all partial range maps
+  MultiMapExtractor rangemaps_;
+
+  /// row major matrix block storage
+  std::vector<SparseMatrix> blocks_;
+
+  /// full matrix row map
+  Teuchos::RCP<Epetra_Map> fullrowmap_;
+
+  /// full matrix column map
+  Teuchos::RCP<Epetra_Map> fullcolmap_;
+};
+
+
+/// Block matrix consisting of SparseMatrix blocks
+/*!  
+    There are strange algorithms that need to split a large sparse matrix into
+    blocks. Such things happen, e.g., in FSI calculations with internal and
+    interface splits, in fluid projection preconditioners or in contact
+    simulations with slave and master sides. Unfortunatelly spliting a huge
+    sparse matrix in (possibly) many blocks is nontrivial and expensive. So
+    the idea here is to assemble into a block matrix in the first place.
+
+    The difficulty with this approach is the handling of ghost entries in a
+    parallel matrix. It is hard (expensive) to figure out to which column
+    block each particular ghost entry belongs. That is why this class is
+    templated with a Strategy. There is a default implementation for this
+    template parameter DefaultBlockMatrixStrategy, that handles the most
+    general case. That is DefaultBlockMatrixStrategy finds the right column
+    block be heavy communication. But if there is some knowledge available in
+    a particular case, it is easy to implement a specify Strategy that does
+    not need to communicate that much.
+
+    \author u.kue
+    \date 02/08
+ */
+template <class Strategy>
+class BlockSparseMatrix : public BlockSparseMatrixBase,
+public Strategy
+{
+public:
+  BlockSparseMatrix(const MultiMapExtractor& domainmaps,
+      const MultiMapExtractor& rangemaps,
+      int npr=81,
+      bool explicitdirichlet=true,
+      bool savegraph=false);
+
+  Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access);
+
+  void Assemble(int eid,
+      const Epetra_SerialDenseMatrix& Aele,
+      const std::vector<int>& lmrow,
+      const std::vector<int>& lmrowowner,
+      const std::vector<int>& lmcol)
+  {
+    const int myrank = Comm().MyPID();
+    Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
+  }
+
+  /// single value assemble
+  /*!
+
+     \warning This method is less useful here. We just need to make the
+     compiler happy. We assume "element matrices" of size 1x1 here. Do not use
+     this method if your strategy depends on the real position of the dof in
+     the element matrix.
+
+   */
+  void Assemble(double val, int rgid, int cgid)
+  {
+    Strategy::Assemble(val,rgid,cgid);
+  }
+
+  void Complete();
+};
+
+
+/// default strategy implementation for block matrix
+/*!
+
+    This default implementation solves the ghost entry problem by remembering
+    all ghost entries during the assembly in a private map. Afterwards
+    Complete() needs to be called that finds the appropiate block for each
+    ghost entry by communication an finally assembles these entries.
+
+    This is the most general, most expensive implementation. You are
+    encouraged to provide your own Strategy implementation if you know your
+    specific block structure.
+
+    \sa BlockSparseMatrix
+
+    \author u.kue
+    \date 02/08
+ */
+class DefaultBlockMatrixStrategy
+{
+public:
+
+  /// construct with a block matrix base
+  explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat);
+
+  /// assemble into the given block
+  void Assemble(int eid,
+      int myrank,
+      const Epetra_SerialDenseMatrix& Aele,
+      const std::vector<int>& lmrow,
+      const std::vector<int>& lmrowowner,
+      const std::vector<int>& lmcol);
+
+  /// assemble into the given block
+  void Assemble(double val, int rgid, int cgid);
+
+  /// assemble the remaining ghost entries
+  void Complete();
+
+protected:
+
+  /// assemble into the given block
+  void Assemble(double val,
+      int lrow, int rgid, int rblock,
+      int lcol, int cgid, int cblock);
+
+  /// find row block to a given row gid
+  int RowBlock(int lrow, int rgid);
+
+  /// find column block to a given column gid
+  int ColBlock(int rblock, int lcol, int cgid);
+
+  /// access to the block sparse matrix for subclasses
+  BlockSparseMatrixBase& Mat() { return mat_; }
+
+private:
+
+  /// my block matrix base
+  BlockSparseMatrixBase& mat_;
+
+  /// all ghost entries stored by row,column
+  std::map<int,std::map<int,double> > ghost_;
+};
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+/// output of BlockSparseMatrixBase
+ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
+
+
+} // end of namespace LINALG
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
+    const MultiMapExtractor& rangemaps,
+    int npr,
+    bool explicitdirichlet,
+    bool savegraph)
+: BlockSparseMatrixBase(domainmaps,rangemaps,npr,explicitdirichlet,savegraph),
+// this was necessary, otherwise ambigous with copy constructor of Strategy
+Strategy((LINALG::BlockSparseMatrixBase&)(*this))
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(Epetra_DataAccess access)
+{
+  int npr                = Matrix(0,0).MaxNumEntries();
+  bool explicitdirichlet = Matrix(0,0).ExplicitDirichlet();
+  bool savegraph         = Matrix(0,0).SaveGraph();
+  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::rcp(new BlockSparseMatrix<Strategy>(DomainExtractor(),
+      RangeExtractor(),
+      npr,
+      explicitdirichlet,
+      savegraph));
+  for (int r=0; r<Rows(); ++r)
+  {
+    for (int c=0; c<Cols(); ++c)
+    {
+      bsm->Matrix(r,c).Assign(access,Matrix(r,c));
+    }
+  }
+  return bsm;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+void LINALG::BlockSparseMatrix<Strategy>::Complete()
+{
+  Strategy::Complete();
+  BlockSparseMatrixBase::Complete();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
+{
+  int rows = mat_.Rows();
+  for (int rblock=0; rblock<rows; ++rblock)
+  {
+    if (mat_.RangeMap(rblock).MyGID(rgid))
+    {
+      return rblock;
+    }
+  }
+  return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
+{
+  int cols = mat_.Cols();
+  for (int cblock = 0; cblock<cols; ++cblock)
+  {
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+
+    // If we have a filled matrix we know the column map already.
+    if (matrix.Filled())
+    {
+      if (matrix.ColMap().MyGID(cgid))
+      {
+        return cblock;
+      }
+    }
+
+    // otherwise we can get just the non-ghost entries right now
+    else if (mat_.DomainMap(cblock).MyGID(cgid))
+    {
+      return cblock;
+    }
+  }
+
+  // ghost entries in a non-filled matrix will have to be done later
+
+  return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
+    int myrank,
+    const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner,
+    const std::vector<int>& lmcol)
+{
+  const int lrowdim = (int)lmrow.size();
+  const int lcoldim = (int)lmcol.size();
+
+  // loop rows of local matrix
+  for (int lrow=0; lrow<lrowdim; ++lrow)
+  {
+
+    // check ownership of row
+    if (lmrowowner[lrow]!=myrank)
+      continue;
+
+    int rgid = lmrow[lrow];
+    int rblock = RowBlock(lrow,rgid);
+
+    for (int lcol=0; lcol<lcoldim; ++lcol)
+    {
+      double val = Aele(lrow,lcol);
+      int cgid = lmcol[lcol];
+      int cblock = ColBlock(rblock,lcol,cgid);
+
+      Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
+{
+  int rblock = RowBlock(0,rgid);
+  int cblock = ColBlock(rblock,0,cgid);
+
+  Assemble(val,0,rgid,rblock,0,cgid,cblock);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
+    int lrow, int rgid, int rblock,
+    int lcol, int cgid, int cblock)
+{
+#ifdef DEBUG
+  if (rblock==-1)
+    dserror("no block entry found for row gid=%d",rgid);
+#endif
+
+  if (cblock>-1)
+  {
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+    matrix.Assemble(val,rgid,cgid);
+  }
+  else
+  {
+    // ghost entry in non-filled matrix. Save for later insertion.
+    ghost_[rgid][cgid] += val;
+  }
+}
+
+
+
+
+#endif
+#endif
+
+

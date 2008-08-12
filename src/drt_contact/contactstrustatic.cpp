@@ -27,7 +27,7 @@ Maintainer: Alexander Popp
 #include "../drt_structure/stru_static_drt.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_structure/stru_resulttest.H"
 
 

@@ -20,11 +20,11 @@ Maintainer: Ursula Mayer
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
-#include "../drt_xfem/xfsi_searchtree.H"
+#include "../drt_geometry/searchtree.H"
 
 
 using namespace std;
@@ -46,8 +46,10 @@ public:
 
     \param discret (in): Discretization
    */
-  PotentialManager( Teuchos::RCP<DRT::Discretization> discretRCP,
-      DRT::Discretization& discret);
+  PotentialManager( 
+      Teuchos::RCP<DRT::Discretization>     discretRCP,
+      DRT::Discretization&            discret
+      );
 
   /*!
     \brief Destructor
@@ -121,7 +123,9 @@ public:
     \param con_quot_max (in) maximum surfactant concentration
     \param con_quot_eq (in) equilibrium surfactant concentration
    */
-  void StiffnessAndInternalForces(const int curvenum,
+  void StiffnessAndInternalForces(
+      const DRT::Element* element,
+      const int curvenum,
       const double& A,
       Epetra_SerialDenseVector& fint,
       Epetra_SerialDenseMatrix& K_surf,
@@ -131,7 +135,7 @@ public:
       const double label,
       const double depth,
       const double rootDist,
-      const double cutOff);
+      const double radius);
 
 
 private:
@@ -140,6 +144,7 @@ private:
   PotentialManager operator = (const PotentialManager& old);
   PotentialManager(const DRT::PotentialManager& old);
 
+  
   /*!
   \brief Update displacements
    */
@@ -147,17 +152,54 @@ private:
     Teuchos::RCP<Epetra_Vector> idisp_solid
     );
 
+  
   /*!
   \brief  set history variables after reading restart. The row map
           based vectors written in case of restart are exported to column
           based ones needed for calculations again.
    */
   void searchElementsInCutOffRadius(    
-    const vector<double>&   point,
-    set< int >&             potentialElementIds, 
-    const double            cutOff
+    const BlitzVec3&        point,
+    std::set<int>&          potentialElementIds,
+    const double            radius
     );
   
+  
+  /*!
+  \brief  set history variables after reading restart. The row map
+          based vectors written in case of restart are exported to column
+          based ones needed for calculations again.
+   */
+  void octTreeSearchElementsInCutOffRadius(
+      const BlitzVec3&        point,
+      std::set<int>&          potentialElementIds,
+      const double            radius
+      );
+  
+  
+  /*!
+  \brief  creates element map with key label
+   */
+  void CollectElementsByPotentialCouplingLabel(
+      std::map<int,std::set<int> >&        elementsByLabel
+      );
+  
+  
+  /*!
+  \brief  evaluate potential condition
+   */
+  /*
+  void EvaluatePotentialCondition(
+      ParameterList&                          params,
+      RefCountPtr<LINALG::SparseOperator>     systemmatrix1,
+      RefCountPtr<LINALG::SparseOperator>     systemmatrix2,
+      RefCountPtr<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<Epetra_Vector>             systemvector2,
+      Teuchos::RCP<Epetra_Vector>             systemvector3,
+      const string&                           condstring,
+      const int                               condid
+      );
+  */
   
   //! name@ Private Attributes
 
@@ -176,11 +218,14 @@ private:
   // surface areas of former time step
   RefCountPtr<Epetra_Vector> A_old_;
 
-  //! XSearchTree xTree_
-  Teuchos::RCP<XFEM::XSearchTree>  xTree_;
+  //! SearchTree xTree_
+  Teuchos::RCP<GEO::SearchTree>  octTree_;
 
   //! current position of boundary elements
-  std::map<int,vector<double> > currentboundarypositions_;
+  std::map<int,BlitzVec3 > currentboundarypositions_;
+  
+  //! for each potential condition label there is a set of boundary elements
+ std::map<int,std::set<int> >            elementsByLabel_;
 
   LINALG::MapExtractor                   potboundary_;
 

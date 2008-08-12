@@ -22,7 +22,7 @@ Maintainer: Michael Gee
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
 #include "linalg_downwindmatrix.H"
-#include "linalg_systemmatrix.H"
+#include "linalg_sparsematrix.H"
 
 extern "C"
 {

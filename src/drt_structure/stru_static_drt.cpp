@@ -26,7 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 #include "stru_resulttest.H"
 #include "Teuchos_TimeMonitor.hpp"
 

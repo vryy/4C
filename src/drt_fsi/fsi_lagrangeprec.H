@@ -3,7 +3,7 @@
 #ifndef FSI_LAGRANGEPREC_H
 #define FSI_LAGRANGEPREC_H
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 

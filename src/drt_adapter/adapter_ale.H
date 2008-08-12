@@ -30,7 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_io/io.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>

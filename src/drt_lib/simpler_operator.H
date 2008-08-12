@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 
 #include "drt_dserror.H"
 #include "linalg_mapextractor.H"
-#include "linalg_systemmatrix.H"
+#include "linalg_blocksparsematrix.H"
 #include "linalg_solver.H"
 #include "linalg_utils.H"
 #include "linalg_ana.H"

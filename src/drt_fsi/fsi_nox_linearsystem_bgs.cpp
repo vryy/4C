@@ -13,7 +13,7 @@
 
 #include <blitz/array.h>
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/linalg_solver.H"

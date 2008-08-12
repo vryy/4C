@@ -15,7 +15,7 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_fsi/fsi_utils.H"
 
 

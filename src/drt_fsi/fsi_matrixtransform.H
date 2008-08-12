@@ -4,7 +4,7 @@
 #ifndef FSI_MATRIXTRANSFORM_H
 #define FSI_MATRIXTRANSFORM_H
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_adapter/adapter_coupling.H"
 
 #include <map>

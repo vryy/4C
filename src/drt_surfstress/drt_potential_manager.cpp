@@ -20,7 +20,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_xfem/xfsi_searchtree.H"
 #include "../drt_lib/drt_utils.H"
 #include <cstdlib>
 
@@ -28,8 +27,9 @@ Maintainer: Ursula Mayer
 /*-------------------------------------------------------------------*
  |  ctor (public)                                          umay 06/08|
  *-------------------------------------------------------------------*/
-DRT::PotentialManager::PotentialManager(Teuchos::RCP<DRT::Discretization> discretRCP,
-                                        DRT::Discretization& discret):
+DRT::PotentialManager::PotentialManager(
+    Teuchos::RCP<DRT::Discretization> discretRCP,
+    DRT::Discretization& discret):
 discretRCP_(discretRCP),
 discret_(discret)
 {
@@ -99,10 +99,6 @@ discret_(discret)
   // create disp vector for boundary discretization redundant on all procs
   idisp_total_    = LINALG::CreateVector(*potsurface_dofrowmap_total,true);
 
-  
-  std::cout << "Potential manager constructor done" << endl;
-  
-  
   // we start with interfacial area (A_old_) and concentration
   // (con_quot_) = 0. this is wrong but does not make a difference
   // since we apply the equilibrium concentration gradually, thus we
@@ -110,7 +106,15 @@ discret_(discret)
   // in the beginning.
   A_old_temp_   = rcp(new Epetra_Vector(*surfcolmap,true));
   A_old_        = rcp(new Epetra_Vector(*surfcolmap,true));
-  xTree_        = rcp(new XFEM::XSearchTree());
+  
+  // determine depth + aabb
+  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*boundarydis_);
+  std::map<int,std::set<int> > elementsByLabel;
+  CollectElementsByPotentialCouplingLabel(elementsByLabel);
+  octTree_      = rcp(new GEO::SearchTree(8));
+  octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  
+  std::cout << "Potential manager constructor done" << endl;
 }
 
 
@@ -134,7 +138,11 @@ void DRT::PotentialManager::EvaluatePotential(  ParameterList& p,
 
   discret_.ClearState();
   discret_.SetState("displacement",disp);
-  discret_.EvaluateCondition(p,stiff,null,fint,null,null,"Potential");
+  // write conditionon your own copy from discret condition
+  //discret_.EvaluateCondition(p,stiff,null,fint,null,null,"Potential");
+  
+  // set condid -1 so there is no effect
+  //EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential", -1);
 
   return;
 }
@@ -179,7 +187,8 @@ void DRT::PotentialManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row)
 | on element level for Lennard-Jones potential interaction forces    |
 *--------------------------------------------------------------------*/
 
-void DRT::PotentialManager::StiffnessAndInternalForces( const int curvenum,
+void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* element,
+                                                        const int curvenum,
                                                         const double& A,
                                                         Epetra_SerialDenseVector& fint,
                                                         Epetra_SerialDenseMatrix& K_surf,
@@ -189,16 +198,26 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const int curvenum,
                                                         const double label,
                                                         const double depth,
                                                         const double rootDist,
-                                                        const double cutOff)
+                                                        const double radius)
 {
-
   double traction;
   int LID = A_old_->Map().LID(ID);
   double t_end = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
-  set<int> potentialElementIds;
   
-  //const TinyVector<double,3> eleCenter = getLocalCenterPosition(       
-  //    const DRT::Element::DiscretizationType  distype)      
+  
+  // find nodal ids influencing a given element
+  std::set<int> potentialElementIds;
+  // use corner nodes
+  // TODO check for other elements
+  for(int i = 0; i < 4; i++)
+  {
+    const DRT::Node* node = element->Nodes()[i];
+    const BlitzVec3 x_node = currentboundarypositions_.find(node->Id())->second;
+    octTreeSearchElementsInCutOffRadius(x_node, potentialElementIds, radius);
+  }
+  
+  //const TinyVector<double,3> eleCenter = getLocalCenterPosition(element->Shape());     
+  
   
   //searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
   printf("not yet fully implemented");
@@ -258,7 +277,7 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const int curvenum,
 | from solid discretization                                          |
 *--------------------------------------------------------------------*/
 void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
-    Teuchos::RCP<Epetra_Vector> idisp_solid
+    Teuchos::RCP<Epetra_Vector>     idisp_solid
     )
 {
   // extract displacements associated with potential elements from solid discretization
@@ -278,7 +297,7 @@ void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
       // extract global dof ids
       boundarydis_->Dof(node, lm);
       vector<double> mydisp(3);
-      vector<double> currpos(3);
+      BlitzVec3 currpos(3);
       DRT::UTILS::ExtractMyValues(*idisp_total_,mydisp,lm);
       currpos[0] = node->X()[0] + mydisp[0];
       currpos[1] = node->X()[1] + mydisp[1];
@@ -286,6 +305,8 @@ void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
       currentboundarypositions_[node->Id()] = currpos;
     }
   }
+  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*boundarydis_, currentboundarypositions_);
+  octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
 }
 
 
@@ -299,9 +320,9 @@ void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
 void DRT::PotentialManager::searchElementsInCutOffRadius(
-    const vector<double>&   point,
-    set< int >&             potentialElementIds, 
-    const double            cutOff)
+    const BlitzVec3&        point,
+    std::set<int>&          potentialElementIds,
+    const double            radius)
 {
 
 const double tol =  1e-7;
@@ -309,18 +330,18 @@ const double tol =  1e-7;
   for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
   {
     // compute distance between point and node
-    const vector<double> currpos = currentboundarypositions_[lid];
+    const BlitzVec3 currpos = currentboundarypositions_[lid];
     double distance = 0;
     for(int k = 0; k < 3; k++)
     {
-      const double comp_diff = currpos[k] - point[k];
+      const double comp_diff = currpos(k) - point(k);
       const double diff_square = comp_diff*comp_diff;
       distance += diff_square; 
     }
     distance = sqrt(distance);
     
     // if node lies within cutoff radius -> collect element id in set
-    if(fabs(distance) - fabs(cutOff) < tol)
+    if(fabs(distance) - fabs(radius) < tol)
     {
       const DRT::Node* node = boundarydis_->lColNode(lid);
       const DRT::Element *const* elements = node->Elements();
@@ -330,6 +351,193 @@ const double tol =  1e-7;
   }
 }
 
+
+
+
+/*-------------------------------------------------------------------*
+| (private)                                               umay  07/08|
+|                                                                    |
+| serial version of search method                                    |
+| method runs over all nodes of the boundary discretization and      |
+| checks, if a node lies within a given cut off radius               |
+| in this case the element ids of adjacent elements are stored       |
+*--------------------------------------------------------------------*/
+void DRT::PotentialManager::octTreeSearchElementsInCutOffRadius(
+    const BlitzVec3&        point,
+    std::set<int>&          potentialElementIds,
+    const double            radius)
+{
+
+const double tol =  1e-7;
+
+  for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
+  {
+    // compute distance between point and node
+    const BlitzVec3 currpos = currentboundarypositions_[lid];
+    double distance = 0;
+    for(int k = 0; k < 3; k++)
+    {
+      const double comp_diff = currpos(k) - point(k);
+      const double diff_square = comp_diff*comp_diff;
+      distance += diff_square; 
+    }
+    distance = sqrt(distance);
+    
+    // if node lies within cutoff radius -> collect element id in set
+    if(fabs(distance) - fabs(radius) < tol)
+    {
+      const DRT::Node* node = boundarydis_->lColNode(lid);
+      const DRT::Element *const* elements = node->Elements();
+      for(int k = 0; k <  node->NumElement(); k++)
+        potentialElementIds.insert(elements[k]->Id());
+    }
+  } 
+}
+
+
+
+/*-------------------------------------------------------------------*
+| (private)                                               umay  08/08|
+|                                                                    |
+| collects all emement ids that belong to certain label              |
+*--------------------------------------------------------------------*/
+void DRT::PotentialManager::CollectElementsByPotentialCouplingLabel(
+    std::map<int,std::set<int> >&        elementsByLabel)
+{
+  // Reset
+  elementsByLabel.clear();
+  
+  // get condition
+  vector< DRT::Condition * >  potConditions;
+  boundarydis_->GetCondition ("Potential", potConditions);
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = potConditions.begin(); conditer!=potConditions.end(); ++conditer)
+  {
+    DRT::Condition* potCondition = *conditer;
+    const int label = potCondition->Getint("label");
+    const map<int, RCP<DRT::Element > > geometryMap = potCondition->Geometry();
+    std::set< DRT::Element* > boundaryElements;
+    // find all elements of this condition
+    map<int, RCP<DRT::Element > >::const_iterator iterGeo;
+    for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
+    {
+      DRT::Element*  cutterElement = iterGeo->second.get();
+      elementsByLabel[label].insert(cutterElement->Id());
+    }
+  }
+}
+
+
+/*
+void DRT::PotentialManager::EvaluatePotentialCondition(
+    ParameterList&                          params,
+    RefCountPtr<LINALG::SparseOperator>     systemmatrix1,
+    RefCountPtr<LINALG::SparseOperator>     systemmatrix2,
+    RefCountPtr<Epetra_Vector>              systemvector1,
+    Teuchos::RCP<Epetra_Vector>             systemvector2,
+    Teuchos::RCP<Epetra_Vector>             systemvector3,
+    const string&                           condstring,
+    const int                               condid)
+{
+  if (!discret_.Filled()) dserror("FillComplete() was not called");
+  if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  // get the current time
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time < 0.0) usetime = false;
+
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
+
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemvector2!=Teuchos::null;
+  const bool assemblevec3 = systemvector3!=Teuchos::null;
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first == condstring)
+    {
+      DRT::Condition& cond = *(fool->second);
+      if (condid == -1 || condid ==cond.Getint("ConditionID"))
+      {
+        map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+        // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+        // no check for empty geometry here since in parallel computations
+        // can exist processors which do not own a portion of the elements belonging
+        // to the condition geometry
+        map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+        // Evaluate Loadcurve if defined. Put current load factor in parameterlist
+        const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+        int curvenum = -1;
+        if (curve) curvenum = (*curve)[0];
+        double curvefac = 1.0;
+        if (curvenum>=0 && usetime)
+          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+        // Get ConditionID of current condition if defined and write value in parameterlist
+        const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+        if (CondIDVec)
+        {
+          params.set("ConditionID",(*CondIDVec)[0]);
+          char factorname[30];
+          sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+          params.set(factorname,curvefac);
+        }
+        else
+        {
+          params.set("LoadCurveFactor",curvefac);
+        }
+        params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
+
+        // define element matrices and vectors
+        Epetra_SerialDenseMatrix elematrix1;
+        Epetra_SerialDenseMatrix elematrix2;
+        Epetra_SerialDenseVector elevector1;
+        Epetra_SerialDenseVector elevector2;
+        Epetra_SerialDenseVector elevector3;
+
+        for (curr=geom.begin(); curr!=geom.end(); ++curr)
+        {
+          // get element location vector and ownerships
+          vector<int> lm;
+          vector<int> lmowner;
+          curr->second->LocationVector(*this,lm,lmowner);
+
+        // get dimension of element matrices and vectors
+        // Reshape element matrices and vectors and init to zero
+        const int eledim = (int)lm.size();
+        if (assemblemat1) elematrix1.Shape(eledim,eledim);
+        if (assemblemat2) elematrix2.Shape(eledim,eledim);
+        if (assemblevec1) elevector1.Size(eledim);
+        if (assemblevec2) elevector2.Size(eledim);
+        if (assemblevec3) elevector3.Size(eledim);
+
+          // call the element specific evaluate method
+          int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
+                                           elevector1,elevector2,elevector3);
+          if (err) dserror("error while evaluating elements");
+
+          // assembly
+          int eid = curr->second->Id();
+          if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+          if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
+          if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+          if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+          if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+        }
+      }
+    }
+  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  return;
+} // end of DRT::Discretization::EvaluateCondition
+*/
 
 
 #endif

@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 
 // Trilinos includes
 #include "drt_dserror.H"
-#include "linalg_systemmatrix.H"
+#include "linalg_sparsematrix.H"
 #include "linalg_solver.H"
 
 #define DEBUGGING_ANA 0 // turn on to get debugging printouts

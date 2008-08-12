@@ -41,7 +41,7 @@ Maintainer: Volker Gravemeier
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Eig.h>
 
-#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_sparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;
