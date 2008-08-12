@@ -1825,13 +1825,15 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
+  const Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
+  const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   cout << "SetState" << endl;
   cutterdiscret->SetState("idispcolnp", idispcolnp);
   cutterdiscret->SetState("idispcoln", idispcoln);
+  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
   cutterdiscret->SetState("ivelcoln", ivelcoln);
   cutterdiscret->SetState("iacccoln", iacccoln);
   
