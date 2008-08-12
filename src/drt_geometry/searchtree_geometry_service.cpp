@@ -25,6 +25,12 @@ BlitzMat3x2 GEO::getXAABBofDis(
     const std::map<int,BlitzVec3>& currentpositions)
 {
   BlitzMat3x2 XAABB;
+  if (dis.NumGlobalElements() == 0){
+    XAABB(0,0)=0;XAABB(0,1)=0;
+    XAABB(1,0)=0;XAABB(1,1)=0;
+    XAABB(2,0)=0;XAABB(2,1)=0;
+    return XAABB;
+    }
 
   // initialize XAABB as rectangle around the first point of dis
   const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
