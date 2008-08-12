@@ -620,6 +620,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
+  
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
+
+  setStringToIntegralParameter("THERMALBATH","None","Type of thermal bath applied to elements",
+                               //listing possible strings in input file in category FLOWFIELD
+                               tuple<std::string>("None","none",
+                                                  "Uniform","uniform",
+                                                  "ShearFlow","shearflow","Shearflow"),
+                               //translating input strings into BACI input parameters
+                               tuple<int>(INPUTPARAMS::thermalbath_none,INPUTPARAMS::thermalbath_none,
+                                          INPUTPARAMS::thermalbath_uniform,INPUTPARAMS::thermalbath_uniform,
+                                          INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow),
+                               &statmech);
+
+  //Reading whether dynamics remodelling of cross linker distribution takes place
+  setStringToIntegralParameter("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
+                               yesnotuple,yesnovalue,&statmech);
+  //Reading double parameter for maximal cross linker protein length
+  DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
+  //Reading double parameter for gradient of flow field
+  DoubleParameter("GRADIENT",0.0,"Velocity gradient of shear flow",&statmech);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");

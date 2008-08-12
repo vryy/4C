@@ -45,6 +45,16 @@ Maintainer: Ulrich Kuettler
 */
 namespace INPUTPARAMS
 {
+//-------------------------------------------STATISTICAL MECHANICS
+
+  /// Type of thermal bath affecting elements
+  /// (this enum represents the input file parameter THERMALBATH)
+  enum ThermalBathType
+  {
+    thermalbath_none,
+    thermalbath_uniform,
+    thermalbath_shearflow
+  };
   //-------------------------------------------STRUCTURAL CONTACT
 
   /// Type of structural contact problem

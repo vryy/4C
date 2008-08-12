@@ -33,6 +33,7 @@ Maintainer: Michael Gee
 #include "stru_resulttest.H"
 
 #include "../drt_inv_analysis/inv_analysis.H"
+#include "../drt_statmech/statmech.H"
 
 
 /*----------------------------------------------------------------------*
@@ -135,6 +136,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
   const Teuchos::ParameterList& iap      = DRT::Problem::Instance()->InverseAnalysisParams();
 
   if (actdis->Comm().MyPID()==0)
@@ -312,18 +314,38 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of contact type");
           break;
       }
+      
+      // detect whether thermal bath is present
+      bool thermalbath = false;
+      switch (Teuchos::getIntegralValue<int>(statmech,"THERMALBATH"))
+      {
+        case INPUTPARAMS::thermalbath_none:
+          thermalbath = false;
+          break;
+        case INPUTPARAMS::thermalbath_uniform:
+          thermalbath = true;
+          break;
+        case INPUTPARAMS::thermalbath_shearflow:
+          thermalbath = true;
+          break;
+        default:
+          dserror("Cannot cope with choice of thermal bath");
+          break;
+      }
 
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !inv_analysis)
+      if (!contact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
-        if (!inv_analysis)
+        if (contact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        else
+        if (inv_analysis)
           tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
+        if (thermalbath)
+          tintegrator = rcp(new StatMech(genalphaparams,*actdis,solver,output));
       }
 
       // do restart if demanded from input file
