@@ -121,6 +121,7 @@ CONVTOL      1.0E-6
 ISDMAX       0
 COUPMETHOD   conforming
 COUPFORCE    nodeforce
+SECONDORDER  Yes
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
