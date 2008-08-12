@@ -111,15 +111,22 @@ public:
   long double Det_long();
 
   /*!
-  \brief Update matrix components with scaled values of B,
-         this = ScalarThis * this + ScalarB * B
-  \author bborn \date 08/08
-  */
+   * \brief Update matrix components with scaled values of B,
+   *        this = ScalarThis * this + ScalarB * B
+   * \author bborn \date 08/08
+   */
   void Update(
     const double& ScalarB,  /*!< scale input matrix with */
     const Epetra_SerialDenseMatrix& B,  /*!< input matrix */
     const double& ScalarThis  /*!< scale this matrix with */
   );
+
+  /*!
+   * \brief Set matrix components to zero,
+   *        this = 0.0
+   * \author bborn \date 08/08
+   */
+  void Zero();
 
   //@}
 

@@ -191,4 +191,13 @@ void LINALG::SerialDenseMatrix::Update(
   AXPY(M()*N(), ScalarB, B.A(), A());
 }
 
+/*----------------------------------------------------------------------*
+ |   Set matrix components to zero                                      |
+ |   this = 0.0                                     (public) bborn 08/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SerialDenseMatrix::Zero()
+{
+  memset(A(), 0, M()*N()*sizeof(double));
+}
+
 #endif  // #ifdef CCADISCRET
