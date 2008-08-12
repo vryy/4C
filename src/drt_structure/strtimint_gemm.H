@@ -89,13 +89,13 @@ namespace STR
     //! Give linear order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
     { 
-      return 0;//(fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
+      return (fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
     { 
-      return 0;//(fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
+      return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
     }
 
     //! Return linear error coefficient of displacements
@@ -110,14 +110,12 @@ namespace STR
     //! 2nd order linear error coefficient of displacements
     double MethodLinErrCoeffDis2()
     {
-      // CHECK THIS
       return 1./6. - beta_*(1.-alphaf_)/(1.-alpham_);
     }
 
     //! 3rd order linear error coefficient of displacements
     double MethodLinErrCoeffDis3()
     {
-      // CHECK THIS
       return 1./12. - beta_*(1.-alphaf_)/(1.-alpham_);
     }
 
@@ -134,14 +132,12 @@ namespace STR
     //! 1st order linear error coefficient of velocities
     double MethodLinErrCoeffVel1()
     {
-      // CHECK THIS
       return 1./2. - gamma_*(1.-alphaf_)/(1.-alpham_);
     }
 
     //! 2nd order linear error coefficient of velocities
     double MethodLinErrCoeffVel2()
     {
-      // CHECK THIS
       return 1./3. - gamma_*(1.-alphaf_)/(1.-alpham_);
     }
 
@@ -223,25 +219,9 @@ namespace STR
     TimIntGEMM(const TimIntGEMM& old);
 
     //! @name Key coefficients
-    //! Please note, to obtain a second-order accurate scheme, you need
-    //! to follow the following formulas in which \f$\rho_\infty\f$ is the
-    //! spectral radius.
-    //! \f[ \alpha_m = (2*\rho_\infty - 1)/(\rho_\infty + 1) \f]
-    //! \f[ \alpha_f = \rho_\infty/(\rho_\infty + 1) \f]
-    //! \f[ \beta = 1/4*(1 - \alpha_m + \alpha_f)^2 \mbox{(max. damp. of high-freq. modes)} \f]
-    //! \f[ \gamma = 1/2 - \alpha_m + \alpha_f \f]
-    //! The spectral radius is responsible for the magnitude of 
-    //! numerical dissipation introduced. 
-    //! For instance
-    //! Without numerical dissipation at \f$\rho_\infty=1\f$
-    //! \f[ \beta=0.25, \gamma=0.5, \alpha_m=0.5, \alpha_f=0.5 \f]
-    //! Medium dissipation at \f$\rho_\infty=0.8\f$
-    //! \f[ \beta=25/81, \gamma=11/18, \alpha_m=1/3, \alpha_f=4/9  \f]
-    //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$
-    //! \f[ \beta=4/9, \gamma=10/12, \alpha_m=0, \alpha_f=1/3 \f]
     //@{
-    const double beta_;  //!< factor (0,1/2]
-    const double gamma_;  //!< factor (0,1]
+    static const double beta_ = 0.25;  //!< factor (0,1/2]
+    static const double gamma_ = 0.5;  //!< factor (0,1]
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [0,1)
     double xi_;  //!< factor [0,1)

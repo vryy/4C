@@ -39,8 +39,6 @@ STR::TimIntGEMM::TimIntGEMM
     solver,
     output
   ),
-  beta_(0.25),
-  gamma_(0.5),
   alphaf_(sdynparams.sublist("GEMM").get<double>("ALPHA_F")),
   alpham_(sdynparams.sublist("GEMM").get<double>("ALPHA_M")),
   xi_(sdynparams.sublist("GEMM").get<double>("XI")),

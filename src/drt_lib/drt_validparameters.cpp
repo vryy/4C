@@ -1605,6 +1605,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
 
   DoubleParameter("OUTSYSPERIOD", 0.0, "", &list);
   DoubleParameter("OUTSTRPERIOD", 0.0, "", &list);
+  DoubleParameter("OUTENEPERIOD", 0.0, "", &list);
   DoubleParameter("OUTRESTPERIOD", 0.0, "", &list);
 
   DoubleParameter("STEPSIZEMAX", 0.0, "", &list);

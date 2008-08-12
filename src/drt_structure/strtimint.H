@@ -171,7 +171,7 @@ namespace STR
     //! Destructor
     virtual ~TimInt()
     { 
-      delete energyfile_;
+      DetachEnergyFile();
     }
 
     //! Empty constructor
@@ -285,6 +285,34 @@ namespace STR
     
     //! Energy output
     void OutputEnergy();
+
+    //! Check wether energy output file is attached
+    bool AttachedEnergyFile()
+    {
+      if (energyfile_) return true;
+      else return false;
+    }
+
+    //! Attach file handle for energy file #energyfile_
+    void AttachEnergyFile()
+    {
+      if (not energyfile_)
+      {
+        std::string energyname 
+          = DRT::Problem::Instance()->OutputControlFile()->FileName()
+          + ".energy";
+        energyfile_ = new std::ofstream(energyname.c_str());
+        *energyfile_ << "# timestep time total_energy"
+                     << " kinetic_energy internal_energy external_energy"
+                     << std::endl;
+      }
+    }
+
+    //! Detach file handle for energy file #energyfile_
+    void DetachEnergyFile()
+    {
+      if (energyfile_) delete energyfile_;
+    }
 
     //@}
 

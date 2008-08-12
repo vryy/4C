@@ -133,7 +133,7 @@ STR::TimInt::TimInt
   writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
   writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
-  energyfile_(),
+  energyfile_(NULL),
   damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
@@ -190,13 +190,7 @@ STR::TimInt::TimInt
 
   // output file for energy
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
-  {
-    std::string energyname 
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + ".energy";
-    energyfile_ = new std::ofstream(energyname.c_str());
-    *energyfile_ << "# timestep       time total_energy kinetic_energy internal_energy external_energy" << std::endl;
-  }
+    AttachEnergyFile();
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices

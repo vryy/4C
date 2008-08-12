@@ -233,7 +233,7 @@ namespace STR
     //@{
     Teuchos::RCP<TimInt> sti_;  //!< marching time integrator
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
-    int mypid_;  //!< processor ID
+    int myrank_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     //@}
@@ -288,15 +288,19 @@ namespace STR
     //@{
     bool outsys_;  //!< do it this step: write system to file
     bool outstr_;  //!< do it this step: write stress/strain to file
+    bool outene_;  //!< do it this step: write energy to file
     bool outrest_;  //!< do it this step: write restart data to file
     double outsysperiod_;  //!< print system (dis,vel,acc,...) 
                            //!< every given period of time
     double outstrperiod_;  //!< print stress/strain every given 
                            //!< period of time
+    double outeneperiod_;  //!< print energies every given 
+                           //!< period of time
     double outrestperiod_;  //!< print restart every given 
                             //!< period of time
     double outsystime_;  //!< next output time point for system
     double outstrtime_;  //!< next output time point for stress/strain
+    double outenetime_;  //!< next output time point for energy
     double outresttime_;  //!< next output time point for restart
     //@}
 

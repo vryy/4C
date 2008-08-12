@@ -33,7 +33,7 @@ STR::TimAda::TimAda
 )
 : sti_(tis),
   discret_(tis->Discretization()),
-  mypid_(discret_->Comm().MyPID()),
+  myrank_(discret_->Comm().MyPID()),
   solver_(tis->GetSolver()),
   output_(tis->GetDiscretizationWriter()),
   //
@@ -64,16 +64,27 @@ STR::TimAda::TimAda
   //
   outsys_(false),
   outstr_(false),
+  outene_(false),
   outrest_(false),
   outsysperiod_(tap.get<double>("OUTSYSPERIOD")),
   outstrperiod_(tap.get<double>("OUTSTRPERIOD")),
+  outeneperiod_(tap.get<double>("OUTENEPERIOD")),
   outrestperiod_(tap.get<double>("OUTRESTPERIOD")),
   outsystime_(timeinitial_+outsysperiod_),
   outstrtime_(timeinitial_+outstrperiod_),
+  outenetime_(timeinitial_+outeneperiod_),
   outresttime_(timeinitial_+outrestperiod_)
 {
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+
+  // check wether energyout_ file handle was attached
+  if ( (not sti_->AttachedEnergyFile()) 
+       and (outeneperiod_ != 0.0) 
+       and (myrank_ == 0) )
+  {
+    sti_->AttachEnergyFile();
+  }
 
   // hallelujah
   return;
@@ -127,28 +138,38 @@ void STR::TimAda::Integrate()
       Indicate(accepted, stpsiznew);
 
       // adjust step-size
-      if ( (not accepted) and (mypid_ == 0) )
+      if (not accepted)
       {
-        printf("Repeating step with stepsize = %g\n", stpsiznew);
-        std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-                  << " - - - - - - - - - - - - - - -"
-                  << std::endl;
+        if (myrank_ == 0)
+        {
+          std::cout << "Repeating step with stepsize = " << stpsiznew
+                    << std::endl;
+          std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+                    << " - - - - - - - - - - - - - - -"
+                    << std::endl;
+        }
         stepsize_ = stpsiznew;
-        outrest_ = outsys_ = outstr_ = false;
+        outrest_ = outsys_ = outstr_ = outene_ = false;
+        sti_->ResetStep();
       }
+
+      // increment number of adapted step sizes in a row
       adaptstep_ += 1;
     }
 
     // update or break
-    if ( (mypid_ == 0) and (accepted) )
+    if (accepted)
     {
-      printf("Step size accepted\n");
+      if (myrank_ == 0)
+        std::cout << "Step size accepted" << std::endl;
     }
-    else if ( (mypid_ == 0) and (adaptstep_ >= adaptstepmax_) )
+    else if (adaptstep_ >= adaptstepmax_)
     {
-      printf("Could not find acceptable time step size ... continuing\n");
+      if (myrank_ == 0)
+        std::cout << "Could not find acceptable time step size"
+                  << " ... continuing" << std::endl;
     }
-    else
+    else 
     {
       dserror("Do not know what to do");
     }
@@ -172,10 +193,10 @@ void STR::TimAda::Integrate()
     stepsize_ = stpsiznew;
     //
     UpdatePeriod();
-    outrest_ = outsys_ = outstr_ = false;
+    outrest_ = outsys_ = outstr_ = outene_ = false;
     
     // the user reads but rarely listens
-    if (mypid_ == 0)
+    if (myrank_ == 0)
     {
       std::cout << "Step " << timestep_ 
                 << ", Time " << time_ 
@@ -221,7 +242,7 @@ void STR::TimAda::Indicate
   accepted = (norm < errtol_);
 
   // debug
-  if (mypid_ == 0)
+  if (myrank_ == 0)
   {
     std::cout << "LocErrNorm " << std::scientific << norm 
               << ", LocErrTol " << errtol_ 
@@ -239,8 +260,11 @@ void STR::TimAda::Indicate
   double sizrat = pow(errtol_/norm, 1.0/(errorder_+1.0));
 
   // debug
-  printf("sizrat %g, stepsize %g, stepsizepre %g\n",
-         sizrat, stepsize_, stepsizepre_);
+  if (myrank_ == 0)
+  {
+    printf("sizrat %g, stepsize %g, stepsizepre %g\n",
+           sizrat, stepsize_, stepsizepre_);
+  }
 
   // scaled by safety parameter
   sizrat *= sizeratioscale_;
@@ -305,6 +329,17 @@ void STR::TimAda::SizeForOutput()
     if (fabs(outstrtime_) < fabs(outsystime_)) outsys_ = false;
   }
 
+  // check output of energy
+  if ( (fabs(time_ + stepsize_) >= fabs(outenetime_))
+       and (outeneperiod_ != 0.0) )
+  {
+    stepsize_ = outenetime_ - time_;
+    outene_ = true;
+    if (fabs(outenetime_) < fabs(outresttime_)) outrest_ = false;
+    if (fabs(outenetime_) < fabs(outsystime_)) outsys_ = false;
+    if (fabs(outenetime_) < fabs(outstrtime_)) outstr_ = false;
+  }
+
   // give a lift
   return;
 }
@@ -337,6 +372,12 @@ void STR::TimAda::OutputPeriod()
     sti_->OutputStressStrain(datawritten);
   }
 
+  // output energy
+  if (outene_)
+  {
+    sti_->OutputEnergy();
+  }
+
   // flag down the cab
   return;
 }
@@ -348,6 +389,7 @@ void STR::TimAda::UpdatePeriod()
   if (outrest_) outresttime_ += outrestperiod_;
   if (outsys_) outsystime_ += outsysperiod_;
   if (outstr_) outstrtime_ += outstrperiod_;
+  if (outene_) outenetime_ += outeneperiod_;
   // freedom
   return;
 }

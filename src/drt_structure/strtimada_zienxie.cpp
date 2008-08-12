@@ -38,11 +38,14 @@ STR::TimAdaZienXie::TimAdaZienXie
     tis
   )
 {
-  // check if scheme is .LE. second order accurate
+  // check if scheme is .NE. second order accurate
   if (sti_->MethodOrderOfAccuracyDis() != 2)
   {
-    dserror("%s can only work with 2nd order accurate marching scheme",
-            MethodTitle().c_str());
+    dserror("%s can only work with 2nd order accurate marching scheme,"
+            " whereas the actual %s is of order %i",
+            MethodTitle().c_str(),
+            sti_->MethodTitle().c_str(),
+            sti_->MethodOrderOfAccuracyDis());
   }
 
   // hail Mary
