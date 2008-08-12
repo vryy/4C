@@ -192,9 +192,10 @@ namespace ADAPTER {
     //@}
 
     //! @name state vectors using the solid boundary parallel distribution (row vectors)
-    Teuchos::RCP<Epetra_Vector>            ivel_;      ///< interface velocity      n+1
-    Teuchos::RCP<Epetra_Vector>            idisp_;     ///< interface displacement  n+1
-    Teuchos::RCP<Epetra_Vector>            itrueres_;  ///< interface residual      n+1
+    Teuchos::RCP<Epetra_Vector>            idispnp_;   ///< interface displacement  n+1
+    Teuchos::RCP<Epetra_Vector>            ivelnp_;    ///< interface velocity      n+1
+    Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
+    Teuchos::RCP<Epetra_Vector>            idispn_;    ///< interface displacement  n
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
     Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
