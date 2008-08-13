@@ -1220,10 +1220,20 @@ OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o
 #               electrochemistry
 OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
                 src/drt_elch/elch_algorithm.o 
-#               combustion 
-OBJS_DRT_COMBUST = src/drt_combust/combust_dyn.o \
-                src/drt_combust/combust_algorithm.o \
-                src/drt_combust/combust_utils.o
+#------------------------------------------------ combustion (drt version)
+OBJS_DRT_COMBUST =  src/drt_combust/combust_dyn.o \
+                    src/drt_combust/combust_algorithm.o \
+                    src/drt_combust/combust_utils.o
+#------------------------------------------------ combustion (drt version)
+OBJS_DRT_COMBUST3_LIB = src/drt_combust/combust3.o \
+                        src/drt_combust/combust3_evaluate.o \
+                        src/drt_combust/combust3_input.o \
+                        src/drt_combust/combust3_line.o \
+                        src/drt_combust/combust3_line_evaluate.o \
+                        src/drt_combust/combust3_surface.o \
+                        src/drt_combust/combust3_surface_evaluate.o \
+                        src/drt_combust/combust3_sysmat3.o \
+                        src/drt_combust/combust3_sysmat4.o                                     
 # boundary elements
 OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/bele3_line.o \

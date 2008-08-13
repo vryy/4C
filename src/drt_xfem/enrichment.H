@@ -16,13 +16,11 @@
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_geometry/vector_definitions.H"
-
+#include "interface.H"
 
 //! namespace for all XFEM related stuff
 namespace XFEM
 {
-
-  class InterfaceHandle;
 
   /*!
    * \brief Corresponds to a specific enrichment with unique id and type

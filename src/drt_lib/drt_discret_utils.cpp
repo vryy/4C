@@ -72,6 +72,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       nv = 3;
       np = 1;
     break;
+    case DRT::Element::element_combust3:
+      nv = 3;
+      np = 1;
+    break;
     case DRT::Element::element_fluid2:
       nv = 2;
       np = 1;
@@ -159,6 +163,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_fluid3:
     case DRT::Element::element_xfluid3:
+    case DRT::Element::element_combust3:
       numdf = 4;
       dimns = 4;
     break;
@@ -378,7 +383,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
    //there are three rigid body modes for beam2
 
-    else if (ele->Type() == DRT::Element::element_beam2)
+  else if (ele->Type() == DRT::Element::element_beam2)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -422,7 +427,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   
   //there are three rigid body modes for beam2
 
-   else if (ele->Type() == DRT::Element::element_beam3)
+ else if (ele->Type() == DRT::Element::element_beam3)
  {
    for (int i=0; i<NumMyRowNodes(); ++i)
    {
@@ -586,7 +591,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
-  else if (ele->Type() == DRT::Element::element_fluid3 or ele->Type() == DRT::Element::element_xfluid3)
+  else if (ele->Type() == DRT::Element::element_fluid3 or ele->Type() == DRT::Element::element_xfluid3 or ele->Type() == DRT::Element::element_combust3)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {

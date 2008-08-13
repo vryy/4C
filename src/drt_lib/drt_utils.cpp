@@ -56,6 +56,7 @@ extern "C"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
+#include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_bele3/bele3.H"
@@ -315,6 +316,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_Combust3:
+    {
+      DRT::ELEMENTS::Combust3* object = new DRT::ELEMENTS::Combust3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Combust3Register:
+    {
+      DRT::ELEMENTS::Combust3Register* object =
+    	              new DRT::ELEMENTS::Combust3Register(DRT::Element::element_combust3);
+      object->Unpack(data);
+      return object;
+    }
+    break;    
     case ParObject_Condif3:
     {
       DRT::ELEMENTS::Condif3* object = new DRT::ELEMENTS::Condif3(-1,-1);
@@ -679,6 +695,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     condif3,
     fluid3,
     xfluid3,
+    combust3,
     ale2,
     ale3,
     bele3,
@@ -706,6 +723,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="CONDIF3") type = condif3;
   else if (eletype=="FLUID3") type = fluid3;
   else if (eletype=="XFLUID3") type = xfluid3;
+  else if (eletype=="COMBUST3") type = combust3;
   else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="BELE3") type = bele3;
@@ -802,6 +820,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case xfluid3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
+      return ele;
+    }
+    break;
+    case combust3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
       return ele;
     }
     break;
