@@ -642,6 +642,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
   //Reading double parameter for gradient of flow field
   DoubleParameter("GRADIENT",0.0,"Velocity gradient of shear flow",&statmech);
+  //Reading double parameter for crosslinker off-rate
+  DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
