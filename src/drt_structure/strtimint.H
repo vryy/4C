@@ -248,6 +248,11 @@ namespace STR
     //! quantities
     void ResetStep();
 
+    //@}
+
+    //! @name Output
+    //@{
+
     //! print summary after step
     virtual void PrintStep() = 0;
 
