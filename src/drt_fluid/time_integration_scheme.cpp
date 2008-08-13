@@ -102,39 +102,24 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     const Teuchos::RCP<Epetra_Vector>&   velnp,
     const Teuchos::RCP<Epetra_Vector>&   veln,
     const Teuchos::RCP<Epetra_Vector>&   velnm,
+    const Teuchos::RCP<Epetra_Vector>&   accn,
     const FLUID_TIMEINTTYPE              timealgo,
     const int                            step,
     const double                         theta,
     const double                         dta,
     const double                         dtp,
-    Teuchos::RCP<Epetra_Vector>&         accn,
-    Teuchos::RCP<Epetra_Vector>&         accnm
+    Teuchos::RCP<Epetra_Vector>&         accnp
 )
 {
 
-  // update acceleration
+  // in the first step, we have no old acceleration values
   if (step == 1)
   {
-    accnm->PutScalar(0.0);
-
     // do just a linear interpolation within the first timestep
-    accn->Update( 1.0/dta,*velnp,1.0);
-
-    accn->Update(-1.0/dta,*veln ,1.0);
-
-    // ???
-    accnm->Update(1.0,*accn,0.0);
-    if (timealgo == timeint_stationary)
-    {
-      accn->PutScalar(0.0);
-    }
-
+    accnp->Update( 1.0/dta,*velnp,-1.0/dta,*veln, 0.0);
   }
   else
   {
-    // prev. acceleration becomes (n-1)-accel. of next time step
-    accnm->Update(1.0,*accn,0.0);
-
     /*
 
     One-step-Theta:
@@ -152,41 +137,42 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
                + ----------------------- vel(n-1)
                  dt(n-1)*[dt(n)+dt(n-1)]
 
-      */
+    */
 
-      switch (timealgo)
-      {
-          case timeint_one_step_theta: /* One step Theta time integration */
-          {
-            const double fact1 = 1.0/(theta*dta);
-            const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
-
-            accn->Update( fact1,*velnp,0.0);
-            accn->Update(-fact1,*veln ,1.0);
-            accn->Update( fact2,*accnm ,1.0);
-
-            break;
-          }
-          case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
-          {
-            if (dta*dtp < EPS15)
-              dserror("Zero time step size!!!!!");
-            const double sum = dta + dtp;
-
-            accn->Update((2.0*dta+dtp)/(dta*sum),*velnp,
-                          - sum /(dta*dtp),*veln ,0.0);
-            accn->Update(dta/(dtp*sum),*velnm,1.0);
-          }
-          break;
-          case timeint_stationary:
-          {
-            accn->PutScalar(0.0);
-          }
-          break;
-          default:
-            dserror("Time integration scheme unknown for mass rhs!");
-      }
+    switch (timealgo)
+    {
+    case timeint_one_step_theta: /* One step Theta time integration */
+    {
+      const double fact1 = 1.0/(theta*dta);
+      const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
+      
+      accnp->Update( fact1,*velnp,0.0);
+      accnp->Update(-fact1,*veln ,1.0);
+      accnp->Update( fact2,*accn ,1.0);
+      
+      break;
     }
+    case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+    {
+      if (dta*dtp < EPS15)
+        dserror("Zero time step size!!!!!");
+      const double sum = dta + dtp;
+      
+      accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp,
+          - sum /(dta*dtp),*veln ,0.0);
+      accnp->Update(dta/(dtp*sum),*velnm,1.0);
+      break;
+    }
+    default:
+      dserror("Time integration scheme unknown for mass rhs!");
+    }
+  }
+  
+  // no accelerations for stationary problems
+  if (timealgo == timeint_stationary)
+  {
+    accnp->PutScalar(0.0);
+  }
 
   return;
 }

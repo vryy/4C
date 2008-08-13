@@ -75,21 +75,18 @@ namespace TIMEINT_THETA_BDF2
       Teuchos::RCP<Epetra_Vector>&         hist
   );
   
-  /*!
-  \brief Update the solution after convergence of the nonlinear
-         iteration.
-  */
+  //! Calculate time derivatives for Stationary/OST/BDF2 time integration
   void CalculateAcceleration(
-      const Teuchos::RCP<Epetra_Vector>&   velnp,
-      const Teuchos::RCP<Epetra_Vector>&   veln,
-      const Teuchos::RCP<Epetra_Vector>&   velnm,
-      const FLUID_TIMEINTTYPE              timealgo,
-      const int                            step,
-      const double                         theta,
-      const double                         dta,
-      const double                         dtp,
-      Teuchos::RCP<Epetra_Vector>&         accn,
-      Teuchos::RCP<Epetra_Vector>&         accnm
+      const Teuchos::RCP<Epetra_Vector>&   velnp,    ///< velocity at     n+1
+      const Teuchos::RCP<Epetra_Vector>&   veln,     ///< velocity at     n
+      const Teuchos::RCP<Epetra_Vector>&   velnm,    ///< velocity at     n-1
+      const Teuchos::RCP<Epetra_Vector>&   accn,     ///< acceleration at n
+      const FLUID_TIMEINTTYPE              timealgo, ///< time integration id
+      const int                            step,     ///< time step
+      const double                         theta,    ///< factor for one-step-theta method
+      const double                         dta,      ///< time step size (delta t)
+      const double                         dtp,      
+      Teuchos::RCP<Epetra_Vector>&         accnp     ///< acceleration at n+1
   );
   
 }

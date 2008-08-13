@@ -1565,11 +1565,16 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
-  // update acceleration
+  // prev. acceleration becomes (n-1)-accel. of next time step
+  accnm_->Update(1.0,*accn_,0.0);
+  
+  // compute acceleration 
+  // note a(n+1) is directly stored in a(n),
+  // hence we use a(n-1) as a(n) (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
-      velnp_, veln_, velnm_,
+      velnp_, veln_, velnm_, accnm_,
       timealgo_, step_, theta_, dta_, dtp_,
-      accn_, accnm_);
+      accn_);
 
   // solution of this step becomes most recent solution of the last step
   velnm_->Update(1.0,*veln_ ,0.0);

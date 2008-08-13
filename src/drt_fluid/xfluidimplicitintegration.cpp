@@ -476,14 +476,25 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   BlitzVec3 rigidveln;
   BlitzVec3 rigidaccn;
 
-  rigidveln(0) = (ivelcoln)[0];
-  rigidveln(1) = (ivelcoln)[1];
-  rigidveln(2) = (ivelcoln)[2];
+  if (ivelcoln.GlobalLength() > 3)
+  {
+    rigidveln(0) = (ivelcoln)[0];
+    rigidveln(1) = (ivelcoln)[1];
+    rigidveln(2) = (ivelcoln)[2];
+    
+    // falsch!!!
+    rigidaccn(0) = (iacccoln)[0];
+    rigidaccn(1) = (iacccoln)[1];
+    rigidaccn(2) = (iacccoln)[2];
+    
+  }
+  else
+  {
+    std::cout << "Could not compute rigid body velocity/acceleration. Set them to zero..." << std::endl;
+    rigidveln = 0.0;
+    rigidaccn = 0.0;
+  }
   cout << "rigidveln " << rigidveln << endl;
-
-  rigidaccn(0) = (iacccoln)[0];
-  rigidaccn(1) = (iacccoln)[1];
-  rigidaccn(2) = (iacccoln)[2];
   cout << "rigidaccn " << rigidaccn << endl;
 
 
@@ -1036,11 +1047,16 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::XFluidImplicitTimeInt::TimeUpdate()
 {
 
-  // update acceleration
+  // prev. acceleration becomes (n-1)-accel. of next time step
+  state_.accnm_->Update(1.0,*state_.accn_,0.0);
+  
+  // compute acceleration 
+  // note a(n+1) is directly stored in a(n),
+  // hence we use a(n-1) as a(n) (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
-      state_.velnp_, state_.veln_, state_.velnm_,
+      state_.velnp_, state_.veln_, state_.velnm_, state_.accnm_,
           timealgo_, step_, theta_, dta_, dtp_,
-          state_.accn_, state_.accnm_);
+          state_.accn_);
 
   // solution of this step becomes most recent solution of the last step
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
