@@ -106,7 +106,7 @@ void STR::TimAda::Integrate()
 {
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
-    dserror("This combination is not implemented ... Richardson's extrapolation");
+    dserror("This combination is not implemented ... Richardson's extrapolation ... Yoshida technique ...");
 
   // initialise time loop
   time_ = timeinitial_;
