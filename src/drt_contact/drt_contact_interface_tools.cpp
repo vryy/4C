@@ -33,7 +33,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
- |  Visualize node projections with gmsh                      popp 01/08|
+ |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                                        const int step, const int iter, const bool fric)

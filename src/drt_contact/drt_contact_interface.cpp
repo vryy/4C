@@ -325,6 +325,8 @@ void CONTACT::Interface::FillComplete()
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
+  // build octree for contact search
+  
   return;
 }
 
@@ -480,6 +482,9 @@ void CONTACT::Interface::Evaluate()
 
   // contact search algorithm
   EvaluateContactSearch();
+  
+  // contact search algorithm (Octree)
+  EvaluateContactSearchOctree();
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -610,6 +615,7 @@ bool CONTACT::Interface::EvaluateContactSearch()
     CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmapbound_,mindist);
     mnode->ClosestNode() = closestnode->Id();
 
+    //if (Comm().MyPID()==0) cout << "MNode: " << mnode->Id() << " ClosestNode: " << closestnode->Id() << " Distance: " << mindist << endl;
     // proceed only if nodes are not far from each other!!!
     if (mindist<=CONTACTCRITDIST)
     {
@@ -636,6 +642,23 @@ bool CONTACT::Interface::EvaluateContactSearch()
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Search for potentially contacting sl/ma pairs (public)    popp 08/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::EvaluateContactSearchOctree()
+{
+  /**********************************************************************/
+  /* CONTACT SEARCH ALGORITHM (OCTREE)                                  */
+  /* The idea of the search is to reduce the number of master / slave   */
+  /* element pairs that are checked for overlap and contact by intro-   */
+  /* ducing information about proximity and maybe history!              */
+  /* Here we use Ursula's octree to find the potential intersection     */
+  /* candidates on slave and master side.                               */
+  /**********************************************************************/
+ 
+  
+  return true;
+}
 /*----------------------------------------------------------------------*
  |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
  *----------------------------------------------------------------------*/
