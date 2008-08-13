@@ -66,19 +66,17 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   solver_ (solver),
   params_ (params),
   output_ (output),
+  myrank_(discret_->Comm().MyPID()),
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
+  stepmax_(params_.get<int>   ("max number timesteps")),
+  maxtime_(params_.get<double>("total time")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
 
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
@@ -88,8 +86,6 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
   dtp_ = dta_ = params_.get<double>("time step size");
-  stepmax_  = params_.get<int>   ("max number timesteps");
-  maxtime_  = params_.get<double>("total time");
   theta_    = params_.get<double>("theta");
 
   // create empty cutter discretization
@@ -327,6 +323,12 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   if (timealgo_==timeint_bdf2)
   {
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+  }
+  
+  // do a backward Euler step for the first timestep
+  if (step_==1)
+  {
+    theta_ = 1.0;
   }
 }
 

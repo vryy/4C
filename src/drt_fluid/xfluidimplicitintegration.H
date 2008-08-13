@@ -30,24 +30,17 @@ Maintainer: Axel Gerstenberger
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/dof_management.H"
 
-#include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
 #include <ctime>
-#include <cstdlib>
-#include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -316,16 +309,16 @@ protected:
   IO::DiscretizationWriter&              output_;
   
   //! the processor ID from the communicator
-  int                           myrank_;
+  const int                     myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
-  bool                          alefluid_;
+  const bool                    alefluid_;
   //@}
 
   //! @name time stepping variables
   double  time_;    ///< physical time
   int     step_;    ///< timestep
-  int     stepmax_; ///< maximal number of timesteps
-  double  maxtime_; ///< maximal physical computation time
+  const int     stepmax_; ///< maximal number of timesteps
+  const double  maxtime_; ///< maximal physical computation time
   //@}
 
   /// time algorithm flag
@@ -338,9 +331,9 @@ protected:
   bool extrapolationpredictor_;
 
   //! @name restart variables
-  int uprestart_;
-  int upres_;
-  int writestresses_;
+  const int uprestart_;
+  const int upres_;
+  const int writestresses_;
   //@}
 
   //! @name time step sizes
@@ -387,23 +380,26 @@ protected:
   struct State
   {
     /*! contains connection between nodal DofKey and a position in the global state arrays
-     *  should always fit to the current Epetra_Maps in this class
+     * 
+     *  should always fit to the current Epetra_Maps of this classes vectors
      */
     XFEM::NodalDofPosMap       nodalDofDistributionMap_;
+    
     /*! contains connection between elemental DofKey and a position in the global state arrays
-     *  should always fit to the current Epetra_Maps in this class
+     * 
+     *  should always fit to the current Epetra_Maps of this classes vectors
      */
     XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
     
-    //! @name accelerations at time n and n-1
-    Teuchos::RCP<Epetra_Vector>    accn_;
-    Teuchos::RCP<Epetra_Vector>    accnm_;
+    //! @name accelerations
+    Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
+    Teuchos::RCP<Epetra_Vector>    accnm_;  ///< accelerations at time n-1
     //@}
 
-    //! @name velocities and pressures at time n+1, n and n-1
-    Teuchos::RCP<Epetra_Vector>    velnp_;
-    Teuchos::RCP<Epetra_Vector>    veln_;
-    Teuchos::RCP<Epetra_Vector>    velnm_;
+    //! @name velocities and pressures
+    Teuchos::RCP<Epetra_Vector>    velnp_;  ///< velocities and pressures at time n+1
+    Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
+    Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
 
   } state_;
