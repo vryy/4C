@@ -118,7 +118,7 @@ void UTILS::UzawaSolver::Solve(
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
   //Solve one iteration step with augmented lagrange
   //Since we calculate displacement norm as well, at least one step has to be taken
-  while (((norm_uzawa > tolres_/20 or norm_constr_uzawa>tolconstr_)
+  while (((norm_uzawa > tolres_/10 or norm_constr_uzawa>tolconstr_/10)
           and numiter_uzawa < maxIter_) or numiter_uzawa<1)
   {
       LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,dirichtoggle_);
@@ -192,7 +192,7 @@ void UTILS::UzawaSolver::Solve(
           }
         }
       }
-      if (uzawaParam_*norm_constr_uzawa<1.0E-10)
+      if (uzawaParam_<1.0E-8)
       {
         uzawaParam_*=1.0E3;
         break;
