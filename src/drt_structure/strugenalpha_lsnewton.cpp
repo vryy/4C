@@ -175,8 +175,10 @@ void StruGenAlpha::LineSearchNewton()
       discret_.SetState("residual displacement",disim);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
 #else
       discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
 #endif
 #ifdef STRUGENALPHA_FINTLIKETR
       fintn_->PutScalar(0.0);  // initialise internal force vector
