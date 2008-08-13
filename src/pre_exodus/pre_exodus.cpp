@@ -63,6 +63,7 @@ int main(
   int soshseedid = 0;
   int soshgmsh = -1;
   int concat2loose = 0;
+  int diveblocks = 0;
   
   // related to centerline
   vector<double> cline_coordcorr(3);
@@ -80,6 +81,7 @@ int main(
   // here options related to solid shell extrusion are defined
   My_CLP.setOption("gensosh",&soshthickness,"generate solid-shell body with given thickness");
   My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
+  My_CLP.setOption("diveblocks",&diveblocks,"if larger 0 the xxx inner elements of generated layers are put into first eblock, the rest into second");
   My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
   My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
   My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
@@ -134,7 +136,8 @@ int main(
   // generate solid shell extrusion based on exodus file
   if (soshthickness!=0.0){
     if (exofile=="") dserror("no exofile specified for extrusion");
-    EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose);
+    if (soshnumlayer <= diveblocks) dserror("number of layers and inner-layer elements mismatch, check if numlayer>diveblocks!");
+    EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose, diveblocks);
     mysosh.WriteMesh("extr_" + exofile);
     
     exit(0);

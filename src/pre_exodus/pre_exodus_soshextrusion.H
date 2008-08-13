@@ -36,7 +36,7 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-  Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose);
+  Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose, int diveblocks);
   
   bool CheckExtrusion(const EXODUS::ElementBlock eblock);
   bool CheckExtrusion(const EXODUS::SideSet sideset);
@@ -87,6 +87,7 @@ namespace EXODUS
   map<int,vector<int> > ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
       const set<int>& doneles, const map<int,vector<int> >& ele_conn, const set<int>& todo_eleset);
 
+  void PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes);
   void PlotStartEleGmsh(const int eleid, const vector<int> elenodes, 
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
   

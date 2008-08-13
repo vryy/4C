@@ -26,7 +26,7 @@ using namespace Teuchos;
 
 
 /* Method to extrude a surface to become a volumetric body */
-EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose)
+EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose, int diveblocks)
 {
   int highestnid = basemesh.GetNumNodes() +1;
   //map<int,vector<double> > newnodes;
@@ -162,6 +162,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     vector<int> actelenodes = ele_conn.find(startele)->second;
     vector<int>::const_iterator i_node;
     int newid;
+    bool havehexes = false;
+    if (actelenodes.size()==4) havehexes = true;
     
     // calculate the normal at the first node which defines the "outside" dir
     vector<int> myNodeNbrs = FindNodeNeighbors(actelenodes,actelenodes.front());
@@ -405,6 +407,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
           }
           
           if (actnbrnodes.size() > 3){ // in case of neighbor not being a tri3
+            havehexes = true;
             
             /* the new elements orientation is opposite the current one
              * therefore the FOURTH node is gained from the neighbor ele */
@@ -555,28 +558,77 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       int hexcounter = 0;
       RCP<map<int,vector<int> > > wegconn = rcp(new map<int,vector<int> >);
       int wegcounter = 0;
+      
+      // case of 2 eblocks over extrusion (diveblocks > 0) ===================
+      RCP<map<int,vector<int> > > hexconn2 = rcp(new map<int,vector<int> >);
+      int hexcounter2 = 0;
+      RCP<map<int,vector<int> > > wegconn2 = rcp(new map<int,vector<int> >);
+      int wegcounter2 = 0;
+      int innerelecounter;
+      // =====================================================================
+      
       for (i_ele = newconn->begin(); i_ele != newconn->end(); ++i_ele){
         int numnodes = i_ele->second.size();
         if (numnodes == 8){
-          hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
-          if (newsideset.find(i_ele->first)!=newsideset.end()){
-            newsideset.find(i_ele->first)->second.at(0) = hexcounter;  // update sideset with new element ids
-            // store eblockid the sideset is related to at 3rd position, in hexcase it will be highestblock
-            newsideset.find(i_ele->first)->second.at(2) = highestblock;
+          if (diveblocks ==0 ){ // standard case: just one eblock over extrusion
+            hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+            if (newsideset.find(i_ele->first)!=newsideset.end()){
+              newsideset.find(i_ele->first)->second.at(0) = hexcounter;  // update sideset with new element ids
+              // store eblockid the sideset is related to at 3rd position, in hexcase it will be highestblock
+              newsideset.find(i_ele->first)->second.at(2) = highestblock;
+            }
+            hexcounter ++;
+          } else { // special case of 2 eblocks over extrusion
+            // initialize counter if we have a base-ele
+            if (layerstack.find(i_ele->first) != layerstack.end()) innerelecounter = 0;
+            
+            if (innerelecounter < diveblocks){  // insert ele into inner layer eblock
+              hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+              hexcounter ++;
+              innerelecounter ++;
+            } else { // insert ele into outer layer eblock
+              hexconn2->insert(pair<int,vector<int> >(hexcounter2,i_ele->second));
+              if (newsideset.find(i_ele->first)!=newsideset.end()){
+                newsideset.find(i_ele->first)->second.at(0) = hexcounter2;  // update sideset with new element ids
+                // store eblockid the sideset is related to at 3rd position, it will be highestblock + 1
+                newsideset.find(i_ele->first)->second.at(2) = highestblock + int(diveblocks>0);
+              }
+              hexcounter2 ++;
+            }
           }
-          hexcounter ++;
         }
         else if (numnodes == 6){
-          wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
-          if (newsideset.find(i_ele->first)!=newsideset.end()){
-            newsideset.find(i_ele->first)->second.at(0) = wegcounter;  // update sideset with new element ids
-            // store eblockid the sideset is related to at 3rd position, in wegcase it will probably be highestblock+1
-            newsideset.find(i_ele->first)->second.at(2) = highestblock+1;
+          if (diveblocks == 0){ // standard case: just one eblock over extrusion
+            wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+            if (newsideset.find(i_ele->first)!=newsideset.end()){
+              newsideset.find(i_ele->first)->second.at(0) = wegcounter;  // update sideset with new element ids
+              // store eblockid the sideset is related to at 3rd position, in wegcase it will be highestblock or if we have hexes highestblock+1 
+              newsideset.find(i_ele->first)->second.at(2) = highestblock + int(havehexes);
+            }
+            wegcounter ++;
+          } else { // special case of 2 eblocks over extrusion
+            // initialize counter if we have a base-ele
+            if (layerstack.find(i_ele->first) != layerstack.end()) innerelecounter = 0;
+            
+            if (innerelecounter < diveblocks){  // insert ele into inner layer eblock
+              wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+              wegcounter ++;
+              innerelecounter ++;
+            } else { // insert ele into outer layer eblock
+              wegconn2->insert(pair<int,vector<int> >(wegcounter2,i_ele->second));
+              if (newsideset.find(i_ele->first)!=newsideset.end()){
+                newsideset.find(i_ele->first)->second.at(0) = wegcounter2;  // update sideset with new element ids
+                // store eblockid the sideset is related to at 3rd position, in wegcase it will be highestblock or if we have hexes highestblock+2+1
+                newsideset.find(i_ele->first)->second.at(2) = highestblock + 2*int(havehexes) + int(diveblocks>0);
+              }
+              wegcounter2 ++;
+            }
           }
-          wegcounter ++;
         }
         else dserror("Number of basenodes for extrusion not supported");
       }
+      
+      
       if (hexcounter>0){
         std::ostringstream hexblockname;
         hexblockname << blockname.str().c_str() << "h" << highestblock;
@@ -584,14 +636,27 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
-      } else {
-        // in case we have ONLY wedges we need to trim the '+1' in the related eblockid
-        for(i_ss=newsideset.begin();i_ss!=newsideset.end();++i_ss) i_ss->second.at(2) -= 1;
       }
+      if (hexcounter2>0){
+        std::ostringstream hexblockname;
+        hexblockname << blockname.str().c_str() << "h" << highestblock;
+        string hexname = hexblockname.str().c_str();
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn2,hexname));
+        neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        highestblock ++;
+      }
+      
       if (wegcounter>0){
         std::ostringstream wegblockname;
         wegblockname << blockname.str().c_str() << "w" << highestblock;
         RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str().c_str()));
+        neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        highestblock ++;
+      }
+      if (wegcounter2>0){
+        std::ostringstream wegblockname;
+        wegblockname << blockname.str().c_str() << "w" << highestblock;
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn2,wegblockname.str().c_str()));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
@@ -815,7 +880,10 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
   map<int,vector<int> >::const_iterator i_encl;
   vector<int>::const_iterator it;
   int twistcounter = 0;
-  
+  int firstcheck = 0;
+  int secondcheck = 0;
+  int newnodesbyrepair = 0;
+  map<int,vector<int> >repaired_conn; // for gmsh plot
   
   for(i_encl=encloseconn.begin();i_encl!=encloseconn.end();++i_encl){
     vector<int> actele = i_encl->second;
@@ -828,6 +896,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
     
     if(actelesign != initelesign){ // thus we have a twisted element
       ++ twistcounter;
+      //PlotEleGmsh(actele, newnodes);
       //cout << "twisted: ";PrintVec(cout,i_encl->second);
       
       // get extrusion base which is always the first half of actele
@@ -836,7 +905,6 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
       
       // store angular deviation between avgNormal to nodeNormal
       map<double,int> normaldeviations;  // carefull, we compare doubles here, should work though
-      map<double,int>::iterator i_dev;
       pair<map<double,int>::iterator,bool> doubleentry;
       const double epsilon = 1.0E-6;
       map<int,vector<double> > node_normals;
@@ -852,109 +920,175 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
         // in case of two exactly equal deviations we raise it a bit
         if(doubleentry.second==false) normaldeviations.insert(pair<double,int>(dev+epsilon,*it));
       }
+      map<double,int>::iterator i_dev = normaldeviations.begin();
       
-      // repair element at all nodes with deviation larger as tolerance
-      const double devtol = 0.9;
-      vector<int> backup_actele(actele);
-      //map<int,vector<double> >backup_newnodes(newnodes);
-      
-      for(i_dev=normaldeviations.begin();i_dev!=normaldeviations.end();++i_dev){
-        double actdev = i_dev->first;
-        if (actdev < devtol){
-          int repairbasenode = i_dev->second;
-          vector<double> repairnormal = node_normals.find(repairbasenode)->second;
-          CheckNormDir(repairnormal,avgnode_normals.find(repairbasenode)->second);
-          vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,1,1,repairnormal);
+      while(actelesign!=initelesign && i_dev!=normaldeviations.end()){
+        
+        // get current repairnode and its normal and extrude to new coords
+        int repairbasenode = i_dev->second;
+        vector<double> repairnormal = node_normals.find(repairbasenode)->second;
+        CheckNormDir(repairnormal,avgnode_normals.find(repairbasenode)->second);
+        vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,1,1,repairnormal);
+        
+        int repairnodepos = FindPosinVec(repairbasenode,baseface) + nnodes/2;
+        int repairnode = actele.at(repairnodepos);
+        
+        // create new node or move node if only one element is left at this node
+        if(ext_node_conn.find(repairnode)->second.size() == 1){
+        // move existing node
+          newnodes.find(ExoToStore(repairnode))->second = newcoords;
+          coords.find(repairnode)->second = newcoords;  // coords update
           
-          // create new node or move node if only one element is left at this node
-          int repairnodepos = FindPosinVec(repairbasenode,baseface) + nnodes/2;
-          int repairnode = actele.at(repairnodepos);
-          
-          if(ext_node_conn.find(repairnode)->second.size() == 1){
-            // move case
-            newnodes.find(ExoToStore(repairnode))->second = newcoords;
-            coords.find(repairnode)->second = newcoords;  // coords update
-            
-            // layer case rework layer elements within enclosing one
-            if (numlayers > 1){
-              const vector<int> layereles = layerstack.find(i_encl->first)->second;
-              vector<int>::const_iterator i_layerele;
-              int i_layer = 1;
-              for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
-                vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
-                ++i_layer;
-                int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
-                newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
-              }
-            }
-          } else {
-            int newid;
-            
-            // layer case rework layer elements within enclosing one
+          // layer case rework layer elements within enclosing one
+          if (numlayers > 1){
             const vector<int> layereles = layerstack.find(i_encl->first)->second;
             vector<int>::const_iterator i_layerele;
             int i_layer = 1;
-            for(i_layerele=layereles.begin();i_layerele!=layereles.end();++i_layerele){
+            for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
               vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
-              
-              // replace also the base for inner inner
-              if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
-              
-              // create new node
-              newid = highestnid; ++ highestnid;
-              int newMapNid = ExoToStore(newid);
-              // put new coords into newnode map
-              newnodes.insert(pair<int,vector<double> >(newMapNid,newlayercoords));
-              coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
-              
-              // replace previously connected node corresponding to repairnode with new node in actlayerele
-              newconn.find(*i_layerele)->second.at(repairnodepos) = newid;
-              
               ++i_layer;
+              int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
+              newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
             }
-            // update actual enclosing element for following double check
-            actele.at(repairnodepos) = newid;
-            // update ext_node_conn
-            ext_node_conn.find(repairnode)->second.erase(i_encl->first);
           }
         }
+        else {
+        // we need a new node
+          int newid;
+          
+          // layer case rework layer elements within enclosing one
+          const vector<int> layereles = layerstack.find(i_encl->first)->second;
+          vector<int>::const_iterator i_layerele;
+          int i_layer = 1;
+          for(i_layerele=layereles.begin();i_layerele!=layereles.end();++i_layerele){
+            vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
+            
+            // replace also the base for inner inner
+            if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
+            
+            // create new node
+            newid = highestnid; ++ highestnid;
+            ++newnodesbyrepair;
+            int newMapNid = ExoToStore(newid);
+            // put new coords into newnode map
+            newnodes.insert(pair<int,vector<double> >(newMapNid,newlayercoords));
+            coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
+            
+            // replace previously connected node corresponding to repairnode with new node in actlayerele
+            newconn.find(*i_layerele)->second.at(repairnodepos) = newid;
+            
+            ++i_layer;
+          }
+          // update actual enclosing element for following double check
+          actele.at(repairnodepos) = newid;
+          // update ext_node_conn
+          ext_node_conn.find(repairnode)->second.erase(i_encl->first);
+        }
+        
+        // while loop update
+        actelesign = EleSaneSign(actele,coords);
+        ++i_dev;
+        //PlotEleGmsh(actele, newnodes);
+        ++firstcheck;
       }
+      
+//      // repair element at all nodes with deviation larger as tolerance
+//      const double devtol = 0.9;
+//      vector<int> backup_actele(actele);
+//      //map<int,vector<double> >backup_newnodes(newnodes);
+//      
+//      for(i_dev=normaldeviations.begin();i_dev!=normaldeviations.end();++i_dev){
+//        double actdev = i_dev->first;
+//        if (actdev < devtol){
+//          int repairbasenode = i_dev->second;
+//          vector<double> repairnormal = node_normals.find(repairbasenode)->second;
+//          CheckNormDir(repairnormal,avgnode_normals.find(repairbasenode)->second);
+//          vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,1,1,repairnormal);
+//          
+//          // create new node or move node if only one element is left at this node
+//          int repairnodepos = FindPosinVec(repairbasenode,baseface) + nnodes/2;
+//          int repairnode = actele.at(repairnodepos);
+//          
+//          if(ext_node_conn.find(repairnode)->second.size() == 1){
+//            // move case
+//            newnodes.find(ExoToStore(repairnode))->second = newcoords;
+//            coords.find(repairnode)->second = newcoords;  // coords update
+//            
+//            // layer case rework layer elements within enclosing one
+//            if (numlayers > 1){
+//              const vector<int> layereles = layerstack.find(i_encl->first)->second;
+//              vector<int>::const_iterator i_layerele;
+//              int i_layer = 1;
+//              for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
+//                vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
+//                ++i_layer;
+//                int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
+//                newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
+//              }
+//            }
+//            ++ firstcheck;
+//            
+//
+//          }
+//          else
+//          { // we need a new node
+//            int newid;
+//            
+//            // layer case rework layer elements within enclosing one
+//            const vector<int> layereles = layerstack.find(i_encl->first)->second;
+//            vector<int>::const_iterator i_layerele;
+//            int i_layer = 1;
+//            for(i_layerele=layereles.begin();i_layerele!=layereles.end();++i_layerele){
+//              vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
+//              
+//              // replace also the base for inner inner
+//              if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
+//              
+//              // create new node
+//              newid = highestnid; ++ highestnid;
+//              int newMapNid = ExoToStore(newid);
+//              // put new coords into newnode map
+//              newnodes.insert(pair<int,vector<double> >(newMapNid,newlayercoords));
+//              coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
+//              
+//              // replace previously connected node corresponding to repairnode with new node in actlayerele
+//              newconn.find(*i_layerele)->second.at(repairnodepos) = newid;
+//              
+//              ++i_layer;
+//            }
+//            // update actual enclosing element for following double check
+//            actele.at(repairnodepos) = newid;
+//            // update ext_node_conn
+//            ext_node_conn.find(repairnode)->second.erase(i_encl->first);
+//          }
+//        }
+//      }
       
       // check repaired element
       int repairedelesign = EleSaneSign(actele,coords);
       
       // double check
       if(repairedelesign != initelesign){
+        ++ secondcheck;
+        //PlotEleGmsh(actele, newnodes);
         // still not sane!
-        /*
-        cout << "Twisted Element Repairing still not successfull!" << endl;
-        cout << "Element: ", PrintVec(cout,actele);
-        cout << "InitSign: " << initelesign << ", ActSign: " << repairedelesign << endl;
-        cout << "Deviations: "; PrintMap(cout,normaldeviations);
-        cout << "Compare Normals: Face: "; PrintVec(cout,node_normals.find(baseface[0])->second);
-        
-        for(it=baseface.begin();it!=baseface.end();++it){
-          cout << "Node: " << *it << ", avg: ";
-          PrintVec(cout,avgnode_normals.find(*it)->second);
-        }
-        
-        map<int,vector<int> >obstinates;
-        obstinates.insert(pair<int,vector<int> >(i_encl->first,actele));
-        obstinates.insert(pair<int,vector<int> >(0,backup_actele));
-        PlotEleConnGmsh(obstinates,newnodes);
-        */
         
         // extreme repair: align all normals in one direction
         it = baseface.begin(); // first node is the reference
         vector<double>refnormal = node_normals.find(*it)->second;
         CheckNormDir(refnormal,avgnode_normals.find(*it)->second);
+        vector<double>repairnormal = node_normals.find(*it)->second;
+        CheckNormDir(repairnormal,avgnode_normals.find(*it)->second);
         for(it=(baseface.begin());it!=baseface.end();++it){
           int repairnodepos = FindPosinVec(*it,baseface) + nnodes/2;
           int repairnode = actele.at(repairnodepos);
-          vector<double>repairnormal = node_normals.find(*it)->second;
-          CheckNormDir(repairnormal,refnormal);
+          //vector<double>repairnormal = node_normals.find(*it)->second;
+          //CheckNormDir(repairnormal,refnormal);
           vector<double> newcoords = ExtrudeNodeCoords(coords.find(*it)->second,thickness,1,1,repairnormal);
+            
+
           // move node to this aligned position
+          // actually due to repairing above all extrusion nodes must be already new and can just be moved
           newnodes.find(ExoToStore(repairnode))->second = newcoords;
           coords.find(repairnode)->second = newcoords;  // coords update
           
@@ -971,16 +1105,22 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             }
           }
         }
+        //PlotEleGmsh(actele, newnodes);
         
         int doublerepairedelesign = EleSaneSign(actele,coords);
-        if (doublerepairedelesign != initelesign) cout << "What?! Element still twisted, I give up!" << endl;
+        if (doublerepairedelesign != initelesign)
+          cout << "What?! Element still twisted, I give up! elesign=" << doublerepairedelesign << ", reference elesign=" << initelesign << endl;
         
         //PlotEleConnGmsh(obstinates,newnodes);
-
       }
-      
+
+      repaired_conn.insert(pair<int,vector<int> >(twistcounter,actele));
     }
   }
+
+  cout << "firstcheck: " << firstcheck << ", secondcheck: " << secondcheck << endl;
+  cout << "During repair " << newnodesbyrepair << " new nodes have been created."<<endl;
+  PlotEleConnGmsh(repaired_conn,newnodes,repaired_conn);
   
   return twistcounter;
 }
@@ -1394,6 +1534,33 @@ map<int,vector<int> > EXODUS::ExtrusionErrorOutput(const int secedgenode,const i
   return leftovers;
 }
 
+void EXODUS::PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes)
+{
+  ofstream f_system("ele.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Element \" {" << endl;
+  int numnodes = elenodes.size();
+  if (numnodes==6) gmshfilecontent << "SI(";
+  else if (numnodes==8) gmshfilecontent << "SH(";
+  else if (numnodes==3) gmshfilecontent << "ST(";
+  else if (numnodes==4) gmshfilecontent << "SQ(";
+  for(unsigned int i=0; i<elenodes.size(); ++i){
+    // node map starts with 0 but exodus with 1!
+    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
+    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
+    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+    if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+    else gmshfilecontent << ",";
+  }
+  gmshfilecontent << "{";
+  for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << elenodes[i] << ",";
+  gmshfilecontent << elenodes.back() << "};" << endl;
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+
+}
+
 void EXODUS::PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
     const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal)
 {
@@ -1547,9 +1714,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
   map<int,vector<int> >::const_iterator it;
   for(it = conn.begin(); it != conn.end(); ++it){
     int eleid = it->first;
-    if(eleid >= plot_eleid-5){
-      eleid = -1; // will turn plot_eleid into dark blue in gmsh
-    }
+    //if(eleid >= plot_eleid-5){
+    //  eleid = -1; // will turn plot_eleid into dark blue in gmsh
+    //}
     const vector<int> elenodes = it->second;
     int numnodes = elenodes.size();
     if (numnodes==6) gmshfilecontent << "SI(";
@@ -1582,7 +1749,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
   for(it = conn.begin(); it != conn.end(); ++it){
     const vector<int> elenodes = it->second;
     int numnodes = elenodes.size();
-    if (numnodes==3) gmshfilecontent << "ST(";
+    if (numnodes==6) gmshfilecontent << "SI(";
+    else if (numnodes==8) gmshfilecontent << "SH(";
+    else if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
       // node map starts with 0 but exodus with 1!
@@ -1603,7 +1772,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     const vector<int> elenodes = it->second;
     int eleid = it->first;
     int numnodes = elenodes.size();
-    if (numnodes==3) gmshfilecontent << "ST(";
+    if (numnodes==6) gmshfilecontent << "SI(";
+    else if (numnodes==8) gmshfilecontent << "SH(";
+    else if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
       // node map starts with 0 but exodus with 1!

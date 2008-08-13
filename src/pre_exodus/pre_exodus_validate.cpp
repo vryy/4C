@@ -192,7 +192,6 @@ bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetr
 
 int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
 {
-  // use one point gauss rule to calculate jacobian at element center
   const int iel = nodes.size();
   DRT::Element::DiscretizationType distype;
   DRT::UTILS::GaussRule3D integrationrule = DRT::UTILS::intrule3D_undefined;
@@ -235,8 +234,10 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
   LINALG::SerialDenseMatrix xjm(NSD,NSD);
   int n_posdet = 0;
   int n_negdet = 0;
+  double tonode = sqrt(3);
+  
   for (int i = 0; i < intpoints.nquad; ++i) {
-    DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[i][0],intpoints.qxg[i][1],intpoints.qxg[i][2],distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,tonode*intpoints.qxg[i][0],tonode*intpoints.qxg[i][1],tonode*intpoints.qxg[i][2],distype);
     xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
     const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                        xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -245,7 +246,9 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
                        xjm(0,0)*xjm(1,2)*xjm(2,1)-
                        xjm(0,1)*xjm(1,0)*xjm(2,2);
     if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
-    if (det<0) ++n_negdet;
+    if (det<0){
+      ++n_negdet;
+    }
     else ++n_posdet;
   }
   
