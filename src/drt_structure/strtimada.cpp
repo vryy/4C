@@ -24,7 +24,6 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimada.H"
 
-
 /*----------------------------------------------------------------------*/
 /* Constructor */
 STR::TimAda::TimAda
@@ -73,12 +72,13 @@ STR::TimAda::TimAda
   outstrperiod_(tap.get<double>("OUTSTRPERIOD")),
   outeneperiod_(tap.get<double>("OUTENEPERIOD")),
   outrestperiod_(tap.get<double>("OUTRESTPERIOD")),
+  outsizeevery_(tap.get<int>("OUTSIZEEVERY")),
   outsystime_(timeinitial_+outsysperiod_),
   outstrtime_(timeinitial_+outstrperiod_),
   outenetime_(timeinitial_+outeneperiod_),
-  outresttime_(timeinitial_+outrestperiod_)
+  outresttime_(timeinitial_+outrestperiod_),
+  outsizefile_(NULL)
 {
-  
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
@@ -88,6 +88,12 @@ STR::TimAda::TimAda
        and (myrank_ == 0) )
   {
     sti_->AttachEnergyFile();
+  }
+
+  // check if step size file is wanted and attach
+  if ( (outsizeevery_ != 0) and (myrank_ == 0) )
+  {
+    AttachFileStepSize();
   }
 
   // hallelujah
@@ -184,8 +190,8 @@ void STR::TimAda::Integrate()
     // printing and output
     sti_->UpdateStep();
     sti_->PrintStep();
-    //
     OutputPeriod();
+    OutputStepSize();
     
     // update
     sti_->stepn_ = timestep_ += 1;
@@ -393,6 +399,23 @@ void STR::TimAda::UpdatePeriod()
   if (outene_) outenetime_ += outeneperiod_;
   // freedom
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Write step size */
+void STR::TimAda::OutputStepSize()
+{
+  if ( (outsizeevery_ != 0)
+       and (timestep_%outsizeevery_ == 0)
+       and (myrank_ == 0) )
+  {
+    *outsizefile_ << " " << std::setw(12) << timestep_
+                  << std::scientific << std::setprecision(8)
+                  << " " << time_
+                  << " " << stepsize_
+                  << " " << std::setw(2) << adaptstep_
+                  << std::endl;
+  }
 }
 
 /*----------------------------------------------------------------------*/

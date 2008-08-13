@@ -118,7 +118,10 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~TimAda() { ; }
+    virtual ~TimAda()
+    {
+      DetachFileStepSize();
+    }
 
     //! @name Actions
     //@{
@@ -182,6 +185,36 @@ namespace STR
 
     //!  Update output periods
     void UpdatePeriod();
+
+    //! Check wether step size output file is attached
+    bool AttachedFileStepSize()
+    {
+      if (outsizefile_) return true;
+      else return false;
+    }
+
+    //! Attach file handle for step size file #outsizefile_
+    void AttachFileStepSize()
+    {
+      if (not outsizefile_)
+      {
+        std::string filename 
+          = DRT::Problem::Instance()->OutputControlFile()->FileName()
+          + ".stepsize";
+        outsizefile_ = new std::ofstream(filename.c_str());
+        *outsizefile_ << "# timestep time step-size adaptations"
+                      << std::endl;
+      }
+    }
+
+    //! Detach file handle for step size file #outsizefile_
+    void DetachFileStepSize()
+    {
+      if (outsizefile_) delete outsizefile_;
+    }
+
+    //! Write step size
+    void OutputStepSize();
 
     //@}
 
@@ -301,10 +334,12 @@ namespace STR
                            //!< period of time
     double outrestperiod_;  //!< print restart every given 
                             //!< period of time
+    int outsizeevery_;  //!< print step size every given step
     double outsystime_;  //!< next output time point for system
     double outstrtime_;  //!< next output time point for stress/strain
     double outenetime_;  //!< next output time point for energy
     double outresttime_;  //!< next output time point for restart
+    std::ofstream* outsizefile_;  //!< outputfile for step sizes
     //@}
 
   }; // class TimAda
@@ -313,10 +348,10 @@ namespace STR
 
 /*======================================================================*/
 /*!
-\brief Out stream operator
-\author bborn
-\date 10/07
-*/
+ * \brief Out stream inserter for STR::TimAda
+ *
+ * \author bborn \date 10/07
+ */
 std::ostream& operator<<
 (
   std::ostream& str,
