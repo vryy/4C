@@ -20,6 +20,8 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <iostream>
 
+#include "../drt_io/io_ostream0.H"
+
 #include "strtimada.H"
 
 
@@ -36,6 +38,7 @@ STR::TimAda::TimAda
   myrank_(discret_->Comm().MyPID()),
   solver_(tis->GetSolver()),
   output_(tis->GetDiscretizationWriter()),
+  cout0_(discret_->Comm(), std::cout),
   //
   timeinitial_(0.0),
   timefinal_(sdyn.get<double>("MAXTIME")),
@@ -75,6 +78,7 @@ STR::TimAda::TimAda
   outenetime_(timeinitial_+outeneperiod_),
   outresttime_(timeinitial_+outrestperiod_)
 {
+  
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
@@ -140,14 +144,11 @@ void STR::TimAda::Integrate()
       // adjust step-size
       if (not accepted)
       {
-        if (myrank_ == 0)
-        {
-          std::cout << "Repeating step with stepsize = " << stpsiznew
-                    << std::endl;
-          std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-                    << " - - - - - - - - - - - - - - -"
-                    << std::endl;
-        }
+        cout0_ << "Repeating step with stepsize = " << stpsiznew
+               << std::endl;
+        cout0_ << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+               << " - - - - - - - - - - - - - - -"
+               << std::endl;
         stepsize_ = stpsiznew;
         outrest_ = outsys_ = outstr_ = outene_ = false;
         sti_->ResetStep();
@@ -426,11 +427,11 @@ void STR::TimAda::PrintVariables
   std::ostream& str
 ) const
 {
-  str << "TimAda:  Variables" << endl
-      << "   Current time = " << time_ << endl
-      << "   Previous step size = " << stepsizepre_ << endl
-      << "   Current step size = " << stepsize_ << endl
-      << "   Current adaptive step = " << adaptstep_ << endl;
+  str << "TimAda:  Variables" << std::endl
+      << "   Current time = " << time_ << std::endl
+      << "   Previous step size = " << stepsizepre_ << std::endl
+      << "   Current step size = " << stepsize_ << std::endl
+      << "   Current adaptive step = " << adaptstep_ << std::endl;
   return;
 }
 
@@ -442,7 +443,7 @@ void STR::TimAda::Print
   std::ostream& str
 ) const
 {
-  str << "TimAda" << endl;
+  str << "TimAda" << std::endl;
   PrintConstants(str);
   PrintVariables(str);
   // step aside

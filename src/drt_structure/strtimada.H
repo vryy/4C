@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_ostream0.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -236,6 +237,8 @@ namespace STR
     int myrank_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    IO::Ostream0 cout0_;  //!< a singular stream to stdout 
+                          //!< in parallel environment
     //@}
 
 
