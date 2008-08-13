@@ -167,14 +167,12 @@ void STR::TimAda::Integrate()
     // update or break
     if (accepted)
     {
-      if (myrank_ == 0)
-        std::cout << "Step size accepted" << std::endl;
+      cout0_ << "Step size accepted" << std::endl;
     }
     else if (adaptstep_ >= adaptstepmax_)
     {
-      if (myrank_ == 0)
-        std::cout << "Could not find acceptable time step size"
-                  << " ... continuing" << std::endl;
+      cout0_ << "Could not find acceptable time step size"
+             << " ... continuing" << std::endl;
     }
     else 
     {
@@ -439,7 +437,7 @@ void STR::TimAda::PrintConstants
       << "   Error norm = " << TimIntVector::MapNormEnumToString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
-      << "   Max adaptive step = " << adaptstepmax_ << std::endl;
+      << "   Max adaptations = " << adaptstepmax_ << std::endl;
   return;
 }
 
