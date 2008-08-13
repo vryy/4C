@@ -38,15 +38,14 @@ actdisc_(discr)
   // over IDs as well as element results stored here can be used after all
   // constraints are evaluated
   
-  actdisc_->SetState("displacement",disp);
   minConstrID_=10000;
   int maxConstrID=0;
   volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID));
   areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID));
   areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID));
   
-  mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
   mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
+  mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
 
   numConstrID_=max(maxConstrID-minConstrID_+1,0);
   //----------------------------------------------------
@@ -76,14 +75,16 @@ actdisc_(discr)
     //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
     p.set("total time",time);
+    actdisc_->SetState("displacement",disp);
     volconstr3d_->Initialize(p,refbaseredundant);
     areaconstr3d_->Initialize(p,refbaseredundant);
     areaconstr2d_->Initialize(p,refbaseredundant);
     
-    ImportResults(refbasevalues_,refbaseredundant);
-    
-    mpconplane3d_->Initialize(p,refbasevalues_);
+    mpconline2d_->SetConstrState("displacement",disp);
     mpconline2d_->Initialize(p,refbasevalues_);
+    mpconplane3d_->SetConstrState("displacement",disp);
+    mpconplane3d_->Initialize(p,refbaseredundant);
+    ImportResults(refbasevalues_,refbaseredundant);
     
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
@@ -181,7 +182,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
-  
   ImportResults(actvalues_,actredundant);
   ImportResults(refbasevalues_,refbaseredundant,false);
   // ----------------------------------------------------
@@ -189,7 +189,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   // ----------------------------------------------------
   SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
   // Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
-  
   referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);  
   constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
   actdisc_->ClearState();

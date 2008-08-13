@@ -41,14 +41,16 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
 {
   if (constrcond_.size())
   {
-    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE");
-    ReplaceNumDof(actdisc_,constraintdis_);
-    RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
+    int dummy=0;
+    //create constraint discretization and store it with label 0, within the map
+    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE", dummy);
+    ReplaceNumDof(actdisc_,constraintdis_.find(0)->second);
+    RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
-    constraintdis_->ReplaceDofSet(newdofset);
+    (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = null;
-    constraintdis_->FillComplete();
+    (constraintdis_.find(0)->second)->FillComplete();
   }
 
   return;
@@ -138,14 +140,14 @@ void UTILS::MPConstraint2::Evaluate(
   switch (Type())
   {
     case mpcnodeonline2d:
-      params.set("action","calc_MPC_stiff");
+      params.set("action","calc_MPC2D_stiff");
     break;
     case none:
       return;
     default:
       dserror("Constraint/monitor is not an multi point constraint!");
   }
-  EvaluateConstraint(constraintdis_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
+  EvaluateConstraint(constraintdis_.find(0)->second,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
   
   return;
 }
@@ -154,12 +156,13 @@ void UTILS::MPConstraint2::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-RCP<DRT::Discretization> UTILS::MPConstraint2::CreateDiscretizationFromCondition
+map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
 (  
   RCP<DRT::Discretization> actdisc,
   vector< DRT::Condition* >      constrcondvec,
   const string&             discret_name,
-  const string&             element_name
+  const string&             element_name, 
+  int& startID
 )
 {
   RCP<Epetra_Comm> com = rcp(actdisc->Comm().Clone());
@@ -243,7 +246,9 @@ RCP<DRT::Discretization> UTILS::MPConstraint2::CreateDiscretizationFromCondition
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
   
-  return newdis;
+  map<int,RCP<DRT::Discretization> > newdismap;
+  newdismap[startID]=newdis;
+  return newdismap;
 }
 
 /*----------------------------------------------------------------------*

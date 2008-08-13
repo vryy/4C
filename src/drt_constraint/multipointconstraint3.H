@@ -86,7 +86,7 @@ namespace UTILS
         return constrtype_!=none;
     };
   
-    //@}
+ 
   
   private:
       
@@ -95,8 +95,6 @@ namespace UTILS
     MPConstraint3 operator = (const MPConstraint3& old);
     MPConstraint3(const MPConstraint3& old);
   
-    //! @name Private Member Functions
-      
     //! Return the ConstrType based on the condition name
     ConstrType GetConstrType(const string& Name);///<condition name
     
@@ -109,24 +107,30 @@ namespace UTILS
         Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by aasembly of element contributions
-    
+ 
+    //! Initialize constraint discretization and assemble the results to the refbasevector
+    void InitializeConstraint
+    ( 
+      RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by aasembly of element contributions
+    );
     
     //! creating a new discretization based on conditions containing constraint elements
-    RCP<DRT::Discretization> CreateDiscretizationFromCondition
+    map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
       RCP<DRT::Discretization> actdisc,
       vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
       const string&             discret_name, ///< name of new discretization
-      const string&             element_name ///< name of element type to create
+      const string&             element_name, ///< name of element type to create
+      int& startID  ///<ID to start with
     );
      
-    //! Reorder MPC nodes based on condition input 
-    void ReorderConstraintNodes(
-         vector<int>& nodeids,  ///< reordered node ids
-         const DRT::Condition* condname); ///< condition to deal with
-     
-    //@}
-  
+
+    map<int,bool> absconstraint_;///<maps condition ID to indicator if absolute values are to use for controlling
+    map<int,int> eletocondID_;///<maps element ID to condition ID, to allow use of other maps
+    map<int,int> eletocondvecindex_;///<maps element ID to condition index in vector
+      
   }; //class
 }
 #endif /*MPCONSTRAINT_H*/

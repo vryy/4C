@@ -111,12 +111,13 @@ namespace UTILS
     
     
     //! creating a new discretization based on conditions containing constraint elements
-    RCP<DRT::Discretization> CreateDiscretizationFromCondition
+    map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
       RCP<DRT::Discretization> actdisc,
       vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
       const string&             discret_name, ///< name of new discretization
-      const string&             element_name ///< name of element type to create
+      const string&             element_name, ///< name of element type to create
+      int& startID
     );
      
     //! Reorder MPC nodes based on condition input 

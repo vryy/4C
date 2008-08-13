@@ -68,6 +68,16 @@ namespace UTILS
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far   
     );  
+    
+    /*!
+    \brief Constructor of a constraint based on a conditions with a given name. 
+    */
+  
+    Constraint
+    (
+      RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+      const string& CondName ///< Name of condition to creat constraint from
+    );  
   
     /*!
         \brief Destructor

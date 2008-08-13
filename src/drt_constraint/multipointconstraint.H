@@ -46,6 +46,15 @@ namespace UTILS
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far   
     );  
+    
+    /*!
+        \brief Alternative Constructor
+    */
+    MPConstraint
+    (
+      RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+      const string& CondName ///< Name of condition to creat constraint from
+    );  
   
     /*!
         \brief Destructor
@@ -64,8 +73,12 @@ namespace UTILS
     {
       if (constrtype_!=none)
       {
-        constraintdis_->ClearState();
-        constraintdis_->SetState(state,V);
+        map<int,RCP<DRT::Discretization> >::iterator discrit;
+        for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
+        {
+          (discrit->second)->ClearState();
+          (discrit->second)->SetState(state,V);
+        }
       }
     };
       
@@ -104,7 +117,7 @@ namespace UTILS
   
     //@}
   
-  public:
+  protected:
       
     // don't want = operator, cctor and destructor
   
@@ -113,7 +126,7 @@ namespace UTILS
   
   
     //! additional discretization consisting of constraint elements
-    RCP<DRT::Discretization> constraintdis_;
+    map<int,RCP<DRT::Discretization> > constraintdis_;
   
     
     //! @name Private Member Functions
@@ -131,12 +144,13 @@ namespace UTILS
     )=0;
     
     //! creating a new discretization based on conditions containing constraint elements
-    virtual RCP<DRT::Discretization> CreateDiscretizationFromCondition
+    virtual map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
       RCP<DRT::Discretization> actdisc,
       vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
       const string&             discret_name, ///< name of new discretization
-      const string&             element_name ///< name of element type to create
+      const string&             element_name, ///< name of element type to create
+      int& startID
     )=0;
         
     ///replace numdofs in elements of constraint discretization
@@ -152,6 +166,33 @@ namespace UTILS
              const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
              ) const;
   
+    void PrintVec(ostream& os, const vector<int> actvec)
+    {
+      vector<int>::const_iterator i;
+      for (i=actvec.begin(); i<actvec.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+    }
+
+    void PrintVec(ostream& os, const vector<double> actvec)
+    {
+      vector<double>::const_iterator i;
+      for (i=actvec.begin(); i<actvec.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+    }
+
+    void PrintSet(ostream& os, const set<int> actset)
+    {
+      set<int>::iterator i;
+      for (i=actset.begin(); i != actset.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+      
+    }
     //@}
   
   }; //class

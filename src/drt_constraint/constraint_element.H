@@ -245,6 +245,7 @@ private:
   {
     none,
     calc_MPC3D_stiff,
+    calc_MPC3D_state,
     calc_MPC2D_dist_stiff,
     calc_MPC2D_angle_stiff
   };

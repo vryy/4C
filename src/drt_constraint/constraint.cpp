@@ -64,6 +64,38 @@ actdisc_(discr)
   }  
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                               tk 07/08|
+ *----------------------------------------------------------------------*/
+UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
+        const string& conditionname):
+actdisc_(discr)
+{
+  actdisc_->GetCondition(conditionname,constrcond_);
+  if (constrcond_.size())
+  {
+    constrtype_=GetConstrType(conditionname);
+    for (unsigned int i=0; i<constrcond_.size();i++)
+    {
+      vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
+      int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
+      if (myinittime.size())
+      {
+        inittimes_.insert(pair<int,double>(condID,myinittime[0]));
+        activecons_.insert(pair<int,bool>(condID,false));
+      }
+      else
+      {
+        inittimes_.insert(pair<int,double>(condID,0.0));
+        activecons_.insert(pair<int,bool>(condID,false));
+      }
+    }
+  }
+  else
+  {
+    constrtype_=none;
+  }  
+}
 
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
@@ -132,11 +164,7 @@ void UTILS::Constraint::Initialize
     int condID=(*CondIDVec)[0];
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if(inittimes_.find(condID)->second<=time)
-    {     
-      activecons_.erase(condID);
-      activecons_[condID]=true;
-    }
+    if(inittimes_.find(condID)->second<=time) activecons_.find(condID)->second=true;
   }
 }
 
@@ -223,7 +251,11 @@ void UTILS::Constraint::EvaluateConstraint(
       if(activecons_.find(condID)->second==false)
       {
         const string action = params.get<string>("action"); 
+        RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+        actdisc_->SetState("displacement",displast);
         Initialize(params,systemvector2);
+        RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+        actdisc_->SetState("displacement",disp);
         params.set("action",action);
       }
       {
@@ -320,7 +352,7 @@ void UTILS::Constraint::InitializeConstraint(
     int condID=(*CondIDVec)[0];
     params.set("ConditionID",condID);
     // if current time is larger than initialization time of the condition, start computing
-    if(inittimes_.find(condID)->second<=time)
+    if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
     {
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
   
@@ -364,8 +396,7 @@ void UTILS::Constraint::InitializeConstraint(
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
       }
       // remember next time, that this condition is already initialized, i.e. active
-      activecons_.erase(condID);
-      activecons_[condID]=true;
+      activecons_.find(condID)->second=true;
       cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
     }
     

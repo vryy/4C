@@ -46,25 +46,24 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
   // get the required action and distinguish between 2d and 3d MPC's
   string action = params.get<string>("action","none");
   if (action == "none") return 0;
-  else if (action=="calc_MPC_stiff")       
+  else if (action=="calc_MPC3D_stiff")       
   {
-    RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+    act=calc_MPC3D_stiff;  
+  }
+  else if (action=="calc_MPC3D_state")
+  {
+  act=calc_MPC3D_state;
+  }
+  else if (action=="calc_MPC2D_stiff")
+  {
     
-    //2D or 3D?
-    if (condition->Type()==DRT::Condition::MPC_NodeOnPlane_3D)
-    {
-      act=calc_MPC3D_stiff;  
-    }
-    else if (condition->Type()==DRT::Condition::MPC_NodeOnLine_2D)
-    {
+    RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+    const string* type = condition->Get<string>("control value");
 
-      RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-      const string* type = condition->Get<string>("control value");
-  
-      if (*type == "dist") act = calc_MPC2D_dist_stiff;
-      else if (*type == "angle") act = calc_MPC2D_angle_stiff;
-      else dserror("No constraint type specified. Value to control should by either be 'dist' or 'angle'!");
-    }
+    if (*type == "dist") act = calc_MPC2D_dist_stiff;
+    else if (*type == "angle") act = calc_MPC2D_angle_stiff;
+    else dserror("No constraint type in 2d MPC specified. Value to control should by either be 'dist' or 'angle'!");
+    
   }
   else
     dserror("Unknown type of action for ConstraintElement");
@@ -74,6 +73,33 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
     case none:
     {
       return(0);
+    }
+    break;
+    case calc_MPC3D_state:
+    {
+      if (NumDofPerNode(*(Nodes()[0]))!=3) dserror ("MPC only working with 3 dof per node");
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numnod = NumNode();
+      const int numdim = 3;
+      LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
+      SpatialConfiguration(xscurr,mydisp,numdim);
+      
+      LINALG::SerialDenseVector elementnormal(numdim);
+      ComputeElementNormal3D(xscurr,elementnormal);
+      if(abs(elementnormal.Norm2())<1E-6)
+      {
+        dserror("Bad plane, points almost on a line!");
+      }
+      double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
+      
+      const int minID =params.get("MinID",0);
+      const int condID=params.get("ConditionID",-1);
+      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      //update corresponding column in "constraint" matrix
+      elevec3[condID-minID]=normaldistance;      
     }
     break;
     case calc_MPC3D_stiff:

@@ -41,10 +41,24 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
     minID,
     maxID
   )
-{
-  
+{  
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                               tk 07/08|
+ *----------------------------------------------------------------------*/
+UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
+        const string& conditionname)
+: UTILS::Constraint
+  (
+    discr,
+    conditionname
+  )
+{  
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |(private)                                                   tk 05/08  |

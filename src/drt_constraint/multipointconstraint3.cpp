@@ -31,23 +31,41 @@ Maintainer: Thomas Kloeppel
 UTILS::MPConstraint3::MPConstraint3(RCP<DRT::Discretization> discr,
         const string& conditionname,
         int& minID,
-        int& maxID)
-: MPConstraint(discr,
-     conditionname,
-     minID,
-     maxID)
-{
+        int& maxID):
+MPConstraint(discr,
+    conditionname
+)
+{ 
   if (constrcond_.size())
   {
-    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE");
-    ReplaceNumDof(actdisc_,constraintdis_);
-    RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
-    actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
-    constraintdis_->ReplaceDofSet(newdofset);
-    newdofset = null;
-    constraintdis_->FillComplete();
-    constraintdis_->Print(cout);
+    maxID++;
+    // control the constraint by absolute or relative values
+    vector<DRT::Condition*>::iterator conditer;
+    for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
+    {
+      const int condID = (*(*conditer)->Get<vector<int> >("ConditionID"))[0];
+      if (minID>maxID) minID=maxID;
+      const string* type = (*conditer)-> Get<string>("control");
+      if (*type == "abs")  
+        absconstraint_[condID]=true;
+      else 
+        absconstraint_[condID]=false;
+    }
+    
+
+    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE",maxID);
+    map<int, RCP<DRT::Discretization> > ::iterator discriter;
+   
+    for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
+    {
+      ReplaceNumDof(actdisc_,discriter->second);
+      RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, discriter->second);
+      actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
+      RCP<DRT::DofSet> newdofset=rcp(new MPCDofSet(actdisc_));
+      (discriter->second)->ReplaceDofSet(newdofset);
+      newdofset=null;
+      (discriter->second)->FillComplete(); 
+    }
   }
 
   return;
@@ -73,8 +91,7 @@ void UTILS::MPConstraint3::Initialize
     // if current time (at) is larger than activation time of the condition, activate it 
     if(inittimes_.find(condID)->second<=time)
     {     
-      activecons_.erase(condID);
-      activecons_[condID]=true;
+      activecons_.find(condID)->second=true;
     }
   }
 }
@@ -92,31 +109,48 @@ void UTILS::MPConstraint3::Initialize(
   // in the input file
   // allocate vectors for amplitudes and IDs
  
-
+  
   vector<double> amplit(constrcond_.size());
   vector<int> IDs(constrcond_.size());
   // read data of the input files
+  
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
+    
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
-    if(inittimes_.find(condID)->second<=time)
+    if(inittimes_.find(condID)->second<=time&& (!(activecons_.find(condID)->second)))
     {
-      const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
-      const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
-      amplit[i]=(*MPCampl)[0];
-      const int mid=params.get("MinID",0);
-      IDs[i]=(*MPCcondID)[0]-mid;
-      // remember next time, that this condition is already initialized, i.e. active
-      activecons_.erase(condID);
-      activecons_[condID]=true;
+      if (absconstraint_.find(condID)->second)
+      {
+        const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
+        const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
+        amplit[i]=(*MPCampl)[0];
+        const int mid=params.get("MinID",0);
+        IDs[i]=(*MPCcondID)[0]-mid;
+        // remember next time, that this condition is already initialized, i.e. active
+      } 
+      else
+      {
+        switch (Type())
+        {
+          case mpcnodeonplane3d: 
+            params.set("action","calc_MPC3D_state");
+          break;
+          case none:
+            return;
+          default:
+            dserror("Constraint/monitor is not an multi point constraint!");
+        }
+        InitializeConstraint(constraintdis_.find(condID)->second,params,systemvector);
+      }
+      activecons_.find(condID)->second=true;
       cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
     }
   }
-  // replace systemvector by the given amplitude values
-  // systemvector is supposed to be the vector with initial values of the constraints
-  systemvector->ReplaceGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
+ 
+  if (actdisc_->Comm().MyPID()==0) systemvector->SumIntoGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
   
   return;
 }
@@ -137,14 +171,16 @@ void UTILS::MPConstraint3::Evaluate(
   switch (Type())
   {
     case mpcnodeonplane3d: 
-      params.set("action","calc_MPC_stiff");
+      params.set("action","calc_MPC3D_stiff");
     break;
     case none:
       return;
     default:
       dserror("Constraint/monitor is not an multi point constraint!");
   }
-  EvaluateConstraint(constraintdis_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
+  map<int, RCP<DRT::Discretization> > ::iterator discriter;
+  for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
+    EvaluateConstraint(discriter->second,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
   
   return;
 }
@@ -153,130 +189,140 @@ void UTILS::MPConstraint3::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-RCP<DRT::Discretization> UTILS::MPConstraint3::CreateDiscretizationFromCondition
+map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFromCondition
 (  
   RCP<DRT::Discretization> actdisc,
   vector< DRT::Condition* >      constrcondvec,
   const string&             discret_name,
-  const string&             element_name
+  const string&             element_name,
+  int& startID
 )
 {
-  RCP<Epetra_Comm> com = rcp(actdisc->Comm().Clone());
-
-  RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
-
-  if (!actdisc->Filled())
+  // start with empty map
+  map<int,RCP<DRT::Discretization> > newdiscmap;
+  
+   if (!actdisc->Filled())
   {
     actdisc->FillComplete();
   }
 
-  const int myrank = newdis->Comm().MyPID();
-
   if(constrcondvec.size()==0)
       dserror("number of multi point constraint conditions = 0 --> cannot create constraint discretization");
 
-  set<int> rownodeset;
-  set<int> colnodeset;
-  const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
 
-  // Loop all conditions in constrcondvec
-  for (unsigned int j=0;j<constrcondvec.size();j++)
+  // Loop all conditions in constrcondvec and build discretization for any condition ID
+  
+  int index=0; // counter for the index of condition in vector 
+  vector<DRT::Condition*>::iterator conditer;
+  for (conditer=constrcondvec.begin();conditer!=constrcondvec.end();conditer++)
   {
-    vector<int> ngid=*(constrcondvec[j]->Nodes());
-    const int numnodes=ngid.size();
-    // We sort the global node ids according to the definition of the boundary condition
-    ReorderConstraintNodes(ngid, constrcondvec[j]);
-
-    remove_copy_if(&ngid[0], &ngid[0]+numnodes,
-                     inserter(rownodeset, rownodeset.begin()),
-                     not1(DRT::UTILS::MyGID(actnoderowmap)));
-    // copy node ids specified in condition to colnodeset
-    copy(&ngid[0], &ngid[0]+numnodes,
-          inserter(colnodeset, colnodeset.begin()));
-
-    // construct boundary nodes, which use the same global id as the cutter nodes
-    for (int i=0; i<actnoderowmap->NumMyElements(); ++i)
+    // initialize a new discretization
+    RCP<Epetra_Comm> com = rcp(actdisc->Comm().Clone());
+    RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
+    const int myrank = newdis->Comm().MyPID();
+    set<int> rownodeset;
+    set<int> colnodeset;
+    const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
+    //get node IDs, this vector will only contain FREE nodes in the end
+    vector<int> ngid=*((*conditer)->Nodes());
+    // take three nodes defining plane as specified by user and put them into a set
+    const vector<int>*  defnv = (*conditer)->Get<vector<int> > ("planeNodes");
+    set<int> defns (defnv->begin(),defnv->end());
+    set<int>::iterator nsit;
+    // safe gids of definition nodes in a vector
+    vector<int> defnodeIDs;
+    
+    int counter=1;//counter is used to keep track of deleted node ids from the vector 
+    for (nsit=defns.begin(); nsit!=defns.end();++nsit)
     {
-      const int gid = actnoderowmap->GID(i);
-      if (rownodeset.find(gid)!=rownodeset.end())
-      {
-        const DRT::Node* standardnode = actdisc->lRowNode(i);
-        newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
-      }
+      defnodeIDs.push_back(ngid.at((*nsit)-counter));
+      ngid.erase(ngid.begin()+(*nsit)-counter);
+      counter++;
     }
-
-    if (myrank == 0)
+    
+    unsigned int nodeiter;
+    // loop over all free nodes of condition
+    for (nodeiter=0; nodeiter<ngid.size();nodeiter++)
     {
-      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", j, myrank);
-      // set the same global node ids to the ale element
-      constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
+      vector<int> ngid_ele = defnodeIDs;
+      ngid_ele.push_back(ngid[nodeiter]);
+      const int numnodes=ngid_ele.size();
       
-      // add constraint element
-      newdis->AddElement(constraintele);
-
+      remove_copy_if(&ngid_ele[0], &ngid_ele[0]+numnodes,
+                       inserter(rownodeset, rownodeset.begin()),
+                       not1(DRT::UTILS::MyGID(actnoderowmap)));
+      // copy node ids specified in condition to colnodeset
+      copy(&ngid_ele[0], &ngid_ele[0]+numnodes,
+            inserter(colnodeset, colnodeset.begin()));
+  
+      // construct constraint nodes, which use the same global id as the standard nodes
+      for (int i=0; i<actnoderowmap->NumMyElements(); ++i)
+      {
+        const int gid = actnoderowmap->GID(i);
+        if (rownodeset.find(gid)!=rownodeset.end())
+        {
+          const DRT::Node* standardnode = actdisc->lRowNode(i);
+          newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
+        }
+      }
+  
+      if (myrank == 0)
+      {
+        RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", nodeiter+startID, myrank);
+        // set the same global node ids to the ale element
+        constraintele->SetNodeIds(ngid_ele.size(), &(ngid_ele[0]));
+        // add constraint element
+        newdis->AddElement(constraintele);
+      }
+      // save the connection between element and condition 
+      eletocondID_[nodeiter+startID]=(*(*conditer)->Get<vector<int> >("ConditionID"))[0];
+      eletocondvecindex_[nodeiter+startID]=index;
     }
+    //adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter is larger than the ID
+    // of the last element
+    startID+=nodeiter;
+
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
-  }
-
-  //build unique node row map
-  vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
-  rownodeset.clear();
-  RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
-                                                             boundarynoderowvec.size(),
-                                                             &boundarynoderowvec[0],
-                                                             0,
-                                                             newdis->Comm()));
-  boundarynoderowvec.clear();
-
-  //build overlapping node column map
-  vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
-  colnodeset.clear();
-  RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
-                                                             constraintnodecolvec.size(),
-                                                             &constraintnodecolvec[0],
-                                                             0,
-                                                             newdis->Comm()));
-
-  constraintnodecolvec.clear();
-
-  DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
   
-  return newdis;
-}
-
-/*----------------------------------------------------------------------*
- |(private)                                                 tk 04/08    |
- |reorder MPC nodes based on condition input                            |
- *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::ReorderConstraintNodes
-(
-  vector<int>& nodeids,
-  const DRT::Condition* cond
-)
-{
-  // get this condition's nodes
-  vector<int> temp=nodeids;
-  if (nodeids.size()==4)
-  {
-    const vector<int>*    constrNode  = cond->Get<vector<int> >("constrNode");
-    nodeids[(*constrNode)[0]-1]=temp[3];
-    nodeids[3]=temp[(*constrNode)[0]-1];
+    //build unique node row map
+    vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
+    rownodeset.clear();
+    RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
+                                                               boundarynoderowvec.size(),
+                                                               &boundarynoderowvec[0],
+                                                               0,
+                                                               newdis->Comm()));
+    boundarynoderowvec.clear();
+  
+    //build overlapping node column map
+    vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
+    colnodeset.clear();
+    RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
+                                                               constraintnodecolvec.size(),
+                                                               &constraintnodecolvec[0],
+                                                               0,
+                                                               newdis->Comm()));
+  
+    constraintnodecolvec.clear();
+    DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
+    //put new discretization into the map
+    newdiscmap[(*(*conditer)->Get<vector<int> >("ConditionID"))[0]]=newdis;
+    // increase counter 
+    index++;
   }
-  else
-  {
-    dserror("Strange number of nodes for an MPC! Should be 4 in 3D.");
-  }
-  return;
+   
+  startID--; // set counter back to ID of the last element
+  return newdiscmap;
 }
-
 
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::EvaluateConstraint(RCP<DRT::Discretization> disc,
+void UTILS::MPConstraint3::EvaluateConstraint(
+    RCP<DRT::Discretization> disc,
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -307,17 +353,22 @@ void UTILS::MPConstraint3::EvaluateConstraint(RCP<DRT::Discretization> disc,
   const int numcolele = disc->NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
+    // some useful data for computation
     DRT::Element* actele = disc->lColElement(i);
-    DRT::Condition& cond = *(constrcond_[actele->Id()]);
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    int eid=actele->Id();
+    int condID = eletocondID_.find(eid)->second;
+    DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
     
     if(inittimes_.find(condID)->second<=time)
     {
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action"); 
+        const string action = params.get<string>("action");
+        RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+        SetConstrState("displacement",displast);
         Initialize(params,systemvector2);
+        RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+        SetConstrState("displacement",disp);
         params.set("action",action);
       }   
   
@@ -333,27 +384,23 @@ void UTILS::MPConstraint3::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblevec1) elevector1.Size(eledim);
       if (assemblevec2) elevector2.Size(eledim);        
       if (assemblevec3) elevector3.Size(systemvector3->MyLength());
-      DRT::Condition& cond = *(constrcond_[actele->Id()]);
-      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-      int condID=(*CondIDVec)[0];
-      params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set("ConditionID",eid);
+      
+      params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);
-      if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
-  
-      int eid = actele->Id();
+      if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),eid,err);
+        
       if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
       if (assemblemat2)
       {
         int minID=params.get("MinID",0);
         vector<int> colvec(1);
-        colvec[0]=condID-minID;
+        colvec[0]=eid-minID;
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-      //if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
       if (assemblevec3) 
       {
         vector<int> constrlm;
@@ -365,7 +412,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(RCP<DRT::Discretization> disc,
         }
         LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
       }
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      const vector<int>*    curve  = cond->Get<vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
@@ -376,9 +423,83 @@ void UTILS::MPConstraint3::EvaluateConstraint(RCP<DRT::Discretization> disc,
   
       // Get ConditionID of current condition if defined and write value in parameterlist
       char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",condID);
+      sprintf(factorname,"LoadCurveFactor %d",eid);
       params.set(factorname,curvefac);
     }
+  }
+  return;
+} // end of EvaluateCondition
+
+/*-----------------------------------------------------------------------*
+ |(private)                                                     tk 07/08 |
+ |Evaluate method, calling element evaluates of a condition and          |
+ |assembing results based on this conditions                             |
+ *----------------------------------------------------------------------*/
+void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
+    ParameterList&        params,
+    RCP<Epetra_Vector>    systemvector)
+{
+  if (!(disc->Filled())) dserror("FillComplete() was not called");
+  if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // loop over column elements
+  const double time = params.get("total time",-1.0);
+  const int numcolele = disc->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    // some useful data for computation
+    DRT::Element* actele = disc->lColElement(i);
+    int eid=actele->Id();
+    int condID = eletocondID_.find(eid)->second;
+    DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
+    
+    // get element location vector, dirichlet flags and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*disc,lm,lmowner);
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    const int eledim = (int)lm.size();
+    elematrix1.Shape(eledim,eledim);
+    elematrix2.Shape(eledim,eledim);
+    elevector1.Size(eledim);
+    elevector2.Size(eledim);        
+    elevector3.Size(systemvector->MyLength());
+    params.set("ConditionID",eid);
+    // call the element evaluate method
+    int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
+                               elevector1,elevector2,elevector3);
+    if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
+
+    vector<int> constrlm;
+    vector<int> constrowner;
+    for (int i=0; i<elevector3.Length();i++)
+    {
+      constrlm.push_back(i);
+      constrowner.push_back(actele->Owner());
+    }
+    LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
+    const vector<int>*    curve  = cond->Get<vector<int> >("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double curvefac = 1.0;
+    bool usetime = true;
+    if (time<0.0) usetime = false;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    char factorname[30];
+    sprintf(factorname,"LoadCurveFactor %d",condID);
+    params.set(factorname,curvefac);
+  
   }
   return;
 } // end of EvaluateCondition
