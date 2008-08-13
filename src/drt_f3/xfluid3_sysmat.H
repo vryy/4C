@@ -22,8 +22,8 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3.H"
 #include "../drt_xfem/interface.H"
 
-//namespace XFLUID
-//{
+namespace XFLUID
+{
   /*!
    * \brief entry point for Sysmat call
    * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
@@ -75,7 +75,7 @@ Maintainer: Axel Gerstenberger
           const bool                        cstab  ,
           const bool                        instationary
           );
-//}
+}
 
 #endif
 #endif

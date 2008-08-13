@@ -1862,7 +1862,7 @@ static void Sysmat3(
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void callSysmat3(
+void XFLUID::callSysmat3(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,

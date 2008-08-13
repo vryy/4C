@@ -1815,7 +1815,7 @@ static void Sysmat4(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void callSysmat4(
+void XFLUID::callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
