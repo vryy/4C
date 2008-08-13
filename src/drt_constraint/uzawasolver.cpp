@@ -84,7 +84,7 @@ void UTILS::UzawaSolver::Solve(
   // For every iteration step an uzawa algorithm is used to solve the linear system.
   //Preparation of uzawa method to solve the linear system.
   double norm_uzawa;
-  double norm_uzawa_alt;
+  double norm_uzawa_old;
   double quotient;
   double norm_constr_uzawa;
   int numiter_uzawa=0;
@@ -118,7 +118,7 @@ void UTILS::UzawaSolver::Solve(
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
   //Solve one iteration step with augmented lagrange
   //Since we calculate displacement norm as well, at least one step has to be taken
-  while (((norm_uzawa > tolres_/10 or norm_constr_uzawa>tolconstr_/10)
+  while (((norm_uzawa > tolres_/20 or norm_constr_uzawa>tolconstr_)
           and numiter_uzawa < maxIter_) or numiter_uzawa<1)
   {
       LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,dirichtoggle_);
@@ -139,7 +139,6 @@ void UTILS::UzawaSolver::Solve(
       lagrinc->Update(uzawaParam_,*constrTDispInc,uzawaParam_,*rhsconstr,1.0);
       
       //Compute residual of the uzawa algorithm
-      //constrMan_->ComputeConstrTimesLagrIncr(constrTLagrInc);
       constr->Multiply(false,*lagrinc,*constrTLagrInc);
       constrTLagrInc->Scale(-1.0);
       
@@ -150,7 +149,7 @@ void UTILS::UzawaSolver::Solve(
       // blank residual DOFs which are on Dirichlet BC
       Epetra_Vector rescopy(uzawa_res);
       uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
-      norm_uzawa_alt=norm_uzawa;
+      norm_uzawa_old=norm_uzawa;
       uzawa_res.Norm2(&norm_uzawa);
       Epetra_Vector constr_res(lagrinc->Map());
 
@@ -165,33 +164,38 @@ void UTILS::UzawaSolver::Solve(
       // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
       if (count_paramadapt>=2)
       {
-          double quotient_neu=norm_uzawa/norm_uzawa_alt;
-          // In case of divergence the parameter must be too high
-          if (quotient_neu>1)
+        double quotient_new=norm_uzawa/norm_uzawa_old;
+        // In case of divergence the parameter must be too high
+        if (quotient_new>1)
+        {
+          uzawaParam_=uzawaParam_/2.;
+          count_paramadapt=0;
+          quotient=1;
+        }
+        else
+        {
+          // In case the newly computed quotient is better than the one obtained from the
+          // previous parameter, the parameter is increased by a factor (1+quotient_new)
+          if (quotient>quotient_new)
           {
-            uzawaParam_=uzawaParam_/2.;
+            uzawaParam_=uzawaParam_*(1+quotient_new);
+            quotient=quotient_new;
             count_paramadapt=0;
-            quotient=1;
           }
+          // In case the newly computed quotient is worse than the one obtained from the
+          // previous parameter, the parameter is decreased by a factor 1/(1+quotient_new)
           else
           {
-            // In case the newly computed quotient is better than the one obtained from the
-            // previous parameter, the parameter is increased by a factor (1+quotient_neu)
-            if (quotient>quotient_neu)
-            {
-              uzawaParam_=uzawaParam_*(1+quotient_neu);
-              quotient=quotient_neu;
-              count_paramadapt=0;
-            }
-            // In case the newly computed quotient is worse than the one obtained from the
-            // previous parameter, the parameter is decreased by a factor 1/(1+quotient_neu)
-            else
-            {
-              uzawaParam_=uzawaParam_/(1+quotient_neu);
-              quotient=quotient_neu;
-              count_paramadapt=0;
-            }
+            uzawaParam_=uzawaParam_/(1+quotient_new);
+            quotient=quotient_new;
+            count_paramadapt=0;
           }
+        }
+      }
+      if (uzawaParam_*norm_constr_uzawa<1.0E-10)
+      {
+        uzawaParam_*=1.0E3;
+        break;
       }
       count_paramadapt++;
       numiter_uzawa++;
