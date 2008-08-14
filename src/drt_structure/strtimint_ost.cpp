@@ -166,17 +166,17 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
     damp_->Multiply(false, *velt_, *fvisct_);
   }
 
-  // build negative residual  Res = -( M . A_{n+theta}
-  //                                   + C . V_{n+theta}
-  //                                   + F_{int;n+theta}
-  //                                   - F_{ext;n+theta} )
-  fres_->Update(theta_, *fextn_, 1.0-theta_, *fext_, 0.0);
-  fres_->Update(-theta_, *fintn_, -(1.0-theta_), *fint_, 1.0);
+  // build residual  Res = M . A_{n+theta}
+  //                     + C . V_{n+theta}
+  //                     + F_{int;n+theta}
+  //                     - F_{ext;n+theta}
+  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
+  fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
   if (damping_ == damp_rayleigh)
   {
-    fres_->Update(-1.0, *fvisct_, 1.0);
+    fres_->Update(1.0, *fvisct_, 1.0);
   }
-  fres_->Update(-1.0, *finertt_, 1.0);
+  fres_->Update(1.0, *finertt_, 1.0);
 
   //cout << TimIntVector::CalculateNorm(vectornorm_l2, fextn_) << endl;
 

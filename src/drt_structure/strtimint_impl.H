@@ -173,7 +173,7 @@ namespace STR
 
     //! Evaluate _certain_ surface stresses and stiffness
     //!
-    //! The Evaluation happens internal-force like.
+    //! The Evaluation happens internal-force-like.
     void ApplyForceStiffSurfstress
     (
       const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
@@ -183,7 +183,7 @@ namespace STR
 
     //! evaluate certain potential forces and its stiffness
     //!
-    //! Evaluation happens internal-force like.
+    //! Evaluation happens internal-force-like.
     //! Which potentials are actually meant can be found 
     //! at DRT::PotentialManager
     void ApplyForceStiffPotential
@@ -192,6 +192,20 @@ namespace STR
       Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
       Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness
     );
+
+    //! Apply forces due to interface with fluid
+    virtual void AddForceInterface
+    (
+      const LINALG::MapExtractor& extractor,
+      Teuchos::RCP<Epetra_Vector> iforce,  ///< the force on interface
+      const double isign  ///< +1: internal-force-like
+                          ///< -1: external-force-like
+    )
+    {
+      Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*dofrowmap_, true);
+      extractor.AddCondVector(iforce, fifc);
+      fres_->Update(isign, *fifc, 1.0);
+    }
 
     //@}
 

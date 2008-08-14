@@ -469,6 +469,9 @@ void STR::TimIntImpl::NewtonFull()
   // equilibrium iteration loop
   while ( (not Converged()) and (iter_ <= itermax_) )
   {
+    // make negative residual
+    fres_->Scale(-1.0);
+
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 

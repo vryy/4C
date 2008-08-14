@@ -176,18 +176,18 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
     damp_->Multiply(false, *velm_, *fviscm_);
   }
 
-  // build negative residual
-  //    Res = -( M . A_{n+1-alpha_m}
-  //             + C . V_{n+1-alpha_f}
-  //             + F_{int;m}
-  //             - F_{ext;n+1-alpha_f} )
-  fres_->Update(1.0, *fextm_, 0.0);
-  fres_->Update(-1.0, *fintm_, 1.0);
+  // build residual
+  //    Res = M . A_{n+1-alpha_m}
+  //        + C . V_{n+1-alpha_f}
+  //        + F_{int;m}
+  //        - F_{ext;n+1-alpha_f}
+  fres_->Update(-1.0, *fextm_, 0.0);
+  fres_->Update(1.0, *fintm_, 1.0);
   if (damping_ == damp_rayleigh)
   {
-    fres_->Update(-1.0, *fviscm_, 1.0);
+    fres_->Update(1.0, *fviscm_, 1.0);
   }
-  fres_->Update(-1.0, *finertm_, 1.0);
+  fres_->Update(1.0, *finertm_, 1.0);
   
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M

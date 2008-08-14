@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
+#include "adapter_structure_timint.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -74,6 +75,41 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterList& prbdyn)
+{
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // major switch to different time integrators
+  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  {
+  case STRUCT_DYNAMIC::centr_diff :
+    dserror("no central differences in DRT");
+    break;
+  case STRUCT_DYNAMIC::gen_alfa :
+    SetupStruGenAlpha(prbdyn);  // <-- here is the show
+    break;
+  case STRUCT_DYNAMIC::statics :
+    dserror("no statics, please");
+    break;
+  case STRUCT_DYNAMIC::Gen_EMM :
+    dserror("Gen_EMM not supported");
+    break;
+  case STRUCT_DYNAMIC::genalpha :
+  case STRUCT_DYNAMIC::onesteptheta :
+  case STRUCT_DYNAMIC::gemm :
+    SetupTimIntImpl(prbdyn);  // <-- here is the show
+    break;
+  case STRUCT_DYNAMIC::ab2 :
+    dserror("explicitly no");
+    break;
+  default :
+    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+    break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::ParameterList& prbdyn)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
@@ -259,4 +295,107 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   structure_ = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
+{
+  // this is not exactly a one hundred meter race, but we need timing
+  Teuchos::RCP<Teuchos::Time> t 
+    = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
+  Teuchos::TimeMonitor monitor(*t);
+
+  // access the discretization
+  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+
+  // set degrees of freedom in the discretization
+  if (not actdis->Filled()) actdis->FillComplete();
+
+  // context for output and restart
+  Teuchos::RCP<IO::DiscretizationWriter> output
+    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  output->WriteMesh(0,0.0);
+
+  // set some pointers and variables
+  SOLVAR* actsolv = &solv[genprob.numsf];
+
+  // get input parameter lists and copy them, because a few parameters are overwritten
+  //const Teuchos::ParameterList& probtype 
+  //  = DRT::Problem::Instance()->ProblemTypeParams();
+  Teuchos::RCP<Teuchos::ParameterList> ioflags 
+    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
+  Teuchos::RCP<Teuchos::ParameterList> sdyn 
+    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
+
+  //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
+
+  // show default parameters
+  if ((actdis->Comm()).MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
+
+  // add extra parameters (a kind of work-around)
+  Teuchos::RCP<Teuchos::ParameterList> xparams 
+    = Teuchos::rcp(new Teuchos::ParameterList());
+  xparams->set<FILE*>("err file", allfiles.out_err);
+
+  // overwrite certain parameters
+  sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
+  sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
+  sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("UPRES"));
+  sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
+
+  // sanity checks and default flags
+  if (genprob.probtyp == prb_fsi)
+  {
+    const Teuchos::ParameterList& fsidyn 
+      = DRT::Problem::Instance()->FSIDynamicParams();
+
+    // Robin flags
+    INPUTPARAMS::FSIPartitionedCouplingMethod method
+      = Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    xparams->set<bool>("structrobin",
+                      ( (method==INPUTPARAMS::fsi_DirichletRobin) 
+                        or (method==INPUTPARAMS::fsi_RobinRobin) ));
+
+    // THIS SHOULD GO, OR SHOULDN'T IT?
+    xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
+
+    // check if predictor fits to FSI algo
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if ( (coupling == fsi_iter_monolithic)
+         or (coupling == fsi_iter_monolithiclagrange)
+         or (coupling == fsi_iter_monolithicstructuresplit) )
+    {
+      if (Teuchos::getIntegralValue<int>(*sdyn,"PREDICT")
+          != STRUCT_DYNAMIC::pred_constdisvelacc)
+        dserror("only constant structure predictor with monolithic FSI possible");
+#if 0
+      // THIS WAS AND WILL BE DEACTIVATED!!!
+      // overwrite time integration flags
+      genalphaparams->set<double>("gamma",fsidyn.get<double>("GAMMA"));
+      genalphaparams->set<double>("alpha m",fsidyn.get<double>("ALPHA_M"));
+      genalphaparams->set<double>("alpha f",fsidyn.get<double>("ALPHA_F"));
+#endif
+    }
+  }
+
+  // create a solver
+  Teuchos::RCP<ParameterList> solveparams 
+    = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<LINALG::Solver> solver
+    = Teuchos::rcp(new LINALG::Solver(solveparams,
+                                      actdis->Comm(),
+                                      allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams, actsolv);
+  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+
+  // create marching time integrator
+  structure_ = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
+                                                actdis, solver, output));
+
+  // see you
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 #endif

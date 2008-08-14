@@ -237,6 +237,12 @@ namespace ADAPTER {
     /// setup structure algorithm
     void SetupStructure(const Teuchos::ParameterList& prbdyn);
 
+    /// setup structure algorithm of StruGenAlpha type
+    void SetupStruGenAlpha(const Teuchos::ParameterList& prbdyn);
+
+    /// setup structure algorithm of STR::TimIntImpl type
+    void SetupTimIntImpl(const Teuchos::ParameterList& prbdyn);
+
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
   };

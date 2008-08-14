@@ -29,9 +29,9 @@ Maintainer: Burkhard Bornemann
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_structure/strtimint.H"
 #include "../drt_structure/stru_resulttest.H"
 
+#include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
 
 
@@ -51,8 +51,8 @@ namespace ADAPTER {
 
     /// Constructor
     StructureTimInt(
-      Teuchos::RCP<const Teuchos::ParameterList> ioparams,  ///< I/O flags
-      Teuchos::RCP<const Teuchos::ParameterList> sdynparams,  ///< input parameters
+      Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
+      Teuchos::RCP<Teuchos::ParameterList> sdynparams,  ///< input parameters
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
       Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
@@ -202,43 +202,14 @@ namespace ADAPTER {
     /// @name local copies of input parameters
     //{@
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
-    Teuchos::RCP<const Teuchos::ParameterList> ioparams_;
-    Teuchos::RCP<const Teuchos::ParameterList> sdynparams_;
+    Teuchos::RCP<Teuchos::ParameterList> ioparams_;
+    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;
     Teuchos::RCP<Teuchos::ParameterList> xparams_;
     Teuchos::RCP<LINALG::Solver> solver_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 
   };  // class StructureTimInt
-
-  /*====================================================================*/
-  /*!
-   * \brief Structure field solver
-   * 
-   * \date 08/08
-   */
-  class StructureTimIntBaseAlgorithm
-  {
-  public:
-
-    /// constructor
-    explicit StructureTimIntBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
-
-    /// virtual destructor to support polymorph destruction
-    virtual ~StructureTimIntBaseAlgorithm();
-
-    /// structural field solver
-    Structure& StructureField() { return *structure_; }
-    const Structure& StructureField() const { return *structure_; }
-
-  private:
-
-    /// setup structure algorithm
-    void SetupStructure();
-
-    /// structural field solver
-    Teuchos::RCP<Structure> structure_;
-  };  // class StructureTimIntBaseAlgorithm
 
 }  // namespace ADAPTER
 

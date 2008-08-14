@@ -55,8 +55,8 @@ extern struct _FILES allfiles;
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureTimInt::StructureTimInt(
-  Teuchos::RCP<const Teuchos::ParameterList> ioparams,
-  Teuchos::RCP<const Teuchos::ParameterList> sdynparams,
+  Teuchos::RCP<Teuchos::ParameterList> ioparams,
+  Teuchos::RCP<Teuchos::ParameterList> sdynparams,
   Teuchos::RCP<Teuchos::ParameterList> xparams,
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<LINALG::Solver> solver,
@@ -126,7 +126,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// ABSOLUTELY UNWANTED
+// UNWANTED
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnm()
 {
 /*
@@ -168,7 +168,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// ABSOLUTELY UNWANTED
+// UNWANTED
 double ADAPTER::StructureTimInt::DispIncrFactor()
 {
   return -1; //structure_->DispIncrFactor();
@@ -447,6 +447,8 @@ void ADAPTER::StructureTimInt::ApplyInterfaceForces(
   // stiffness in the first iteration).
   structure_->ApplyExternalForce(interface_,iforce);
 */
+  // This will add the provided interface force onto the residual forces
+  structure_->AddForceInterface(interface_, iforce, -1.0);
 }
 
 
@@ -498,119 +500,6 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimInt::CreateFieldTest()
   return Teuchos::rcp(new StruResultTest(*structure_));
 }
 
-
-/*======================================================================*/
-/* constructor */
-ADAPTER::StructureTimIntBaseAlgorithm::StructureTimIntBaseAlgorithm(
-  const Teuchos::ParameterList& prbdyn
-)
-{
-  SetupStructure();
-}
-
-
-/*----------------------------------------------------------------------*/
-/* destructor */
-ADAPTER::StructureTimIntBaseAlgorithm::~StructureTimIntBaseAlgorithm()
-{
-}
-
-/*----------------------------------------------------------------------*/
-/* set-up */
-void ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure()
-{
-  // this is not exactly a one hundred meter race, but we need timing
-  Teuchos::RCP<Teuchos::Time> t 
-    = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
-  Teuchos::TimeMonitor monitor(*t);
-
-  // access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
-
-  // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
-
-  // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // set some pointers and variables
-  SOLVAR* actsolv = &solv[genprob.numsf];
-
-  // get input parameter lists
-  //const Teuchos::ParameterList& probtype 
-  //  = DRT::Problem::Instance()->ProblemTypeParams();
-  Teuchos::RCP<const Teuchos::ParameterList> ioflags 
-    = Teuchos::rcp(&(DRT::Problem::Instance()->IOParams()),false);
-  Teuchos::RCP<const Teuchos::ParameterList> sdyn 
-    = Teuchos::rcp(&(DRT::Problem::Instance()->StructuralDynamicParams()),false);
-
-  //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
-
-  // show default parameters
-  if ((actdis->Comm()).MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
-
-  // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams 
-    = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", allfiles.out_err);
-
-
-  // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi)
-  {
-    const Teuchos::ParameterList& fsidyn 
-      = DRT::Problem::Instance()->FSIDynamicParams();
-
-    // Robin flags
-    INPUTPARAMS::FSIPartitionedCouplingMethod method
-      = Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-    xparams->set<bool>("structrobin",
-                      ( (method==INPUTPARAMS::fsi_DirichletRobin) 
-                        or (method==INPUTPARAMS::fsi_RobinRobin) ));
-
-    // THIS SHOULD GO, OR SHOULDN'T IT?
-    xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
-
-    // check if predictor fits to FSI algo
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if ( (coupling == fsi_iter_monolithic)
-         or (coupling == fsi_iter_monolithiclagrange)
-         or (coupling == fsi_iter_monolithicstructuresplit) )
-    {
-      if (Teuchos::getIntegralValue<int>(*sdyn,"PREDICT")
-          != STRUCT_DYNAMIC::pred_constdisvelacc)
-        dserror("only constant structure predictor with monolithic FSI possible");
-#if 0
-      // THIS WAS AND WILL BE DEACTIVATED!!!
-      // overwrite time integration flags
-      genalphaparams->set<double>("gamma",fsidyn.get<double>("GAMMA"));
-      genalphaparams->set<double>("alpha m",fsidyn.get<double>("ALPHA_M"));
-      genalphaparams->set<double>("alpha f",fsidyn.get<double>("ALPHA_F"));
-#endif
-    }
-  }
-
-  // create a solver
-  Teuchos::RCP<ParameterList> solveparams 
-    = Teuchos::rcp(new ParameterList());
-  Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(solveparams,
-                                      actdis->Comm(),
-                                      allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams, actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // create marching time integrator
-  structure_ = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
-                                                actdis, solver, output));
-
-  // see you
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
