@@ -222,9 +222,19 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
   }
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
+  Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
+  cutterdiscret->SetState("idispcolnp",idispcolnp);
+  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
+  
+  cutterdiscret->SetState("idispcoln",idispcoln);
+  cutterdiscret->SetState("ivelcoln",ivelcoln);
+  cutterdiscret->SetState("iacccoln",iacccoln);
 
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -962,10 +972,35 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-
-  cout << "F_x: "<< c(0) << endl;
-  cout << "F_y: "<< c(1) << endl;
-  cout << "F_z: "<< c(2) << endl;
+  
+  {
+    std::stringstream s;
+    std::stringstream header;
+    
+    header << left  << std::setw(10) << "TimeStep" 
+           << right << std::setw(16) << "F_x"
+           << right << std::setw(16) << "F_y"
+           << right << std::setw(16) << "F_z";
+    s << left  << std::setw(10) << scientific << step_ 
+      << right << std::setw(16) << scientific << c(0)
+      << right << std::setw(16) << scientific << c(1)
+      << right << std::setw(16) << scientific << c(2);
+    
+    std::ofstream f;
+    if (step_ <= 1)
+    {
+      f.open("liftdrag.txt",std::fstream::trunc);
+      f << header.str() << endl;
+    }
+    else
+    {
+      f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
+    }
+    f << s.str() << endl;
+    f.close();
+    
+    //cout << header.str() << endl << s.str() << endl;
+  }
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
