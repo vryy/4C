@@ -57,11 +57,11 @@ STR::TimAdaZienXie::TimAdaZienXie
 void STR::TimAdaZienXie::IntegrateStepAuxiliar()
 {
   // get state vectors of marching integrator
-  const Teuchos::RCP<Epetra_Vector> dis = sti_->Disp();  // D_{n}^{A2}
-  //const Teuchos::RCP<Epetra_Vector> disn = sti_->Dispn();  // D_{n+1}^{A2}
+  const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();  // D_{n}^{A2}
+  //const Teuchos::RCP<Epetra_Vector> disn = sti_->DisNew();  // D_{n+1}^{A2}
   const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
   const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> accn = sti_->Accn();  // A_{n+1}^{A2}
+  const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
   
   // build NM3* displacements D_{n+1}^{NM3*}
   // using the lower or equal than second order accurate new accelerations

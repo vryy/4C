@@ -28,16 +28,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 
-#include "strtimint.H"
-#include "strtimint_impl.H"
-#include "strtimint_expl.H"
-#include "strtimint_genalpha.H"
-#include "strtimint_ost.H"
-#include "strtimint_ab2.H"
-
-#include "strtimada.H"
-#include "strtimada_zienxie.H"
-
 /*----------------------------------------------------------------------*/
 /* Structural Dynamics */
 namespace STR
@@ -49,33 +39,6 @@ namespace STR
   //!
   //! \author bborn \date 06/08
   void strudyn_direct();
-
-  /*====================================================================*/
-  //! Create marching time integrator convenience routine
-  //!
-  //! \author bborn \date 07/08 
-  Teuchos::RCP<STR::TimInt> strudyn_CreateMarching
-  (
-    const Teuchos::ParameterList& ioflags,  //!< input-output-flags
-    const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
-    const Teuchos::ParameterList& xparams,  //!< extra flags
-    Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
-    Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
-    Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
-  );
-
-  /*====================================================================*/
-  //! Create auxiliar time integrator convenience routine
-  //!
-  //! \author bborn \date 07/08
-  Teuchos::RCP<STR::TimAda> strudyn_CreateAuxiliar
-  (
-    const Teuchos::ParameterList& ioflags,  //!< input-output-flags
-    const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
-    const Teuchos::ParameterList& xparams,  //!< extra flags
-    const Teuchos::ParameterList& tap,  //!< adaptive input flags
-    Teuchos::RCP<STR::TimInt> tis  //!< marching time integrator
-  );
 
 }  // namespace STR
 

@@ -11,9 +11,14 @@ Maintainer: Burkhard Bornemann
             089 - 289-15237
 </pre>
 */
+
 /*----------------------------------------------------------------------*/
+/* macros */
 #ifdef CCADISCRET
 
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "../drt_structure/strtimint_create.H"
 #include "adapter_structure_timint.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -24,152 +29,164 @@ Maintainer: Burkhard Bornemann
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
+/*----------------------------------------------------------------------*/
+//! General problem data
+//!
+//! global variable GENPROB genprob is defined in global_control.c
+//! \author m.gee \date 06/01
+extern struct _GENPROB genprob;
 
 /*----------------------------------------------------------------------*/
+//! global variable *solv, vector of lenght numfld of structures SOLVAR
+//! defined in solver_control.c
+//!
+//! \author m.gee \date 11/00
+extern struct _SOLVAR *solv;
+
 /*----------------------------------------------------------------------*/
+//! File pointers
+//!
+//! This structure struct _FILES allfiles is defined in input_control_global.c
+//! and the type is in standardtypes.h
+//! It holds all file pointers and some variables needed for the FRSYSTEM
+extern struct _FILES allfiles;
+
+
+/*======================================================================*/
+/* constructor */
 ADAPTER::StructureTimInt::StructureTimInt(
-  Teuchos::RCP<Teuchos::ParameterList> params,
-  Teuchos::RCP<DRT::Discretization> dis,
+  Teuchos::RCP<const Teuchos::ParameterList> ioparams,
+  Teuchos::RCP<const Teuchos::ParameterList> sdynparams,
+  Teuchos::RCP<Teuchos::ParameterList> xparams,
+  Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: structure_(*params, *dis, *solver, *output),
-  dis_(dis),
-  params_(params),
+: structure_(STR::TimIntImplCreate(*ioparams, *sdynparams, *xparams, 
+                                   discret, solver, output)),
+  discret_(discret),
+  ioparams_(ioparams),
+  sdynparams_(sdynparams),
+  xparams_(xparams),
   solver_(solver),
   output_(output)
 {
-  DRT::UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-  structure_.SetFSISurface(&interface_);
+  // make sure
+  if (structure_ == Teuchos::null)
+    dserror("Failed to create structural integrator");
+
+  // set-up FSI interface
+  DRT::UTILS::SetupNDimExtractor(*discret, "FSICoupling", interface_);
+  structure_->SetFSISurface(&interface_);
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::InitialGuess()
 {
-  return Teuchos::rcp(&structure_.Getdu(),false);
-  //return structure_.Dispm();
+  return structure_->DisRes();
+  //return structure_->Dispm();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* right-hand side alias the dynamic force residual */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
 {
-  return structure_.Residual();
+  return structure_->ForceRes();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* get current displacements D_{n+1} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 {
 #ifdef PRESTRESS
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+  dserror("check this");
+  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
-  double alphaf = structure_.AlphaF();
-  Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Dispn()));
-  dispnp->Update(1./(1.-alphaf),*Dispnm(),-alphaf/(1.-alphaf));
-  return dispnp;
+  return structure_->DisNew();
 #endif
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* get last converged displacements D_{n} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 {
 #ifdef PRESTRESS
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+  dserror("check this");
+  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
-  return structure_.Disp();
+  return structure_->Dis();
 #endif
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+// ABSOLUTELY UNWANTED
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnm()
 {
+/*
 #ifdef PRESTRESS
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
-  return structure_.Dispm();
+  return structure_->Dispm();
 #endif
+*/
+  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* non-overlapping DOF map */
 Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
 {
-  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* stiffness, i.e. force residual R_{n+1} differentiated 
+ * by displacements D_{n+1} */
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
 {
-  return structure_.SystemMatrix();
+  return structure_->Stiff();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* get discretisation */
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
 {
-  return structure_.Discretization();
+  return structure_->Discretization();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+// ABSOLUTELY UNWANTED
 double ADAPTER::StructureTimInt::DispIncrFactor()
 {
-  return structure_.DispIncrFactor();
+  return -1; //structure_->DispIncrFactor();
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FRobin()
 {
-  return structure_.FRobin();
+  //return structure_->GetForceRobinFSI();
+  return LINALG::CreateVector(*discret_->DofRowMap(), true);
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* External force F_{ext,n+1} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 {
-  return structure_.FExtn();
+  return structure_->FextNew();
 }
 
 
@@ -182,10 +199,10 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 //   // extrapolate d(n+1) at the interface and substract d(n)
 
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_->Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_->Disp ());
 
-//   double alphaf = structure_.AlphaF();
+//   double alphaf = structure_->AlphaF();
 //   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
 //   return idis;
 // }
@@ -200,195 +217,170 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 //   // extrapolate d(n+1) at the interface
 
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_->Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_->Disp ());
 
-//   double alphaf = structure_.AlphaF();
+//   double alphaf = structure_->AlphaF();
 //   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
 //   return idis;
 // }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* prepare time step */
 void ADAPTER::StructureTimInt::PrepareTimeStep()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
 
-  std::string pred = params_->get<string>("predictor","consistent");
-  if (pred=="constant")
-  {
-    structure_.ConstantPredictor();
-  }
-  else if (pred=="consistent")
-  {
-    structure_.ConsistentPredictor();
-  }
-  else
-    dserror("predictor %s unknown", pred.c_str());
+  // predict 
+  structure_->Predict();
 
-  if (sumdisi_!=Teuchos::null)
-    sumdisi_->PutScalar(0.);
+  // initialise incremental displacements
+  if (disinc_ != Teuchos::null) 
+    disinc_->PutScalar(0.0);
+
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+/* build linear system stiffness matrix and rhs/force residual
+ *
+ * Monolithic FSI accesses the linearised structure problem. */
+void ADAPTER::StructureTimInt::Evaluate(
+  Teuchos::RCP<const Epetra_Vector> disp
+)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  if (disp!=Teuchos::null)
+  if (disp != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    if (sumdisi_!=Teuchos::null)
+    if (disinc_ != Teuchos::null)
     {
-      disi->Update(-1.0,*sumdisi_,1.0);
-      sumdisi_->Update(1.0,*disp,0.0);
+      disi->Update(-1.0, *disinc_, 1.0);
+      disinc_->Update(1.0, *disp, 0.0);
     }
     else
     {
-      sumdisi_ = Teuchos::rcp(new Epetra_Vector(*disp));
+      disinc_ = Teuchos::rcp(new Epetra_Vector(*disp));
     }
-    structure_.Evaluate(disi);
+    structure_->UpdateIterIncrementally(disi);
+    structure_->EvaluateForceStiffResidual();
   }
   else
   {
-    structure_.Evaluate(Teuchos::null);
+    // ORIGINAL ACTION BUILDS TANGENT AND APPLIES DBC ON SLE
+    // SENSIBLE ???
+    structure_->UpdateIterIncrementally(Teuchos::null);
+    structure_->EvaluateForceStiffResidual();
   }
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* update time step */
 void ADAPTER::StructureTimInt::Update()
 {
-  structure_.Update();
+  structure_->UpdateStepAndTime();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* output */
 void ADAPTER::StructureTimInt::Output()
 {
-  structure_.Output();
+  structure_->OutputStep();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* domain map */
 const Epetra_Map& ADAPTER::StructureTimInt::DomainMap()
 {
-  return structure_.DomainMap();
+  return structure_->GetDomainMap();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* read restart */
 void ADAPTER::StructureTimInt::ReadRestart(int step)
 {
-  structure_.ReadRestart(step);
+  dserror("Not impl.");
+/*
+  structure_->ReadRestart(step);
+*/
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* find iteratively solution */
 void ADAPTER::StructureTimInt::Solve()
 {
-  std::string equil = params_->get<string>("equilibrium iteration","undefined solution algorithm");
-
-  if (structure_.HaveConstraint())
-  {
-    structure_.FullNewtonLinearUzawa();
-  }
-  else if (equil=="full newton")
-  {
-    structure_.FullNewton();
-  }
-  else if (equil=="line search newton")
-  {
-    structure_.LineSearchNewton();
-  }
-  else if (equil=="modified newton")
-  {
-    structure_.ModifiedNewton();
-  }
-  else if (equil=="nonlinear cg")
-  {
-    structure_.NonlinearCG();
-  }
-  else if (equil=="ptc")
-  {
-    structure_.PTC();
-  }
-  else
-    dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());
+  structure_->Solve();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
+/* */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
+  Teuchos::RCP<Epetra_Vector> iforce
+)
 {
   Teuchos::RCP<Epetra_Vector> relax = interface_.InsertCondVector(iforce);
-  Teuchos::RCP<Epetra_Vector> idisi = structure_.LinearRelaxationSolve(relax);
+  Teuchos::RCP<Epetra_Vector> idisi = structure_->SolveRelaxationLinear(relax);
 
   // we are just interested in the incremental interface displacements
   idisi = interface_.ExtractCondVector(idisi);
   return idisi;
 }
 
-
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* extract interface displacements D_{n} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 {
 #ifdef PRESTRESS
+  dserror("Check this");
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
 #else
-  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
+  Teuchos::RCP<Epetra_Vector> idis 
+    = interface_.ExtractCondVector(structure_->Dis());
   return idis;
 #endif
 }
 
-
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* extract interface displacements D_{n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 {
 #ifdef PRESTRESS
+  dserror("Check this");
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
 #else
-  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
-  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
-
-  double alphaf = params_->get<double>("alpha f", 0.459);
-  idis->Update(1./(1.-alphaf),*idism,-alphaf/(1.-alphaf));
-
+  Teuchos::RCP<Epetra_Vector> idis 
+    = interface_.ExtractCondVector(structure_->DisNew());
   return idis;
 #endif
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* extract external forces at interface F_{ext,n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceForces()
 {
-  Teuchos::RCP<Epetra_Vector> iforce = interface_.ExtractCondVector(structure_.FExtn());
-
+  Teuchos::RCP<Epetra_Vector> iforce 
+    = interface_.ExtractCondVector(structure_->FextNew());
   return iforce;
 }
 
-
-
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn
+    = DRT::Problem::Instance()->FSIDynamicParams();
 
   Teuchos::RCP<Epetra_Vector> idis;
 
@@ -398,7 +390,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
   {
     // d(n)
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    idis  = interface_.ExtractCondVector(structure_.Dispn());
+    idis  = interface_.ExtractCondVector(structure_->DisNew());
     break;
   }
   case 2:
@@ -408,24 +400,27 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
   case 3:
   {
     // d(n)+dt*v(n)
-    double dt            = params_->get<double>("delta time"             ,0.01);
+    double dt = sdynparams_->get<double>("TIMESTEP");
 
-    idis  = interface_.ExtractCondVector(structure_.Disp());
-    Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(structure_.Vel());
+    idis = interface_.ExtractCondVector(structure_->Dis());
+    Teuchos::RCP<Epetra_Vector> ivel 
+      = interface_.ExtractCondVector(structure_->Vel());
 
-    idis->Update(dt,*ivel,1.0);
+    idis->Update(dt,* ivel, 1.0);
     break;
   }
   case 4:
   {
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
-    double dt            = params_->get<double>("delta time"             ,0.01);
+    double dt = sdynparams_->get<double>("TIMESTEP");
 
-    idis  = interface_.ExtractCondVector(structure_.Disp());
-    Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(structure_.Vel());
-    Teuchos::RCP<Epetra_Vector> iacc  = interface_.ExtractCondVector(structure_.Acc());
+    idis = interface_.ExtractCondVector(structure_->Dis());
+    Teuchos::RCP<Epetra_Vector> ivel
+      = interface_.ExtractCondVector(structure_->Vel());
+    Teuchos::RCP<Epetra_Vector> iacc
+      = interface_.ExtractCondVector(structure_->Acc());
 
-    idis->Update(dt,*ivel,0.5*dt*dt,*iacc,1.0);
+    idis->Update(dt, *ivel, 0.5*dt*dt, *iacc, 1.0);
     break;
   }
   default:
@@ -438,24 +433,31 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
+/* */
+void ADAPTER::StructureTimInt::ApplyInterfaceForces(
+  Teuchos::RCP<Epetra_Vector> iforce
+)
 {
+/*
   // Play it save. In the first iteration everything is already set up
   // properly. However, all following iterations need to calculate the
   // stiffness matrix here. Furthermore we are bound to reset fextm_
   // before we add our special contribution.
   // So we calculate the stiffness anyway (and waste the available
   // stiffness in the first iteration).
-  structure_.ApplyExternalForce(interface_,iforce);
+  structure_->ApplyExternalForce(interface_,iforce);
+*/
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
-                                                          Teuchos::RCP<Epetra_Vector> ifluidvel)
+void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(
+  Teuchos::RCP<Epetra_Vector> iforce,
+  Teuchos::RCP<Epetra_Vector> ifluidvel
+)
 {
+/*
   // get robin parameter and timestep
   double alphas  = params_->get<double>("alpha s",-1.);
   double dt      = params_->get<double>("delta time",-1.);
@@ -476,217 +478,114 @@ void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vect
   // after successfully reaching timestep end.
   // This is why an additional robin force vector is needed.
 
-  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_.Disp());
-  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_.FRobin());
+  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_->Disp());
+  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_->FRobin());
 
   // save robin coupling values in frobin vector (except iforce which
   // is passed separately)
   frobin->Update(alphas/dt,*idisn,alphas*(1-alphaf),*ifluidvel,0.0);
 
-  interface_.InsertCondVector(frobin,structure_.FRobin());
-  structure_.ApplyExternalForce(interface_,iforce);
+  interface_.InsertCondVector(frobin,structure_->FRobin());
+  structure_->ApplyExternalForce(interface_,iforce);
+*/
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/* structural result test */
 Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimInt::CreateFieldTest()
 {
-  return Teuchos::rcp(new StruResultTest(structure_));
+  return Teuchos::rcp(new StruResultTest(*structure_));
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::StructureTimIntBaseAlgorithm::StructureTimIntBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+/*======================================================================*/
+/* constructor */
+ADAPTER::StructureTimIntBaseAlgorithm::StructureTimIntBaseAlgorithm(
+  const Teuchos::ParameterList& prbdyn
+)
 {
-  SetupStructure(prbdyn);
+  SetupStructure();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/* destructor */
 ADAPTER::StructureTimIntBaseAlgorithm::~StructureTimIntBaseAlgorithm()
 {
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure(const Teuchos::ParameterList& prbdyn)
+/* set-up */
+void ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
+  // this is not exactly a one hundred meter race, but we need timing
+  Teuchos::RCP<Teuchos::Time> t 
+    = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
-  // -------------------------------------------------------------------
   // access the discretization
-  // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
 
   // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (not actdis->Filled()) actdis->FillComplete();
 
-  // -------------------------------------------------------------------
   // context for output and restart
-  // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output
+    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
-  // -------------------------------------------------------------------
   // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[genprob.numsf];
+  SOLVAR* actsolv = &solv[genprob.numsf];
 
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  // get input parameter lists
+  const Teuchos::ParameterList& probtype 
+    = DRT::Problem::Instance()->ProblemTypeParams();
+  Teuchos::RCP<const Teuchos::ParameterList> ioflags 
+    = Teuchos::rcp(&(DRT::Problem::Instance()->IOParams()),false);
+  Teuchos::RCP<const Teuchos::ParameterList> sdyn 
+    = Teuchos::rcp(&(DRT::Problem::Instance()->StructuralDynamicParams()),false);
 
   //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
+  // show default parameters
   if ((actdis->Comm()).MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  // add extra parameters (a kind of work-around)
+  Teuchos::RCP<Teuchos::ParameterList> xparams 
+    = Teuchos::rcp(new Teuchos::ParameterList());
+  xparams->set<FILE*>("err file", allfiles.out_err);
 
-  // -------------------------------------------------------------------
-  // create a generalized alpha time integrator
-  // -------------------------------------------------------------------
-  RCP<ParameterList> genalphaparams = rcp(new ParameterList());
-  StruGenAlpha::SetDefaults(*genalphaparams);
-
-  genalphaparams->set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
-  genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
-  genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
-  genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
-
-  genalphaparams->set<double>("beta",sdyn.get<double>("BETA"));
-  genalphaparams->set<double>("gamma",sdyn.get<double>("GAMMA"));
-  genalphaparams->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-  genalphaparams->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-
-  genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",prbdyn.get<double>("TIMESTEP"));
-  genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",prbdyn.get<int>("NUMSTEP"));
-  genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-  genalphaparams->set<int>   ("num iterations",-1);
-  genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-  genalphaparams->set<string>("convcheck",sdyn.get<string>("CONV_CHECK"));
-
-  genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
-
-  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-  {
-  case struct_stress_none:
-    genalphaparams->set<string>("io structural stress", "none");
-    break;
-  case struct_stress_cauchy:
-    genalphaparams->set<string>("io structural stress", "cauchy");
-    break;
-  case struct_stress_pk:
-    genalphaparams->set<string>("io structural stress", "2PK");
-    break;
-  default:
-    genalphaparams->set<string>("io structural stress", "none");
-    break;
-  }
-
-  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-
-  genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
-  genalphaparams->set<int>   ("write restart every",prbdyn.get<int>("RESTARTEVRY"));
-
-  genalphaparams->set<bool>  ("print to screen",true);
-  genalphaparams->set<bool>  ("print to err",true);
-  genalphaparams->set<FILE*> ("err file",allfiles.out_err);
-
-  switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
-  {
-  case STRUCT_DYNAMIC::fullnewton:
-    genalphaparams->set<string>("equilibrium iteration","full newton");
-    break;
-  case STRUCT_DYNAMIC::lsnewton:
-    genalphaparams->set<string>("equilibrium iteration","line search newton");
-    break;
-  case STRUCT_DYNAMIC::modnewton:
-    genalphaparams->set<string>("equilibrium iteration","modified newton");
-    break;
-  case STRUCT_DYNAMIC::nlncg:
-    genalphaparams->set<string>("equilibrium iteration","nonlinear cg");
-    break;
-  case STRUCT_DYNAMIC::ptc:
-    genalphaparams->set<string>("equilibrium iteration","ptc");
-    break;
-  default:
-    genalphaparams->set<string>("equilibrium iteration","full newton");
-    break;
-  }
-
-  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-  {
-  case struct_strain_none:
-    genalphaparams->set<string>("io structural strain", "none");
-  break;
-  case struct_strain_ea:
-    genalphaparams->set<string>("io structural strain", "euler_almansi");
-  break;
-  case struct_strain_gl:
-    genalphaparams->set<string>("io structural strain", "green_lagrange");
-  break;
-  default:
-    genalphaparams->set<string>("io structural strain", "none");
-  break;
-  }
-
-
-  // set predictor (takes values "constant" "consistent")
-  switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
-  {
-  case STRUCT_DYNAMIC::pred_vague:
-    dserror("You have to define the predictor");
-    break;
-  case STRUCT_DYNAMIC::pred_constdis:
-    genalphaparams->set<string>("predictor","consistent");
-    break;
-  case STRUCT_DYNAMIC::pred_constdisvelacc:
-    genalphaparams->set<string>("predictor","constant");
-    break;
-  default:
-    dserror("Cannot cope with choice of predictor");
-    break;
-  }
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn 
+      = DRT::Problem::Instance()->FSIDynamicParams();
 
-    // robin flags
-    INPUTPARAMS::FSIPartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-    genalphaparams->set<bool>  ("structrobin",
-                                method==INPUTPARAMS::fsi_DirichletRobin or method==INPUTPARAMS::fsi_RobinRobin);
+    // Robin flags
+    INPUTPARAMS::FSIPartitionedCouplingMethod method
+      = Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    xparams->set<bool>("structrobin",
+                      ( (method==INPUTPARAMS::fsi_DirichletRobin) 
+                        or (method==INPUTPARAMS::fsi_RobinRobin) ));
 
-    genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
+    // THIS SHOULD GO, OR SHOULDN'T IT?
+    xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
 
+    // check if predictor fits to FSI algo
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-    if (coupling == fsi_iter_monolithic or
-        coupling == fsi_iter_monolithiclagrange or
-        coupling == fsi_iter_monolithicstructuresplit)
+    if ( (coupling == fsi_iter_monolithic)
+         or (coupling == fsi_iter_monolithiclagrange)
+         or (coupling == fsi_iter_monolithicstructuresplit) )
     {
-      if (Teuchos::getIntegralValue<int>(sdyn,"PREDICT")!=STRUCT_DYNAMIC::pred_constdisvelacc)
+      if (Teuchos::getIntegralValue<int>(*sdyn,"PREDICT")
+          != STRUCT_DYNAMIC::pred_constdisvelacc)
         dserror("only constant structure predictor with monolithic FSI possible");
-
 #if 0
+      // THIS WAS AND WILL BE DEACTIVATED!!!
       // overwrite time integration flags
       genalphaparams->set<double>("gamma",fsidyn.get<double>("GAMMA"));
       genalphaparams->set<double>("alpha m",fsidyn.get<double>("ALPHA_M"));
@@ -695,7 +594,23 @@ void ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure(const Teuchos::Parame
     }
   }
 
-  structure_ = rcp(new StructureTimInt(genalphaparams,actdis,solver,output));
+  // create a solver
+  Teuchos::RCP<ParameterList> solveparams 
+    = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<LINALG::Solver> solver
+    = Teuchos::rcp(new LINALG::Solver(solveparams,
+                                      actdis->Comm(),
+                                      allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams, actsolv);
+  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+
+  // create marching time integrator
+  structure_ = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
+                                                actdis, solver, output));
+
+  // see you
+  return;
 }
 
-#endif
+/*----------------------------------------------------------------------*/
+#endif  // #ifdef CCADISCRET

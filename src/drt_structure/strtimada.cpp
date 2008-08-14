@@ -35,8 +35,8 @@ STR::TimAda::TimAda
 : sti_(tis),
   discret_(tis->Discretization()),
   myrank_(discret_->Comm().MyPID()),
-  solver_(tis->GetSolver()),
-  output_(tis->GetDiscretizationWriter()),
+  solver_(tis->Solver()),
+  output_(tis->DiscWriter()),
   cout0_(discret_->Comm(), std::cout),
   //
   timeinitial_(0.0),

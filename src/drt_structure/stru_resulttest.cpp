@@ -61,7 +61,7 @@ StruResultTest::StruResultTest(StruGenAlpha& tintegrator)
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 {
-  dis_ = tintegrator.Disp();
+  dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();
   acc_ = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();

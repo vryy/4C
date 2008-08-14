@@ -102,8 +102,8 @@ namespace STR
       // allocate auxiliar integrator
       sta_ = Teuchos::rcp(new T(ioparams, sdynparams, xparams,
                                 sti->Discretization(), 
-                                sti->GetSolver(),
-                                sti->GetDiscretizationWriter()));
+                                sti->Solver(),
+                                sti->DiscWriter()));
       // check explicitness
       if (sta_->MethodImplicit())
       {
@@ -151,11 +151,11 @@ namespace STR
     {
 
       // get state vectors of marching integrator
-      //const Teuchos::RCP<Epetra_Vector> dis = sti_->Disp();  // D_{n}^{A2}
-      const Teuchos::RCP<Epetra_Vector> disn = sti_->Dispn();  // D_{n+1}^{A2}
+      //const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();  // D_{n}^{A2}
+      const Teuchos::RCP<Epetra_Vector> disn = sti_->DisNew();  // D_{n+1}^{A2}
       //const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
       //const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
-      //const Teuchos::RCP<Epetra_Vector> accn = sti_->Accn();  // A_{n+1}^{A2}
+      //const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
 
       // integrate
       sta_->IntegrateStep();

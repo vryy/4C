@@ -73,6 +73,19 @@ namespace STR
     //! becomes impossible. We are ready and keen awating the next time step.
     virtual void UpdateStep() = 0;
 
+    //! Update configuration and time after time step
+    void UpdateStepAndTime()
+    {
+      // system state
+      UpdateStep();
+      // update time and step
+      time_->UpdateSteps(timen_);
+      step_ = stepn_;
+      // 
+      timen_ += (*dt_)[0];
+      stepn_ += 1;
+    }
+
     //@}
 
     //! @name Output

@@ -155,6 +155,8 @@ namespace STR
     //@{
 
     //! Do residual force due to global balance of momentum
+    //! and its tangent with respect to the current 
+    //! displacements \f$D_{n+1}\f$
     //!
     //! The residual #fres_ is determined readily negative
     virtual void EvaluateForceStiffResidual() = 0;
@@ -225,7 +227,7 @@ namespace STR
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
     //! state of the displacement solution
-    void NewtonModified() { ; }
+    void NewtonModified() { dserror("Not impl."); }
 
     //! Do classical augmented lagrange for volume constraint
     //!
@@ -253,7 +255,7 @@ namespace STR
     //! Do non-linear CG iteration using NOX
     //!
     //! \author mwgee (originally) \date 03/07
-    void NonlinearCG() { ; }
+    void NonlinearCG() { dserror("Not impl."); }
 
     //! Do pseudo transient continuation non-linear iteration
     //! 
@@ -262,7 +264,7 @@ namespace STR
     //! and/or can do larger time steps
     //!
     //! \author mwgee (originally) \date 03/07
-    void PTC() { ; }
+    void PTC() { dserror("Not impl."); }
 
     //! Update iteration
     //!
@@ -283,6 +285,22 @@ namespace STR
     //! (like #PredictConstDisConsistVelAcc)
     virtual void UpdateIterIncrementally() = 0;
 
+    //! Update iteration incrementally with prescribed residual
+    //! displacements
+    void UpdateIterIncrementally
+    (
+      const Teuchos::RCP<Epetra_Vector> disi  //!< input residual displacements
+    )
+    {
+      // select residual displacements
+      if (disi != Teuchos::null)
+        disi_->Update(1.0, *disi, 0.0);  // set the new solution we just got
+      else
+        disi_->PutScalar(0.0);
+      // Update
+      UpdateIterIncrementally();
+    }
+
     //! Update iteration iteratively
     //!
     //! This is the ordinary update of #disn_, #veln_ and #accn_ by
@@ -302,6 +320,19 @@ namespace STR
     //! of the time step becomes impossible.
     //! We are ready and keen awating the next time step.
     virtual void UpdateStep() = 0;
+
+    //! Update configuration and time after time step
+    void UpdateStepAndTime()
+    {
+      // system state
+      UpdateStep();
+      // update time and step
+      time_->UpdateSteps(timen_);
+      step_ = stepn_;
+      // 
+      timen_ += (*dt_)[0];
+      stepn_ += 1;
+    }
 
     //! Update step for surface stress
     void UpdateStepSurfstress()
@@ -375,11 +406,77 @@ namespace STR
 
     //@}
 
-    //! @name System vectors
+    //! @name Fluid-structure-interaction specific methods
+    //@{
+
+    //! introduce (robin) fsi surface extractor object
+    //!
+    //! Introduce the FSI surface to the fluid algorithm. This way special case
+    //! algorithms (robin coupling) can work on the surface.
+    void SetFSISurface
+    (
+      const LINALG::MapExtractor* fsisurface  //!< the FSI surface
+    ) 
+    { 
+      fsisurface_ = fsisurface; 
+    }
+
+    //! Kind of FSI Robin pseudo external force
+    //Teuchos::RCP<Epetra_Vector> GetForceRobinFSI() { return frobin_; }
+    //virtual Teuchos::RCP<Epetra_Vector> GetForceRobinFSI() = 0;
+
+    //!
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear
+    (
+      Teuchos::RCP<Epetra_Vector> relax
+    )
+    {
+      // compute residual forces #fres_ and stiffness #stiff_
+      EvaluateForceStiffResidual();
+
+      // we start from zero
+      //fres_->Update(1.-alphaf,*relax,0.0);
+      fres_->Update(1.0, *relax, 0.0);
+
+      // apply Dirichlet BCs to system of equations
+      disi_->PutScalar(0.0);  // Useful? depends on solver and more
+      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 
+                                     zeros_, dirichtoggle_);
+
+      // solve for #disi_
+      solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
+
+      // go back
+      return disi_;
+    }
+
+    //@}
+
+    //! @name Access methods
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+
+    //! Return external force \f$F_{ext,n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
+
+    //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
+    Teuchos::RCP<Epetra_Vector> DisRes() { return disi_; }
+
+    //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
+    void SetDisResidual
+    (
+      const Teuchos::RCP<Epetra_Vector> disi  //!< input residual displacements
+    )
+    {  
+      // set the new solution we just got
+      if (disi != Teuchos::null)
+        disi_->Update(1.0, *disi, 0.0);
+    }
+
+    //! Return effective residual force \f$R_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> ForceRes() { return fres_; }
 
     //@}
 
@@ -387,6 +484,13 @@ namespace STR
 
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
+
+    //! @name FSI stuff
+    //@{
+    const LINALG::MapExtractor* fsisurface_;  //!< surface of structural
+                                              //!< which is in contact
+                                              //!< with fluid
+    //@}
 
     //! @name General purpose algorithm parameters
     //@{

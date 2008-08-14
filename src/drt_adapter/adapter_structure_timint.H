@@ -11,12 +11,16 @@ Maintainer: Burkhard Bornemann
             089 - 289-15237
 </pre>
 */
+
 /*----------------------------------------------------------------------*/
+/* macros */
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_STRUCTURE_TIMINT_H
 #define ADAPTER_STRUCTURE_TIMINT_H
 
+/*----------------------------------------------------------------------*/
+/* headers */
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
@@ -25,18 +29,19 @@ Maintainer: Burkhard Bornemann
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_structure/strugenalpha.H"
+#include "../drt_structure/strtimint.H"
 #include "../drt_structure/stru_resulttest.H"
 
 #include "adapter_structure.H"
 
 
-
+/*----------------------------------------------------------------------*/
+/* adapting adapter */
 namespace ADAPTER {
 
   /*====================================================================*/
   /*!
-   * \brief Adapter to general structural time integration
+   * \brief Adapter to general implicit structural time integration
    *
    * \date 08/08
    */
@@ -44,39 +49,89 @@ namespace ADAPTER {
   {
   public:
 
-    StructureTimInt(Teuchos::RCP<Teuchos::ParameterList> params,
-                    Teuchos::RCP<DRT::Discretization> dis,
-                    Teuchos::RCP<LINALG::Solver> solver,
-                    Teuchos::RCP<IO::DiscretizationWriter> output);
+    /// Constructor
+    StructureTimInt(
+      Teuchos::RCP<const Teuchos::ParameterList> ioparams,  ///< I/O flags
+      Teuchos::RCP<const Teuchos::ParameterList> sdynparams,  ///< input parameters
+      Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
+      Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
+    );
 
+    /// initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
+
+    /// right-hand-side of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS();
+
+    /// unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Dispnp();
+
+    /// unknown displacements at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Dispn();
+
+    /// GET RID OF THIS ONE
     Teuchos::RCP<const Epetra_Vector> Dispnm();
+
+    /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    /// direct access to system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+    /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
+
+    /// GET RID OF THIS ONE
     double DispIncrFactor();
+
+    /// External force at t_{n+1}
     Teuchos::RCP<const Epetra_Vector> FExtn();
+
+    /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
     Teuchos::RCP<const Epetra_Vector> FRobin();
     //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
     //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
 
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
+    /// start new time step
     void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+
+    /// evaluate elements with given displacement
+    void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> disp  ///< current state
+    );
+
+    /// update at time step end
     void Update();
+
+    /// output results
     void Output();
 
     /// communication object at the interface
-    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+    virtual const LINALG::MapExtractor& Interface() const
+    { 
+      return interface_;
+    }
 
+    /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap();
 
-    virtual void ReadRestart(int step);
+    /// read restart information for given time step
+    virtual void ReadRestart
+    (
+      int step  ///< given time step
+    );
 
+    /// @name Solver calls
+    //@{
+
+    /// non-linear solve
+    ///
+    /// Do the nonlinear solve for the time step. All boundary conditions have
+    /// been set.
     virtual void Solve();
 
     /// get the linear solver object used for this field
@@ -88,9 +143,13 @@ namespace ADAPTER {
     ///  calculation (and matrix free Newton Krylov).
     ///
     ///  \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+      Teuchos::RCP<Epetra_Vector> iforce
+    );
 
-    //! @name Extract interface values
+    //@}
+
+    /// @name Extract interface values
 
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
@@ -106,7 +165,7 @@ namespace ADAPTER {
 
     //@}
 
-    //! @name Apply interface forces
+    /// @name Apply interface forces
 
     /// apply interface forces to structural solver
     ///
@@ -114,35 +173,42 @@ namespace ADAPTER {
     ///  step. The middle values are newly created.
     ///
     ///  \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void ApplyInterfaceForces(
+      Teuchos::RCP<Epetra_Vector> iforce
+    );
 
-    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
-                                          Teuchos::RCP<Epetra_Vector> ifluidvel);
+    virtual void ApplyInterfaceRobinValue(
+      Teuchos::RCP<Epetra_Vector> iforce,
+      Teuchos::RCP<Epetra_Vector> ifluidvel
+    );
 
     //@}
 
-    /// create result test for encapulated structure algorithm
+    /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   private:
 
     /// the actual structure algorithm
-    StruGenAlpha structure_;
+    Teuchos::RCP<STR::TimIntImpl> structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
 
-    /// sum of displacement vectors already applied
-    Teuchos::RCP<Epetra_Vector> sumdisi_;
+    /// sum of displacement vectors already applied,
+    /// i.e. the incremental displacements
+    Teuchos::RCP<Epetra_Vector> disinc_;
 
-    //! @name local copies of input parameters
-
-    Teuchos::RCP<DRT::Discretization> dis_;
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    /// @name local copies of input parameters
+    //{@
+    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
+    Teuchos::RCP<const Teuchos::ParameterList> ioparams_;
+    Teuchos::RCP<const Teuchos::ParameterList> sdynparams_;
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;
     Teuchos::RCP<LINALG::Solver> solver_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
-
     //@}
+
   };  // class StructureTimInt
 
   /*====================================================================*/
@@ -168,7 +234,7 @@ namespace ADAPTER {
   private:
 
     /// setup structure algorithm
-    void SetupStructure(const Teuchos::ParameterList& prbdyn);
+    void SetupStructure();
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
@@ -176,5 +242,6 @@ namespace ADAPTER {
 
 }  // namespace ADAPTER
 
+/*----------------------------------------------------------------------*/
 #endif
 #endif

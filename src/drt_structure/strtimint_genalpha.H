@@ -200,13 +200,19 @@ namespace STR
 
     //@}
 
-    //! @name System vectors
+    //! @name Access methods
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
     Teuchos::RCP<Epetra_Vector> Fext()
     {
       return fext_;
+    }
+
+    //! Return external force \f$F_{ext,n+1}\f$
+    Teuchos::RCP<Epetra_Vector> FextNew()
+    {
+      return fextn_;
     }
 
     //@}

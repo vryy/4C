@@ -171,6 +171,7 @@ STR::TimIntImpl::TimIntImpl
     solver,
     output
   ),
+  fsisurface_(NULL),
   pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
   itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
   itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
@@ -195,7 +196,7 @@ STR::TimIntImpl::TimIntImpl
        and ( (itertype_ != soltech_uzawalinnewton)
              and (itertype_ != soltech_uzawanonlinnewton) ) )
   {
-    dserror("Chosen solution technique %s does not work constraints.",
+    dserror("Chosen solution technique %s does not work constrained.",
             MapSolTechEnumToString(itertype_).c_str());
   }
 

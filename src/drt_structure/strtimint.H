@@ -241,6 +241,9 @@ namespace STR
     //! time step.
     virtual void UpdateStep() = 0;
 
+    //! Update configuration and time after time step
+    virtual void UpdateStepAndTime() = 0;
+
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor
@@ -402,6 +405,11 @@ namespace STR
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
 
+    //@}
+
+    //! @name Access methods
+    //@{
+
     //! Access dicretisation
     Teuchos::RCP<DRT::Discretization> Discretization()
     { 
@@ -423,43 +431,44 @@ namespace STR
     }
 
     //! Access solver
-    Teuchos::RCP<LINALG::Solver> GetSolver()
+    Teuchos::RCP<LINALG::Solver> Solver()
     {
       return solver_;
     }
 
     //! Access output object
-    Teuchos::RCP<IO::DiscretizationWriter> GetDiscretizationWriter()
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
     {
       return output_;
     }
 
-    //@}
-
-    //! @name System vectors
-    //@{
-
     //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Disp() { return (*dis_)(0); }
+    Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
     //! Return displacements \f$D_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> Dispn() { return disn_; }
+    Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
 
     //! Return velocities \f$V_{n}\f$
     Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+    Teuchos::RCP<Epetra_Vector> VelNew() { return veln_; }
 
     //! Return accelerations \f$A_{n}\f$
     Teuchos::RCP<Epetra_Vector> Acc() { return (*acc_)(0); }
 
     //! Return accelerations \f$A_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
+    Teuchos::RCP<Epetra_Vector> AccNew() { return accn_; }
 
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
 
+    //! Return stiffness,
+    //! i.e. force residual differentiated by displacements
+    Teuchos::RCP<LINALG::SparseMatrix> Stiff() { return stiff_; }
+    
+    //! Return domain map
+    const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
     //@}
 
   protected:
