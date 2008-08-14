@@ -1855,11 +1855,11 @@ void XFLUID::callSysmat4(
 //                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
 //                        material, time, timefac, newton, pstab, supg, cstab, instationary);
 //                break;
-//            case DRT::Element::tet4:
-//                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-//                break;
+            case DRT::Element::tet4:
+                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                break;
             default:
                 dserror("Sysmat not templated yet");
         };
