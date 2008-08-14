@@ -24,8 +24,11 @@ namespace XFEM
 class DRT::Discretization;
   
 /*!
- \brief It knows everything about the XFEM enrichments for one particular interface setup
-
+ * It knows everything about the XFEM interface geometry
+ * 
+ * It doen't not deal with DOFs in any way. DOF management is done by
+ * the DofManager and ElementDofManager classes. 
+ *
  */
 class InterfaceHandle
 {
@@ -33,8 +36,8 @@ public:
 
     //! constructor
     explicit InterfaceHandle(
-            const Teuchos::RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
-            const Teuchos::RCP<DRT::Discretization>        cutterdis     ///< discretization with boundary elements
+            const Teuchos::RCP<DRT::Discretization>  xfemdis,   ///< discretization that will be intersected
+            const Teuchos::RCP<DRT::Discretization>  cutterdis  ///< discretization with boundary elements
             );
     //! destructor
     ~InterfaceHandle();
@@ -66,7 +69,6 @@ public:
 
     //! get pointer to oct tree
     Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTreenp_;};
- 
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     GEO::DomainIntCells GetDomainIntCells(
