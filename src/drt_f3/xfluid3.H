@@ -1,10 +1,7 @@
 /*!
 \file xfluid3.H
 
-\brief A C++ wrapper for the fluid3 element
-
-This file contains the element specific service routines like
-Pack, Unpack, NumDofPerNode etc.
+\brief provides the XFluid3 element and related classes
 
 In addition to that, it contains the interface between element call
 and integration point loop (depending on the fluid implementation)
@@ -47,6 +44,7 @@ namespace DRT
     {
       public:
         
+        //! this struct stores local vectors extracted from the global unknown arrays
         struct MyState
         {
           vector<double> velnp;

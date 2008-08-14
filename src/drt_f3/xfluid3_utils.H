@@ -19,8 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management_element.H"
 
 
-//class DRT::Discretization;
-
 namespace XFEM
 {
   
