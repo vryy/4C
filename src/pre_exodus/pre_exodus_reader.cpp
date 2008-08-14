@@ -410,19 +410,6 @@ void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
   }
 }
 
-vector<double> EXODUS::Mesh::GetNodeExo(const int ExoNodeID) const
-{
-  int mapID = ExoNodeID - 1;
-  map<int,vector<double> >::const_iterator  it = nodes_->find(mapID);
-  return it->second;
-}
-
-vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
-{
-  map<int,vector<double> >::const_iterator  it = nodes_->find(MapNodeID);
-  return it->second;
-}
-
 vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
 {
   map<int,vector<double> >::const_iterator  it = nodes_->find(NodeID);
@@ -831,9 +818,9 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   map<int,vector<double> >::const_iterator it;
   RCP<map<int,vector<double> > > nodes = GetNodes();
   for(it=nodes->begin(); it != nodes->end(); ++it){
-    xc[it->first] = it->second[0];
-    yc[it->first] = it->second[1];
-    zc[it->first] = it->second[2];
+    xc[it->first-1] = it->second[0]; // vector starts with 0
+    yc[it->first-1] = it->second[1]; // vector starts with 0
+    zc[it->first-1] = it->second[2]; // vector starts with 0
   }
   error = ex_put_coord (exoid, &xc[0], &yc[0], &zc[0]);
 

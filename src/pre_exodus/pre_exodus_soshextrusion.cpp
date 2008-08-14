@@ -28,7 +28,7 @@ using namespace Teuchos;
 /* Method to extrude a surface to become a volumetric body */
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose, int diveblocks)
 {
-  int highestnid = basemesh.GetNumNodes() +1;
+  int highestnid = basemesh.GetNumNodes();  // this is the currently highest id, a new node must become highestnid+1
   //map<int,vector<double> > newnodes;
   RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes ar stored
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
@@ -179,25 +179,23 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       
       // place new node at new position
-      vector<double> actcoords = basemesh.GetNodeExo(*i_node); //curr position
+      vector<double> actcoords = basemesh.GetNode(*i_node); //curr position
       // new base position equals actele (matching mesh!)
       const vector<double> newcoords = actcoords;
       
       // concatenating or node-merging feature
-      int newExoNid = *i_node;
       newid = *i_node;
       concat_counter++;
       
       // create new node = loose concatenating
       if(concat_counter>=concat2loose){
-        newid = highestnid; // here just raise for each basenode
-        newExoNid = ExoToStore(newid);
+        newid = highestnid+1; // here just raise for each basenode
         highestnid++;
         concat_counter = 0;
       }
       
       // put new coords into newnode map
-      newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+      newnodes->insert(pair<int,vector<double> >(newid,newcoords));
       
       // put new node into map of OldNodeToNewNode
       vector<int> newids(1,newid);
@@ -216,10 +214,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       for (int i_layer = 1; i_layer <= layers; ++i_layer) {
         const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
         // numbering of new ids nodewise not layerwise as may be expected
-        newid = highestnid; ++ highestnid; 
-        int newExoNid = ExoToStore(newid);
+        newid = highestnid+1; ++ highestnid; 
         // put new coords into newnode map
-        newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+        newnodes->insert(pair<int,vector<double> >(newid,newcoords));
         // put new node into map of OldNodeToNewNode
         node_pair[*i_node].push_back(newid);
         // finally store this node where it will be connected to an ele
@@ -236,7 +233,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     int nnodes = firstele.size();  // could be either 6 or 8
     map<int,vector<double> >coords;
     for (int i = 0; i < nnodes; ++i) {
-      coords.insert(pair<int,vector<double> >(firstele[i],newnodes->find(ExoToStore(firstele[i]))->second));
+      coords.insert(pair<int,vector<double> >(firstele[i],newnodes->find(firstele[i])->second));
     }
     int initelesign = EleSaneSign(firstele,coords);
     encloseconn.insert(pair<int,vector<int> >(newele,firstele));
@@ -349,25 +346,23 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
           // check if new node already exists
           if (node_pair.find(thirdnode)==node_pair.end()){
             // place node at new position
-            vector<double> actcoords = basemesh.GetNodeExo(thirdnode); //curr position
+            vector<double> actcoords = basemesh.GetNode(thirdnode); //curr position
             // new base position equals actele (matching mesh!)
             const vector<double> newcoords = actcoords;
             
             // concatenating or node-merging feature
-            int newExoNid = thirdnode;
             newid = thirdnode;
             concat_counter++;
             
             // create new node = loose concatenating
             if(concat_counter>=concat2loose){
-              newid = highestnid; // here just raise for each basenode
-              newExoNid = ExoToStore(newid);
+              newid = highestnid+1; // here just raise for each basenode
               highestnid++;
               concat_counter = 0;
             }
             
             // put new coords into newnode map
-            newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+            newnodes->insert(pair<int,vector<double> >(newid,newcoords));
             
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
@@ -387,10 +382,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             // create layers at this node location
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
               const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
-              newid = highestnid; ++ highestnid;
-              int newExoNid = ExoToStore(newid);
+              newid = highestnid+1; ++ highestnid;
               // put new coords into newnode map
-              newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+              newnodes->insert(pair<int,vector<double> >(newid,newcoords));
               
               // put new node into map of OldNodeToNewNode
               node_pair[thirdnode].push_back(newid);
@@ -417,25 +411,23 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             // check if new node already exists
             if (node_pair.find(fourthnode)==node_pair.end()){
               // place new node at new position
-              vector<double> actcoords = basemesh.GetNodeExo(fourthnode); //curr position
+              vector<double> actcoords = basemesh.GetNode(fourthnode); //curr position
               // new base position equals actele (matching mesh!)
               const vector<double> newcoords = actcoords;
               
               // concatenating or node-merging feature
-              int newExoNid = fourthnode;
               newid = fourthnode;
               concat_counter++;
               
               // create new node = loose concatenating
               if(concat_counter>=concat2loose){
-                newid = highestnid; // here just raise for each basenode
-                newExoNid = ExoToStore(newid);
+                newid = highestnid+1; // here just raise for each basenode
                 highestnid++;
                 concat_counter = 0;
               }
               
              // put new coords into newnode map
-              newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+              newnodes->insert(pair<int,vector<double> >(newid,newcoords));
               
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
@@ -455,10 +447,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               // create layers at this node location
               for (int i_layer = 1; i_layer <= layers; ++i_layer) {
                 const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
-                newid = highestnid; ++ highestnid;
-                int newExoNid = ExoToStore(newid);
+                newid = highestnid+1; ++ highestnid;
                 // put new coords into newnode map
-                newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
+                newnodes->insert(pair<int,vector<double> >(newid,newcoords));
                 
                 // put new node into map of OldNodeToNewNode
                 node_pair[fourthnode].push_back(newid);
@@ -801,11 +792,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 
             // correct node coords for all layers
             int i_layer = 1;
-            vector<double> basecoords = newnodes->find(ExoToStore(nodes2flatten[0]))->second;
+            vector<double> basecoords = newnodes->find(nodes2flatten[0])->second;
             for(i_node=(nodes2flatten.begin()+1);i_node!=nodes2flatten.end();++i_node){
               int node = *i_node;
               vector<double> correctcoords = ExtrudeNodeCoords(basecoords,thickness,i_layer,layers,normal);
-              newnodes->find(ExoToStore(node))->second = correctcoords;
+              newnodes->find(node)->second = correctcoords;
               ++i_layer;
             }
           }
@@ -890,7 +881,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
     int nnodes = actele.size();  // could be either 6 or 8
     map<int,vector<double> >coords;
     for (int i = 0; i < nnodes; ++i) {
-      coords.insert(pair<int,vector<double> >(actele[i],newnodes.find(ExoToStore(actele[i]))->second));
+      coords.insert(pair<int,vector<double> >(actele[i],newnodes.find(actele[i])->second));
     }
     int actelesign = EleSaneSign(actele,coords);
     
@@ -936,7 +927,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
         // create new node or move node if only one element is left at this node
         if(ext_node_conn.find(repairnode)->second.size() == 1){
         // move existing node
-          newnodes.find(ExoToStore(repairnode))->second = newcoords;
+          newnodes.find(repairnode)->second = newcoords;
           coords.find(repairnode)->second = newcoords;  // coords update
           
           // layer case rework layer elements within enclosing one
@@ -948,7 +939,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
               vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,thickness,i_layer,numlayers,repairnormal);
               ++i_layer;
               int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
-              newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
+              newnodes.find(layerrepairnode)->second = newlayercoords;
             }
           }
         }
@@ -967,11 +958,10 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
             
             // create new node
-            newid = highestnid; ++ highestnid;
+            newid = highestnid+1; ++ highestnid;
             ++newnodesbyrepair;
-            int newMapNid = ExoToStore(newid);
             // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newMapNid,newlayercoords));
+            newnodes.insert(pair<int,vector<double> >(newid,newlayercoords));
             coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
             
             // replace previously connected node corresponding to repairnode with new node in actlayerele
@@ -1018,7 +1008,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
 
           // move node to this aligned position
           // actually due to repairing above all extrusion nodes must be already new and can just be moved
-          newnodes.find(ExoToStore(repairnode))->second = newcoords;
+          newnodes.find(repairnode)->second = newcoords;
           coords.find(repairnode)->second = newcoords;  // coords update
           
           // layer case rework layer elements within enclosing one
@@ -1030,7 +1020,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
               vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(*it)->second,thickness,i_layer,numlayers,repairnormal);
               ++i_layer;
               int layerrepairnode = newconn.find(*i_layerele)->second.at(repairnodepos);
-              newnodes.find(ExoToStore(layerrepairnode))->second = newlayercoords;
+              newnodes.find(layerrepairnode)->second = newlayercoords;
             }
           }
         }
@@ -1320,9 +1310,9 @@ vector<double> EXODUS::AverageNormal(const vector<double> n, const vector<vector
 vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mesh& basemesh)
 {
   vector<double> normal(3);
-  vector<double> h1 = basemesh.GetNodeExo(head1);
-  vector<double> h2 = basemesh.GetNodeExo(head2);
-  vector<double> o  = basemesh.GetNodeExo(origin);
+  vector<double> h1 = basemesh.GetNode(head1);
+  vector<double> h2 = basemesh.GetNode(head2);
+  vector<double> o  = basemesh.GetNode(origin);
   
   normal[0] =   ((h1[1]-o[1])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[1]-o[1]));
   normal[1] = - ((h1[0]-o[0])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[0]-o[0]));
@@ -1474,10 +1464,9 @@ void EXODUS::PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double
   else if (numnodes==3) gmshfilecontent << "ST(";
   else if (numnodes==4) gmshfilecontent << "SQ(";
   for(unsigned int i=0; i<elenodes.size(); ++i){
-    // node map starts with 0 but exodus with 1!
-    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
-    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
-    gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+    gmshfilecontent << nodes.find(elenodes.at(i))->second[0] << ",";
+    gmshfilecontent << nodes.find(elenodes.at(i))->second[1] << ",";
+    gmshfilecontent << nodes.find(elenodes.at(i))->second[2];
     if (i==(elenodes.size()-1)) gmshfilecontent << ")";
     else gmshfilecontent << ",";
   }
@@ -1499,38 +1488,38 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
   int numnodes = elenodes.size();
   if (numnodes==3){
     gmshfilecontent << "ST(" <<  
-    basemesh.GetNodeExo(elenodes.at(0))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(0))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(0))[2] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[2] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[2] << ")" <<
+    basemesh.GetNode(elenodes.at(0))[0] << "," <<
+    basemesh.GetNode(elenodes.at(0))[1] << "," <<
+    basemesh.GetNode(elenodes.at(0))[2] << "," <<
+    basemesh.GetNode(elenodes.at(1))[0] << "," <<
+    basemesh.GetNode(elenodes.at(1))[1] << "," <<
+    basemesh.GetNode(elenodes.at(1))[2] << "," <<
+    basemesh.GetNode(elenodes.at(2))[0] << "," <<
+    basemesh.GetNode(elenodes.at(2))[1] << "," <<
+    basemesh.GetNode(elenodes.at(2))[2] << ")" <<
     "{" << eleid << "," << eleid << "," << eleid << "};" << endl;
   } else if (numnodes==4){
     gmshfilecontent << "SQ(" <<  
-    basemesh.GetNodeExo(elenodes.at(0))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(0))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(0))[2] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(1))[2] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(2))[2] << "," <<
-    basemesh.GetNodeExo(elenodes.at(3))[0] << "," <<
-    basemesh.GetNodeExo(elenodes.at(3))[1] << "," <<
-    basemesh.GetNodeExo(elenodes.at(3))[2] << ")" <<
+    basemesh.GetNode(elenodes.at(0))[0] << "," <<
+    basemesh.GetNode(elenodes.at(0))[1] << "," <<
+    basemesh.GetNode(elenodes.at(0))[2] << "," <<
+    basemesh.GetNode(elenodes.at(1))[0] << "," <<
+    basemesh.GetNode(elenodes.at(1))[1] << "," <<
+    basemesh.GetNode(elenodes.at(1))[2] << "," <<
+    basemesh.GetNode(elenodes.at(2))[0] << "," <<
+    basemesh.GetNode(elenodes.at(2))[1] << "," <<
+    basemesh.GetNode(elenodes.at(2))[2] << "," <<
+    basemesh.GetNode(elenodes.at(3))[0] << "," <<
+    basemesh.GetNode(elenodes.at(3))[1] << "," <<
+    basemesh.GetNode(elenodes.at(3))[2] << ")" <<
     "{" << eleid << "," << eleid << "," << eleid << "," << eleid << "};" << endl;
   } else dserror("numnodes not supported");
   gmshfilecontent << "};" << endl;
   gmshfilecontent <<"View \" Normal \" {" << endl;
   gmshfilecontent << "VP(" <<
-  basemesh.GetNodeExo(nodeid)[0] << "," <<
-  basemesh.GetNodeExo(nodeid)[1] << "," <<
-  basemesh.GetNodeExo(nodeid)[2] << ")" <<
+  basemesh.GetNode(nodeid)[0] << "," <<
+  basemesh.GetNode(nodeid)[1] << "," <<
+  basemesh.GetNode(nodeid)[2] << ")" <<
   "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
   gmshfilecontent << "};" << endl;
   f_system << gmshfilecontent.str();
@@ -1552,10 +1541,9 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
   if (numnodes==3) gmshfilecontent << "ST(";
   else if (numnodes==4) gmshfilecontent << "SQ(";
   for(unsigned int i=0; i<centerele.size(); ++i){
-    // node map starts with 0 but exodus with 1!
-    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[0] << ",";
-    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[1] << ",";
-    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[2];
+    gmshfilecontent << basemesh.GetNode(centerele.at(i))[0] << ",";
+    gmshfilecontent << basemesh.GetNode(centerele.at(i))[1] << ",";
+    gmshfilecontent << basemesh.GetNode(centerele.at(i))[2];
     if (i==(centerele.size()-1)) gmshfilecontent << ")";
     else gmshfilecontent << ",";
   }
@@ -1572,9 +1560,9 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
       patchnodes.insert(elenodes.at(i));
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[0] << ",";
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[1] << ",";
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[2];
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[0] << ",";
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[1] << ",";
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }
@@ -1595,9 +1583,9 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
     if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[0] << ",";
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[1] << ",";
-      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[2];
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[0] << ",";
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[1] << ",";
+      gmshfilecontent << basemesh.GetNode(elenodes.at(i))[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }
@@ -1613,9 +1601,9 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
   for (it = patchnodes.begin(); it != patchnodes.end(); ++it){
     if (avg_nn.find(*it) != avg_nn.end()){
       gmshfilecontent << "VP(" <<
-      basemesh.GetNodeExo(*it)[0] << "," <<
-      basemesh.GetNodeExo(*it)[1] << "," <<
-      basemesh.GetNodeExo(*it)[2] << ")";
+      basemesh.GetNode(*it)[0] << "," <<
+      basemesh.GetNode(*it)[1] << "," <<
+      basemesh.GetNode(*it)[2] << ")";
       vector<double> actn = avg_nn.find(*it)->second;
       gmshfilecontent << "{" << actn[0] << "," << actn[1] << "," << actn[2] << "};" << endl;
     }
@@ -1624,9 +1612,9 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
  
   gmshfilecontent <<"View \" Normal \" {" << endl;
   gmshfilecontent << "VP(" <<
-  basemesh.GetNodeExo(nodeid)[0] << "," <<
-  basemesh.GetNodeExo(nodeid)[1] << "," <<
-  basemesh.GetNodeExo(nodeid)[2] << ")" <<
+  basemesh.GetNode(nodeid)[0] << "," <<
+  basemesh.GetNode(nodeid)[1] << "," <<
+  basemesh.GetNode(nodeid)[2] << ")" <<
   "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
   gmshfilecontent << "};" << endl;
   f_system << gmshfilecontent.str();
@@ -1653,10 +1641,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     else if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
-      // node map starts with 0 but exodus with 1!
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }
@@ -1683,10 +1670,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     else if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
-      // node map starts with 0 but exodus with 1!
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }
@@ -1707,9 +1693,9 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
     else if (numnodes==4) gmshfilecontent << "SQ(";
     for(unsigned int i=0; i<elenodes.size(); ++i){
       // node map starts with 0 but exodus with 1!
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
-      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i))->second[2];
       if (i==(elenodes.size()-1)) gmshfilecontent << ")";
       else gmshfilecontent << ",";
     }

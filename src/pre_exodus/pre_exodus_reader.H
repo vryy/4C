@@ -143,11 +143,7 @@ public:
   //! Get Node map
   RCP<map<int,vector<double> > > GetNodes() const {return nodes_;}
   
-  //! Get one nodal coords, accessed by ExoID
-  vector<double> GetNodeExo(const int ExoNodeID) const;
-  
-  //! Get one nodal coords, accessed by MapID
-  vector<double> GetNodeMap(const int MapNodeID) const;
+  //! Get one nodal coords
   vector<double> GetNode(const int NodeID) const;
 
   //! Close Exodus File
@@ -317,14 +313,6 @@ private:
 };
 // *********** end of classes
 
-
-// Exodus NodeIds start from 1 but are stored starting from 0
-inline int ExoToStore(const int ExoID){
-  if(ExoID-1 != 0) return ExoID-1;
-  else dserror("error in NodeID: Exo or Store?");
-  return 0;
-}
-inline int StoreToExo(const int StoreID){return StoreID+1;}
 
 inline ElementBlock::Shape StringToShape(const string shape)
 {
