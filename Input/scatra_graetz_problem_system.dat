@@ -353,7 +353,7 @@ DLINE  0
 ----------------------------------------------IMPEDANCE CONDITIONS
 DSURF  0
 -----------------------------------DESIGN MULTIPOINT CONSTRAINT 3D
-DVOL   0
+DSURF   0
 -----------------------------------DESIGN MULTIPOINT CONSTRAINT 2D
 DLINE  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
