@@ -205,6 +205,18 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate/define the residual force vector #fres_ for
+ * relaxation solution with SolveRelaxationLinear */
+void STR::TimIntGEMM::EvaluateForceStiffResidualRelax()
+{
+  // compute residual forces #fres_ and stiffness #stiff_
+  EvaluateForceStiffResidual();
+
+  // overwrite the residual forces #fres_ with interface load
+  fres_->Update(-(1.0-alphaf_), *fifc_, 0.0);
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
 void STR::TimIntGEMM::EvaluateMidState()
 {

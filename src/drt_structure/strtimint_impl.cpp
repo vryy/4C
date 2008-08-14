@@ -189,7 +189,8 @@ STR::TimIntImpl::TimIntImpl
   normdisi_(0.0),
   disi_(Teuchos::null),
   timer_(actdis->Comm()),
-  fres_(Teuchos::null)
+  fres_(Teuchos::null),
+  fifc_(Teuchos::null)
 {
   // verify: if system has constraints, then Uzawa-type solver is used
   if ( conman_->HaveConstraint()
@@ -202,6 +203,9 @@ STR::TimIntImpl::TimIntImpl
 
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
+
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
@@ -942,6 +946,62 @@ void STR::TimIntImpl::PrintStepText
 
   // fall asleep
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* introduce (robin) fsi surface extractor object */
+void STR::TimIntImpl::SetSurfaceFSI
+(
+  const LINALG::MapExtractor* fsisurface  //!< the FSI surface
+) 
+{ 
+  fsisurface_ = fsisurface; 
+}
+
+/*----------------------------------------------------------------------*/
+/* Set forces due to interface with fluid */
+void STR::TimIntImpl::SetForceInterface
+(
+  const LINALG::MapExtractor& extractor,
+  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+)
+{
+  fifc_->PutScalar(0.0);
+  extractor.AddCondVector(iforce, fifc_);
+}
+
+/*----------------------------------------------------------------------*/
+/* Set forces due to interface with fluid,
+ * the force is expected external-force-like */
+void STR::TimIntImpl::SetForceInterface
+(
+  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+)
+{
+  fifc_->Update(1.0, *iforce, 0.0);
+}
+
+/*----------------------------------------------------------------------*/
+/* Linear structure solve with just an interface load */
+Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
+{
+  // Evaluate/define the residual force vector #fres_ for
+  // relaxation solution with SolveRelaxationLinear
+  EvaluateForceStiffResidualRelax();
+
+  // negative residual
+  fres_->Scale(-1.0);
+
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 
+                                 zeros_, dirichtoggle_);
+
+  // solve for #disi_
+  solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
+
+  // go back
+  return disi_;
 }
 
 /*----------------------------------------------------------------------*/

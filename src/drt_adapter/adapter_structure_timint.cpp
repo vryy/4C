@@ -77,7 +77,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
 
   // set-up FSI interface
   DRT::UTILS::SetupNDimExtractor(*discret, "FSICoupling", interface_);
-  structure_->SetFSISurface(&interface_);
+  structure_->SetSurfaceFSI(&interface_);
 }
 
 
@@ -331,7 +331,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
 )
 {
   Teuchos::RCP<Epetra_Vector> relax = interface_.InsertCondVector(iforce);
-  Teuchos::RCP<Epetra_Vector> idisi = structure_->SolveRelaxationLinear(relax);
+  structure_->SetForceInterface(relax);
+  Teuchos::RCP<Epetra_Vector> idisi = structure_->SolveRelaxationLinear();
 
   // we are just interested in the incremental interface displacements
   idisi = interface_.ExtractCondVector(idisi);
@@ -448,7 +449,8 @@ void ADAPTER::StructureTimInt::ApplyInterfaceForces(
   structure_->ApplyExternalForce(interface_,iforce);
 */
   // This will add the provided interface force onto the residual forces
-  structure_->AddForceInterface(interface_, iforce, -1.0);
+  // The sign convention of the interface force is external-force-like.
+  structure_->SetForceInterface(interface_, iforce);
 }
 
 
@@ -459,6 +461,7 @@ void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(
   Teuchos::RCP<Epetra_Vector> ifluidvel
 )
 {
+  dserror("Not impl.");
 /*
   // get robin parameter and timestep
   double alphas  = params_->get<double>("alpha s",-1.);

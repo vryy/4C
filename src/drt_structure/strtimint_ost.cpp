@@ -196,6 +196,18 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate/define the residual force vector #fres_ for
+ * relaxation solution with SolveRelaxationLinear */
+void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax()
+{
+  // compute residual forces #fres_ and stiffness #stiff_
+  EvaluateForceStiffResidual();
+
+  // overwrite the residual forces #fres_ with interface load
+  fres_->Update(-theta_, *fifc_, 0.0);
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate theta-state vectors by averaging end-point vectors */
 void STR::TimIntOneStepTheta::EvaluateMidState()
 {

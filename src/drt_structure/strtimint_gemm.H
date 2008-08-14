@@ -148,6 +148,10 @@ namespace STR
     //! Create force residual #fres_ and ist stiffness #stiff_
     void EvaluateForceStiffResidual();
 
+    //! Evaluate/define the residual force vector #fres_ for
+    //! relaxation solution with SolveRelaxationLinear
+    void EvaluateForceStiffResidualRelax();
+
     //! Determine characteristic norm for displacements
     //! \author lw (originally)
     double CalcRefNormDisplacement();

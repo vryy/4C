@@ -184,21 +184,14 @@ STR::TimInt::TimInt
 
   // time state 
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
-  timen_ = (*time_)[0];  // set target time to initial time
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
   step_ = 0;
+  timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
+  stepn_ = step_ + 1;
 
   // output file for energy
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
     AttachEnergyFile();
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //if (not discret_->Filled())
-  //{
-  //  discret_->FillComplete();
-  //}
-  //dofrowmap_ = discret_->DofRowMap();
 
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*dofrowmap_, true);

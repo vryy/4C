@@ -193,20 +193,6 @@ namespace STR
       Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness
     );
 
-    //! Apply forces due to interface with fluid
-    virtual void AddForceInterface
-    (
-      const LINALG::MapExtractor& extractor,
-      Teuchos::RCP<Epetra_Vector> iforce,  ///< the force on interface
-      const double isign  ///< +1: internal-force-like
-                          ///< -1: external-force-like
-    )
-    {
-      Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*dofrowmap_, true);
-      extractor.AddCondVector(iforce, fifc);
-      fres_->Update(isign, *fifc, 1.0);
-    }
-
     //@}
 
     //! @name Solution
@@ -279,6 +265,11 @@ namespace STR
     //!
     //! \author mwgee (originally) \date 03/07
     void PTC() { dserror("Not impl."); }
+
+    //@}
+
+    //! @name Updates
+    //@{
 
     //! Update iteration
     //!
@@ -392,7 +383,6 @@ namespace STR
 
     //@}
 
-
     //! @name Attribute access functions
     //@{
 
@@ -427,42 +417,31 @@ namespace STR
     //!
     //! Introduce the FSI surface to the fluid algorithm. This way special case
     //! algorithms (robin coupling) can work on the surface.
-    void SetFSISurface
+    void SetSurfaceFSI
     (
       const LINALG::MapExtractor* fsisurface  //!< the FSI surface
-    ) 
-    { 
-      fsisurface_ = fsisurface; 
-    }
+    );
 
-    //! Kind of FSI Robin pseudo external force
-    //Teuchos::RCP<Epetra_Vector> GetForceRobinFSI() { return frobin_; }
-    //virtual Teuchos::RCP<Epetra_Vector> GetForceRobinFSI() = 0;
-
-    //!
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear
+    //! Set forces due to interface with fluid
+    void SetForceInterface
     (
-      Teuchos::RCP<Epetra_Vector> relax
-    )
-    {
-      // compute residual forces #fres_ and stiffness #stiff_
-      EvaluateForceStiffResidual();
+      const LINALG::MapExtractor& extractor,
+      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+    );
 
-      // we start from zero
-      //fres_->Update(1.-alphaf,*relax,0.0);
-      fres_->Update(1.0, *relax, 0.0);
+    //! Set forces due to interface with fluid,
+    //! the force is expected external-force-like
+    void SetForceInterface
+    (
+      Teuchos::RCP<Epetra_Vector> iforce  //!< the force on interface
+    );
 
-      // apply Dirichlet BCs to system of equations
-      disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 
-                                     zeros_, dirichtoggle_);
+    //! Evaluate/define the residual force vector #fres_ for
+    //! relaxation solution with SolveRelaxationLinear
+    virtual void EvaluateForceStiffResidualRelax() = 0;
 
-      // solve for #disi_
-      solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
-
-      // go back
-      return disi_;
-    }
+    //! Linear structure solve with just an interface load 
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
     //@}
 
@@ -484,9 +463,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> disi  //!< input residual displacements
     )
     {  
-      // set the new solution we just got
-      if (disi != Teuchos::null)
-        disi_->Update(1.0, *disi, 0.0);
+      if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
     }
 
     //! Return effective residual force \f$R_{n+1}\f$
@@ -538,6 +515,11 @@ namespace STR
     //! @name Various global forces
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
+    //@}
+
+    //! @name Interface stuff
+    //@{
+    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
     //@}
 
   };  // class TimIntImpl

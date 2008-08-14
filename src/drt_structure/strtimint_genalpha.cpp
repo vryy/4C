@@ -182,6 +182,16 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
+  // interface forces to external forces
+  if (fsisurface_)
+  {
+    // we need the minus sign, because we add a force, which
+    // is accompanied by a sign to define it relative to
+    // an  internal force vector. However, here it is 
+    // added to an external force vector
+    fextn_->Update(1.0, *fifc_, 1.0);  
+  }
+
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
@@ -285,6 +295,18 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
 
   // hallelujah
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Evaluate/define the residual force vector #fres_ for
+ * relaxation solution with SolveRelaxationLinear */
+void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax()
+{
+  // compute residual forces #fres_ and stiffness #stiff_
+  EvaluateForceStiffResidual();
+
+  // overwrite the residual forces #fres_ with interface load
+  fres_->Update(-0.5, *fifc_, 0.0);
 }
 
 /*----------------------------------------------------------------------*/
