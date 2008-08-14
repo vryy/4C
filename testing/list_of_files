@@ -198,3 +198,5 @@ Input/constr3D_MPC_dirich.dat                           x        x        x     
 Input/constr2D_shrinking.dat                            x        x        x        -        -        -
 Input/constr2D_fsi.dat                                  x        x        x        -        -        -
 Input/viscoNeoHooke_creep.dat                           x        x        x        -        -        -
+Input/mat_contchain_remo.dat                            x        -        x
+Input/mat_holzharit_remo.dat                            x        -        x
