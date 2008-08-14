@@ -24,25 +24,10 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUIDIMPLICITINTEGRATION_H
 #define XFLUIDIMPLICITINTEGRATION_H
 
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_xfem/dof_management.H"
-
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ctime>
-#include <Teuchos_TimeMonitor.hpp>
-
 
 
 namespace FLD

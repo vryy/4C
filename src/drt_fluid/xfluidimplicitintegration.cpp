@@ -28,6 +28,8 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/linalg_utils.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
@@ -37,6 +39,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_f3/xfluid3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
+//#include <ctime>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -1683,10 +1687,25 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     )
 {
   // create zero displacement vector to use initial position of interface
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  Teuchos::RCP<Epetra_Vector> idispcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  {
+    const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
+    Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    
+    Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    
+    cutterdiscret->SetState("idispcolnp",idispcolnp);
+    cutterdiscret->SetState("ivelcolnp",ivelcolnp);
+    
+    cutterdiscret->SetState("idispcoln",idispcoln);
+    cutterdiscret->SetState("ivelcoln",ivelcoln);
+    cutterdiscret->SetState("iacccoln",iacccoln);
+  
+    ComputeInterfaceAndSetDOFs(cutterdiscret);
+    cutterdiscret->ClearState();
+  }
 
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)

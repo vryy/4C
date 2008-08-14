@@ -28,19 +28,14 @@ Maintainer: Axel Gerstenberger
 #include <iostream>
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 #include "xfluid_dyn_nln_drt.H"
 #include "xfluidimplicitintegration.H"
-#include "../drt_lib/drt_resulttest.H"
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
