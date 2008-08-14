@@ -72,12 +72,12 @@ EXODUS::Mesh::Mesh(string exofilename)
 
     // store nodes in map
     nodes_ = rcp(new map<int,vector<double> >);
-    for (int i = 1; i <= num_nodes; ++i) {
+    for (int i = 0; i < num_nodes; ++i) {
       vector<double> coords;
       coords.push_back(x[i]);
       coords.push_back(y[i]);
       coords.push_back(z[i]);
-      nodes_->insert(std::pair<int,vector<double> >(i,coords));
+      nodes_->insert(std::pair<int,vector<double> >(i+1,coords)); //to store the EXO-ID starting with 1
     }
   } // free coordinate vectors x, y ,z
 
