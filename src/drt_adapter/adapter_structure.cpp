@@ -314,7 +314,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
+  output->WriteMesh(0, 0.0);
 
   // set some pointers and variables
   SOLVAR* actsolv = &solv[genprob.numsf];
@@ -326,8 +326,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
   Teuchos::RCP<Teuchos::ParameterList> sdyn 
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
-
-  //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
+  //const Teuchos::ParameterList& size
+  //  = DRT::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters
   if ((actdis->Comm()).MyPID()==0)
@@ -338,7 +338,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     = Teuchos::rcp(new Teuchos::ParameterList());
   xparams->set<FILE*>("err file", allfiles.out_err);
 
-  // overwrite certain parameters
+  // overrule certain parameters
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("UPRES"));
@@ -347,6 +347,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi)
   {
+    // FSI input parameters
     const Teuchos::ParameterList& fsidyn 
       = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -354,8 +355,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     INPUTPARAMS::FSIPartitionedCouplingMethod method
       = Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     xparams->set<bool>("structrobin",
-                      ( (method==INPUTPARAMS::fsi_DirichletRobin) 
-                        or (method==INPUTPARAMS::fsi_RobinRobin) ));
+                       ( (method==INPUTPARAMS::fsi_DirichletRobin) 
+                         or (method==INPUTPARAMS::fsi_RobinRobin) ));
 
     // THIS SHOULD GO, OR SHOULDN'T IT?
     xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
@@ -368,14 +369,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     {
       if (Teuchos::getIntegralValue<int>(*sdyn,"PREDICT")
           != STRUCT_DYNAMIC::pred_constdisvelacc)
+      {
         dserror("only constant structure predictor with monolithic FSI possible");
-#if 0
-      // THIS WAS AND WILL BE DEACTIVATED!!!
-      // overwrite time integration flags
-      genalphaparams->set<double>("gamma",fsidyn.get<double>("GAMMA"));
-      genalphaparams->set<double>("alpha m",fsidyn.get<double>("ALPHA_M"));
-      genalphaparams->set<double>("alpha f",fsidyn.get<double>("ALPHA_F"));
-#endif
+      }
     }
   }
 

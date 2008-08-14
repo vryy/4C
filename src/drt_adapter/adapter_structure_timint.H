@@ -202,11 +202,12 @@ namespace ADAPTER {
     /// @name local copies of input parameters
     //{@
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
-    Teuchos::RCP<Teuchos::ParameterList> ioparams_;
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;
-    Teuchos::RCP<LINALG::Solver> solver_;
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
+    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used, 
+                                                       ///< but could/should be circumvented
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
+    Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 
   };  // class StructureTimInt
