@@ -332,7 +332,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
   for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
   {
     vector<double> coords = i_node->second;
-    dat << "NODE " << i_node->first+1 << "  " << '\t' << "COORD" << '\t';
+    dat << "NODE " << i_node->first << "  " << '\t' << "COORD" << '\t';
     for(unsigned int i=0; i<coords.size(); ++i) dat << scientific << coords[i] << '\t';
     dat << endl;
   }

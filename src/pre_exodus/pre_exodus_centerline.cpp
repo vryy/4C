@@ -188,7 +188,7 @@ Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<doubl
   int id = 0;
   //ns.Print(cout,true);
   for(it=nodeset.begin(); it!=nodeset.end(); ++it){
-    vector<double> node = nodes->find(ExoToStore(*it))->second;
+    vector<double> node = nodes->find(*it)->second;
     points_->insert(std::pair<int,vector<double> >(id,node));
     ++id;
   }

@@ -169,7 +169,7 @@ bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetr
   LINALG::SerialDenseMatrix xyze(deriv.M(),iel);
   for (int inode=0; inode<iel; inode++)
   {
-    const vector<double> x = mymesh.GetNodeExo(nodes.at(inode));
+    const vector<double> x = mymesh.GetNode(nodes.at(inode));
     xyze(0,inode) = x[0];
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
