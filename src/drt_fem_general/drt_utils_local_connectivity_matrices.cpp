@@ -517,14 +517,13 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
 vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
     const DRT::Element::DiscretizationType      distype)
 {
+    vector< vector<int> >   map;  
+  
     const int nCornerNode = getNumberOfElementCornerNodes(distype);
-    int nLine;
-
-    vector< vector<int> >   map;
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        nLine = 3;
+        const int nLine = 3;
         vector<int> submap(nLine, 0);
         for(int i = 0; i < nCornerNode; i++)
         {
@@ -533,15 +532,24 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
                 map[i][j] = eleNodeNumbering_hex27_nodes_lines[i][j];
         }
     }
+    else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
+    {
+        const int nLine = 3;
+        vector<int> submap(nLine, 0);
+        for(int i = 0; i < nCornerNode; i++)
+        {
+            map.push_back(submap);
+            for(int j = 0; j < nLine; j++)
+                map[i][j] = eleNodeNumbering_tet10_nodes_lines[i][j];
+        }
+    }
     else
         dserror("discretizationtype not yet implemented");
 
     return map;
 }
-                                                
-                                                
-                                                
-                                                
+
+
 
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|

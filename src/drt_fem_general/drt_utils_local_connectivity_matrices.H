@@ -224,6 +224,12 @@ namespace UTILS
                                                              {0,  1,  2}};
 
 
+  //! for each of the 4 corner nodes, tell me the 3 neighbouring lines
+ const int eleNodeNumbering_tet10_nodes_lines[4][3] =  { {0,  2,  3},
+                                                         {0,  1,  4},
+                                                         {1,  2,  5},
+                                                         {3,  4,  5}};
+  
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {    {-1.0,  -1.0,  -1.0},
                                                                     { 1.0,  -1.0,  -1.0},
