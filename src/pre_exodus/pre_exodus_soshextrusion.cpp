@@ -848,8 +848,9 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
 bool EXODUS::CheckFlatEx(const EXODUS::NodeSet nodeset)
 {
   const string myname = nodeset.GetName();
-  if (myname.find("flat") != string::npos)
+  if (myname.find("flat") != string::npos){
     return true;
+  }
   return false;
 }
 

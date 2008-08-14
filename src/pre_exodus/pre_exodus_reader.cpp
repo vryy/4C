@@ -137,7 +137,7 @@ EXODUS::Mesh::Mesh(string exofilename)
       char mychar[MAX_STR_LENGTH+1];
       error = ex_get_name (exoid_, EX_NODE_SET, npropID[i], mychar);
       // prefer string to store name
-      string nodesetname(mychar, int(MAX_STR_LENGTH));
+      string nodesetname(mychar);
 
       // get nodes in node set
       vector<int> node_set_node_list(num_nodes_in_set);
