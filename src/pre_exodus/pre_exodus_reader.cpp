@@ -72,7 +72,7 @@ EXODUS::Mesh::Mesh(string exofilename)
 
     // store nodes in map
     nodes_ = rcp(new map<int,vector<double> >);
-    for (int i = 0; i < num_nodes; ++i) {
+    for (int i = 1; i <= num_nodes; ++i) {
       vector<double> coords;
       coords.push_back(x[i]);
       coords.push_back(y[i]);
@@ -423,6 +423,13 @@ vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
   return it->second;
 }
 
+vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
+{
+  map<int,vector<double> >::const_iterator  it = nodes_->find(NodeID);
+  return it->second;
+}
+
+
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
   cout << "Creating SideSet Connectivity... " << endl;
@@ -468,7 +475,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   int tetc=0,hexc=0,pyrc=0,wedgc=0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
     RCP<TimeMonitor> tm1 = rcp(new TimeMonitor(*time1));
-    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
+    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0 //ToDo: remove -1 idconfusion
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
     int actebid=-1;
@@ -578,7 +585,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   int tetc=0,hexc=0,pyrc=0,wedgc=0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
     RCP<TimeMonitor> tm1 = rcp(new TimeMonitor(*time1));
-    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
+    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0 //ToDo: remove -1 idconfusion
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
     int actebid=-1;
@@ -671,9 +678,9 @@ vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const
 vector<double> EXODUS::Mesh::Normal(const int head1,const int origin,const int head2) const
 {
   vector<double> normal(3);
-  vector<double> h1 = GetNodeExo(head1);
-  vector<double> h2 = GetNodeExo(head2);
-  vector<double> o  = GetNodeExo(origin);
+  vector<double> h1 = GetNode(head1);
+  vector<double> h2 = GetNode(head2);
+  vector<double> o  = GetNode(origin);
   
   normal[0] =   ((h1[1]-o[1])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[1]-o[1]));
   normal[1] = - ((h1[0]-o[0])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[0]-o[0]));
@@ -690,8 +697,8 @@ vector<double> EXODUS::Mesh::Normal(const int head1,const int origin,const int h
 vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
 {
   vector<double> nv(3);
-  vector<double> t = GetNodeExo(tail);
-  vector<double> h = GetNodeExo(head);
+  vector<double> t = GetNode(tail);
+  vector<double> h = GetNode(head);
   nv[0] = h[0] - t[0]; nv[1] = h[1] - t[1]; nv[2] = h[2] - t[2];
   double length = sqrt(nv[0]*nv[0] + nv[1]*nv[1] + nv[2]*nv[2]);
   nv[0] = nv[0]/length; nv[1] = nv[1]/length; nv[2] = nv[2]/length;
@@ -1003,9 +1010,9 @@ map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& 
 				nodes_per_element++;
 					
 				//sum of two vectors
-				sumVector[0] += GetNodeExo(*it_3)[0];
-				sumVector[1] += GetNodeExo(*it_3)[1];
-				sumVector[2] += GetNodeExo(*it_3)[2];
+				sumVector[0] += GetNode(*it_3)[0];
+				sumVector[1] += GetNode(*it_3)[1];
+				sumVector[2] += GetNode(*it_3)[2];
 			}
 		
 			//midpoint of element i
@@ -1081,10 +1088,9 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& 
       if (numnodes==6) gmshfilecontent << "SI(";
       else if (numnodes==8) gmshfilecontent << "SH(";
       for(unsigned int i=0; i<elenodes.size(); ++i){
-        // node map starts with 0 but exodus with 1!
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[0] << ",";
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[1] << ",";
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[2];
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[0] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[1] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[2];
         if (i==(elenodes.size()-1)) gmshfilecontent << ")";
         else gmshfilecontent << ",";
       }
@@ -1130,10 +1136,9 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& 
       if (numnodes==6) gmshfilecontent << "SI(";
       else if (numnodes==8) gmshfilecontent << "SH(";
       for(unsigned int i=0; i<elenodes.size(); ++i){
-        // node map starts with 0 but exodus with 1!
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[0] << ",";
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[1] << ",";
-        gmshfilecontent << nodes->find(elenodes.at(i)-1)->second[2];
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[0] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[1] << ",";
+        gmshfilecontent << nodes->find(elenodes.at(i))->second[2];
         if (i==(elenodes.size()-1)) gmshfilecontent << ")";
         else gmshfilecontent << ",";
       }

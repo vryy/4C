@@ -148,6 +148,7 @@ public:
   
   //! Get one nodal coords, accessed by MapID
   vector<double> GetNodeMap(const int MapNodeID) const;
+  vector<double> GetNode(const int NodeID) const;
 
   //! Close Exodus File
   void CloseExo();
