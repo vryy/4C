@@ -1211,6 +1211,7 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/dof_distribution_switcher.o \
                     src/drt_xfem/enrichment.o \
                     src/drt_xfem/interface.o \
+                    src/drt_xfem/spacetime_boundary.o \
                     src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
                     src/drt_xfem/xdofmapcreation.o \
