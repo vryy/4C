@@ -128,6 +128,8 @@ void STR::strudyn_direct()
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> sti 
     = TimIntCreate(ioflags, sdyn, xparams, actdis, solver, output);
+  if (sti == Teuchos::null)
+    dserror("Failed in creating integrator.");
 
   // create auxiliar time integrator
   Teuchos::RCP<STR::TimAda> sta 
@@ -156,7 +158,7 @@ void STR::strudyn_direct()
   }
   else
   {
-    //adapated step sizes
+    //adapted step sizes
     sta->Integrate();
   }
 

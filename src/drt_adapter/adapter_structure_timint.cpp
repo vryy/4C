@@ -540,8 +540,8 @@ void ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure()
   SOLVAR* actsolv = &solv[genprob.numsf];
 
   // get input parameter lists
-  const Teuchos::ParameterList& probtype 
-    = DRT::Problem::Instance()->ProblemTypeParams();
+  //const Teuchos::ParameterList& probtype 
+  //  = DRT::Problem::Instance()->ProblemTypeParams();
   Teuchos::RCP<const Teuchos::ParameterList> ioflags 
     = Teuchos::rcp(&(DRT::Problem::Instance()->IOParams()),false);
   Teuchos::RCP<const Teuchos::ParameterList> sdyn 
