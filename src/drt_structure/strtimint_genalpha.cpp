@@ -185,10 +185,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // interface forces to external forces
   if (fsisurface_)
   {
-    // we need the minus sign, because we add a force, which
-    // is accompanied by a sign to define it relative to
-    // an  internal force vector. However, here it is 
-    // added to an external force vector
     fextn_->Update(1.0, *fifc_, 1.0);  
   }
 

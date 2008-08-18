@@ -139,6 +139,12 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
+  // interface forces to external forces
+  if (fsisurface_)
+  {
+    fextn_->Update(1.0, *fifc_, 1.0);  
+  }
+
   // initialise internal forces
   fintn_->PutScalar(0.0);
 
