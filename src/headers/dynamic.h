@@ -67,7 +67,7 @@ typedef struct _STRUCT_DYNAMIC
 enum
    {
     gen_alfa,                   /* generalised-alpha time integrator */
-    statics,                    /* static analysis with gen_alfa */
+    gen_alfa_statics,           /* static analysis with gen_alfa */
     centr_diff,                 /* central differences (explicit) */
     Gen_EMM,                    /* generalised energy-momentum method */
     genalpha,                   /* generalised-alpha time integrator, 

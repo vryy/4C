@@ -79,7 +79,7 @@ void caldyn_drt()
     dserror("no central differences in DRT");
     break;
   case STRUCT_DYNAMIC::gen_alfa:
-  case STRUCT_DYNAMIC::statics:
+  case STRUCT_DYNAMIC::gen_alfa_statics:
     switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
     {
     case TIMADA_DYNAMIC::timada_kind_none:
@@ -159,7 +159,7 @@ void dyn_nlnstructural_drt()
     // Generalized alpha time integration
     //==================================================================
     case STRUCT_DYNAMIC::gen_alfa :
-    case STRUCT_DYNAMIC::statics :
+    case STRUCT_DYNAMIC::gen_alfa_statics :
     {
       ParameterList genalphaparams;
       StruGenAlpha::SetDefaults(genalphaparams);

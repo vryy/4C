@@ -85,9 +85,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     dserror("no central differences in DRT");
     break;
   case STRUCT_DYNAMIC::gen_alfa :
-    SetupStruGenAlpha(prbdyn);  // <-- here is the show
-    break;
-  case STRUCT_DYNAMIC::statics :
+  case STRUCT_DYNAMIC::gen_alfa_statics :
     SetupStruGenAlpha(prbdyn);  // <-- here is the show
     break;
   case STRUCT_DYNAMIC::Gen_EMM :

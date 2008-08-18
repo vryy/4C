@@ -385,7 +385,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
                                           STRUCT_DYNAMIC::gen_alfa,
-                                          STRUCT_DYNAMIC::statics,
+                                          STRUCT_DYNAMIC::gen_alfa_statics,
                                           STRUCT_DYNAMIC::genalpha,
                                           STRUCT_DYNAMIC::onesteptheta,
                                           STRUCT_DYNAMIC::gemm,
