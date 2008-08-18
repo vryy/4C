@@ -94,7 +94,43 @@ namespace GEO
       std::map<int, std::set<int> >&          elementList
       );
   
-
+  /*!
+  \brief Returns a vector of element ids intersecting with a given query element (XAABB)
+         This is for CONTACT search!
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param element              element to be examined
+  \param elementList          map of elements label gid
+  \return                     label
+   */
+  std::vector<int> getIntersectionElements(
+      const DRT::Discretization&              dis,    
+      const std::map<int,BlitzVec3>&          currentpositions,   
+      DRT::Element*                           element,
+      std::map<int, std::set<int> >&          elementList);
+  
+  /*!
+  \brief checks if two 2D extended axis aligned bounding boxes intersect
+         This is for CONTACT search!
+  \param slaveXAABB (in)       XAABB of the slave element
+  \param masterXAABB (in)      XAABB of the element element
+  \return true if the XAABBs intersect or false otherwise
+   */
+  bool intersectionOfXAABB2D(  
+      const BlitzMat3x2&     slaveXAABB, 
+      const BlitzMat3x2&     masterXAABB);
+  
+  /*!
+  \brief Computes a 2D extended axis-aligned bounding box for an element (XAABB)
+         This is for CONTACT search!
+  \param element        (in)  element
+  \param xyze           (in)  nodal position array (3,numnode)
+  \return extended axis-aligned bounding box (XAABB) as BlitzMat3x2
+   */
+  BlitzMat3x2 computeContactXAABB( 
+      DRT::Element*       element,
+      const BlitzMat&     xyze);
+  
   /*!
   \brief Returns the nearest object to a point 
   \param dis                  discretization

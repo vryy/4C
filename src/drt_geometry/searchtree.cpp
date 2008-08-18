@@ -156,6 +156,29 @@ std::set<int> GEO::SearchTree::searchNodesInRadius(
 }
 
 
+/*----------------------------------------------------------------------*
+ | returns intersection elements (CONTACT)                    popp 07/08|
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::searchIntersectionElements(
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    DRT::Element*                    element) 
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  std::vector<int> elementset;
+
+  if(treeRoot_ == Teuchos::null)
+      dserror("tree is not yet initialized !!!");
+
+  if(!treeRoot_->getElementList().empty())
+    elementset = treeRoot_->searchIntersectionElements(dis, currentpositions, element);
+  else
+    dserror("element list is empty");
+
+  return elementset;
+}
+
 
 /*----------------------------------------------------------------------*
  | print tree to gmsh file                                 peder   07/08|
@@ -517,13 +540,29 @@ void GEO::SearchTree::TreeNode::createChildren(
   
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
+  {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
     {
       std::vector<int> elementClassification = classifyElement(dis.gElement(*eleIter),currentpositions);
       for(unsigned int count = 0; count < elementClassification.size(); count++)
+      {
         children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
+      }
     }
+  }
   
+  // this node becomes an inner tree node
+  treeNodeType_ = INNER_NODE;
+}
+  
+ 
+/*----------------------------------------------------------------------*
+ | set XFEM label of empty children                        u.may   08/08|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
+    const DRT::Discretization&        dis,
+    const std::map<int,BlitzVec3>&    currentpositions)
+{    
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
@@ -534,8 +573,6 @@ void GEO::SearchTree::TreeNode::createChildren(
       children_[index]->setLabel(getXFEMLabel(dis, currentpositions, childNodeCenter, elementList_));
     }
   }
-  // this node becomes an inner tree node
-  treeNodeType_ = INNER_NODE;
 }
 
 
@@ -591,6 +628,9 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
         if (AABB(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(3);
       }
+      
+      else if (treeType_ == QUADTREE)
+        octants.push_back(3);
     }
     
     // check min_y less than y-plane
@@ -606,6 +646,9 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(1);
       }
+      
+      else if(treeType_ == QUADTREE)
+        octants.push_back(1);
     }
   }
 
@@ -626,6 +669,9 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
         if (AABB(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
           octants.push_back(4);
       }
+      
+      else if(treeType_ == QUADTREE)
+        octants.push_back(0);
     }
     
     // check max_y greater than y-plane
@@ -641,6 +687,9 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
         if (AABB(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
           octants.push_back(2);
       }
+      
+      else if(treeType_ == QUADTREE)
+        octants.push_back(2);
     }
   }
   return octants;
@@ -776,6 +825,7 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
 
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(dis, currentpositions);
+      setXFEMLabelOfEmptyChildren(dis, currentpositions);
       // search in apropriate child node
       return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
       break;
@@ -841,6 +891,61 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
 
 }
 
+
+/*----------------------------------------------------------------------*
+ | returns intersection elements (CONTACT)                    popp 07/08|
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::TreeNode::searchIntersectionElements(
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    DRT::Element*                    element) 
+{
+  std::vector<int> elementset;
+  
+  switch (treeNodeType_) 
+  {
+    case INNER_NODE:
+    {     
+      const vector<int> childindex = classifyElement(element,currentpositions);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1)
+        return children_[childindex[0]]->searchIntersectionElements(dis, currentpositions, element);
+      else
+        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_); 
+        
+      break;
+    }
+    case LEAF_NODE:   
+    {
+      if(elementList_.empty())
+        return elementset;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_);
+  
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node  
+      const vector<int> childindex = classifyElement(element,currentpositions);
+      if((int)childindex.size() < 1)
+        dserror("no child found\n");
+      else if ((int)childindex.size() == 1)
+      {
+        createChildren(dis, currentpositions);
+        return children_[childindex[0]]->searchIntersectionElements(dis, currentpositions, element);
+      }
+      else
+        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_); 
+
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  
+  return elementset;
+}
 
 
 /*----------------------------------------------------------------------*

@@ -150,6 +150,15 @@ private:
       const std::map<int, BlitzVec3 >&    currentpositions
       );
   
+  /*!
+   \brief set XFEM label of empty children
+   \param dis                  discretization
+   \param currentpositions     current nodal positions in discretization
+   */
+  void setXFEMLabelOfEmptyChildren(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions
+      );
   
 public:
   /*!
@@ -313,7 +322,20 @@ public:
       const int                        label
       );
   
-  
+  /*!
+  \brief returns a vector of gids of contact elements whose AABBs intersect with
+         the AABB of a given contact element (This is a query method for CONTACT search!)
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param element              given slave contact element
+  \return vector of master contact element gids
+   */
+  std::vector<int> searchIntersectionElements(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      DRT::Element*                     element
+      );
+    
   /*!
   \brief print tree node
   \param max_depth           maximum depth of tree
@@ -432,7 +454,20 @@ public:
       const int                         label
       );
   
-  
+  /*!
+  \brief returns a vector of gids of contact elements whose AABBs intersect with
+         the AABB of a given contact element (This is a query method for CONTACT search!)
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param element              given slave contact element
+  \return vector of master contact element gids
+   */
+  std::vector<int> searchIntersectionElements(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      DRT::Element*                     element
+      );
+    
   /*!
   \brief prints entire tree to gmsh file
   \param prefix               prefix

@@ -14,6 +14,7 @@ Maintainer: Ursula Mayer
 #include "searchtree_geometry_service.H"
 #include "intersection_service.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_contact/drt_celement.H"
 
 
 /*----------------------------------------------------------------------*
@@ -197,6 +198,186 @@ std::set<int> GEO::getNodeSetInRadius(
   return nodeSet;
 }
 
+
+/*----------------------------------------------------------------------*
+ | a vector of intersection elements                          popp 07/08|
+ | for a given query element (CONTACT)                                  |                                 |
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::getIntersectionElements(
+    const DRT::Discretization&              dis,    
+    const std::map<int,BlitzVec3>&          currentpositions,   
+    DRT::Element*                           element,
+    std::map<int, std::set<int> >&          elementList)  
+{
+  // vector containing sought-after element ids
+  vector<int> intersectionids;
+  
+  // create XAABB for query element
+  const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));  
+  BlitzMat3x2 slaveXAABB = GEO::computeContactXAABB(element,xyze);
+  
+  // loop over all entries of elementList (= intersection candidates)
+  for(std::set<int>::const_iterator elementIter = (elementList.begin()->second).begin();
+      elementIter != (elementList.begin()->second).end(); elementIter++)
+  {
+    DRT::Element* masterelement = dis.gElement(*elementIter);
+    const BlitzMat masterxyze(DRT::UTILS::getCurrentNodalPositions(masterelement,currentpositions));
+    BlitzMat3x2 masterXAABB = GEO::computeContactXAABB(masterelement,masterxyze);
+    
+    // compare slaveXAABB and masterXAABB (2D only)
+    if(intersectionOfXAABB2D(slaveXAABB,masterXAABB))
+      intersectionids.push_back(*elementIter);
+  }
+
+  return intersectionids;
+}
+
+/*----------------------------------------------------------------------*
+ | checks if two XAABB's intersect (2D CONTACT)               popp 08/08|
+ *----------------------------------------------------------------------*/
+bool GEO::intersectionOfXAABB2D(  
+    const BlitzMat3x2&     slaveXAABB, 
+    const BlitzMat3x2&     masterXAABB)
+{
+    
+  /*====================================================================*/
+  /* bounding box topology*/
+  /*--------------------------------------------------------------------*/
+  /* parameter coordinates (x,y,z) of nodes
+   * node 0: (minX, minY, minZ)
+   * node 1: (maxX, minY, minZ)
+   * node 2: (maxX, maxY, minZ)
+   * node 3: (minX, maxY, minZ)
+   * node 4: (minX, minY, maxZ)
+   * node 5: (maxX, minY, maxZ)
+   * node 6: (maxX, maxY, maxZ)
+   * node 7: (minX, maxY, maxZ)
+   * 
+   *                      z
+   *                      |           
+   *             4========|================7
+   *           //|        |               /||
+   *          // |        |              //||
+   *         //  |        |             // ||
+   *        //   |        |            //  ||
+   *       //    |        |           //   ||
+   *      //     |        |          //    ||
+   *     //      |        |         //     ||
+   *     5=========================6       ||
+   *    ||       |        |        ||      ||
+   *    ||       |        o--------||---------y
+   *    ||       |       /         ||      ||
+   *    ||       0------/----------||------3
+   *    ||      /      /           ||     //
+   *    ||     /      /            ||    //
+   *    ||    /      /             ||   //
+   *    ||   /      /              ||  //
+   *    ||  /      /               || //
+   *    || /      x                ||//
+   *    ||/                        ||/
+   *     1=========================2
+   *
+   */
+  /*====================================================================*/
+    
+    bool intersection =  false;
+    static std::vector<BlitzVec3> nodes(8, BlitzVec3());
+    
+    nodes[0](0) = slaveXAABB(0,0); nodes[0](1) = slaveXAABB(1,0); nodes[0](2) = slaveXAABB(2,0); // node 0   
+    nodes[1](0) = slaveXAABB(0,1); nodes[1](1) = slaveXAABB(1,0); nodes[1](2) = slaveXAABB(2,0); // node 1
+    nodes[2](0) = slaveXAABB(0,1); nodes[2](1) = slaveXAABB(1,1); nodes[2](2) = slaveXAABB(2,0); // node 2
+    nodes[3](0) = slaveXAABB(0,0); nodes[3](1) = slaveXAABB(1,1); nodes[3](2) = slaveXAABB(2,0); // node 3
+    nodes[4](0) = slaveXAABB(0,0); nodes[4](1) = slaveXAABB(1,0); nodes[4](2) = slaveXAABB(2,1); // node 4
+    nodes[5](0) = slaveXAABB(0,1); nodes[5](1) = slaveXAABB(1,0); nodes[5](2) = slaveXAABB(2,1); // node 5
+    nodes[6](0) = slaveXAABB(0,1); nodes[6](1) = slaveXAABB(1,1); nodes[6](2) = slaveXAABB(2,1); // node 6
+    nodes[7](0) = slaveXAABB(0,0); nodes[7](1) = slaveXAABB(1,1); nodes[7](2) = slaveXAABB(2,1); // node 7
+    
+    for (int i = 0; i < 8; i++)
+        if(isPositionWithinXAABB(nodes[i], masterXAABB))
+        {
+            intersection = true;
+            break;
+        }
+    
+    if(!intersection)
+    {
+        nodes[0](0) = masterXAABB(0,0);   nodes[0](1) = masterXAABB(1,0);   nodes[0](2) = masterXAABB(2,0);   // node 0   
+        nodes[1](0) = masterXAABB(0,1);   nodes[1](1) = masterXAABB(1,0);   nodes[1](2) = masterXAABB(2,0);   // node 1
+        nodes[2](0) = masterXAABB(0,1);   nodes[2](1) = masterXAABB(1,1);   nodes[2](2) = masterXAABB(2,0);   // node 2
+        nodes[3](0) = masterXAABB(0,0);   nodes[3](1) = masterXAABB(1,1);   nodes[3](2) = masterXAABB(2,0);   // node 3
+        nodes[4](0) = masterXAABB(0,0);   nodes[4](1) = masterXAABB(1,0);   nodes[4](2) = masterXAABB(2,1);   // node 4
+        nodes[5](0) = masterXAABB(0,1);   nodes[5](1) = masterXAABB(1,0);   nodes[5](2) = masterXAABB(2,1);   // node 5
+        nodes[6](0) = masterXAABB(0,1);   nodes[6](1) = masterXAABB(1,1);   nodes[6](2) = masterXAABB(2,1);   // node 6
+        nodes[7](0) = masterXAABB(0,0);   nodes[7](1) = masterXAABB(1,1);   nodes[7](2) = masterXAABB(2,1);   // node 7
+    
+        for (int i = 0; i < 8; i++)
+            if(isPositionWithinXAABB(nodes[i], slaveXAABB))
+            {
+                intersection = true;
+                break;
+            }
+    }   
+    
+    if(!intersection)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
+            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
+            if(isLineWithinXAABB(nodes[index1], nodes[index2], slaveXAABB))
+            {
+                intersection = true;
+                break;
+            }
+        }
+    }
+    return intersection;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute XAABB for contact search                           popp 08/08|
+ | of a given query element (CONTACT)                                   |                             |
+ *----------------------------------------------------------------------*/
+BlitzMat3x2 GEO::computeContactXAABB( 
+    DRT::Element*       element,
+    const BlitzMat&     xyze)
+{
+  
+    const int nsd = 2;
+    BlitzMat3x2 XAABB;
+    
+    CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
+    double area = selement->Area();
+    
+    // first node
+    for(int dim=0; dim<nsd; ++dim)
+    {
+        XAABB(dim, 0) = xyze(dim, 0) - 0.1 * area;
+        XAABB(dim, 1) = xyze(dim, 0) + 0.1 * area;
+    }
+    XAABB(2, 0) = 0.0;
+    XAABB(2, 1) = 0.0;
+    
+    // remaining nodes
+    for(int i=1; i<element->NumNode(); ++i)
+    {
+        for(int dim=0; dim<nsd; dim++)
+        {
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), xyze(dim,i) - 0.1 * area);
+            XAABB(dim, 1) = std::max( XAABB(dim, 1), xyze(dim,i) + 0.1 * area);
+        }
+    }
+    
+    /*
+    printf("\n");
+    printf("axis-aligned bounding box:\n minX = %f\n minY = %f\n minZ = %f\n maxX = %f\n maxY = %f\n maxZ = %f\n", 
+              XAABB(0,0), XAABB(1,0), XAABB(2,0), XAABB(0,1), XAABB(1,1), XAABB(2,1));
+    printf("\n");
+    */
+    
+    return XAABB;
+}
 
 /*----------------------------------------------------------------------*
  | searches a nearest object in tree node                    u.may 07/08|
