@@ -39,6 +39,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_expl.H"
+#include "strtimint_statics.H"
 #include "strtimint_genalpha.H"
 #include "strtimint_ost.H"
 #include "strtimint_gemm.H"
@@ -66,6 +67,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   {
     // old style time integrators
     case STRUCT_DYNAMIC::gen_alfa :
+    case STRUCT_DYNAMIC::gen_alfa_statics :
     case STRUCT_DYNAMIC::Gen_EMM :
     case STRUCT_DYNAMIC::centr_diff :
     {
@@ -107,6 +109,14 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   // create specific time integrator
   switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
   {
+    // Static analysis
+    case STRUCT_DYNAMIC::statics :
+    {
+      sti = Teuchos::rcp(new STR::TimIntStatics(ioflags, sdyn, xparams,
+                                                actdis, solver, output));
+      break;
+    }
+
     // Generalised-alpha time integration
     case STRUCT_DYNAMIC::genalpha :
     {

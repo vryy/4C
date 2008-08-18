@@ -70,6 +70,7 @@ enum
     gen_alfa_statics,           /* static analysis with gen_alfa */
     centr_diff,                 /* central differences (explicit) */
     Gen_EMM,                    /* generalised energy-momentum method */
+    statics,                    /* static analysis */
     genalpha,                   /* generalised-alpha time integrator, 
                                  * new style (implicit) */
     onesteptheta,               /* one-step-theta time integrator (implicit) */

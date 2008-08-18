@@ -121,6 +121,7 @@ namespace STR
     //! List of all available time integration schemes
     enum NameEnum
     {
+      name_statics,  //!< static analysis
       name_genalpha,  //!< generalised-alpha
       name_onesteptheta,  //!< one-step-theta
       name_gemm,  //!< generalised energy-momentum method
@@ -131,28 +132,7 @@ namespace STR
     static std::string MapNameEnumToString
     (
       const enum NameEnum term  //!< the enum
-    )
-    {
-      switch (term)
-      {
-      case name_genalpha :
-        return "GenAlpha";
-        break;
-      case name_onesteptheta :
-        return "OneStepTheta";
-        break;
-      case name_gemm :
-        return "GEMM";
-        break;
-      case name_ab2 :
-        return "AdamsBashforth2";
-        break;
-      default :
-        dserror("Cannot cope with name enum %d", term);
-        return "";
-        break;
-      }
-    }   
+    );
 
     //! @name Life
     //@{

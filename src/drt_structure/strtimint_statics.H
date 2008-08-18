@@ -1,0 +1,187 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file strtimint_statics.H
+
+<pre>
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef STRTIMINT_STATICS_H
+#define STRTIMINT_STATICS_H
+
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "strtimint_impl.H"
+
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
+{
+
+  /*====================================================================*/
+  /*!
+   * \brief Static analysis
+   *
+   * \author bborn
+   * \date 06/08
+   */
+  class TimIntStatics : public TimIntImpl
+  {
+
+  public:
+
+    //! @name Construction
+    //@{
+
+    //! Constructor
+    TimIntStatics
+    (
+      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& sdynparams,  //!< input parameters
+      const Teuchos::ParameterList& xparams,  //!< extra flags
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    );
+
+    //! Destructor
+    // ....
+
+    //! Resize #TimIntMStep<T> multi-step quantities
+    //! Single-step method: nothing to do here
+    void ResizeMStep() { ; }
+
+    //@}
+
+    //! @name Pure virtual methods which have to be implemented
+    //@{
+
+    //! Return name
+    enum TimInt::NameEnum MethodName()
+    { 
+      return TimInt::name_statics;
+    }
+
+    //! Provide number of steps, a single-step method returns 1
+    int MethodSteps() { return 1; }
+
+    //! Give local order of accuracy of displacement part
+    int MethodOrderOfAccuracyDis()
+    { 
+      dserror("Sensible to ask?");
+      return 0;
+    }
+
+    //! Give local order of accuracy of velocity part
+    int MethodOrderOfAccuracyVel()
+    { 
+      dserror("Sensible to ask?");
+      return 0;
+    }
+
+    //! Return linear error coefficient of displacements
+    virtual double MethodLinErrCoeffDis()
+    {
+      dserror("Sensible to ask?");
+      return 0.0;
+    }
+
+    //! Return linear error coefficient of velocities
+    virtual double MethodLinErrCoeffVel()
+    {
+      dserror("Sensible to ask?");
+      return 0.0;
+    }
+
+    //! Consistent predictor with constant displacements
+    //! and consistent velocities and displacements
+    void PredictConstDisConsistVelAcc();
+
+    //! Create force residual #fres_ and ist stiffness #stiff_
+    void EvaluateForceStiffResidual();
+
+    //! Evaluate/define the residual force vector #fres_ for
+    //! relaxation solution with SolveRelaxationLinear
+    void EvaluateForceStiffResidualRelax();
+
+    //! Determine characteristic norm for displacements
+    //! \author lw (originally)
+    double CalcRefNormDisplacement();
+
+    //! Determine characteristic norm for force
+    //! \author lw (originally)
+    double CalcRefNormForce();
+
+    //! Update iteration incrementally
+    //!
+    //! This update is carried out by computing the new #veln_ and #acc_
+    //! from scratch by using the newly updated #disn_. The method
+    //! respects the Dirichlet DOFs which are not touched.
+    //! This method is necessary for certain predictors 
+    //! (like #PredictConstDisConsistVelAcc)
+    void UpdateIterIncrementally();
+
+    //! Update iteration iteratively
+    //!
+    //! This is the ordinary update of #disn_, #veln_ and #accn_ by
+    //! incrementing these vector proportional to the residual
+    //! displacements #disi_
+    //! The Dirichlet BCs are automatically respected, because the
+    //! residual displacements #disi_ are blanked at these DOFs.
+    void UpdateIterIteratively();
+
+    //! Update step
+    void UpdateStep();
+
+    //@}
+
+    //! @name Access methods
+    //@{
+
+    //! Return external force \f$F_{ext,n}\f$
+    Teuchos::RCP<Epetra_Vector> Fext()
+    {
+      return fext_;
+    }
+
+    //! Return external force \f$F_{ext,n+1}\f$
+    Teuchos::RCP<Epetra_Vector> FextNew()
+    {
+      return fextn_;
+    }
+
+    //@}
+
+  protected:
+
+    //! equal operator is hidden
+    TimIntStatics operator=(const TimIntStatics& old);
+
+    //! copy constructor is hidden
+    TimIntStatics(const TimIntStatics& old);
+
+    //! @name Global force vectors
+    //! Residual \c fres_ exists already in base class
+    //@{
+    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
+    //@}
+
+  };  // class TimIntStatics
+
+}  // namespace STR
+
+/*----------------------------------------------------------------------*/
+#endif  // #ifndef STRTIMINT_STATICS_H
+#endif  // #ifdef CCADISCRET
