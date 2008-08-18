@@ -344,8 +344,11 @@ private:
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
   
-  //!computing rotation matrix out of a spin matrix
-  void computerotation(BlitzMat3x3& rotationmatrix, const BlitzMat3x3& spin);
+  //!computing rotation matrix out of a rotation vector theta by Crisfield, Vol. 2, equation (16.34) and (16.35)
+  void computerotation(BlitzMat3x3& rotationmatrix, BlitzVec3 theta, const double& scale);
+  
+  //updating curvature
+  void updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
   void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm);

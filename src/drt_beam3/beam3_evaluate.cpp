@@ -256,13 +256,11 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       default:
       dserror("unknown or improper type of material law");
     }
-        
-    /*
+           
     //calculating diagonal entry of damping matrix  
     double gammatrans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_ / 2;
     double gammarot   = params.get<double>("damping factor M",0.0) * Iyy_      * density * lrefe_ / 2;
-    
-    
+      
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
     double standdevtrans = pow(2 * thermalenergy_ * gammatrans   / params.get<double>("delta time",0.01),0.5);
     double standdevrot   = pow(2 * thermalenergy_ * gammarot     / params.get<double>("delta time",0.01),0.5);
@@ -279,38 +277,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       //elevec1(i+3) += normalGenRot.random();
       elevec1(i+6) += normalGenTrans.random();
       //elevec1(i+9) += normalGenRot.random();
-    }  
-    */
-    
-    
-    //calculating diagonal entry of damping matrix  
-    double gammatrans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_ ;
-    double gammarot   = params.get<double>("damping factor M",0.0) * Iyy_      * density * lrefe_ ;
-    
-    
-    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double standdevtrans = pow(2 * thermalenergy_ * gammatrans   / params.get<double>("delta time",0.01),0.5);
-    double standdevrot   = pow(2 * thermalenergy_ * gammarot     / params.get<double>("delta time",0.01),0.5);
-    
-    //creating random generator objects which create random numbers with mean = 0 and standard deviation
-    //standdevtrans and standdevrot; using Blitz namespace "ranlib" for random number generation
-    ranlib::Normal<double> normalGenTrans(0,standdevtrans);
-    ranlib::Normal<double> normalGenRot(0,standdevrot);
-    
-    double kraft[3];
-    kraft[0] = normalGenTrans.random(); 
-    kraft[1] = normalGenTrans.random(); 
-    kraft[2] = normalGenTrans.random();
-    
-    //adding statistical forces 
-    for (int i=0; i<3; ++i)
-    {
-      elevec1(i)   += kraft[i]/2;
-      //elevec1(i+3) += normalGenRot.random();
-      elevec1(i+6) += kraft[i]/2;
-      //elevec1(i+9) += normalGenRot.random();
-    }  
- 
+    }   
   }
   
   return 0;
@@ -413,16 +380,92 @@ inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotat
   return;
 } // DRT::ELEMENTS::Beam3::computespin 
 
-//computing rotation matrix out of a spin matrix
-inline void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, const BlitzMat3x3& spin)
+//computing rotation matrix out of a rotation vector theta by Crisfield, Vol. 2, equation (16.34) and (16.35)
+//note: function was checked by comparing results with Matlab calculations of (16.31) for several examples of rotation vectors theta
+inline void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, BlitzVec3 theta, const double& scale)
 {
-  rotationmatrix = spin;
+  BlitzMat3x3 spin;
+  computespin(spin,theta, scale);
+
+  //applying proper scaling for rotation angle
+  BLITZTINY::V_scale<3>(theta,scale);
+
+  //absolute value of rotation vector theta
+  double abs_theta = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) , 0.5);
+  
+  BlitzVec3 omega = theta;
+  if (abs_theta > 0)
+    BLITZTINY::V_scale<3>(omega,2*tan(0.5*abs_theta) / abs_theta);
+    
+
+  //spin matrix S(omega) in Crisfield, Vol. 2, equation (16.35)
+  BlitzMat3x3 Somega;
+  computespin(Somega,omega,1.0);
+  
+  BLITZTINY::MM_product<3,3,3>(Somega,Somega,rotationmatrix);
+  BLITZTINY::M_scale<3,3>(rotationmatrix,0.5);
+  
+  for(int i = 0; i<3; i++)
+  {
+    for(int j = 0; j<3; j++)
+      rotationmatrix(i,j) += Somega(i,j);
+  }
+  
+  BLITZTINY::M_scale<3,3>(rotationmatrix,1.0/(1+ tan(0.5*abs_theta) * tan(0.5*abs_theta)));
+
   rotationmatrix(0,0) +=1;
   rotationmatrix(1,1) +=1;
   rotationmatrix(2,2) +=1;
   
+  
   return;
 } //DRT::ELEMENTS::Beam3::computerotation 
+
+inline void DRT::ELEMENTS::Beam3::updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha)
+{
+  //-------------------calculating omega-------------------------------------//
+  
+  //applying proper scaling for rotation angle
+  BLITZTINY::V_scale<3>(deltabetaplusalpha,0.5);
+ 
+  //absolute value of rotation vector theta
+  double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);  
+  
+  BlitzVec3 omega = deltabetaplusalpha;
+  BlitzVec3 omegaprime = deltabetaplusalpha;
+  if (abs_theta > 0)
+  {
+    BLITZTINY::V_scale<3>(omega,2*tan(0.5*abs_theta) / abs_theta);
+    BlitzMat3x3 Aux;
+    for(int i = 0; i<3; i++)
+    {
+      for(int j = 0; j<3; j++)
+      {
+        Aux(i,j) = 0;
+        Aux(i,j) -= (1 - abs_theta / sin(abs_theta) ) * deltabetaplusalpha(i)*deltabetaplusalpha(j) / pow(abs_theta,2);
+        if(i==j)
+          Aux(i,j) += 1;
+          
+       Aux(i,j) *= 2*tan(abs_theta / 2) / abs_theta;
+      }
+    }
+    BLITZTINY::V_scale<3>(deltabetaminusalpha,1 / lrefe_);
+    BLITZTINY::MV_product<3,3>(Aux,deltabetaminusalpha,omegaprime);
+  }
+  
+  BlitzVec3 curvaux;
+  curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
+  curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
+  curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
+  
+  curvaux += omegaprime;
+  BLITZTINY::V_scale<3>(curvaux, 1/(1 + pow(tan(abs_theta/2),2) ));
+  
+  BLITZTINY::MtV_product<3,3>(Tnew_,curvaux,curvnew_);
+  curvnew_ += curvold_;
+  
+  return;
+} //DRT::ELEMENTS::Beam3::updatecurvature
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
 inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm)
@@ -515,7 +558,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   //auxiliary variables
   BlitzVec3 deltabetaplusalpha;
   BlitzVec3 deltabetaminusalpha;
-  BlitzMat3x3 Saux;
   BlitzMat3x3 Raux;
 
   //nodal coordinates in current position
@@ -545,19 +587,25 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   deltabetaminusalpha -= betaminusalphaold_;
 
   //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
-  computespin(Saux,deltabetaplusalpha, 0.5);
-  computerotation(Raux,Saux);
+  computerotation(Raux,deltabetaplusalpha,0.5);
   BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tnew_);
-
-  //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
-  computespin(Saux,deltabetaplusalpha, 0.25);
-  computerotation(Raux,Saux);
+  
+  //updating curvature
+  //updatecurvature(deltabetaplusalpha,deltabetaminusalpha);
+   
+  computespin(Raux,deltabetaplusalpha, 0.25);
+  Raux(0,0)+= 1;
+  Raux(1,1)+= 1;
+  Raux(2,2)+= 1;
   BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tmid_);
-
+  
   //updating curvature, Crisfield, Vol. 2, equation (17.72)
   BLITZTINY::MtV_product<3,3>(Tmid_,deltabetaminusalpha,curvnew_);
   BLITZTINY::V_scale<3>(curvnew_,1/lrefe_);
   curvnew_ += curvold_;
+  
+  std::cout<<"\ndeltabetaminusalpha\n"<<deltabetaminusalpha<<"\n";
+  
 
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
@@ -658,7 +706,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Beam3.H
     //and Beam3_evaluate.cpp
     /*
-    if(Id() == 8) //limiting the following tests to certain element numbers
+    if(Id() == 3) //limiting the following tests to certain element numbers
     {
      Epetra_SerialDenseMatrix stiff_approx;
      Epetra_SerialDenseMatrix stiff_relerr;
@@ -699,8 +747,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
          }    
        }
       } 
-    */
-      
+    
+      */
         
    
   }
@@ -763,7 +811,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xc
   BlitzVec3 deltabetaplusalpha;
   BlitzVec3 deltabetaminusalpha;
   BlitzVec3 curvnew;
-  BlitzMat3x3 Saux;
   BlitzMat3x3 Raux;
   BlitzMat3x3 Tnew;
   BlitzMat3x3 Tmid;
@@ -788,31 +835,59 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xc
         betaplusalphanew(j) = xcurr_aux(j+3,1) + xcurr_aux(j+3,0);
         betaminusalphanew(j) = xcurr_aux(j+3,1) - xcurr_aux(j+3,0);
       }
-      //the basis configuration is the new one of the actual calculation process; for numerical approximation
-      //other configurations rotated out of this one by h_rel are considered
       deltabetaplusalpha  = betaplusalphanew;
       deltabetaplusalpha -= betaplusalphanew_;
     
       deltabetaminusalpha  = betaminusalphanew;
       deltabetaminusalpha -= betaminusalphanew_;
 
-      //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
-      computespin(Saux,deltabetaplusalpha, 0.5);
-      computerotation(Raux,Saux);
+      //auxiliary matrix for update of Tnew, Crisfield, Vol 2, equation (17.65)
+      computerotation(Raux,deltabetaplusalpha,0.5);
       BLITZTINY::MM_product<3,3,3>(Raux,Tnew_,Tnew);
-
-      //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
-      computespin(Saux,deltabetaplusalpha, 0.25);
-      computerotation(Raux,Saux);
-      BLITZTINY::MM_product<3,3,3>(Raux,Tnew_,Tmid);
       
-      //updating curvature, Crisfield, Vol. 2, equation (17.72)
-      BLITZTINY::MtV_product<3,3>(Tmid,deltabetaminusalpha,curvnew);
-      BLITZTINY::V_scale<3>(curvnew,1/lrefe_);
-    
-      curvnew += curvnew_;
-      epsilonm_aux = curvnew;
+     
+      //applying proper scaling for rotation angle
+      BLITZTINY::V_scale<3>(deltabetaplusalpha,0.5);
+     
+      //absolute value of rotation vector theta
+      double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);  
+      
+      BlitzVec3 omega = deltabetaplusalpha;
+      BlitzVec3 omegaprime = deltabetaplusalpha;
+      
+      if (abs_theta > 0)
+      {
+        BLITZTINY::V_scale<3>(omega,2*tan(0.5*abs_theta) / abs_theta);
+        BlitzMat3x3 Aux;
+        for(int i = 0; i<3; i++)
+        {
+          for(int j = 0; j<3; j++)
+          {
+            Aux(i,j) = 0;
+            Aux(i,j) -= (1 - abs_theta / sin(abs_theta) ) * deltabetaplusalpha(i)*deltabetaplusalpha(j) / pow(abs_theta,2);
+            if(i==j)
+              Aux(i,j) += 1;
+              
+           Aux(i,j) *= 2*tan(abs_theta / 2) / abs_theta;
+          }
+        }
+        BLITZTINY::V_scale<3>(deltabetaminusalpha,1 / lrefe_);
+        BLITZTINY::MV_product<3,3>(Aux,deltabetaminusalpha,omegaprime);       
+      }
 
+       
+      BlitzVec3 curvaux;
+      curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
+      curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
+      curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
+      
+      curvaux += omegaprime;
+      BLITZTINY::V_scale<3>(curvaux,1/(1 + pow(tan(abs_theta/2),2) ));
+      
+      BLITZTINY::MtV_product<3,3>(Tnew,curvaux,curvnew);
+      curvnew += curvnew_;
+      
+     
       //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
       BLITZTINY::MtV_product<3,3>(Tnew,x21_aux,epsilonn_aux);
       BLITZTINY::V_scale<3>(epsilonn_aux,1/lrefe_);
