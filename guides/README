@@ -5,10 +5,11 @@
 
    -> Use make to generate reports in subdirectory reports
    
-      make          :   global & single reports
-      make global   :   create only one master document
-      make single   :   create one pdf for each chapter
-      make clean    :   remove all generated documents and re-./configure
+      make           :   global & single reports
+      make global    :   create only one master document
+      make single    :   create one pdf for each chapter
+      make clean     :   remove all generated documents
+      make reconfig  :   remove all generated documents and re-configure
 
 2) How to add a tech report
 

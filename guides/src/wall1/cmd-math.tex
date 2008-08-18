@@ -1,15 +1,38 @@
 %% mathematical abbreviations
+%%\usepackage{helvet}
+%%\renewcommand{\familydefault}{\sfdefault}
+%\usepackage{amsmath,amssymb,color}  % and more
+
+% extra colourful stuff
+%%\newcommand{\mathbl}[1]{\text{\textcolor[rgb]{0.0,0.0,0.69}{$#1$}}}
+%\newcommand{\mathbl}[1]{#1}
+%%\newcommand{\mathgr}[1]{\text{\textcolor[rgb]{0.0,0.69,0.0}{$#1$}}}
+%\newcommand{\mathgr}[1]{#1}
 
 %% mathematical operators
 \newcommand{\ii}{\mathrm{i}}  % complex i
 \newcommand{\dd}{\mathrm{d}}  % differential d
 \newcommand{\pd}{\partial}  % partial differentiation d
 \newcommand{\DD}{\mathrm{D}}  % linearisation operator
+\newcommand{\Alpha}{\mathcal{A}}
+\newcommand{\levicivita}{\mathcal{E}}  % Levi-Civita symbol
 %\newcommand{\tns}[1]{\underline{\boldsymbol{#1}}}  % tensor
-\newcommand{\tns}[1]{
+%\newcommand{\tnsfour}[1]{\mathsf{#1}}
+\newcommand{\tns}[2][0]{
+\def\myinput{#2}
+% \count0=#1
+% \ifnum\count0=1
+%   \def\myinput{#2}
+% \fi
+% \ifnum\count0=2
+%   \def\myinput{#2}
+% \fi
+% \ifnum\count0=4
+%   \def\myinput{\tnsfour{#2}}
+% \fi
 \dimen1=0.5pt  % truncation length of underline
 \mathchoice{
-  \setbox0=\hbox{$\boldsymbol{#1}$}
+  \setbox0=\hbox{$\boldsymbol{\myinput{}}$}
   \dimen2=\wd0
   \ifdim\dimen2>\dimen1
     \advance\dimen2 by -2\dimen1
@@ -18,7 +41,7 @@
   \setbox1=\hbox{\hskip\dimen1\underline{\hskip-\dimen1\box0}\hskip2\dimen1}
   \box1
 }{
-  \setbox0=\hbox{$\boldsymbol{\textstyle #1}$}
+  \setbox0=\hbox{$\boldsymbol{\textstyle \myinput{}}$}
   \dimen2=\wd0
   \ifdim\dimen2>\dimen1
    \advance\dimen2 by -2\dimen1
@@ -27,7 +50,7 @@
   \setbox1=\hbox{\hskip\dimen1\underline{\hskip-\dimen1\box0}\hskip2\dimen1}
   \box1
 }{
-  \setbox0=\hbox{$\boldsymbol{\scriptstyle #1}$}
+  \setbox0=\hbox{$\boldsymbol{\scriptstyle \myinput{}}$}
   \dimen2=\wd0
   \ifdim\dimen2>\dimen1
     \advance\dimen2 by -2\dimen1
@@ -36,7 +59,7 @@
   \setbox1=\hbox{\hskip\dimen1\underline{\hskip-\dimen1\box0}\hskip2\dimen1}
   \box1
 }{
-  \setbox0=\hbox{$\boldsymbol{\scriptscriptstyle #1}$}
+  \setbox0=\hbox{$\boldsymbol{\scriptscriptstyle \myinput{}}$}
   \dimen2=\wd0
   \ifdim\dimen2>\dimen1
     \advance\dimen2 by -2\dimen1
@@ -50,6 +73,7 @@
 \newcommand{\bartns}[1]{\bar{\tns{#1}}}  % tensor with bar
 \newcommand{\bretns}[1]{\breve{\tns{#1}}}  % tensor with breve
 \newcommand{\chetns}[1]{\check{\tns{#1}}}  % tensor with check
+\newcommand{\tiltns}[1]{\tilde{\tns{#1}}}  % tensor with tilde
 \newcommand{\ddottns}[1]{\ddot{\tns{#1}}}  % tensor with to dots
 \newcommand{\mat}[1]{\boldsymbol{#1}}  % matrix
 \newcommand{\barmat}[1]{\bar{\mat{#1}}}  % matrix with bar
@@ -61,16 +85,19 @@
 \newcommand{\dddotvct}[1]{\dddot{\vct{#1}}}  % vector with triple dots
 \newcommand{\barvct}[1]{\bar{\vct{#1}}}  % vector with bar
 \newcommand{\tildevct}[1]{\tilde{\vct{#1}}}  % vector with tilde
+\newcommand{\tilvct}[1]{\tilde{\vct{#1}}}  % vector with tilde
 \newcommand{\chevct}[1]{\check{\vct{#1}}}  % vector with check
 \newcommand{\T}{\mathrm{T}}  % transpose T
 \newcommand{\bre}[1]{\breve{#1}}  % short for breve
 \newcommand{\che}[1]{\check{#1}}  % short for check
-\newcommand{\grad}{grad}  % (spatial) gradient
-\newcommand{\Grad}{Grad}  % (material) gradient
-\newcommand{\ddiv}{div}  % divergence in spatial frame
-\newcommand{\Ddiv}{Div}  % divergence in material frame
+\newcommand{\adiag}[1]{\overset{\scriptscriptstyle\smallsetminus}{#1}}
+\newcommand{\alowtri}[1]{\overset{\scriptscriptstyle\llcorner}{#1}}
+\newcommand{\grad}{\mathrm{grad}}  % (spatial) gradient
+\newcommand{\Grad}{\mathrm{Grad}}  % (material) gradient
+\newcommand{\ddiv}{\mathrm{div}}  % divergence in spatial frame
+\newcommand{\Ddiv}{\mathrm{Div}}  % divergence in material frame
 \newcommand{\dirac}{\delta}  % Dirac's delta
-\newcommand{\cof}{cof}  % (spatial) gradient
+\newcommand{\cof}{\mathrm{cof}}  % (spatial) gradient
 \newcommand{\forwhich}{\;|\;}
 % \newcommand{\ass}[3][d]{%  % assembly operator, 'd' display style, 't' text style
 % \if#1d
@@ -91,25 +118,27 @@
 \raisebox{-0.35ex}{\mbox{\Large $\mathsf{A}$}}_{#2}^{#3}
 }}
 
-\newcommand{\loc}{loc}  % location mapping
-\newcommand{\stat}{stat}  % location mapping
+\newcommand{\loc}{\mathrm{loc}}  % location mapping
+\newcommand{\stat}{\mathrm{stat}}  % location mapping
 \newcommand{\domainsum}{\bigcup}
 \newcommand{\abs}[1]{|#1|}
 \newcommand{\Abs}[1]{\|#1\|}
 % \ifmmode ... \else ... \fi
 \newcommand{\Nabla}{\nabla_{\!0}}
 \newcommand{\incr}{\Delta}
-\newcommand{\Lin}{Lin}  % linearisation
-\newcommand{\trace}{tr}  % trace of quadratic tensor
+\newcommand{\Lin}{\mathrm{Lin}}  % linearisation
+\newcommand{\trace}{\mathrm{tr}}  % trace of quadratic tensor
 
 %% symbols
 \newcommand{\eps}{\varepsilon}  % epsilon
 \newcommand{\sig}{\sigma}  % epsilon
 \newcommand{\const}{\mathrm{const}}  % constant
 \newcommand{\R}{\mathbb{R}}  % real set of numbers R
+\newcommand{\CC}{\mathbb{C}}  % complex set of numbers C
 \newcommand{\ndof}{\mathit{ndof}}  % number of degrees of freedom
 \newcommand{\nnod}{\mathit{nnod}}  % number of nodes
 \newcommand{\nele}{\mathit{nele}}  % number of elements
+\newcommand{\eenh}{\mathit{eenh}}  % number of element enhancements
 \newcommand{\enod}{\mathit{enod}}  % number of element nodes
 \newcommand{\numgp}{\mathit{numgp}}  % number of Gausspoints in direction 
 \newcommand{\nco}{\mathit{nco}}  % number of active contact sets 
@@ -119,6 +148,8 @@
 \newcommand{\TPE}{\text{TPE}}  % total potential energy
 \newcommand{\EEE}{\text{EE}}  % strain-strain connection
 \newcommand{\SSS}{\text{SS}}  % stress-stress connection
+\newcommand{\FFF}{\text{FF}}  % defgrad-defgard connection
+\newcommand{\PPP}{\text{PP}}  % 1PK-1PK stress connection 
 \newcommand{\HR}{\text{HR}}  % Hellinger--Reissner
 \newcommand{\HW}{\text{HW}}  % Hu--Washizu
 \newcommand{\Int}{\text{int}}  % internal
@@ -126,6 +157,7 @@
 \newcommand{\HOT}{\mathit{HOT}}  % higher order terms
 \newcommand{\Dt}{\Delta t}  % time step size
 \newcommand{\effdyn}{\text{effdyn}}  % effective dynamic
+\newcommand{\Teffdyn}{\text{Teffdyn}}  % effective dynamic
 \newcommand{\PK}{\text{PK2}}  % 2nd Piola--Kirchhoff
 \newcommand{\Pk}{\text{PK1}}  % 1st Piola--Kirchhoff
 \newcommand{\KI}{\text{K}}  % Kirchhoff
@@ -135,20 +167,29 @@
 \newcommand{\Nat}{\text{n}}  % natural / logarithmic
 \newcommand{\TSO}{\textrm{II}}  % theory of second order
 \newcommand{\TFO}{\textrm{I}} % theory of 1st order
-\newcommand{\CT}{\text{C}}  % Cuachy / true
+\newcommand{\CT}{\text{C}}  % Cauchy / true
 \newcommand{\BI}{\text{B}}  % Biot
+\newcommand{\VK}{\text{VK}}  % St. Venant-Kirchhoff
 \newcommand{\Tang}{\text{T}}  % tangential
 \newcommand{\ela}{\text{e}}  % elastic
 \newcommand{\geo}{\text{g}}  % geometric
 \newcommand{\ini}{\text{u}}  % initial
 \newcommand{\loa}{\text{L}}  % load
-\newcommand{\tol}{\mathit{tol}}
+\newcommand{\tol}{\mathit{tol}}  % tolerance
+\newcommand{\LL}{\text{L}}  % `linear'
+\newcommand{\enh}{\mathit{enh}}  % enhanced
+\newcommand{\red}{\text{red}}  % reduced
+\newcommand{\crit}{\text{crit}}  % critical
+\newcommand{\Inva}{I}
+\newcommand{\INva}{I\!\!I}
+\newcommand{\INVa}{I\!\!I\!\!I}
+\newcommand{\Mat}{\text{m}}
 
 
 %% convenience
 \newcommand{\unit}[1]{\,\mathrm{#1}}  % unit
 \newcommand{\EE}[1]{\cdot 10^{#1}}  % "scientific notation" for 10 to the power of 
-\newcommand{\virt}{\delta}  % variation of first kind
+\newcommand{\virt}{\delta}  % variation of first kind / virtual
 \newcommand{\set}[1]{\mathcal{#1}}  % set
 \newcommand{\script}[1]{\mathcal{#1}}
 
@@ -157,6 +198,22 @@
 \newcommand{\comma}{\text{,}}
 %\newcommand{\colon}{\text{:}}
 \newcommand{\semicolon}{\text{;}}
+
+%% circled text (EgyptTeX)
+%%\newcommand{\tc}[1]{%
+%%\ifmmode
+%%  \mathchoice{
+%%    \ovalfbox{\textsf{\text{$#1$}}}
+%%  }{
+%%    \ovalfbox{\textsf{\text{$#1$}}}
+%%  }{
+%%    \ovalfbox{\textsf{\text{$\scriptstyle #1$}}}
+%%  }{
+%%    \ovalfbox{\textsf{\text{$\scriptscriptstyle #1$}}}
+%%  }
+%%\else
+%%\ovalfbox{\textsf{#1}}%
+%%\fi}
 
 %% special
 \newcommand{\sboxed}[1]{\boxed{\scriptstyle#1}}
