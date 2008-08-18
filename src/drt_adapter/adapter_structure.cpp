@@ -91,6 +91,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   case STRUCT_DYNAMIC::Gen_EMM :
     dserror("Gen_EMM not supported");
     break;
+  case STRUCT_DYNAMIC::statics :
   case STRUCT_DYNAMIC::genalpha :
   case STRUCT_DYNAMIC::onesteptheta :
   case STRUCT_DYNAMIC::gemm :
