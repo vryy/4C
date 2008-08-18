@@ -48,13 +48,16 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  data_(old.data_),
  material_(old.material_),
  lrefe_(old.lrefe_),
+ Tconv_(old.Tconv_),
  Told_(old.Told_),
  Tnew_(old.Tnew_),
- Tmid_(old.Tmid_),
+ curvconv_(old.curvconv_),
  curvold_(old.curvold_),
  curvnew_(old.curvnew_),
+ betaplusalphaconv_(old.betaplusalphaconv_),
  betaplusalphaold_(old.betaplusalphaold_),
  betaplusalphanew_(old.betaplusalphanew_),
+ betaminusalphaconv_(old.betaminusalphaconv_),
  betaminusalphaold_(old.betaminusalphaold_),
  betaminusalphanew_(old.betaminusalphanew_),
  crosssec_(old.crosssec_),
@@ -136,13 +139,16 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   //reference length
   AddtoPack(data,lrefe_);
   //central coordinate triad and related data
+  AddtoPack(data,Tconv_);
   AddtoPack(data,Told_);
   AddtoPack(data,Tnew_);
-  AddtoPack(data,Tmid_);
+  AddtoPack(data,curvconv_);
   AddtoPack(data,curvold_);
   AddtoPack(data,curvnew_);  
+  AddtoPack(data,betaplusalphaconv_);
   AddtoPack(data,betaplusalphaold_);
   AddtoPack(data,betaplusalphanew_);
+  AddtoPack(data,betaminusalphaconv_);
   AddtoPack(data,betaminusalphaold_);
   AddtoPack(data,betaminusalphanew_);
   //cross section
@@ -185,13 +191,16 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   //reference length
   ExtractfromPack(position,data,lrefe_);
   //central coordinate triad and related data
+  ExtractfromPack(position,data,Tconv_);
   ExtractfromPack(position,data,Told_);
   ExtractfromPack(position,data,Tnew_);
-  ExtractfromPack(position,data,Tmid_);
+  ExtractfromPack(position,data,curvconv_);
   ExtractfromPack(position,data,curvold_);
   ExtractfromPack(position,data,curvnew_); 
+  ExtractfromPack(position,data,betaplusalphaconv_);
   ExtractfromPack(position,data,betaplusalphaold_);
   ExtractfromPack(position,data,betaplusalphanew_);
+  ExtractfromPack(position,data,betaminusalphaconv_);
   ExtractfromPack(position,data,betaminusalphaold_);
   ExtractfromPack(position,data,betaminusalphanew_);   
   //cross section
@@ -385,21 +394,25 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
       currele->Told_(1,2) =    currele->Told_(0,0)*currele->Told_(2,1);
       currele->Told_(2,2) =    currele->Told_(0,0)*currele->Told_(1,1);
     
-      //the triad Tnew_ has the same initial configuration as Told_ (both coincide in the reference configuration)
+      //the triads Tnew_ and Tconv_ have the same initial configuration as Told_ (coincide in the reference configuration)
       currele->Tnew_ = currele->Told_;
+      currele->Tconv_ = currele->Told_;
       
       
       //the here employed beam element does not need data about the current position of the nodal directors so that
-      //initilization of those can be skipped (the nodal handeled in beam3_evaluate.cpp are not the actual angles,
+      //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
       //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
       //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
       //generality
-      currele->curvold_ = 0;
-      currele->curvnew_ = 0;
       for (int k=0; k<3; k++) 
       {
+        currele->curvconv_(k) = 0;
+        currele->curvold_(k) = 0;
+        currele->curvnew_(k) = 0;
+        currele->betaplusalphaconv_(k)  = 0;
         currele->betaplusalphaold_(k)  = 0;   
         currele->betaplusalphanew_(k)  = 0;
+        currele->betaminusalphaconv_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
       }

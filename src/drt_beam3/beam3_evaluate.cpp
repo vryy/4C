@@ -110,6 +110,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       b3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
       else if (act == Beam3::calc_struct_internalforce)
       b3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
+      
+      /*at the end of an iteration step the geometric ocnfiguration has to be updated: the starting point for the
+       * next iteration step is the configuration at the end of the current step */  
+      Told_ = Tnew_;
+      curvold_ = curvnew_;
+      betaplusalphaold_ = betaplusalphanew_;
+      betaminusalphaold_ = betaminusalphanew_; 
     
     }
     break;
@@ -120,10 +127,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * equilibrium has finally been found; this is the point where the variable representing the geomatric
        * status of the beam have to be updated; the geometric status is represented by means of the triad Tnew_,
        * the curvature curvnew_ and the angular values betaplusalphanew_ and betaminusalphanew_*/
-      Told_ = Tnew_;
-      curvold_ = curvnew_;
-      betaplusalphaold_ = betaplusalphanew_;
-      betaminusalphaold_ = betaminusalphanew_; 
+      Tconv_ = Tnew_;
+      curvconv_ = curvnew_;
+      betaplusalphaconv_ = betaplusalphanew_;
+      betaminusalphaconv_ = betaminusalphanew_; 
     }
     break;
     case calc_struct_reset_istep:
@@ -131,13 +138,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       /*the action calc_struct_reset_istep is called by the adaptive time step controller; carries out one test
        * step whose purpose is only figuring out a suitabel timestep; thus this step may be a very bad one in order
        * to iterated towards the new dynamic equilibrium and the thereby gained new geometric configuration should 
-       * not be applied for any further iteration step; as a consequence the thereby generated change of the geometric
-       * configuration should be canceled and the configuration should be reset to the value at the beginning of the 
-       * time step*/
-      Tnew_ = Told_;
-      curvnew_ = curvold_;
-      betaplusalphanew_ = betaplusalphaold_;
-      betaminusalphanew_ = betaminusalphaold_; 
+       * not be applied as starting point for any further iteration step; as a consequence the thereby generated change 
+       * of the geometric configuration should be canceled and the configuration should be reset to the value at the  
+       * beginning of the time step*/
+      Told_ = Tconv_;
+      curvold_ = curvconv_;
+      betaplusalphaold_ = betaplusalphaconv_;
+      betaminusalphaold_ = betaminusalphaconv_; 
     }
     break;
     default:
@@ -277,7 +284,13 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       //elevec1(i+3) += normalGenRot.random();
       elevec1(i+6) += normalGenTrans.random();
       //elevec1(i+9) += normalGenRot.random();
-    }   
+    }  
+    /*
+    elevec1(1)   += normalGenTrans.random() / 1.4;
+    elevec1(2)   += elevec1(1);
+    elevec1(1+6) += normalGenTrans.random() / 1.4;
+    elevec1(2+6) += elevec1(1+6);
+    */
   }
   
   return 0;
@@ -287,7 +300,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing basis of stiffness matrix of Crisfield, Vol. 2, equation (17.81)
-inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew_, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
+inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
 {
   //calculating the first matrix of (17.81) directly involves multiplications of large matrices (e.g. with the 12x6-matrix X)
   //application of the definitions in (17.74) allows blockwise evaluation with multiplication and addition of 3x3-matrices only
@@ -421,6 +434,8 @@ inline void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, B
   return;
 } //DRT::ELEMENTS::Beam3::computerotation 
 
+//updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of the curvature is computed by
+//means of equation (16.148) instead of an approximated one as given by equs. (17.72) and (17.73)
 inline void DRT::ELEMENTS::Beam3::updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha)
 {
   //-------------------calculating omega-------------------------------------//
@@ -559,6 +574,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   BlitzVec3 deltabetaplusalpha;
   BlitzVec3 deltabetaminusalpha;
   BlitzMat3x3 Raux;
+  //midpoint triad, Crisfiel Vol. 2, equation (17.73)
+  BlitzMat3x3 Tmid;
 
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
@@ -590,23 +607,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   computerotation(Raux,deltabetaplusalpha,0.5);
   BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tnew_);
   
-  //updating curvature
-  //updatecurvature(deltabetaplusalpha,deltabetaminusalpha);
+  //updating local curvature
+  updatecurvature(deltabetaplusalpha,deltabetaminusalpha);
    
-  computespin(Raux,deltabetaplusalpha, 0.25);
-  Raux(0,0)+= 1;
-  Raux(1,1)+= 1;
-  Raux(2,2)+= 1;
-  BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tmid_);
-  
-  //updating curvature, Crisfield, Vol. 2, equation (17.72)
-  BLITZTINY::MtV_product<3,3>(Tmid_,deltabetaminusalpha,curvnew_);
-  BLITZTINY::V_scale<3>(curvnew_,1/lrefe_);
-  curvnew_ += curvold_;
-  
-  std::cout<<"\ndeltabetaminusalpha\n"<<deltabetaminusalpha<<"\n";
-  
-
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
   BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
@@ -690,7 +693,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     
     //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
     (*stiffmatrix).Shape(12,12);  
-    computestiffbasis(Tnew_,Cm,Cb,spinx21,(*stiffmatrix));
+    computestiffbasis(Cm,Cb,spinx21,(*stiffmatrix));
     
      
     //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.83), (17.87), (17.89)

@@ -299,22 +299,28 @@ private:
   //! length in reference configuration
   double lrefe_;
     
-  //!central triad at the end of hte preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  //! central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  BlitzMat3x3 Tconv_;
+  //!central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
   BlitzMat3x3 Told_;
   //! central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   BlitzMat3x3 Tnew_;
-  //!midpoint triad for curvature update due to Crisfield, Vol. 2, equation (17.73)
-  BlitzMat3x3 Tmid_;
-  //!curvature at the end of hte preceeding time step due to Crisfield, Vol. 2, equation (17.72)
+  //!curvature at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
+  BlitzVec3 curvconv_;
+  //!curvature at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
   BlitzVec3 curvold_;
   //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
   BlitzVec3 curvnew_;
   
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of hte preceeding time step
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding time step
+  BlitzVec3 betaplusalphaconv_;
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding iteration step
   BlitzVec3 betaplusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) during current iteration step
   BlitzVec3 betaplusalphanew_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of hte preceeding time step
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding time step
+  BlitzVec3 betaminusalphaconv_;
+  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding iteration step
   BlitzVec3 betaminusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) during current iteration step
   BlitzVec3 betaminusalphanew_;
@@ -347,7 +353,7 @@ private:
   //!computing rotation matrix out of a rotation vector theta by Crisfield, Vol. 2, equation (16.34) and (16.35)
   void computerotation(BlitzMat3x3& rotationmatrix, BlitzVec3 theta, const double& scale);
   
-  //updating curvature
+  //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
   void updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
@@ -357,7 +363,7 @@ private:
   void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& x21);
   
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
-  void computestiffbasis(const BlitzMat3x3& Tnew_, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
+  void computestiffbasis(const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 
