@@ -420,10 +420,10 @@ namespace GEO
     \param xsi                  (in)        : element coordinates
     \param x                    (out)       : position in physical coordinates (x, y, z)
     */
-    template <class V>
+    template <class V, class M>
     void elementToCurrentCoordinates(   
         const DRT::Element*  element,  
-        const BlitzMat&      xyze,    
+        const M&             xyze,    
         const V&             xsi,      
         BlitzVec3&           x      )
     {
