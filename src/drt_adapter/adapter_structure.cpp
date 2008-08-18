@@ -88,7 +88,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     SetupStruGenAlpha(prbdyn);  // <-- here is the show
     break;
   case STRUCT_DYNAMIC::statics :
-    dserror("no statics, please");
+    SetupStruGenAlpha(prbdyn);  // <-- here is the show
     break;
   case STRUCT_DYNAMIC::Gen_EMM :
     dserror("Gen_EMM not supported");
