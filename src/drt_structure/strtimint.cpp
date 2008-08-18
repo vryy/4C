@@ -105,6 +105,21 @@ enum STR::TimInt::StrainEnum STR::TimInt::MapStrainStringToEnum
 }
 
 /*----------------------------------------------------------------------*/
+/* print tea time logo */
+void STR::TimInt::Logo()
+{
+  std::cout << "Welcome to Structural Time Integration " << std::endl;
+  std::cout << "     __o__                          __o__       " << std::endl;
+  std::cout << "__  /-----\\__                  __  /-----\\__           " << std::endl;
+  std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\          " << std::endl;
+  std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |          " << std::endl;
+  std::cout << "  \\|       |_/    |       /      \\|       |_/          " << std::endl;
+  std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /| " << std::endl;
+  std::cout << "              | |                            | | |   | " << std::endl;
+  std::cout << std::endl;
+}
+
+/*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimInt::TimInt
 (
@@ -122,6 +137,7 @@ STR::TimInt::TimInt
   solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   output_(output),
+  printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
   printscreen_(true),  // ADD INPUT PARAMETER
   errfile_(xparams.get<FILE*>("err file")), 
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
@@ -162,17 +178,9 @@ STR::TimInt::TimInt
   damp_(Teuchos::null)
 {
   // welcome user
-  if (myrank_ == 0)
+  if ( (printlogo_) and (myrank_ == 0) )
   {
-    std::cout << "Welcome to Structural Time Integration " << std::endl;
-    std::cout << "     __o__                          __o__       " << std::endl;
-    std::cout << "__  /-----\\__                  __  /-----\\__           " << std::endl;
-    std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\          " << std::endl;
-    std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |          " << std::endl;
-    std::cout << "  \\|       |_/    |       /      \\|       |_/          " << std::endl;
-    std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /| " << std::endl;
-    std::cout << "              | |                            | | |   | " << std::endl;
-    std::cout << std::endl;
+    Logo();
   }
 
   // check wether discretisation has been completed

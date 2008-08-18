@@ -157,6 +157,9 @@ namespace STR
     //! @name Life
     //@{
 
+    //! Print tea time logo
+    void Logo();
+
     //! Constructor
     TimInt
     (
@@ -488,6 +491,7 @@ namespace STR
     //! @name Printing and output
     //@{
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    bool printlogo_;  //!< true: enjoy your cuppa
     bool printscreen_;  //!< print infos to standard out
     FILE* errfile_;  //!< error file handle
     bool printerrfile_;  //!< print infos to error file #errfile_
