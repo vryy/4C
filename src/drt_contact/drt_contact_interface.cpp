@@ -29,8 +29,10 @@ id_(id),
 comm_(comm)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
+  procmap_.clear();
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
   contactsegs_.Reshape(0,0);
+  treecount_ = 0;
   
   return;
 }
@@ -120,6 +122,78 @@ void CONTACT::Interface::FillComplete()
   RCP<Epetra_Map> oldnodecolmap = rcp (new Epetra_Map(*(Discret().NodeColMap() )));
   // get standard element column map
   RCP<Epetra_Map> oldelecolmap = rcp (new Epetra_Map(*(Discret().ElementColMap() )));
+
+  // create interface local communicator
+  // find all procs that have business on this interface (own nodes/elements)
+  // build a Epetra_Comm that contains only those procs
+  // this intra-communicator will be used to handle most stuff on this 
+  // interface so the interface will not block all other procs
+  {
+#ifdef PARALLEL
+    vector<int> lin(Comm().NumProc());
+    vector<int> gin(Comm().NumProc());
+    for (int i=0; i<Comm().NumProc(); ++i)
+      lin[i] = 0;
+    
+    // check ownership of any elements / nodes
+    const Epetra_Map* noderowmap = Discret().NodeRowMap();
+    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
+    
+    if (noderowmap->NumMyElements() || elerowmap->NumMyElements())
+      lin[Comm().MyPID()] = 1;
+   
+    Comm().MaxAll(&lin[0],&gin[0],Comm().NumProc());
+    lin.clear();
+    
+    // build global -> local communicator PID map
+    // we need this when calling Broadcast() on lComm later
+    int counter = 0;
+    for (int i=0; i<Comm().NumProc(); ++i)
+    {
+      if (gin[i])
+        procmap_[i]=counter++;
+      else
+        procmap_[i]=-1;
+    }
+    
+    // typecast the Epetra_Comm to Epetra_MpiComm
+    RCP<Epetra_Comm> copycomm = rcp(Comm().Clone());
+    Epetra_MpiComm* epetrampicomm = dynamic_cast<Epetra_MpiComm*>(copycomm.get());
+    if (!epetrampicomm)
+      dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+    
+    // split the communicator into participating and none-participating procs
+    int color;
+    int key = Comm().MyPID();
+    // I am taking part in the new comm if I have any ownership 
+    if (gin[Comm().MyPID()]) 
+      color = 0; 
+    // I am not taking part in the new comm
+    else                    
+      color = MPI_UNDEFINED;
+      
+    // tidy up
+    gin.clear();
+
+    // create the local communicator   
+    MPI_Comm  mpi_global_comm = epetrampicomm->GetMpiComm();
+    RCP<MPI_Comm> mpi_local_comm  = rcp(new MPI_Comm());
+    MPI_Comm_split(mpi_global_comm,color,key,mpi_local_comm.get());
+
+    // create the new Epetra_MpiComm
+    if (*mpi_local_comm.get() == MPI_COMM_NULL)
+      lcomm_ = null;
+    else
+      lcomm_ = rcp(new Epetra_MpiComm(*mpi_local_comm.get()));
+    
+#else  // the easy serial case
+    RCP<Epetra_Comm> copycomm = rcp(Comm().Clone());
+    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
+    if (!serialcomm)
+      dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
+    lcomm_ = rcp(new Epetra_SerialComm(*serialcomm));
+#endif // #ifdef PARALLEL    
+  }
 
   // to ease our search algorithms we'll afford the luxury to ghost all nodes
   // on all processors. To do so, we'll take the nodal row map and export it
@@ -325,7 +399,8 @@ void CONTACT::Interface::FillComplete()
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
-  // build octree for contact search
+  // create octree object for contact search
+  tree_ = rcp(new GEO::SearchTree(CONTACTDEPTHOCTREE));
   
   return;
 }
@@ -479,13 +554,31 @@ void CONTACT::Interface::Evaluate()
     // build averaged normal at each slave node
     cnode->BuildAveragedNormal();
   }
-
+ 
   // contact search algorithm
+  Comm().Barrier();
+  const double t_start = ds_cputime();
   EvaluateContactSearch();
+  Comm().Barrier();
+  const double t_end = ds_cputime()-t_start;
+  if (Comm().MyPID()==0)
+  {
+    cout << "************************************************************\n";
+    cout << "Classical search: " << t_end << " seconds\n";
+  }
   
-  // contact search algorithm (Octree)
+  // contact search algorithm (octree)
+  Comm().Barrier();
+  const double t_start2 = ds_cputime();
   EvaluateContactSearchOctree();
-
+  Comm().Barrier();
+  const double t_end2 = ds_cputime()-t_start2;
+  if (Comm().MyPID()==0)
+  {
+    cout << "Octree-based search: " << t_end2 << " seconds\n";
+    cout << "************************************************************\n";
+  }
+  
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -615,7 +708,6 @@ bool CONTACT::Interface::EvaluateContactSearch()
     CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmapbound_,mindist);
     mnode->ClosestNode() = closestnode->Id();
 
-    //if (Comm().MyPID()==0) cout << "MNode: " << mnode->Id() << " ClosestNode: " << closestnode->Id() << " Distance: " << mindist << endl;
     // proceed only if nodes are not far from each other!!!
     if (mindist<=CONTACTCRITDIST)
     {
@@ -655,8 +747,85 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
   /* Here we use Ursula's octree to find the potential intersection     */
   /* candidates on slave and master side.                               */
   /**********************************************************************/
- 
   
+  //create map of current positions
+  map<int,BlitzVec3> currentpositions;
+  
+  for (int i=0; i<mnodefullmapnobound_->NumMyElements();++i)
+  {
+    int gid = mnodefullmapnobound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+    
+    BlitzVec3 pos;
+    for (int j=0;j<3;++j)
+      pos(j) = mnode->xspatial()[j];
+    
+    currentpositions[gid] = pos;
+  }
+  
+  for (int i=0; i<snodefullmapbound_->NumMyElements();++i)
+  {
+    int gid = snodefullmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    BlitzVec3 pos;
+    for (int j=0;j<3;++j)
+      pos(j) = snode->xspatial()[j];
+    
+    currentpositions[gid] = pos;
+  }
+  
+  //create map of master elements (search domain)
+  map<int,set<int> > masterelements;
+  
+  for (int i=0; i<melefullmap_->NumMyElements();++i)
+  {
+    int gid = melefullmap_->GID(i);
+    masterelements[0].insert(gid);
+  }
+  
+  // initialize tree (only on processors participating in interface
+  if (Discret().NumMyColElements()>0)
+    tree_->initializeTree(GEO::getXAABBofDis(Discret(),currentpositions),masterelements,GEO::TreeType(GEO::QUADTREE));
+
+  // loop over proc's slave elements for intersection detection
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid = selecolmap_->GID(i);
+    DRT::Element* element = idiscret_->gElement(gid);
+    if (!element) dserror("ERROR: Cannot find slave element with gid %",gid);
+    CElement* selement = static_cast<CElement*>(element);
+
+    // search intersection partners for this slave element
+    vector<int> partners;
+    vector<int> partners2;
+    partners = selement->SearchElements();
+    partners2 = tree_->searchIntersectionElements(Discret(),currentpositions,element);
+    //if ((int)partners2.size()!=0) selement->AddSearchElements(partners2);
+    /*cout << "\nSElement: " << selement->Id() << endl;
+    if ((int)partners.size()==0)
+      cout << " CLASSICAL: No PartnerMElements for intersection!" << endl;
+    else
+      for (int j=0;j<(int)partners.size();++j)
+        cout << " CLASSICAL: PartnerMElement " << j+1 << " is: " << partners[j] << endl;
+    if ((int)partners2.size()==0)
+      cout << " OCTREE: No PartnerMElements for intersection!" << endl;
+    else
+      for (int j=0;j<(int)partners2.size();++j)
+        cout <<" OCTREE: PartnerMElement " << j+1 << " is: " << partners2[j] << endl;*/
+  }
+  
+  /*if (Discret().NumMyColElements()>0)
+  {
+    tree_->evaluateTreeMetrics(treecount_);
+    tree_->printTree("tree",treecount_++);
+  }*/
+
   return true;
 }
 /*----------------------------------------------------------------------*
@@ -1845,6 +2014,10 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
 void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                                        LINALG::SparseMatrix& linmglobal)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
   /********************************************** LinDMatrix **********/
   // This is easy and can be done without communication, as the global
   // matrix lind has the same row map as the storage of the derivatives
@@ -1935,7 +2108,14 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       mastersize = (int)mderiv.size();
       mcurr = mderiv.begin();
     }
-    Comm().Broadcast(&mastersize,1,cnode->Owner());
+    //********************************************************************
+    // important notes:
+    // 1) we use lComm here, as we only communicate among participating
+    // procs of this interface (all others are already out of here)
+    // 2) the broadcasting proc has to be given in lComm numbering, not
+    // Comm numbering, which is achieved by calling the map procmap_
+    //********************************************************************
+    lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
     
     // loop over all master nodes in the DerivM-map of the current slave node
     for (int j=0;j<mastersize;++j)
@@ -1946,7 +2126,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         mgid = mcurr->first;
         ++mcurr;
       }
-      Comm().Broadcast(&mgid,1,cnode->Owner());
+      lComm()->Broadcast(&mgid,1,procmap_[cnode->Owner()]);
       
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
@@ -1958,7 +2138,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       int mapsize = 0;
       if (Comm().MyPID()==cnode->Owner())
         mapsize = (int)(thismderiv.size());
-      Comm().Broadcast(&mapsize,1,cnode->Owner());
+      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
       
       // loop over all master node dofs
       for (int k=0;k<mnumdof;++k)
@@ -1979,8 +2159,8 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
             val = lm[k] * (colcurr->second);
             ++colcurr;
           }
-          Comm().Broadcast(&col,1,cnode->Owner());
-          Comm().Broadcast(&val,1,cnode->Owner());
+          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
+          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
           
           // owner of master node has to do the assembly!!!
           if (Comm().MyPID()==cmnode->Owner())

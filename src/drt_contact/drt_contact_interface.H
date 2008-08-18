@@ -71,6 +71,14 @@ public:
   */
   virtual const Epetra_Comm& Comm() const { return comm_;}
 
+  /*!
+  \brief Get local interface communicator (Filled()==true is prerequisite)
+         This Epetra_Comm only contains the participating processors of the interface
+
+  */
+  virtual const Epetra_Comm* lComm() const { return lcomm_.get();}
+  
+  
   //! @name Access methods
     
   /*!
@@ -619,6 +627,9 @@ protected:
 
   int                         id_;            // unique interface id
   const Epetra_Comm&          comm_;          // communicator
+  RCP<Epetra_Comm>            lcomm_;         // interface local communicator
+  map<int,int>                procmap_;       // mapping global -> local communicator PIDs
+  
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
   
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
@@ -655,6 +666,7 @@ protected:
   RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
   
   RCP<GEO::SearchTree>        tree_;          // octree for contact search
+  int                         treecount_;     // counter for tree
   
   Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
   

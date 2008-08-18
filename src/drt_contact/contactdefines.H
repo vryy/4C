@@ -47,6 +47,7 @@ Maintainer: Alexander Popp
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTNGP 5             /* no. Gauss points for integration */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
+#define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
 
 namespace CONTACT {
   // static solution routine
