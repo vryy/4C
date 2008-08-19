@@ -48,9 +48,9 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  data_(old.data_),
  material_(old.material_),
  lrefe_(old.lrefe_),
- Tconv_(old.Tconv_),
- Told_(old.Told_),
- Tnew_(old.Tnew_),
+ Qconv_(old.Qconv_),
+ Qold_(old.Qold_),
+ Qnew_(old.Qnew_),
  curvconv_(old.curvconv_),
  curvold_(old.curvold_),
  curvnew_(old.curvnew_),
@@ -139,9 +139,9 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   //reference length
   AddtoPack(data,lrefe_);
   //central coordinate triad and related data
-  AddtoPack(data,Tconv_);
-  AddtoPack(data,Told_);
-  AddtoPack(data,Tnew_);
+  AddtoPack(data,Qconv_);
+  AddtoPack(data,Qold_);
+  AddtoPack(data,Qnew_);
   AddtoPack(data,curvconv_);
   AddtoPack(data,curvold_);
   AddtoPack(data,curvnew_);  
@@ -191,9 +191,9 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   //reference length
   ExtractfromPack(position,data,lrefe_);
   //central coordinate triad and related data
-  ExtractfromPack(position,data,Tconv_);
-  ExtractfromPack(position,data,Told_);
-  ExtractfromPack(position,data,Tnew_);
+  ExtractfromPack(position,data,Qconv_);
+  ExtractfromPack(position,data,Qold_);
+  ExtractfromPack(position,data,Qnew_);
   ExtractfromPack(position,data,curvconv_);
   ExtractfromPack(position,data,curvold_);
   ExtractfromPack(position,data,curvnew_); 
@@ -339,16 +339,18 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
   
   //variable for nodal point coordinates in reference configuration
   BlitzMat3x2 xrefe;
+  //center triad in reference configuration
+  BlitzMat3x3 Tref;
   
   //setting beam reference director correctly
-  for (int i=0; i<  dis.NumMyColElements(); ++i)
+  for (int num=0; num<  dis.NumMyColElements(); ++num)
     {    
       //in case that current element is not a beam3 element there is nothing to do and we go back
       //to the head of the loop
-      if (dis.lColElement(i)->Type() != DRT::Element::element_beam3) continue;
+      if (dis.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
       
       //if we get so far current element is a beam3 element and  we get a pointer at it
-      DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i));
+      DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
       if (!currele) dserror("cast to Beam3* failed");
       
       //getting element's reference coordinates     
@@ -362,43 +364,73 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
       //length in reference configuration
       currele->lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
       
-      /*initial triad Told_ = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
+      /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
        * of area tensor */
       for (int k=0; k<3; k++)	
       {
-        currele->Told_(k,0) = ( xrefe(k,1)-xrefe(k,0) )/currele->lrefe_;        
+        Tref(k,0) = ( xrefe(k,1)-xrefe(k,0) )/currele->lrefe_;        
       }
       /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
        * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
        * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
       
       //t2 is calculated as a unit vector in the x2x3-plane orthogonal to t1
-      currele->Told_(0,1) = 0;
+      Tref(0,1) = 0;
       //if t1 is a unit direction vector for the x1-axis t2 is set to a unit direction vector of the x2-axis
-      if (currele->Told_(1,0) == 0 && currele->Told_(2,0) == 0)
+      if (Tref(1,0) == 0 && Tref(2,0) == 0)
       {    
-        currele->Told_(1,1) = 1;
-        currele->Told_(2,1) = 0;
+        Tref(1,1) = 1;
+        Tref(2,1) = 0;
       }
       //otherwise t2 is calculated from the scalar product with t1
       else
       { 
         //seeting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-        double lin1norm = pow(pow(currele->Told_(1,0),2)+pow(currele->Told_(2,0),2),0.5);
-        currele->Told_(1,1) =  currele->Told_(1,0)/lin1norm;
-        currele->Told_(2,1) = -currele->Told_(2,0)/lin1norm;
+        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+        Tref(1,1) =  Tref(1,0)/lin1norm;
+        Tref(2,1) = -Tref(2,0)/lin1norm;
       }
    
       //calculating t3 by crossproduct t1 x t2
-      currele->Told_(0,2) = -currele->Told_(1,0)*currele->Told_(2,1)-currele->Told_(2,0)*currele->Told_(1,1);
-      currele->Told_(1,2) =    currele->Told_(0,0)*currele->Told_(2,1);
-      currele->Told_(2,2) =    currele->Told_(0,0)*currele->Told_(1,1);
+      Tref(0,2) = -Tref(1,0)*Tref(2,1)-Tref(2,0)*Tref(1,1);
+      Tref(1,2) =  Tref(0,0)*Tref(2,1);
+      Tref(2,2) =  Tref(0,0)*Tref(1,1);
     
-      //the triads Tnew_ and Tconv_ have the same initial configuration as Told_ (coincide in the reference configuration)
-      currele->Tnew_ = currele->Told_;
-      currele->Tconv_ = currele->Told_;
-      
-      
+      /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
+       * from the identity matrix into the reference configuration all operations are performed according to
+       * Crisfield, Vol. 2, section 16.10 and the there described Spurrier's algorithm*/
+      double trace = Tref(0,0) + Tref(1,1) + Tref(2,2);
+      if(trace>Tref(0,0)  && trace>Tref(1,1) &&trace>Tref(2,2))
+      {
+        currele->Qconv_(3) = 0.5 * pow(1 + trace, 0.5);
+        currele->Qconv_(0) = (Tref(1,2) - Tref(2,1)) / (4*currele->Qconv_(3));
+        currele->Qconv_(1) = (Tref(2,0) - Tref(0,2)) / (4*currele->Qconv_(3));
+        currele->Qconv_(2) = (Tref(0,1) - Tref(1,0)) / (4*currele->Qconv_(3));
+      }
+      else if(Tref(0,0)>Tref(1,1) && Tref(0,0)>Tref(2,2))
+      {
+        for(int i = 0 ; i<3 ; i++)
+        {
+          int k = (i+1)% 3;
+          int j = (i+2)% 3;
+          int l;
+          
+          currele->Qconv_(i) = pow(0.5*Tref(i,i) + 0.25*(1 - trace) , 0.5);
+          
+          l = j;        
+          currele->Qconv_(l) = 0.25*(Tref(l,i) + Tref(i,l)) / currele->Qconv_(i);
+          
+          l = k;        
+          currele->Qconv_(l) = 0.25*(Tref(l,i) + Tref(i,l)) / currele->Qconv_(i);
+          
+          currele->Qconv_(3) = 0.25*(Tref(k,j) - Tref(j,k)) / currele->Qconv_(i);
+        }
+      }
+
+    
+      currele->Qold_ = currele->Qconv_;
+      currele->Qnew_ = currele->Qconv_;
+          
       //the here employed beam element does not need data about the current position of the nodal directors so that
       //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
       //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
@@ -417,7 +449,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
         currele->betaminusalphaold_(k) = 0;
       }
             
-    } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+    } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 	
   return 0;
 }

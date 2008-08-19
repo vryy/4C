@@ -113,7 +113,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       
       /*at the end of an iteration step the geometric ocnfiguration has to be updated: the starting point for the
        * next iteration step is the configuration at the end of the current step */  
-      Told_ = Tnew_;
+      Qold_ = Qnew_;
       curvold_ = curvnew_;
       betaplusalphaold_ = betaplusalphanew_;
       betaminusalphaold_ = betaminusalphanew_; 
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * equilibrium has finally been found; this is the point where the variable representing the geomatric
        * status of the beam have to be updated; the geometric status is represented by means of the triad Tnew_,
        * the curvature curvnew_ and the angular values betaplusalphanew_ and betaminusalphanew_*/
-      Tconv_ = Tnew_;
+      Qconv_ = Qnew_;
       curvconv_ = curvnew_;
       betaplusalphaconv_ = betaplusalphanew_;
       betaminusalphaconv_ = betaminusalphanew_; 
@@ -141,7 +141,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * not be applied as starting point for any further iteration step; as a consequence the thereby generated change 
        * of the geometric configuration should be canceled and the configuration should be reset to the value at the  
        * beginning of the time step*/
-      Told_ = Tconv_;
+      Qold_ = Qconv_;
       curvold_ = curvconv_;
       betaplusalphaold_ = betaplusalphaconv_;
       betaminusalphaold_ = betaminusalphaconv_; 
@@ -294,7 +294,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing basis of stiffness matrix of Crisfield, Vol. 2, equation (17.81)
-inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
+inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
 {
   //calculating the first matrix of (17.81) directly involves multiplications of large matrices (e.g. with the 12x6-matrix X)
   //application of the definitions in (17.74) allows blockwise evaluation with multiplication and addition of 3x3-matrices only
@@ -315,8 +315,8 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzVec3& Cm, const B
       TCbTt(i,j) = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        TCmTt(i,j) += Tnew_(i,k)*Cm(k)*Tnew_(j,k);
-        TCbTt(i,j) += Tnew_(i,k)*Cb(k)*Tnew_(j,k);
+        TCmTt(i,j) += Tnew(i,k)*Cm(k)*Tnew(j,k);
+        TCbTt(i,j) += Tnew(i,k)*Cb(k)*Tnew(j,k);
       }
     }
   }
@@ -387,50 +387,62 @@ inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotat
   return;
 } // DRT::ELEMENTS::Beam3::computespin 
 
-//computing rotation matrix out of a rotation vector theta by Crisfield, Vol. 2, equation (16.34) and (16.35)
-//note: function was checked by comparing results with Matlab calculations of (16.31) for several examples of rotation vectors theta
-inline void DRT::ELEMENTS::Beam3::computerotation(BlitzMat3x3& rotationmatrix, BlitzVec3 theta, const double& scale)
+/*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
+ * quaterion product and then calculation of the equivalent rotation matrix according to eq. (16.70*/
+inline void DRT::ELEMENTS::Beam3::updatetriad(BlitzVec3 deltabetaplusalpha, BlitzMat3x3& Tnew)
 {
-  BlitzMat3x3 spin;
-  computespin(spin,theta, scale);
-
-  //applying proper scaling for rotation angle
-  BLITZTINY::V_scale<3>(theta,scale);
-
-  //absolute value of rotation vector theta
-  double abs_theta = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) , 0.5);
+  //calculating angle theta by which triad is rotated according to Crisfield, Vol. 2, equation (17.64)
+  BLITZTINY::V_scale<3>(deltabetaplusalpha,0.5);
   
-  BlitzVec3 omega = theta;
+  //absolute value of rotation angle theta
+  double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);
+  
+  //computing quaterion for rotation by angle theta
+  BlitzVec4 Qrot;
   if (abs_theta > 0)
-    BLITZTINY::V_scale<3>(omega,2*tan(0.5*abs_theta) / abs_theta);
-    
-
-  //spin matrix S(omega) in Crisfield, Vol. 2, equation (16.35)
-  BlitzMat3x3 Somega;
-  computespin(Somega,omega,1.0);
+  {
+    Qrot(0) = deltabetaplusalpha(0) * sin(abs_theta / 2) / abs_theta;
+    Qrot(1) = deltabetaplusalpha(1) * sin(abs_theta / 2) / abs_theta;
+    Qrot(2) = deltabetaplusalpha(2) * sin(abs_theta / 2) / abs_theta;
+    Qrot(3) = cos(abs_theta / 2);
+  }
+  else
+  {
+    BLITZTINY::PutScalar<4>(Qrot,0);
+    Qrot(3) = 1;
+  }
   
-  BLITZTINY::MM_product<3,3,3>(Somega,Somega,rotationmatrix);
-  BLITZTINY::M_scale<3,3>(rotationmatrix,0.5);
+  //computing quaterion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
+  Qnew_(0) = Qrot(3)*Qold_(0) + Qold_(3)*Qrot(0) + Qrot(1)*Qold_(2) - Qold_(1)*Qrot(2);
+  Qnew_(1) = Qrot(3)*Qold_(1) + Qold_(3)*Qrot(1) + Qrot(2)*Qold_(0) - Qold_(2)*Qrot(0);
+  Qnew_(2) = Qrot(3)*Qold_(2) + Qold_(3)*Qrot(2) + Qrot(0)*Qold_(1) - Qold_(0)*Qrot(1);
+  Qnew_(3) = Qrot(3)*Qold_(3) - Qrot(2)*Qold_(2) - Qrot(1)*Qold_(1) - Qrot(0)*Qold_(0);
   
+  //separate storage of vector part of Qnew_
+  BlitzVec3 Qnewvec;
+  for(int i = 0; i<3; i++)
+  {
+    Qnewvec(i) = Qnew_(i);
+  }
+  
+  //computing the rotation matrix from Crisfield, Vol. 2, equation (17.70) with respect to Qnew_,
+  //which is the new center triad Tnew
+  computespin(Tnew, Qnewvec, 2*Qnew_(3));
   for(int i = 0; i<3; i++)
   {
     for(int j = 0; j<3; j++)
-      rotationmatrix(i,j) += Somega(i,j);
+    {
+      Tnew(i,j) += 2*Qnew_(i)*Qnew_(j);
+      if(i == j)
+        Tnew(i,j) += Qnew_(3)*Qnew_(3) - Qnew_(2)*Qnew_(2) - Qnew_(1)*Qnew_(1) - Qnew_(0)*Qnew_(0);
+    }
   }
-  
-  BLITZTINY::M_scale<3,3>(rotationmatrix,1.0/(1+ tan(0.5*abs_theta) * tan(0.5*abs_theta)));
-
-  rotationmatrix(0,0) +=1;
-  rotationmatrix(1,1) +=1;
-  rotationmatrix(2,2) +=1;
-  
-  
-  return;
-} //DRT::ELEMENTS::Beam3::computerotation 
+ 
+} //DRT::ELEMENTS::Beam3::updatetriad
 
 //updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of the curvature is computed by
 //means of equation (16.148) instead of an approximated one as given by equs. (17.72) and (17.73)
-inline void DRT::ELEMENTS::Beam3::updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha)
+inline void DRT::ELEMENTS::Beam3::updatecurvature(const BlitzMat3x3& Tnew, BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha)
 {
   //-------------------calculating omega-------------------------------------//
   
@@ -470,7 +482,7 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(BlitzVec3 deltabetaplusalpha,B
   curvaux += omegaprime;
   BLITZTINY::V_scale<3>(curvaux, 1/(1 + pow(tan(abs_theta/2),2) ));
   
-  BLITZTINY::MtV_product<3,3>(Tnew_,curvaux,curvnew_);
+  BLITZTINY::MtV_product<3,3>(Tnew,curvaux,curvnew_);
   curvnew_ += curvold_;
   
   return;
@@ -569,7 +581,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   BlitzVec3 deltabetaminusalpha;
   BlitzMat3x3 Raux;
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
-  BlitzMat3x3 Tmid;
+  BlitzMat3x3 Tnew;
 
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
@@ -597,15 +609,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   deltabetaminusalpha  = betaminusalphanew_;
   deltabetaminusalpha -= betaminusalphaold_;
 
-  //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
-  computerotation(Raux,deltabetaplusalpha,0.5);
-  BLITZTINY::MM_product<3,3,3>(Raux,Told_,Tnew_);
+  //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
+  updatetriad(deltabetaplusalpha,Tnew);
   
   //updating local curvature
-  updatecurvature(deltabetaplusalpha,deltabetaminusalpha);
+  updatecurvature(Tnew, deltabetaplusalpha,deltabetaminusalpha);
+  
+  if(Id() == 8)
+  {
+    //std::cout<<"\nTnew\n"<<Tnew<<"\n";
+  }
    
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
-  BLITZTINY::MtV_product<3,3>(Tnew_,x21,epsilonn);
+  BLITZTINY::MtV_product<3,3>(Tnew,x21,epsilonn);
   BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
   epsilonn(0) -=  1;
 
@@ -639,14 +655,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   epsilonn(0) *= ym*crosssec_;
   epsilonn(1) *= sm*crosssecshear_;
   epsilonn(2) *= sm*crosssecshear_;
-  BLITZTINY::MV_product<3,3>(Tnew_,epsilonn,stressn);  
+  BLITZTINY::MV_product<3,3>(Tnew,epsilonn,stressn);  
 
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
   epsilonm(0) *= sm*Irr_;
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
-  BLITZTINY::MV_product<3,3>(Tnew_,epsilonm,stressm); 
+  BLITZTINY::MV_product<3,3>(Tnew,epsilonm,stressm); 
   
   //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
   BlitzMat3x3 spinx21;
@@ -686,7 +702,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     
     //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
     (*stiffmatrix).Shape(12,12);  
-    computestiffbasis(Cm,Cb,spinx21,(*stiffmatrix));
+    computestiffbasis(Tnew,Cm,Cb,spinx21,(*stiffmatrix));
     
      
     //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.83), (17.87), (17.89)
@@ -810,7 +826,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xc
   BlitzVec3 curvnew;
   BlitzMat3x3 Raux;
   BlitzMat3x3 Tnew;
-  BlitzMat3x3 Tmid;
   BlitzMat6x2 xcurr_aux;
   Epetra_SerialDenseMatrix stiff_approx;
   Epetra_SerialDenseVector force_aux;

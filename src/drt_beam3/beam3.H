@@ -41,6 +41,7 @@ using namespace Teuchos;
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
+typedef blitz::TinyVector<double,4> BlitzVec4; ///< a short-cut for a one-dimensional BLITZ vector of length 4
 typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
 typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
 typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
@@ -298,13 +299,13 @@ private:
   
   //! length in reference configuration
   double lrefe_;
-    
-  //! central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzMat3x3 Tconv_;
-  //!central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzMat3x3 Told_;
-  //! central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzMat3x3 Tnew_;
+  
+  //! quaternion of central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  BlitzVec4 Qconv_;
+  //! quaternion of central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  BlitzVec4 Qold_;
+  //! quaternion of central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  BlitzVec4 Qnew_;
   //!curvature at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
   BlitzVec3 curvconv_;
   //!curvature at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
@@ -350,11 +351,12 @@ private:
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
   
-  //!computing rotation matrix out of a rotation vector theta by Crisfield, Vol. 2, equation (16.34) and (16.35)
-  void computerotation(BlitzMat3x3& rotationmatrix, BlitzVec3 theta, const double& scale);
+  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
+   * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
+  void updatetriad(BlitzVec3 deltabetaplusalpha, BlitzMat3x3& Tnew);
   
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-  void updatecurvature(BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha);
+  void updatecurvature(const BlitzMat3x3& Tnew, BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
   void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm);
@@ -363,7 +365,7 @@ private:
   void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& x21);
   
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
-  void computestiffbasis(const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
+  void computestiffbasis(const BlitzMat3x3& Tnew, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 
