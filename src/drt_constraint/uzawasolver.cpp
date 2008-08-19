@@ -80,7 +80,6 @@ void UTILS::UzawaSolver::Solve(
         RCP<Epetra_Vector> rhsconstr
         )
 {
-  
   // For every iteration step an uzawa algorithm is used to solve the linear system.
   //Preparation of uzawa method to solve the linear system.
   double norm_uzawa;
@@ -96,12 +95,10 @@ void UTILS::UzawaSolver::Solve(
 
   // Compute residual of the uzawa algorithm
 
-  constr->Multiply(false,*lagrinc,*constrTLagrInc);//necessary?
-  
   RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*rhsstand));
-  fresmcopy->Update(1.0,*constrTLagrInc,1.0);
-  Epetra_Vector uzawa_res(*fresmcopy);
+   Epetra_Vector uzawa_res(*fresmcopy);
   (*stiff).Multiply(false,*dispinc,uzawa_res);
+  
   uzawa_res.Update(1.0,*fresmcopy,-1.0);
   
   // blank residual DOFs which are on Dirichlet BC 
@@ -111,8 +108,7 @@ void UTILS::UzawaSolver::Solve(
   uzawa_res.Norm2(&norm_uzawa);
   Epetra_Vector constr_res(lagrinc->Map());
   
-  constr->Multiply(true,*dispinc,*constrTDispInc) ;
-  constr_res.Update(1.0,*constrTDispInc,1.0,*(rhsconstr),0.0);
+  constr_res.Update(1.0,*(rhsconstr),0.0);
   constr_res.Norm2(&norm_constr_uzawa);
   quotient =1;
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
