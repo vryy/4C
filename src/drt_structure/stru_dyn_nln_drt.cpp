@@ -95,6 +95,7 @@ void caldyn_drt()
   case STRUCT_DYNAMIC::Gen_EMM:
     dserror("GEMM not supported");
     break;
+  case STRUCT_DYNAMIC::statics:
   case STRUCT_DYNAMIC::genalpha:
   case STRUCT_DYNAMIC::onesteptheta:
   case STRUCT_DYNAMIC::gemm:
