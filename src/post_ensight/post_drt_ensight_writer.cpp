@@ -237,10 +237,10 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   {
 
     // cast dis to NurbsDiscretisation
-    DRT::NURBS::NurbsDiscretization* nurbsdis 
-      = 
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(field_->discretization())));
-    
+
     if(nurbsdis==NULL)
     {
       dserror("This probably isn't a NurbsDiscretization\n");
@@ -250,13 +250,13 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     int npatches = (nurbsdis->GetKnotVector())->ReturnNP();
 
     int totalnumvisp=0;
-    
+
     // loop all patches
     for(int np=0;np<npatches;++np)
     {
       // get nurbs dis' knotvector sizes
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
-    
+
       int numvisp=1;
 
       for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
@@ -282,7 +282,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   RefCountPtr<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
   proc0map_=proc0map; // update the internal map
   WriteCells(file, field_->discretization(), proc0map);
-  
+
   Write(file, "END TIME STEP");
   return;
 }
@@ -303,12 +303,12 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     cout << " approximation\n";
   }
 
-  // map for all visualisation points after they have been 
+  // map for all visualisation points after they have been
   // communicated to proc 0
   RefCountPtr<Epetra_Map> proc0map;
 
-  // refcountpointer to vector of all coordinates 
-  // distributed among all procs 
+  // refcountpointer to vector of all coordinates
+  // distributed among all procs
   RefCountPtr<Epetra_MultiVector> nodecoords;
 
   const int NSD = 3; // number of space dimensions
@@ -319,7 +319,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     const int numnp = nodemap->NumMyElements();
     const int numnpglobal = nodemap->NumGlobalElements();
     nodecoords = rcp(new Epetra_MultiVector(*nodemap,3));
-    
+
     // loop over the nodes on this proc and store the coordinate information
     for (int inode=0; inode<numnp; inode++)
     {
@@ -331,16 +331,16 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	nodecoords->ReplaceMyValue(inode, isd, val);
       }
     }
-    
+
     // put all coordinate information on proc 0
     proc0map = LINALG::AllreduceEMap(*nodemap,0);
-    
+
     // import my new values (proc0 gets everything, other procs empty)
     Epetra_Import proc0importer(*proc0map,*nodemap);
     RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
     int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-    
+
     // write the node coordinates (only proc 0)
     // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
     // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
@@ -377,19 +377,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     local_vis_point_x.clear();
 
     // cast dis to NurbsDiscretisation
-    DRT::NURBS::NurbsDiscretization* nurbsdis 
-      = 
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
     if(nurbsdis==NULL)
     {
       dserror("This probably isn't a NurbsDiscretization\n");
     }
-      
+
     // get dimension
     int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
-    // get the knotvector itself 
+    // get the knotvector itself
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // detrmine number of patches from knotvector
@@ -397,7 +397,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
     // get vispoint offsets among patches
     vector<int> vpoff(npatches);
-    
+
     vpoff[0]=0;
 
     // loop all patches
@@ -405,7 +405,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     {
       // get nurbs dis' knotvector sizes
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
-    
+
       int numvisp=1;
 
       for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
@@ -418,16 +418,16 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
     // get element map
     const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
-  
+
     // loop all available elements
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
       DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
       DRT::Node**   nodes = actele->Nodes();
-      
+
       // get gid, location in the patch
       int gid = actele->Id();
-	
+
       vector<int> ele_cart_id(dim);
       int np=-1;
       knots->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
@@ -435,36 +435,36 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       // get nurbs dis' element numbers
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
 
-      // want to loop all control points of the element, 
+      // want to loop all control points of the element,
       // so get the number of points
       const int numnp = actele->NumNode();
-      
+
       // access elements knot span
       std::vector<blitz::Array<double,1> > knots(dim);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
-      
+
       // aquire weights from nodes
       blitz::Array<double,1> weights(numnp);
-      
+
       for (int inode=0; inode<numnp; ++inode)
       {
-	DRT::NURBS::ControlPoint* cp 
-	  = 
+	DRT::NURBS::ControlPoint* cp
+	  =
 	  dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-	
+
 	weights(inode) = cp->W();
       }
-      
+
       // get shapefunctions, compute all visualisation point positions
       blitz::Array<double,1> nurbs_shape_funct(numnp);
-      
+
       switch (actele->Shape())
       {
       case DRT::Element::nurbs4:
       {
 	// element local point position
-	blitz::Array<double,1> uv(2);    
-	  
+	blitz::Array<double,1> uv(2);
+
 	// standard
 
 	// 3           4
@@ -485,7 +485,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	// temporary x vector
 	std::vector<double> x(3);
 	x[2]=0;
-	  
+
 	// point 1
 	uv(0)= -1.0;
 	uv(1)= -1.0;
@@ -504,7 +504,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  x[isd]=val;
 	}
 	local_vis_point_x.push_back(x);
-	  
+
 	// point 2
 	uv(0)=  1.0;
 	uv(1)= -1.0;
@@ -523,7 +523,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  x[isd]=val;
 	}
 	local_vis_point_x.push_back(x);
-	  
+
 	// point 3
 	uv(0)= -1.0;
 	uv(1)=  1.0;
@@ -542,7 +542,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  x[isd]=val;
 	}
 	local_vis_point_x.push_back(x);
-	  
+
 	// point 4
 	uv(0)= 1.0;
 	uv(1)= 1.0;
@@ -561,17 +561,17 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  x[isd]=val;
 	}
 	local_vis_point_x.push_back(x);
-	  
+
 	break;
       }
       case DRT::Element::nurbs9:
       {
 	// element local point position
-	blitz::Array<double,1> uv(2);    
-	  
+	blitz::Array<double,1> uv(2);
+
 	{
 	  // standard
-	    
+
 	  //
 	  //  +---------+
 	  //  |         |
@@ -586,11 +586,11 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  local_vis_point_ids.push_back(vpoff[np]+(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
 	  local_vis_point_ids.push_back(vpoff[np]+(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
 	  local_vis_point_ids.push_back(vpoff[np]+(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
-	    
+
 	  // temporary x vector
 	  std::vector<double> x(3);
 	  x[2]=0;
-	    
+
 	  // point 1
 	  uv(0)= -1.0;
 	  uv(1)= -1.0;
@@ -609,7 +609,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	    x[isd]=val;
 	  }
 	  local_vis_point_x.push_back(x);
-	    
+
 	  // point 2
 	  uv(0)=  0.0;
 	  uv(1)= -1.0;
@@ -628,7 +628,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	    x[isd]=val;
 	  }
 	  local_vis_point_x.push_back(x);
-	    
+
 	  // point 3
 	  uv(0)= -1.0;
 	  uv(1)=  0.0;
@@ -647,7 +647,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	    x[isd]=val;
 	  }
 	  local_vis_point_x.push_back(x);
-	    
+
 	  // point 4
 	  uv(0)= 0.0;
 	  uv(1)= 0.0;
@@ -667,7 +667,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  }
 	  local_vis_point_x.push_back(x);
 	}
-	
+
 	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
 	{
 	  // top line
@@ -681,7 +681,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  //  |         |
 	  //  X----X----+
 	  // 1    2
-	  //                 
+	  //
 
 	  // append points 5 and 6
 	  local_vis_point_ids.push_back(vpoff[np]+(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
@@ -699,7 +699,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 						knots            ,
 						weights          ,
 						actele->Shape()  );
-	
+
 	  for (int isd=0; isd<2; ++isd)
 	  {
 	    double val = 0;
@@ -792,7 +792,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	  local_vis_point_x.push_back(x);
 	}
 	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1]
-	   && 
+	   &&
 	   ele_cart_id[0]+1==nele_x_mele_x_lele[0])
 	{
 	  // top right corner
@@ -838,7 +838,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       case DRT::Element::nurbs27:
       {
 	// element local point position
-	blitz::Array<double,1> uv(3);   
+	blitz::Array<double,1> uv(3);
 
 	int idu;
 	int idv;
@@ -846,7 +846,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 	// number of visualisation points in u direction
 	int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(np))[0]+1;
-	
+
 	// number of visualisation points in v direction
 	int nvpv=2*(nurbsdis->Return_nele_x_mele_x_lele(np))[1]+1;
 
@@ -855,19 +855,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /         /  |       
-	  //  +---------+   |     
-	  //  | A----A  |   |     
-	  //  |/|   /|  |   +      
-	  //  A----A |  |  /       
-	  //  | A--|-A  | /       
-	  //  |/   |/   |/         
-	  //  A----A----+ ----->u    
-	  //       
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /         /  |
+	  //  +---------+   |
+	  //  | A----A  |   |
+	  //  |/|   /|  |   +
+	  //  A----A |  |  /
+	  //  | A--|-A  | /
+	  //  |/   |/   |/
+	  //  A----A----+ ----->u
+	  //
 	  // append 8 points
 
 	  idu=(2*ele_cart_id[0]  );
@@ -1081,19 +1081,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /         /  |       
-	  //  +---------+   |     
-	  //  | X----X--|-A |     
-	  //  |/|   /|  |/| +      
-	  //  X----X----A |/       
-	  //  | X--|-X--|-A       
-	  //  |/   |/   |/         
-	  //  X----X----A ----->u    
-	  //            
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /         /  |
+	  //  +---------+   |
+	  //  | X----X--|-A |
+	  //  |/|   /|  |/| +
+	  //  X----X----A |/
+	  //  | X--|-X--|-A
+	  //  |/   |/   |/
+	  //  X----X----A ----->u
+	  //
 	  // append 4 additional points
 
 	  idu=(2*ele_cart_id[0]+2);
@@ -1207,19 +1207,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /  A----A /  |       
-	  //  +---------+   |     
-	  //  | X----X ||   |     
-	  //  |/| A-/|-A|   +      
-	  //  X----X |/ |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //       
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /  A----A /  |
+	  //  +---------+   |
+	  //  | X----X ||   |
+	  //  |/| A-/|-A|   +
+	  //  X----X |/ |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  // append 4 additional points
 
 	  idu=(2*ele_cart_id[0]  );
@@ -1329,25 +1329,25 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	}
 
 	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
-	   && 
+	   &&
 	   ele_cart_id[1]+1==nele_x_mele_x_lele[1])
 	{
 
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /  X----X-/--A       
-	  //  +---------+  /|     
-	  //  | X----X--|-X |     
-	  //  |/| X-/|-X|/|-A      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //       
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /  X----X-/--A
+	  //  +---------+  /|
+	  //  | X----X--|-X |
+	  //  |/| X-/|-X|/|-A
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  // append 2 additional points
 
 	  idu=(2*ele_cart_id[0]+2);
@@ -1409,19 +1409,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	{
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | A----A    / |         
-	  //   /    /|   /  |       
-	  //  A----A----+   |     
-	  //  | X--|-X  |   |     
-	  //  |/|  |/|  |   +      
-	  //  X----X |  |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //     
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | A----A    / |
+	  //   /    /|   /  |
+	  //  A----A----+   |
+	  //  | X--|-X  |   |
+	  //  |/|  |/|  |   +
+	  //  X----X |  |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  //
 	  // append 4 additional points
 
@@ -1540,19 +1540,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	{
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   A----A----+      
-	  //  |  /|   /|   /|        
-	  //  | X----X |  / |         
-	  //   /| X /| X /  |       
-	  //  X----X----+   |     
-	  //  | X--|-X ||   |     
-	  //  |/|  |/| X|   +      
-	  //  X----X |/ |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //     
+	  //  w          /
+	  //  ^   A----A----+
+	  //  |  /|   /|   /|
+	  //  | X----X |  / |
+	  //   /| X /| X /  |
+	  //  X----X----+   |
+	  //  | X--|-X ||   |
+	  //  |/|  |/| X|   +
+	  //  X----X |/ |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  //
 	  // append 2 additional points
 
@@ -1617,19 +1617,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	{
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | X----X----A |         
-	  //   /    /|   /| |       
-	  //  X----X----A | |     
-	  //  | X--|-X--|-X |     
-	  //  |/|  |/|  |/| +      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //     
+	  //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | X----X----A |
+	  //   /    /|   /| |
+	  //  X----X----A | |
+	  //  | X--|-X--|-X |
+	  //  |/|  |/|  |/| +
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  //
 	  // append 2 additional points
 
@@ -1697,19 +1697,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
 	  //               v
 	  //              /
-	  //  w          /       
-	  //  ^   X----X----A      
-	  //  |  /|   /    /|        
-	  //  | X----X----X |         
-	  //   /| X-/|-X-/|-X       
-	  //  X----X----X |/|     
-	  //  | X--|-X--|-X |     
-	  //  |/| X|/|-X|/|-X      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //       
+	  //  w          /
+	  //  ^   X----X----A
+	  //  |  /|   /    /|
+	  //  | X----X----X |
+	  //   /| X-/|-X-/|-X
+	  //  X----X----X |/|
+	  //  | X--|-X--|-X |
+	  //  |/| X|/|-X|/|-X
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  // append 1 additional point
 
 
@@ -1746,19 +1746,19 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       }
       default:
 	dserror("Unknown distype for nurbs element output\n");
-      }      
+      }
     }
 
-    // construct map for visualisation points. Store it in 
+    // construct map for visualisation points. Store it in
     // class variable for access in data interpolation
     int numvispoints = 0;
-    
+
     // loop all patches
     for(int np=0;np<npatches;++np)
     {
       // get nurbs dis' knotvector sizes
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
-    
+
       int numvisp=1;
 
       for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
@@ -1795,7 +1795,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
     int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-  
+
     // write the node coordinates (only proc 0)
     // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
     // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
@@ -1926,30 +1926,30 @@ void EnsightWriter::WriteCells(
 	case DRT::Element::nurbs4:
 	{
 	  // cast dis to NurbsDiscretisation
-	  DRT::NURBS::NurbsDiscretization* nurbsdis 
-	    = 
+	  DRT::NURBS::NurbsDiscretization* nurbsdis
+	    =
 	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
-	  
+
 	  if(nurbsdis==NULL)
 	  {
 	    dserror("This probably isn't a NurbsDiscretization\n");
 	  }
-      
+
 	  // get dimension
 	  int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
-	  // get the knotvector itself 
+	  // get the knotvector itself
 	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
-	  // determine type of element 
-	  
-	  // get gid, location in the patch and the number of the patch 
+	  // determine type of element
+
+	  // get gid, location in the patch and the number of the patch
 	  int gid = actele->Id();
 
 	  int npatch  =-1;
 	  vector<int> ele_cart_id(dim);
 	  knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
-    
+
 	  // number of visualisation points in u direction
 	  int nvpu=(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
 	  {
@@ -1962,7 +1962,7 @@ void EnsightWriter::WriteCells(
 	    //  |         |
 	    //  X---------X
 	    // 1           2
-	    
+
 	    // append 4 elements
             if (myrank_==0) // proc0 can write its elements immediately
 	    {
@@ -1985,34 +1985,34 @@ void EnsightWriter::WriteCells(
 	case DRT::Element::nurbs9:
 	{
 	  // cast dis to NurbsDiscretisation
-	  DRT::NURBS::NurbsDiscretization* nurbsdis 
-	    = 
+	  DRT::NURBS::NurbsDiscretization* nurbsdis
+	    =
 	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
-	  
+
 	  if(nurbsdis==NULL)
 	  {
 	    dserror("This probably isn't a NurbsDiscretization\n");
 	  }
 
-          // get the knotvector itself 
+          // get the knotvector itself
 	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
 	  // detrmine number of patches from knotvector
 	  int npatches=knots->ReturnNP();
-	  
+
 	  // get vispoint offsets among patches
 	  vector<int> vpoff(npatches);
-	  
+
 	  vpoff[0]=0;
-    
+
 	  // loop all patches
 	  for(int np=1;np<npatches;++np)
 	  {
 	    // get nurbs dis' knotvector sizes
 	    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
-	    
+
 	    int numvisp=1;
-	    
+
 	    for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
 	    {
 	      numvisp*=2*nele_x_mele_x_lele[rr]+1;
@@ -2023,14 +2023,14 @@ void EnsightWriter::WriteCells(
 
 	  // get dimension
 	  int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
-    	 
+
 	  // get gid, location in the patch
 	  int gid = actele->Id();
-	  
+
 	  int npatch  =-1;
 	  vector<int> ele_cart_id(dim);
 	  knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
-    
+
 	  // number of visualisation points in u direction
 	  int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
 
@@ -2044,7 +2044,7 @@ void EnsightWriter::WriteCells(
 	    //  |         |
 	    //  X----X----X
 	    // 1    2    3
-	    
+
 	    // append 4 elements
             if (myrank_==0) // proc0 can write its elements immediately
 	    {
@@ -2074,17 +2074,17 @@ void EnsightWriter::WriteCells(
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ));
-				                                                                             
+
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  ));
-				                                                                             
+
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
-				                                                                             
+
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2));
 	      nodevector.push_back(vpoff[npatch]+((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2));
@@ -2097,48 +2097,48 @@ void EnsightWriter::WriteCells(
 	{
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   X----X----A      
-	  //  |  /|   /    /|        
-	  //  | X----X----X |         
-	  //   /| X-/|-X-/|-X       
-	  //  X----X----X |/|     
-	  //  | X--|-X--|-X |     
-	  //  |/| X|/|-X|/|-X      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //       
+          //  w          /
+	  //  ^   X----X----A
+	  //  |  /|   /    /|
+	  //  | X----X----X |
+	  //   /| X-/|-X-/|-X
+	  //  X----X----X |/|
+	  //  | X--|-X--|-X |
+	  //  |/| X|/|-X|/|-X
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  // cast dis to NurbsDiscretisation
-	  DRT::NURBS::NurbsDiscretization* nurbsdis 
-	    = 
+	  DRT::NURBS::NurbsDiscretization* nurbsdis
+	    =
 	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
- 
+
 	  if(nurbsdis==NULL)
 	  {
 	    dserror("This probably isn't a NurbsDiscretization\n");
 	  }
 
-          // get the knotvector itself 
+          // get the knotvector itself
 	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
 	  // detrmine number of patches from knotvector
 	  int npatches=knots->ReturnNP();
-	  
+
 	  // get vispoint offsets among patches
 	  vector<int> vpoff(npatches);
-	  
+
 	  vpoff[0]=0;
-    
+
 	  // loop all patches
 	  for(int np=1;np<npatches;++np)
 	  {
 	    // get nurbs dis' knotvector sizes
 	    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
-	    
+
 	    int numvisp=1;
-	    
+
 	    for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
 	    {
 	      numvisp*=2*nele_x_mele_x_lele[rr]+1;
@@ -2146,13 +2146,13 @@ void EnsightWriter::WriteCells(
 
 	    vpoff[np]=vpoff[np-1]+numvisp;
 	  }
-      
+
 	  // get dimension
 	  int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
 	  // get gid, location in the patch
 	  int gid = actele->Id();
-	  
+
 	  int npatch  =-1;
 	  vector<int> ele_cart_id(dim);
 	  knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
@@ -2249,22 +2249,22 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
-	    // bottom, left rear  
+	    // bottom, left rear
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-		
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
@@ -2274,17 +2274,17 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-		    
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
@@ -2295,17 +2295,17 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
@@ -2315,17 +2315,17 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-		
+
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
@@ -2343,12 +2343,12 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
-	    
+
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
@@ -2357,22 +2357,22 @@ void EnsightWriter::WriteCells(
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
 	    // top, right front
@@ -2416,7 +2416,7 @@ void EnsightWriter::WriteCells(
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
 	    Write(geofile,proc0map->LID(vpoff[npatch]+i)+1);
 
-	    // top, left rear  
+	    // top, left rear
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
@@ -2508,172 +2508,172 @@ void EnsightWriter::WriteCells(
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    // bottom, right front
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
-	    // bottom, left rear  
+	    // bottom, left rear
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    // bottom, right rear
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    //-------------------------------------------------------------------------------
@@ -2682,172 +2682,172 @@ void EnsightWriter::WriteCells(
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    // top, right front
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]  )*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
-	    // top, left rear  
+	    // top, left rear
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]  );
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    // top, right rear
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+1)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+2);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	    i  = (2*ele_cart_id[0]+1);
 	    i += (2*ele_cart_id[1]+2)*nvpu;
 	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
-	    
+
 	    nodevector.push_back(vpoff[npatch]+i);
 	  }
 	}
@@ -3246,9 +3246,16 @@ void EnsightWriter::WriteResult(const string groupname,
                                 const int from)
 {
   PostResult result = PostResult(field_);
-  result.next_result();
-  if (!map_has_map(result.group(), groupname.c_str()))
-    return;
+  bool foundit = false;
+  while (result.next_result(groupname))
+  {
+    if (map_has_map(result.group(), groupname.c_str()))
+    {
+      foundit = true;
+      break;
+    }
+  }
+  if (!foundit) return;
 
   // new for file continuation
   bool multiple_files = false;
@@ -3295,12 +3302,15 @@ void EnsightWriter::WriteResult(const string groupname,
 
     while (result.next_result(groupname))
     {
-      const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
-      if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+      if (map_has_map(result.group(), groupname.c_str()))
       {
-        FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+        const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+        if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+        {
+          FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+        }
+        WriteDofResultStep(file, result, resultfilepos, groupname, name, numdf, from);
       }
-      WriteDofResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     }
   }
   break;
@@ -3520,13 +3530,13 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
   // taken into account.
   // NOTE 1: for the pressure result vector of FLUID calculations,
   // this offset is 2 or 3, depending on the number of space dimensions.
-  // NOTE 2: this command is only valid, if you use NOT MORE processors 
+  // NOTE 2: this command is only valid, if you use NOT MORE processors
   //         for filtering than for computation. Otherwise we have empty procs
-  //         owning empty maps, and therefore epetradatamap->MinAllGID() 
+  //         owning empty maps, and therefore epetradatamap->MinAllGID()
   //         will always return zero, resulting in a wrong offset value.
-  //         This is the only reason, why not to use more (and empty) procs. 
+  //         This is the only reason, why not to use more (and empty) procs.
   //         All other code parts of post_drt_ensight can handle that.
-  if (epetradatamap->NumMyElements()<1) 
+  if (epetradatamap->NumMyElements()<1)
     dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
   int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
@@ -3538,19 +3548,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     Teuchos::RefCountPtr<Epetra_MultiVector> idata;
     idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
 
-    DRT::NURBS::NurbsDiscretization* nurbsdis 
-      = 
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
-    
+
     if(nurbsdis==NULL)
     {
       dserror("This probably isn't a NurbsDiscretization\n");
     }
-    
+
     // get number of patches
     int npatches = (nurbsdis->GetKnotVector())->ReturnNP();
 
-    // assuming that dimension of the manifold is 
+    // assuming that dimension of the manifold is
     // equal to spatial dimension
     int dim = (int)(nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
@@ -3563,23 +3573,23 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
       // get nurbs dis' knotvector sizes
       vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
-     
+
       // get nurbs dis' knotvector sizes
       vector<int> degree(nurbsdis->Return_degree(np));
-    
+
       for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
       {
 	numvisp*=2*(n_x_m_x_l[rr]-2*degree[rr])-1;
       }
       numvispoints+=numvisp;
-    } // end loop over patches 
+    } // end loop over patches
 
-    // get the knotvector itself 
+    // get the knotvector itself
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // get vispoint offsets among patches
     vector<int> vpoff(npatches);
-    
+
     vpoff[0]=0;
 
     // loop all patches
@@ -3587,7 +3597,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     {
       // get nurbs dis' knotvector sizes
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
-    
+
       int numvisp=1;
 
       for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
@@ -3602,7 +3612,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     // get element map
     const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
 
-    // construct a colmap for data to have it available at 
+    // construct a colmap for data to have it available at
     // all elements (the critical ones are the ones at the
     // processor boundary)
     // loop all available elements
@@ -3613,17 +3623,17 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
       vector<int> lm;
       vector<int> lmowner;
-      
+
       // extract local values from the global vectors
-      actele->LocationVector(*nurbsdis,lm,lmowner); 
-      
+      actele->LocationVector(*nurbsdis,lm,lmowner);
+
       for (int inode=0; inode<actele->NumNode(); ++inode)
       {
-	
+
 	if(name == "velocity")
 	{
 	  for(int rr=0;rr<dim;++rr)
-	  {	  
+	  {
 	    coldofset.insert(lm[inode*(dim+1)+rr]);
 	  }
 	}
@@ -3651,7 +3661,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     coldofmapvec.clear();
 
     const Epetra_Map* fulldofmap = &(*coldofmap);
-    const RefCountPtr<Epetra_Vector> coldata 
+    const RefCountPtr<Epetra_Vector> coldata
       = Teuchos::rcp(new Epetra_Vector(*fulldofmap,true));
 
     // create an importer and import the data
@@ -3661,20 +3671,20 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     {
       dserror("import falied\n");
     }
-    
+
     // loop all available elements
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
       DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
       DRT::Node**   nodes = actele->Nodes();
-  
-      // get gid, location in the patch and the number of the patch 
+
+      // get gid, location in the patch and the number of the patch
       int gid = actele->Id();
-      
+
       int npatch  =-1;
       vector<int> ele_cart_id(dim);
       knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
-  
+
       // get nele_x_mele_x_lele array
       vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
 
@@ -3687,30 +3697,30 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
       // aquire weights from nodes
       blitz::Array<double,1> weights(numnp);
-	
+
       for (int inode=0; inode<numnp; ++inode)
       {
 	DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
 	weights(inode) = cp->W();
       }
-	
+
       // get shapefunctions, compute all visualisation point positions
       blitz::Array<double,1> nurbs_shape_funct(numnp);
 
       // element local visualisation point position
-      blitz::Array<double,1> uv(dim);    
+      blitz::Array<double,1> uv(dim);
 
       // extract local values from the global vectors
       vector<int> lm;
       vector<int> lmowner;
 
-      actele->LocationVector(*nurbsdis,lm,lmowner); 
-	
+      actele->LocationVector(*nurbsdis,lm,lmowner);
+
       vector<double> my_data(lm.size());
       if(name == "velocity")
       {
 	my_data.resize(dim*numnp);
-	
+
 	for (int inode=0; inode<numnp; ++inode)
 	{
 	  for(int rr=0;rr<dim;++rr)
@@ -3722,7 +3732,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       else if(name == "pressure")
       {
 	my_data.resize(numnp);
-	
+
 	for (int inode=0; inode<numnp; ++inode)
 	{
 	  my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim])];
@@ -3737,7 +3747,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       {
       case DRT::Element::nurbs4:
       {
-    
+
 	// number of visualisation points in u direction
 	int nvpu=(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
 
@@ -3911,7 +3921,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 						actele->Shape()  );
 	  idu=2*ele_cart_id[0];
 	  idv=(2*ele_cart_id[1]+1)*(nvpu);
- 
+
 	  for (int isd=0; isd<numdf; ++isd)
 	  {
 	    double val = 0;
@@ -3933,7 +3943,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 						actele->Shape()  );
 	  idu=2*ele_cart_id[0]+1;
 	  idv=(2*ele_cart_id[1]+1)*(nvpu);
- 
+
 	  for (int isd=0; isd<numdf; ++isd)
 	  {
 	    double val = 0;
@@ -3957,7 +3967,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	//  |         |
 	//  X----X----+
 	// 1    2
-	//                 
+	//
 	// two additional points
 
 	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
@@ -4092,7 +4102,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       case DRT::Element::nurbs27:
       {
 	// element local point position
-	blitz::Array<double,1> uv(3);   
+	blitz::Array<double,1> uv(3);
 
 	int idu;
 	int idv;
@@ -4103,19 +4113,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /         /  |       
-	  //  +---------+   |     
-	  //  | A----A  |   |     
-	  //  |/|   /|  |   +      
-	  //  A----A |  |  /       
-	  //  | A--|-A  | /       
-	  //  |/   |/   |/         
-	  //  A----A----+ ----->u    
-	  //       
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /         /  |
+	  //  +---------+   |
+	  //  | A----A  |   |
+	  //  |/|   /|  |   +
+	  //  A----A |  |  /
+	  //  | A--|-A  | /
+	  //  |/   |/   |/
+	  //  A----A----+ ----->u
+	  //
 	  // append 8 points
 
 	  // temporary x vector
@@ -4327,19 +4337,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /         /  |       
-	  //  +---------+   |     
-	  //  | X----X--|-A |     
-	  //  |/|   /|  |/| +      
-	  //  X----X----A |/       
-	  //  | X--|-X--|-A       
-	  //  |/   |/   |/         
-	  //  X----X----A ----->u    
-	  //            
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /         /  |
+	  //  +---------+   |
+	  //  | X----X--|-A |
+	  //  |/|   /|  |/| +
+	  //  X----X----A |/
+	  //  | X--|-X--|-A
+	  //  |/   |/   |/
+	  //  X----X----A ----->u
+	  //
 	  // append 4 additional points
 
 	  // temporary x vector
@@ -4450,19 +4460,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /  A----A /  |       
-	  //  +---------+   |     
-	  //  | X----X ||   |     
-	  //  |/| A-/|-A|   +      
-	  //  X----X |/ |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //       
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /  A----A /  |
+	  //  +---------+   |
+	  //  | X----X ||   |
+	  //  |/| A-/|-A|   +
+	  //  X----X |/ |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  // append 4 additional points
 
 	  // temporary x vector
@@ -4572,25 +4582,25 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	}
 
 	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
-	   && 
+	   &&
 	   ele_cart_id[1]+1==nele_x_mele_x_lele[1])
 	{
 
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  //   /  X----X-/--A       
-	  //  +---------+  /|     
-	  //  | X----X--|-X |     
-	  //  |/| X-/|-X|/|-A      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //       
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  //   /  X----X-/--A
+	  //  +---------+  /|
+	  //  | X----X--|-X |
+	  //  |/| X-/|-X|/|-A
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  // append 2 additional points
 
 	  // temporary x vector
@@ -4651,19 +4661,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	{
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | A----A    / |         
-	  //   /    /|   /  |       
-	  //  A----A----+   |     
-	  //  | X--|-X  |   |     
-	  //  |/|  |/|  |   +      
-	  //  X----X |  |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //     
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | A----A    / |
+	  //   /    /|   /  |
+	  //  A----A----+   |
+	  //  | X--|-X  |   |
+	  //  |/|  |/|  |   +
+	  //  X----X |  |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  //
 	  // append 4 additional points
 
@@ -4779,19 +4789,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	{
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   A----A----+      
-	  //  |  /|   /|   /|        
-	  //  | X----X |  / |         
-	  //   /| X /| X /  |       
-	  //  X----X----+   |     
-	  //  | X--|-X ||   |     
-	  //  |/|  |/| X|   +      
-	  //  X----X |/ |  /       
-	  //  | X--|-X  | /       
-	  //  |/   |/   |/         
-	  //  X----X----+ ----->u    
-	  //     
+          //  w          /
+	  //  ^   A----A----+
+	  //  |  /|   /|   /|
+	  //  | X----X |  / |
+	  //   /| X /| X /  |
+	  //  X----X----+   |
+	  //  | X--|-X ||   |
+	  //  |/|  |/| X|   +
+	  //  X----X |/ |  /
+	  //  | X--|-X  | /
+	  //  |/   |/   |/
+	  //  X----X----+ ----->u
+	  //
 	  //
 	  // append 2 additional points
 
@@ -4857,19 +4867,19 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	{
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | X----X----A |         
-	  //   /    /|   /| |       
-	  //  X----X----A | |     
-	  //  | X--|-X--|-X |     
-	  //  |/|  |/|  |/| +      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //     
+          //  w          /
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | X----X----A |
+	  //   /    /|   /| |
+	  //  X----X----A | |
+	  //  | X--|-X--|-X |
+	  //  |/|  |/|  |/| +
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  //
 	  // append 2 additional points
 
@@ -4937,24 +4947,24 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
 	  //               v
 	  //              /
-          //  w          /       
-	  //  ^   X----X----A      
-	  //  |  /|   /    /|        
-	  //  | X----X----X |         
-	  //   /| X-/|-X-/|-X       
-	  //  X----X----X |/|     
-	  //  | X--|-X--|-X |     
-	  //  |/| X|/|-X|/|-X      
-	  //  X----X----X |/       
-	  //  | X--|-X--|-X       
-	  //  |/   |/   |/         
-	  //  X----X----X ----->u    
-	  //       
+          //  w          /
+	  //  ^   X----X----A
+	  //  |  /|   /    /|
+	  //  | X----X----X |
+	  //   /| X-/|-X-/|-X
+	  //  X----X----X |/|
+	  //  | X--|-X--|-X |
+	  //  |/| X|/|-X|/|-X
+	  //  X----X----X |/
+	  //  | X--|-X--|-X
+	  //  |/   |/   |/
+	  //  X----X----X ----->u
+	  //
 	  // append 1 additional point
 
 	  // temporary x vector
 	  std::vector<double> x(3);
-	  
+
 	  // point 1
 	  uv(0)=  1.0;
 	  uv(1)=  1.0;
@@ -4994,15 +5004,15 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     RefCountPtr<Epetra_MultiVector> allsols = rcp(new Epetra_MultiVector(*proc0map_,numdf));
     int err = allsols->Import(*idata,proc0importer,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-    
+
     // write the node results (only proc 0)
-    // ensight format requires u_1 .. u_n, v_1 .. v_n, w_1 ... w_n, as for nodes 
+    // ensight format requires u_1 .. u_n, v_1 .. v_n, w_1 ... w_n, as for nodes
     // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
     if (myrank_==0)
     {
       double* solvals = allsols->Values();
       int numentries = (numdf*(allsols->GlobalLength()));
-      
+
       // now write the solution
       for (int i=0; i<numentries; ++i)
       {
@@ -5025,27 +5035,27 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     //------------------------------------------------------
     // each processor provides its result values for proc 0
     //------------------------------------------------------
-    
+
     RefCountPtr<Epetra_Map> proc0datamap;
     proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
-    
+
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
     RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
     int err = proc0data->Import(*data,proc0dataimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-    
+
     const Epetra_BlockMap& finaldatamap = proc0data->Map();
-    
-    
+
+
     //------------------------------------------------------------------
     // each processor provides its dof global id information for proc 0
     //------------------------------------------------------------------
-    
+
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
     RefCountPtr<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));
     dofgidpernodelid->PutScalar(-1.0);
-    
+
     const int mynumnp = nodemap->NumMyElements();
     for (int idf=0; idf<numdf; ++idf)
     {
@@ -5073,7 +5083,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     //---------------
     // write results
     //---------------
-    
+
     const int finalnumnode = proc0map_->NumGlobalElements();
     if (myrank_==0) // ensures pointer dofgids is valid
     {
@@ -5097,7 +5107,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
             dserror("received illegal dof local id: %d", lid);
         }
       }// for idf
-      
+
       // 2 component vectors in a 3d problem require a row of zeros.
       // do we really need this?
       if (numdf==2)
