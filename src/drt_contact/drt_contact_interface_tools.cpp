@@ -245,6 +245,10 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckNormalDeriv()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // global loop to apply FD scheme to all slave dofs (=2*nodes)
   for (int i=0; i<2*snodefullmap_->NumMyElements();++i)
   {
@@ -453,6 +457,10 @@ void CONTACT::Interface::FDCheckNormalDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckMortarDDeriv()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // create storage for D-Matrix entries
   vector<double> refD(int(snoderowmap_->NumMyElements()));
   vector<double> newD(int(snoderowmap_->NumMyElements()));
@@ -721,6 +729,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckMortarMDeriv()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // create storage for M-Matrix entries
   int nrow = snoderowmap_->NumMyElements();
   vector<map<int,double> > refM(nrow);
@@ -1319,6 +1331,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckGapDeriv()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refG(nrow);
@@ -1994,6 +2010,10 @@ void CONTACT::Interface::FDCheckGapDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckTangLMDeriv()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refTLM(nrow);

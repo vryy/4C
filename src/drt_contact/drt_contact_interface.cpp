@@ -410,6 +410,10 @@ void CONTACT::Interface::FillComplete()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::Initialize()
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // loop over all nodes to reset normals, closestnode and Mortar maps
   // (use fully overlapping column map)
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
@@ -477,6 +481,10 @@ void CONTACT::Interface::Initialize()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   if (statename=="displacement")
   {
     // set displacements in interface discretization
@@ -533,9 +541,13 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
 void CONTACT::Interface::Evaluate()
 {
   // interface needs to be complete
-  if (!Filled() && comm_.MyPID()==0)
+  if (!Filled() && Comm().MyPID()==0)
       dserror("ERROR: FillComplete() not called on interface %", id_);
 
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
 #ifdef CONTACTFDNORMAL
   // FD check of normal derivatives
   FDCheckNormalDeriv();
@@ -556,24 +568,24 @@ void CONTACT::Interface::Evaluate()
   }
  
   // contact search algorithm
-  Comm().Barrier();
+  lComm()->Barrier();
   const double t_start = ds_cputime();
   EvaluateContactSearch();
-  Comm().Barrier();
+  lComm()->Barrier();
   const double t_end = ds_cputime()-t_start;
-  if (Comm().MyPID()==0)
+  if (lComm()->MyPID()==0)
   {
     cout << "************************************************************\n";
     cout << "Classical search: " << t_end << " seconds\n";
   }
   
   // contact search algorithm (octree)
-  Comm().Barrier();
+  lComm()->Barrier();
   const double t_start2 = ds_cputime();
   EvaluateContactSearchOctree();
-  Comm().Barrier();
+  lComm()->Barrier();
   const double t_end2 = ds_cputime()-t_start2;
-  if (Comm().MyPID()==0)
+  if (lComm()->MyPID()==0)
   {
     cout << "Octree-based search: " << t_end2 << " seconds\n";
     cout << "************************************************************\n";
@@ -859,7 +871,7 @@ bool CONTACT::Interface::Project2D(CONTACT::CElement& sele,
                                    vector<double>& xiproj)
 {
 
-  //cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
+  //cout << "Proc " << Comm().MyPID() << " checking pair... Slave ID: "
   //     << sele.Id() << " Master ID: " << mele.Id() << endl;
 
   // initialize projection status
@@ -1392,6 +1404,10 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
                                       LINALG::SparseMatrix& mglobal,
                                       Epetra_Vector& gglobal)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -1401,7 +1417,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
-    if (cnode->Owner() != comm_.MyPID())
+    if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** D-matrix ******/
@@ -1593,6 +1609,10 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
 void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
                                      LINALG::SparseMatrix& tglobal)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // nothing to do if no active nodes
   if (activenodes_==null)
     return;
@@ -1605,7 +1625,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
-    if (cnode->Owner() != comm_.MyPID())
+    if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleNT: Node ownership inconsistency!");
 
     // prepare assembly (only 2D so far !!!!)
@@ -1668,9 +1688,13 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
                                         Epetra_Vector& rglobal,
                                         double frbound, double ct)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // nothing to do if no active nodes
   if (slipnodes_==null)
-  return;
+    return;
   
   // loop over all active slave nodes of the interface
   for (int i=0;i<slipnodes_->NumMyElements();++i)
@@ -1680,7 +1704,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
-    if (cnode->Owner() != comm_.MyPID())
+    if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleTresca: Node ownership inconsistency!");
     
     // prepare assembly (only 2D so far !!!!)
@@ -1770,6 +1794,10 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // nothing to do if no active nodes
   if (activenodes_==null)
     return;
@@ -1782,7 +1810,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
     
-    if (cnode->Owner() != comm_.MyPID())
+    if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
     
     // prepare assembly
@@ -1951,6 +1979,10 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // nothing to do if no active nodes
   if (activenodes_==null)
     return;
@@ -1963,7 +1995,7 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
     
-    if (cnode->Owner() != comm_.MyPID())
+    if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleP: Node ownership inconsistency!");
     
     // prepare assembly
