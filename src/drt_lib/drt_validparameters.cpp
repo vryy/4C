@@ -398,7 +398,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
   IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
   IntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
-  IntParameter("RESEVRYERGY",1,"write system energies every requested step",&sdyn);
+  IntParameter("RESEVRYERGY",0,"write system energies every requested step",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
   // Time loop control
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
@@ -460,8 +460,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the residual norm for the newton iteration",
                   &sdyn);
   DoubleParameter("TOLCONSTR",1.0E-08,
-                    "tolerance in the constr error norm for the newton iteration",
-                    &sdyn);
+                  "tolerance in the constr error norm for the newton iteration",
+                  &sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);

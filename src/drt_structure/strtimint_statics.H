@@ -28,6 +28,13 @@ namespace STR
   /*!
    * \brief Static analysis
    *
+   * This static analysis inside the structural dynamics methods appears
+   * slightly displaced, however, it comes in handy in case of
+   * fluid-structure-interaction, which is built upon structural
+   * dynamics.
+   *
+   * Regarding this matter, please direct any complains to Axel Gerstenberger.
+   *
    * \author bborn
    * \date 06/08
    */
