@@ -113,6 +113,27 @@ Maintainer: Axel Gerstenberger
           v(i) *= f;
       }
     }
+    //! set each element of vector v to scalar value f
+    template<int ni, class V1, class F1>
+    inline void PutScalar(V1& v, const F1& f)
+    {
+      for (int i = 0; i < ni; ++i)
+      {
+          v(i) = f;
+      }
+    }
+    //! set each element of ,matrix m to scalar value f
+    template<int ni, int nj, class M1, class F1>
+    inline void PutScalar(M1& m, const F1& f)
+    {
+      for (int i = 0; i < ni; ++i)
+      {
+        for (int j = 0; j < nj; ++j)
+        {
+          m(i,j) = 0;
+        }
+      }
+    }
     //! matrix^T vector product
     template<int ni, int nj, class M1, class V1, class V2>
     inline void MtV_product(const M1& m, const V1& v, V2& rv)
