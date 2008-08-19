@@ -1108,7 +1108,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    //      + F_c(D_{n+1-alpha_f})
+    //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     
     // add inertia mid-forces
@@ -1552,34 +1552,10 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  //in case a constraint is defined, use defined algorithm
+  // in case a constraint is defined, throw dserror
   if (constrMan_->HaveConstraint())
   {
-    string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-    for (int i=step; i<nstep; ++i)
-    {
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-      //Does predicted displacement satisfy constraint?
-      double time = params_.get<double>("total time",0.0);
-      //double dt   = params_.get<double>("delta time",0.01);
-      // what algorithm is used?
-      // - "newtonlinuzawa":      Potential is linearized wrt displacements and Lagrange multipliers
-      //                  Linear problem is solved with Uzawa algorithm
-      // - "augmentedlagrange":   Potential is linearized wrt displacements keeping Lagrange multiplier fixed
-      //                Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
-      if (algo=="newtonlinuzawa")
-      {
-        FullNewtonLinearUzawa();
-      }
-      else if (algo=="augmentedlagrange")
-      {
-         NonLinearUzawaFullNewton(predictor);
-      }
-      else dserror("Unknown type of algorithm to deal with constraints");
-      UpdateandOutput();
-      if (time>=maxtime) break;
-    }
+    dserror("ERROR: Problems with contact AND constraints not yet solvable!");
   }
   
   // Newton as nonlinear iteration scheme
