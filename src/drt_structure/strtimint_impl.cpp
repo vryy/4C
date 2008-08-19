@@ -246,12 +246,12 @@ void STR::TimIntImpl::Predict()
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_);
 
-  // initialise Lagrange multiplicators to zero
-  if ( (conman_->HaveConstraint())
-       and (itertype_ == soltech_uzawalinnewton) )
-  {
-    conman_->ScaleLagrMult(0.0);
-  }
+  // possibly initialise Lagrange multiplicators to zero
+  //  if ( (conman_->HaveConstraint())
+  //       and (itertype_ == soltech_uzawalinnewton) )
+  //  {
+  //    conman_->ScaleLagrMult(0.0);
+  //  }
 
   // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual();

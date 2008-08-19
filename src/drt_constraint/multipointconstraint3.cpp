@@ -92,6 +92,10 @@ void UTILS::MPConstraint3::Initialize
     if(inittimes_.find(condID)->second<=time)
     {     
       activecons_.find(condID)->second=true;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+      }
     }
   }
 }
@@ -145,8 +149,14 @@ void UTILS::MPConstraint3::Initialize(
         }
         InitializeConstraint(constraintdis_.find(condID)->second,params,systemvector);
       }
-      activecons_.find(condID)->second=true;
-      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        activecons_.find(condID)->second=true;
+        if (actdisc_->Comm().MyPID()==0)
+        {
+          cout << "Encountered a new active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        }
+      }
     }
   }
  
@@ -232,7 +242,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     // safe gids of definition nodes in a vector
     vector<int> defnodeIDs;
     
-    int counter=1;//counter is used to keep track of deleted node ids from the vector 
+    int counter=1;//counter is used to keep track of deleted node ids from the vector, input starts with 1 
+    
     for (nsit=defns.begin(); nsit!=defns.end();++nsit)
     {
       defnodeIDs.push_back(ngid.at((*nsit)-counter));

@@ -398,6 +398,11 @@ void StruGenAlpha::ConstantPredictor()
       p.set("pot_man", pot_man_);
       pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
+    
+    if (constrMan_->HaveConstraint())
+    {
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
+    }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -677,6 +682,11 @@ void StruGenAlpha::ConsistentPredictor()
     {
       p.set("pot_man", pot_man_);
       pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+    }
+    
+    if (constrMan_->HaveConstraint())
+    {
+      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -1433,7 +1443,6 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
     double time        = params_.get<double>("total time"             ,0.0);
     double dt          = params_.get<double>("delta time"             ,0.01);
 
-    constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
     FullNewton();
     //--------------------update end configuration
     disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
@@ -1504,8 +1513,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
-  constrMan_->ScaleLagrMult(0.0);
-  constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
   RCP<LINALG::SparseMatrix> constrMatrix = rcp(new  LINALG::SparseMatrix(*(constrMan_->GetConstrMatrix())));
   RCP<Epetra_Vector> constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
 

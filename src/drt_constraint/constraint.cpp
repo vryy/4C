@@ -164,7 +164,14 @@ void UTILS::Constraint::Initialize
     int condID=(*CondIDVec)[0];
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if(inittimes_.find(condID)->second<=time) activecons_.find(condID)->second=true;
+    if(inittimes_.find(condID)->second<=time) 
+    {
+      activecons_.find(condID)->second=true;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+      }
+    }
   }
 }
 
@@ -397,7 +404,11 @@ void UTILS::Constraint::InitializeConstraint(
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;
-      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        cout << "Encountered a new active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+      }
     }
     
   }
