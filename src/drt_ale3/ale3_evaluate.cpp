@@ -341,8 +341,20 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
   xyze_dyn_tria(1,2) = sqrt(local_y(0)*local_y(0)+local_y(1)*local_y(1)+local_y(2)*local_y(2));
   xyze_dyn_tria(0,2) = 0.0;
 
-  //if s lies directly above q calculate stiffness of lineal spring s-q
-  if (fabs(xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0)) < 1e-4)
+  local_y = (1.0/xyze_dyn_tria(1,2))*local_y;
+
+  double checkx = local_y(1)*rp(2) - local_y(2)*rp(1);
+  double checky = local_y(2)*rp(0) - local_y(0)*rp(2);
+  double checkz = local_y(0)*rp(1) - local_y(1)*rp(0);
+  double check = sqrt(checkx*checkx + checky*checky + checkz*checkz);
+  check /= sqrt(rp(0)*rp(0) + rp(1)*rp(1) + rp(2)*rp(2));
+
+  // if s lies directly above q calculate stiffness of lineal spring s-q
+  // or if rp and local_y are parallel
+  if (fabs(local_y(0))>0.99 or
+      fabs(local_y(1))>0.99 or
+      fabs(local_y(2))>0.99 or
+      check < 1e-2)
   {
     ale3_edge_geometry(node_s,node_q,xyze,&length,&ex,&ey,&ez);
     factor = 1.0 / length;
@@ -399,12 +411,23 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
   }
   else
   {
-    local_y = (1.0/xyze_dyn_tria(1,2))*local_y;
-
     //local x,y-values of j, using pO + Oj + jp = 0
     //(O is local origin on plane pqr)
     xyze_dyn_tria(0,1) = 0.0;
     res = xyze_dyn_tria(1,2)*local_y - pq;
+
+#if 0
+    {
+      extern struct _FILES  allfiles;
+
+      fprintf(allfiles.out_err,"\n");
+      fprintf(allfiles.out_err,"rp=matrix([% e,% e,% e]).transpose()\n",rp(0),rp(1),rp(2));
+      fprintf(allfiles.out_err,"pq=matrix([% e,% e,% e]).transpose()\n",pq(0),pq(1),pq(2));
+      fprintf(allfiles.out_err,"sq=matrix([% e,% e,% e]).transpose()\n",sq(0),sq(1),sq(2));
+      fprintf(allfiles.out_err,"res=matrix([% e,% e,% e]).transpose()\n",res(0),res(1),res(2));
+      fflush(allfiles.out_err);
+    }
+#endif
 
     double numerator = 0.0;
     double denominator = 1.0;
