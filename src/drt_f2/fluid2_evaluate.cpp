@@ -26,6 +26,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_function.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -1236,11 +1237,11 @@ void DRT::ELEMENTS::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 /*----------------------------------------------------------------------*
  |  get the body force in the nodes of the element (private) g.bau 07/07|
  |  the Neumann condition associated with the nodes is stored in the    |
- |  array edeadng only if all nodes have a surface Neumann condition   |
+ |  array edeadng only if all nodes have a surface Neumann condition    |
  *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
-								const double time,
-								struct _MATERIAL* material
+                         const double time,
+                         struct _MATERIAL* material
 )
 {
   const int iel = NumNode();
@@ -1263,9 +1264,9 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
     // we can cope with physical parameters (force per volume) in the input file
     // check here, if we really have a fluid !!
     if( material->mattyp != m_fluid
-	&&  material->mattyp != m_carreauyasuda
-	&&  material->mattyp != m_modpowerlaw)
-  	  dserror("Material law is not a fluid");
+        &&  material->mattyp != m_carreauyasuda
+        &&  material->mattyp != m_modpowerlaw)
+      dserror("Material law is not a fluid");
 
     // get density
     double invdensity=0.0;
@@ -1297,10 +1298,8 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
       }
       else
       {
-	// do not compute an "alternative" curvefac here since a negative time value
-	// indicates an error.
+         // a negative time value indicates an error.
          dserror("Negative time value in body force calculation: time = %f",time);
-	// curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1
@@ -1311,13 +1310,35 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
     // get values and switches from the condition
     const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
     const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
+
+    // factor given by spatial function
+    double functionfac = 1.0;
+    int functnum = -1;
 
     // set this condition to the edeadng array
     for(int jnode=0;jnode<iel;jnode++)
     {
       for(int isd=0;isd<nsd;isd++)
       {
-        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac*invdensity;
+        // get factor given by spatial function
+        if (functions) 
+          functnum = (*functions)[isd];
+        else 
+          functnum = -1;
+
+        if (functnum>0)
+        {
+          // evaluate function at the position of the current node
+          functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,(Nodes()[jnode])->X());
+        }
+        else
+        {
+          functionfac = 1.0;
+        }
+
+        // compute and store the (normalized) bodyforce value
+        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac*functionfac*invdensity;
       }
     }
   }
