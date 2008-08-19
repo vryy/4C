@@ -2508,29 +2508,39 @@ St.~Venant}--\name{Kirchhoff} material is a potential $V$ and defined as follows
 \begin{equation}
 \begin{aligned}
    V 
-&  = \frac{1}{2} \int \tns{E} : \tns{S} \, \dd V
+&  = \frac{1}{2} \int_{\set{B}_0} \tns{E} : \tns{S} \, \dd V
 && \text{or}
 &  V 
-&  = \frac{1}{2} \int \vct{E}^\T \vct{S} \, \dd V
+&  = \frac{1}{2} \int_{\set{B}_0} \vct{E}^\T \vct{S} \, \dd V
 \\
-&  = \frac{1}{2} \int \tns{E} : \tns{C}_\VK : \tns{E} \, \dd V
+&  = \frac{1}{2} \int_{\set{B}_0} \tns{E} : \tns{C}_\VK : \tns{E} \, \dd V
 &&
-&& = \frac{1}{2} \int \vct{E}^\T \vct{C}_\VK \vct{E} \, \dd V
+&& = \frac{1}{2} \int_{\set{B}_0} \vct{E}^\T \vct{C}_\VK \vct{E} \, \dd V
 \end{aligned}
 \end{equation}
+in which $\set{B}_0$ is the material domain of the body.
 
-\subsection{Interal mid-point forces to achieve
-energy-momemtum method --- displacement-based element}
-An internal mid-point force vector
+\subsection{Internal mid-point forces to achieve
+energy-momentum method --- displacement-based element}
+An internal mid-point force element vector
 $\vct{f}_{\Int;m}$ of the purely displacement-based finite element must
 satisfy \emph{exactly}
 \begin{equation}
-   V_{n+1} - V_n
-   = \big( \vct{d}_{n+1} - \vct{d}_n \big)^\T \vct{f}_{\Int;m}
+   V_{n+1}^{(e)} - V_n^{(e)}
+   = \big( \vct{d}_{n+1}^{(e)} - \vct{d}_n^{(e)} \big)^\T \vct{f}_{\Int;m}^{(e)}
 \end{equation}
 to achieve the energy-momentum method invented by \name{Simo} and
 \name{Tarnow}. Here, $n$ denotes the $n$th time step and $m$ a
-mid-configuration between $t_n$ and $t_{n+1}$.
+mid-configuration between $t_n$ and $t_{n+1}$. After assembling, the global
+mid-internal force vector yields
+\begin{equation}
+   V_{n+1} - V_n
+   = \sum_{e=1}^{\nele} \Big( V_{n+1}^{(e)} - V_n^{(e)} \Big)
+   = \Ass{e=1}{\nele} \Big(  \big( \vct{d}_{n+1}^{(e)} - \vct{d}_n^{(e)}
+   \big)^\T \vct{f}_{\Int;m}^{(e)} \Big)
+   =  \big( \vct{D}_{n+1} - \vct{D}_n
+   \big)^\T \vct{F}_{\Int;m}
+\end{equation}
 
 Let us now dwell upon the aforementioned potential of
 \name{de~St.~Venant}--\name{Kirchhoff} material. We write
@@ -2550,7 +2560,7 @@ Let us now dwell upon the aforementioned potential of
 \end{aligned}
 \end{equation}
 The next step denote the \name{Green}--\name{Lagrange} strains
-$\tns{E}=\frac{1}{2}(\tns{F}^\T\cdot\tns{F}-\tns{1})$ sin terms of the
+$\tns{E}=\frac{1}{2}(\tns{F}^\T\cdot\tns{F}-\tns{1})$ in terms of the
 deformation gradient $\tns{F}$. We achieve 
 \begin{equation}
 \begin{aligned}
@@ -2636,16 +2646,17 @@ as presented in Section~\ref{wall1:sec:wall}, in the potential difference
 The energy-momentum conserving internal mid-force vector for \name{de
 St.~Venant}--\name{Kirchhoff} material is thus
 \begin{equation}\label{wall1:eq:mid-internal-pure-disp-vkmat}
-   \vct{f}_{\Int;m}
+   \vct{f}_{\Int;m}^{(e)}
    = \int_{\Omega^{(e)}}
      \mat{B}_\LL \underbrace{\frac{\barmat{F}_{n+1} + \barmat{F}_{n}}{2}}_{\barmat{F}_m}
      \underbrace{\frac{\vct{S}_{n+1} + \vct{S}_n}{2}}_{\vct{S}_m}
      \, \dd V
 \end{equation}
 with the mid-deformation gradient $\barmat{F}_m=\frac{1}{2}(\barmat{F}_{n+1} +
-\barmat{F}_{n})$ (denoted as \name{Voigt}-matrix) and 2nd
+\barmat{F}_{n})$ (here denoted as \name{Voigt}-matrix) and 2nd
 \name{Piola}--\name{Kirchhoff} mid-stress $\vct{S}_m =
-\frac{1}{2}(\vct{S}_{n+1} + \vct{S}_n)=\mat{C}_\VK\big(\frac{1}{2}(\vct{E}_{n+1} + \vct{E}_n)\big)$ (denoted as \name{Voigt}-vector).
+\frac{1}{2}(\vct{S}_{n+1} +
+\vct{S}_n)=\mat{C}_\VK\big(\frac{1}{2}(\vct{E}_{n+1} + \vct{E}_n)\big)$ (here denoted as \name{Voigt}-vector).
 
 \subsubsection{Generalised energy-momentum method}
 The generalised energy-momentum method\footnote{D Kuhl and MA Crisfield,
@@ -2663,7 +2674,7 @@ International Journal for Numerical Methods in Engineering, 45(5):569-599,
      \, \dd V
 && \text{with}
 &  \barmat{F}_m
-&  = (1-\alpha_f) \barmat{F}_{n+1} + \alpha_f \barmat{F}_n
+&  := (1-\alpha_f) \barmat{F}_{n+1} + \alpha_f \barmat{F}_n
 && \text{and}
 &&  \alpha\in[0,1)
    \comma
@@ -2671,7 +2682,7 @@ International Journal for Numerical Methods in Engineering, 45(5):569-599,
 &
 &&
 &  \vct{S}_m
-&  = \mat{C}_\VK \big( (1-\alpha_f+\xi)\vct{E}_{n+1} +
+&  := \mat{C}_\VK \big( (1-\alpha_f+\xi)\vct{E}_{n+1} +
 (\alpha_f-\xi)\vct{E}_{n} \big)
 &&
 && \xi\in[0,1)
@@ -2712,22 +2723,288 @@ The stiffness matrix $\mat{k}^{(e)}_m$ is readily computed as
 \end{aligned}
 \end{equation}
 
-\subsection{Interal mid-point forces to achieve
-energy-momemtum method --- EAS-displacement-based element}
+\subsection{Internal mid-point forces to achieve
+energy-momentum method --- EAS-displacement-based element Q1E4}
 Similarly in case of the mixed element approach based on displacement and EAS
 parameters, the internal energy difference must be recovered exactly by
 \begin{equation}
    V_{n+1} - V_n
-   = \big( \vct{d}_{n+1} - \vct{d}_n \big)^\T \vct{f}_{\Int;m}
+   = \sum_{e=1}^{\nele} \Big( V_{n+1}^{(e)} - V_n^{(e)} \Big)
+   = \Ass{e=1}{\nele} \Big( \big( \vct{d}_{n+1} - \vct{d}_n \big)^\T \vct{f}_{\Int;m}
    + \big( \vct{\alpha}_{n+1} - \vct{\alpha}_n \big)^\T
-   \underbrace{\vct{s}_m}_{\to \vct{0}}
+   \underbrace{\vct{s}_m}_{\to \vct{0}} \Big)
    \comma
 \end{equation}
-in which $\vct{f}_{\Int;m}$ is once more the internal mid-force vector and
-$\vct{s}_m$ the mid-point enhanced assumed strain constraint, \cf{}
+in which $\vct{f}_{\Int;m}^{(e)}$ is once more the internal mid-force vector and
+$\vct{s}_m^{(e)}$ the mid-point enhanced assumed strain constraint, \cf{}
 \eqref{wall1:eq:eas-constraint-vector}. 
 
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "nfem"
-%%% End: 
+\subsubsection{Difference of total deformation gradient}
+The total deformation gradient $\tilvct{F}$ consists of the displacement-based
+part $\tilvct{F}^u$ and an enhancement $\tilvct{F}^\enh$, \ie{}
+\begin{equation}
+\begin{aligned}
+   \tilvct{F}
+&  = \tilvct{F}^u + \tilvct{F}^\enh
+&& \text{with}
+&  \tilvct{F}^u
+&  = \tilvct{1} + \mat{B}_\LL \vct{d}
+   \comma
+\\
+&
+&&
+&  \tns{F}^\enh
+&  = \tns{F}_o^u(\vct{d}) \cdot \frac{J_o}{J}
+   \tns{J}_o^\T \cdot \sum_{\epsilon} \big( \tns{M}_\epsilon
+   \alpha^\epsilon \big) \cdot \tns{J}_o^{-\T}
+   \period
+\end{aligned}
+\end{equation}
+Alternatively, these equations can be written in tensor-like index
+notation. The deformation gradient $F^a{}_A$ constitutes of
+\begin{equation}
+   F^a{}_A
+   = \underbrace{\delta^a{}_A + N_{\alpha,A} u^{a\alpha}}_{\displaystyle F^a{}_A|^u}
+   \;\; + \underbrace{F^a{}_C(u^{a\alpha})|_o^u}_{\displaystyle
+   \delta^a{}_C + N_{\alpha,C}|_o \,  u^{a\alpha}}
+     \, \underbrace{\frac{J_o}{J} J^C{}_\gamma|_o \,
+     M^\gamma{}_{\delta \epsilon} \, \alpha^\epsilon \,
+   J^\delta{}_A|_o}_{\displaystyle H^C{}_{\epsilon A} \alpha^\epsilon}
+\end{equation}
+here $\delta^a{}_A$ is \name{Kronecker}'s delta (we are working on a Cartesian
+global co-ordinate system), $N_\alpha$ are the shape functions over
+$\alpha=1,\ldots,\enod$ element 
+nodes, $u^{a\alpha}$ the nodal displacements (\ie{} a reshaped $\vct{d}$),
+$N_\alpha|_o$ the shape functions evaluated at the parametric origin and
+$H^C{}_{\epsilon A}$ an auxiliary quantity independent of displacements
+$u^{a\alpha}$ and enhancement scalars $\alpha^\epsilon$. The difference of the
+total deformation gradient between two time steps can be expressed as follows:
+\begin{equation}
+\begin{split}
+   F^a{}_A|_{n+1} - F^a{}_A|_{n}
+&  = \delta^a{}_A + N_{\alpha,A} \, u^{a\alpha}_{n+1}
+   + \big( \delta^a{}_C + N_{\alpha,C}|_o \,  u^{a\alpha}_{n+1} \big) 
+     \, H^C{}_{\epsilon A} \, \alpha^\epsilon_{n+1}
+\\
+&\quad  - \delta^a{}_A + N_{\alpha,A} \, u^{a\alpha}_{n}
+   -  \big( \delta^a{}_C + N_{\alpha,C}|_o \,  u^{a\alpha}_{n} \big) 
+      \, H^C{}_{\epsilon A} \, \alpha^\epsilon_{n}
+\\
+&  = N_{\alpha,A} \, \big( u^{a\alpha}_{n+1} - u^{a\alpha}_{n} \big)
+\\
+&\quad + \delta^a{}_C \, H^C{}_{\epsilon A} 
+   \, \big( \alpha^\epsilon_{n+1} - \alpha^\epsilon_{n} \big)
+\\
+&\quad + N_{\alpha,C}|_o \, H^C{}_{\epsilon A}
+   \, \underline{\big( u^{a\alpha}_{n+1} \, \alpha^\epsilon_{n+1} 
+            - u^{a\alpha}_{n} \, \alpha^\epsilon_{n} \big)}
+   \period
+\end{split}
+\end{equation}
+The underlined term can be rewritten using the identity
+\begin{equation}
+   u^{a\alpha}_{n+1} \, \alpha^\epsilon_{n+1} 
+     - u^{a\alpha}_{n} \, \alpha^\epsilon_{n}
+   = \tfrac{1}{2} \big( u^{a\alpha}_{n+1} - u^{a\alpha}_n \big)
+     \big( \alpha^\epsilon_{n+1} + \alpha^\epsilon_{n} \big)
+   + \tfrac{1}{2} \big( u^{a\alpha}_{n+1} + u^{a\alpha}_n \big)
+     \big( \alpha^\epsilon_{n+1} - \alpha^\epsilon_{n} \big)
+\end{equation}
+which is introduced in the deformation gradient difference resulting in
+\begin{equation}
+\begin{split}
+   F^a{}_A|_{n+1} - F^a{}_A|_{n}
+&  = \Big( N_{\alpha,A} + N_{\alpha,C}|_o \, H^C{}_{\epsilon A}
+           \, \tfrac{1}{2} \big( \alpha^\epsilon_{n+1} 
+                                 + \alpha^\epsilon_{n} \big) \Big)
+     \, \big( u^{a\alpha}_{n+1} - u^{a\alpha}_n \big)
+\\
+&\quad + \Big( \delta^a{}_C \, H^C{}_{\epsilon A}
+               + N_{\alpha,C}|_o \, H^C{}_{\epsilon A}
+                 \, \tfrac{1}{2} \big( u^{a\alpha}_{n+1} 
+                                    + u^{a\alpha}_n \big) \Big)
+       \, \big( \alpha^\epsilon_{n+1} - \alpha^\epsilon_{n} \big)
+\\
+&  = \Big( N_{\alpha,A} + H^C{}_{\epsilon A}
+           \, \tfrac{1}{2} \big( \alpha^\epsilon_{n+1} 
+                                 + \alpha^\epsilon_{n} \big) \, N_{\alpha,C}|_o \Big)
+     \, \big( u^{a\alpha}_{n+1} - u^{a\alpha}_n \big)
+\\
+&\quad + \tfrac{1}{2} \Big( \delta^a{}_C  
+                            + N_{\alpha,C}|_o \, u^{a\alpha}_{n+1}
+                            + \delta^a{}_C  
+                            + N_{\alpha,C}|_o \, u^{a\alpha}_{n} \Big)
+       \, H^C{}_{\epsilon A}
+       \, \big( u^{a\alpha}_{n+1} - u^{a\alpha}_n \big)
+  \period
+\end{split}   
+\end{equation}
+In \name{Voigt}-notation (\cf{} Sec.~\ref{wall1:sec:walleas}) the latter
+equation reads equivalently
+\begin{equation}
+\begin{split}
+   \tilvct{F}_{n+1} - \tilvct{F}_n
+&  = \Big( \mat{B}_\LL + \tfrac{1}{2} \big( \barmat{A}(\vct{\alpha}_{n+1})
+   + \barmat{A}(\vct{\alpha}_n) \big) \mat{B}_{\LL o} \Big)
+   \big( \vct{d}_{n+1} - \vct{d}_n \big)
+\\
+&\quad
+   + \tfrac{1}{2} \Big( \mat{G}(\vct{d}_{n+1}) + \mat{G}(\vct{d}_n) \Big)
+   \big( \vct{\alpha}_{n+1} - \vct{\alpha}_n \big)
+\\
+&  = \big( \mat{B}_\LL + \mat{W}_{o;m} \big)
+     \big( \vct{d}_{n+1} - \vct{d}_n \big)
+\\
+&\quad
+   + \mat{G}_m \big( \vct{\alpha}_{n+1} - \vct{\alpha}_n \big)
+\end{split}
+\end{equation}
+with the definition $\mat{W}_{o;m} = \tfrac{1}{2} \big(
+\barmat{A}(\vct{\alpha}_{n+1}) + \barmat{A}(\vct{\alpha}_n) \big) \mat{B}_{\LL
+o}$  and $\mat{G}_m = \tfrac{1}{2} \big( \mat{G}(\vct{d}_{n+1}) +
+\mat{G}(\vct{d}_n) \big)$. 
+
+\subsubsection{Element internal mid-force vector and enhancement constraint
+vector to achieve energy-momentum method for
+\name{de~St.~Venant}--\name{Kirchhoff} material}
+The derived expression for the deformation gradient difference is applied to
+the potential difference of the \name{de~St.~Venant}--\name{Kirchhoff}
+material. On the element level, this becomes
+\begin{equation}
+\begin{split}
+   V_{n+1}^{(e)} - V_n^{(e)}
+&  = \int_{\Omega^{(e)}} 
+   \big( \tilvct{F}_{n+1} - \tilvct{F}_n \big)^\T
+   \, \overbrace{\frac{\barmat{F}_{n+1} + \barmat{F}_n}{2}}^{\barmat{F}_m}
+   \, \overbrace{\frac{\vct{S}_{n+1} + \vct{S}_n}{2}}^{\vct{S}_m}
+   \, \dd V
+\\
+&  = \int_{\Omega^{(e)}} 
+   \Big( \big( \mat{B}_\LL + \mat{W}_{o;m} \big)
+         \big( \vct{d}_{n+1} - \vct{d}_n \big)
+         + \mat{G}_m \big( \vct{\alpha}_{n+1} - \vct{\alpha}_n \big) \Big)
+   \, \barmat{F}_m \, \vct{S}_m \, \dd V
+\\
+&  = \big( \vct{d}_{n+1} - \vct{d}_n \big)^\T
+   \underbrace{\int_{\Omega^{(e)}} \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T
+   \, \barmat{F}_m \, \vct{S}_m \, \dd V}_{\vct{f}_{\Int;m}^{(e)}}
+   + \big( \vct{\alpha}_{n+1} - \vct{\alpha}_n \big)^\T
+   \underbrace{\int_{\Omega^{(e)}} \mat{G}_m^\T \, \barmat{F}_m \, \vct{S}_m \, \dd V}_{\vct{s}_{m}^{(e)}}
+\end{split}   
+\end{equation}
+and, therefore, the mid-internal force vector is obtained as
+\begin{equation}
+   \vct{f}_{\Int;m}^{(e)}
+   = \int_{\Omega^{(e)}} \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T
+   \, \barmat{F}_m \, \vct{S}_m \, \dd V
+\end{equation}
+and the enhancement mid-constraints
+\begin{equation}
+   \vct{s}_{m}^{(e)}
+   = \int_{\Omega^{(e)}} \mat{G}_m^\T \, \barmat{F}_m \, \vct{S}_m \, \dd V
+   \period
+\end{equation}
+
+\subsubsection{Generalised energy-momentum method}
+The generalised energy-momentum method is achieved by replacing the
+mid-deformation gradient and 2nd \name{Piola}--\name{Kirchhoff} mid-stresses
+with 
+\begin{equation}
+\begin{aligned}
+   \barmat{F}_m
+&  := (1-\alpha_f) \barmat{F}_{n+1} + \alpha_f \barmat{F}_n
+&& \text{and}
+&&  \alpha\in[0,1)
+   \comma
+\\
+   \vct{S}_m
+&  := \mat{C}_\VK \big( (1-\alpha_f+\xi)\vct{E}_{n+1} +
+(\alpha_f-\xi)\vct{E}_{n} \big)
+&&
+&& \xi\in[0,1)
+   \period
+\end{aligned}
+\end{equation}
+
+\subsubsection{Tangents}
+Let us close this section by introducing the required tangents to be able to
+uitilise a \name{Newton}--\name{Raphson} iteration.
+
+\begin{align}
+&
+\begin{array}{rl}
+  \mat{k}_{dd}^{i(e)}|_m
+  = \frac{\pd \vct{f}_{\Int;m}}{\pd \vct{d}_{n+1}}
+& = \displaystyle\int_{\Omega^{(e)}}
+    \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T 
+    \barmat{F}_m \, (1-\alpha_f+\xi) \mat{C}_\VK \, \barmat{F}_{n+1}^\T
+    \big( \mat{B}_\LL + \mat{W}_{o;n+1} \big)
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T
+    \, \barmat{S}_m \,
+    (1-\alpha_f)\big( \mat{B}_\LL + \mat{W}_{o;n+1} \big)
+    \, \dd V
+\end{array}
+\\
+&
+\begin{array}{rl}
+  \mat{k}_{d\alpha}^{i(e)}|_m
+  = \frac{\pd \vct{f}_{\Int;m}^{(e)}}{\pd \vct{\alpha}_{n+1}}
+& = \displaystyle\int_{\Omega^{(e)}}
+    \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T 
+    \barmat{F}_m \, (1-\alpha_f+\xi)\mat{C}_\VK \, \barmat{F}_{n+1}^\T
+    \mat{G}_{n+1}
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \big( \mat{B}_\LL + \mat{W}_{o;m} \big)^\T
+    \, \barmat{S}_m \,
+    (1-\alpha_f)\mat{G}_{n+1}
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \bar{\barmat{P}}_{mm} \tfrac{1}{2}\mat{Z}_{n+1}
+    \, \dd V
+\end{array}
+\\
+&
+\begin{array}{rl}
+  \mat{k}_{\alpha d}^{i(e)}
+  = \frac{\pd \vct{s}_{m}^{(e)}}{\pd \vct{d}_{n+1}}
+& = \displaystyle\int_{\Omega^{(e)}}
+    \mat{G}_{m}^\T \, \barmat{F}_{m}
+    \, (1-\alpha_f+\xi)\mat{C}_\VK 
+    \, \barmat{F}_{n+1} \,\big( \mat{B}_\LL + \mat{W}_{o;n+1} \big)
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \mat{G}_m^\T
+    \, \barmat{S}_m
+    \, (1-\alpha_f) \big( \mat{B}_\LL + \mat{W}_{o;n+1} \big)^\T
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \big( \bar{\barmat{P}}_{mm} \tfrac{1}{2}\mat{Z}_{n+1} \big)^\T
+    \, \dd V
+\end{array}
+\\
+&
+\begin{array}{rl}
+  \mat{k}_{\alpha\alpha}^{i(e)}
+  = \frac{\pd \vct{s}_{m}^{(e)}}{\pd \vct{\alpha}_{n+1}}
+& = \displaystyle\int_{\Omega^{(e)}}
+    \mat{G}_m^\T
+    \barmat{F}_m \, (1-\alpha_f+\xi)\mat{C}_\VK \, \barmat{F}_{n+1}^\T
+    \mat{G}_{n+1}
+    \, \dd V
+\\[2ex]
+& + \displaystyle\int_{\Omega^{(e)}}
+    \mat{G}_m^\T
+    \, \barmat{S}_m \,
+    (1-\alpha_f)\mat{G}_{n+1}
+    \, \dd V
+\end{array}
+\end{align}
+
