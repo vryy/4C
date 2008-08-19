@@ -284,13 +284,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       //elevec1(i+3) += normalGenRot.random();
       elevec1(i+6) += normalGenTrans.random();
       //elevec1(i+9) += normalGenRot.random();
-    }  
-    /*
-    elevec1(1)   += normalGenTrans.random() / 1.4;
-    elevec1(2)   += elevec1(1);
-    elevec1(1+6) += normalGenTrans.random() / 1.4;
-    elevec1(2+6) += elevec1(1+6);
-    */
+    }    
   }
   
   return 0;
@@ -639,8 +633,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     break;
     default:
     dserror("unknown or improper type of material law");
-  }
-  
+  }  
  
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
   epsilonn(0) *= ym*crosssec_;
@@ -701,6 +694,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     computeKsig2(Ksig2,stressn,x21);
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
+
 
     //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
     //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
