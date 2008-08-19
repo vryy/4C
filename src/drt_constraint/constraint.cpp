@@ -164,7 +164,7 @@ void UTILS::Constraint::Initialize
     int condID=(*CondIDVec)[0];
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if(inittimes_.find(condID)->second<=time) 
+    if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false)) 
     {
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)

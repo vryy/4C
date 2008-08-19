@@ -108,8 +108,6 @@ void UTILS::Monitor::EvaluateMonitor(
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-  // get the current time
-  const double time = 0.0;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -164,7 +162,6 @@ void UTILS::Monitor::EvaluateMonitor(
       }
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
     }
-    // remember next time, that this condition is already initialized, i.e. active
     
   }
   return;
