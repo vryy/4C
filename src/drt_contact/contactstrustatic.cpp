@@ -205,7 +205,7 @@ void contact_stru_static_drt()
     
     // set old Lagrange multipliers for contact restart
     *(contactmanager->LagrMultOld())=*zold;
-    contactmanager->StoreNodalQuantities("lmold");
+    contactmanager->StoreNodalQuantities(Manager::lmold);
     contactmanager->ReadRestart(activetoggle);
       
     // override current time and step with values from file
@@ -245,6 +245,10 @@ void contact_stru_static_drt()
   invtoggle->PutScalar(1.0);
   invtoggle->Update(-1.0,*dirichtoggle,1.0);
 
+  //----------------------- save Dirichlet B.C. status in Contact Manager
+  // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
+  contactmanager->StoreNodalQuantities(Manager::dirichlet,dirichtoggle);
+    
   //------------------------------------------------- output initial state
   output.NewStep(istep, time);
   output.WriteVector("displacement", dis);
@@ -410,7 +414,7 @@ void contact_stru_static_drt()
     // reset displacement jumps (slave dofs)
     RCP<Epetra_Vector> jump = contactmanager->Jump();
     jump->Scale(0.0); 
-    contactmanager->StoreNodalQuantities("jump");
+    contactmanager->StoreNodalQuantities(Manager::jump);
     
     //-------------------------- make contact modifications to lhs and rhs
     fresm->Scale(-1.0);     // rhs = -R = -fresm
@@ -630,13 +634,13 @@ void contact_stru_static_drt()
       RCP<Epetra_Vector> z = contactmanager->LagrMult();
       RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
       z->Update(1.0,*zold,0.0);
-      contactmanager->StoreNodalQuantities("lmcurrent");
+      contactmanager->StoreNodalQuantities(Manager::lmcurrent);
       
       // friction  
       // reset displacement jumps (slave dofs)
       RCP<Epetra_Vector> jump = contactmanager->Jump();
       jump->Scale(0.0); 
-      contactmanager->StoreNodalQuantities("jump");
+      contactmanager->StoreNodalQuantities(Manager::jump);
            
       //-------------------------- make contact modifications to lhs and rhs
       fresm->Scale(-1.0);     // rhs = -R = -fresm
@@ -818,7 +822,7 @@ void contact_stru_static_drt()
     RCP<Epetra_Vector> stepz = contactmanager->LagrMult();
     RCP<Epetra_Vector> stepzold = contactmanager->LagrMultOld();
     stepzold->Update(1.0,*stepz,0.0);
-    contactmanager->StoreNodalQuantities("lmold");
+    contactmanager->StoreNodalQuantities(Manager::lmold);
 
     //------------------------------------------------- write restart step
     bool isdatawritten = false;

@@ -36,6 +36,7 @@ grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
   {
+    dbc()[i]=false;
     n()[i]=0.0;
     u()[i]=0.0;
     xspatial()[i]=X()[i];
@@ -67,6 +68,7 @@ grow_(old.grow_)
 {
   for (int i=0;i<3;++i)
   {
+    dbc()[i]=old.dbc_[i];
     n()[i]=old.n_[i];
     u()[i]=old.u_[i];
     xspatial()[i]=old.xspatial_[i];
@@ -139,6 +141,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,isslave_);
   // add isonbound_
   AddtoPack(data,isonbound_);
+  // add dbc_
+  AddtoPack(data,dbc_,3);
   // add numdof_
   AddtoPack(data,numdof_);
   // add dofs_
@@ -186,6 +190,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,isslave_);
   // isonbound_
   ExtractfromPack(position,data,isonbound_);
+  // dbc_
+  ExtractfromPack(position,data,dbc_,3);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_

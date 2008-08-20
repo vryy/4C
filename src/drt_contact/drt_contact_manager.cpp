@@ -2897,7 +2897,7 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   
   // friction
   // store updaded jumps to nodes
-  StoreNodalQuantities("jump");
+  StoreNodalQuantities(Manager::jump);
   
   // extract master displacements from disi
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -2939,7 +2939,7 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   z_->Scale(1/(1-alphaf_));
   
   // store updated LM into nodes
-  StoreNodalQuantities("lmcurrent");
+  StoreNodalQuantities(Manager::lmupdate);
   
   /*
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
@@ -3025,7 +3025,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   jump_->Update(1.0,*incrjump_,1.0);
   // friction
   // store updaded jumps to nodes
-  StoreNodalQuantities("jump");
+  StoreNodalQuantities(Manager::jump);
     
   /**********************************************************************/
   /* Update Lagrange multipliers z_n+1                                  */
@@ -3051,7 +3051,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   z_->Scale(1/(1-alphaf_));
   
   // store updated LM into nodes
-  StoreNodalQuantities("lmcurrent");
+  StoreNodalQuantities(Manager::lmupdate);
     
   /* 
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
@@ -3719,9 +3719,9 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers and displacent jumps into CNode popp 06/08|
+ |  Store Lagrange mulitpliers and disp. jumps into CNode     popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::StoreNodalQuantities(const string& state)
+void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epetra_Vector> vec)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -3729,12 +3729,41 @@ void CONTACT::Manager::StoreNodalQuantities(const string& state)
     // currently this only works safely for 1 interface
     //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
     
-    // export global LM vector or Jump vector to current interface slave dof row map
+    // get global quantity to be stored in nodes
     RCP<Epetra_Vector> vectorglobal = null;
-    if (state=="lmcurrent") vectorglobal = LagrMult();
-    else if (state=="lmold") vectorglobal = LagrMultOld();
-    else if (state=="jump") vectorglobal = Jump(); 
-    else dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
+    switch(type)
+    {
+    case Manager::lmcurrent:
+    {
+      vectorglobal = LagrMult();
+      break;
+    }
+    case Manager::lmold:
+    {
+      vectorglobal = LagrMultOld();
+      break;
+    }
+    case Manager::lmupdate:
+    {
+      vectorglobal = LagrMult();
+      break;
+    }
+    case Manager::jump:
+    {
+      vectorglobal = Jump(); 
+      break;
+    }
+    case Manager::dirichlet:
+    {
+      if (vec==null) dserror("Dirichtoggle vector has to be applied on input");
+      vectorglobal = vec;
+      break;
+    }
+    default:
+      dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
+    } // switch
+    
+    // export global quantity to current interface slave dof row map
     RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
     RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
     LINALG::Export(*vectorglobal,*vectorinterface);
@@ -3749,17 +3778,56 @@ void CONTACT::Manager::StoreNodalQuantities(const string& state)
       
       if (cnode->NumDof() > 2) dserror("ERROR: StoreNodalQuantities: Not yet implemented for 3D!");
       
-      // extract this node's LM from zcurr
+      // index for first DOF of current node in Epetra_Vector
+      int locindex = vectorinterface->Map().LID(2*gid);
+      
+      // extract this node's quantity from vectorinterface
       for (int k=0;k<2;++k)
       {
-        if (state=="lmcurrent")
-          cnode->lm()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
-        else if (state=="lmold")
-          cnode->lmold()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
-        else if (state=="jump")
-        	cnode->jump()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
-        else
+        switch(type)
+        {
+        case Manager::lmcurrent:
+        {
+          cnode->lm()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        case Manager::lmold:
+        {
+          cnode->lmold()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        case Manager::lmupdate:
+        {
+          // throw a warning if a non-DBC inactive dof has a non-zero value
+          if (!cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-12)
+            dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
+                     cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
+          
+          // throw a dserror if node is Active and DBC
+          if (cnode->dbc()[k] && cnode->Active())
+            dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
+          
+          // explicity set global Lag. Mult. to zero for D.B.C nodes
+          if (cnode->IsDbc())
+            (*vectorinterface)[locindex+k] = 0.0;
+          
+          // store updated LM into node
+          cnode->lm()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        case Manager::jump:
+        {
+          cnode->jump()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        case Manager::dirichlet:
+        {
+          cnode->dbc()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        default:
           dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
+        } // switch 
       }
     }
   }
@@ -3854,33 +3922,26 @@ void CONTACT::Manager::PrintActiveSet()
         // compute tangential part of Lagrange multiplier
         tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
       }  
-            
-            // print nodes of inactive set *************************************
+      
+      // get D.B.C. status of current node
+      bool dbc = cnode->IsDbc();
+      
+      // print nodes of inactive set *************************************
       if (cnode->Active()==false)
-      {
-        cout << "INACTIVE: " << gid << " " << wgap << " " << nz << endl;
-      }
+        cout << "INACTIVE: " << dbc << " " << gid << " " << wgap << " " << nz << endl;
       
       // print nodes of active set ***************************************
       else
       {
       	if (ctype != "frictional")
-      	{	
-          cout << "ACTIVE:   " << gid << " " << nz << " " << nzold << " "
-      	       << 0.5*nz+0.5*nzold << " " << wgap << endl;
-      	}
+          cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
+      	
       	else
       	{
       		if (cnode->Slip() == false)
-      		{	
-      		  cout << "ACTIVE:   " << gid << " " << nz << " " << nzold << " "
-      		       << 0.5*nz+0.5*nzold << " " << wgap << " STICK" << " " << tz << endl;
-      		}
+      		  cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << " STICK" << " " << tz << endl;
       		else
-      		{
-      			cout << "ACTIVE:   " << gid << " " << nz << " " << nzold << " "
-      			     << 0.5*nz+0.5*nzold << " " << wgap << " SLIP" << " " << tjump << endl;
-      		}
+      			cout << "ACTIVE:   " << dbc << " " << gid << " " << nz << " " << wgap << " SLIP" << " " << tjump << endl;
       	}
       }
     }

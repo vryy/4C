@@ -42,6 +42,11 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
+  
+  // save Dirichlet B.C. status in Contact Manager
+  // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
+  contactmanager_->StoreNodalQuantities(Manager::dirichlet,dirichtoggle_);
+  
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha
 
@@ -302,13 +307,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities("lmcurrent");
+  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
     
   // friction  
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
   jump->Scale(0.0); 
-  contactmanager_->StoreNodalQuantities("jump");
+  contactmanager_->StoreNodalQuantities(Manager::jump);
   
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
@@ -325,12 +330,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
   }
   
-  // reset Lagrange multipliers to last converged state
-  // this resetting is necessary due to multiple active set steps
-  // RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  // RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  // z->Update(1.0,*zold,0.0);
-  // contactmanager_->StoreNodalQuantities("lmcurrent");
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
   
@@ -542,13 +541,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities("lmcurrent");
+  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
     
   // friction  
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
   jump->Scale(0.0); 
-  contactmanager_->StoreNodalQuantities("jump");
+  contactmanager_->StoreNodalQuantities(Manager::jump);
 
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
@@ -1299,14 +1298,14 @@ void CONTACT::ContactStruGenAlpha::Update()
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   zold->Update(1.0,*z,0.0);
-  contactmanager_->StoreNodalQuantities("lmold");
+  contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->StoreDM("old");
 
   // friction  
   // reset displacement jumps (slave dofs)
   //RCP<Epetra_Vector> jump = contactmanager_->Jump();
   //jump->Scale(0.0); 
-  //contactmanager_->StoreNodalQuantities("jump");
+  //contactmanager_->StoreNodalQuantities(Manager::jump);
     
 
 #ifdef PRESTRESS
@@ -1686,7 +1685,7 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadVector(zold,"lagrmultold");
   reader.ReadVector(activetoggle,"activetoggle");
   *(contactmanager_->LagrMultOld())=*zold;
-  contactmanager_->StoreNodalQuantities("lmold");
+  contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->ReadRestart(activetoggle);
   
   // build restart Mortar matrices D and M

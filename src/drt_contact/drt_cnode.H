@@ -141,7 +141,19 @@ public:
   \brief Set slave side boundary status of current node
   */
   inline virtual bool& SetBound() { return isonbound_; }
-   
+  
+  /*!
+  \brief Return D.B.C. status of this node's dofs (length 3)
+  */
+  virtual inline bool* dbc() { return dbc_; }
+  
+  /*!
+  \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
+  */
+  virtual inline bool IsDbc() const { bool globaldbc = false;
+                                      for(int i=0;i<NumDof();++i) globaldbc += dbc_[i];
+                                      return globaldbc; }
+    
   /*!
   \brief Get no. of degrees of freedom
   */
@@ -366,6 +378,7 @@ protected:
 
   bool            isslave_;        // true if cnode is on slave side of contact problem
   bool            isonbound_;      // true if cnode is on slave side boundary
+  bool            dbc_[3];         // true if D.B.C. is applied on dofs_[i]
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
   double          n_[3];           // nodal normal for contact methods

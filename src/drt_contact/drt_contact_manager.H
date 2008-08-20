@@ -38,6 +38,14 @@ class Manager
 public:
 
   //! @name Enums and Friends
+  enum QuantityType // types that can be called by StoreNodalQuantities()
+  {
+    lmcurrent,
+    lmold,
+    lmupdate,
+    jump,
+    dirichlet
+  };
   //@}
 
   /*!
@@ -409,17 +417,22 @@ public:
   /*!
   \brief Get some nodal quantity globally and store into CNodes
   
-  The string input parameter defines, which quantity is be updated
-  (lagrange multipliers or sum of incremental jumps). Currently only the
-  possibilities "lmold", "lmcurrent" and "jump" exist, with "lmold" meaning
-  the converged value LM_n of the last time / load step.  The string
-  "lmcurrent" adresses the current (not necessarily converged) value of the
-  LM_n+1 and "jump" the current (not necessarily converged) value of d_n+1-d_n
+  The enum input parameter defines, which quantity is be updated.
+  Currently the possibilities "lmold", "lmcurrent", "lmupdate", "jump"
+  and "dirichlet" exist. Note that "lmold" means the converged value LM_n
+  of the last time / load step, whereas "lmcurrent" adresses the current
+  (not necessarily converged) value of the LM_n+1 and "jump" the current
+  (not necessarily converged) value of d_n+1-d_n. "lmupdate" is a special
+  option called only in Recover() after the update of the Lagr. multipliers.
+  It basically does the same as "lmcurrent", but also checks for D.B.C.
+  problems. Finally, "dirichlet" is called once at the beginning of the
+  simulation to set the D.B.C. status in each CNode.
   
-  \param state (in): string defining which quantity to store into CNodes
+  \param type (in): enum defining which quantity to store into CNodes
+  \param vec (in): optional, vector carrying global (only for "dirichlet")
   
   */
-  void StoreNodalQuantities(const string& state);
+  void StoreNodalQuantities(Manager::QuantityType type, RCP<Epetra_Vector> vec = null);
   
   /*!
   \brief Update Mortar matrices D and M
