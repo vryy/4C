@@ -39,41 +39,15 @@ XFEM::InterfaceHandle::InterfaceHandle(
 {
   std::cout << "Constructing InterfaceHandle" << std::endl;
       
-  const Epetra_Vector& idispcolnp = *cutterdis->GetState("idispcolnp");
-  const Epetra_Vector& idispcoln = *cutterdis->GetState("idispcoln");
-      
-  FillCurrentCutterPositionMap(cutterdis, idispcolnp, cutterposnp_);
-  FillCurrentCutterPositionMap(cutterdis, idispcoln , cutterposn_ );
+  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
+  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
   GEO::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
   
-//  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
-//  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
-  if (elementalDomainIntCells_.size() != elementalBoundaryIntCells_.size())
-  {
-    dserror("mismatch in cutted elements maps!");  
-  }
-  
-  // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,GEO::DomainIntCells>::const_iterator 
-      tmp = elementalDomainIntCells_.begin();
-      tmp != elementalDomainIntCells_.end();
-      ++tmp)
-  {
-    dsassert(tmp->second.empty() == false, "this is a bug!");
-  }
-  
-  // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,GEO::BoundaryIntCells>::const_iterator 
-      tmp = elementalBoundaryIntCells_.begin();
-      tmp != elementalBoundaryIntCells_.end();
-      ++tmp)
-  {
-    dsassert(tmp->second.empty() == false, "this is a bug!");
-  }
+  SanityChecks();
   
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
@@ -125,6 +99,35 @@ void XFEM::InterfaceHandle::FillCurrentCutterPositionMap(
     currpos(1) = node->X()[1] + mydisp[1];
     currpos(2) = node->X()[2] + mydisp[2];
     currentcutterpositions[node->Id()] = currpos;
+  }
+}
+
+
+void XFEM::InterfaceHandle::SanityChecks() const
+{
+  //  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
+  //  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
+  if (elementalDomainIntCells_.size() != elementalBoundaryIntCells_.size())
+  {
+    dserror("mismatch in cutted elements maps!");  
+  }
+  
+  // sanity check, whether, we really have integration cells in the map
+  for (std::map<int,GEO::DomainIntCells>::const_iterator 
+      tmp = elementalDomainIntCells_.begin();
+      tmp != elementalDomainIntCells_.end();
+      ++tmp)
+  {
+    dsassert(tmp->second.empty() == false, "this is a bug!");
+  }
+  
+  // sanity check, whether, we really have integration cells in the map
+  for (std::map<int,GEO::BoundaryIntCells>::const_iterator 
+      tmp = elementalBoundaryIntCells_.begin();
+      tmp != elementalBoundaryIntCells_.end();
+      ++tmp)
+  {
+    dsassert(tmp->second.empty() == false, "this is a bug!");
   }
 }
 

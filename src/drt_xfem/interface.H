@@ -137,6 +137,9 @@ private:
         std::map<int,BlitzVec3>&                 currentcutterpositions  ///< map to be filled with positions
         ) const;
     
+    //! some checks to ensure properly filled integrationcell maps
+    void SanityChecks() const;
+    
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
   
