@@ -756,7 +756,6 @@ void STR::TimIntImpl::PrintNewtonIter()
   // print to standard out
   if ( (myrank_ == 0) and printscreen_ and printiter_ )
   {
-    if (conman_->HaveMonitor()) conman_->PrintMonitorValues();
     PrintNewtonIterText(stdout);
   }
 
