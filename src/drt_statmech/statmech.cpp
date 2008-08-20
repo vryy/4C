@@ -226,13 +226,7 @@ void StatMech::FullNewton()
         pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
       }
 
-      if (constrMan_->HaveConstraint())
-      {
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
-      }
-
       // do NOT finalize the stiffness matrix to add masses to it later
-
       // If we have a robin condition we need to modify both the rhs and the
       // matrix diagonal corresponding to the dofs at the robin interface.
       if (structrobin)
@@ -321,10 +315,6 @@ void StatMech::FullNewton()
   }
   else
   {
-    if (constrMan_->HaveMonitor())
-    {
-      constrMan_->ComputeMonitorValues(dism_);
-    }
     if (!myrank_ and printscreen)
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
@@ -549,12 +539,6 @@ void StatMech::Output()
       output_.WriteVector("Aold", A);
     }
 
-    if (constrMan_->HaveConstraint())
-    {
-      output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
-      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());
-    }
-
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -673,39 +657,7 @@ void StatMech::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  //in case a constraint is defined, use defined algorithm
-  if (constrMan_->HaveConstraint())
-  {
-      string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-      for (int i=step; i<nstep; ++i)
-      {
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-        //Does predicted displacement satisfy constraint?
-        double time = params_.get<double>("total time",0.0);
-        //double dt   = params_.get<double>("delta time",0.01);
-        // what algorithm is used?
-        // - "newtonlinuzawa": Potential is linearized wrt displacements
-        //                     and Lagrange multipliers
-        //                     Linear problem is solved with Uzawa algorithm
-        // - "augmentedlagrange": Potential is linearized wrt displacements
-        //                        keeping Lagrange multiplier fixed
-        //                        Until convergence Lagrange multiplier
-        //                        increased by Uzawa_param*(Vol_err)
-        if (algo=="newtonlinuzawa")
-        {
-          FullNewtonLinearUzawa();
-        }
-        else if (algo=="augmentedlagrange")
-        {
-           NonLinearUzawaFullNewton(predictor);
-        }
-        else dserror("Unknown type of algorithm to deal with constraints");
-        UpdateandOutput();
-        if (time>=maxtime) break;
-      }
-  }
-  else if (equil=="full newton")
+  if (equil=="full newton")
   {
   //defining and initializing a file pointer variable
   FILE* fp = NULL;

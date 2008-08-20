@@ -760,11 +760,6 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
 
-      if (constrMan_->HaveConstraint())
-      {
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
-      }
-
       // do NOT finalize the stiffness matrix to add masses to it later
 
       // If we have a robin condition we need to modify both the rhs and the
@@ -888,10 +883,6 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   }
   else
   {
-    if (constrMan_->HaveMonitor())
-    {
-      constrMan_->ComputeMonitorValues(dism_);
-    }
     if (!myrank_ and printscreen)
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
@@ -1072,11 +1063,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
 
-      if (constrMan_->HaveConstraint())
-      {
-        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_);
-      }
-
       // do NOT finalize the stiffness matrix to add masses to it later
 
       // If we have a robin condition we need to modify both the rhs and the
@@ -1209,10 +1195,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   }
   else
   {
-    if (constrMan_->HaveMonitor())
-    {
-      constrMan_->ComputeMonitorValues(dism_);
-    }
     if (!myrank_ and printscreen)
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
@@ -1429,11 +1411,6 @@ void CONTACT::ContactStruGenAlpha::Output()
       output_.WriteVector("conquot", con);
     }
 
-    if (constrMan_->HaveConstraint())
-    {
-      output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
-    }
-
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -1551,14 +1528,8 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  // in case a constraint is defined, throw dserror
-  if (constrMan_->HaveConstraint())
-  {
-    dserror("ERROR: Problems with contact AND constraints not yet solvable!");
-  }
-  
   // Newton as nonlinear iteration scheme
-  else if (equil=="full newton")
+  if (equil=="full newton")
   {
     //********************************************************************
     // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
@@ -1716,12 +1687,6 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
     p.set("action","multi_readrestart");
     discret_.Evaluate(p,null,null,null,null,null);
     discret_.ClearState();
-  }
-
-  if (constrMan_->HaveConstraint())
-  {
-    double uzawatemp = reader.ReadDouble("uzawaparameter");
-    uzawaSolv_->SetUzawaParameter(uzawatemp);
   }
 
   return;
