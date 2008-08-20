@@ -514,7 +514,7 @@ void STR::TimInt::OutputRestart
   output_->WriteVector("displacement", (*dis_)(0));
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
-  //output_->WriteVector("fexternal", fext_);  // CURRENTLY NOT AVAILABLE THINK OF SCENARIO
+  output_->WriteVector("fexternal", Fext());
 
   // surface stress
   if (surfstressman_ != Teuchos::null)
@@ -544,9 +544,9 @@ void STR::TimInt::OutputRestart
   if (conman_->HaveConstraint())
   {
     output_->WriteDouble("uzawaparameter",
-                        uzawasolv_->GetUzawaParameter());
+                         uzawasolv_->GetUzawaParameter());
     output_->WriteVector("refconval",
-                        conman_->GetRefBaseValues());
+                         conman_->GetRefBaseValues());
   }
 
   // info dedicated to user's eyes staring at standard out
@@ -583,7 +583,7 @@ void STR::TimInt::OutputState
   output_->WriteVector("displacement", (*dis_)(0));
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
-  //output_->WriteVector("fexternal",fext_);  // CURRENTLY NOT AVAILABLE
+  output_->WriteVector("fexternal", Fext());
   output_->WriteElementData(); 
 
   // leave for good
