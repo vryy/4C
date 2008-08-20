@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file matlist.H
+\file ion.H
 
 <pre>
 Maintainer: Georg Bauer
@@ -8,8 +8,8 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 *----------------------------------------------------------------------*/
-#ifndef MATLIST_H
-#define MATLIST_H
+#ifndef IONIC_H
+#define IONIC_H
 
 #ifdef CCADISCRET
 
@@ -18,16 +18,16 @@ Maintainer: Georg Bauer
 namespace MAT
 {
 
-  /// Wrapper for a list of materials
-  class MatList : public Material
+  /// Wrapper for the material properties of an ion species in an electrolyte solution
+  class Ion : public Material
   {
   public:
 
     /// construct empty material object
-    MatList();
+    Ion();
 
     /// construct the material object given material parameters
-    explicit MatList(MATERIAL* matdata);
+    explicit Ion(MATERIAL* matdata);
 
     //! @name Packing and Unpacking
 
@@ -37,7 +37,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_MatList; }
+    virtual int UniqueParObjectId() const { return ParObject_Ion; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -68,7 +68,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_matlist; }
+    virtual MATERIAL_TYP MaterialType() const { return m_ion; }
 
     /// return material parameters for element calculation
     MATERIAL* MaterialData() const { return matdata_; }

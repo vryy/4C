@@ -92,6 +92,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.m.condif = new _CONDIF();
       frdouble("DIFFUSIVITY",&(localmat.m.condif->diffusivity),&ierr);
    }
+   frchk("MAT_ion",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp = m_ion;
+      localmat.m.ion = new _ION();
+      frint("VALENCE",&(localmat.m.ion->valence),&ierr);
+      if (ierr!=1) dserror("Error while reading property VALENCE of MAT_ion");
+      frdouble("DIFFUSIVITY",&(localmat.m.ion->diffusivity),&ierr);
+      if (ierr!=1) dserror("Error while reading property DIFFUSIVITY of MAT_ion");
+   }
    frchk("MAT_matlist",&ierr);
    if (ierr==1)
    {

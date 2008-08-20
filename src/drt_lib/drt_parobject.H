@@ -133,6 +133,7 @@ using namespace std;
 #define ParObject_Combust3Register      (int)120
 #define ParObject_Combust3Surface       (int)121
 #define ParObject_Combust3Line          (int)122
+#define ParObject_Ion                   (int)123
 
 namespace DRT
 {

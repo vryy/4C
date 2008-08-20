@@ -239,6 +239,12 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
     {
       const int matid = material->m.matlist->matids[k];
       const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+#if 0
+      if (singlemat.mattyp == m_ion)
+        cout<<"MatId: "<<material->m.matlist->matids[k]
+        <<" valence["<<k<<"] = "<<singlemat.m.ion->valence 
+        <<" diffusivity["<<k<<"] = "<<singlemat.m.ion->diffusivity<<endl;
+#endif
       if (singlemat.mattyp != m_condif) dserror("no condif material found");
       diffus[k]= singlemat.m.condif->diffusivity;
 #if 0

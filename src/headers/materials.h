@@ -65,6 +65,7 @@ typedef struct _MATERIAL
      struct _STRUCT_MULTISCALE *struct_multiscale;     /* material parameters are calculated from microscale simulation */
      struct _MATLIST          *matlist;       /* collection of any single materials (used for scalar transport problems)*/
      struct _BIOCELL          *biocell;       /* Biological Cell model */
+     struct _ION              *ion;           /* material properties of an ion species in an electrolyte solution */
      }                         m;             /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -223,6 +224,7 @@ typedef struct _CONDIF
 {
      DOUBLE                    diffusivity; /* kinematic diffusivity */
 } CONDIF;
+
 /*----------------------------------------------------------------------*
  | plastic mises material                              a.lipka 17/05    |
  *----------------------------------------------------------------------*/
@@ -236,6 +238,7 @@ typedef struct _PL_MISES
      DOUBLE                    GF;
      DOUBLE                    betah;
 } PL_MISES;
+
 /*----------------------------------------------------------------------*
  | Damage material                                     he      04/03    |
  *----------------------------------------------------------------------*/
@@ -805,5 +808,13 @@ typedef struct _MATLIST
 {
      INT         nummat; /* number of materials in list */
      INT*        matids; /* pointer to an array that holds the material ids */
-
 } MATLIST;
+
+/*----------------------------------------------------------------------*
+ | material parameters for ion species in electrlyte solution gjb 07/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _ION
+{
+     INT         valence;     /* valence (= charge number) */
+     DOUBLE      diffusivity; /* kinematic diffusivity     */
+} ION;

@@ -309,10 +309,11 @@ typedef enum _MATERIAL_TYP
                        m_artwallremod,  /* Arterial Wall Material Law (Holzapfel) with remodeling (Hariton) */
                        m_th_fourier_iso,  /* isotropic (linear) Fourier's law of heat conduction */
                        m_th_fourier_gen,  /* general (linear) Fourier's law of heat conduction */
-                       m_vp_robinson,  /* Robinson's visco-plastic material */
+                       m_vp_robinson,   /* Robinson's visco-plastic material */
                        m_struct_multiscale, /*  structural microscale approach */
                        m_matlist,       /* collection of single materials (used for scalar transport problems)*/
-                       m_biocell        /* biological cell model */
+                       m_biocell,       /* biological cell model */
+                       m_ion            /* properties of an ion species in an electrolyte solution */
 } MATERIAL_TYP;
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
