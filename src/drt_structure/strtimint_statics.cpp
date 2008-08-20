@@ -118,7 +118,8 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
 
   // apply forces and stiffness due to constraints
-  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fint_, stiff_);
+  Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fint_, stiff_, pcon);
 
   // surface stress force
   ApplyForceStiffSurfstress(disn_, fintn_, stiff_);

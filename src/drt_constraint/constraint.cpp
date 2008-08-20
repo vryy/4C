@@ -220,6 +220,8 @@ void UTILS::Constraint::EvaluateConstraint(
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
 {
+  
+  
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
@@ -237,6 +239,10 @@ void UTILS::Constraint::EvaluateConstraint(
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
     DRT::Condition& cond = *(constrcond_[i]);
+    
+    // get values from time integrator to scale matrices with 
+    double scStiff = params.get("scaleStiffEntries",1.0);
+    double scConMat = params.get("scaleConstrMat",1.0);
 
     // Evaluate Loadcurve if defined. Put current load factor in parameterlist
     const vector<int>*    curve  = cond.Get<vector<int> >("curve");
@@ -308,13 +314,20 @@ void UTILS::Constraint::EvaluateConstraint(
 
           // assembly
           int eid = curr->second->Id();
-          if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+          if (assemblemat1) 
+          { 
+            // scale with time integrator dependent value
+            elematrix1.Scale(scStiff);
+            systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+          }
           if (assemblemat2)
           {
-            //assemble to rectangular matrix. The colum corresponds to the constraint ID
+            // assemble to rectangular matrix. The colum corresponds to the constraint ID.
+            // scale with time integrator dependent value
             int minID=params.get("MinID",0);
             vector<int> colvec(1);
             colvec[0]=condID-minID;
+            elevector2.Scale(scConMat);
             systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
           }
           if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);

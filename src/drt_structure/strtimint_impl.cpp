@@ -348,12 +348,13 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
   const Teuchos::RCP<Epetra_Vector> dis,
   const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff
+  Teuchos::RCP<LINALG::SparseMatrix>& stiff,
+  Teuchos::ParameterList pcon
 )
 {
   if (conman_->HaveConstraint())
   {
-    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff);
+    conman_->StiffnessAndInternalForces(time,dis,disn,fint,stiff,pcon);
   }
 
   // wotcha
@@ -685,9 +686,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // monitor values
     if (conman_->HaveMonitor())
     {
-      // WARNING: THIS WAS dism_, BUT WE DO NOT WANT THIS HERE!!!
-      //          NEED TO TALK TO THOMAS KLOEPPEL, IF disn_ WORKS AS WELL
-      conman_->ComputeMonitorValues(disn_);
+       conman_->ComputeMonitorValues(disn_);
     }
 
     // print message

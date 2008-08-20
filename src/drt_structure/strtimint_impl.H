@@ -168,7 +168,8 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
       const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
       Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness is added onto
+      Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is added onto
+      Teuchos::ParameterList pcon   //!<Parameterlist containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness

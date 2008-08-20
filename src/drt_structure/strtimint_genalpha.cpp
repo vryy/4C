@@ -222,11 +222,17 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // apply forces and stiffness due to constraints
   if (midavg_ == midavg_trlike)
   {
-    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_);
+    ParameterList pcon;
+    // for TR scale constraint matrix with the same value fintn_ is scaled with
+    pcon.set("scaleConstrMat",(1.0-alphaf_));
+    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
   }
   else if (midavg_ == midavg_imrlike)
   {
-    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_);
+    ParameterList pcon;
+    // for IMR scale stiffness matrix, since constraint is always evaluated at the end of time step
+    pcon.set("scaleStiffEntries",1.0/(1.0-alphaf_));  
+    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
   }
 
   // surface stress force

@@ -310,9 +310,15 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
-  // loop over column elements
+  
   const double time = params.get("total time",-1.0);
   const int numcolele = disc->NumMyColElements();
+  
+  // get values from time integrator to scale matrices with 
+  double scStiff = params.get("scaleStiffEntries",1.0);
+  double scConMat = params.get("scaleConstrMat",1.0);
+
+  // loop over column elements
   for (int i=0; i<numcolele; ++i)
   {
     DRT::Element* actele = disc->lColElement(i);
@@ -352,12 +358,18 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
   
       int eid = actele->Id();
-      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+      if (assemblemat1) 
+      { 
+        // scale with time integrator dependent value
+        elematrix1.Scale(scStiff);
+        systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+      }
       if (assemblemat2)
       {
         int minID=params.get("MinID",0);
         vector<int> colvec(1);
         colvec[0]=condID-minID;
+        elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
       if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);

@@ -56,8 +56,9 @@ actdisc_(discr)
   if (haveconstraint_)
   {
     ParameterList p;
-    uzawaparam_=params.get<double>("uzawa parameter",1);
-    double time =params.get<double>("total time"      ,0.0);
+    uzawaparam_ = params.get<double>("uzawa parameter",1);
+    double time = params.get<double>("total time"      ,0.0);
+    alphaf_ = params.get<double>("alpha f"         ,0.459);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constrMatrix
@@ -148,8 +149,12 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
         RCP<Epetra_Vector> displast,
         RCP<Epetra_Vector> disp,
         RCP<Epetra_Vector> fint,
-        RCP<LINALG::SparseMatrix> stiff)
+        RCP<LINALG::SparseMatrix> stiff,
+        ParameterList scalelist)
 {
+  double scStiff = scalelist.get("scaleStiffEntries",1.0);
+  double scConMat = scalelist.get("scaleConstrMat",1.0);
+  
   // create the parameters for the discretization
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
@@ -163,6 +168,8 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   p.set("NumberofID",numConstrID_);
   p.set("old disp",displast);
   p.set("new disp",disp);
+  p.set("scaleStiffEntries",scStiff);
+  p.set("scaleConstrMat",scConMat);
   // Convert Epetra_Vector constaining lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*redconstrmap_));
@@ -172,6 +179,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
   RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
 
+  
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
@@ -190,7 +198,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
   // Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
   referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);  
-  constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
+  constrainterr_->Update(scConMat,*referencevalues_,-1.0*scConMat,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
   constrMatrix_->Complete(*constrmap_,*dofrowmap);

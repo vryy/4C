@@ -74,7 +74,8 @@ namespace UTILS
       RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
       RCP<Epetra_Vector> disp,  ///< displacement at end of time step
       RCP<Epetra_Vector> fint,  ///< vector of internal forces
-      RCP<LINALG::SparseMatrix> stiff  ///< stiffness matrix
+      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      ParameterList scalelist
     );
   
     /*!
@@ -176,13 +177,9 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier vector
     */
-    void GetLagrMultVector
-    (
-      RCP<Epetra_Vector> tmpmult ///< vector to store lagrange multiplier in
-    )
+    RCP<Epetra_Vector> GetLagrMultVector()
     {
-      LINALG::Export(*lagrMultVec_,*tmpmult);
-      return ;
+      return lagrMultVec_;
     };
   
     /*!
@@ -231,6 +228,16 @@ namespace UTILS
       RCP<Epetra_Vector> newrefvals,  ///< new reference base values
       const double& time   ///< current time
     );
+    
+    /// Reset reference base values for restart computations
+    void SetLagrMultVector
+    (
+      RCP<Epetra_Vector> newlagrmult  ///< new reference base values
+    )
+    {
+      lagrMultVec_=newlagrmult;
+      return;
+    }
     
     RCP<Epetra_Vector> GetRefBaseValues()
     {
@@ -289,7 +296,8 @@ namespace UTILS
     bool haveconstraint_;  ///< are there constraints at all?
     bool havemonitor_;  ///< are there monitor conditions?
     double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used) 
-  
+    double alphaf_;
+    
     RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces 
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
     RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
@@ -299,6 +307,7 @@ namespace UTILS
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
     RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
+    
     
   
   

@@ -155,7 +155,10 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
 
   // apply forces and stiffness due to constraints
-  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fint_, stiff_);
+  ParameterList pcon;
+  //constraint matrix has to be scaled with the same value fintn_ is scaled with
+  pcon.set("scaleConstrMat",theta_);
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // surface stress force
   ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
