@@ -29,7 +29,11 @@ Maintainer: Axel Gerstenberger
 std::string XFEM::Enrichment::toString() const
 {
     std::stringstream s;
-    s << "( Iface " << xfemconditionlabel_ << ", EnrType " << enrTypeToString(type_) << " )";
+    int width = 1;
+    if (xfemconditionlabel_ > 9)
+      width = 2;
+      
+    s << "Enr(" << setw(width) << xfemconditionlabel_ << ", " << enrTypeToString(type_) << ")";
     return s.str();
 }
 
@@ -37,9 +41,9 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
 {
     std::string typetext;
     switch (type){
-        case typeStandard:  typetext = "Standard"; break;
-        case typeJump:      typetext = "Jump    "; break;
-        case typeVoid:      typetext = "Void    "; break;
+        case typeStandard:  typetext = "Stnd"; break;
+        case typeJump:      typetext = "Jump"; break;
+        case typeVoid:      typetext = "Void"; break;
         default: dserror("no string defined for EnrType");
     };
     return typetext;

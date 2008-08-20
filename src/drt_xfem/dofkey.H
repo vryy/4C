@@ -84,7 +84,7 @@ namespace XFEM
       std::string toString() const
       {
         std::stringstream s;
-        s << "Dofkey: <" << dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
+        s << "Dofkey: [" << dofTypeToString(doftype) << " " << setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
         return s.str();
       };
             
@@ -135,6 +135,11 @@ namespace XFEM
           return false;
       }
               
+      friend ostream& operator<<(ostream& out, const DofKey& key)
+      {
+          out << key.toString();
+          return out;
+      }
               
     private:
       
