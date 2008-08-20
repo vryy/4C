@@ -196,7 +196,8 @@ Input/sohex8_easfull_cooks_nl.dat                       x        x        x     
 Input/sotet10_cooks_nl.dat                              x        x        x        -        -        -
 Input/sosh8_mooneyrivlin_rubbersheet.dat                x        x        x        -        -        -
 Input/constr3D_shrinking.dat                            x        x        x        -        -        -
-Input/constr3D_MPC_dirich.dat                           x        x        x        -        -        -
+Input/constr3D_MPC_STI_trlike.dat                       x        x        x        -        -        -
+Input/constr3D_shrinking_ost.dat                        x        x        x        -        -        -
 Input/constr2D_shrinking.dat                            x        x        x        -        -        -
 Input/constr2D_fsi.dat                                  x        x        x        -        -        -
 Input/viscoNeoHooke_creep.dat                           x        x        x        -        -        -
