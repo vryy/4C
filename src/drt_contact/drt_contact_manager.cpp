@@ -465,6 +465,7 @@ void CONTACT::Manager::SetState(const string& statename,
   {
     interface_[i]->SetState(statename,vec);
   }
+  
   return;
 }
 

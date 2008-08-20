@@ -481,9 +481,11 @@ void CONTACT::Interface::Initialize()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
+  // ***WARNING:*** This is not possible here, as idiscret_->SetState()
+  // needs all procs around, not only the interface local ones!
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  // if (!lComm())
+  //   return;
     
   if (statename=="displacement")
   {
