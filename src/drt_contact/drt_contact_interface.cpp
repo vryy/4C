@@ -1864,6 +1864,9 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     vector<map<int,double> > mmap = cnode->GetM();
     map<int,double>::iterator mcurr;
     int mcolsize = (int)mmap[0].size();
+    
+    // get out of here, if no M-matric entries for this node
+    if ((int)mmap.size()==0) continue;
     if (mcolsize%2!=0) dserror("ERROR: AssembleS: 3D case not yet implemented!");
     
     // loop over all master nodes (find adjacent ones to this active node)

@@ -3799,8 +3799,10 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
         }
         case Manager::lmupdate:
         {
-          // throw a warning if a non-DBC inactive dof has a non-zero value
-          if (!cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-12)
+          // throw a dserror if a non-DBC inactive dof has a non-zero value
+          // (only in semi-smooth Newton case, of course!)
+          bool semismooth = scontact_.get<bool>("semismooth newton",false);
+          if (semismooth && !cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-12)
             dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
                      cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
           
