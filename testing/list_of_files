@@ -156,7 +156,7 @@ Input/contact1_lin.dat                                  x        x        x     
 Input/contact_friction_tresca.dat                       x        x        x        -        -        -
 Input/xf3_drivencavity_stat_drt.dat                     x        -        x        -        -        -
 Input/xf3_beltrami_tet4_drt.dat                         -        -        -        -        -        -
-Input/xf3_ew_Q1_27x_drt.dat                             x        -        x        -        -        -
+Input/xf3_ew_Q1_27x_drt.dat                             -        -        -        -        -        -
 Input/xf3_hit_the_corner_fixpoint.dat                   x        -        x        -        -        -
 Input/xf3_hit_the_corner_newton.dat                     x        -        x        -        -        -
 Input/xf3_hit_the_thing_plane_in_plane.dat              x        -        x        -        -        -
