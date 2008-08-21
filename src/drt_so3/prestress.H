@@ -40,9 +40,6 @@ public:
 
   /*!
   \brief Copy Constructor
-
-  Makes a deep copy of a Node
-
   */
   PreStress(const DRT::ELEMENTS::PreStress& old);
 
