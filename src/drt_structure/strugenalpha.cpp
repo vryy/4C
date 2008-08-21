@@ -1164,9 +1164,8 @@ void StruGenAlpha::FullNewton()
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
@@ -1510,12 +1509,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
-  if (!damp_->Filled()) dserror("damping matrix must be filled here");
+    if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
   RCP<LINALG::SparseMatrix> constrMatrix = rcp(new  LINALG::SparseMatrix(*(constrMan_->GetConstrMatrix())));
@@ -1742,9 +1740,8 @@ void StruGenAlpha::ModifiedNewton()
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
@@ -1976,10 +1973,9 @@ void StruGenAlpha::NonlinearCG()
   int maxlevel = linearmllist.get<int>("max levels",3);
   int maxcsize = linearmllist.get<int>("coarse: max size",1);
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (stiff_==null)     dserror("stiffness matrix = null");
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
@@ -2286,9 +2282,8 @@ void StruGenAlpha::PTC()
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
