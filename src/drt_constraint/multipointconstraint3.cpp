@@ -89,7 +89,7 @@ void UTILS::MPConstraint3::Initialize
     int condID=(*CondIDVec)[0];
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if(inittimes_.find(condID)->second<=time)
+    if((inittimes_.find(condID)->second <= time) && (!activecons_.find(condID)->second))
     {     
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
@@ -152,7 +152,7 @@ void UTILS::MPConstraint3::Initialize(
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
     }
   }

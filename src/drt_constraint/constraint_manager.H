@@ -229,13 +229,13 @@ namespace UTILS
       const double& time   ///< current time
     );
     
-    /// Reset reference base values for restart computations
+    /// Reset lagrange multipliers
     void SetLagrMultVector
     (
-      RCP<Epetra_Vector> newlagrmult  ///< new reference base values
+      RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
     )
     {
-      lagrMultVec_=newlagrmult;
+      lagrMultVec_->Update(1.0,*newlagrmult,0.0);
       return;
     }
     

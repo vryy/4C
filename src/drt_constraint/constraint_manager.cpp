@@ -247,7 +247,7 @@ void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const d
   mpconplane3d_->Initialize(time);
   mpconline2d_->Initialize(time);
 
-  refbasevalues_=newrefval;
+  refbasevalues_->Update(1.0, *newrefval,0.0);
   return;
 }
 
