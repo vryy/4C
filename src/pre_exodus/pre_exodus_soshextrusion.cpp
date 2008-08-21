@@ -538,7 +538,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");
       blockname << highestblock;
-      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str().c_str()));
+      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str()));
       neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
       highestblock ++;
       break;
@@ -622,16 +622,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       
       if (hexcounter>0){
         std::ostringstream hexblockname;
-        hexblockname << blockname.str().c_str() << "h" << highestblock;
-        string hexname = hexblockname.str().c_str();
+        hexblockname << blockname.str() << "h" << highestblock;
+        const string hexname = hexblockname.str();
         RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (hexcounter2>0){
         std::ostringstream hexblockname;
-        hexblockname << blockname.str().c_str() << "h" << highestblock;
-        string hexname = hexblockname.str().c_str();
+        hexblockname << blockname.str() << "h" << highestblock;
+        const string hexname = hexblockname.str();
         RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn2,hexname));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
@@ -639,21 +639,21 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       
       if (wegcounter>0){
         std::ostringstream wegblockname;
-        wegblockname << blockname.str().c_str() << "w" << highestblock;
-        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str().c_str()));
+        wegblockname << blockname.str() << "w" << highestblock;
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str()));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (wegcounter2>0){
         std::ostringstream wegblockname;
-        wegblockname << blockname.str().c_str() << "w" << highestblock;
-        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn2,wegblockname.str().c_str()));
+        wegblockname << blockname.str() << "w" << highestblock;
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn2,wegblockname.str()));
         neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       
       // put new sideset into map
-      string sidesetname = "extsideset";
+      const string sidesetname = "extsideset";
       EXODUS::SideSet newSideSet = EXODUS::SideSet(newsideset,sidesetname);
       newsidesets.insert(pair<int,EXODUS::SideSet>(highestss,newSideSet));
       break;
@@ -747,7 +747,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
     bool FlatEx = CheckFlatEx(i_nss->second);
     if (FlatEx){
-      cout << "Flattening Nodeset " <<  (i_nss->second).GetName().c_str() << "..." <<endl;
+      cout << "Flattening Nodeset " <<  (i_nss->second).GetName() << "..." <<endl;
       set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
       set<int>::iterator it;
       
@@ -768,7 +768,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }
       vector<double> facenormal = Normal(head1,origin,*thirdnode,basemesh);
       if (facenormal.size()==1){
-        cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName().c_str() << "', stop flattening" << endl;
+        cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName() << "', stop flattening" << endl;
       }
       else {
         for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){

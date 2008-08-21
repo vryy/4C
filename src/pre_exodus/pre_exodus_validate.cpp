@@ -38,7 +38,7 @@ using namespace Teuchos;
 using namespace EXODUS;
 
 
-void EXODUS::ValidateInputFile(string datfile)
+void EXODUS::ValidateInputFile(const string datfile)
 {
   // read and check the provided header file
   //cout << "checking BACI input file       --> "<<datfile<< endl;
@@ -67,7 +67,7 @@ void EXODUS::ValidateInputFile(string datfile)
 
   //create a problem instance and a DatFileReader
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-  DRT::INPUT::DatFileReader reader(datfile.c_str(), comm, 0,false);
+  DRT::INPUT::DatFileReader reader(datfile, comm, 0,false);
   reader.Activate();
 
   // validate dynamic and solver sections

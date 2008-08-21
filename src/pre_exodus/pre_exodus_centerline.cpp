@@ -103,7 +103,7 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
 	
 	// check
 	if(!infile){
-	  cout << "Could not open Centerline file: " << filename.c_str() << endl;
+	  cout << "Could not open Centerline file: " << filename << endl;
 	  dserror("Could not open Centerline file!");
 	}
 	

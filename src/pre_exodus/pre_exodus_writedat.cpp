@@ -84,8 +84,7 @@ void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, o
 
 int EXODUS::CountMat(const string& headfile){
   stringstream head;
-  const char *headfilechar;
-  headfilechar = headfile.c_str();
+  const char *headfilechar = headfile.c_str();
   ifstream header(headfilechar, ifstream::in);
   if (not header.good()){
     cout << endl << "Unable to open file: " << headfilechar << endl;
@@ -94,7 +93,7 @@ int EXODUS::CountMat(const string& headfile){
   while (header.good()) head << (char) header.get();
   //while (!header.eof()) head << (char) header.get();
   header.close();
-  string headstring = head.str();
+  const string headstring = head.str();
   size_t mat_section = headstring.find("MATERIALS");
   int counter = 0;
   while (mat_section != string::npos){
@@ -108,8 +107,7 @@ int EXODUS::CountMat(const string& headfile){
 void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 {
   stringstream head;
-  const char *headfilechar;
-  headfilechar = headfile.c_str();
+  const char *headfilechar = headfile.c_str();
   ifstream header(headfilechar, ifstream::in);
   if (not header.good()){
     cout << endl << "Unable to open file: " << headfilechar << endl;
@@ -119,9 +117,9 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   //while (!header.eof()) head << (char) header.get();
   header.close();
   string headstring = head.str();
-  size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
+  const size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
   if (size_section!=string::npos){
-    size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+    const size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
     headstring.erase(size_section,typ_section-size_section);
   }
   headstring.erase(headstring.end()-1);
@@ -218,10 +216,10 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
           name = (mymesh.GetSideSet(actcon.id).GetName());
         } else dserror ("Unidentified Actcon");
         if((name!="")){
-          dat << "// " << name.c_str();
-          if (pname!="none"){ dat << " " << pname.c_str();}
+          dat << "// " << name;
+          if (pname!="none"){ dat << " " << pname;}
           dat << endl;
-        } else if (pname!="none") dat << "// " << pname.c_str() << endl;
+        } else if (pname!="none") dat << "// " << pname << endl;
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
     }

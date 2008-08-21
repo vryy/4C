@@ -147,10 +147,10 @@ public:
   vector<double> GetNode(const int NodeID) const;
 
   //! Close Exodus File
-  void CloseExo();
+  void CloseExo() const;
   
   //! Write Mesh into exodus file
-  void WriteMesh(string newexofilename);
+  void WriteMesh(const string newexofilename) const;
   
   //! Add Element Block to mesh
   void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
@@ -165,10 +165,10 @@ public:
   map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
   
   //! Adjust local element ids referenced in SideSet to global ids
-  map<int,vector<int> > GlobalifySSeleids(const int ssid);
+  map<int,vector<int> > GlobalifySSeleids(const int ssid) const;
   
   //! Plot Nodes in Gmsh-file
-  void PlotNodesGmsh();
+  void PlotNodesGmsh() const;
   
   //! Plot all ElementBlocks into Gmsh-file
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
@@ -263,7 +263,7 @@ private:
 class NodeSet
 {
 public:
-  NodeSet(set<int> nodeids, string name, string propname);
+  NodeSet(const set<int>& nodeids, const string& name, const string& propname);
   
   virtual ~NodeSet();
   
@@ -288,7 +288,7 @@ private:
 class SideSet
 {
 public:
-  SideSet(map<int,vector<int> >sides,string name);
+  SideSet(const map<int,vector<int> >& sides, const string& name);
   
   virtual ~SideSet();
   
@@ -316,32 +316,32 @@ private:
 
 inline ElementBlock::Shape StringToShape(const string shape)
 {
-  if      (shape.compare(0,6,"SPHERE")== 0)   return ElementBlock::point1;
-  else if (shape.compare(0,5,"QUAD4")== 0)    return ElementBlock::quad4;
-  else if (shape.compare(0,5,"QUAD8")== 0)    return ElementBlock::quad8;
-  else if (shape.compare(0,5,"QUAD9")== 0)    return ElementBlock::quad9;
-  else if (shape.compare(0,6,"SHELL4")== 0)   return ElementBlock::shell4;
-  else if (shape.compare(0,6,"SHELL8")== 0)   return ElementBlock::shell8;
-  else if (shape.compare(0,6,"SHELL9")== 0)   return ElementBlock::shell9;
-  else if (shape.compare(0,4,"TRI3")== 0)     return ElementBlock::tri3;
-  else if (shape.compare(0,4,"TRI6")== 0)     return ElementBlock::tri6;
-  else if (shape.compare(0,3,"HEX")== 0)      return ElementBlock::hex8;
-  else if (shape.compare(0,4,"HEX8")== 0)     return ElementBlock::hex8;
-  else if (shape.compare(0,5,"HEX20")== 0)    return ElementBlock::hex20;
-  else if (shape.compare(0,5,"HEX27")== 0)    return ElementBlock::hex27;
-  else if (shape.compare(0,5,"TETRA")== 0)    return ElementBlock::tet4;
-  else if (shape.compare(0,4,"TET4")== 0)     return ElementBlock::tet4;
-  else if (shape.compare(0,6,"TETRA4")== 0)   return ElementBlock::tet4;
-  else if (shape.compare(0,5,"TET10")== 0)    return ElementBlock::tet10;
-  else if (shape.compare(0,5,"WEDGE")== 0)    return ElementBlock::wedge6;
-  else if (shape.compare(0,6,"WEDGE6")== 0)   return ElementBlock::wedge6;
-  else if (shape.compare(0,7,"WEDGE15")== 0)  return ElementBlock::wedge15;
-  else if (shape.compare(0,7,"PYRAMID")== 0)  return ElementBlock::pyramid5;
-  else if (shape.compare(0,8,"PYRAMID5")== 0) return ElementBlock::pyramid5;
-  else if (shape.compare(0,4,"BAR2")== 0)     return ElementBlock::bar2;
-  else if (shape.compare(0,4,"BAR3")== 0)     return ElementBlock::bar3;
+  if      (shape.compare("SPHERE")== 0)   return ElementBlock::point1;
+  else if (shape.compare("QUAD4")== 0)    return ElementBlock::quad4;
+  else if (shape.compare("QUAD8")== 0)    return ElementBlock::quad8;
+  else if (shape.compare("QUAD9")== 0)    return ElementBlock::quad9;
+  else if (shape.compare("SHELL4")== 0)   return ElementBlock::shell4;
+  else if (shape.compare("SHELL8")== 0)   return ElementBlock::shell8;
+  else if (shape.compare("SHELL9")== 0)   return ElementBlock::shell9;
+  else if (shape.compare("TRI3")== 0)     return ElementBlock::tri3;
+  else if (shape.compare("TRI6")== 0)     return ElementBlock::tri6;
+  else if (shape.compare("HEX8")== 0)     return ElementBlock::hex8;
+  else if (shape.compare("HEX20")== 0)    return ElementBlock::hex20;
+  else if (shape.compare("HEX27")== 0)    return ElementBlock::hex27;
+  else if (shape.compare("HEX")== 0)      return ElementBlock::hex8; // really needed????? a.g. 08/08
+  else if (shape.compare("TET4")== 0)     return ElementBlock::tet4;
+  else if (shape.compare("TETRA4")== 0)   return ElementBlock::tet4;
+  else if (shape.compare("TET10")== 0)    return ElementBlock::tet10;
+  else if (shape.compare("TETRA")== 0)    return ElementBlock::tet4;  // really needed????? a.g. 08/08
+  else if (shape.compare("WEDGE6")== 0)   return ElementBlock::wedge6;
+  else if (shape.compare("WEDGE15")== 0)  return ElementBlock::wedge15;
+  else if (shape.compare("WEDGE")== 0)    return ElementBlock::wedge6;   // really needed????? a.g. 08/08
+  else if (shape.compare("PYRAMID5")== 0) return ElementBlock::pyramid5;
+  else if (shape.compare("PYRAMID")== 0)  return ElementBlock::pyramid5; // really needed????? a.g. 08/08
+  else if (shape.compare("BAR2")== 0)     return ElementBlock::bar2;
+  else if (shape.compare("BAR3")== 0)     return ElementBlock::bar3;
   else{
-    cout << "Unknown Exodus Element Shape Name: " << shape.c_str();
+    cout << "Unknown Exodus Element Shape Name: " << shape;
     dserror("Unknown Exodus Element Shape Name!"); return ElementBlock::dis_none;
   }
 }

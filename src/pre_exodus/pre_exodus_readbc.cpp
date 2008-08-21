@@ -26,11 +26,10 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
 {
   // first we read the whole file into one stream/string
   stringstream bcstream;
-  const char *bcfilechar;
-  bcfilechar = bcfile.c_str();
+  const char *bcfilechar = bcfile.c_str();
   ifstream bcfstream(bcfilechar, ifstream::in);
   if (!bcfstream.good()){
-    cout << endl << "Unable to open file: " << bcfile.c_str() << endl;
+    cout << endl << "Unable to open file: " << bcfile << endl;
     dserror("Unable to open bc-file");
   }
   while (bcfstream.good()) bcstream << (char) bcfstream.get();

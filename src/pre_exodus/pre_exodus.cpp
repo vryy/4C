@@ -125,7 +125,7 @@ int main(
   }
 
   // create mesh object based on given exodus II file
-  EXODUS::Mesh mymesh(exofile.c_str());
+  EXODUS::Mesh mymesh(exofile);
   // print infos to cout
   mymesh.Print(cout);
 
@@ -177,7 +177,7 @@ int main(
    **************************************************************************/
   if (headfile=="")
   {
-    string defaultheadfilename = "default.head";
+    const string defaultheadfilename = "default.head";
     cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
 
     // open default header file
@@ -227,7 +227,7 @@ int main(
     // set default dat-file name if needed
     if (datfile=="")
     {
-      string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
+      const string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
       datfile=exofilebasename+".dat";
     }
 

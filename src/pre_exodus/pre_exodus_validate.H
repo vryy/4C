@@ -40,7 +40,7 @@ using namespace std;
 
 namespace EXODUS{
 //! validate a given datfile
-void ValidateInputFile(string datfile);
+void ValidateInputFile(const string datfile);
 
 //! Check Elements for positive Jacobian and otherwise 'rewind' them
 void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);
