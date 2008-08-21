@@ -149,13 +149,10 @@ void UTILS::MPConstraint3::Initialize(
         }
         InitializeConstraint(constraintdis_.find(condID)->second,params,systemvector);
       }
+      activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        activecons_.find(condID)->second=true;
-        if (actdisc_->Comm().MyPID()==0)
-        {
-          cout << "Encountered a new active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
-        }
+        cout << "Encountered a new active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
       }
     }
   }
