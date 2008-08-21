@@ -424,6 +424,30 @@ namespace STR
     {
       return output_;
     }
+    
+    //! Read restart values 
+    void ReadRestart
+    (
+      const int step //!< restart step
+    );
+    
+    //! Read and set restart state
+    void ReadRestartState();
+    
+    //! Read and set restart forces
+    virtual void ReadRestartForce()=0;
+    
+    //! Read and set restart values for constraints
+    void ReadRestartConstraint();
+    
+    //! Read and set restart values for surface stresses
+    void ReadRestartSurfstress();
+    
+    //! Read and set restart values for potentials
+    void ReadRestartPotential();
+    
+    //! Read and set restart values for multi scale materials
+    void ReadRestartMultiScale();
 
     //! Return displacements \f$D_{n}\f$
     Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
@@ -452,6 +476,14 @@ namespace STR
     
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
+    
+    //! Return current step number map
+    int GetStep() { return step_; }
+        
+    //! Return current step number map
+    double GetTime() { return (*time_)[0]; }
+        
+    
     //@}
 
   protected:

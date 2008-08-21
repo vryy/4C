@@ -455,6 +455,9 @@ namespace STR
     //! Return external force \f$F_{ext,n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
 
+    //! Read and set external forces from file
+    virtual void ReadRestartForce() = 0;
+   
     //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     Teuchos::RCP<Epetra_Vector> DisRes() { return disi_; }
 

@@ -454,6 +454,105 @@ void STR::TimInt::ResetStep()
 }
 
 /*----------------------------------------------------------------------*/
+/* Read and set restart values */
+void STR::TimInt::ReadRestart
+(
+  int step
+)
+{
+  IO::DiscretizationReader reader(discret_,step);
+  step_ = reader.ReadInt("step");
+  if (step_ != step) dserror("Time step on file not equal to given step");
+  time_  = Teuchos::rcp(new TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  ReadRestartState();
+  ReadRestartForce();
+  ReadRestartConstraint();
+  ReadRestartPotential();
+  ReadRestartSurfstress();
+  ReadRestartMultiScale();
+  // fix pointer to #dofrowmap_, which has not really changed, but is
+  // located at different place
+  dofrowmap_ = discret_->DofRowMap();
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart state */
+void STR::TimInt::ReadRestartState()
+{
+  IO::DiscretizationReader reader(discret_,step_);
+  reader.ReadVector(disn_, "displacement");
+  dis_ -> UpdateSteps(*disn_);
+  reader.ReadVector(veln_, "velocity");
+  vel_ -> UpdateSteps(*veln_);
+  reader.ReadVector(accn_, "acceleration");
+  acc_ -> UpdateSteps(*accn_);
+  reader.ReadMesh(step_);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for constraints */
+void STR::TimInt::ReadRestartConstraint()
+{
+  if (conman_->HaveConstraint())
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    double uzawatemp = reader.ReadDouble("uzawaparameter");
+    uzawasolv_->SetUzawaParameter(uzawatemp);
+    RCP<Epetra_Map> constrmap=conman_->GetConstraintMap();
+    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);    
+    reader.ReadVector(tempvec, "lagrmultiplier");
+    conman_->SetLagrMultVector(tempvec);
+    reader.ReadVector(tempvec, "refconval");
+    conman_->SetRefBaseValues(tempvec,(*time_)[0]);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for potentials */
+void STR::TimInt::ReadRestartPotential()
+{
+  if (potman_!=null)
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    RCP<Epetra_Map> surfmap=potman_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    potman_->SetHistory(A_old);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for constraints */
+void STR::TimInt::ReadRestartSurfstress()
+{
+  if (surfstressman_!=null)
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    RCP<Epetra_Map> surfmap=surfstressman_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    reader.ReadVector(con_quot, "conquot");
+    surfstressman_->SetHistory(A_old,con_quot);
+  }
+}
+
+
+void STR::TimInt::ReadRestartMultiScale()
+{
+  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","multi_readrestart");
+    discret_->Evaluate(p,null,null,null,null,null);
+    discret_->ClearState();
+  }
+}
+
+/*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
 void STR::TimInt::OutputStep()
@@ -544,9 +643,11 @@ void STR::TimInt::OutputRestart
   if (conman_->HaveConstraint())
   {
     output_->WriteDouble("uzawaparameter",
-                         uzawasolv_->GetUzawaParameter());
+                          uzawasolv_->GetUzawaParameter());
+    output_->WriteVector("lagrmultiplier",
+                          conman_->GetLagrMultVector());
     output_->WriteVector("refconval",
-                         conman_->GetRefBaseValues());
+                          conman_->GetRefBaseValues());
   }
 
   // info dedicated to user's eyes staring at standard out

@@ -134,6 +134,10 @@ namespace STR
 
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    
+    //! Read and set external forces from file
+    virtual void ReadRestartForce() = 0;
+  
 
     //@}
 

@@ -212,6 +212,8 @@ namespace STR
     //! Update step
     void UpdateStep();
 
+    //! Read and set restart for forces
+    void ReadRestartForce();
     //@}
 
     //! @name Access methods

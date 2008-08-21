@@ -446,4 +446,13 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
 }
 
 /*----------------------------------------------------------------------*/
+/* read restart forces */
+void STR::TimIntGEMM::ReadRestartForce()
+{
+  IO::DiscretizationReader reader(discret_,step_);
+  reader.ReadVector(fext_,"fexternal");
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

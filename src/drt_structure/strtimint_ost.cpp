@@ -403,6 +403,14 @@ void STR::TimIntOneStepTheta::UpdateStep()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* read restart forces */
+void STR::TimIntOneStepTheta::ReadRestartForce()
+{
+  IO::DiscretizationReader reader(discret_,step_);
+  reader.ReadVector(fext_,"fexternal");
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

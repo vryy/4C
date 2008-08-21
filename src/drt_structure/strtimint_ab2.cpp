@@ -196,4 +196,11 @@ void STR::TimIntAB2::UpdateStep()
 }
 
 /*----------------------------------------------------------------------*/
+/* read restart forces */
+void STR::TimIntAB2::ReadRestartForce()
+{
+  dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
+}
+
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

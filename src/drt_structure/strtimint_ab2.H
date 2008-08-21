@@ -124,6 +124,9 @@ namespace STR
       return fextn_;
     }
 
+    //! Read and set restart for forces
+    void ReadRestartForce();
+    
     //@}
 
   protected:

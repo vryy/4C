@@ -265,6 +265,14 @@ void STR::TimIntStatics::UpdateStep()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* read restart forces */
+void STR::TimIntStatics::ReadRestartForce()
+{
+  IO::DiscretizationReader reader(discret_,step_);
+  reader.ReadVector(fext_,"fexternal");
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

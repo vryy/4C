@@ -396,16 +396,15 @@ void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
   // auxiliar global vectors
   Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*dofrowmap_, false);
+      = LINALG::CreateVector(*dofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> aux2
-      = LINALG::CreateVector(*dofrowmap_, false);
+      = LINALG::CreateVector(*dofrowmap_, true);
   // further auxiliar variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
-
   // new end-point velocities
   aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
   aux->Update((beta_-gamma_)/beta_, (*vel_)[0],
@@ -509,6 +508,15 @@ void STR::TimIntGenAlpha::UpdateStep()
   UpdateStepPotential();
 
   // look out
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* read restart forces */
+void STR::TimIntGenAlpha::ReadRestartForce()
+{
+  IO::DiscretizationReader reader(discret_,step_);
+  reader.ReadVector(fext_,"fexternal");
   return;
 }
 

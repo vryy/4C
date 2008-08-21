@@ -139,14 +139,13 @@ void STR::strudyn_direct()
   // note that this changes time and step in genalphaparams
   if (genprob.restart)
   {
-    dserror("Not yet implemented.");
-    //sti->ReadRestart(genprob.restart);
+    sti->ReadRestart(genprob.restart);
   }
 
   // write mesh always at beginning of calc or restart
   {
-    const int step = 0;
-    const double time = 0.0; // PROVIDE INPUT PARAMETER IN sdyn
+    const int step = sti->GetStep();
+    const double time = sti->GetTime(); // PROVIDE INPUT PARAMETER IN sdyn
     output->WriteMesh(step, time);
   }
 
