@@ -498,7 +498,8 @@ void STR::TimIntGenAlpha::UpdateStep()
       p.set("action", "calc_struct_update_imrlike");
     }
     // go to elements
-    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
   // update surface stress
@@ -515,8 +516,8 @@ void STR::TimIntGenAlpha::UpdateStep()
 /* read restart forces */
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_,step_);
-  reader.ReadVector(fext_,"fexternal");
+  IO::DiscretizationReader reader(discret_, step_);
+  reader.ReadVector(fext_, "fexternal");
   return;
 }
 

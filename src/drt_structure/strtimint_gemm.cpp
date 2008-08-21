@@ -394,7 +394,8 @@ void STR::TimIntGEMM::UpdateStep()
     //p.set("alpha f", alphaf_);
     p.set("action", "calc_struct_update_istep");
     // go to elements
-    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
   // update surface stress
@@ -438,7 +439,8 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   discret_->SetState("residual displacement", disi);
   if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, stiff, null, fint, null, null);
+  discret_->Evaluate(p, stiff, Teuchos::null,
+                     fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
   
   // that's it
@@ -449,8 +451,8 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
 /* read restart forces */
 void STR::TimIntGEMM::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_,step_);
-  reader.ReadVector(fext_,"fexternal");
+  IO::DiscretizationReader reader(discret_, step_);
+  reader.ReadVector(fext_, "fexternal");
   return;
 }
 

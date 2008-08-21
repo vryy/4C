@@ -245,7 +245,7 @@ STR::TimInt::TimInt
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, null, null, dirichtoggle_);
+    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, dirichtoggle_);
     zeros_->PutScalar(0.0); // just in case of change
   }
   // opposite of dirichtoggle vector, ie for each component
@@ -362,7 +362,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState("residual displacement", zeros_);
     discret_->SetState("displacement", (*dis_)(0));
     if (damping_ == damp_material) discret_->SetState("velocity", (*vel_)(0));
-    discret_->Evaluate(p, stiff_, mass_, fint, null, null);
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -445,7 +445,8 @@ void STR::TimInt::ResetStep()
     ParameterList p;
     p.set("action", "calc_struct_reset_istep");    
     // go to elements
-    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+                       Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 
@@ -457,13 +458,13 @@ void STR::TimInt::ResetStep()
 /* Read and set restart values */
 void STR::TimInt::ReadRestart
 (
-  int step
+  const int step
 )
 {
-  IO::DiscretizationReader reader(discret_,step);
+  IO::DiscretizationReader reader(discret_, step);
   step_ = reader.ReadInt("step");
   if (step_ != step) dserror("Time step on file not equal to given step");
-  time_  = Teuchos::rcp(new TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
   ReadRestartState();
   ReadRestartForce();
   ReadRestartConstraint();
@@ -479,13 +480,13 @@ void STR::TimInt::ReadRestart
 /* Read and set restart state */
 void STR::TimInt::ReadRestartState()
 {
-  IO::DiscretizationReader reader(discret_,step_);
+  IO::DiscretizationReader reader(discret_, step_);
   reader.ReadVector(disn_, "displacement");
-  dis_ -> UpdateSteps(*disn_);
+  dis_->UpdateSteps(*disn_);
   reader.ReadVector(veln_, "velocity");
-  vel_ -> UpdateSteps(*veln_);
+  vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
-  acc_ -> UpdateSteps(*accn_);
+  acc_->UpdateSteps(*accn_);
   reader.ReadMesh(step_);
   return;
 }
@@ -496,15 +497,15 @@ void STR::TimInt::ReadRestartConstraint()
 {
   if (conman_->HaveConstraint())
   {
-    IO::DiscretizationReader reader(discret_,step_);
+    IO::DiscretizationReader reader(discret_, step_);
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     uzawasolv_->SetUzawaParameter(uzawatemp);
-    RCP<Epetra_Map> constrmap=conman_->GetConstraintMap();
-    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);    
+    Teuchos::RCP<Epetra_Map> constrmap=conman_->GetConstraintMap();
+    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap, true);
     reader.ReadVector(tempvec, "lagrmultiplier");
     conman_->SetLagrMultVector(tempvec);
     reader.ReadVector(tempvec, "refconval");
-    conman_->SetRefBaseValues(tempvec,(*time_)[0]);
+    conman_->SetRefBaseValues(tempvec, (*time_)[0]);
   }
 }
 
@@ -512,11 +513,11 @@ void STR::TimInt::ReadRestartConstraint()
 /* Read and set restart values for potentials */
 void STR::TimInt::ReadRestartPotential()
 {
-  if (potman_!=null)
+  if (potman_ != Teuchos::null)
   {
-    IO::DiscretizationReader reader(discret_,step_);
-    RCP<Epetra_Map> surfmap=potman_->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    IO::DiscretizationReader reader(discret_, step_);
+    Teuchos::RCP<Epetra_Map> surfmap = potman_->GetSurfRowmap();
+    Teuchos::RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap, true);
     reader.ReadVector(A_old, "Aold");
     potman_->SetHistory(A_old);
   }
@@ -526,28 +527,30 @@ void STR::TimInt::ReadRestartPotential()
 /* Read and set restart values for constraints */
 void STR::TimInt::ReadRestartSurfstress()
 {
-  if (surfstressman_!=null)
+  if (surfstressman_ != Teuchos::null)
   {
-    IO::DiscretizationReader reader(discret_,step_);
-    RCP<Epetra_Map> surfmap=surfstressman_->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
+    IO::DiscretizationReader reader(discret_, step_);
+    Teuchos::RCP<Epetra_Map> surfmap = surfstressman_->GetSurfRowmap();
+    Teuchos::RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap, true);
+    Teuchos::RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap, true);
     reader.ReadVector(A_old, "Aold");
     reader.ReadVector(con_quot, "conquot");
-    surfstressman_->SetHistory(A_old,con_quot);
+    surfstressman_->SetHistory(A_old, con_quot);
   }
 }
 
-
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for multi-scale */
 void STR::TimInt::ReadRestartMultiScale()
 {
-  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
+  if (DRT::Problem::Instance()->ProblemType() == "struct_multi")
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","multi_readrestart");
-    discret_->Evaluate(p,null,null,null,null,null);
+    p.set("action", "multi_readrestart");
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+                       Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
 }
@@ -745,7 +748,8 @@ void STR::TimInt::OutputStressStrain
   discret_->ClearState();
   discret_->SetState("residual displacement", zeros_);
   discret_->SetState("displacement", (*dis_)(0));
-  discret_->Evaluate(p, null, null, null, null, null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+                     Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // Make new step
@@ -904,7 +908,7 @@ void STR::TimInt::ApplyForceStiffInternal
   discret_->SetState("displacement", dis);
   if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, stiff, null, fint, null, null);
+  discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
   
   // that's it
@@ -937,7 +941,8 @@ void STR::TimInt::ApplyForceInternal
   discret_->SetState("displacement", dis);
   if (damping_ == damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, null, null, fint, null, null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
   
   // where the fun starts

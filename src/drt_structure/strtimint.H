@@ -435,7 +435,7 @@ namespace STR
     void ReadRestartState();
     
     //! Read and set restart forces
-    virtual void ReadRestartForce()=0;
+    virtual void ReadRestartForce() = 0;
     
     //! Read and set restart values for constraints
     void ReadRestartConstraint();

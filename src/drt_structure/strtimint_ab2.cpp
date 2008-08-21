@@ -188,7 +188,8 @@ void STR::TimIntAB2::UpdateStep()
     // action for elements
     p.set("action", "calc_struct_update_istep");    
     // go to elements
-    discret_->Evaluate(p, null, null, null, null, null);
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
   // bye
@@ -200,6 +201,7 @@ void STR::TimIntAB2::UpdateStep()
 void STR::TimIntAB2::ReadRestartForce()
 {
   dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
+  return;
 }
 
 /*----------------------------------------------------------------------*/

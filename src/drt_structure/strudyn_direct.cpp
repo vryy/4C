@@ -136,7 +136,6 @@ void STR::strudyn_direct()
     = TimAdaCreate(ioflags, sdyn, xparams, tap, sti);
 
   // do restart if demanded from input file
-  // note that this changes time and step in genalphaparams
   if (genprob.restart)
   {
     sti->ReadRestart(genprob.restart);
