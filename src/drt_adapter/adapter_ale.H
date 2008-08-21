@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
@@ -37,7 +38,6 @@ Maintainer: Ulrich Kuettler
 #include <NOX_Epetra_Interface_Required.H>
 
 #include <set>
-
 
 
 
@@ -99,6 +99,9 @@ public:
 
   /// get the linear solver object used for this field
   virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
+  /// get the linear solver object used for this field
+  virtual Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() = 0;
 
   //@}
 
@@ -184,6 +187,8 @@ public:
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
+  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return precond_; }
+
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
@@ -232,6 +237,9 @@ private:
   Teuchos::RCP<ParameterList> params_;
   Teuchos::RCP<IO::DiscretizationWriter> output_;
   //@}
+
+  /// cached preconditioner on constant system matrix
+  Teuchos::RCP<LINALG::Preconditioner> precond_;
 
   //! @name Algorithm core variables
   int step_;
@@ -297,6 +305,8 @@ public:
 
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+
+  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return Teuchos::null; }
 
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 

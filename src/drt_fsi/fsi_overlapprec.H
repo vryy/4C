@@ -7,6 +7,10 @@
 #include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/adapter_ale.H"
+
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
@@ -25,9 +29,9 @@ namespace FSI
 
     /// construction
     OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                           Teuchos::RCP<LINALG::Solver> structuresolver,
-                           Teuchos::RCP<LINALG::Solver> fluidsolver,
-                           Teuchos::RCP<LINALG::Solver> alesolver,
+                           ADAPTER::Structure& structure,
+                           ADAPTER::Fluid& fluid,
+                           ADAPTER::Ale& ale,
                            bool structuresplit=false,
                            double somega=1.0,
                            int siterations=0,
@@ -91,6 +95,8 @@ namespace FSI
     Teuchos::RCP<LINALG::Preconditioner> structuresolver_;
     Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
     Teuchos::RCP<LINALG::Preconditioner> alesolver_;
+
+    Teuchos::RCP<LINALG::Preconditioner> constalesolver_;
 
     //@}
 

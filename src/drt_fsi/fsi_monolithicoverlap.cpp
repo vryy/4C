@@ -74,19 +74,6 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   SetDofRowMaps(vecSpaces);
 
-  // create block system matrix
-
-  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
-                                                          StructureField().LinearSolver(),
-                                                          FluidField().LinearSolver(),
-                                                          AleField().LinearSolver(),
-                                                          false,
-                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
-                                                          fsidyn.get<int>("STRUCTPCITER"),
-                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
-                                                          fsidyn.get<int>("FLUIDPCITER"),
-                                                          allfiles.out_err));
-
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
   FluidField().UseBlockMatrix(FluidField().Interface(),
@@ -95,6 +82,19 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
+
+  // create block system matrix
+
+  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
+                                                          StructureField(),
+                                                          FluidField(),
+                                                          AleField(),
+                                                          false,
+                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                          fsidyn.get<int>("STRUCTPCITER"),
+                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          allfiles.out_err));
 }
 
 

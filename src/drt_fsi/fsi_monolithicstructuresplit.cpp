@@ -81,19 +81,6 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
 
   SetDofRowMaps(vecSpaces);
 
-  // create block system matrix
-
-  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
-                                                          StructureField().LinearSolver(),
-                                                          FluidField().LinearSolver(),
-                                                          AleField().LinearSolver(),
-                                                          true,
-                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
-                                                          fsidyn.get<int>("STRUCTPCITER"),
-                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
-                                                          fsidyn.get<int>("FLUIDPCITER"),
-                                                          allfiles.out_err));
-
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
   FluidField().UseBlockMatrix(FluidField().Interface(),
@@ -102,6 +89,19 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
+
+  // create block system matrix
+
+  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
+                                                          StructureField(),
+                                                          FluidField(),
+                                                          AleField(),
+                                                          true,
+                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                          fsidyn.get<int>("STRUCTPCITER"),
+                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          allfiles.out_err));
 }
 
 

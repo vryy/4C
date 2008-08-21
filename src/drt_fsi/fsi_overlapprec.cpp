@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                                                    Teuchos::RCP<LINALG::Solver> structuresolver,
-                                                    Teuchos::RCP<LINALG::Solver> fluidsolver,
-                                                    Teuchos::RCP<LINALG::Solver> alesolver,
+                                                    ADAPTER::Structure& structure,
+                                                    ADAPTER::Fluid& fluid,
+                                                    ADAPTER::Ale& ale,
                                                     bool structuresplit,
                                                     double somega,
                                                     int siterations,
@@ -25,9 +25,17 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
     fiterations_(fiterations),
     err_(err)
 {
-  structuresolver_ = Teuchos::rcp(new LINALG::Preconditioner(structuresolver));
-  fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluidsolver));
-  alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(alesolver));
+  fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluid.LinearSolver()));
+
+#ifndef BLOCKMATRIXMERGE
+  structuresolver_ = Teuchos::rcp(new LINALG::Preconditioner(structure.LinearSolver()));
+
+  constalesolver_ = ale.ConstPreconditioner();
+  if (constalesolver_==Teuchos::null)
+    alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(ale.LinearSolver()));
+  else
+    alesolver_ = constalesolver_;
+#endif
 }
 
 
@@ -584,7 +592,9 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
-  alesolver_      ->Setup(aleInnerOp   .EpetraMatrix());
+
+  if (constalesolver_==Teuchos::null)
+    alesolver_    ->Setup(aleInnerOp   .EpetraMatrix());
 #endif
 }
 
