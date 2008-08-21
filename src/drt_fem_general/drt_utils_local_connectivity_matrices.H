@@ -622,6 +622,12 @@ namespace UTILS
     }
     return pos;
   }
+  
+  /*!
+   *  returns the element size in local coordinates
+   */    
+  double getSizeInLocalCoordinates( 
+      const DRT::Element::DiscretizationType     distype);
 
 } // namespace UTILS
 } // namespace DRT

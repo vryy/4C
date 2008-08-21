@@ -14,7 +14,8 @@ Maintainer: Axel Gerstenberger
 #ifndef UTILS_INTEGRATION_H
 #define UTILS_INTEGRATION_H
 
-#include "../drt_lib/drt_element.H"
+#include <string>
+#include <sstream>
 
 namespace DRT
 {
@@ -22,24 +23,29 @@ namespace UTILS
 {
 
 //! supported 3d integration rules
+//!
+//! integration rules can be distinguished into open and closed rules
+//! hereby, open rules are rules where all integration points are inside the domain
+//! and none on the boundary of the integrated domain
 enum GaussRule3D
 {
-    intrule3D_undefined,    ///< use this to initialize a gaussrule, if you don't know the value, yet!
-    intrule_hex_1point,
-    intrule_hex_8point,
-    intrule_hex_27point,
-    intrule_tet_1point,     ///< GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 0
-    intrule_tet_4point,     ///< GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 1
-    intrule_tet_4point_alternative,  ///< ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION ? (closed)
-    intrule_tet_5point,     ///< GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 2 (open)
-    intrule_tet_10point,    ///< GAUSS INTEGRATION        10 SAMPLING POINTS, DEG.OF PRECISION 3 (closed)
-    intrule_tet_11point,    ///< KEAST5,        11 SAMPLING POINTS, DEG.OF PRECISION 4 (open)
-    intrule_tet_24point,    ///< KEAST7,        24 SAMPLING POINTS, DEG.OF PRECISION 6 (open)
-    intrule_wedge_1point,
-    intrule_wedge_6point,   ///< GAUSS INTEGRATION         6 SAMPLING POINTS, degree of precission ???
-    intrule_wedge_9point,   ///< GAUSS INTEGRATION         9 SAMPLING POINTS, degree of precission ???
-    intrule_pyramid_1point,
-    intrule_pyramid_8point
+    intrule3D_undefined,            ///< use this to initialize a gaussrule, if you don't know the value, yet!
+    intrule_hex_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 0 (open)
+    intrule_hex_8point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
+    intrule_hex_27point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
+    intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 0 (open)
+    intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
+    intrule_tet_4point_alternative, ///< GAUSS INTEGRATION, DEG.OF PRECISION ? (closed)
+    intrule_tet_5point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
+    intrule_tet_10point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (closed)
+    intrule_tet_11point,            ///< KEAST5           , DEG.OF PRECISION 4 (open)
+    intrule_tet_24point,            ///< KEAST7           , DEG.OF PRECISION 6 (open)
+    intrule_tet_45point,            ///< KEAST9           , DEG.OF PRECISION 8 (open)
+    intrule_wedge_1point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+    intrule_wedge_6point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+    intrule_wedge_9point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+    intrule_pyramid_1point,         ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
+    intrule_pyramid_8point          ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
 };
 
 
@@ -77,7 +83,7 @@ template <int dim, class Vec>
 class IntegrationPoint
 {
 public:
-    //! Default constructor
+    //! Standard constructor
     explicit IntegrationPoint(
             const Vec&       pos,
             const double     weight) : 
@@ -143,8 +149,8 @@ struct IntegrationPoints3D
       const GaussRule3D gaussrule   ///< 3d rule
       );
   int           nquad;         ///< number of gausspoints
-  double        qxg[27][3];    ///< coordinates
-  double        qwgt[27];      ///< weights
+  double        qxg[45][3];    ///< coordinates
+  double        qwgt[45];      ///< weights
 };
 
 /*!
@@ -218,11 +224,6 @@ inline IntegrationPoints1D getIntegrationPoints1D(
   return IntegrationPoints1D(gaussrule);
 }
 
-/*!
- *  returns the element size in local coordinates
- */    
-double getSizeInLocalCoordinates( 
-    const DRT::Element::DiscretizationType     distype);
 
 
 } // namespace UTILS
