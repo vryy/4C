@@ -84,7 +84,7 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false));
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   if (damping) damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
 
@@ -398,7 +398,7 @@ void StruGenAlpha::ConstantPredictor()
       p.set("pot_man", pot_man_);
       pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
-    
+
     if (constrMan_->HaveConstraint())
     {
       ParameterList pcon;
@@ -685,7 +685,7 @@ void StruGenAlpha::ConsistentPredictor()
       p.set("pot_man", pot_man_);
       pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
-    
+
     if (constrMan_->HaveConstraint())
     {
       ParameterList pcon;
@@ -1609,7 +1609,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     {
       // zero out stiffness and internal forces
       stiff_->Zero();
-      fint_->PutScalar(0.0); 
+      fint_->PutScalar(0.0);
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1626,13 +1626,13 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       disi_->Scale(1.-alphaf);
 #endif
       ParameterList pcon;
-      
+
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
       constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
       constrMatrix = constrMan_->GetConstrMatrix();
       constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
       constrnorm=constrMan_->GetErrorNorm();
- 
+
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       discret_.SetState("velocity",velm_);
@@ -2920,7 +2920,7 @@ void StruGenAlpha::Output()
     {
       output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
       output_.WriteVector("lagrmultiplier",constrMan_->GetLagrMultVector());
-      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());      
+      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());
     }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
@@ -3369,7 +3369,7 @@ void StruGenAlpha::ReadRestart(int step)
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     uzawaSolv_->SetUzawaParameter(uzawatemp);
     RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
-    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);    
+    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);
     reader.ReadVector(tempvec, "lagrmultiplier");
     constrMan_->SetLagrMultVector(tempvec);
     reader.ReadVector(tempvec, "refconval");
