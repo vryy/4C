@@ -73,30 +73,28 @@ int DRT::UTILS::getNumberOfElementNodes(
 int DRT::UTILS::getNumberOfElementCornerNodes(
     const DRT::Element::DiscretizationType&     distype)
 {
-
     int numCornerNodes = 0;
-
     switch(distype)
     {
-        case DRT::Element::hex8:
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        {
             numCornerNodes = 8;
             break;
-        case DRT::Element::hex20:
-            numCornerNodes = 8;
-            break;
-        case DRT::Element::hex27:
-            numCornerNodes = 8;
-            break;
-        case DRT::Element::tet4:
+        }
+        case DRT::Element::tet4: case DRT::Element::tet10: 
+        case DRT::Element::quad9: case DRT::Element::quad8: case DRT::Element::quad4:
+        {
             numCornerNodes = 4;
             break;
-        case DRT::Element::tet10:
-            numCornerNodes = 4;
+        }
+        case DRT::Element::tri6: case DRT::Element::tri3: 
+        {
+            numCornerNodes = 3;
             break;
+        }
         default:
             dserror("discretization type not yet implemented");
     }
-
     return numCornerNodes;
 }
 
