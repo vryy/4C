@@ -77,7 +77,6 @@ UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              frictional
-INIT_CONTACT         Yes
 BASISTRAFO           No
 FRICTION             tresca
 FRBOUND              1.0
@@ -562,7 +561,7 @@ DLINE 0
 DSURF 0
 ---------------------------------------------CONTACT CONDITIONS 2D
 DLINE 2
-E 1 - 1 Slave
+E 1 - 1 Slave Active
 E 7 - 1 Master
 ---------------------------------------------CONTACT CONDITIONS 3D
 DSURF 0

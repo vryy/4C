@@ -80,7 +80,6 @@ TOLDISP      1.0E-06
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
-INIT_CONTACT         Yes
 BASISTRAFO           No
 FRICTION             None
 FRBOUND              0.0
@@ -659,7 +658,7 @@ DLINE 0
 DSURF 0
 ---------------------------------------------CONTACT CONDITIONS 2D
 DLINE 2
-E 11 - 1 Slave
+E 11 - 1 Slave Active
 E 13 - 1 Master
 ---------------------------------------------CONTACT CONDITIONS 3D
 DSURF 0

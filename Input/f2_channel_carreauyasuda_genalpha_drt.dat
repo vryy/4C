@@ -289,7 +289,6 @@ CONTACT                         None
 FRBOUND                         0
 FRCOEFF                         0
 FRICTION                        None
-INIT_CONTACT                    No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

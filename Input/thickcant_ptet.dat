@@ -68,7 +68,6 @@ UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT          None
-INIT_CONTACT     No
 BASISTRAFO       No
 FRICTION         None
 FRBOUND          0.0

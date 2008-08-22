@@ -70,7 +70,6 @@ UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 ----------------------------------------------------------STRUCTURAL CONTACT
 CONTACT                         None
-INIT_CONTACT                    No
 ---------------------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP                      Nlin_Time_Int
 INITIALFIELD                    zero_field

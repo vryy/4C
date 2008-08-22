@@ -51,7 +51,6 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT          None
-INIT_CONTACT     No
 BASISTRAFO       No
 FRICTION         None
 FRBOUND          0.0
