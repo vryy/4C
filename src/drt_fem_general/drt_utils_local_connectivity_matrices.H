@@ -289,37 +289,6 @@ namespace UTILS
    const DRT::Element::DiscretizationType&     distype
    );
 
-  /*!
-  \brief Returns the number of nodes
-         for each discretization type
-         - template version
-
-  \return number of nodes of the discretization type
-  */
-  template <DRT::Element::DiscretizationType DISTYPE>
-  inline int getNumberOfElementNodes()
-  {
-     switch(DISTYPE)
-     {
-     case DRT::Element::dis_none:     return 0;    break;
-     case DRT::Element::point1:       return 1;    break;
-     case DRT::Element::line2:        return 2;    break;
-     case DRT::Element::line3:        return 3;    break;
-     case DRT::Element::quad4:        return 4;    break;
-     case DRT::Element::quad8:        return 8;    break;
-     case DRT::Element::quad9:        return 9;    break;
-     case DRT::Element::tri3:         return 3;    break;
-     case DRT::Element::tri6:         return 6;    break;
-     case DRT::Element::hex8:         return 8;    break;
-     case DRT::Element::hex20:        return 20;   break;
-     case DRT::Element::hex27:        return 27;   break;
-     case DRT::Element::tet4:         return 4;    break;
-     case DRT::Element::tet10:        return 10;   break;
-     default:
-         dserror("discretization type not yet implemented");
-         return -1;
-     }
-  }
   
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>
@@ -332,7 +301,7 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::quad4>    {static const int numNodePerElement = 4;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::quad8>    {static const int numNodePerElement = 8;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::quad9>    {static const int numNodePerElement = 9;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs4>   {static const int numNodePerElement = 8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs4>   {static const int numNodePerElement = 4;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs9>   {static const int numNodePerElement = 9;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri3>     {static const int numNodePerElement = 3;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri6>     {static const int numNodePerElement = 6;};
@@ -487,20 +456,12 @@ namespace UTILS
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
-//  /*!
-//  \brief    Returns the dimension of an element
-//
-//  */
-//  int getDimension(
-//    const DRT::Element*   element     ///< element
-//    );
-
   /*!
   \brief    Returns the dimension of an element based on its discretization-type
 
   */
   int getDimension(
-		  const DRT::Element::DiscretizationType distype///< element-discretization type
+      const DRT::Element::DiscretizationType distype  ///< element-discretization type
     );
 
   /*!
@@ -528,18 +489,6 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::tet10>    {static const int dim = 3;};
   
   /*!
-  \brief    Returns the dimension of an element based on its discretization-type
-            Template version
-
-  */
-  template <DRT::Element::DiscretizationType DISTYPE>
-  inline int getDimension()
-  {
-      return DisTypeToDim<DISTYPE>::dim;
-  }
-  
-  
-  /*!
     \brief    Returns the order of an element based on its discretization-type
               Template version
    */
@@ -563,15 +512,6 @@ namespace UTILS
   template<> struct DisTypeToOrder<DRT::Element::tet4>     {static const int order = 1;};
   template<> struct DisTypeToOrder<DRT::Element::tet10>    {static const int order = 2;};
 
-  /*!
-    \brief    returns the order of the element-shape
-              Template version
-   */
-  template <DRT::Element::DiscretizationType DISTYPE>
-  inline int getOrder()
-  {
-    return DisTypeToOrder<DISTYPE>::order;
-  }
 
   /*!
     \brief    returns the order of the element-shape
