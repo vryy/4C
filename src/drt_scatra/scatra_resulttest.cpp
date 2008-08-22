@@ -15,23 +15,11 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-#include <string>
-
 #include "scatra_resulttest.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-}
 
 
 /*----------------------------------------------------------------------*/
