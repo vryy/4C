@@ -575,8 +575,8 @@ void updateAForCSI(
     const BlitzMat&                   xyze_lineElement     ///< nodal positions of line element
 )
 {
-  const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
-  const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+  const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
+  const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
 
   A = 0.0;
 
@@ -617,8 +617,8 @@ void updateRHSForCSI(
     const BlitzMat&      xyze_lineElement     ///< nodal positions of line element
     )
 {
-  const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
-  const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+  const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
+  const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
 
   b = 0.0;
 
