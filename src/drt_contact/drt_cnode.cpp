@@ -22,9 +22,11 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CNode::CNode(int id, const double* coords, const int owner, 
-                      const int numdof, const vector<int>& dofs, const bool isslave) :
+                      const int numdof, const vector<int>& dofs, const bool isslave,
+                      const bool initactive) :
 DRT::Node(id,coords,owner),
 isslave_(isslave),
+initactive_(initactive),
 isonbound_(false),
 numdof_(numdof),
 dofs_(dofs),
@@ -54,6 +56,7 @@ grow_(1.0e12)
 CONTACT::CNode::CNode(const CONTACT::CNode& old) :
 DRT::Node(old),
 isslave_(old.isslave_),
+initactive_(old.initactive_),
 isonbound_(old.isonbound_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
@@ -106,19 +109,16 @@ ostream& operator << (ostream& os, const CONTACT::CNode& cnode)
 void CONTACT::CNode::Print(ostream& os) const
 {
   // Print id and coordinates
-  os << "CNode " << setw(12) << Id()
-     << " Owner " << setw(4) << Owner()
-     << " Coords "
-     << setw(12) << X()[0] << " "
-     << setw(12) << X()[1] << " "
-     << setw(12) << X()[2] << " "
-     << " Dofs "; 
-  for (int i=0; i<(int)dofs_.size(); ++i)
-    os << dofs_[i] << " ";
-  if (IsSlave()) os << " Slave Side  ";
-  else           os << " Master Side ";
-  if (IsOnBound()) os << " Boundary Node ";
-  else             os << " Interior Node ";
+  os << "Contact ";
+  DRT::Node::Print(os);
+  if (IsSlave())
+  {
+    os << " Slave  ";
+    if (IsInitActive()) os << " InitActive  ";
+  }
+  else           os << " Master ";
+  if (IsOnBound()) os << " Boundary ";
+  else             os << " Interior ";
   return;
 }
 
@@ -139,6 +139,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // add isslave_
   AddtoPack(data,isslave_);
+  // add initactive_
+  AddtoPack(data,initactive_);
   // add isonbound_
   AddtoPack(data,isonbound_);
   // add dbc_
@@ -188,6 +190,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   DRT::Node::Unpack(basedata);
   // isslave_
   ExtractfromPack(position,data,isslave_);
+  // isslave_
+  ExtractfromPack(position,data,initactive_);
   // isonbound_
   ExtractfromPack(position,data,isonbound_);
   // dbc_

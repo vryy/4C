@@ -641,7 +641,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       double x[3];
       vector<int> dofs(0);
-      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false);
+      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false,false);
       node->Unpack(data);
       return node;
     }

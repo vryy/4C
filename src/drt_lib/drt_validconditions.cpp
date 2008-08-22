@@ -234,6 +234,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "Side","Master",
         Teuchos::tuple<std::string>("Master","Slave"),
         Teuchos::tuple<std::string>("Master","Slave"))));
+  contactcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Initialization","Inactive",
+        Teuchos::tuple<std::string>("Inactive","Active"),
+        Teuchos::tuple<std::string>("Inactive","Active"))));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("CONTACT CONDITIONS 2D",

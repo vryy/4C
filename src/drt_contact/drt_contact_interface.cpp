@@ -2247,17 +2247,15 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
 
     // *******************************************************************
     // INITIALIZATION OF THE ACTIVE SET (t=0)
-    // Later this will be the point where we have IF ACTIVE (see below)
-    // but here for initialization of the active set, it is our choice!
-    // The following cases can be thought of:
-    // 0) Empty active set
-    //    -> this means everything is identical to BuildActiveSet
-    //     -> for unconstrained static problems this doesn't work!
-    // 1) Full active set
-    //    -> all slave nodes are set active, no IF here at all
+    // This is given by the CNode member variable IsInitActive(), which
+    // has been introduced via the contact conditions in the input file.
+    // Thus, if no design line has been chosen to be active at t=0,
+    // the active node set will be empty at t=0. Yet, if one or more
+    // design lines have been specified as "Slave" AND "Active" then
+    // the corresponding CNodes are put into an initial active set!
+    // This yields a very flexible solution for contact initialization.
     // *******************************************************************
-
-    if (initialcontact)
+    if (cnode->IsInitActive())
     {
       // FULL: all slave nodes are assumed to be active
       cnode->Active()=true;
@@ -2268,22 +2266,6 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
       {
         mydofgids[countdofs] = cnode->Dofs()[j];
         ++countdofs;
-      }
-    }
-    else
-    {
-      // EMPTY: no assumption on initial active set
-      if (cnode->Active())
-      {
-        cnode->Active()=true;
-        mynodegids[countnodes] = cnode->Id();
-        ++countnodes;
-
-        for (int j=0;j<numdof;++j)
-        {
-          mydofgids[countdofs] = cnode->Dofs()[j];
-          ++countdofs;
-        }
       }
     }
   }

@@ -79,8 +79,8 @@ void CONTACT::CElement::Print(ostream& os) const
 {
   os << "Contact Element ";
   DRT::Element::Print(os);
-  if (isslave_) os << " Slave  Side ";
-  else          os << " Master Side ";
+  if (isslave_) os << " Slave  ";
+  else          os << " Master ";
 
   return;
 }

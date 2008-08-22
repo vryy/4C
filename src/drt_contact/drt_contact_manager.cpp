@@ -126,12 +126,40 @@ isincontact_(false)
     
     if (!hasslave) dserror("Slave side missing in contact condition group!");
     if (!hasmaster) dserror("Master side missing in contact condition group!");
+       
+    // find out which sides are initialized as Active
+    vector<const string*> active((int)currentgroup.size());
+    vector<bool> isactive((int)currentgroup.size());
+    
+    for (int j=0;j<(int)sides.size();++j)
+    {
+      active[j] = currentgroup[j]->Get<string>("Initialization");
+      if (*sides[j] == "Slave")
+      {
+        // slave sides may be initialized as "Active" or as "Inactive"
+        if (*active[j] == "Active")        isactive[j] = true;
+        else if (*active[j] == "Inactive") isactive[j] = false;
+        else                               dserror("ERROR: Unknown contact init qualifier!");
+      }
+      else if (*sides[j] == "Master")
+      {
+        // master sides must NOT be initialized as "Active" as this makes no sense
+        if (*active[j] == "Active")        dserror("ERROR: Master side cannot be active!");
+        else if (*active[j] == "Inactive") isactive[j] = false;
+        else                               dserror("ERROR: Unknown contact init qualifier!");
+      }
+      else
+        dserror("ERROR: ContactManager: Unknown contact side qualifier!");
+    }
     
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
     // contact interface
     // We rely on this fact, therefore it is not possible to
     // do contact between two distinct discretizations here
+    
+    // collect all intial active nodes
+    std::vector<int> initialactive;
     
     //-------------------------------------------------- process nodes
     for (int j=0;j<(int)currentgroup.size();++j)
@@ -146,13 +174,38 @@ isincontact_(false)
         if (!Discret().NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %",gid);
+        
+        // store initial active node gids
+        if (isactive[j]) initialactive.push_back(gid);
+        
+        // find out if this node is initial active on another Condition
+        // and do NOT overwrite this status then!
+        bool foundinitialactive = false;
+        if (!isactive[j])
+        {
+          for (int k=0;k<(int)initialactive.size();++k)
+            if (gid == initialactive[k])
+            {
+              foundinitialactive = true;
+              break;
+            }
+        }
+        
+        // create CNode object
+        // for the boolean variable initactive we use isactive[j]+foundinitialactive,
+        // as this is true for BOTH initial active nodes found for the first time
+        // and found for the second, third, ... time!
         RCP<CONTACT::CNode> cnode = rcp(new CONTACT::CNode(node->Id(),node->X(),
                                                            node->Owner(),
                                                            Discret().NumDof(node),
-                                                           Discret().Dof(node),isslave[j]));
+                                                           Discret().Dof(node),
+                                                           isslave[j],isactive[j]+foundinitialactive));
         
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!
+        // the only problem would have occured for the initial active nodes,
+        // as their status could have been overwritten, but is prevented
+        // by the "foundinitialactive" block above!
         interface->AddCNode(cnode);
       }
     }
@@ -248,6 +301,7 @@ isincontact_(false)
   // friction
   // setup vector of displacement jumps (slave dof) 
   jump_       = rcp(new Epetra_Vector(*gsdofrowmap_));
+  
   return;
 }
 
@@ -311,8 +365,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
       break;
   }
   
-  // read initial contact and basis trafo flags
-  scontact_.set<bool> ("initial contact",Teuchos::getIntegralValue<int>(input,"INIT_CONTACT"));
+  // read basis trafo flag
   scontact_.set<bool> ("basis transformation",Teuchos::getIntegralValue<int>(input,"BASISTRAFO"));
   
   // read friction type
@@ -349,7 +402,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
     
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
-  bool init      = scontact_.get<bool>("initial contact",false);
   bool btrafo    = scontact_.get<bool>("basis transformation",false);
   string ftype   = scontact_.get<string>("friction type","none");
   //double frbound = scontact_.get<double>("friction bound",0.0);
@@ -375,8 +427,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   
   // overrule input in certain cases
-  if (ctype=="meshtying" && !init)
-    scontact_.set<bool>("initial contact",true);
   if (ctype=="meshtying" && ftype!="stick")
     scontact_.set<string>("friction type","stick");
     
@@ -3801,10 +3851,10 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
         {
           // throw a dserror if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
-          bool semismooth = scontact_.get<bool>("semismooth newton",false);
-          if (semismooth && !cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
-            dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
-                     cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
+          //bool semismooth = scontact_.get<bool>("semismooth newton",false);
+          //if (semismooth && !cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
+          //  dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
+          //           cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
           
           // throw a dserror if node is Active and DBC
           if (cnode->dbc()[k] && cnode->Active())

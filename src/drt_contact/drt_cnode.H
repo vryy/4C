@@ -60,9 +60,11 @@ public:
   \param numdof (in): Number of degrees of freedom to this node
   \param dofs   (in): list of global degrees of freedom
   \param isslave(in): flag indicating whether node is slave or master side
+  \param initactive (in): flag indicating whether initially set to active
   */
   CNode(int id, const double* coords, const int owner, 
-        const int numdof, const vector<int>& dofs, const bool isslave);
+        const int numdof, const vector<int>& dofs, const bool isslave,
+        const bool initactive);
 
   /*!
   \brief Copy Constructor
@@ -131,6 +133,12 @@ public:
   pliers and their neighbors' dual shape fct. are modified!
   */
   inline virtual bool& SetSlave() { return isslave_; }
+  
+  /*!
+  \brief Is Node initialized as active node (only slave nodes)
+  */
+  inline virtual bool IsInitActive() const { if (!IsSlave()) dserror("ERROR: Initactive status requested for Master node");
+                                        return initactive_; }
     
   /*!
   \brief Is Node on slave side boundary of contact interface
@@ -377,6 +385,7 @@ public:
 protected:
 
   bool            isslave_;        // true if cnode is on slave side of contact problem
+  bool            initactive_;     // true if node is initialized as active node
   bool            isonbound_;      // true if cnode is on slave side boundary
   bool            dbc_[3];         // true if D.B.C. is applied on dofs_[i]
   int             numdof_;         // number of degrees of freedom (length of dofs_)

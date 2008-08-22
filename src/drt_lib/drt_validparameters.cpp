@@ -594,9 +594,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPUTPARAMS::contact_meshtying),
                                &scontact);
 
-  setStringToIntegralParameter("INIT_CONTACT","No","If chosen all slave nodes are set active at t=0",
-                               yesnotuple,yesnovalue,&scontact);
-
   setStringToIntegralParameter("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
                                yesnotuple,yesnovalue,&scontact);
 
