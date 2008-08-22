@@ -75,6 +75,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_nlnstifflmass") act = Wall1::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_nlnstiff_gemm") act = Wall1::calc_struct_nlnstiff_gemm;
   else if (action=="calc_struct_stress")        act = Wall1::calc_struct_stress;
+  else if (action=="postprocess_stress")        act = Wall1::postprocess_stress;
   else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
@@ -112,7 +113,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
     break;
-    // NULL-pointer for mass matrix in case of calculating only stiff matrix 
+    // NULL-pointer for mass matrix in case of calculating only stiff matrix
     case Wall1::calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
@@ -223,6 +224,119 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       else dserror("requested strain output option not yet available for wall1");
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
+    }
+    break;
+    // postprocess stresses/strains at gauss points
+
+    // note that in the following, quantities are always referred to as
+    // "stresses" etc. although they might also apply to strains
+    // (depending on what this routine is called for from the post filter)
+    case postprocess_stress:
+    {
+      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress/strain map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+
+      if (stresstype=="ndxyz")
+      {
+        int numnode = NumNode();
+
+        // extrapolate stresses/strains at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
+        wall1_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses/strains between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(numnode);
+
+        for (int i=0;i<numnode;++i)
+        {
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<numnode;++i)
+        {
+          elevec1(2*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(2*i+1)=nodalstresses(i,1)/numadjele[i];
+        }
+        for (int i=0;i<numnode;++i)
+        {
+          elevec2(2*i)=nodalstresses(i,2)/numadjele[i];
+          elevec2(2*i+1)=nodalstresses(i,3)/numadjele[i];
+        }
+      }
+      else if (stresstype=="cxyz")
+      {
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress/strain vector available");
+        const Epetra_BlockMap& elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+        if (lid!=-1)
+        {
+          // 3 independent stresses exist in 2D -> numstr_-1!
+          for (int i = 0; i < Wall1::numstr_-1; ++i)
+          {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < intpoints.nquad; ++j)
+            {
+              (*((*elestress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else if (stresstype=="cxyz_ndxyz")
+      {
+        int numnode = NumNode();
+
+        // extrapolate stresses/strains at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
+        wall1_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses/strains between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(numnode);
+
+        for (int i=0;i<numnode;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<numnode;++i){
+          elevec1(2*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(2*i+1)=nodalstresses(i,1)/numadjele[i];
+        }
+        for (int i=0;i<numnode;++i){
+          elevec2(2*i)=nodalstresses(i,2)/numadjele[i];
+          elevec2(2*i+1)=nodalstresses(i,3)/numadjele[i];
+        }
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress/strain vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+        if (lid!=-1) {
+          for (int i = 0; i < Wall1::numstr_; ++i)
+          {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < intpoints.nquad; ++j)
+            {
+              (*((*elestress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else
+      {
+        dserror("unknown type of stress/strain output on element level");
+      }
     }
     break;
     case Wall1::calc_struct_energy:
@@ -378,7 +492,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
                                            Epetra_SerialDenseMatrix* elestrain,
                                            struct _MATERIAL*         material,
                                            const bool                cauchy)
-                                           
+
 {
   const int numnode = NumNode();
   const int numdf   = 2;
@@ -630,7 +744,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   // EAS technology: ------------------------------------------------------ EAS
   // subtract EAS matrices from disp-based Kdd to "soften" element
 
-  if (force != NULL && stiffmatrix != NULL) 
+  if (force != NULL && stiffmatrix != NULL)
   {
     if (iseas_ == true)
     {
@@ -842,7 +956,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
 //{
 //  RefCountPtr<MAT::Material> mat = Material();
 //  Epetra_SerialDenseMatrix cmat;
-//  
+//
 //  switch(material->mattyp)
 //  {
 //    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
@@ -944,7 +1058,7 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
     // we assume #elemat2 is a square matrix
     for (int c=0; c<(*emass).N(); ++c)  // parse columns
     {
-      double d = 0.0;  
+      double d = 0.0;
       for (int r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries
@@ -1063,7 +1177,7 @@ void DRT::ELEMENTS::Wall1::Energy(
     Fuv0.Size(4);
     boplin0.Shape(4,edof);
     W0.Shape(4,edof);
-    G.Shape(4,Wall1::neas_); 
+    G.Shape(4,Wall1::neas_);
     Z.Shape(edof,Wall1::neas_);
 
     // get alpha of last converged state

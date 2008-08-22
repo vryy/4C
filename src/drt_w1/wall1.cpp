@@ -93,7 +93,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const
 void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -159,11 +159,11 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -201,9 +201,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Wall1::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -220,6 +220,57 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
   vector<RCP<Element> > surfaces(1);
   surfaces[0]= rcp(this, false);
   return surfaces;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes      popp 08/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::wall1_expol(Epetra_SerialDenseMatrix& stresses,
+                                       Epetra_SerialDenseMatrix& nodalstresses)
+{
+  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+  int numgp = intpoints.nquad;
+  int numnode = NumNode();
+
+  static Epetra_SerialDenseMatrix expol(numnode,numgp);
+  static bool isfilled;
+
+  if (isfilled==true)
+  {
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+  else
+  {
+    // quad4
+    if (numgp==4)
+    {
+      double sq3=sqrt(3);
+      expol(0,0)=1.0+0.5*sq3;
+      expol(0,1)=-0.5;
+      expol(0,2)=1.0-0.5*sq3;
+      expol(0,3)=-0.5;
+      expol(1,1)=1.0+0.5*sq3;
+      expol(1,2)=-0.5;
+      expol(1,3)=1.0-0.5*sq3;
+      expol(2,2)=1.0+0.5*sq3;
+      expol(2,3)=-0.5;
+      expol(3,3)=1.0+0.5*sq3;
+
+      for (int i=0;i<numnode;++i)
+      {
+        for (int j=0;j<i;++j)
+        {
+          expol(i,j)=expol(j,i);
+        }
+      }
+    }
+    else dserror("extrapolation not yet implemented for this element type");
+
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+
+    isfilled = true;
+  }
 }
 
 
@@ -263,7 +314,7 @@ DRT::ELEMENTS::Wall1Register* DRT::ELEMENTS::Wall1Register::Clone() const
 void DRT::ELEMENTS::Wall1Register::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -271,7 +322,7 @@ void DRT::ELEMENTS::Wall1Register::Pack(vector<char>& data) const
   vector<char> basedata(0);
   ElementRegister::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   return;
 }
 
@@ -291,11 +342,11 @@ void DRT::ELEMENTS::Wall1Register::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*

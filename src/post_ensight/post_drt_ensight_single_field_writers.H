@@ -61,30 +61,20 @@ protected:
                                     const int numdf) const;
   void WriteNodalEigenStress(const string groupname,
                              PostResult& result);
-  void WriteNodalEigenStressStep(ofstream& file0,
-                                 ofstream& file1,
-                                 ofstream& file2,
-                                 ofstream& file3,
-                                 ofstream& file4,
-                                 ofstream& file5,
+  void WriteNodalEigenStressStep(std::vector<RCP<ofstream> > files,
                                  PostResult& result,
                                  map<string, vector<ofstream::pos_type> >& resultfilepos,
                                  const string groupname,
                                  vector<string> name,
-                                 const int numdf) const;
+                                 const int numdf);
   void WriteElementCenterEigenStress(const string groupname,
                                      PostResult& result);
-  void WriteElementCenterEigenStressStep(ofstream& file0,
-                                         ofstream& file1,
-                                         ofstream& file2,
-                                         ofstream& file3,
-                                         ofstream& file4,
-                                         ofstream& file5,
+  void WriteElementCenterEigenStressStep(std::vector<RCP<ofstream> > files,
                                          PostResult& result,
                                          map<string, vector<ofstream::pos_type> >& resultfilepos,
                                          const string groupname,
                                          vector<string> name,
-                                         const int numdf) const;
+                                         const int numdf);
 
   string stresstype_;
   string straintype_;

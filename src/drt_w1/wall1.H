@@ -54,7 +54,7 @@ class Wall1Line;
  * \author gitterle (gitterle@lnm.mw.tum.de)
  *
  * <b>Typical quantities and their storage pattern</b>
- * - Green-Lagrange strain vector 
+ * - Green-Lagrange strain vector
  *   \f$E = \left[\begin{array}{c} E_{11} \\ E_{22} \\ 2E_{12} \end{array}\right]\f$
  * - Deformation gradient vector
  *   \f$\tilde{F} = \left[\begin{array}{c} F_{11} \\ F_{22} \\ F_{12} \\ F_{21} \end{array}\right]\f$
@@ -66,10 +66,10 @@ class Wall1Line;
  *   \f$\tilde{P} = \left[\begin{array}{c} P_{11} \\ P_{22} \\ P_{12} \\ P_{21} \end{array}\right]\f$
  *
  * <b>References</b>
- * - [1] JC Simo and F Armero, Geometrically non-linear enhanced strain 
- *   mixed methods and the method of incompatible modes, International 
+ * - [1] JC Simo and F Armero, Geometrically non-linear enhanced strain
+ *   mixed methods and the method of incompatible modes, International
  *   Journal for Numerical Methods in Engineering, 33:1413-1449, 1992.
- * - [2] S Glaser and F Armero, On the formulation of enhanced strain finite 
+ * - [2] S Glaser and F Armero, On the formulation of enhanced strain finite
  *   elements in finite deformations, Engineering Computations, 14:759-791,
  *   1997.
  * - [3] P Wriggers, Nichtlineare Finite-Element-Methoden, Springer, 2001.
@@ -121,7 +121,7 @@ public:
 
   /// Return number of lines of this element
   virtual int NumLine() const
-  { 
+  {
     if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
     else return 3;
   }
@@ -228,7 +228,7 @@ public:
                                        ///< the controlling method does not epxect the element
                                        ///< to fill this vector
   );
-  
+
   /// Evaluate a Neumann boundary condition
   ///
   /// this method evaluates a surfaces Neumann condition on the wall element
@@ -242,6 +242,10 @@ public:
     std::vector<int>& lm,  ///< location vector of this element
     Epetra_SerialDenseVector& elevec1  ///< vector to be filled by element. If NULL on input
   );
+
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
+  void wall1_expol(Epetra_SerialDenseMatrix& stresses,
+                   Epetra_SerialDenseMatrix& nodalstresses);
 
   //@}
 
@@ -257,9 +261,10 @@ private:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_nlnstifflmass,
-    calc_struct_nlnstiff_gemm,  ///< internal force, stiffness and mass 
+    calc_struct_nlnstiff_gemm,  ///< internal force, stiffness and mass
                                 ///< for generalised energy-momentum method (GEMM)
     calc_struct_stress,
+    postprocess_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
@@ -291,9 +296,9 @@ private:
   DRT::Container data_;
 
   /// number of the material law
-  int material_; 
-  /// element thickness 
-  double thickness_; 
+  int material_;
+  /// element thickness
+  double thickness_;
   /// gaussian points
   DRT::UTILS::GaussRule2D gaussrule_;
   /// problem type
@@ -311,7 +316,7 @@ private:
   void w1_nlnstiffmass(
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& disp,  ///< element displacements
-    const std::vector<double>& residual,  ///< residual displacements 
+    const std::vector<double>& residual,  ///< residual displacements
     Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
     Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix
     Epetra_SerialDenseVector* force,  ///< element internal force vector
@@ -374,21 +379,21 @@ private:
     const int nd  ///< number of element nodes
   );
 
-  /// Geometric stiffness constribution (total Lagrange) 
+  /// Geometric stiffness constribution (total Lagrange)
   /// \author mgit \date 05/07
   void w1_kg(
-    Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix 
+    Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
     const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
     const double fac,  ///< integration factor
     const int nd,  ///< number of element DOFs
     const int numeps  ///< number of strains
   );
-  
+
   /// elastic and initial displacement stiffness contribution (total Lagrange)
   /// \author mgit \date 05/07
   void w1_keu(
-    Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix 
+    Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
     const Epetra_SerialDenseMatrix& b_cure,  ///< non-linear B-operator
     const Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
     const double fac,  ///< integration factor
@@ -465,7 +470,7 @@ private:
     Epetra_SerialDenseMatrix& W0,  ///< W_0-operator
     const Epetra_SerialDenseMatrix boplin0,  ///< linear B-op at origin
     Epetra_SerialDenseMatrix& Z  ///< Z-operator
-  ); 
+  );
 
   /// Total deformation gradient and (enhanced) Green-Lagrange strain
   /// \author mgit \date 01/08
@@ -474,16 +479,16 @@ private:
     Epetra_SerialDenseMatrix& F_tot,  ///< total def.grad.
     const Epetra_SerialDenseVector& F,  ///< displ.-based def.grad.
     Epetra_SerialDenseVector& strain  ///< GL strains
-  ); 
-  
-  /// first Piola-Kirchhoff stress vector  
+  );
+
+  /// first Piola-Kirchhoff stress vector
   /// \author mgit \author 02/08
   void w1_stress_eas(
     const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
     const Epetra_SerialDenseMatrix& F_tot,  ///< total def.grad.
     Epetra_SerialDenseMatrix& p_stress  ///< PK1 stress vector
-  ); 
-  
+  );
+
   /// calculate stiffness matrix kdd \f$\partial f_{int}/\partial d\f$
   /// \author mgit \date 03/08
   void w1_kdd(
@@ -510,7 +515,7 @@ private:
     const Epetra_SerialDenseMatrix& p_stress,  ///< PK1 stress
     const double fac  ///< integration factor
   );
-  
+
   /// calculate tangential matrix kaa \f$\partial s/\partial \alpha\f$
   /// \author mgit \date 03/08
   void w1_kaa(
@@ -520,7 +525,7 @@ private:
     Epetra_SerialDenseMatrix& Kaa,  ///< target: kaa
     const double fac  ///< integration factor
   );
-  
+
   /// calculate internal forces fint(displacements u) and feas
   void w1_fint_eas(
     const Epetra_SerialDenseMatrix& W0,  ///< W-op at origin
@@ -556,7 +561,7 @@ private:
   /// Internal/strain energy
   double EnergyInternal(
     const struct _MATERIAL* material,  ///< element material
-    const double& fac,  ///< integration factor 
+    const double& fac,  ///< integration factor
     const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
   );
 
@@ -697,7 +702,7 @@ class Wall1Register : public DRT::ElementRegister
 public:
 
   /// @name Constructors and destructors and related methods
-  //@{ 
+  //@{
 
   /// Standard Constructor
   Wall1Register(DRT::Element::ElementType etype);
@@ -707,7 +712,7 @@ public:
   /// Makes a deep copy of an Wall1Register
   Wall1Register(const DRT::ELEMENTS::Wall1Register& old);
 
-  
+
   /// Deep copy this instance of Wall1Register and return pointer to the copy
   ///
   /// The Clone() method is used from the virtual base class Element in cases
@@ -784,7 +789,7 @@ public:
 
   /// @name Constructors and destructors and related methods
   //@{
-  
+
   /// Standard Constructor
   Wall1Line(
     int id,  ///< A unique global id
@@ -801,7 +806,7 @@ public:
   /// Makes a deep copy of a Element
   Wall1Line(const Wall1Line& old);
 
-  
+
   /// Deep copy this instance of an element and return pointer to the copy
   ///
   /// The Clone() method is used from the virtual base class Element in cases
@@ -839,7 +844,7 @@ public:
 
   /// Get number of degrees of freedom of a certain node
   /// (implements pure virtual DRT::Element)
-  /// 
+  ///
   /// The element decides how many degrees of freedom its nodes must have.
   /// As this may vary along a simulation, the element can redecide the
   /// number of degrees of freedom per node along the way for each of it's nodes
@@ -885,7 +890,7 @@ public:
     std::vector<int>& lm,  ///< (in) location vector of this element
     Epetra_SerialDenseVector& elevec1  ///< (out) vector to be filled by element. If NULL on input
   );
-  
+
   /// Evaluate a boundary condition
   ///
   /// this method evaluates a line Neumann condition on the wall element
@@ -904,8 +909,8 @@ public:
   );
 
   //@}
-    
-    
+
+
 private:
 
   /// digestible actions
@@ -915,7 +920,7 @@ private:
     calc_struct_areaconstrstiff,
     calc_struct_constrarea
   };
-  
+
   /// don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
 
@@ -929,13 +934,13 @@ private:
     Epetra_SerialDenseMatrix xscurr,
     Epetra_SerialDenseMatrix& elematrix
   );
-  
+
   /// Submethod to compute first derivatives of constraint area w.r.t. the displacements
   void ComputeAreaConstrDeriv(
     Epetra_SerialDenseMatrix xscurr,
     Epetra_SerialDenseVector& elevector
   );
-  
+
   /// compute infintesimal line element dr for integration along the line
   double w1_substitution(
     const Epetra_SerialDenseMatrix& xyze,
