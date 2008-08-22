@@ -82,11 +82,11 @@ void SCATRA::CreateScaTraDiscretization(
     DRT::Element* actele = fluiddis->lColElement(i);
     bool ismyele = fluiddis->ElementRowMap()->MyGID(actele->Id());
     // we use the shape of the fluid elements to find out if we have a 2D or 3D problem
-    switch (DRT::UTILS::getDimension(actele))
+    switch (DRT::UTILS::getDimension(actele->Shape()))
     {
       case 3: {eletype.push_back("CONDIF3"); break;}
       case 2: {eletype.push_back("CONDIF2"); break;}
-      default: dserror("Illegal dimension: %d",DRT::UTILS::getDimension(actele));
+      default: dserror("Illegal dimension: %d",DRT::UTILS::getDimension(actele->Shape()));
     }
 
     {

@@ -487,13 +487,13 @@ namespace UTILS
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
-  /*!
-  \brief    Returns the dimension of an element
-
-  */
-  int getDimension(
-    const DRT::Element*   element     ///< element
-    );
+//  /*!
+//  \brief    Returns the dimension of an element
+//
+//  */
+//  int getDimension(
+//    const DRT::Element*   element     ///< element
+//    );
 
   /*!
   \brief    Returns the dimension of an element based on its discretization-type

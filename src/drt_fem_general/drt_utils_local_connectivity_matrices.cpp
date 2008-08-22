@@ -988,14 +988,14 @@ int DRT::UTILS::getHigherOrderIndex(
 
 
 
-/*----------------------------------------------------------------------*
- |  returns the dimension of the element parameter space     u.may 10/07|
- *----------------------------------------------------------------------*/
-int DRT::UTILS::getDimension(
-    const DRT::Element*   element)
-{
-    return getDimension(element->Shape());
-}
+///*----------------------------------------------------------------------*
+// |  returns the dimension of the element parameter space     u.may 10/07|
+// *----------------------------------------------------------------------*/
+//int DRT::UTILS::getDimension(
+//    const DRT::Element*   element)
+//{
+//    return getDimension(element->Shape());
+//}
 
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element-shape                 bos 01/08|
