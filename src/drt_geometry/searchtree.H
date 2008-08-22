@@ -119,27 +119,16 @@ private:
   
   
   /*!
-   \brief return child, whose node box completely encloses the circle with the given midpoint and radius
+   \brief return children, whose node box intersects with the circle with the given midpoint and radius
    \param radius              radius
    \param point               point
    \return child index
    */
-  int classifyRadius(
+  std::vector<int> classifyRadius(
       const double        radius,
       const BlitzVec3&    point
       ) const;
   
-  
-  /*!
-  \brief returns the child node index which completely contains a given AABB
-  \param AABB                AABB
-  \return child index
-   */
-  int classifyAABBCompletelyInNodeBox(
-      const   BlitzMat3x2&  AABB
-      ) const;
-
-
   /*!
    \brief create children of a treenode and insert elements
    \param dis                  discretization

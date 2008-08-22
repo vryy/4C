@@ -147,7 +147,7 @@ std::set<int> GEO::SearchTree::searchNodesInRadius(
   if(treeRoot_ == Teuchos::null)
       dserror("tree is not yet initialized !!!");
 
-  if(!treeRoot_->getElementList().empty())
+  if(!(treeRoot_->getElementList().empty()))
     nodeset = treeRoot_->searchNodesInRadius(dis, currentpositions, point, radius, label);
   else
     dserror("element list is empty");
@@ -718,7 +718,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               u.may   08/08|
  *----------------------------------------------------------------------*/
-int GEO::SearchTree::TreeNode::classifyRadius(
+std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
     const double      radius,
     const BlitzVec3&	point
     ) const
@@ -737,43 +737,7 @@ int GEO::SearchTree::TreeNode::classifyRadius(
     radiusXAABB(2,1) = 0.0;
   }
    
-  return classifyAABBCompletelyInNodeBox(radiusXAABB);
-}
-
-
-
-/*----------------------------------------------------------------------*
- | checks if a AABB is completely in a child node          u.may   08/08|
- *----------------------------------------------------------------------*/
-int GEO::SearchTree::TreeNode::classifyAABBCompletelyInNodeBox(
-    const BlitzMat3x2&  AABB
-    ) const
-{
-  int childindex = -1;
-  
-  int indexMin = 0;
-  if(AABB(0,0) > xPlaneCoordinate_)
-    indexMin += 1;
-  if(AABB(1,0) > yPlaneCoordinate_)
-    indexMin += 2;
-  if(treeType_ == OCTTREE)
-    if(AABB(2,0) > zPlaneCoordinate_)
-      indexMin += 4;
-  
-  int indexMax = 0;
-  if(AABB(0,1) > xPlaneCoordinate_)
-    indexMax += 1;
-  if(AABB(1,1) > yPlaneCoordinate_)
-    indexMax += 2;
-  if(treeType_ == OCTTREE)
-    if(AABB(2,1) > zPlaneCoordinate_)
-      indexMax += 4;
-    
-  
-  if(indexMin == indexMax)
-    childindex = indexMin;
-  
-  return childindex;
+  return classifyXAABB(radiusXAABB);
 }
 
 
@@ -847,20 +811,20 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
     const BlitzVec3& 		             point,
     const double                     radius, 
     const int 			                 label) 
-{
-  
+{  
   std::set<int> nodeset;
 
   switch (treeNodeType_) 
   {
     case INNER_NODE:
     {       
-      const int childindex = classifyRadius(radius, point);
-      if(childindex != -1) // child node found which encloses AABB so step down
-        return children_[childindex]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+      const vector<int> childindex = classifyRadius(radius, point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1) // child node found which encloses AABB so step down
+        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius, label);
       else
         return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
-        
       break;
     }
     case LEAF_NODE:   
@@ -873,12 +837,14 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
         return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
 
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node     
-      const int childindex = classifyRadius(radius, point);
-      if(childindex != -1)  // child node found
-      {
+      // search in apropriate child node 
+      const vector<int> childindex = classifyRadius(radius, point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1) // child node found which encloses AABB so refine further
+      { 
         createChildren(dis, currentpositions);
-        return children_[childindex]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius, label);
       }
       else // AABB does not fit into a single child node box anymore so don t refine any further
         return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
@@ -888,7 +854,6 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
       dserror("should not get here\n");
   }
   return nodeset;
-
 }
 
 
@@ -943,7 +908,6 @@ std::vector<int> GEO::SearchTree::TreeNode::searchIntersectionElements(
     default:
       dserror("should not get here\n");
   }
-  
   return elementset;
 }
 

@@ -178,8 +178,7 @@ std::set<int> GEO::getNodeSetInRadius(
       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
       {
         DRT::Element* element = dis.gElement(*eleIter);
-        // run over all corner points of the element
-        for(int i = 0; i < 4; i++)
+        for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
           nodeList[labelIter->first].insert(element->NodeIds()[i]);
       }
     }
