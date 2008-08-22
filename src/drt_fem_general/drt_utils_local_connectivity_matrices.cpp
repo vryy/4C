@@ -725,6 +725,16 @@ vector<int> DRT::UTILS::getLines(
         if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(10); // +s +t
         if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(11); // -r +t
     }
+    else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
+    {
+        const double tcoord = 1.0 - rst(0) - rst(1) - rst(2);
+        if(fabs(rst(1)) < TOL && fabs(rst(2)) < TOL)      lines.push_back(0); 
+        if(fabs(rst(2)) < TOL && fabs(tcoord) < TOL)      lines.push_back(1); 
+        if(fabs(rst(0)) < TOL && fabs(rst(2)) < TOL)      lines.push_back(2);
+        if(fabs(rst(0)) < TOL && fabs(rst(1)) < TOL)      lines.push_back(3); 
+        if(fabs(rst(1)) < TOL && fabs(tcoord) < TOL)      lines.push_back(4);
+        if(fabs(rst(0)) < TOL && fabs(tcoord) < TOL)      lines.push_back(5);
+    }
     else
         dserror("discretization type not yet implemented");
 
@@ -734,7 +744,7 @@ vector<int> DRT::UTILS::getLines(
 
 
 /*----------------------------------------------------------------------*
- |  Retruns the node ID a point is lying on                  u.may 07/08|
+ |  Returns the node ID a point is lying on                  u.may 07/08|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 int DRT::UTILS::getNode(
