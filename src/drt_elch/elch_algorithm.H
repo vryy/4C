@@ -46,7 +46,7 @@ namespace ELCH
 
     /// constructor
     explicit Algorithm(
-        Epetra_Comm& comm,             ///< problem-specific parameter list
+        Epetra_Comm& comm,                   ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 

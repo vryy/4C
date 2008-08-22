@@ -16,7 +16,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "elch_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
+//#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -26,7 +26,8 @@ ELCH::Algorithm::Algorithm(
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
- // no ELCH specific stuff at the moment
+  // no ELCH specific stuff at the moment
+  return;
 }
 
 
@@ -34,6 +35,7 @@ ELCH::Algorithm::Algorithm(
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::~Algorithm()
 {
+  return;
 }
 
 
@@ -48,7 +50,7 @@ void ELCH::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // prepare next time step (only ELCH and fluid)
+    // prepare next time step
     PrepareTimeStep();
 
     // solve nonlinear Navier-Stokes system
@@ -57,7 +59,7 @@ void ELCH::Algorithm::TimeLoop()
     // solve transport equations for ion concentrations and electric potential
     DoTransportStep();
 
-    // update all field solvers
+    // update all single field solvers
     Update();
 
     // write output to screen and files

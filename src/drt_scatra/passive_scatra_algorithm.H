@@ -36,7 +36,7 @@ namespace SCATRA{
 
     /// constructor
     explicit PassiveScaTraAlgorithm(
-        Epetra_Comm& comm,             ///< communicator
+        Epetra_Comm& comm,                   ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 

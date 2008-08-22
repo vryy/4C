@@ -16,7 +16,6 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "passive_scatra_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -24,6 +23,7 @@ SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const 
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
  // no stuff to add here at the moment
+  return;
 }
 
 
@@ -31,6 +31,7 @@ SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const 
 /*----------------------------------------------------------------------*/
 SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 {
+  return;
 }
 
 
@@ -131,12 +132,6 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
   FluidField().Output();
   FluidField().LiftDrag();
   ScaTraField().Output();
-
-  // debug IO
-#if 0
-  // print out convective velocity vector
-  cout<<*velocitynp_<<endl;
-#endif
 
   return;
 }
