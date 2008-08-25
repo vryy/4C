@@ -48,7 +48,7 @@ namespace XFEM
       const int actTreedepth_;
       
       //! treenode has 8 children (octree)
-      TreeNode* children_[8];	
+      TreeNode* children_[8];
       
       //! pointer to the tree
       XSearchTree* tree_; 
@@ -128,7 +128,7 @@ namespace XFEM
         void insertElement(
             const DRT::Element* elem,                       ///< point element to insert
             const map<int,BlitzVec3>& currentpositions      ///< current position of element nodes
-            );	
+            );
         
         /*!
          \brief Gives back the XFEM-label of the point X

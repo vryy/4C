@@ -670,7 +670,7 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const
     for (int j=0; j<8; j++){
       if (children_[j]!=NULL)
         children_[j]->printTree(fc);
-    }	  
+    }
   }
   else if (TreeNodeType_==LEAF_NODE)
   {
