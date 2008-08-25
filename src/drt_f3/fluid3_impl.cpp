@@ -2109,7 +2109,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   const double vol = wquad*det;
 
   if (det<=0)
-    dserror("negative Jacobian determinant %f in caltau", det);
+    dserror("negative Jacobian determinant %f in element %d", det, ele->Id());
 
   double idet = 1./det;
 
