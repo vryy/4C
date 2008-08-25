@@ -61,7 +61,11 @@ void DRT::Discretization::Evaluate(
       curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
                                 systemvector1,systemvector2,systemvector3);
   }
-  
+
+#ifdef THROWELEMENTERRORS
+  EnterElementLoop();
+#endif
+
   // loop over column elements
   const int numcolele = NumMyColElements();
   for (int i=0; i<numcolele; ++i)
@@ -82,6 +86,10 @@ void DRT::Discretization::Evaluate(
     if (assemblevec2) elevector2.Size(eledim);
     if (assemblevec3) elevector3.Size(eledim);
 
+#ifdef THROWELEMENTERRORS
+    try {
+#endif
+
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
     // call the element evaluate method
@@ -100,7 +108,20 @@ void DRT::Discretization::Evaluate(
       if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
     }
 
+#ifdef THROWELEMENTERRORS
+    }
+    catch (const std::string& err)
+    {
+      ElementError(actele->Id(),err);
+    }
+#endif
+
   } // for (int i=0; i<numcolele; ++i)
+
+#ifdef THROWELEMENTERRORS
+  ExitElementLoop();
+#endif
+
   return;
 }
 
@@ -618,7 +639,7 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  vector<int> lmowner;
 	  curr->second->LocationVector(*this,lm,lmowner);
 
-	  // place vectors for parent lm and lmowner in 
+	  // place vectors for parent lm and lmowner in
 	  // the parameterlist --- the element will fill
 	  // them since only the element implementation
 	  // knows its parent
@@ -633,7 +654,7 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 					   elevector1,elevector2,elevector3);
 	  if (err) dserror("error while evaluating elements");
 
-	  // assembly to all parent dofs even if we just integrated 
+	  // assembly to all parent dofs even if we just integrated
 	  // over a boundary element
 	  int eid = curr->second->Id();
 
@@ -643,9 +664,9 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,*plm,*plmowner);
 	  if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,*plm,*plmowner);
 	} // end loop geometry elements of this conditions
-      } // the condition number is as desired or we wanted to evaluate 
+      } // the condition number is as desired or we wanted to evaluate
         // all numbers
-    } // end we have a condition of type condstring 
+    } // end we have a condition of type condstring
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 } // end of DRT::Discretization::EvaluateConditionUsingParentData
@@ -714,7 +735,7 @@ void DRT::Discretization::EvaluateScalars(
   // reduce
   for (int i=0; i<numscalars; ++i) (*scalars)(i) = 0.0;
   Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
-  
+
   // bye
   return;
 }  // DRT::Discretization::EvaluateScalars

@@ -50,3 +50,4 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # COLOROUTPUT        # use colored output to the terminal
 # DSERROR_DUMP       # dserror creates a core file
 # TRAP_FE            # crash ccarat if a nan of inf occurs
+# THROWELEMENTERRORS # throw errors at element level so all element error can be found
