@@ -373,11 +373,12 @@ bool GEO::isLineWithinXAABB(
  *----------------------------------------------------------------------*/
 bool GEO::checkPositionWithinElement(  
     const DRT::Element*                 element,
+    const BlitzMat&                     xyze,
     const BlitzVec3&                    x)
 {
     dsassert(DRT::UTILS::getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
     BlitzVec3 xsi;
-    bool nodeWithinElement = currentToVolumeElementCoordinates(element, x, xsi);
+    bool nodeWithinElement = currentToVolumeElementCoordinates(element->Shape(), xyze, x, xsi);
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
     
@@ -611,18 +612,18 @@ void GEO::elementToCurrentCoordinatesInPlace(
        The nonlinear system of equation is solved with help of the Newton-method.
        Fast templated version
 
-\param element              (in)        : element 
+\param xyze                 (in)        : element nodal positions (3,numnode)
 \param x                    (in)        : node in current coordinates \f$(x, y, z)\f$
 \param xsi                  (inout)     : node in element coordinates
 */  
 template <DRT::Element::DiscretizationType DISTYPE>
 static inline bool currentToVolumeElementCoordinatesT(
-    const DRT::Element*                 element,
-    const BlitzVec3&                    x,
-    BlitzVec3&                          xsi)
+    const BlitzMat&                     xyze,            ///< nodal position array
+    const BlitzVec3&                    x,               ///< (x,y,z)
+    BlitzVec3&                          xsi              ///< (r,s,t)
+    )
 {
     const int dim = 3;
-    dsassert(element->Shape() == DISTYPE, "this is a bug in currentToElementCoordinatesT!");
     bool nodeWithinElement = true;
     const int maxiter = 20;
     double residual = 1.0;
@@ -630,9 +631,6 @@ static inline bool currentToVolumeElementCoordinatesT(
     static blitz::TinyMatrix<double,dim,dim> A;
     static blitz::TinyVector<double,dim> b;
     static blitz::TinyVector<double,dim> dx;
-    
-    static blitz::TinyMatrix<double,3,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement> xyze;
-    DRT::UTILS::fillInitialPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
     xsi = 0.0;
@@ -673,24 +671,25 @@ static inline bool currentToVolumeElementCoordinatesT(
  |      into element coordinates                                        | 
  *----------------------------------------------------------------------*/
 bool GEO::currentToVolumeElementCoordinates(  
-    const DRT::Element*                 element,
-    const BlitzVec3&                    x,
-    BlitzVec3&                          xsi)
+    const DRT::Element::DiscretizationType  distype,
+    const BlitzMat&                         xyze,
+    const BlitzVec3&                        x,
+    BlitzVec3&                              xsi)
 {
     bool nodeWithinElement = false;
-    switch (element->Shape())
+    switch (distype)
     {
     case DRT::Element::hex8:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex8>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex8>(xyze, x, xsi);
         break;
     case DRT::Element::hex20:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex20>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex20>(xyze, x, xsi);
         break;
     case DRT::Element::hex27:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(xyze, x, xsi);
         break;
     default:
-        std::cout << DistypeToString(element->Shape()) << endl;
+        std::cout << DistypeToString(distype) << endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
     }   
@@ -716,7 +715,7 @@ bool GEO::searchForNearestPointOnSurface(
   distance = -1.0;
   normal = 0;
   
-  CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, eleCoord);
+  CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, physCoord, eleCoord);
   
   const bool pointWithinElement = checkPositionWithinElementParameterSpace(eleCoord, surfaceElement->Shape());
   
@@ -958,13 +957,13 @@ static void currentToSurfaceElementCoordinatesT(
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
 void GEO::CurrentToSurfaceElementCoordinates(
-        const DRT::Element*         surfaceElement,
-        const BlitzMat&             xyze_surfaceElement,
-        const BlitzVec3&            physCoord,
-        BlitzVec2&                  eleCoord
+        const DRT::Element::DiscretizationType  distype,
+        const BlitzMat&                         xyze_surfaceElement,
+        const BlitzVec3&                        physCoord,
+        BlitzVec2&                              eleCoord
         )
 {
-    switch (surfaceElement->Shape())
+    switch (distype)
     {
         case DRT::Element::quad4:
             currentToSurfaceElementCoordinatesT<DRT::Element::quad4>(xyze_surfaceElement,physCoord,eleCoord);
@@ -1084,13 +1083,13 @@ static void currentToLineElementCoordinatesT(
  |          in the 3-dim physical space lies on a given line element    |
  *----------------------------------------------------------------------*/
 void GEO::CurrentToLineElementCoordinates(
-        const DRT::Element*         lineElement,
-        const BlitzMat&             xyze_lineElement,
-        const BlitzVec3&            physCoord,
-        BlitzVec1&                  eleCoord
+        const DRT::Element::DiscretizationType  distype,
+        const BlitzMat&                         xyze_lineElement,
+        const BlitzVec3&                        physCoord,
+        BlitzVec1&                              eleCoord
         )
 {
-    switch (lineElement->Shape())
+    switch (distype)
     {
         case DRT::Element::line2:
             currentToLineElementCoordinatesT<DRT::Element::line2>(xyze_lineElement,physCoord,eleCoord);

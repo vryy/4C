@@ -237,7 +237,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(*myIt, currentpositions));
       BlitzVec3 tmpNormal;
       BlitzVec2 tmpXsi;
-      GEO::CurrentToSurfaceElementCoordinates(*myIt, xyze_surfaceElement, X, tmpXsi);
+      GEO::CurrentToSurfaceElementCoordinates((*myIt)->Shape(), xyze_surfaceElement, X, tmpXsi);
       GEO::computeNormalToSurfaceElement(*myIt, xyze_surfaceElement, tmpXsi, tmpNormal);
       normalVectors.push_back(tmpNormal);
     }
@@ -258,7 +258,7 @@ BlitzVec3 XFEM::getNormalAtXsi(
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(tmpSurfaceElement, currentpositions));
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 tmpXsi;
-      GEO::CurrentToSurfaceElementCoordinates(tmpSurfaceElement, xyze_surfaceElement, closest_node_pos, tmpXsi);
+      GEO::CurrentToSurfaceElementCoordinates(tmpSurfaceElement->Shape(), xyze_surfaceElement, closest_node_pos, tmpXsi);
       GEO::computeNormalToSurfaceElement(tmpSurfaceElement, xyze_surfaceElement, tmpXsi, eleNormalAtXsi);
       normal(0) = normal(0) +  eleNormalAtXsi(0);
       normal(1) = normal(1) +  eleNormalAtXsi(1);
@@ -323,7 +323,7 @@ double XFEM::getSquaredElementDistance(
   BlitzVec3 normal;
   const BlitzMat2x2 xsiBoundingBox = XFEM::getXsiBoundingBox(surfaceElement);
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
-  GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
+  GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, physCoord, xsi);
 
   if ( (xsi(0) < xsiBoundingBox(0,0) || xsi(0) > xsiBoundingBox(0,1) ) &&
       (xsi(1) < xsiBoundingBox(1,0) || xsi(1) > xsiBoundingBox(1,1) )    )   {
@@ -443,7 +443,7 @@ double XFEM::getSquaredElementDistance_Point(
     }
   }
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
-  GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, xNodePos, xsi);
+  GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, xNodePos, xsi);
   x_surface_phys = xNodePos;
   return min_node_distance;
 }

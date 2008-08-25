@@ -281,7 +281,7 @@ bool GEO::Intersection::collectInternalPoints(
   const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
 
   static BlitzVec3 xsi;
-  xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL7);
+  xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
   //currentToVolumeElementCoordinates(xfemElement, x, xsi);
   const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
   // debugNodeWithinElement(xfemElement,cutterNode, xsi, elemId ,nodeId, nodeWithinElement);
@@ -425,7 +425,7 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
 
   // surface element is an xfem surface
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsiSurface, x);
-  xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL7); 
+  xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7); 
   vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemElement->Shape());
   const int count = surfaces.size();
 
@@ -1202,7 +1202,7 @@ void GEO::Intersection::preparePLC(
           eleCoordSurf(j)  = ipoint->getCoord()[j];
         static BlitzVec3 curCoordVol;
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
+        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
         for(int j = 0; j < 3; j++)
         {
           vertex[j] = eleCoordVol(j);
@@ -1265,7 +1265,7 @@ void GEO::Intersection::computeConvexHull(
       eleCoordSurf(j)  = midpoint.getCoord()[j];
     static BlitzVec3 curCoordVol;
     elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-    const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL14));
+    const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL14));
     for(int j = 0; j < 3; j++)
       midpoint.setSingleCoord(j,eleCoordVol(j));
   }
@@ -1294,7 +1294,7 @@ void GEO::Intersection::computeConvexHull(
         eleCoordSurf(j)  = ipoint->getCoord()[j];
       static BlitzVec3 curCoordVol;
       elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
+      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
       for(int j = 0; j < 3; j++)
         ipoint->setSingleCoord(j,eleCoordVol(j));
     }
@@ -1320,7 +1320,7 @@ void GEO::Intersection::computeConvexHull(
           eleCoordSurf(m)  = vertex[m];
         static BlitzVec3 curCoordVol;
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
+        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
         for(int m = 0; m < 3; m++)
           vertex[m] = eleCoordVol(m);
       }
@@ -2634,7 +2634,7 @@ GEO::SteinerType GEO::Intersection::decideSteinerCase(
 
     static BlitzVec3    xsi;
     // check exact TODO
-    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL7);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
     //currentToVolumeElementCoordinates(xfemElement, x, xsi);
 
     InterfacePoint emptyIp;
@@ -4022,7 +4022,7 @@ void GEO::Intersection::storeHigherOrderNode(
         const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }
-    xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr, TOL7);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curr, TOL7);
 
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[globalHigherOrderIndex*3], out.pointlist[globalHigherOrderIndex*3+1], out.pointlist[globalHigherOrderIndex*3+2]);
 
@@ -4120,7 +4120,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     BlitzVec2 eleCoordBoundaryCorner;
 //    cout << *cutterElement << endl;
 //    cout << "xyze_cutterElement: " << xyze_cutterElement << endl;
-    CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
+    CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
 
 //    std::cout << "physcood = " << physCoordCorner << "    ";
 //    std::cout << "elecood = " << eleCoordBoundaryCorner << endl;
@@ -4153,7 +4153,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
         const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
         const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         BlitzVec2 eleCoordBoundaryHO;
-        CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
+        CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
 //        std::cout << "physcood = " << physCoordHO << "    ";
 //        std::cout << "elecood = " << eleCoordBoundaryHO << endl;
@@ -4202,7 +4202,7 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
     const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
     BlitzVec2 eleCoordBoundaryCorner;
-    CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
+    CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
 
     boundaryCoord[cornerIndex][0] = eleCoordBoundaryCorner(0);
     boundaryCoord[cornerIndex][1] = eleCoordBoundaryCorner(1);
@@ -4233,7 +4233,7 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
       const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
       const BlitzMat xyze_cutterElement(DRT::UTILS::getCurrentNodalPositions(cutterElement, currentcutterpositions));
       BlitzVec2 eleCoordBoundaryHO;
-      CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
+      CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
       boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
       boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);

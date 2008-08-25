@@ -369,18 +369,20 @@ namespace GEO
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
     
-    \param element              (in)        : element 
+    \param element              (in)        : element
+    \param xyze                 (in)        : element nodal positions (3,numnode)
     \param x                    (in)        : node in current coordinates
     */  
     bool checkPositionWithinElement(  
         const DRT::Element*                 element,
+        const BlitzMat&                     xyze,
         const BlitzVec3&                    x
         );   
     
     
     /*!
     \brief checks if a position in element coordinates lies within a certain Element parameter space
-    \param eleCoord              (out)  node in element coordinates (r,s,t)
+    \param eleCoord              (in)   node in element coordinates (r,s,t)
     \param distype               (in)   shape of the element
     \return  true if point lies in the element, false otherwise
     */
@@ -481,15 +483,17 @@ namespace GEO
            in element coordinates with respect to a given element       
            The nonlinear system of equation is solved with help of the Newton-method.
 
-    \param element              (in)        : element 
+    \param element              (in)        : element shape
+    \param xyze                 (in)        : element nodal positions (3,numnode)
     \param x                    (in)        : node in current coordinates (x, y, z)
     \param xsi                  (out)       : node in element coordinates (r, s, t)
     \return bool, indicates, whether positions was found within element coordinates
     */  
     bool currentToVolumeElementCoordinates(
-        const DRT::Element*                 element,
-        const BlitzVec3&                    x,
-        BlitzVec3&                          xsi
+        const DRT::Element::DiscretizationType  distype,
+        const BlitzMat&                         xyze,
+        const BlitzVec3&                        x,
+        BlitzVec3&                              xsi
         );
     
     
@@ -497,19 +501,21 @@ namespace GEO
     \brief transforms a point in current coordinates to a point
            in element coordinates with respect to a given element
            rounds point within a tolerance around 1 and -1 to 1.0 and -1.0 (required by tetgen)
-    \param element              (in)        : element 
+    \param distype              (in)        : element shape
+    \param xyze                 (in)        : element nodal coordinates (3,numnode)
     \param x                    (in)        : node in current coordinates (x, y, z)
     \param tol                  (out)       : tolerance
     \return                                   vector of element coordinates
     */
     inline BlitzVec3 currentToVolumeElementCoordinatesExact(
-            const DRT::Element*         element,  
-            const BlitzVec3&            x,        
-            const double                tol       
+            const DRT::Element::DiscretizationType  distype,
+            const BlitzMat&                         xyze,
+            const BlitzVec3&                        x,
+            const double                            tol
             )
     {
       static BlitzVec3 xsi;
-      currentToVolumeElementCoordinates(element, x, xsi);
+      currentToVolumeElementCoordinates(distype, xyze, x, xsi);
      
       // rounding 1 and -1 to be exact for the CDT
       // TODO extend for triangles
@@ -661,32 +667,32 @@ namespace GEO
     /*!
      \brief checks if a position in current coordinates lies within a certain surfaceElement           
             The nonlinear system of equation is solved with help of the Newton-method.
-     \param surfaceElement        (in) :  surface element
+     \param distype               (in) :  surface element shape
      \param xyze_surfaceElement   (in) :  nodal position array (3,numnode)
      \param physCoord             (in) :  node in physical coordinates (x, y, z)
      \param eleCoord              (out):  node in element coordinates (r, s)
      */  
     void CurrentToSurfaceElementCoordinates(
-        const DRT::Element*      surfaceElement,        
-        const BlitzMat&          xyze_surfaceElement,   
-        const BlitzVec3&         physCoord,             
-        BlitzVec2&               eleCoord                  
+        const DRT::Element::DiscretizationType  distype,
+        const BlitzMat&                         xyze_surfaceElement,
+        const BlitzVec3&                        physCoord,
+        BlitzVec2&                              eleCoord
         );
 
 
     /*!
     \brief checks if a position in current coordinates lies within a certain lineElement           
            The nonlinear system of equation is solved with help of the Newton-method.
-    \param lineElement            (in)  : line element
+    \param distype                (in)  : line element shape
     \param xyze_surfaceElement    (in)  : nodal position array (3,numnode)
     \param physCoord              (in)  : node in physical coordinates (x, y, z)
     \param eleCoord               (out) : node in element coordinates (r)
     */
     void CurrentToLineElementCoordinates(
-            const DRT::Element*         lineElement,
-            const BlitzMat&             xyze_lineElement,
-            const BlitzVec3&            physCoord,
-            BlitzVec1&                  eleCoord
+            const DRT::Element::DiscretizationType  distype,
+            const BlitzMat&                         xyze_lineElement,
+            const BlitzVec3&                        physCoord,
+            BlitzVec1&                              eleCoord
             );
     
 

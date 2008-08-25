@@ -503,7 +503,7 @@ bool GEO::getDistanceToSurface(
   BlitzVec2 elecoord = 0.0; // starting value at element center
 
   const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
-  GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
+  GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
   if(GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
   { 
@@ -530,7 +530,7 @@ bool GEO::getDistanceToSurface(
       for(int j = 0; j < 2; j++)
         elecoord(j) = DRT::UTILS::getEleNodeNumbering_nodes_reference(surfaceElement->Shape())[i][j];
 
-      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, point, elecoord);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
       if( GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()) )
       { 
@@ -573,7 +573,7 @@ bool GEO::getDistanceToLine(
 
   const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineElement, currentpositions));
   
-  GEO::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
+  GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
   
   if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
   { 
@@ -599,7 +599,7 @@ bool GEO::getDistanceToLine(
       // use end nodes as starting values in addition
       elecoord(0) = DRT::UTILS::getEleNodeNumbering_nodes_reference(lineElement->Shape())[i][0];
 
-      GEO::CurrentToLineElementCoordinates(lineElement, xyze_lineElement, point, elecoord);
+      GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
 
       if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()) )
       { 
@@ -700,7 +700,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
     BlitzVec2 elecoord = 0.0;
     const DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
     const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
-    GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
+    GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
     GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, normal);
     break;
   }
@@ -719,7 +719,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
       BlitzVec2 eleCoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
       
-      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), eleCoord);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), eleCoord);
       GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, eleCoord, surface_normal);
       normal += surface_normal;
     }
@@ -736,7 +736,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
       const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec2 elecoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
-      GEO::CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
+      GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
       GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, surface_normal);
       normal += surface_normal;
     }
