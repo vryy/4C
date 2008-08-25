@@ -53,6 +53,8 @@ public:
       return ref;
     };
     
+    BlitzMat get_xyzt() const {return xyzt_;};
+    
     //! return string representation
     std::string toString() const;
 

@@ -72,6 +72,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
     elementalBoundaryIntCells_.erase(*eleid);
   }
   
+  GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
+  
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -239,6 +241,38 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_system.close();
     cout << " done" << endl;
   }
+  
+  if (gmshdebugout) // print space time layer
+  {
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
+    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+
+    std::ofstream f_system(filename.str().c_str());
+    {
+      // stringstream for domains
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
+      BlitzVec vals(8);
+      vals(0) = 1.0;vals(1) = 1.0;vals(2) = 1.0;vals(3) = 1.0;
+      vals(4) = 0.0;vals(5) = 0.0;vals(6) = 0.0;vals(7) = 0.0;
+      for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
+      {
+        const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
+        
+        gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(DRT::Element::hex8, vals, slabitem.get_xyzt()) << endl;
+      }
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+    }
+    f_system.close();
+    cout << " done" << endl;
+  }
+  
+  
   if (gmsh_tree_output)
   {
     // debug: write information about which structure we are in
@@ -455,49 +489,20 @@ int XFEM::PositionWithinConditionBruteForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool XFEM::InterfaceHandle::PositionWithinAnyInfluencingCondition(
-    const BlitzVec3&                  x_in,
-    const std::set<int>&              xlabelset
-) const
-{
-  
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
- 
-  const int label = PositionWithinConditionNP(x_in);
-  
-  bool compute = false;
-  if (label == 0) // fluid
-  {
-    compute = true;
-  }
-  else if (xlabelset.size() > 1)
-  {
-    compute = true;
-  }
-  else if (xlabelset.find(label) == xlabelset.end())
-  {
-    compute = true;
-  }
-  //compute = true;
-  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-#ifdef PARALLEL
-  dserror("not implemented, yet");
-#endif
-  return compute;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandle::ComputeSlabValues(
+void XFEM::InterfaceHandle::FindSpaceTimeLayerCell(
     const BlitzVec3&                  querypos,
-    XFEM::SpaceTimeBoundaryCell&      slab,
+    XFEM::SpaceTimeBoundaryCell&      stcell,
     BlitzVec3&                        rst
 ) const
 {
   
-  // loop over space time slab cells until one is found
-  for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = slabs_.begin(); slabiter != slabs_.end(); ++slabiter)
+  // loop over space time slab cells until one is found - brute force
+  for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
   {
+    const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
+    BlitzVec3 xsi;
+    xsi = 0.0;
+//    bool currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
     
   }
 //  const int label = PositionWithinConditionNP(x_in);
@@ -523,7 +528,7 @@ void XFEM::InterfaceHandle::ComputeSlabValues(
   return;
 }
 
-void XFEM::InterfaceHandle::GenerateSpaceTimeSlabs(
+void XFEM::InterfaceHandle::GenerateSpaceTimeLayer(
     const Teuchos::RCP<DRT::Discretization>  cutterdis,
     const std::map<int,BlitzVec3>&           cutterposnp,
     const std::map<int,BlitzVec3>&           cutterposn
@@ -554,7 +559,7 @@ void XFEM::InterfaceHandle::GenerateSpaceTimeSlabs(
       }
     }
     XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
-    slabs_.insert(make_pair(cutterele->Id(),slab));
+    stlayer_.insert(make_pair(cutterele->Id(),slab));
   }
   
   return;

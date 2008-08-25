@@ -129,13 +129,7 @@ public:
         GEO::NearestObject&               nearestobject
     ) const;
     
-    //! checks if a position in current coordinates lies within a certain condition region           
-    bool PositionWithinAnyInfluencingCondition(
-        const BlitzVec3&                  x_in,
-        const std::set<int>&              xlabelset
-    ) const;
-    
-    void ComputeSlabValues(
+    void FindSpaceTimeLayerCell(
         const BlitzVec3&                  querypos,
         XFEM::SpaceTimeBoundaryCell&      slab,
         BlitzVec3&                        rst
@@ -162,7 +156,7 @@ private:
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
     
-    void GenerateSpaceTimeSlabs(
+    void GenerateSpaceTimeLayer(
         const Teuchos::RCP<DRT::Discretization>  cutterdis,   ///< discretization with boundary elements
         const std::map<int,BlitzVec3>&           cutterposnp,
         const std::map<int,BlitzVec3>&           cutterposn
@@ -171,7 +165,7 @@ private:
     //! intersected domain
     const Teuchos::RCP<DRT::Discretization> xfemdis_;
 
-    //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
+    //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
     const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
     //! current positions of all cutter nodes at n+1
@@ -195,37 +189,9 @@ private:
     //! SearchTree octtree for timestep n
     const Teuchos::RCP<GEO::SearchTree>           octTreen_;
     
-    std::map<int,XFEM::SpaceTimeBoundaryCell>         slabs_;
+    std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
 
 };
-
-///*!
-//\brief checks if a position in current coordinates lies within a certain condition region           
-//*/  
-//int PositionWithinCondition(
-//        const BlitzVec3&                  x,              ///< node in physical coordinates
-//        const XFEM::InterfaceHandle&      ih              ///< the ubiquitous interface handle with all geometry information
-//    );
-//
-//
-///*!
-//\brief checks if a position in current coordinates lies within a certain condition region using an octree
-//*/
-//int PositionWithinConditionSearchTree(
-//    const BlitzVec3&                  x_in, ///< node in physical coordinates
-//    const XFEM::InterfaceHandle&      ih    ///< the ubiquitous interface handle with all geometry information
-//    );
-
-
-///*!
-//\brief checks if a position in current coordinates lies within a certain condition region           
-//*/  
-//bool PositionWithinAnyInfluencingCondition(
-//        const BlitzVec3&                  x,              ///< node in physical coordinates
-//        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitous interface handle with all geometry information
-//        const std::set<int>&              xlabelset       ///< influencing enrichment labels
-//    );
-
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region: example brute force implementation
