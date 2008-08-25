@@ -72,7 +72,8 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -202,6 +203,17 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
 
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    velm_->PutScalar(0.0);
+    accm_->PutScalar(0.0);
+    veln_->PutScalar(0.0);
+    accn_->PutScalar(0.0);
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+    
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -262,16 +274,26 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // Of course it is part of the contact residual, but the normal and
   // tangential contact conditions have to be considered as well.
 
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-
-  // add mid-viscous damping force
-  if (damping)
+  // build residual
+  if (dynkindstat)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    // static residual
+    // Res = F_int - F_ext
+    fresm_->PutScalar(0.0);
+  }
+  else
+  {
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
   }
 
   // add static mid-balance
@@ -288,18 +310,22 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
-#ifdef STRUGENALPHA_BE
-  stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-  if (damping)
+  if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+  else
   {
 #ifdef STRUGENALPHA_BE
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
+    if (damping)
+    {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+    }
   }
   stiff_->Complete();
 
@@ -385,7 +411,8 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -426,6 +453,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.ClearState();
   }
 
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+    
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
   accn_->Update(1.0,*acc_,0.0);
@@ -442,6 +476,10 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
+  if (dynkindstat)
+  {
+    fext_->PutScalar(0.0);
+  }
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
   //------------- eval fint at interpolated state, eval stiffness matrix
@@ -498,17 +536,26 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // Of course it is part of the contact residual, but the normal and
   // tangential contact conditions have to be considered as well.
 
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-  // add mid-viscous damping force
-  if (damping)
+  // build residual
+  if (dynkindstat)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    // static residual
+    // Res = F_int - F_ext
+     fresm_->PutScalar(0.0);
   }
-
+  else
+  {
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
+  }
   // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
   fresm_->Update(1.0,*fextm_,-1.0);
@@ -523,18 +570,22 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
-#ifdef STRUGENALPHA_BE
-  stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-  if (damping)
+  if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+  else
   {
 #ifdef STRUGENALPHA_BE
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
+    if (damping)
+    {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+    }
   }
   stiff_->Complete();
 
@@ -627,6 +678,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
@@ -721,6 +773,13 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 #endif
 #endif
 
+    // zerofy velocity and acceleration in case of statics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
+        
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -795,15 +854,24 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
 
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // add inertia mid-forces
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add viscous mid-forces
+      if (damping)
+      {
+        //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -820,18 +888,22 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
-  #ifdef STRUGENALPHA_BE
-    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-  #else
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-  #endif
-    if (damping)
-    {
-  #ifdef STRUGENALPHA_BE
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
-  #else
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-  #endif
+    if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+    else
+    { 
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
+      stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
+      if (damping)
+      {
+#ifdef STRUGENALPHA_BE
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+      }
     }
     stiff_->Complete();
 
@@ -926,7 +998,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
-
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1024,6 +1097,13 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 #endif
 #endif
 
+    // zerofy velocity and acceleration in case of statics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
+        
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -1098,15 +1178,24 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
 
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // add inertia mid-forces
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add viscous mid-forces
+      if (damping)
+      {
+        //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1123,18 +1212,22 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
-  #ifdef STRUGENALPHA_BE
-    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-  #else
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-  #endif
-    if (damping)
+    if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+    else
     {
-  #ifdef STRUGENALPHA_BE
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
-  #else
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-  #endif
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
+      stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
+      if (damping)
+      {
+#ifdef STRUGENALPHA_BE
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+      }
     }
     stiff_->Complete();
 
@@ -1237,6 +1330,8 @@ void CONTACT::ContactStruGenAlpha::Update()
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
 
+  const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  
   string iostress      = params_.get<string>("io structural stress"   ,"none");
   string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
@@ -1261,9 +1356,22 @@ void CONTACT::ContactStruGenAlpha::Update()
   //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
   //                     - alpham/(1.-alpham) * A_n
   acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
+  
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+  
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
+  // zerofy external force, such that there is no history from load step to load step
+  if (dynkindstat)
+  {
+    fext_->PutScalar(0.0);
+  }
 #ifdef STRUGENALPHA_FINTLIKETR
   // update new internal force
   //    F_{int;n} := F_{int;n+1}
