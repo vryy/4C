@@ -14,7 +14,7 @@
 #ifndef ENRICHMENT_H
 #define ENRICHMENT_H
 
-#include "Teuchos_RefCountPtr.hpp"
+
 #include "../drt_geometry/vector_definitions.H"
 #include "interface.H"
 
