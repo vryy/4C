@@ -374,6 +374,10 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   if (time != timen_ && timen_ != 0.)
   {
     microstatic->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_, surf_stress_man_);
+    microstatic->SetNewStep(true);           // this is needed for possible surface stresses
+                                             // (comparison of A_old and A_new, which are
+                                             // nearly the same in the beginning of a new
+                                             // time step due to our choice of predictors)
   }
 
   if (time != timen_)
@@ -415,6 +419,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microstatic->SetTime(timen_, istep_);
 
   microstatic->Predictor(defgrd);
+  microstatic->SetNewStep(false);
   microstatic->FullNewton();
   microstatic->StaticHomogenization(stress, cmat, density, defgrd, mod_newton_, build_stiff_);
 

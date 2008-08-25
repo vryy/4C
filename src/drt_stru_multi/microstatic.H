@@ -141,17 +141,13 @@ public:
 
   void SetTime(double timen, int istep);
 
+  void SetNewStep(bool newstep) { params_->set("newstep", newstep); }
+
 //  RefCountPtr<Epetra_Vector> ReturnNewDism();
 
   void ClearState();
 
   void SetUpHomogenization();
-
-  void Homogenization(Epetra_SerialDenseVector* stress,
-                      Epetra_SerialDenseMatrix* cmat,
-                      double *density,
-                      const Epetra_SerialDenseMatrix* defgrd,
-                      const string action);
 
   void StaticHomogenization(Epetra_SerialDenseVector* stress,
                             Epetra_SerialDenseMatrix* cmat,

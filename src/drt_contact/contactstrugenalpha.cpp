@@ -37,16 +37,16 @@ StruGenAlpha(params,dis,solver,output)
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
     if (!contactconditions.size()) dserror("No contact boundary conditions present");
-    
+
     // store integration parameter alphaf into cmanager as well
     double alphaf = params_.get<double>("alpha f",0.459);
     contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
-  
+
   // save Dirichlet B.C. status in Contact Manager
   // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
   contactmanager_->StoreNodalQuantities(Manager::dirichlet,dirichtoggle_);
-  
+
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha
 
@@ -242,6 +242,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      p.set("newstep", true);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
 
@@ -254,17 +255,17 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-  
+
   // Please note that due to the contact modifications to the l.h.s. and to
   // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
   // the residual here, as it does in structural dynamics without contact.
   // Of course it is part of the contact residual, but the normal and
   // tangential contact conditions have to be considered as well.
-  
+
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
-  
+
   // add mid-viscous damping force
   if (damping)
   {
@@ -283,7 +284,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-  
+
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
@@ -301,44 +302,44 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 #endif
   }
   stiff_->Complete();
-  
+
   // reset Lagrange multipliers to last converged state
   // this resetting is necessary due to multiple active set steps
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
-    
-  // friction  
+
+  // friction
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  jump->Scale(0.0); 
+  jump->Scale(0.0);
   contactmanager_->StoreNodalQuantities(Manager::jump);
-  
+
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
-  
+
   contactmanager_->InitializeMortar(0);
   contactmanager_->EvaluateMortar(0);
-    
+
   contactmanager_->Initialize(0);
   contactmanager_->Evaluate(stiff_,fresm_,0);
-  
+
   // blank residual DOFs that are on Dirichlet BC
   {
     Epetra_Vector fresmdbc(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
   }
-  
+
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
-  
+
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
   contactmanager_->VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
-  
+
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -358,7 +359,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   {
     PrintPredictor(convcheck, fresmnorm);
   }
-    
+
   return;
 } // ContactStruGenAlpha::ConsistentPredictor()
 
@@ -477,6 +478,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      p.set("newstep", true);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
 
@@ -489,13 +491,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-  
+
   // Please note that due to the contact modifications to the l.h.s. and to
   // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
   // the residual here, as it does in structural dynamics without contact.
   // Of course it is part of the contact residual, but the normal and
   // tangential contact conditions have to be considered as well.
-  
+
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
@@ -517,7 +519,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-  
+
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
@@ -535,44 +537,44 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 #endif
   }
   stiff_->Complete();
-  
+
   // reset Lagrange multipliers to last converged state
   // this resetting is necessary due to multiple active set steps
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
-    
-  // friction  
+
+  // friction
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  jump->Scale(0.0); 
+  jump->Scale(0.0);
   contactmanager_->StoreNodalQuantities(Manager::jump);
 
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
-  
+
   contactmanager_->InitializeMortar(0);
   contactmanager_->EvaluateMortar(0);
-   
+
   contactmanager_->Initialize(0);
   contactmanager_->Evaluate(stiff_,fresm_,0);
-  
+
   // blank residual DOFs that are on Dirichlet BC
   {
     Epetra_Vector fresmdbc(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
   }
-      
+
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
-  
+
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
   contactmanager_->VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
-  
+
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -592,7 +594,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   {
     PrintPredictor(convcheck, fresmnorm);
   }
-    
+
   return;
 } // ContactStruGenAlpha::ConstantPredictor()
 
@@ -625,7 +627,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
-  
+
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -649,7 +651,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   bool print_unconv = true;
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
-  {   
+  {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -669,7 +671,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     {
       contactmanager_->Recover(disi_);
     }
-        
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -792,7 +794,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
-    
+
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
     fresm_->Update(1.0,*finert_,0.0);
@@ -811,10 +813,10 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-    
+
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-    
+
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -832,31 +834,31 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   #endif
     }
     stiff_->Complete();
-    
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->SetState("displacement",disn_);
-      
+
       contactmanager_->InitializeMortar(numiter+1);
       contactmanager_->EvaluateMortar(numiter+1);
-            
+
       contactmanager_->Initialize(numiter+1);
       contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
     }
-    
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmdbc(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     }
-    
+
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
-    
+
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
-  
+
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
@@ -870,8 +872,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-    
-    
+
+
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
@@ -924,7 +926,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
-  
+
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -952,7 +954,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
           !contactmanager_->ActiveSetConverged()) && numiter<=maxiter)
-  {   
+  {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -972,7 +974,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     {
       contactmanager_->Recover(disi_);
     }
-        
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1095,7 +1097,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
-    
+
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
     fresm_->Update(1.0,*finert_,0.0);
@@ -1114,10 +1116,10 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-    
+
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-    
+
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -1135,40 +1137,40 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   #endif
     }
     stiff_->Complete();
-    
+
     //-------------------------make contact modifications to lhs and rhs
     //-------------------- update active set for semi-smooth Newton case
     {
       contactmanager_->SetState("displacement",disn_);
-      
+
       contactmanager_->InitializeMortar(numiter+1);
       contactmanager_->EvaluateMortar(numiter+1);
-      
+
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
-      contactmanager_->UpdateActiveSetSemiSmooth(disn_); 
-      
+      contactmanager_->UpdateActiveSetSemiSmooth(disn_);
+
       contactmanager_->Initialize(numiter+1);
       contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
     }
-    
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmdbc(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     }
-       
+
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
-    
+
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
     contactmanager_->VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
-  
+
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
@@ -1182,8 +1184,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-    
-    
+
+
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
@@ -1270,11 +1272,11 @@ void CONTACT::ContactStruGenAlpha::Update()
 
   //---------------------------------------------- print contact to screen
   contactmanager_->PrintActiveSet();
-  
+
 #ifdef CONTACTGMSH1
   contactmanager_->VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1
-    
+
   //---------------------------------- store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
@@ -1283,12 +1285,12 @@ void CONTACT::ContactStruGenAlpha::Update()
   contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->StoreDM("old");
 
-  // friction  
+  // friction
   // reset displacement jumps (slave dofs)
   //RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  //jump->Scale(0.0); 
+  //jump->Scale(0.0);
   //contactmanager_->StoreNodalQuantities(Manager::jump);
-    
+
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material
@@ -1383,7 +1385,7 @@ void CONTACT::ContactStruGenAlpha::Output()
   if (!errfile) printerr = false;
 
   bool isdatawritten = false;
- 
+
   //------------------------------------------------- write restart step
   if (writeresevry and istep%writeresevry==0)
   {
@@ -1394,7 +1396,7 @@ void CONTACT::ContactStruGenAlpha::Output()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     isdatawritten = true;
-    
+
     // write restart information for contact
     RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
@@ -1547,7 +1549,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
     bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
-    
+
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
@@ -1570,13 +1572,13 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 
       // LOOP2: nonlinear iteration (Newton)
       SemiSmoothNewton();
-      
+
       UpdateandOutput();
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
   }
-  
+
     //********************************************************************
     // FIXED-POINT APPROACH
     // The search for the correct active set (=contact nonlinearity) is
@@ -1606,7 +1608,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         // update of active set (fixed-point)
         contactmanager_->UpdateActiveSet(disn_);
       }
-      
+
       UpdateandOutput();
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
@@ -1616,7 +1618,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // END: options for primal-dual active set strategy (PDASS)
     //********************************************************************
   }
-  
+
   // other types of nonlinear iteration schemes
   else dserror("Unknown type of equilibrium iteration");
 
@@ -1636,7 +1638,7 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 #ifdef STRUGENALPHA_FINTLIKETR
   dserror("ERROR: ReadRestart: Not yet implemented for FINTLIKETR!");
 #endif // #ifdef STRUGENALPHA_FINTLIKETR
-  
+
   RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();
   IO::DiscretizationReader reader(rcpdiscret,step);
@@ -1658,13 +1660,13 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   *(contactmanager_->LagrMultOld())=*zold;
   contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->ReadRestart(activetoggle);
-  
+
   // build restart Mortar matrices D and M
   contactmanager_->SetState("displacement",dis_);
   contactmanager_->InitializeMortar(0);
   contactmanager_->EvaluateMortar(0);
   contactmanager_->StoreDM("old");
-  
+
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);

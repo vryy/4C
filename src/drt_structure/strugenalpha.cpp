@@ -390,6 +390,7 @@ void StruGenAlpha::ConstantPredictor()
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      p.set("newstep", true);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
 
@@ -677,6 +678,7 @@ void StruGenAlpha::ConsistentPredictor()
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      p.set("newstep", true);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
 

@@ -357,7 +357,7 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_homog_stressdens,
+    calc_homog_dens,
     eas_init_multi,
     eas_set_multi,
     postprocess_stress,
@@ -422,13 +422,13 @@ protected:
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                    prestress_;
-  
+
   // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp, 
+  void UpdateJacobianMapping(const vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
 
   // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp, 
+  void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
@@ -535,9 +535,7 @@ protected:
   // multi-scale section
   void soh8_initvol(ParameterList& params);
 
-  void soh8_homog(ParameterList&  params,
-                  vector<double>& disp,
-                  vector<double>& residual);
+  void soh8_homog(ParameterList& params);
 
   void soh8_set_eas_multi(ParameterList&  params);
 

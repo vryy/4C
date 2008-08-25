@@ -66,8 +66,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_istep")    act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
-  else if (action=="calc_homog_stressdens")       act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
+  else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
+  else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
+  else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
+  else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
@@ -353,15 +356,45 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     }
     break;
 
-    case calc_homog_stressdens: {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_homog(params, mydisp, myres);
+    case calc_homog_dens:
+    {
+      soh8_homog(params);
+    }
+    break;
+
+    // in case of multi-scale problems, possible EAS internal data on microscale
+    // have to be stored in every macroscopic Gauss point
+    // allocation and initializiation of these data arrays can only be
+    // done in the elements that know the number of EAS parameters
+    case eas_init_multi:
+    {
+      if (eastype_ != soh8_easnone)
+      {
+        soh8_eas_init_multi(params);
+      }
+    }
+    break;
+
+    // in case of multi-scale problems, possible EAS internal data on microscale
+    // have to be stored in every macroscopic Gauss point
+    // before any microscale simulation, EAS internal data has to be
+    // set accordingly
+    case eas_set_multi:
+    {
+      if (eastype_ != soh8_easnone)
+      {
+        soh8_set_eas_multi(params);
+      }
+    }
+    break;
+
+    // read restart of microscale
+    case multi_readrestart:
+    {
+      RefCountPtr<MAT::Material> mat = Material();
+
+      if (mat->MaterialType()==m_struct_multiscale)
+        soh8_read_restart_multi(params);
     }
     break;
 

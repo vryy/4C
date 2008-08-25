@@ -58,7 +58,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
   else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
   else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
-  else if (action=="calc_homog_stressdens")                       act = So_hex8::calc_homog_stressdens;
+  else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
 #ifdef PRESTRESS
@@ -67,10 +67,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
-  switch(act) 
+  switch(act)
   {
     // linear stiffness
-    case calc_struct_linstiff: 
+    case calc_struct_linstiff:
     {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff: 
+    case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -177,7 +177,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       int gid = Id();
       RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
 
-      if (stresstype=="ndxyz") 
+      if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
@@ -206,26 +206,26 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
           elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
         }
       }
-      else if (stresstype=="cxyz") 
+      else if (stresstype=="cxyz")
       {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap& elemap = elestress->Map();
         int lid = elemap.LID(Id());
-        if (lid!=-1) 
+        if (lid!=-1)
         {
-          for (int i = 0; i < NUMSTR_SOH8; ++i) 
+          for (int i = 0; i < NUMSTR_SOH8; ++i)
           {
             (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j) 
+            for (int j = 0; j < NUMGPT_SOH8; ++j)
             {
               (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
             }
           }
         }
       }
-      else if (stresstype=="cxyz_ndxyz") 
+      else if (stresstype=="cxyz_ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
@@ -256,17 +256,17 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOH8; ++i) 
+          for (int i = 0; i < NUMSTR_SOH8; ++i)
           {
             (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j) 
+            for (int j = 0; j < NUMGPT_SOH8; ++j)
             {
               (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
             }
           }
         }
       }
-      else 
+      else
       {
         dserror("unknown type of stress/strain output on element level");
       }
@@ -281,10 +281,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: 
+    case calc_struct_update_istep:
     {
       // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
@@ -301,12 +301,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-    case calc_struct_update_imrlike: 
+    case calc_struct_update_imrlike:
     {
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
@@ -326,10 +326,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-    case calc_struct_reset_istep: 
+    case calc_struct_reset_istep:
     {
       // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
@@ -346,16 +346,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-    case calc_homog_stressdens: 
+    case calc_homog_dens:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_homog(params, mydisp, myres);
+      soh8_homog(params);
     }
     break;
 
@@ -363,9 +356,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case eas_init_multi: 
+    case eas_init_multi:
     {
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         soh8_eas_init_multi(params);
       }
@@ -376,9 +369,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case eas_set_multi: 
+    case eas_set_multi:
     {
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         soh8_set_eas_multi(params);
       }
@@ -386,7 +379,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 
     // read restart of microscale
-    case multi_readrestart: 
+    case multi_readrestart:
     {
       RefCountPtr<MAT::Material> mat = Material();
 
@@ -402,11 +395,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      
+
       // build def gradient for every gauss point
       LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8,9);
       DefGradient(mydisp,gpdefgrd,*prestress_);
-      
+
       // update deformation gradient and put back to storage
       LINALG::SerialDenseMatrix deltaF(3,3);
       LINALG::SerialDenseMatrix Fhist(3,3);
@@ -543,7 +536,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass( 
+void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -651,7 +644,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) 
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -676,13 +669,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       // get derivatives wrt to last spatial configuration
       LINALG::SerialDenseMatrix N_xyz(NUMDIM_SOH8,NUMNOD_SOH8);
       N_xyz.Multiply('N','N',1.0,invJdef,int_hex8.deriv_gp[gp],0.0);
-      
+
       // build multiplicative incremental defgrd
       defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
-      
+
       // get stored old incremental F
       LINALG::SerialDenseMatrix Fhist(3,3);
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
@@ -696,7 +689,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
 #endif
-    
+
     // Right Cauchy-Green tensor = F^T * F
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
@@ -726,11 +719,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // return gp strains (only in case of stress/strain output)
     if (elestrain != NULL)
     {
-      if (!euler_almansi) 
+      if (!euler_almansi)
       {
-        for (int i = 0; i < 3; ++i) 
+        for (int i = 0; i < 3; ++i)
           (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i) 
+        for (int i = 3; i < 6; ++i)
           (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
       else
@@ -786,7 +779,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     LINALG::SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
-    for (int i=0; i<NUMNOD_SOH8; ++i) 
+    for (int i=0; i<NUMNOD_SOH8; ++i)
     {
       bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
       bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
@@ -822,14 +815,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
     // return gp stresses
     if (elestress != NULL) // return 2nd Piola-Kirchhoff stresses
-    {                
-      if (!cauchy) 
+    {
+      if (!cauchy)
       {
-        for (int i = 0; i < NUMSTR_SOH8; ++i) 
+        for (int i = 0; i < NUMSTR_SOH8; ++i)
           (*elestress)(gp,i) = stress(i);
       }
       else // return Cauchy stresses
-      {                               
+      {
         double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                       defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
                       defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
@@ -862,7 +855,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       }
     }
 
-    if (force != NULL && stiffmatrix != NULL) 
+    if (force != NULL && stiffmatrix != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       (*force).Multiply('T', 'N',detJ*int_hex8.weights(gp),bop,stress,1.0);
@@ -897,7 +890,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       } // end of integrate `geometric' stiffness******************************
 
       // EAS technology: integrate matrices --------------------------------- EAS
-      if (eastype_ != soh8_easnone) 
+      if (eastype_ != soh8_easnone)
       {
         double integrationfactor = detJ * int_hex8.weights(gp);
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
@@ -914,11 +907,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     }
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
-    { 
+    {
       // integrate consistent mass matrix
-      for (int inod=0; inod<NUMNOD_SOH8; ++inod) 
+      for (int inod=0; inod<NUMNOD_SOH8; ++inod)
       {
-        for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) 
+        for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
         {
           double massfactor = (int_hex8.shapefct_gp[gp])(inod) * density * (int_hex8.shapefct_gp[gp])(jnod)
                             * detJ * int_hex8.weights(gp);     // intermediate factor
@@ -932,11 +925,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
 
-  if (force != NULL && stiffmatrix != NULL) 
+  if (force != NULL && stiffmatrix != NULL)
   {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
-    if (eastype_ != soh8_easnone) 
+    if (eastype_ != soh8_easnone)
     {
       // we need the inverse of Kaa
       Epetra_SerialDenseSolver solve_for_inverseKaa;
@@ -953,11 +946,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       (*force).Multiply('N', 'N', -1.0, KdaKaa, feas, 1.0);
 
       // store current EAS data in history
-      for (int i=0; i<neas_; ++i) 
+      for (int i=0; i<neas_; ++i)
       {
-        for (int j=0; j<neas_; ++j) 
+        for (int j=0; j<neas_; ++j)
           (*oldKaainv)(i,j) = Kaa(i,j);
-        for (int j=0; j<NUMDOF_SOH8; ++j) 
+        for (int j=0; j<NUMDOF_SOH8; ++j)
           (*oldKda)(i,j) = Kda(i,j);
         (*oldfeas)(i,0) = feas(i);
       }
@@ -977,7 +970,7 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(Epetra_SerialDenseMatrix* emass)
     // we assume #elemat2 is a square matrix
     for (int c=0; c<(*emass).N(); ++c)  // parse columns
     {
-      double d = 0.0;  
+      double d = 0.0;
       for (int r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries
@@ -1091,7 +1084,7 @@ int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp, 
+void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
@@ -1106,7 +1099,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
   }
 
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) 
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     LINALG::SerialDenseMatrix invJdef(3,3);
@@ -1124,7 +1117,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
     defgrd(2,2) += 1.0;
 
     prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
-  }  
+  }
   return;
 }
 
@@ -1150,7 +1143,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
   LINALG::SerialDenseMatrix N_xyz(NUMDIM_SOH8,NUMNOD_SOH8);
   LINALG::SerialDenseMatrix invJnew(NUMDIM_SOH8,NUMDIM_SOH8);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) 
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
@@ -1167,7 +1160,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
     invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
-  } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)  
+  } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)
 
   return;
 }

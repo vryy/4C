@@ -184,18 +184,12 @@ solver_(solver)
   // create the parameters for the discretization
   ParameterList par;
   // action for elements
-  par.set("action","calc_homog_stressdens");
+  par.set("action","calc_homog_dens");
   // set density to zero
   par.set("homogdens", 0.0);
-  // set flag that only density has to be calculated
-  par.set("onlydens", true);
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual displacement",zeros_);
-
-  discret_->SetState("displacement",dism_);
-
   discret_->Evaluate(par,null,null,null,null,null);
   discret_->ClearState();
 
@@ -661,14 +655,18 @@ void MicroStatic::ReadRestart(int step,
 
   reader.ReadVector(dis, "displacement");
   // It does not make any sense to read the mesh and corresponding
-  // element based data because we only have one instance of the
-  // microscale discretization and surely have different element based
+  // element based data because we surely have different element based
   // data at every Gauss point
   // reader.ReadMesh(step);
 
   // Override current time and step with values from file
   params_->set<double>("total time",time);
   params_->set<int>   ("step",rstep);
+
+  // set newstep=true for surface stresses (comparison of A_old and
+  // A_new which are nearly the same in the beginning of a new time
+  // step due to our choice of predictors)
+  params_->set<bool>("newstep", true);
 
   if (surf_stress_man!=null)
   {
@@ -1142,146 +1140,6 @@ void MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 
 
 
-
-
-// after having finished all the testing, remove cmat from the input
-// parameters, since no constitutive tensor is calculated here.
-
-void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
-                                       Epetra_SerialDenseMatrix* cmat,
-                                       double *density,
-                                       const Epetra_SerialDenseMatrix* defgrd,
-                                       const string action)
-{
-  // determine macroscopic parameters via averaging (homogenization) of
-  // microscopic features
-  // this was implemented against the background of serial usage
-  // -> if a parallel version of microscale simulations is EVER wanted,
-  // carefully check if/what/where things have to change
-
-  // create the parameters for the discretization
-  ParameterList p;
-  // action for elements
-  p.set("action","calc_homog_stressdens");
-  // choose what to assemble
-  p.set("assemble matrix 1",false);
-  p.set("assemble matrix 2",false);
-  p.set("assemble vector 1",false);
-  p.set("assemble vector 2",false);
-  p.set("assemble vector 3",false);
-  // set stresses and densities to zero
-//   p.set("homogdens", 0.0);
-
-  p.set("homogP11", 0.0);
-  p.set("homogP12", 0.0);
-  p.set("homogP13", 0.0);
-  p.set("homogP21", 0.0);
-  p.set("homogP22", 0.0);
-  p.set("homogP23", 0.0);
-  p.set("homogP31", 0.0);
-  p.set("homogP32", 0.0);
-  p.set("homogP33", 0.0);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("residual displacement",zeros_);
-
-  // we have to distinguish here whether we are in a homogenization
-  // procedure during the nonlinear solution or in the post-processing
-  // (macroscopic stress calculation) phase -> in the former case, the
-  // displacement has to be chosen at the generalized mid-point, in
-  // the latter one we need to evaluate everything at the end of the
-  // time step
-  if (action == "stress_calc")
-    discret_->SetState("displacement",dis_);
-  else
-    discret_->SetState("displacement",dism_);
-  discret_->Evaluate(p,null,null,null,null,null);
-  discret_->ClearState();
-
-  // homogenized density was already determined in the constructor
-  *density = density_;
-
-  Epetra_SerialDenseMatrix P(3, 3);
-  P(0, 0) = 1/V0_*p.get<double>("homogP11", 0.0);
-  P(0, 1) = 1/V0_*p.get<double>("homogP12", 0.0);
-  P(0, 2) = 1/V0_*p.get<double>("homogP13", 0.0);
-  P(1, 0) = 1/V0_*p.get<double>("homogP21", 0.0);
-  P(1, 1) = 1/V0_*p.get<double>("homogP22", 0.0);
-  P(1, 2) = 1/V0_*p.get<double>("homogP23", 0.0);
-  P(2, 0) = 1/V0_*p.get<double>("homogP31", 0.0);
-  P(2, 1) = 1/V0_*p.get<double>("homogP32", 0.0);
-  P(2, 2) = 1/V0_*p.get<double>("homogP33", 0.0);
-
-  // determine inverse of deformation gradient
-
-  Epetra_SerialDenseMatrix F_inv(3,3);
-
-  double detF= (*defgrd)(0,0) * (*defgrd)(1,1) * (*defgrd)(2,2)
-             + (*defgrd)(0,1) * (*defgrd)(1,2) * (*defgrd)(2,0)
-             + (*defgrd)(0,2) * (*defgrd)(1,0) * (*defgrd)(2,1)
-             - (*defgrd)(0,0) * (*defgrd)(1,2) * (*defgrd)(2,1)
-             - (*defgrd)(0,1) * (*defgrd)(1,0) * (*defgrd)(2,2)
-             - (*defgrd)(0,2) * (*defgrd)(1,1) * (*defgrd)(2,0);
-
-  F_inv(0,0) = ((*defgrd)(1,1)*(*defgrd)(2,2)-(*defgrd)(1,2)*(*defgrd)(2,1))/detF;
-  F_inv(0,1) = ((*defgrd)(0,2)*(*defgrd)(2,1)-(*defgrd)(2,2)*(*defgrd)(0,1))/detF;
-  F_inv(0,2) = ((*defgrd)(0,1)*(*defgrd)(1,2)-(*defgrd)(1,1)*(*defgrd)(0,2))/detF;
-  F_inv(1,0) = ((*defgrd)(1,2)*(*defgrd)(2,0)-(*defgrd)(2,2)*(*defgrd)(1,0))/detF;
-  F_inv(1,1) = ((*defgrd)(0,0)*(*defgrd)(2,2)-(*defgrd)(2,0)*(*defgrd)(0,2))/detF;
-  F_inv(1,2) = ((*defgrd)(0,2)*(*defgrd)(1,0)-(*defgrd)(1,2)*(*defgrd)(0,0))/detF;
-  F_inv(2,0) = ((*defgrd)(1,0)*(*defgrd)(2,1)-(*defgrd)(2,0)*(*defgrd)(1,1))/detF;
-  F_inv(2,1) = ((*defgrd)(0,1)*(*defgrd)(2,0)-(*defgrd)(2,1)*(*defgrd)(0,0))/detF;
-  F_inv(2,2) = ((*defgrd)(0,0)*(*defgrd)(1,1)-(*defgrd)(1,0)*(*defgrd)(0,1))/detF;
-
-  for (int i=0; i<3; ++i)
-  {
-    (*stress)[0] += F_inv(0, i)*P(i,0);                     // S11
-    (*stress)[1] += F_inv(1, i)*P(i,1);                     // S22
-    (*stress)[2] += F_inv(2, i)*P(i,2);                     // S33
-    (*stress)[3] += F_inv(0, i)*P(i,1);                     // S12
-    (*stress)[4] += F_inv(1, i)*P(i,2);                     // S23
-    (*stress)[5] += F_inv(0, i)*P(i,2);                     // S13
-  }
-
-  // for testing reasons only!!!!!!!!!! begin testing region
-  const double Emod  = 100.0;
-  const double nu  = 0.2;
-
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-  /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-
-  // Right Cauchy-Green tensor = F^T * F
-  Epetra_SerialDenseMatrix cauchygreen(3,3);
-  cauchygreen.Multiply('T','N',1.0,*defgrd,*defgrd,1.0);
-
-  // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-  // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  Epetra_SerialDenseVector glstrain(6);
-  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-  glstrain(3) = cauchygreen(0,1);
-  glstrain(4) = cauchygreen(1,2);
-  glstrain(5) = cauchygreen(2,0);
-
-  Epetra_SerialDenseVector ref_stress(6);
-  (*cmat).Multiply('N',glstrain,ref_stress);
-  /// end testing region!!!!!!!!!
-}
 
 void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
                                        Epetra_SerialDenseMatrix* cmat,

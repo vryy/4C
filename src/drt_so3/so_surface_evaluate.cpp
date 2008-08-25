@@ -165,7 +165,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     case neum_orthopressure:
     {
      if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
-      for (int checkdof = 1; checkdof < 3; ++checkdof) 
+      for (int checkdof = 1; checkdof < 3; ++checkdof)
         if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
       double ortho_value = (*val)[0];
       if (!ortho_value) dserror("no orthopressure value given!");
@@ -276,7 +276,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="prestress_readrestart")        act = StructuralSurface::prestress_readrestart;
 #endif
   else dserror("Unknown type of action for StructuralSurface");
-  
+
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -416,29 +416,32 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
       case calc_surfstress_stiff:
       {
-        if (distype!=quad4)
-          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
-
-        // element geometry update
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numnode = NumNode();
-        LINALG::SerialDenseMatrix x(numnode,3);
-        SpatialConfiguration(x,mydisp);
-
         RefCountPtr<SurfStressManager> surfstressman =
           params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
 
         if (surfstressman==null)
           dserror("No SurfStressManager in Solid3 Surface available");
 
-        double time = params.get<double>("total time",-1.0);
-        double dt = params.get<double>("delta time",0.0);
         RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
         if (cond==null)
           dserror("Condition not available in Solid3 Surface");
+
+        if (distype!=quad4)
+          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
+
+        double time = params.get<double>("total time",-1.0);
+        double dt = params.get<double>("delta time",0.0);
+        double alphaf = params.get<double>("alpha f",0.0);
+        bool newstep = params.get<bool>("newstep", false);
+
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
+        if (dism==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydism(lm.size());
+        DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
+        const int numnode = NumNode();
+        LINALG::SerialDenseMatrix x(numnode,3);
+        SpatialConfiguration(x,mydism);
 
         const DRT::UTILS::IntegrationPoints2D  intpoints =
           getIntegrationPoints2D(gaussrule_);
@@ -470,7 +473,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
                                                     time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                     gamma_min, gamma_min_eq, con_quot_max,
-                                                    con_quot_eq);
+                                                    con_quot_eq, alphaf, newstep);
         }
         else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
         {
@@ -478,8 +481,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double const_gamma = cond->GetDouble("gamma");
 
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
-                                                    time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
-                                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+                                                    time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                    0.0, 0.0, 0.0, 0.0, alphaf, newstep);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
@@ -1007,18 +1010,11 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 
   for (int gpid = 0; gpid < ngp; ++gpid)
   {
-    blitz::Array<double,2> ddet(3,ndof);
-    blitz::Array<double,3> ddet2(3,ndof,ndof);
-    ddet2 = 0.;
-    blitz::Array<double,1> jacobi_deriv(ndof);
-
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
 
     // get derivatives of shape functions in the plane of the element
     DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-
-    dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
 
     vector<double> normal(3);
     double detA;
@@ -1026,6 +1022,13 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     SurfaceIntegration(detA,normal,x,deriv);
     Jac = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
     A += Jac*intpoints.qwgt[gpid];
+
+    blitz::Array<double,2> ddet(3,ndof);
+    blitz::Array<double,3> ddet2(3,ndof,ndof);
+    ddet2 = 0.;
+    blitz::Array<double,1> jacobi_deriv(ndof);
+
+    dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */

@@ -52,14 +52,14 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
                                                 RefCountPtr<Epetra_Vector> fint,
                                                 RefCountPtr<LINALG::SparseMatrix> stiff)
 {
-    // action for elements
-    p.set("action","calc_surfstress_stiff");
+  // action for elements
+  p.set("action","calc_surfstress_stiff");
 
-    discret_.ClearState();
-    discret_.SetState("displacement",disp);
-    discret_.EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
+  discret_.ClearState();
+  discret_.SetState("displacement",disp);
+  discret_.EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
 
-    return;
+  return;
 }
 
 /*-------------------------------------------------------------------*
@@ -80,16 +80,11 @@ void DRT::SurfStressManager::Update()
 | write restart                                                      |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row,
-                                        RCP<Epetra_Vector> con_quot_temp_row)
+void DRT::SurfStressManager::GetHistory(RCP<Epetra_Vector> A_old_row,
+                                        RCP<Epetra_Vector> con_quot_row)
 {
-  // Note that the temporal vectors need to be written since in the
-  // final ones we still have the data of the former step. The column
-  // map based vector used for calculations is exported to a row map
-  // based one needed for writing.
-
-  LINALG::Export(*A_old_temp_, *A_old_temp_row);
-  LINALG::Export(*con_quot_temp_, *con_quot_temp_row);
+  LINALG::Export(*A_old_, *A_old_row);
+  LINALG::Export(*con_quot_, *con_quot_row);
 }
 
 /*-------------------------------------------------------------------*
@@ -118,7 +113,9 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                         const double gamma_min,
                                                         const double gamma_min_eq,
                                                         const double con_quot_max,
-                                                        const double con_quot_eq)
+                                                        const double con_quot_eq,
+                                                        const double alphaf,
+                                                        const bool newstep)
 {
   double gamma, dgamma;
   int LID = A_old_->Map().LID(ID);
@@ -126,9 +123,11 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
   if (surface_flag==0)                                   // SURFACTANT
   {
-    /*------------------------------------------------- initialization */
-    (*con_quot_temp_)[LID] = 0.0;
-    (*A_old_temp_)[LID] = A;
+    if ((*A_old_)[LID] == 0.)
+      (*A_old_)[LID] = A;
+
+    /* update for imr-like gen-alpha*/
+    (*A_old_temp_)[LID] = (A - alphaf*(*A_old_)[LID])/(1.-alphaf);
 
     /*-----------calculation of current surface stress and its partial
      *-----------------derivative with respect to the interfacial area */
@@ -136,15 +135,13 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
     if (time <= t_end)         /* gradual application of surface stress */
     {
       gamma = gamma_0-m1*con_quot_eq;
-      (*con_quot_temp_)[LID] = con_quot_eq;
       dgamma = 0.;
+      (*con_quot_temp_)[LID] = con_quot_eq;
     }
     else
     {
-      (*con_quot_temp_)[LID] = (*con_quot_)[LID];
-      gamma_calc(gamma, dgamma, (*con_quot_temp_)[LID], (*A_old_)[LID],
-                 (*A_old_temp_)[LID], dt, k1xC, k2, m1, m2, gamma_0,
-                 gamma_min, gamma_min_eq, con_quot_max);
+      SurfactantModel(ID, gamma, dgamma, dt, k1xC, k2, m1, m2,
+                      gamma_0, gamma_min, gamma_min_eq, con_quot_max, alphaf, newstep);
     }
   }
 
@@ -189,94 +186,125 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 | Calculate current interfacial concentration of surfactant          |
 | molecules and corresponding surface stresses                       |
 *--------------------------------------------------------------------*/
-void DRT::SurfStressManager::gamma_calc(
-                double& gamma,                // (o) surface stress
-                double& dgamma,               // (o) derivative of surface stress
-                double& con_quot,             // (i/o) surfactant concentration
-                const double A_old,          // (i) surface area of last time step
-                const double A_new,          // (i) current surface area
+void DRT::SurfStressManager::SurfactantModel(
+                const int ID,                // (i) ID of surface condition
+                double& gamma,               // (o) surface stress
+                double& dgamma,              // (o) derivative of surface stress
                 const double dt,             // (i) timestep size
-                const double k1xC,           // (i) adsorption coefficent k1
-                                              //     times bulk concentration C
-                const double k2,             // (i) desorption coefficient
+                double k1xC,                 // (i) adsorption coefficent k1 times bulk concentration C
+                double k2,                   // (i) desorption coefficient
                 const double m1,             // (i) 1st isothermal slope
                 const double m2,             // (i) 2nd isothermal slope
                 const double gamma_0,        // (i) surface tension of water
                 const double gamma_min,      // (i) mimimum surface stress
                 const double gamma_min_eq,   // (i) mimimum equilibrium surface stress
-                const double con_quot_max)   // (i) max. surfactant concentration
+                const double con_quot_max,   // (i) max. surfactant concentration
+                const double alphaf,         // (i) generalized-alpha parameter alphaf
+                const bool newstep)          // (i) flag for new step (predictor)
 {
+  const int LID = A_old_->Map().LID(ID);
+  const double A_old = (*A_old_)[LID];
+  const double A_new = (*A_old_temp_)[LID];
+
+  /*-------------------------------------------------------------------*
+   |     DETERMINATION OF CURRENT NON-DIMENSIONALIZED INTERFACIAL      |
+   |       SURFACTANT CONCENTRATION CON_QUOT_NEW  (n+1-alphaf)         |
+   *-------------------------------------------------------------------*/
+
   /* use of non-dimensionalized interfacial surfactant concentration:
    * con_quot=Gamma/Gamma_min_eq
    * mass of surfactant molecules M_old is also divided
    * by minimum equilibrium interfacial surfactant concentration!*/
 
-  double M_old = con_quot*A_old;     // mass of surfactant molecules of
-                                     // last time step
-
-  /*-------------------------------------------------------------------*
-   |     DETERMINATION OF CURRENT NON-DIMENSIONALIZED INTERFACIAL      |
-   |             SURFACTANT CONCENTRATION CON_QUOT_NEW                 |
-   *-------------------------------------------------------------------*/
+  const double con_quot_old = (*con_quot_)[LID];
+  const double M_old = con_quot_old*A_old;       // mass of surfactant molecules of last time step
+  double con_quot_alphaf = 0.;
+  double con_quot_new = 0.;
 
   /*----------------Regime 1: Langmuir kinetics (adsorption/desorption)*/
 
-  if (con_quot < 1.)
+  if (con_quot_old < 1.)
   {
-    /* assumed continuous drop of adsorption/desorption coefficients
-     * when approaching insoluble regime (cf. Morris et al. 2001,
-     * p108) is only needed for high bulk concentrations C! To
-     * simplify matters, drop is left out */
 
-    con_quot = (1.0/dt*M_old+k1xC*A_new)/(A_new*(1.0/dt+k1xC+k2));
+    /* assumed continuous drop of adsorption/desorption coefficients
+     * when approaching insoluble regime */
+
+    if (con_quot_old > 0.98)
+    {
+      k1xC *= (1.-con_quot_old)/0.02;
+      k2 *= (1.-con_quot_old)/0.02;
+    }
+
+    con_quot_new = (1.0/dt*M_old+k1xC*A_new)/(A_new*(1.0/dt+k1xC+k2));
   }
   else
   {
     /*------------------------------------Regime 2: Insoluble monolayer*/
-    if (con_quot < con_quot_max)
+    if (con_quot_old < con_quot_max)
     {
-      con_quot = M_old/A_new;
+      con_quot_new = M_old/A_new;
     }
     /*----------------------------Regime 3: "Squeeze out"/Film collapse*/
     else
     {
-      if (A_new < A_old)
+      // we need to check whether we just entered a new time step
+      // because in this case, A_old nearly equals A_new and we don't
+      // want to base the decision on entering a new regime on this comparison!
+      if (A_old < A_new && newstep == false)
       {
-        con_quot = con_quot_max;
+        con_quot_new = M_old/A_new;
       }
       else
       {
-        con_quot = M_old/A_new;
+        con_quot_new = con_quot_max;
       }
     }
   }
 
+  // for imr-like gen-alpha time discretization
+  con_quot_alphaf = (1.0-alphaf)*con_quot_new + alphaf*con_quot_old;
+
   /* interfacial surfactant concentration must not be larger than the
    * maximum interfacial concentration */
-
-  if (con_quot > con_quot_max)
+  if (con_quot_alphaf > con_quot_max)
   {
-    con_quot = con_quot_max;
+    con_quot_alphaf = con_quot_max;
   }
 
+  /* check of con_quot_new is done after update of con_quot_alphaf in
+   * order to improve estimate of con_quot_alphaf (there is a kink in
+   * the transition regime) */
+  if (con_quot_new > con_quot_max)
+  {
+    con_quot_new = con_quot_max;
+  }
+  (*con_quot_temp_)[LID] = con_quot_new;
+
+
   /*-------------------------------------------------------------------*
-   |        DETERMINATION OF CURRENT GENERALIZED SURFACE ENERGY        |
+   |  DETERMINATION OF CURRENT GENERALIZED SURFACE STRESS (n+1-alphaf) |
    *-------------------------------------------------------------------*/
 
   /*----------------Regime 1: Langmuir kinetics (adsorption/desorption)*/
 
-  if (con_quot < 1.)
+  if (con_quot_alphaf < 1.)
   {
-    gamma  = gamma_0-m1*con_quot;
+    if (con_quot_old > 0.98)
+    {
+      k1xC *= (1.-con_quot_old)/0.02;
+      k2 *= (1.-con_quot_old)/0.02;
+    }
+
+    gamma  = gamma_0-m1*con_quot_alphaf;
     dgamma = m1/dt*M_old/(A_new*A_new*(1/dt+k1xC+k2));
   }
   else
   {
     /*------------------------------------Regime 2: Insoluble monolayer*/
-    if (con_quot < con_quot_max)
+    if ((con_quot_max - con_quot_alphaf) > 1.0e-06)
     {
-      gamma  = gamma_min_eq-m2*(con_quot-1.);
-      dgamma = m2*con_quot/A_new;
+      gamma  = gamma_min_eq-m2*(con_quot_alphaf-1.);
+      dgamma = m2*con_quot_new/A_new;
     }
     /*----------------------------Regime 3: "Squeeze out"/Film collapse*/
     else
@@ -285,6 +313,7 @@ void DRT::SurfStressManager::gamma_calc(
       dgamma = 0.;
     }
   }
+
   return;
 }
 

@@ -68,14 +68,12 @@ public:
   void Update();
 
   /*!
-    \brief get history variables needed for writing restart. Note that
-    the temporal vectors needs to be written since in the old ones we
-    still have the data of the former step. The column map based
+    \brief get history variables needed for writing restart. The column map based
     vectors used for calculations are exported to row map based ones
     needed for writing.
   */
-  void GetHistory(RCP<Epetra_Vector> A_old_temp_row,
-                  RCP<Epetra_Vector> con_quot_temp_row);
+  void GetHistory(RCP<Epetra_Vector> A_old_row,
+                  RCP<Epetra_Vector> con_quot_row);
 
   /*!
     \brief get row map of surface elements
@@ -115,8 +113,10 @@ public:
     \param gamma_0 (in): surface tension of water
     \param gamma_min (in): minimum surface stress
     \param gamma_min_eq (in): minimum equilibrium surface stress
-    \param con_quot_max (in) maximum surfactant concentration
-    \param con_quot_eq (in) equilibrium surfactant concentration
+    \param con_quot_max (in): maximum surfactant concentration
+    \param con_quot_eq (in): equilibrium surfactant concentration
+    \param alphaf (in): generalized-alpha parameter alphaf
+    \param update (in): flag for update or calculation phase
   */
   void StiffnessAndInternalForces(const int curvenum,
                                   const double& A,
@@ -137,15 +137,16 @@ public:
                                   const double gamma_min,
                                   const double gamma_min_eq,
                                   const double con_quot_max,
-                                  const double con_quot_eq);
+                                  const double con_quot_eq,
+                                  const double alphaf,
+                                  const bool newstep);
 
   /*!
-    \brief Routine to calculate current surface stress and its
-    derivative with respect to the change in interfacial area
+    \brief Surfactant model equations
 
+    \param ID (in): ID of surface condition
     \param gamma (out): current surface stress
     \param dgamma (out): current derivative of surface stress
-    \param con_quot (in/out): old/current interfacial surfactant concentration
     \param A_old (in): surface area of last time step
     \param A_new (in): current surface area
     \param dt (in): timestep size
@@ -158,20 +159,20 @@ public:
     \param gamma_min_eq (in): minimum equilibrium surface stress
     \param con_quot_max (in) maximum surfactant concentration
   */
-  void gamma_calc(double& gamma,
-                  double& dgamma,
-                  double& con_quot,
-                  const double A_old,
-                  const double A_new,
-                  const double dt,
-                  const double k1xC,
-                  const double k2,
-                  const double m1,
-                  const double m2,
-                  const double gamma_0,
-                  const double gamma_min,
-                  const double gamma_min_eq,
-                  const double con_quot_max);
+  void SurfactantModel(const int ID,
+                       double& gamma,
+                       double& dgamma,
+                       const double dt,
+                       double k1xC,
+                       double k2,
+                       const double m1,
+                       const double m2,
+                       const double gamma_0,
+                       const double gamma_min,
+                       const double gamma_min_eq,
+                       const double con_quot_max,
+                       const double alphaf,
+                       const bool newstep);
 
 private:
 
@@ -188,10 +189,10 @@ private:
   // row map of surfaces
   RCP<Epetra_Map> surfrowmap_;
 
-  // surface areas of former iteration
+  // surface areas of former iteration (n+1)^i
   RefCountPtr<Epetra_Vector> A_old_temp_;
 
-  // surface areas of former time step
+  // surface areas of former time step (n)
   RefCountPtr<Epetra_Vector> A_old_;
 
   // non-dimensionalized surfactant concentrations of former iteration
