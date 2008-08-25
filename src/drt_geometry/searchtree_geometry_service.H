@@ -74,6 +74,17 @@ namespace GEO
       std::map<int, std::set<int> >&          elementList
       );  	
 
+  /*!
+  \brief Returns the label for a point, the nearest object and a given map of elements
+  \return                     label
+   */
+  int getXFEMLabelAndNearestObject(
+      const DRT::Discretization&        dis,              ///< discretization
+      const std::map<int,BlitzVec3>&    currentpositions, ///< current nodal positions in discretization
+      const BlitzVec3&                  querypoint,       ///< point to be examined
+      std::map<int, std::set<int> >&    elementList,      ///< map of elements label gid
+      GEO::NearestObject&               nearestObject     ///< nearest object to querypoint
+      );
   
   /*!
   \brief Returns a set of node ids lying in a circle of a given querypoint and a radius

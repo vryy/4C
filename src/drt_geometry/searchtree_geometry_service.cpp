@@ -127,10 +127,10 @@ std::vector< BlitzMat3x2 > GEO::computeXAABBForLabeledStructures(
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 int GEO::getXFEMLabel(
-    const DRT::Discretization&              dis, 		
-    const std::map<int,BlitzVec3>&          currentpositions, 	
+    const DRT::Discretization&              dis,
+    const std::map<int,BlitzVec3>&          currentpositions,
     const BlitzVec3&                        querypoint,
-    std::map<int, std::set<int> >&          elementList)  		
+    std::map<int, std::set<int> >&          elementList)
 {
   BlitzVec3 minDistanceVec = 0.0;
  
@@ -141,7 +141,40 @@ int GEO::getXFEMLabel(
   int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);  	
  
   // compute normal in the point found on or in the object 
-  BlitzVec3 normal= getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
+  const BlitzVec3 normal = getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
+
+  // compare normals and set label 
+  const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
+  
+  // if fluid
+  if(scalarproduct > (-1)*GEO::TOL7)
+    label = 0;
+
+  return label;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | returns a label and nearest object for a given point      a.ger 08/08|
+ | and element list                                                     |
+ *----------------------------------------------------------------------*/
+int GEO::getXFEMLabelAndNearestObject(
+    const DRT::Discretization&              dis,
+    const std::map<int,BlitzVec3>&          currentpositions,
+    const BlitzVec3&                        querypoint,
+    std::map<int, std::set<int> >&          elementList,
+    GEO::NearestObject&                     nearestObject
+    )
+{
+  BlitzVec3 minDistanceVec = 0.0;
+
+  // compute the distance to the nearest object (surface, line, node) return label of nearest object
+  // returns the label of the surface element structure the projection of the query point is lying on
+  int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);       
+ 
+  // compute normal in the point found on or in the object 
+  const BlitzVec3 normal = getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
 
   // compare normals and set label 
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
