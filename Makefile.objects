@@ -596,13 +596,13 @@ OBJS_IO       = src/io/io_singlefile.o \
                 src/io/io_packing.o \
                 src/io/io_elements.o
 #
-OBJS_DRT_IO_LIB = src/drt_io/io_hdf.o \
+OBJS_DRT_IO_LIB = src/drt_io/io.o \
+                src/drt_io/io_hdf.o \
                 src/drt_io/io_control.o \
                 src/drt_io/io_gmsh.o \
                 src/drt_io/io_gmsh_xfem_extension.o
 #
-OBJS_DRT_IO   = src/drt_io/io.o \
-                src/drt_io/io_micro.o
+OBJS_DRT_IO   = src/drt_io/io_micro.o
 #------------------------------------------------- w1 drt version
 OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
                 src/drt_w1/wall1_line.o \
@@ -1167,6 +1167,8 @@ OBJS_POST_DRT_ENSIGHT = src/post_ensight/post_drt_ensight_writer.o \
                 src/post_ensight/post_drt_ensight.o
 
 OBJS_POST_DRT_MONITOR = src/post_monitor/post_drt_monitor.o
+
+OBJS_POST_DRT_S8CONVERT = src/post_s8convert/post_drt_s8convert.o
 
 #                 object to mimik baci-objects for pre and post filters
 OBJS_FILTER_COMMON = src/filter_common/filter_evaluation.o
