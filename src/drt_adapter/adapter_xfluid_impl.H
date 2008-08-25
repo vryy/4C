@@ -17,15 +17,7 @@ Maintainer: Axel Gerstenberger
 #ifndef ADAPTER_XFLUID_IMPL_H
 #define ADAPTER_XFLUID_IMPL_H
 
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-
 #include "../drt_fluid/xfluidimplicitintegration.H"
-#include "../drt_fluid/xfluidresulttest.H"
 
 #include "adapter_fluid.H"
 
@@ -197,7 +189,6 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
     Teuchos::RCP<Epetra_Vector>            idispn_;    ///< interface displacement  n
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
-    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
     //@}
 

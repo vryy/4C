@@ -378,7 +378,6 @@ protected:
     
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
-    Teuchos::RCP<Epetra_Vector>    accnm_;  ///< accelerations at time n-1
     //@}
 
     //! @name velocities and pressures

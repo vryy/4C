@@ -16,7 +16,10 @@ Maintainer: Axel Gerstenberger
 
 #include "adapter_xfluid_impl.H"
 
+#include "../drt_fluid/xfluidresulttest.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -72,7 +75,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   idispn_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  ivelnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
@@ -214,32 +216,42 @@ void ADAPTER::XFluidImpl::Update()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = fsidyn.get<double>("TIMESTEP");
 
-  // compute acceleration at timestep n
+  // compute acceleration at timestep n+1
   Teuchos::RCP<Epetra_Vector> iaccnp = rcp(new Epetra_Vector(iaccn_->Map()));
-//  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
+  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
   const double theta = 1.0;
   iaccnp->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
   iaccnp->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
 
-//  const double beta = 1.0/4.0;
-//  const double gamma = 1.0/2.0;
+
+//  double beta;
+//  double gamma;
+//  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1 and not Step()==1)
+//  {
+//    gamma = 0.5;
+//    beta = gamma/2.0;
+//  }
+//  else
+//  {
+//    //dserror("nope");
+//    gamma = 1.0;
+//    beta = gamma/2.0;
+//  }
 //  
+//  // compute acceleration at timestep n+1
 //  iaccnp->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
 //  iaccnp->Update(-1.0/(beta*dt),*iveln_,1.0);
 //  iaccnp->Update(1.0/(beta*dt*dt),*idispnp_,-1.0/(beta*dt*dt),*idispn_,1.0);
 //  
+//  // compute velocity at timestep n+1
 //  ivelnp->Update(1.0,*iveln_,0.0);
 //  ivelnp->Update(gamma*dt,*iaccnp,(1-gamma)*dt,*iaccn_,1.0);
   
   // update acceleration n
   iaccn_->Update(1.0,*iaccnp,0.0);
 
-  // update velocity n-1
-  ivelnm_->Update(1.0,*iveln_,0.0);
-
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
-//  iveln_->Update(1.0,*ivelnp,0.0);
   
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
@@ -262,27 +274,24 @@ void ADAPTER::XFluidImpl::Output()
 
   // create interface DOF vectors using the fluid parallel distribution
   const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
-  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   // map to fluid parallel distribution
-  LINALG::Export(*idispnp_ ,*idispcol);
-  LINALG::Export(*ivelnp_  ,*ivelcol);
+  LINALG::Export(*idispnp_ ,*idispnpcol);
+  LINALG::Export(*ivelnp_  ,*ivelnpcol);
   LINALG::Export(*iveln_   ,*ivelncol);
-  LINALG::Export(*ivelnm_  ,*ivelnmcol);
   LINALG::Export(*iaccn_   ,*iaccncol);
 
   LINALG::Export(*itrueresnp_,*itruerescol);
 
-  PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface force");
-  PrintInterfaceVectorField(idispcol, ivelcol  , "_solution_ivel_"  , "interface velocity n+1");
-  PrintInterfaceVectorField(idispcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-  PrintInterfaceVectorField(idispcol, ivelnmcol, "_solution_ivelnm_", "interface velocity n-1");
-  PrintInterfaceVectorField(idispcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
+  PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
+  PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
+  PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
 
 }
 
@@ -360,31 +369,35 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 void ADAPTER::XFluidImpl::NonlinearSolve()
 {
 
-  cout << "XFluidImpl::NonlinearSolve()" << endl;
+  //cout << "XFluidImpl::NonlinearSolve()" << endl;
 
   // create interface DOF vectors using the fluid parallel distribution
-//  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
-//  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-//  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
+  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> iacccoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //
 //  Teuchos::RCP<Epetra_Vector> ivelncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //  Teuchos::RCP<Epetra_Vector> iaccncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   // map to fluid parallel distribution
-//  LINALG::Export(*ivel_,*ivelcol);
-//  LINALG::Export(*idisp_,*idispcol);
-//
-//  LINALG::Export(*iveln_,*ivelncol);
-//  LINALG::Export(*iaccn_,*iaccncol);
+  LINALG::Export(*idispnp_,*idispcolnp);
+  LINALG::Export(*idispn_ ,*idispcoln);
+  LINALG::Export(*ivelnp_ ,*ivelcolnp);
+  LINALG::Export(*iveln_  ,*ivelcoln);
+  LINALG::Export(*iaccn_  ,*iacccoln);
 
-  cout << "SetState" << endl;
-  boundarydis_->SetState("idispcolnp",idispnp_);
-  boundarydis_->SetState("ivelcolnp",ivelnp_);
+
+//  cout << "SetState" << endl;
+  boundarydis_->SetState("idispcolnp",idispcolnp);
+  boundarydis_->SetState("idispcoln" ,idispcoln);
   
-  boundarydis_->SetState("idispcoln",idispn_);
-  boundarydis_->SetState("ivelcoln",iveln_);
-  boundarydis_->SetState("iacccoln",iaccn_);
+  boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
+  boundarydis_->SetState("ivelcoln"  ,ivelcoln);
+  boundarydis_->SetState("iacccoln"  ,iacccoln);
   
   fluid_.NonlinearSolve(boundarydis_);
   

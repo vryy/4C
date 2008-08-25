@@ -197,7 +197,6 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   }
 
   // print the results of time measurements
-  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
@@ -343,6 +342,10 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   if (step_==1)
   {
     theta_ = 1.0;
+  }
+  else
+  {
+    theta_ = params_.get<double>("theta");
   }
 }
 
@@ -516,13 +519,90 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // accelerations at time n and n-1
   dofswitch.mapVectorToNewDofDistribution(state_.accn_, rigidaccn);
-  dofswitch.mapVectorToNewDofDistribution(state_.accnm_);
 
   // velocities and pressures at time n+1, n and n-1
   dofswitch.mapVectorToNewDofDistribution(state_.velnp_, rigidveln); // use old velocity as start value
   dofswitch.mapVectorToNewDofDistribution(state_.veln_, rigidveln);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
+//  for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+//  {
+//    const DRT::Node* node = ih->xfemdis()->lColNode(i);
+//    const BlitzVec3 nodalpos(toBlitzArray(node->X()));
+//
+//    bool is_in_fluid;
+//    if (ih->PositionWithinConditionNP(nodalpos) == 0)
+//    {
+//      is_in_fluid = true;
+//    }
+//    else
+//    {
+//      is_in_fluid = false;
+//    }
+//    
+//    bool was_in_fluid = false;
+//    if (ih->PositionWithinConditionN(nodalpos) == 0)
+//    {
+//      was_in_fluid = true;
+//    }
+//    else
+//    {
+//      was_in_fluid = false;
+//    }
+//    
+//    if (not is_in_fluid)
+//    {
+//      std::set<XFEM::FieldEnr> nodalDofSet = dofmanager->getNodeDofSet(node->Id());
+//      if (not nodalDofSet.empty())
+//      {
+//        if (nodalDofSet.size() == 4)
+//        {
+//          for (std::set<XFEM::FieldEnr>::const_iterator iter=nodalDofSet.begin();iter!=nodalDofSet.end();iter++)
+//          {
+//            XFEM::Enrichment enr = iter->getEnrichment();
+//            XFEM::PHYSICS::Field field = iter->getField();
+//            XFEM::DofKey<XFEM::onNode> newdofkey(node->Id(),*iter);
+//            
+//            std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos>::const_iterator newdof = state_.nodalDofDistributionMap_.find(newdofkey);
+//            if (newdof == state_.nodalDofDistributionMap_.end())
+//            {
+//              dserror("should definitely be there!");
+//            }
+//            const int newdofpos = newdof->second;
+//            
+//            if (field == XFEM::PHYSICS::Velx)
+//            {
+//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(0);
+//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(0);
+//            }
+//            else if (field == XFEM::PHYSICS::Vely)
+//            {
+//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(1);
+//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(1);
+//            }
+//            else if (field == XFEM::PHYSICS::Velz)
+//            {
+//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(2);
+//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(2);
+//            }
+//            else
+//            {
+//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
+//            }
+//  
+//          }
+//        }
+//        else
+//        {
+//          dserror("works only for 4 dofs per node");
+//        }
+//      }
+//      
+//    }
+//
+//    
+//  };
+  
 //  if (alefluid_)
 //  {
 //      dofswitch.mapVectorToNewDofDistribution(state_.dispnp_);
@@ -623,19 +703,36 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   // get new interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
+  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
   
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
-    std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcolnp)[0] << std::endl;
-    std::cout << "applying interface velocity ivelcol[1] = " << (*ivelcolnp)[1] << std::endl;
-    std::cout << "applying interface velocity ivelcol[2] = " << (*ivelcolnp)[2] << std::endl;
+    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
+    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
+    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
     if (step_ <= 1)
-      f.open("outifacevel.txt",std::fstream::trunc);
+      f.open("outifacevelnp.txt",std::fstream::trunc);
     else
-      f.open("outifacevel.txt",std::fstream::ate | std::fstream::app);
+      f.open("outifacevelnp.txt",std::fstream::ate | std::fstream::app);
 
-    f << step_ << " " << (*ivelcolnp)[0] << "  " << endl;
+    f << time_ << " " << (*ivelcolnp)[0] << "  " << endl;
+
+    f.close();
+  }
+  
+  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
+  {
+    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
+    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
+    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
+    std::ofstream f;
+    if (step_ <= 1)
+      f.open("outifaceveln.txt",std::fstream::trunc);
+    else
+      f.open("outifaceveln.txt",std::fstream::ate | std::fstream::app);
+
+    f << time_ << " " << (*ivelcoln)[0] << "  " << endl;
 
     f.close();
   }
@@ -648,7 +745,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open("outifaceanalytischvel.txt",std::fstream::ate | std::fstream::app);
 
-    f << step_ << " " << (-1.5*std::sin(2.0*time_* PI) * PI) << "  " << endl;
+    const double periodendauer = 10.0;
+    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << endl;
 
     f.close();
   }
@@ -803,20 +901,20 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     double fullresnorm;
 
     const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-      Epetra_Vector full(*dofrowmap);
-      Epetra_Import importer(*dofrowmap,residual_->Map());
+    Epetra_Vector full(*dofrowmap);
+    Epetra_Import importer(*dofrowmap,residual_->Map());
 
-      int err = full.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&fullresnorm);
+    int err = full.Import(*residual_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&fullresnorm);
 
-      err = full.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&incfullnorm_L2);
+    err = full.Import(*incvel_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&incfullnorm_L2);
 
-      err = full.Import(*state_.velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&fullnorm_L2);
+    err = full.Import(*state_.velnp_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&fullnorm_L2);
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
@@ -981,11 +1079,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     std::stringstream s;
     std::stringstream header;
     
-    header << left  << std::setw(10) << "TimeStep" 
+    header << left  << std::setw(10) << "Time" 
            << right << std::setw(16) << "F_x"
            << right << std::setw(16) << "F_y"
            << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << step_ 
+    s << left  << std::setw(10) << scientific << time_ 
       << right << std::setw(16) << scientific << c(0)
       << right << std::setw(16) << scientific << c(1)
       << right << std::setw(16) << scientific << c(2);
@@ -994,7 +1092,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     if (step_ <= 1)
     {
       f.open("liftdrag.txt",std::fstream::trunc);
-      f << header.str() << endl;
+      //f << header.str() << endl;
     }
     else
     {
@@ -1005,6 +1103,20 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     
     //cout << header.str() << endl << s.str() << endl;
   }
+  
+  if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
+  {
+    std::ofstream f;
+    if (step_ <= 1)
+      f.open("outifaceforce.txt",std::fstream::trunc);
+    else
+      f.open("outifaceforce.txt",std::fstream::ate | std::fstream::app);
+
+    f << time_ << " " << (*iforcecolnp)[0] << "  " << endl;
+
+    f.close();
+  }
+  
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1089,13 +1201,13 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
 {
 
   // prev. acceleration becomes (n-1)-accel. of next time step
-  state_.accnm_->Update(1.0,*state_.accn_,0.0);
+  const Teuchos::RCP<Epetra_Vector> accn_tmp = rcp(new Epetra_Vector(*state_.accn_));
   
   // compute acceleration 
   // note a(n+1) is directly stored in a(n),
-  // hence we use a(n-1) as a(n) (see line above)
+  // hence we use a(n-1) as a(n) to save a vector copy (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
-      state_.velnp_, state_.veln_, state_.velnm_, state_.accnm_,
+      state_.velnp_, state_.veln_, state_.velnm_, accn_tmp,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accn_);
 
@@ -1104,7 +1216,7 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 
   return;
-}// FluidImplicitTimeInt::TimeUpdate
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1279,8 +1391,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           else
             f.open("outflowpres.txt",std::fstream::ate | std::fstream::app);
 
-          //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << step_ << "  " << elementvalues(0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          f << time_ << "  " << elementvalues(0) << endl;
 
           f.close();
         }
@@ -1305,7 +1417,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     {
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
-      << endl;
+      << "\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
@@ -1366,7 +1478,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     std::cout << " done" << endl;
   }
 #endif
-#if 0
+#if 1
   if (gmshdebugout)
   {
     //std::stringstream filename;
@@ -1384,6 +1496,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     filenamexz << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenameyz << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"...";
+    flush(cout);
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
@@ -1459,9 +1572,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         BlitzVec elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
 
 
-        const XFEM::DomainIntCells& domainintcells =
+        const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
-        for (XFEM::DomainIntCells::const_iterator cell =
+        for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzMat xyze_cell(3, cell->NumNode());
@@ -1530,7 +1643,6 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
   PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
   PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
   PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
-  PlotVectorFieldToGmsh(state_.accnm_, "_solution_acceleration_old2_step_","Acceleration Solution (Physical) n-1",false);
 }
 
 
@@ -1663,8 +1775,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           else
             f.open("outflowvel.txt",std::fstream::ate | std::fstream::app);
 
-          //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << step_ << "  " << elementvalues(0,0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          f << time_ << "  " << elementvalues(0,0) << endl;
 
           f.close();
         }
@@ -1902,7 +2014,6 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-  cout << "SetState" << endl;
   cutterdiscret->SetState("idispcolnp", idispcolnp);
   cutterdiscret->SetState("idispcoln", idispcoln);
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);

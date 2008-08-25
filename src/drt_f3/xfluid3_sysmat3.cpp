@@ -223,7 +223,21 @@ static void Sysmat3(
         if (ih->ElementIntersected(ele->Id()))
         {
             const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
-            const bool compute = ih->PositionWithinAnyInfluencingCondition(cellcenter, dofman.getUniqueEnrichmentLabels());
+            const int labelnp = ih->PositionWithinConditionNP(cellcenter);
+            const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+            bool compute = false;
+            if (labelnp == 0) // fluid
+            {
+              compute = true;
+            }
+            else if (xlabelset.size() > 1) // multiple interface labels
+            {
+              compute = true;
+            }
+            else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+            {
+              compute = true;
+            }
             if (not compute)
             {
               continue;
@@ -237,7 +251,7 @@ static void Sysmat3(
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

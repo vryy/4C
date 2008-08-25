@@ -512,8 +512,7 @@ void gder2(
         template version
  \return enum with optimal gausrule for this element
  */
-template <DRT::Element::DiscretizationType  distype>
-inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule()
+inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
 {
     DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (distype)
@@ -528,7 +527,7 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule()
         rule = DRT::UTILS::intrule_tet_4point;
         break;
     case DRT::Element::tet10:
-        rule = DRT::UTILS::intrule_tet_5point;
+        rule = DRT::UTILS::intrule_tet_11point;
         break;
     default:
         dserror("unknown distype for gaussrule initialization");
@@ -541,29 +540,29 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule()
         template version
  \return enum with optimal gausrule for this element
  */
-template <DRT::Element::DiscretizationType  distype, XFEM::AssemblyType asstype>
-inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
+inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
+    const bool                              intersected,
+    const DRT::Element::DiscretizationType  distype
+    )
 {
-    DRT::UTILS::GaussRule3D rule = getOptimalVelocityGaussrule<distype>();
-    if (asstype == XFEM::xfem_assembly)
+  DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+  if (not intersected)
+  {
+    rule = getOptimalVelocityGaussrule(distype);
+  }
+  else
+  {
+    if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
     {
-        if (intersected)
-        {
-          // set integration rule for tetrahedral integrtion cells
-          // attention: use "open" rules -> no integration points on boundary of element
-          // -> enrichment values might be undefined
-//            if (distype == DRT::Element::hex8 or distype == DRT::Element::hex27)
-//            {
-          rule = DRT::UTILS::intrule_tet_24point;
-//            }
-//            else
-//            {
-//              //dserror("we need higher order gauss rules here, but they still need to be implemented :-(");
-//                rule = DRT::UTILS::intrule_tet_24point;
-//            }
-        }
+      rule = DRT::UTILS::intrule_tet_24point;
     }
-    return rule;
+    else
+    {
+      dserror("gaussrule only for tetrahedral integration cells defined. Add your stuff here!");
+    }
+  }
+
+  return rule;
 }
 
 /*!

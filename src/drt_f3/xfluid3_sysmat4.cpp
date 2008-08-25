@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
+#include "../drt_xfem/spacetime_boundary.H"
 
 
   using namespace XFEM::PHYSICS;
@@ -172,7 +173,7 @@ static void SysmatDomain4(
     const LocalAssembler<DISTYPE, ASSTYPE>& assembler
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - domain");
    
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -187,6 +188,58 @@ static void SysmatDomain4(
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
     DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
+    // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
+    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+    
+    //cout << ivelcoln << endl;
+    
+    BlitzVec3 rigidveln;
+    BlitzVec3 rigidaccn;
+
+    if (ivelcoln.GlobalLength() > 3)
+    {
+      rigidveln(0) = (ivelcoln)[0];
+      rigidveln(1) = (ivelcoln)[1];
+      rigidveln(2) = (ivelcoln)[2];
+      
+//      rigidveln(0) = ((ivelcoln)[0]+(ivelcolnp)[0])/2.0;
+//      rigidveln(1) = ((ivelcoln)[1]+(ivelcolnp)[1])/2.0;
+//      rigidveln(2) = ((ivelcoln)[2]+(ivelcolnp)[2])/2.0;
+      
+//      rigidveln(0) = 0.0;//((ivelcolnp)[0]);
+//      rigidveln(1) = 0.0;//((ivelcolnp)[1]);
+//      rigidveln(2) = 0.0;//((ivelcolnp)[2]);
+      
+      // falsch!!!
+      rigidaccn(0) = (iacccoln)[0];
+      rigidaccn(1) = (iacccoln)[1];
+      rigidaccn(2) = (iacccoln)[2];
+      
+    }
+    else
+    {
+      rigidveln = 0.0;
+      rigidaccn = 0.0;
+    }
+//    cout << "rigidveln " << rigidveln << endl;
+//    cout << "rigidaccn " << rigidaccn << endl;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
 
@@ -235,26 +288,36 @@ static void SysmatDomain4(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-
-        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-        if (ih->ElementIntersected(ele->Id()))
-        {
-            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
-            const bool compute = ih->PositionWithinAnyInfluencingCondition(cellcenter, dofman.getUniqueEnrichmentLabels());
-            if (not compute)
-            {
-              continue;
-            }
-        }
-
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        
+        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+        const int labelnp = ih->PositionWithinConditionNP(cellcenter);
+        const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+        bool compute = false;
+        if (labelnp == 0) // fluid
+        {
+          compute = true;
+        }
+        else if (xlabelset.size() > 1) // multiple interface labels
+        {
+          compute = true;
+        }
+        else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+        {
+          compute = true;
+        }
+        if (not compute)
+        {
+          continue;
+        }
+            
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
               ih,
               dofman.getUniqueEnrichments(),
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -477,11 +540,63 @@ static void SysmatDomain4(
               }
             }
             
-            // get velocities (n+g,i) at integration point
+            // get velocities and accelerations at integration point
             const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
-            const BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
+            BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
             const BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp, numparamvelx);
-            const BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
+            BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
+            
+            
+            
+            GEO::PosX posx_gp;
+            GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
+            
+            bool is_in_fluid = false;
+            if (labelnp == 0)
+            {
+              is_in_fluid = true;
+            }
+            else
+            {
+              is_in_fluid = false;
+            }
+            
+            if (not is_in_fluid)
+            {
+              std::cout << "should I arrive here?" << std::endl;
+              continue;
+            }
+
+            bool was_in_fluid = false;
+            if (ih->PositionWithinConditionN(posx_gp) == 0)
+            {
+              was_in_fluid = true;
+            }
+            else
+            {
+              was_in_fluid = false;
+            }
+            
+            const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
+            
+            double delta_slab = 1.0;
+            if (in_space_time_slab_area)
+            {
+              //cout << "using rigid values " << ele->Id() << endl; 
+              gpveln(0) = rigidveln(0);
+              gpveln(1) = rigidveln(1);
+              gpveln(2) = rigidveln(2);
+              
+              gpaccn(0) = rigidaccn(0);
+              gpaccn(1) = rigidaccn(1);
+              gpaccn(2) = rigidaccn(2);
+              
+              XFEM::SpaceTimeBoundaryCell slab;
+              BlitzVec3 rst;
+              
+              ih->ComputeSlabValues(posx_gp,slab,rst);
+            }
+            
 //            cout << gpvelnp << endl;
 //            cout << evelnp << endl;
 //            cout << shp << endl;
@@ -495,7 +610,7 @@ static void SysmatDomain4(
 //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp(iparam);
 //            }
-            BlitzVec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+            const BlitzVec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
@@ -1387,7 +1502,7 @@ static void SysmatBoundary4(
     const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - boundary");
   
     //if (false)
     if (ASSTYPE == XFEM::xfem_assembly)
@@ -1402,7 +1517,7 @@ static void SysmatBoundary4(
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+      //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
       //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
@@ -1621,7 +1736,7 @@ static void SysmatBoundary4(
             for (int isd = 0; isd < nsd; ++isd)
             {
                 gpvelnp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparampres; ++iparam)
+                for (int iparam = 0; iparam < numparamvelx; ++iparam)
                     gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
             }
             
@@ -1847,19 +1962,24 @@ void XFLUID::callSysmat4(
                 break;
 //            case DRT::Element::hex20:
 //                Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
 //                break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
 //                break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
                 break;
+//            case DRT::Element::tet10:
+//                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
@@ -1875,13 +1995,18 @@ void XFLUID::callSysmat4(
                 break;
 //            case DRT::Element::hex20:
 //                Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
 //                break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::tet10:
+//                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
 //                break;
             default:
                 dserror("Sysmat not templated yet");

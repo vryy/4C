@@ -83,6 +83,11 @@ public:
             BlitzVec3               ivelnrigid_body
             ) const;
     
+    //! switch from old to new dof distribution
+    void generateTransferInformation(
+            const RCP<Epetra_Vector>&     vector
+            ) const;
+    
 private:
     //! disabled copy constructor
     explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
@@ -94,10 +99,10 @@ private:
     const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
     const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector
     const Epetra_Map                     newdofrowmap_;            ///< dofrowmap of the new state vector
-    const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
-    const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    const map<DofKey<onNode>, DofPos>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onNode>, DofPos>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onElem>, DofPos>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
+    const map<DofKey<onElem>, DofPos>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
     map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
 };
 
