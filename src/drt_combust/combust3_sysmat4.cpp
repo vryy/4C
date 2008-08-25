@@ -237,18 +237,6 @@ static void SysmatDomain4(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-
-        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-        if (ih->ElementIntersected(ele->Id()))
-        {
-            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
-            const bool compute = ih->PositionWithinAnyInfluencingCondition(cellcenter, dofman.getUniqueEnrichmentLabels());
-            if (not compute)
-            {
-              continue;
-            }
-        }
-
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
               ih,
