@@ -24,6 +24,7 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
 
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
   plaintol_ = lsParams.get<double>("base tolerance",1e-4);
+  better_   = lsParams.get<double>("adaptive distance",0.1);
 }
 
 
@@ -56,6 +57,7 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
   // find largest current residual
   currentnlnres_ = 0;
   desirednlnres_ = 1;
+  if (better_ > 0)
   for (unsigned i=0; i<cresiduals_.size(); ++i)
   {
     double c = cresiduals_[i];
@@ -75,6 +77,7 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
   lsParams.set<double>("Tolerance",plaintol_);
 
   // heuristic tolerance calculation
+  if (better_ > 0)
   if (currentnlnres_*plaintol_ < desirednlnres_)
   {
     double tol = desirednlnres_*better_/currentnlnres_;

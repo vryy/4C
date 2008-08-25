@@ -619,7 +619,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
@@ -1327,6 +1327,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
                   "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
                   "to the nonlinear convergance test.",
+                  &fsidyn);
+
+  DoubleParameter("ADAPTIVEDIST",0.1,
+                  "Required distance for adaptive convergence check in monolithic FSI.\n"
+                  "This is the improvement we want to achieve in the linear extrapolation of the\n"
+                  "adaptive convergence check. Set to zero to avoid the adaptive check altogether.",
                   &fsidyn);
 
   // monolithic preconditioner parameter

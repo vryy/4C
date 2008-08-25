@@ -446,6 +446,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 
   // adaptive tolerance settings
   lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL"));
+  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST"));
 
 #if 0
   // add Aitken relaxation to Newton step
