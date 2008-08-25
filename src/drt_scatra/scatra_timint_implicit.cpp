@@ -169,6 +169,36 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 } // ScaTraTimIntImpl::ScaTraTimIntImpl
 
 
+ /*----------------------------------------------------------------------*
+  | returns matching sring for each time integration scheme    gjb 08/08 |
+  *----------------------------------------------------------------------*/
+    std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
+    (
+      const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term  //!< the enum
+    )
+    {
+      // length of return string is 14 due to usage in formated screen output
+      switch (term)
+      {
+      case INPUTPARAMS::timeint_one_step_theta :
+        return "One-Step-Theta";
+        break;
+      case INPUTPARAMS::timeint_bdf2 :
+        return "    BDF2      ";
+        break;
+      case INPUTPARAMS::timeint_stationary :
+        return "  Stationary  ";
+        break;
+      case INPUTPARAMS::timeint_gen_alpha :
+        return "  Gen. Alpha  ";
+        break;
+      default :
+        dserror("Cannot cope with name enum %d", term);
+        return "";
+        break;
+      }
+    }
+
 /*----------------------------------------------------------------------*
  | Start the time integration. Allows                                   |
  |                                                                      |
@@ -303,19 +333,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   if (myrank_==0)
   {
-    switch (timealgo_)
-    {
-    case INPUTPARAMS::timeint_one_step_theta:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    case INPUTPARAMS::timeint_bdf2:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    default:
-      dserror("unknown time integration scheme");
-    }
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
   }
 
   // -------------------------------------------------------------------

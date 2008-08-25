@@ -91,6 +91,12 @@ public:
   virtual ~ScaTraTimIntImpl();
 
 
+  //! Provide enum of time integration scheme
+  enum INPUTPARAMS::ScaTraTimeIntegrationScheme MethodName(){return timealgo_;}
+
+  //! Provide title of time integration scheme
+  std::string MethodTitle(){return MapTimIntEnumToString(MethodName());}
+
   /*!
   \brief Set the part of the righthandside belonging to the last
          timestep.
@@ -199,6 +205,12 @@ protected:
   //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
   //! copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
+  
+  // private helper function to get algorithm title
+  std::string MapTimIntEnumToString
+  (
+    const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term  //!< the enum
+  );
 
   RCP<DRT::Discretization>   discret_;
   RCP<LINALG::Solver>        solver_;
