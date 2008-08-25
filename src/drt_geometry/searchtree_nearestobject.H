@@ -23,7 +23,12 @@ namespace GEO
 {
 
 //! possible positions of a point with respect to an element
-enum ObjectType {NOTYPE_OBJECT, SURFACE_OBJECT, LINE_OBJECT, NODE_OBJECT};
+enum ObjectType {
+  NOTYPE_OBJECT,   ///< closest object not defined
+  SURFACE_OBJECT,  ///< closest object is a point
+  LINE_OBJECT,     ///< closest object is a line
+  NODE_OBJECT      ///< closest object is a surface
+  };
 
 
 /*!
@@ -87,7 +92,7 @@ class NearestObject
     /*!
     \brief Return object type 
      */
-    inline GEO::ObjectType getObjectType() const { return objectType_;}
+    inline ObjectType getObjectType() const { return objectType_;}
            
     /*!
     \brief Return node Id of object
@@ -131,7 +136,7 @@ class NearestObject
   private:
   
     //! ObjectType NOTYPE SURFACE LINE NODE 
-    GEO::ObjectType       objectType_;
+    ObjectType            objectType_;
   
     //! id of node
     int                   nodeId_;
