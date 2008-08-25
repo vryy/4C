@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_ELEMENT_H
 #define DOF_MANAGEMENT_ELEMENT_H
 
-#include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_element.H"
 

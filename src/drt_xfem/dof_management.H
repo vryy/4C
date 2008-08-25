@@ -19,9 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "dof_management_element.H"
 #include "dofkey.H"
 
-class DRT::Discretization;
-class XFEM::InterfaceHandle;
-
 namespace XFEM
 {
   
