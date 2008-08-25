@@ -288,9 +288,10 @@ public:
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   int queryXFEMFSIPointType(
-      const DRT::Discretization&        dis,                   
-      const std::map<int,BlitzVec3>&    currentpositions,  
-      const BlitzVec3&                  point                               
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions,
+      const BlitzVec3&                  point,
+      GEO::NearestObject&               nearestobject
       );
   
   
@@ -420,9 +421,10 @@ public:
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   int queryXFEMFSIPointType(
-      const DRT::Discretization&      dis,  			
-      const std::map<int,BlitzVec3>&  currentpositions, 
-      const BlitzVec3&                point
+      const DRT::Discretization&      dis,
+      const std::map<int,BlitzVec3>&  currentpositions,
+      const BlitzVec3&                point,
+      GEO::NearestObject&             nearestobject
       );
 
   

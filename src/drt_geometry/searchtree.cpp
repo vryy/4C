@@ -112,9 +112,11 @@ void GEO::SearchTree::updateTree(
  | returns xfem label of point                               u.may 07/08|
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::queryXFEMFSIPointType(
-    const DRT::Discretization& 	     dis,
-    const std::map<int,BlitzVec3>& 	 currentpositions, 
-    const BlitzVec3& 		             point) 
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions,
+    const BlitzVec3&                 point,
+    GEO::NearestObject&              nearestobject
+    )
 {
   
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
@@ -123,7 +125,7 @@ int GEO::SearchTree::queryXFEMFSIPointType(
       dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
-    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point);
+    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
   else 
     return 0;
 }
@@ -767,15 +769,17 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
  | return xfem label for point (interface method)          u.may   07/08|
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
-    const DRT::Discretization& 	     dis,
-    const std::map<int,BlitzVec3>& 	 currentpositions, 
-    const BlitzVec3& 		             point) 
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    const BlitzVec3&                 point,
+    GEO::NearestObject&              nearestobject
+    ) 
 {
   switch (treeNodeType_) 
   {
     case INNER_NODE:
     {       
-      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
       break;
     }
     case LEAF_NODE:   
@@ -785,13 +789,13 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getXFEMLabel(dis, currentpositions, point, elementList_); 
+        return GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestobject);
 
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(dis, currentpositions);
       setXFEMLabelOfEmptyChildren(dis, currentpositions);
       // search in apropriate child node
-      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
       break;
     }
     default:

@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/searchtree.H"
+#include "spacetime_boundary.H"
 
 namespace XFEM
 {
@@ -116,10 +117,28 @@ public:
         const BlitzVec3&                  x_in
     ) const;
     
+    //! get domain information at x_in at timestep n+1
+    int PositionWithinConditionNP(
+        const BlitzVec3&                  x_in,
+        GEO::NearestObject&               nearestobject
+    ) const;
+
+    //! get domain information at x_in at timestep n
+    int PositionWithinConditionN(
+        const BlitzVec3&                  x_in,
+        GEO::NearestObject&               nearestobject
+    ) const;
+    
     //! checks if a position in current coordinates lies within a certain condition region           
     bool PositionWithinAnyInfluencingCondition(
         const BlitzVec3&                  x_in,
         const std::set<int>&              xlabelset
+    ) const;
+    
+    void ComputeSlabValues(
+        const BlitzVec3&                  querypos,
+        XFEM::SpaceTimeBoundaryCell&      slab,
+        BlitzVec3&                        rst
     ) const;
     
 private:
@@ -142,6 +161,12 @@ private:
     
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
+    
+    void GenerateSpaceTimeSlabs(
+        const Teuchos::RCP<DRT::Discretization>  cutterdis,   ///< discretization with boundary elements
+        const std::map<int,BlitzVec3>&           cutterposnp,
+        const std::map<int,BlitzVec3>&           cutterposn
+    );
   
     //! intersected domain
     const Teuchos::RCP<DRT::Discretization> xfemdis_;
@@ -165,10 +190,12 @@ private:
     std::map<int,std::set<int> >            elementsByLabel_;
     
     //! SearchTree octtree for timestep n+1
-    Teuchos::RCP<GEO::SearchTree>           octTreenp_;  
+    const Teuchos::RCP<GEO::SearchTree>           octTreenp_;
     
     //! SearchTree octtree for timestep n
-    Teuchos::RCP<GEO::SearchTree>           octTreen_;
+    const Teuchos::RCP<GEO::SearchTree>           octTreen_;
+    
+    std::map<int,XFEM::SpaceTimeBoundaryCell>         slabs_;
 
 };
 

@@ -35,7 +35,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
     const Teuchos::RCP<DRT::Discretization>  cutterdis
     ) :
       xfemdis_(xfemdis),
-      cutterdis_(cutterdis)
+      cutterdis_(cutterdis),
+      octTreenp_(rcp( new GEO::SearchTree(5))),
+      octTreen_(rcp( new GEO::SearchTree(5)))
 {
   std::cout << "Constructing InterfaceHandle" << std::endl;
       
@@ -55,9 +57,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
   const BlitzMat3x2 xfemAABB =GEO::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
-  octTreenp_ = rcp( new GEO::SearchTree(5));
+//  octTreenp_ = rcp( new GEO::SearchTree(5));
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  octTreen_ = rcp( new GEO::SearchTree(5));
+  //octTreen_ = rcp( new GEO::SearchTree(5));
   octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
   // find malicious entries
@@ -170,8 +172,8 @@ std::set<int> XFEM::InterfaceHandle::FindDoubleCountedIntersectedElements() cons
  *----------------------------------------------------------------------*/
 std::string XFEM::InterfaceHandle::toString() const
 {
-	std::stringstream s(" ");
-	return s.str();
+  std::stringstream s(" ");
+  return s.str();
 }
 
 /*----------------------------------------------------------------------*
@@ -347,7 +349,8 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);;
+  GEO::NearestObject  dummy;
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in, dummy);
 }
 
 /*----------------------------------------------------------------------*
@@ -357,7 +360,30 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);;
+  GEO::NearestObject  dummy;
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in, dummy);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionNP(
+    const BlitzVec3&                  x_in,
+    GEO::NearestObject&               nearestobject
+) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in, nearestobject);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandle::PositionWithinConditionN(
+    const BlitzVec3&                  x_in,
+    GEO::NearestObject&               nearestobject
+) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in, nearestobject);
 }
 
 
@@ -460,6 +486,78 @@ bool XFEM::InterfaceHandle::PositionWithinAnyInfluencingCondition(
   return compute;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandle::ComputeSlabValues(
+    const BlitzVec3&                  querypos,
+    XFEM::SpaceTimeBoundaryCell&      slab,
+    BlitzVec3&                        rst
+) const
+{
+  
+  // loop over space time slab cells until one is found
+  for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = slabs_.begin(); slabiter != slabs_.end(); ++slabiter)
+  {
+    
+  }
+//  const int label = PositionWithinConditionNP(x_in);
+//  
+//  bool compute = false;
+//  if (label == 0) // fluid
+//  {
+//    compute = true;
+//  }
+//  else if (xlabelset.size() > 1)
+//  {
+//    compute = true;
+//  }
+//  else if (xlabelset.find(label) == xlabelset.end())
+//  {
+//    compute = true;
+//  }
+//  //compute = true;
+//  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+//#ifdef PARALLEL
+//  dserror("not implemented, yet");
+//#endif
+  return;
+}
 
+void XFEM::InterfaceHandle::GenerateSpaceTimeSlabs(
+    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const std::map<int,BlitzVec3>&           cutterposnp,
+    const std::map<int,BlitzVec3>&           cutterposn
+)
+{
+ 
+  for (int i=0; i<cutterdis->NumMyColElements(); ++i)
+  {
+    const DRT::Element* cutterele = cutterdis->lColElement(i);
+    BlitzMat posnp(3,4);
+    for (int inode = 0; inode != 4; ++inode) // fill n+1 position
+    {
+      const int nodeid = cutterele->Nodes()[inode]->Id();
+      const BlitzVec3 nodexyz = cutterposnp.find(nodeid)->second;
+      for (int isd = 0; isd != 3; ++isd)
+      {
+        posnp(isd,inode) = nodexyz(isd);
+      }
+    }
+    BlitzMat posn(3,4);
+    for (int inode = 0; inode != 4; ++inode) // fill n   position
+    {
+      const int nodeid = cutterele->Nodes()[inode]->Id();
+      const BlitzVec3 nodexyz = cutterposn.find(nodeid)->second;
+      for (int isd = 0; isd != 3; ++isd)
+      {
+        posn(isd,inode) = nodexyz(isd);
+      }
+    }
+    XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
+    slabs_.insert(make_pair(cutterele->Id(),slab));
+  }
+  
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
