@@ -32,7 +32,7 @@ public:
 
     //! Standard Constructor
     explicit SpaceTimeBoundaryCell(
-            const DRT::Element* boundaryele,            ///< boundary element we want to track
+            const int           bele_id,                ///< boundary element id we want to track
             const BlitzMat&     posnp,                  ///< nodal positions at n+1
             const BlitzMat&     posn                    ///< nodal positions at n
             );
@@ -40,6 +40,8 @@ public:
     //! Copy Constructor
     SpaceTimeBoundaryCell(
             const SpaceTimeBoundaryCell& old);
+    
+    explicit SpaceTimeBoundaryCell();
     
     /*!  = operator
      * create true copy
@@ -56,13 +58,15 @@ public:
 
 private:
   
-  const DRT::Element* boundaryele_;           ///< boundary element we want to track
-  const BlitzMat      posnp_;                 ///< nodal positions at n+1
-  const BlitzMat      posn_;                  ///< nodal positions at n
+  const int           bele_id_;           ///< boundary element id we want to track
+  const BlitzMat      posnp_;             ///< nodal positions at n+1
+  const BlitzMat      posn_;              ///< nodal positions at n
+  const BlitzMat      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
   
-    
-  //! hide default constructor
-  explicit SpaceTimeBoundaryCell();
+  BlitzMat getLinearPositionArray(
+      const BlitzMat&      posnp,                 ///< nodal positions at n+1
+      const BlitzMat&      posn                   ///< nodal positions at n
+      ) const;
     
 };
 }

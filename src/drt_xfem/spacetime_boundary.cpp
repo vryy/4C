@@ -90,15 +90,27 @@ static void ComputePhysicalCoordinates(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
-    const DRT::Element* boundaryele,
+    const int           bele_id,
     const BlitzMat&     posnp,
     const BlitzMat&     posn
     ) :
-      boundaryele_(boundaryele),
+      bele_id_(bele_id),
       posnp_(posnp),
-      posn_(posn)
+      posn_(posn),
+      xyzt_(getLinearPositionArray(posnp,posn))
 {
     return;
+}
+    
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
+      bele_id_(-1),
+      posnp_(),
+      posn_(),
+      xyzt_()
+{
+    return;   
 }
 
 /*----------------------------------------------------------------------*
@@ -106,14 +118,36 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
     const SpaceTimeBoundaryCell& old
     ) : 
-      boundaryele_(old.boundaryele_),
+      bele_id_(old.bele_id_),
       posnp_(old.posnp_),
-      posn_(old.posn_)
+      posn_(old.posn_),
+      xyzt_(old.xyzt_)
 {
     return;   
 }
         
- 
+BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
+    const BlitzMat&      posnp,                 ///< nodal positions at n+1
+    const BlitzMat&      posn                   ///< nodal positions at n
+    ) const
+{
+  BlitzMat xyzt(3,8);
+  for (int inode = 0; inode != 4; ++inode) // fill n+1 position
+  {
+    for (int isd = 0; isd != 3; ++isd)
+    {
+      xyzt(isd,inode) = posnp(isd,inode);
+    }
+  }
+  for (int inode = 0; inode != 4; ++inode) // fill n   position
+  {
+    for (int isd = 0; isd != 3; ++isd)
+    {
+      xyzt(isd,inode+4) = posn(isd,inode);
+    }
+  }
+  return xyzt;
+}
 //
 // Print method
 //
