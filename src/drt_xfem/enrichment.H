@@ -15,7 +15,6 @@
 #define ENRICHMENT_H
 
 
-#include "../drt_geometry/vector_definitions.H"
 #include "interface.H"
 
 //! namespace for all XFEM related stuff

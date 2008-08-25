@@ -15,8 +15,6 @@ Maintainer: Axel Gerstenberger
 #define DOF_MANAGEMENT_ELEMENT_H
 
 
-#include "../drt_lib/drt_element.H"
-
 #include "field_enriched.H"
 
 namespace XFEM
