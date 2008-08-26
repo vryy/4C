@@ -1057,9 +1057,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"",&adyn);
   IntParameter("NUMSTEP",41,"",&adyn);
   DoubleParameter("MAXTIME",4.0,"",&adyn);
-  setStringToIntegralParameter("ALE_TYPE","classic_lin","ale mesh algorithm",
-                               tuple<std::string>("classic_lin","springs"),
+  setStringToIntegralParameter("ALE_TYPE","classic_lin","ale mesh movement algorithm",
+                               tuple<std::string>("classic_lin","incr_lin","springs"),
                                tuple<int>(ALE_DYNAMIC::classic_lin,
+                                          ALE_DYNAMIC::incr_lin,
                                           ALE_DYNAMIC::springs),
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);

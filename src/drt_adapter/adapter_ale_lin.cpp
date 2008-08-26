@@ -38,6 +38,7 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                               Teuchos::RCP<LINALG::Solver> solver,
                               Teuchos::RCP<ParameterList> params,
                               Teuchos::RCP<IO::DiscretizationWriter> output,
+                              bool incremental,
                               bool dirichletcond)
   : discret_(actdis),
     solver_ (solver),
@@ -45,6 +46,7 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     output_ (output),
     step_(0),
     time_(0.0),
+    incremental_(incremental),
     sysmat_(null),
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
@@ -104,45 +106,48 @@ void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
     sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
   }
 
-  EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
-
-  // prepare constant preconditioner on constant matrix
-
-  if (full)
+  if (not incremental_)
   {
-    // partitioned FSI does not use explicit preconditioner objects
-  }
-  else
-  {
-    // This is the MFSI case and we need the preconditioner on the inner dofs only
-    precond_ = Teuchos::rcp(new LINALG::Preconditioner(LinearSolver()));
+    EvaluateElements();
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = BlockSystemMatrix()->Matrix(0,0).EpetraMatrix();
+    // prepare constant preconditioner on constant matrix
 
-    Teuchos::RCP<Epetra_Vector> arowsum;
-    Teuchos::RCP<Epetra_Vector> acolsum;
-
-    if (scaling_infnorm)
+    if (full)
     {
-      arowsum = rcp(new Epetra_Vector(A->RowMap(),false));
-      acolsum = rcp(new Epetra_Vector(A->RowMap(),false));
-      A->InvRowSums(*arowsum);
-      A->InvColSums(*acolsum);
-      if (A->LeftScale(*arowsum) or
-          A->RightScale(*acolsum))
-        dserror("ale scaling failed");
+      // partitioned FSI does not use explicit preconditioner objects
     }
-
-    precond_->Setup(A);
-
-    if (scaling_infnorm)
+    else
     {
-      arowsum->Reciprocal(*arowsum);
-      acolsum->Reciprocal(*acolsum);
-      if (A->LeftScale(*arowsum) or
-          A->RightScale(*acolsum))
-        dserror("ale scaling failed");
+      // This is the MFSI case and we need the preconditioner on the inner dofs only
+      precond_ = Teuchos::rcp(new LINALG::Preconditioner(LinearSolver()));
+
+      Teuchos::RCP<Epetra_CrsMatrix> A = BlockSystemMatrix()->Matrix(0,0).EpetraMatrix();
+
+      Teuchos::RCP<Epetra_Vector> arowsum;
+      Teuchos::RCP<Epetra_Vector> acolsum;
+
+      if (scaling_infnorm)
+      {
+        arowsum = rcp(new Epetra_Vector(A->RowMap(),false));
+        acolsum = rcp(new Epetra_Vector(A->RowMap(),false));
+        A->InvRowSums(*arowsum);
+        A->InvColSums(*acolsum);
+        if (A->LeftScale(*arowsum) or
+            A->RightScale(*acolsum))
+          dserror("ale scaling failed");
+      }
+
+      precond_->Setup(A);
+
+      if (scaling_infnorm)
+      {
+        arowsum->Reciprocal(*arowsum);
+        acolsum->Reciprocal(*acolsum);
+        if (A->LeftScale(*arowsum) or
+            A->RightScale(*acolsum))
+          dserror("ale scaling failed");
+      }
     }
   }
 }
@@ -173,6 +178,12 @@ void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
     // Dirichlet boundaries != 0 are not supported.
 
     dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
+  }
+
+  if (incremental_)
+  {
+    EvaluateElements();
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
   }
 }
 
@@ -254,6 +265,9 @@ void ADAPTER::AleLinear::EvaluateElements()
 
   // action for elements
   eleparams.set("action", "calc_ale_lin_stiff");
+  eleparams.set("incremental", incremental_);
+
+  discret_->SetState("dispnp", dispnp_);
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();

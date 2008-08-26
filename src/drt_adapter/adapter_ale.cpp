@@ -122,11 +122,27 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // restart
   params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
 
+  bool dirichletcond = true;
+  if (genprob.probtyp == prb_fsi)
+  {
+    // FSI input parameters
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
+    {
+      dirichletcond = false;
+    }
+  }
+
   int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
   if (aletype==ALE_DYNAMIC::classic_lin)
-    ale_ = rcp(new AleLinear(actdis, solver, params, output));
+    ale_ = rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
+  else if (aletype==ALE_DYNAMIC::incr_lin)
+    ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
   else if (aletype==ALE_DYNAMIC::springs)
-    ale_ = rcp(new AleSprings(actdis, solver, params, output));
+    ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
 }

@@ -64,11 +64,16 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
   {
   case calc_ale_lin_stiff:
   {
-    //RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    //vector<double> my_dispnp(lm.size());
-    //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+    std::vector<double> my_dispnp;
+    bool incremental = params.get<bool>("incremental");
+    if (incremental)
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      my_dispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+    }
 
-    static_ke(lm,&elemat1,&elevec1,mat,params);
+    static_ke(lm,&elemat1,&elevec1,incremental,my_dispnp,mat,params);
 
     break;
   }
@@ -1082,6 +1087,8 @@ void DRT::ELEMENTS::Ale3::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
 void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
                                     Epetra_SerialDenseVector* residual,
+                                    bool                      incremental,
+                                    std::vector<double>&      my_dispnp,
 				    RefCountPtr<MAT::Material> material,
                                     ParameterList&            params)
 {
@@ -1100,9 +1107,20 @@ void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
   // get node coordinates
   for(int i=0;i<iel;i++)
   {
-    xyze(0,i)=Nodes()[i]->X()[0];
-    xyze(1,i)=Nodes()[i]->X()[1];
-    xyze(2,i)=Nodes()[i]->X()[2];
+    const double* x = Nodes()[i]->X();
+    xyze(0,i)=x[0];
+    xyze(1,i)=x[1];
+    xyze(2,i)=x[2];
+  }
+
+  if (incremental)
+  {
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += my_dispnp[3*i+0];
+      xyze(1,i) += my_dispnp[3*i+1];
+      xyze(2,i) += my_dispnp[3*i+2];
+    }
   }
 
   /*----------------------------------------- declaration of variables ---*/

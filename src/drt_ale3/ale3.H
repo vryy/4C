@@ -329,6 +329,8 @@ private:
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
+                 bool                      incremental,
+                 std::vector<double>&      my_dispnp,
                  RefCountPtr<MAT::Material> material,
                  ParameterList& 	   params);
 

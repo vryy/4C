@@ -22,7 +22,8 @@ public:
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,
-            bool dirichletcond=true);
+            bool incremental,
+            bool dirichletcond);
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true);
@@ -101,6 +102,8 @@ private:
   double time_;
   double maxtime_;
   double dt_;
+
+  bool incremental_;
 
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 

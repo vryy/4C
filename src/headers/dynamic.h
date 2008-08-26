@@ -284,6 +284,7 @@ typedef struct _ALE_DYNAMIC
 enum
    {
                   classic_lin,   /*!< classic linear calculation */
+                  incr_lin,
 		  min_Je_stiff,  /*!< incremental calculation
 		                    stiffened with min J_element^2 */
                   two_step,      /*!< calculation in 2 steps per timestep */
