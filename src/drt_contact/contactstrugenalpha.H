@@ -75,6 +75,12 @@ public:
   void FullNewton();
 
   /*!
+  \brief do full Newton iteration with line search
+
+  */
+  void FullNewtonLineSearch();
+    
+  /*!
   \brief do semi-smooth full Newton iteration
 
   PRIMAL-DUAL ACTIVE SET STRATEGY is interpreted as a semi-smooth Newton
@@ -85,6 +91,12 @@ public:
   
   */
   void SemiSmoothNewton();
+  
+  /*!
+  \brief do semi-smooth full Newton iteration with line search
+
+  */
+  void SemiSmoothNewtonLineSearch();
     
   /*!
   \brief update configuration and output to file/screen

@@ -1727,6 +1727,75 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     //********************************************************************
   }
 
+  // Line Search Newton as nonlinear iteration scheme
+  else if (equil=="line search newton")
+  {
+    //********************************************************************
+    // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
+    //********************************************************************
+    bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
+
+    //********************************************************************
+    // 1) SEMI-SMOOTH NEWTON
+    //********************************************************************
+  if (semismooth)
+  {
+    // LOOP1: time steps
+    for (int i=step; i<nstep; ++i)
+    {
+      // initialize convergence status and step no. for active set
+      contactmanager_->ActiveSetConverged() = false;
+      contactmanager_->ActiveSetSteps() = 1;
+
+      // predictor step
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
+
+      // LOOP2: nonlinear iteration (Newton)
+      SemiSmoothNewtonLineSearch();
+
+      UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
+    }
+  }
+
+    //********************************************************************
+    // FIXED-POINT APPROACH
+    //********************************************************************
+  else
+  {
+    // LOOP1: time steps
+    for (int i=step; i<nstep; ++i)
+    {
+      // initialize convergence status and step no. for active set
+      contactmanager_->ActiveSetConverged() = false;
+      contactmanager_->ActiveSetSteps() = 1;
+
+      // LOOP2: active set strategy
+      while (contactmanager_->ActiveSetConverged()==false)
+      {
+        // predictor step
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+
+        // LOOP3: nonlinear iteration (Newton)
+        FullNewtonLineSearch();
+
+        // update of active set (fixed-point)
+        contactmanager_->UpdateActiveSet(disn_);
+      }
+
+      UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
+    }
+  }
+    //********************************************************************
+    // END: options for primal-dual active set strategy (PDASS)
+    //********************************************************************
+  }
+    
   // other types of nonlinear iteration schemes
   else dserror("Unknown type of equilibrium iteration");
 
