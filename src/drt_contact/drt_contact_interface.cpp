@@ -1061,13 +1061,6 @@ bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
   else if (s0hasproj && s1hasproj && m0hasproj && m1hasproj)
   {
     overlap = true;
-    cout << "***WARNING***" << endl << "CONTACT::Interface::IntegrateOverlap2D "<< endl
-         << "has detected '4 feasible projections'-case for Slave/Master pair "
-         << sele.Id() << "/" << mele.Id() << endl;
-    cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
-    cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
-    cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-    cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
 
     // internal case 1 for global CASE 6
     // (equivalent to global CASE 7, slave fully projects onto master)
@@ -1077,7 +1070,7 @@ bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
       sxib = 1.0;
       mxia = sprojxi[1];      // local node numbering always anti-clockwise!!!
       mxib = sprojxi[0];
-      cout << "Problem solved with internal case 1!" << endl;
+      //cout << "Problem solved with internal case 1!" << endl;
     }
 
     // internal case 2 for global CASE 6
@@ -1088,7 +1081,7 @@ bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
       mxib = 1.0;
       sxia = mprojxi[1];      // local node numbering always anti-clockwise!!!
       sxib = mprojxi[0];
-      cout << "Problem solved with internal case 2!" << endl;
+      //cout << "Problem solved with internal case 2!" << endl;
     }
 
     // internal case 3 for global CASE 6
@@ -1099,7 +1092,7 @@ bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
       sxib = mprojxi[0];      // local node numbering always anti-clockwise!!!
       mxia = -1.0;
       mxib = sprojxi[0];
-      cout << "Problem solved with internal case 3!" << endl;
+      //cout << "Problem solved with internal case 3!" << endl;
     }
 
     // internal case 4 for global CASE 6
@@ -1110,12 +1103,20 @@ bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
       sxib = 1.0;            // local node numbering always anti-clockwise!!!
       mxia = sprojxi[1];
       mxib = 1.0;
-      cout << "Problem solved with internal case 4!" << endl;
+      //cout << "Problem solved with internal case 4!" << endl;
     }
 
     // unknown internal case for global CASE 6
     else
+    {
+      cout << "CONTACT::Interface::IntegrateOverlap2D "<< endl << "has detected '4 projections'-case for Sl./Ma. pair "
+           << sele.Id() << "/" << mele.Id() << endl;
+      cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
+      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found in global case 6!");
+    }
   }
 
   /* CASES 7-8 (OVERLAP):
@@ -1390,11 +1391,12 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   }
 
   // integrate and assemble the modification, if necessary
-  if (modification)
+  // (note: we assume that the modification is not useful for mortar contact!)
+  /*if (modification)
   {
-    //RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
-    //integrator.AssembleMmod(*this,sele,mele,*mmodseg);
-  }
+    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
+    integrator.AssembleMmod(*this,sele,mele,*mmodseg);
+  }*/
 
   return true;
 }
