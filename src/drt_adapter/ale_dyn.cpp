@@ -3,6 +3,7 @@
 
 #include "ale_dyn.H"
 #include "../drt_adapter/adapter_ale.H"
+#include "../drt_adapter/adapter_ale_lin.H"
 #include "adapter_ale_resulttest.H"
 
 #ifdef PARALLEL

@@ -19,6 +19,9 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_adapter/adapter_ale.H"
+#include "../drt_adapter/adapter_ale_lin.H"
+#include "../drt_adapter/adapter_ale_springs.H"
+
 
 namespace ADAPTER {
 
