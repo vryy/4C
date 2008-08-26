@@ -24,8 +24,8 @@
 void StructureEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
+  //EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
+  //EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteElementResults(field);
   if (stresstype_!="none")
   {
