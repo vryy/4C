@@ -1184,7 +1184,7 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vect
   // do a sanity check
   for (map<int,vector<int> >::const_iterator elem=eleconn->begin(); elem!=eleconn->end(); ++elem)
   {
-    if (DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) != elem->second.size())
+    if (DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int) elem->second.size())
     {
       dserror("number of read nodes does not fit the distype");
     }
