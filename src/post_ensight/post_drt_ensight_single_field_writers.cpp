@@ -84,9 +84,26 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   int numdof = field->discretization()->DofRowMap()->NumGlobalElements();
   //get number of nodes
   int numnodes = field->discretization()->NumGlobalNodes();
+
   // compute number of dofs per node
-  if (numdof%numnodes !=0) dserror("numdof is not an integer multiple of numnodes");
-  int numdofpernode = numdof/numnodes;
+  int numdofpernode = 0;
+  if (numdof%numnodes == 0) // the standard case
+    numdofpernode = numdof/numnodes;
+  else
+  { 
+    // do we have any periodic boundary conditions?
+    int numperiodicbc = 0;
+    std::vector<DRT::Condition*> periodicbc;
+    field->discretization()->GetCondition("SurfacePeriodic",periodicbc);
+    numperiodicbc += periodicbc.size();
+    field->discretization()->GetCondition("LinePeriodic",periodicbc);
+    numperiodicbc += periodicbc.size();
+    if (numperiodicbc>0) // yes, we have periodic boundary conditions
+      numdofpernode =  (numdof/numnodes)+1; 
+    else // there are no periodic b.c. -> it is time for a dserror
+      dserror("could not determine dofs per node");
+  }
+
   // write results for each transported scalar
   if (numdofpernode == 1)
   {
