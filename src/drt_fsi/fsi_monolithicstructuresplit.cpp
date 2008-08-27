@@ -146,6 +146,28 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   }
 #endif
 
+  if (firstcall)
+  {
+    // additional rhs term for ALE equations
+
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+    if (a==Teuchos::null)
+      dserror("expect ale block matrix");
+
+    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+
+    Teuchos::RCP<Epetra_Vector> veln = StructToAle(FluidToStruct(FluidField().ExtractInterfaceVeln()));
+    //veln = AleField().Interface().InsertCondVector(veln);
+
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+    aig.Apply(*veln,*rhs);
+
+    double timescale = FluidField().TimeScaling();
+    rhs->Scale(-1./timescale);
+
+    Extractor().AddVector(*rhs,2,f);
+  }
+
   // NOX expects a different sign here.
   f.Scale(-1.);
 }
