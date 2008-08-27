@@ -110,6 +110,15 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
               AleField().RHS(),
               FluidField().ResidualScaling());
 
+  if (firstcall)
+  {
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    {
+      dserror("second order with fluid split not supported");
+    }
+  }
+
   // NOX expects a different sign here.
   f.Scale(-1.);
 }

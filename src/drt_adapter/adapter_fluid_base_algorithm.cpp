@@ -233,9 +233,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-      if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-        dserror("no second order for MFSI yet");
-
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }

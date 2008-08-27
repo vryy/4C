@@ -117,38 +117,15 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
               AleField().RHS(),
               FluidField().ResidualScaling());
 
-#if 0
-  if (firstcall)
-  {
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-    {
-      // add rhs term for second order coupling
-      Teuchos::RCP<Epetra_Vector> veln = FluidToStruct(FluidField().ExtractInterfaceVeln());
-      veln = StructureField().Interface().InsertCondVector(veln);
-      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
-
-      Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
-      s->Apply(*veln,*rhs);
-
-      double timescale = FluidField().TimeScaling();
-      rhs->Scale(1./timescale);
-
-      veln = StructureField().Interface().ExtractOtherVector(rhs);
-      Extractor().AddVector(*veln,0,f);
-
-      veln = StructureField().Interface().ExtractCondVector(rhs);
-      veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
-      Extractor().AddVector(*veln,1,f);
-
-      // ale and shape derivatives are missing...
-    }
-  }
-#endif
-
   if (firstcall)
   {
     // additional rhs term for ALE equations
+    // -dt Aig u(n)
+    //
+    //  first order: 1/dt Delta d(n+1) = Delta u(n+1) + 1 u(n)
+    // second order: 2/dt Delta d(n+1) = Delta u(n+1) + 2 u(n)
+    //
+    // And we are concerned with the u(n) part here.
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
     if (a==Teuchos::null)
@@ -156,16 +133,67 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
-    Teuchos::RCP<Epetra_Vector> veln = StructToAle(FluidToStruct(FluidField().ExtractInterfaceVeln()));
-    //veln = AleField().Interface().InsertCondVector(veln);
-
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
+    Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
-    aig.Apply(*veln,*rhs);
+    aig.Apply(*aveln,*rhs);
 
-    double timescale = FluidField().TimeScaling();
-    rhs->Scale(-1./timescale);
+    rhs->Scale(-1.*Dt());
 
     Extractor().AddVector(*rhs,2,f);
+
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    {
+      // add rhs term for second order coupling
+      //
+      // A Delta d(n+1,1) = A dt/2 (Delta u(n+1,1) + u(n))
+      //
+      // Here we are concerned with A dt/2 u(n) where A is any interface
+      // contribution that goes with d(n+1,1) in its original setting
+
+      // structure
+      Teuchos::RCP<Epetra_Vector> veln = StructureField().Interface().InsertCondVector(sveln);
+      rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
+
+      Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+      s->Apply(*veln,*rhs);
+
+      double scale     = FluidField().ResidualScaling();
+      double timescale = FluidField().TimeScaling();
+      rhs->Scale(-1./timescale);
+
+      veln = StructureField().Interface().ExtractOtherVector(rhs);
+      Extractor().AddVector(*veln,0,f);
+
+      veln = StructureField().Interface().ExtractCondVector(rhs);
+      veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
+      veln->Scale(1./scale);
+      Extractor().AddVector(*veln,1,f);
+
+      // shape derivatives
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+      if (mmm!=Teuchos::null)
+      {
+        LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+        LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+
+        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+        fmig.Apply(*fveln,*rhs);
+        veln = FluidField().Interface().InsertOtherVector(rhs);
+
+        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+        fmgg.Apply(*fveln,*rhs);
+        FluidField().Interface().InsertOtherVector(rhs,veln);
+
+        veln->Scale(-1./(timescale*scale));
+
+        Extractor().AddVector(*veln,1,f);
+      }
+
+      // ale already done above
+    }
   }
 
   // NOX expects a different sign here.
