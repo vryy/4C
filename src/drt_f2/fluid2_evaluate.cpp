@@ -175,11 +175,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
   // get the material
   RCP<MAT::Material> mat = Material();
 
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
-        dserror("Material law is not a fluid");
-
   MATERIAL* actmat = NULL;
 
   if(mat->MaterialType()== m_fluid)

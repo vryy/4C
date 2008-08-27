@@ -203,22 +203,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
 
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
-      	  dserror("Material law is not a fluid");
-
-
   MATERIAL* actmat = NULL;
 
   if(mat->MaterialType()== m_fluid)
-	  actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
   else if(mat->MaterialType()== m_carreauyasuda)
-	  actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
   else if(mat->MaterialType()== m_modpowerlaw)
-	  actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
   else
-	  dserror("fluid material expected but got type %d", mat->MaterialType());
+    dserror("fluid material expected but got type %d", mat->MaterialType());
 
   switch(act)
   {
