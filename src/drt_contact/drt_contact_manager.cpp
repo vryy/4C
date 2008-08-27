@@ -278,10 +278,9 @@ isincontact_(false)
   
   // initialize active sets and slip sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
-  bool initialcontact = scontact_.get("initial contact",false);
   for (int i=0;i<(int)interface_.size();++i)
   {
-    interface_[i]->InitializeActiveSet(initialcontact);
+    interface_[i]->InitializeActiveSet();
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);

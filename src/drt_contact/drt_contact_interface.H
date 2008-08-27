@@ -562,11 +562,9 @@ public:
     
   /*!
   \brief Initialize active set of this interface (t=0)
-  
-  \param initialcontact (in): true, if contact at t=0 assumed
         
   */
-  virtual bool InitializeActiveSet(bool initialcontact);
+  virtual bool InitializeActiveSet();
     
   /*!
   \brief Build active set (nodes / dofs) of this interface

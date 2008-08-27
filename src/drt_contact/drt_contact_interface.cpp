@@ -2237,7 +2237,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
+bool CONTACT::Interface::InitializeActiveSet()
 {
   // define local variables
   int countnodes = 0;
