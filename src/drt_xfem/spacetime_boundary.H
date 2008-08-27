@@ -37,34 +37,37 @@ public:
             const BlitzMat&     posn                    ///< nodal positions at n
             );
 
-    //! Copy Constructor
-    SpaceTimeBoundaryCell(
-            const SpaceTimeBoundaryCell& old);
+//    //! Copy Constructor
+//    SpaceTimeBoundaryCell(
+//            const SpaceTimeBoundaryCell& old);
     
     explicit SpaceTimeBoundaryCell();
     
-    /*!  = operator
-     * create true copy
-     */
-    SpaceTimeBoundaryCell& operator = (const SpaceTimeBoundaryCell& old)
-    {
-      SpaceTimeBoundaryCell cell(old);
-      SpaceTimeBoundaryCell& ref = cell;
-      return ref;
-    };
+//    /*!  = operator
+//     * create true copy
+//     */
+//    SpaceTimeBoundaryCell& operator = (const SpaceTimeBoundaryCell& old)
+//    {
+//      SpaceTimeBoundaryCell cell(old.bele_id_, posnp_, posn_);
+//      SpaceTimeBoundaryCell& ref = cell;
+//      return ref;
+//    };
     
     BlitzMat get_xyzt() const {return xyzt_;};
+    
+    int getBeleId() const {return bele_id_;};
     
     //! return string representation
     std::string toString() const;
 
 private:
   
-  const int           bele_id_;           ///< boundary element id we want to track
-  const BlitzMat      posnp_;             ///< nodal positions at n+1
-  const BlitzMat      posn_;              ///< nodal positions at n
-  const BlitzMat      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
+  int           bele_id_;           ///< boundary element id we want to track
+  BlitzMat      posnp_;             ///< nodal positions at n+1
+  BlitzMat      posn_;              ///< nodal positions at n
+  BlitzMat      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
   
+  //! from surface positions at two time steps, create prism element (e.g. hex)
   BlitzMat getLinearPositionArray(
       const BlitzMat&      posnp,                 ///< nodal positions at n+1
       const BlitzMat&      posn                   ///< nodal positions at n

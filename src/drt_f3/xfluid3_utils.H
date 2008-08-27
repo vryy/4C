@@ -12,10 +12,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_UTILS_H
 #define XFLUID3_UTILS_H
 
-#include <Epetra_SerialDenseSolver.h>
-
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_geometry/coordinate_transformation.H"
 #include "../drt_xfem/dof_management_element.H"
 
 

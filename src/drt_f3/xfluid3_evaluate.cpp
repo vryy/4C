@@ -12,19 +12,10 @@ Maintainer: Axel Gerstenberger
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 #include "xfluid3.H"
 #include "xfluid3_sysmat.H"
 #include "xfluid3_interpolation.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"

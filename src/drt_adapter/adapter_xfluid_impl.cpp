@@ -233,6 +233,7 @@ void ADAPTER::XFluidImpl::Update()
 //  }
 //  else
 //  {
+//    cout << "first step" << endl;
 //    //dserror("nope");
 //    gamma = 1.0;
 //    beta = gamma/2.0;

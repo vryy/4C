@@ -115,16 +115,16 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
-    const SpaceTimeBoundaryCell& old
-    ) : 
-      bele_id_(old.bele_id_),
-      posnp_(old.posnp_),
-      posn_(old.posn_),
-      xyzt_(old.xyzt_)
-{
-    return;   
-}
+//XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
+//    const SpaceTimeBoundaryCell& old
+//    ) : 
+//      bele_id_(old.bele_id_),
+//      posnp_(old.posnp_),
+//      posn_(old.posn_),
+//      xyzt_(old.xyzt_)
+//{
+//    return;   
+//}
         
 BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
     const BlitzMat&      posnp,                 ///< nodal positions at n+1
@@ -132,18 +132,18 @@ BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
     ) const
 {
   BlitzMat xyzt(3,8);
-  for (int inode = 0; inode != 4; ++inode) // fill n+1 position
-  {
-    for (int isd = 0; isd != 3; ++isd)
-    {
-      xyzt(isd,inode) = posnp(isd,inode);
-    }
-  }
   for (int inode = 0; inode != 4; ++inode) // fill n   position
   {
     for (int isd = 0; isd != 3; ++isd)
     {
-      xyzt(isd,inode+4) = posn(isd,inode);
+      xyzt(isd,inode  ) = posn(isd,inode);
+    }
+  }
+  for (int inode = 0; inode != 4; ++inode) // fill n+1 position
+  {
+    for (int isd = 0; isd != 3; ++isd)
+    {
+      xyzt(isd,inode+4) = posnp(isd,inode);
     }
   }
   return xyzt;
@@ -154,7 +154,7 @@ BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
 std::string XFEM::SpaceTimeBoundaryCell::toString() const
 {
     std::stringstream s;
-    s << "SpaceTimeBoundaryCell" << endl;
+    s << "SpaceTimeBoundaryCell: " << getBeleId() << endl;
 //    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";

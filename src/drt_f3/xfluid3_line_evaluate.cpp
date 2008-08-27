@@ -14,8 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "xfluid3.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*

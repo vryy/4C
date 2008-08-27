@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
+#include "../drt_geometry/coordinate_transformation.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"

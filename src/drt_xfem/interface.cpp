@@ -257,8 +257,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
       BlitzVec vals(8);
-      vals(0) = 1.0;vals(1) = 1.0;vals(2) = 1.0;vals(3) = 1.0;
-      vals(4) = 0.0;vals(5) = 0.0;vals(6) = 0.0;vals(7) = 0.0;
+      vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
+      vals(4) = 1.0;vals(5) = 1.0;vals(6) = 1.0;vals(7) = 1.0;
       for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
       {
         const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
@@ -495,36 +495,29 @@ void XFEM::InterfaceHandle::FindSpaceTimeLayerCell(
     BlitzVec3&                        rst
 ) const
 {
-  
+  bool in_spacetimecell = false;
   // loop over space time slab cells until one is found - brute force
   for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
   {
-    const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
+    const XFEM::SpaceTimeBoundaryCell slabitem = slabiter->second;
     BlitzVec3 xsi;
     xsi = 0.0;
-//    bool currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
-    
+    in_spacetimecell = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
+    in_spacetimecell = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
+    if (in_spacetimecell)
+    {
+      stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
+//      cout << "slabitem " << slabitem.toString() << endl;
+      rst = xsi;
+      break;
+    }
   }
-//  const int label = PositionWithinConditionNP(x_in);
-//  
-//  bool compute = false;
-//  if (label == 0) // fluid
-//  {
-//    compute = true;
-//  }
-//  else if (xlabelset.size() > 1)
-//  {
-//    compute = true;
-//  }
-//  else if (xlabelset.find(label) == xlabelset.end())
-//  {
-//    compute = true;
-//  }
-//  //compute = true;
-//  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-//#ifdef PARALLEL
-//  dserror("not implemented, yet");
-//#endif
+  
+  if (not in_spacetimecell)
+  {
+    dserror("should be in one space time cell");
+  }
+//  cout << stcell.toString() << endl;
   return;
 }
 
@@ -560,6 +553,7 @@ void XFEM::InterfaceHandle::GenerateSpaceTimeLayer(
     }
     XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
     stlayer_.insert(make_pair(cutterele->Id(),slab));
+    //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
   }
   
   return;
