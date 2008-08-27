@@ -1007,7 +1007,7 @@ static void currentToLineElementCoordinatesT(
   eleCoord = 0.0;
   
   
-  while(residual > GEO::TOL13 && iter < maxiter)
+  while(residual > GEO::TOL13)
   {
     iter++;
     
