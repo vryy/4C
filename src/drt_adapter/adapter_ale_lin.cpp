@@ -183,7 +183,8 @@ void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   if (incremental_)
   {
     EvaluateElements();
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+    // dispn_ has zeros at the Dirichlet-entries, so we maintain zeros there
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,dirichtoggle_);
   }
 }
 
