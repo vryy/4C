@@ -1306,8 +1306,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Supported in monolithic FSI for now.",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  IntParameter("ITECHAPP",1,"",&fsidyn);
-  IntParameter("ICHMAX",1,"",&fsidyn);
+  IntParameter("PRECONDREUSE",
+               1,
+               "Number of preconditioner reused in monolithic FSI",
+               &fsidyn);
+
+  IntParameter("ITECHAPP",1,"unused",&fsidyn);
+  IntParameter("ICHMAX",1,"unused",&fsidyn);
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&fsidyn);
   IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsidyn);

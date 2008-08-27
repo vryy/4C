@@ -295,10 +295,14 @@ namespace UTILS
     /// adaptive Newton direction
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
 
+    int precondreusecount_;
+
     /// @name special debugging output
 
     Teuchos::RCP<UTILS::DebugWriter> sdbg_;
     Teuchos::RCP<UTILS::DebugWriter> fdbg_;
+
+    //@}
   };
 }
 

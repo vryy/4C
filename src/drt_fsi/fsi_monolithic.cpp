@@ -202,7 +202,8 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(Epetra_Comm& comm)
-  : MonolithicBase(comm)
+  : MonolithicBase(comm),
+    precondreusecount_(0)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -256,6 +257,9 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   while (NotFinished())
   {
     PrepareTimeStep();
+
+    // new time step, rebuild preconditioner
+    precondreusecount_ = 0;
 
     if (sdbg_!=Teuchos::null)
       sdbg_->NewTimeStep(Step(),"struct");
@@ -506,10 +510,20 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
                                             Epetra_Operator &M,
                                             Teuchos::ParameterList *precParams)
 {
-  // Create preconditioner operator.
-  // The blocks are already there. And this is the perfect place to initialize
-  // the block preconditioners.
-  SystemMatrix()->SetupPreconditioner();
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computePreconditioner");
+
+  if (precondreusecount_<=0)
+  {
+    // Create preconditioner operator. The blocks are already there. This is
+    // the perfect place to initialize the block preconditioners.
+    SystemMatrix()->SetupPreconditioner();
+
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    precondreusecount_ = fsidyn.get<int>("PRECONDREUSE");
+  }
+
+  precondreusecount_ -= 1;
+
   return true;
 }
 
