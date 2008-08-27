@@ -702,7 +702,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -950,11 +950,23 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   //=================================================================== end equilibrium loop
   print_unconv = false;
 
+  //------------------------------------------------- linear static case
+  int nstep = params_.get<int>("nstep",5);
+  if (dynkindstat && maxiter==1 && nstep==1)
+  {
+    if (!myrank_ and printscreen)
+    {
+      cout << "computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n";
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
+  }
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  else if (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter==maxiter)
   {
      dserror("Newton unconverged in %d iterations",numiter);
   }
+  //--------------------------------------------------- Newton converged
   else
   {
     if (!myrank_ and printscreen)
@@ -1026,7 +1038,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
-          !contactmanager_->ActiveSetConverged()) && numiter<=maxiter)
+          !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1283,11 +1295,18 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   //=================================================================== end equilibrium loop
   print_unconv = false;
 
+  //------------------------------------------------- linear static case
+  int nstep = params_.get<int>("nstep",5);
+  if (dynkindstat && maxiter==1 && nstep==1)
+  {
+    dserror("ERROR: Linear Static solution not applicable to semi-smooth Newton case");
+  }
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  else if (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter==maxiter)
   {
      dserror("Newton unconverged in %d iterations",numiter);
   }
+  //--------------------------------------------------- Newton converged
   else
   {
     if (!myrank_ and printscreen)

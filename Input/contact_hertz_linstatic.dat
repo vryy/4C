@@ -20,7 +20,7 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Static
+TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
@@ -58,26 +58,26 @@ RESEVRYSTRS  1
 RESTARTEVRY  20
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   Static
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.01 
-NUMSTEP      60 
-MAXTIME      0.6
+TIMESTEP     1.0 
+NUMSTEP      1
+MAXTIME      1.0
 BETA         0.25 
 GAMMA        0.5 
 ALPHA_M      0.0 
 ALPHA_F      0.0
-DAMPING      Yes
+DAMPING      No
 M_DAMP       0.00001 
 K_DAMP       0.00001
 CONV_CHECK   AbsRes_And_AbsDis
-TOLRES	     1.0E-06
-TOLDISP      1.0E-06
-MAXITER      50
+TOLRES	     1.0E-08
+TOLDISP      1.0E-08
+MAXITER      1
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
 BASISTRAFO           No

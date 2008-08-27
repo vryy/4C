@@ -87,7 +87,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
   if (!myrank) printf("Initial    residual      %15.5e\n",fresmnorm);
   
   //=================================================== equilibrium loop
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -625,11 +625,23 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
   //=================================================================== end equilibrium loop
   print_unconv = false;
 
+  //------------------------------------------------- linear static case
+  int nstep = params_.get<int>("nstep",5);
+  if (dynkindstat && maxiter==1 && nstep==1)
+  {
+    if (!myrank_ and printscreen)
+    {
+      cout << "computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n";
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
+  }
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  else if (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter==maxiter)
   {
      dserror("Newton unconverged in %d iterations",numiter);
   }
+  //--------------------------------------------------- Newton converged
   else
   {
     if (!myrank_ and printscreen)
@@ -638,7 +650,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
                   fresmnorm,disinorm,convcheck);
     }
   }
-
+  
   params_.set<int>("num iterations",numiter);
 
   return;
@@ -717,7 +729,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   // ONE Newton loop, thus we have to check for convergence of the
   // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
-          !contactmanager_->ActiveSetConverged()) && numiter<=maxiter)
+          !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1269,11 +1281,18 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   //=================================================================== end equilibrium loop
   print_unconv = false;
 
+  //------------------------------------------------- linear static case
+  int nstep = params_.get<int>("nstep",5);
+  if (dynkindstat && maxiter==1 && nstep==1)
+  {
+    dserror("ERROR: Linear Static solution not applicable to semi-smooth Newton case");
+  }
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  else if (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter==maxiter)
   {
      dserror("Newton unconverged in %d iterations",numiter);
   }
+  //--------------------------------------------------- Newton converged
   else
   {
     if (!myrank_ and printscreen)
