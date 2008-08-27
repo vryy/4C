@@ -33,6 +33,11 @@ activesetconv_(false),
 activesetsteps_(0),
 isincontact_(false)
 {
+  // get problem dimension (2D or 3D) and store into dim_
+  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  dim_=psize.get<int>("DIM");
+  if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
+  
   // read and check contact input parameters
   ReadAndCheckInput();
   
@@ -96,7 +101,7 @@ isincontact_(false)
     ++numgroupsfound;
 
     // create an empty interface and store it in this Manager
-    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm())));
+    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim())));
     
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];

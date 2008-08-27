@@ -22,11 +22,13 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
  *----------------------------------------------------------------------*/
-CONTACT::Integrator::Integrator(int ngp, bool oned) :
-oned_(oned),
+CONTACT::Integrator::Integrator(int ngp, int dim) :
+dim_(dim),
 ngp_(ngp)
 {
-  if (oned)
+  // chek for problem dimension and create Gauss rule accordingly
+  // case Dim()==2 -> corresponds to 1D integration on interface
+  if (Dim()==2)
   {
     coords_.resize(ngp_);
     weights_.resize(ngp_);
@@ -86,12 +88,15 @@ ngp_(ngp)
     default:
       dserror("ERROR: Integrator: Given no. of Gauss points not implemented!");
     } // switch (ngp_)
-    
-    
-  } // if (oned)
+  }
   
+  // case Dim()==3 -> corresponds to 2D integration on interface
+  else if (Dim()==3)
+    dserror("ERROR: Integrator: 3D case not yet implemented!");
+  
+  // invalid Dim() problem dimension
   else
-    dserror("ERROR: Integrator: 2D case not yet implemented!");
+    dserror("ERROR: Integrator: Contact problem must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -103,6 +108,9 @@ ngp_(ngp)
 RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement& sele,
                                                               double sxia, double sxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::IntegrateD not yet implemented for 3D");
+  
   //check input data
   if (!sele.IsSlave())
     dserror("ERROR: IntegrateD called on a non-slave CElement!");
@@ -186,6 +194,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
 void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
                                  double sxia, double sxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::DerivD not yet implemented for 3D");
+    
   //check input data
   if (!sele.IsSlave())
     dserror("ERROR: DerivD called on a non-slave CElement!");
@@ -355,6 +366,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
                                                               CONTACT::CElement& mele,
                                                               double mxia, double mxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::IntegrateM not yet implemented for 3D");
+    
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateM called on a wrong type of CElement pair!");
@@ -398,7 +412,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // project Gauss point onto master element
-    CONTACT::Projector projector(true);
+    CONTACT::Projector projector(2);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
     
     // simple version (no Gauss point projection)
@@ -473,6 +487,9 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
                                  CONTACT::CElement& mele,
                                  double mxia, double mxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::DerivM not yet implemented for 3D");
+    
   // *********************************************************************
   // CAUTION: be careful with positive rotation direction ("Umlaufsinn")
   // sxia -> belongs to sele.Nodes()[0]
@@ -569,7 +586,7 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // project Gauss point onto master element
-    CONTACT::Projector projector(true);
+    CONTACT::Projector projector(2);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
     
     // simple version (no Gauss point projection)
@@ -754,6 +771,9 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
                                     vector<map<int,double> >& derivxi,
                                     bool startslave, bool endslave)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::DerivXiAB not yet implemented for 3D");
+    
   // we need the participating slave and master nodes
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
@@ -1064,6 +1084,9 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
                                     const map<int,double>& derivsxi,
                                     map<int,double>& derivmxi)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::DerivXiGP not yet implemented for 3D");
+    
   // we need the participating slave and master nodes
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
@@ -1247,6 +1270,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
                                                                  CONTACT::CElement& mele,
                                                                  double mxia, double mxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::IntegrateMmod not yet implemented for 3D");
+    
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateMmod called on a wrong type of CElement pair!");
@@ -1289,7 +1315,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // project Gauss point onto master element
-    CONTACT::Projector projector(true);
+    CONTACT::Projector projector(2);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
     
     // check GP projection
@@ -1430,6 +1456,9 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
                                                               CONTACT::CElement& mele,
                                                               double mxia, double mxib)
 {
+  //check for problem dimension
+  if (Dim()==3) dserror("ERROR: Integrator::IntegrateG not yet implemented for 3D");
+    
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateG called on a wrong type of CElement pair!");
@@ -1475,7 +1504,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // project Gauss point onto master element
-    CONTACT::Projector projector(true);
+    CONTACT::Projector projector(2);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
     
     // simple version (no Gauss point projection)

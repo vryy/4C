@@ -46,9 +46,9 @@ public:
   Note that this is \b not a collective call as projections are
   performed in parallel by individual processes.
   
-  \param twoD (in): true if problem is 2D, false if 3D
+  \param dim (in): Global problem dimension
   */
-  explicit Projector(bool twoD);
+  explicit Projector(int dim);
 
   /*!
   \brief Destructor
@@ -59,10 +59,10 @@ public:
   //! @name Access methods
   
   /*!
-  \brief Return whether this instance was created for 2D or 3D projections
-  
+  \brief Get problem dimension
+    
   */
-  inline bool IsTwoDimensional() {return twoD_;}
+  virtual inline const int& Dim() {return dim_;};
   
   //@}
   
@@ -190,7 +190,7 @@ protected:
   Projector operator = (const Projector& old);
   Projector(const Projector& old);
   
-  bool        twoD_;          // problem dimension, true if 2D
+  int       dim_;          // dimension of problem (2D or 3D)
 
 }; // class Projector
 }  // namespace CONTACT

@@ -24,11 +24,13 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm) :
+CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm, const int dim) :
 id_(id),
-comm_(comm)
+comm_(comm),
+dim_(dim)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
+  if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
   procmap_.clear();
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
   contactsegs_.Reshape(0,0);
@@ -84,6 +86,9 @@ void CONTACT::Interface::FillComplete()
   }
 
 #ifdef CONTACTBOUNDMOD
+  // only applicable for 2D problems up to now
+  if (Dim()==3) dserror("ERROR: Boundary node modification not yet impl. for 3D");
+  
   // detect boundary nodes on slave side
   // ---------------------------------------------------------------------
   // Within our dual Lagrange multiplier framework, results can be
@@ -847,8 +852,8 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
 {
-  // create a 2D integrator instance of GP order 5
-  CONTACT::Integrator integrator(CONTACTNGP,true);
+  // create an integrator instance with correct NumGP and Dim
+  CONTACT::Integrator integrator(CONTACTNGP,Dim());
   double sxia = -1.0;
   double sxib =  1.0;
 
@@ -890,8 +895,8 @@ bool CONTACT::Interface::Project2D(CONTACT::CElement& sele,
   if (!mymnodes)
       dserror("ERROR: IntegrateOverlap2D: Null pointer for mymnodes!");
 
-  // create a 2-dimensional projector instance
-  CONTACT::Projector projector(true);
+  // create a projector instance of problem dimension Dim()
+  CONTACT::Projector projector(Dim());
 
   // project slave nodes onto master element
   for (int i=0;i<sele.NumNode();++i)
@@ -1349,8 +1354,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   double mxia = xiproj[2];
   double mxib = xiproj[3];
 
-  // create a 2D integrator instance of GP order 5
-  CONTACT::Integrator integrator(CONTACTNGP,true);
+  // create an integrator instance with correct NumGP and Dim
+  CONTACT::Integrator integrator(CONTACTNGP,Dim());
 
   // do the two integrations
   RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele,sxia,sxib,mele,mxia,mxib);
@@ -1365,8 +1370,13 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   integrator.AssembleM(*this,sele,mele,*mseg);
   integrator.AssembleG(*this,sele,*gseg);
 
+  
+  /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces
   // (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)
+  // (note: we assume that the modification is not useful for mortar CONTACT,
+  // but only for mortar MESH TYING as published!)
+  //----------------------------------------------------------------------
   bool modification = false;
 
   // conditions for modification
@@ -1376,7 +1386,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   // (4) use of dual shape functions for LM (always true in our case !!)
   if (sele.Shape()==DRT::Element::line2)
   {
-    if (integrator.IsOneDimensional())
+    if (integrator.Dim()==2)
     {
       CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
       CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
@@ -1391,13 +1401,14 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   }
 
   // integrate and assemble the modification, if necessary
-  // (note: we assume that the modification is not useful for mortar contact!)
-  /*if (modification)
+
+  if (modification)
   {
     RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
     integrator.AssembleMmod(*this,sele,mele,*mmodseg);
-  }*/
-
+  }
+  //--------------------------------------------------------------------*/
+  
   return true;
 }
 

@@ -51,9 +51,9 @@ public:
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
   
-  \param oned (in): true if integration is 1D, false if 2D
+  \param dim (in): Global problem dimension
   */
-  explicit Integrator(int ngp, bool oned);
+  explicit Integrator(int ngp, int dim);
 
   /*!
   \brief Destructor
@@ -64,10 +64,14 @@ public:
   //! @name Access methods
   
   /*!
-  \brief Return whether this instance was created for 1D or 2D integrations
+  \brief Get problem dimension
   
+  Note that only 2D and 3D are possible here as this refers to the global
+  problem dimension. On integration level this corresponds to 1D integration
+  (dim_==2) and 2D integration (dim_==3) on the interface!
+      
   */
-  inline bool IsOneDimensional() {return oned_;}
+  virtual inline const int& Dim() {return dim_;};
   
   /*!
   \brief Return number of Gauss points for this instance
@@ -211,7 +215,7 @@ protected:
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
   
-    bool             oned_;           // intgeration dimension, true if 1D
+    int              dim_;            // dimension of problem (2D or 3D)
     int              ngp_;            // number of Gauss points
     vector<double>   coords_;         // Gauss point coordinates
     vector<double>   weights_;        // Gauss point weights

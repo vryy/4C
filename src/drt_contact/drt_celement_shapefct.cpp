@@ -118,7 +118,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   }
   // *********************************************************************
   // 1D dual quadratic shape functions
-  // (used for interpolation of displacemt field)
+  // (used for interpolation of displacement field)
   // (including adaption process for distorted elements)
   // *********************************************************************
   case CElement::quaddual1D:
@@ -131,7 +131,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     coord = GetNodalCoords();
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     
     Epetra_SerialDenseMatrix me(nnodes,nnodes);
     Epetra_SerialDenseMatrix de(nnodes,nnodes);
@@ -199,7 +199,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     vector<double> derivtemp(nnodes);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     
     Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
     Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
@@ -273,7 +273,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     vector<double> derivtemp(nnodes);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     
     Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
     Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
@@ -357,7 +357,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     coord = GetNodalCoords();
     
     // prepare computation with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     vector<double> val(nnodes);
     vector<double> deriv(nnodes);
     Epetra_SerialDenseMatrix me(nnodes,nnodes);
@@ -533,7 +533,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     vector<double> derivtemp(nnodes);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     
     Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
     Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
@@ -725,7 +725,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     vector<double> derivtemp(nnodes);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     
     Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
     Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);

@@ -101,6 +101,12 @@ public:
   inline Teuchos::ParameterList Params() const { return scontact_;};
     
   /*!
+  \brief Get problem dimension
+  
+  */
+  inline const int& Dim() {return dim_;};
+  
+  /*!
   \brief Return global slave dof row map
   
   */
@@ -479,6 +485,7 @@ protected:
   DRT::Discretization&               discret_;        // the underlying problem discretization
   vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
   Teuchos::ParameterList             scontact_;       // containing contact input parameters
+  int                                dim_;            // dimension of problem (2D or 3D)
   double                             alphaf_;         // Generalized-alpha parameter (0.0 for statics)
   
   RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)

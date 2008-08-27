@@ -21,9 +21,10 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
  *----------------------------------------------------------------------*/
-CONTACT::Projector::Projector(bool twoD) :
-twoD_(twoD)
+CONTACT::Projector::Projector(int dim) :
+dim_(dim)
 {
+  if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -34,7 +35,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
                                             double xi[])
 {
   bool ok = true;
-  if (IsTwoDimensional())
+  if (Dim()==2)
   {
     // define variable to check if projection is outward w.r.t to slave
     bool outward = true;
@@ -101,7 +102,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
     }
 #endif // #ifdef DEBUG
 */    
-  } // if (IsTwoDimesional())
+  } // if (Dim()==2)
   
   else
   {
@@ -122,7 +123,7 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
 {
   bool ok = true;
   
-  if (IsTwoDimensional())
+  if (Dim()==2)
   {    
     // define variable to check if projection is outward w.r.t to slave
     bool outward = true;
@@ -189,7 +190,7 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
     }
 #endif // #ifdef DEBUG
 */    
-  } // if (IsTwoDimesional())
+  } // if (Dim()==2)
     
   else
   {
@@ -210,7 +211,7 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
                                            double xi[])
 {
   bool ok = true;
-  if (IsTwoDimensional())
+  if (Dim()==2)
   {
     // collect necessary data (slave side, for GP)
     int nnodes = gpele.NumNode();
@@ -295,7 +296,7 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
          << "The result is: " << xi[0] << endl;
 #endif // #ifdef DEBUG
 */
-  }
+  } // if (Dim()==2)
   
   else
   {

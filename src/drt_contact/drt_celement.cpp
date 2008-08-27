@@ -592,8 +592,8 @@ double CONTACT::CElement::ComputeArea()
   // 2D quadratic case (3noded line element)
   else if (Shape()==line3)
   {
-    // Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    // Gauss quadrature with correct NumGP and Dim
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     int nnodes = NumNode();
     double detg = 0.0;
     vector<double> val(nnodes);
@@ -650,8 +650,8 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
   // 2D quadratic case (3noded line element)
   else if (Shape()==line3)
   {
-    // Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,true);
+    // Gauss quadrature with correct NumGP and Dim
+    CONTACT::Integrator integrator(CONTACTNGP,2);
     int nnodes = NumNode();
     LINALG::SerialDenseMatrix coord(3,nnodes);
     coord = GetNodalCoords();

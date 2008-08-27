@@ -50,8 +50,9 @@ public:
 
   \param id (in): Unique interface id
   \param comm (in): A communicator object
+  \param dim (in): Global problem dimension
   */
-  explicit Interface(const int id, const Epetra_Comm& comm);
+  explicit Interface(const int id, const Epetra_Comm& comm, const int dim);
 
   /*!
   \brief Destructor
@@ -93,6 +94,16 @@ public:
   */
   virtual inline DRT::Discretization& Discret() const { return *idiscret_; }
 
+  /*!
+  \brief Get problem dimension
+  
+  Note that only 2D and 3D are possible here as this refers to the global
+  problem dimension. On interface level this corresponds to 1D interfaces
+  (dim_==2) and 2D interfaces (dim_==3)!
+    
+  */
+  virtual inline const int& Dim() {return dim_;};
+    
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
@@ -631,6 +642,7 @@ protected:
   map<int,int>                procmap_;       // mapping global -> local communicator PIDs
   
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
+  int                         dim_;           // dimension of problem (2D or 3D)
   
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
