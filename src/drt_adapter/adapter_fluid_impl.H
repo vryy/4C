@@ -100,7 +100,6 @@ namespace ADAPTER {
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
-    /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
