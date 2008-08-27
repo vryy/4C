@@ -1,26 +1,27 @@
-==================================================================
-        General Data File CCARAT
-==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus 
-------------------------------------------------------PROBLEM SIZE
-ELEMENTS 	750
-NODES    	1812
-DIM      	3
-MATERIALS	5
-NUMDF    	6
+//
 // Maintainer: Georg Bauer
+//             bauer@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15252
+//
+// necessary defines: D_FLUID3 CCADISCRET BINIO
+//
 ==================================================================
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 Convection-Diffusion of a Gaussian Hill
+// Reference:
+// J. Donea and A. Huerta
+// Finite Element Methods for Flow Problems
+// Wiley, 2003
+// Chapter 5.6.1, pp. 243
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS        1000
-NODES           1331
-DIM                3
-MATERIALS          1
-NUMDF              1
+ELEMENTS    750
+NODES       1812
+DIM         3
+MATERIALS   4
+NUMDF       2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Scalar_Transport
 NUMFIELD     2
