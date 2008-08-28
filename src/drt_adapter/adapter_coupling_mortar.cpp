@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_coupling_mortar.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include <mrtr_manager.H>
 
@@ -23,15 +24,6 @@ Maintainer: Ulrich Kuettler
 #include <mrtr_segment_linear1D.H>
 #include <mrtr_segment_bilineartri.H>
 #include <mrtr_segment_bilinearquad.H>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
 
 
 class FSIMortarManager : public MOERTEL::Manager
