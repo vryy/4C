@@ -112,6 +112,18 @@ namespace UTILS
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
 
+
+  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /*  \author g.bau 
+   *  \date 08/08
+   */
+  void ExtractMyNodeBasedValues
+  (
+    const DRT::Element* ele,                ///< pointer to current element
+    Epetra_SerialDenseVector& local,        ///< local vector on element-level
+    const RCP<Epetra_MultiVector>& global); ///< global vector
+
+
   /// find all local nodes from discretization marked with condition
   /*!
 
@@ -346,9 +358,6 @@ namespace UTILS
 
 #endif  // #ifndef UTILS_H
 #endif  // #ifdef CCADISCRET
-
-
-
 
 
 
