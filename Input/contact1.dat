@@ -1665,5 +1665,8 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.2 1.2
 // FLUID 1 - 0 0 0 0 0 0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 280 POSITION dispx NAME ux VALUE  5.996296171e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 280 POSITION dispy NAME uy VALUE -1.084864393e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
