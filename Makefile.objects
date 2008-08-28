@@ -291,7 +291,8 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_scatra_base_algorithm.o \
                 src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.o \
                 src/drt_adapter/adapter_coupling.o \
-                src/drt_adapter/adapter_coupling_mortar.o
+                src/drt_adapter/adapter_coupling_mortar.o \
+                src/drt_adapter/adapter_fluid_combust.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
@@ -1235,7 +1236,9 @@ OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
 #------------------------------------------------ combustion (drt version)
 OBJS_DRT_COMBUST =  src/drt_combust/combust_dyn.o \
                     src/drt_combust/combust_algorithm.o \
-                    src/drt_combust/combust_utils.o
+                    src/drt_combust/combust_utils.o \
+                    src/drt_combust/combust_fluidimplicitintegration.o \
+                    src/drt_combust/combust_fluidresulttest.o
 #------------------------------------------------ combustion (drt version)
 OBJS_DRT_COMBUST3_LIB = src/drt_combust/combust3.o \
                         src/drt_combust/combust3_evaluate.o \

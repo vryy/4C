@@ -25,6 +25,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_impl.H"
 #include "adapter_xfluid_impl.H"
 #include "adapter_fluid_genalpha.H"
+#include "adapter_fluid_combust.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -291,6 +292,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       if (!soliddis->Filled()) soliddis->FillComplete();
 
       fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output, isale));
+    }
+    else if (genprob.probtyp == prb_combust)
+    {
+      cout << "Ich bin jetzt eine CombustFluidTimeInt" << &endl;
+      //fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
+      fluid_ = rcp(new ADAPTER::FluidCombust(actdis, solver, fluidtimeparams, output));
     }
     else
     {
