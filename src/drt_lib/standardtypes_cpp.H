@@ -18,7 +18,7 @@
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
 #ifdef PARALLEL
-#include <mpi>
+#include <mpi.h>
 #endif
 extern "C" /* stuff which is c and is accessed from c++ */
 {
