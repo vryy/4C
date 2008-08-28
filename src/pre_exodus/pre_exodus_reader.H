@@ -329,9 +329,9 @@ inline ElementBlock::Shape StringToShape(const string shape)
   else if (shape.compare("HEX20")== 0)    return ElementBlock::hex20;
   else if (shape.compare("HEX27")== 0)    return ElementBlock::hex27;
   else if (shape.compare("HEX")== 0)      return ElementBlock::hex8; // really needed????? a.g. 08/08
-  else if (shape.compare("TET4")== 0)     return ElementBlock::tet4;
+  else if (shape.compare("TET4")== 0)     return ElementBlock::tet4; // TODO:: gibts das eigentlich?
   else if (shape.compare("TETRA4")== 0)   return ElementBlock::tet4;
-  else if (shape.compare("TET10")== 0)    return ElementBlock::tet10;
+  else if (shape.compare("TETRA10")== 0)  return ElementBlock::tet10;
   else if (shape.compare("TETRA")== 0)    return ElementBlock::tet4;  // really needed????? a.g. 08/08
   else if (shape.compare("WEDGE6")== 0)   return ElementBlock::wedge6;
   else if (shape.compare("WEDGE15")== 0)  return ElementBlock::wedge15;
