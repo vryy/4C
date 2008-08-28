@@ -244,8 +244,8 @@ public:
   );
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void wall1_expol(Epetra_SerialDenseMatrix& stresses,
-                   Epetra_SerialDenseMatrix& nodalstresses);
+  void w1_expol(Epetra_SerialDenseMatrix& stresses,
+                Epetra_SerialDenseMatrix& nodalstresses);
 
   //@}
 

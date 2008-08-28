@@ -247,7 +247,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
 
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
-        wall1_expol(*gpstress,nodalstresses);
+        w1_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
 
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
-        wall1_expol(*gpstress,nodalstresses);
+        w1_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements

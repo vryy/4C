@@ -17,6 +17,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
 /*----------------------------------------------------------------------*
@@ -226,12 +227,14 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      popp 08/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::wall1_expol(Epetra_SerialDenseMatrix& stresses,
-                                       Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
+                                    Epetra_SerialDenseMatrix& nodalstresses)
 {
   const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+  const DiscretizationType distype = this->Shape();
   int numgp = intpoints.nquad;
   int numnode = NumNode();
+  Epetra_SerialDenseVector funct(numnode);
 
   static Epetra_SerialDenseMatrix expol(numnode,numgp);
   static bool isfilled;
@@ -241,35 +244,60 @@ void DRT::ELEMENTS::Wall1::wall1_expol(Epetra_SerialDenseMatrix& stresses,
     nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
   }
   else
-  {
-    // quad4
-    if (numgp==4)
-    {
-      double sq3=sqrt(3);
-      expol(0,0)=1.0+0.5*sq3;
-      expol(0,1)=-0.5;
-      expol(0,2)=1.0-0.5*sq3;
-      expol(0,3)=-0.5;
-      expol(1,1)=1.0+0.5*sq3;
-      expol(1,2)=-0.5;
-      expol(1,3)=1.0-0.5*sq3;
-      expol(2,2)=1.0+0.5*sq3;
-      expol(2,3)=-0.5;
-      expol(3,3)=1.0+0.5*sq3;
-
-      for (int i=0;i<numnode;++i)
+  { 
+  	// quad4 and quad9
+    if (numgp==4 or numgp==9)
+    { 
+    	// loop over gaussian points 
+      for (int ip=0; ip<intpoints.nquad; ++ip)
       {
-        for (int j=0;j<i;++j)
+        // gaussian coordinates
+        const double e1 = intpoints.qxg[ip][0];
+        const double e2 = intpoints.qxg[ip][1];
+        
+        // coordinates of the extrapolated points       
+        double e1expol;
+        double e2expol;
+        
+        if (e1!=0)
         {
-          expol(i,j)=expol(j,i);
+        	e1expol = 1/e1;
+        }	
+        else
+        {
+        	e1expol = 0;	
         }
-      }
+        
+        if (e2!=0)
+        {
+        e2expol = 1/e2;
+        }	
+        else
+        {
+        e2expol = 0;	
+        }
+        
+        // shape functions for the extrapolated coordinates
+        DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,distype);
+        
+        // extrapolation matrix
+        for(int i=0;i<numnode;++i)     
+        {
+        	expol(ip,i)=funct(i);
+        }
+      } 
+      nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+      isfilled = true;
     }
+        
+    // for tri3 elements the extrapolated values are the same as those at
+    // gaussian points
+    else if (numgp==3)
+    {
+   	nodalstresses=stresses;
+   	isfilled = true;
+    }   
     else dserror("extrapolation not yet implemented for this element type");
-
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-
-    isfilled = true;
   }
 }
 
