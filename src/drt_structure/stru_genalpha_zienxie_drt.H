@@ -33,14 +33,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
-
-
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 
 using namespace std;
 using namespace Teuchos;

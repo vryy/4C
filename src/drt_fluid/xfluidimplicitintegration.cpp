@@ -29,24 +29,17 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_xfem/interface.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
-#include "../drt_xfem/field_enriched.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
-//#include <ctime>
 #include <Teuchos_TimeMonitor.hpp>
 
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 extern struct _FILES  allfiles;
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
