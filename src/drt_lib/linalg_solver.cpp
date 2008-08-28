@@ -23,10 +23,10 @@ Maintainer: Michael Gee
 #include "simpler_operator.H"
 #include "linalg_downwindmatrix.H"
 #include "linalg_sparsematrix.H"
+#include "standardtypes_cpp.H"
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 }
 

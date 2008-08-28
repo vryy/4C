@@ -15,10 +15,7 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include <iostream>
-
 #include <Teuchos_Array.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_StrUtils.hpp>
 #include <Teuchos_any.hpp>
 
@@ -27,15 +24,7 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_validparameters.H"
 #include "drt_colors.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
+#include "standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*/

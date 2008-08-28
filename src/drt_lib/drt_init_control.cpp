@@ -3,17 +3,8 @@
 
 #include <string>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "drt_init_control.H"
-
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
+#include "standardtypes_cpp.H"
 
 
 /*!----------------------------------------------------------------------

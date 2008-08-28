@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "drt_condition_utils.H"
+#include "standardtypes_cpp.H"
 //#include "adapter_coupling_mortar.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -32,15 +33,6 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <vector>
 #include <algorithm>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

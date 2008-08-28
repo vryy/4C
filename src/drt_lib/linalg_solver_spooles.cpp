@@ -19,10 +19,9 @@ Maintainer: Michael Gee
 #endif
 
 #include "linalg_solver.H"
-
+#include "standardtypes_cpp.H"
 extern "C" 
 {
-#include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 }
 

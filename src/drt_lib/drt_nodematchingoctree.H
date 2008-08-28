@@ -20,15 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_parobject.H"
 #include "drt_exporter.H"
 #include "Teuchos_RefCountPtr.hpp"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
+#include "standardtypes_cpp.H"
 
 namespace DRT {
 namespace UTILS {

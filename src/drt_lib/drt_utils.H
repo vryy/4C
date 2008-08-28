@@ -15,28 +15,14 @@ Maintainer: Michael Gee
 #define UTILS_H
 
 
-//#include <blitz/array.h>
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_Vector.h"
 #include "Epetra_Export.h"
-#include "Teuchos_RefCountPtr.hpp"
 
-#include "drt_parobject.H"
-#include "drt_element.H"
-#include "drt_node.H"
 #include "drt_discret.H"
-#include "linalg_mapextractor.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace std;
 using namespace Teuchos;
 
-namespace LINALG
-{
-  class MapExtractor;
-}
 
 
 

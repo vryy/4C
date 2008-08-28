@@ -1,16 +1,26 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_resulttest.cpp
 
+\brief general result test framework
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
+#include "standardtypes_cpp.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
-#include "../headers/standardtypes.h"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

@@ -13,11 +13,8 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "drt_dserror.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 
 #ifdef THROWELEMENTERRORS
 

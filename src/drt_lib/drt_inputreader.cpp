@@ -19,18 +19,10 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 #include "drt_utils.H"
 #include "linalg_utils.H"
+#include "standardtypes_cpp.H"
 
 #include <Epetra_Time.h>
 #include <iterator>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 
 
 /*!----------------------------------------------------------------------

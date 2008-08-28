@@ -13,11 +13,6 @@ Maintainer: Michael Gee
 #ifndef DSERROR_H
 #define DSERROR_H
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 
 #ifdef __cplusplus
 

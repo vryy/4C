@@ -26,14 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_nurbs_discret.H"
 #include "drt_inputreader.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
+#include "standardtypes_cpp.H"
 
 using namespace std;
 using namespace Teuchos;

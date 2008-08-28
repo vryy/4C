@@ -91,11 +91,7 @@ extern "C"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
+#include "standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*
