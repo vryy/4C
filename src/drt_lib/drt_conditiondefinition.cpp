@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file drt_conditiondefinition.cpp
+
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <algorithm>
