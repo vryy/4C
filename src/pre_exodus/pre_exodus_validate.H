@@ -25,6 +25,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "pre_exodus_reader.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_inputreader.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include <Teuchos_RefCountPtr.hpp>
@@ -35,7 +36,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "../headers/standardtypes.h"
 using namespace std;
 
 namespace EXODUS{
