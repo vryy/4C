@@ -13,15 +13,8 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
-extern "C" 
-{
-#include "../headers/standardtypes.h"
+#include "shell8.H"
+#include "../drt_lib/standardtypes_cpp.H"
 /*!----------------------------------------------------------------------
   \brief file pointers
 
@@ -32,8 +25,6 @@ extern "C"
   </pre>
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-}
-#include "shell8.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|

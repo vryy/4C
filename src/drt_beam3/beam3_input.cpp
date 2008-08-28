@@ -13,25 +13,14 @@ Maintainer: Christian Cyron
 #ifdef D_BEAM3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
+#include "beam3.H"
+#include "../drt_lib/standardtypes_cpp.H"
 /*----------------------------------------------------------------------*
 |                                                        cyron 03/08     |
 | vector of material laws                                                |
 | defined in global_control.c
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
-
-#include "beam3.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 03/08|

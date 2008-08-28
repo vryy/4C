@@ -21,11 +21,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h" // for use of frchk, material...
-}
+#include "../drt_lib/standardtypes_cpp.H"
 
 namespace DRT
 {

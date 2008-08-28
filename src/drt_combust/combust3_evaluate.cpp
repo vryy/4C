@@ -12,12 +12,6 @@ Maintainer: Florian Henke
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 #include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
@@ -27,7 +21,6 @@ Maintainer: Florian Henke
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
 
-#include <blitz/array.h>
 
 
 // converts a string into an Action for this element

@@ -13,17 +13,8 @@ Maintainer: Georg Bauer
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
 #include "condif3.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 using namespace DRT::UTILS;
 

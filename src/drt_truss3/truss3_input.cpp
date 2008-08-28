@@ -13,23 +13,13 @@ Maintainer: Christian Cyron
 #ifdef D_TRUSS3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
+#include "truss3.H"
+#include "../drt_lib/standardtypes_cpp.H"
 /*----------------------------------------------------------------------*
 | vector of material laws defined in global_control.c        cyron 08/08|
 *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
-
-#include "truss3.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 08/08|

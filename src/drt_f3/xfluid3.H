@@ -24,14 +24,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h" // for use of frchk, material...
-}
 
 namespace DRT
 {
