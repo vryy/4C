@@ -1,6 +1,6 @@
 /*======================================================================*/
 /*!
-\file ta_zienkiewczxie.cpp
+\file ta_zienkiewiczxie.cpp
 \brief Generalized Alpha time integration for structural problems
 
 <pre>
