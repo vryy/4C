@@ -21,15 +21,7 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/drt_parobject.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 /// MAT: materials
