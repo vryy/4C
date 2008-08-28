@@ -17,11 +17,6 @@ Maintainer: Axel Gerstenberger
 #ifndef ADAPTER_FLUID_XFEM_H
 #define ADAPTER_FLUID_XFEM_H
 
-#include <Epetra_Comm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
 #include "adapter_coupling.H"

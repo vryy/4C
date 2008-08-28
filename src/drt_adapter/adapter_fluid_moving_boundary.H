@@ -17,13 +17,9 @@ Maintainer: Ulrich Kuettler
 #ifndef ADAPTER_GENERAL_FLUID_H
 #define ADAPTER_GENERAL_FLUID_H
 
-#include <Epetra_Comm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "adapter_fluid.H"
-#include "adapter_ale.H"
+#include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_mapextractor.H"
 
 namespace ADAPTER
 {

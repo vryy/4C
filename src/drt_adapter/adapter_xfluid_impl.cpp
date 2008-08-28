@@ -22,12 +22,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 extern struct _FILES  allfiles;
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/

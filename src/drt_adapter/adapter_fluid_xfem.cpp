@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_fluid_xfem.H"
 
