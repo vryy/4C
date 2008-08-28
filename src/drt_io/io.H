@@ -17,23 +17,12 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
 #include <Epetra_BlockMap.h>
 
-#include <map>
-#include <string>
-
 #include "../drt_lib/drt_discret.H"
-//#include "io.h"
 #include "io_hdf.H"
 
-#ifdef BINIO
-#include <H5LT.h>
-#endif
-
 extern "C" {
-#include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 }
 

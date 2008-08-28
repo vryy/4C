@@ -1,6 +1,6 @@
 /*!
  * \file io_gmsh_xfem_extension.H
- * \brief simple element print library for Gmsh (mostly for debuging, only sequential)
+ * \brief simple element print library for Gmsh (mostly for debugging, only sequential)
  * 
  * <pre>
  * Maintainer: Axel Gerstenberger
@@ -15,13 +15,7 @@
 #define IO_GMSH_XFEM_EXTENSION_H
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
-#include <string>
-#include <vector>
-
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
 namespace IO

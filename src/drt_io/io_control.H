@@ -20,13 +20,10 @@ Maintainer: Ulrich Kuettler
 
 #include <Epetra_Comm.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
+#include "../drt_lib/standardtypes_cpp.H"
 
 extern "C" {
 
-#include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 
 }

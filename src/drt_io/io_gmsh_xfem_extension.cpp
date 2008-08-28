@@ -1,7 +1,7 @@
 /*!
 \file io_gmsh_xfem_extension.cpp
 
-\brief simple element print library for Gmsh (debuging only)
+\brief simple element print library for Gmsh (debugging only)
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -13,15 +13,8 @@ Maintainer: Axel Gerstenberger
 
 #ifdef CCADISCRET
 
-#include <string>
-#include <blitz/array.h>
-
 #include "io_gmsh.H"
 #include "io_gmsh_xfem_extension.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
 
 std::string IO::GMSH::XdisToString(
     const std::string& s,

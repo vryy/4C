@@ -15,12 +15,9 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 extern struct _FILES  allfiles;
 
 using namespace std;

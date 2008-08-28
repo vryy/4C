@@ -27,10 +27,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 extern struct _FILES  allfiles;
 
 

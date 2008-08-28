@@ -147,7 +147,7 @@ int GEO::getXFEMLabel(
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
   
   // if fluid
-  if(scalarproduct > (-1)*GEO::TOL7)
+  if(scalarproduct > (-1)*GEO::TOL13)
     label = 0;
 
   return label;
@@ -180,7 +180,7 @@ int GEO::getXFEMLabelAndNearestObject(
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
   
   // if fluid
-  if(scalarproduct > (-1)*GEO::TOL7)
+  if(scalarproduct > (-1)*GEO::TOL13)
     label = 0;
 
   return label;

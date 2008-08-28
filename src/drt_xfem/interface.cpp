@@ -16,16 +16,13 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/integrationcell.H"
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*

@@ -24,15 +24,9 @@ Maintainer: Ulrich Kuettler
 #include <vector>
 #include <algorithm>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include "Teuchos_RefCountPtr.hpp"
-
-extern "C" {
-#include "../headers/standardtypes.h"
-}
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>

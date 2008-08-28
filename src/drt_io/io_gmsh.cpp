@@ -1,7 +1,7 @@
 /*!
 \file io_gmsh.cpp
 
-\brief simple element print library for Gmsh (debuging only)
+\brief simple element print library for Gmsh (debugging only)
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -13,13 +13,9 @@ Maintainer: Axel Gerstenberger
 
 #ifdef CCADISCRET
 
-#include <string>
-#include <blitz/array.h>
-
 #include "io_gmsh.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
+
 
 std::string IO::GMSH::ScalarToString(const double scalar,
     const DRT::Element::DiscretizationType distype)
@@ -72,9 +68,9 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
 
 
 std::string IO::GMSH::elementAtCurrentPositionToString(
-    const double                                      scalar, 
-    const DRT::Element*                               ele,
-    const map<int,blitz::TinyVector<double,3> >&      currentelepositions)
+    const double                   scalar, 
+    const DRT::Element*            ele,
+    const map<int,BlitzVec3>&      currentelepositions)
 {
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -108,7 +104,7 @@ std::string IO::GMSH::disToString(
     const std::string& s,
     const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int,blitz::TinyVector<double,3> > currentpositions)
+    std::map<int,BlitzVec3> currentpositions)
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;

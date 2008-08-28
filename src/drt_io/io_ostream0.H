@@ -26,7 +26,7 @@ Maintainer: Burkhard Bornemann
 #include <sstream>
 #include <Epetra_Comm.h>
 
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /* namespace */

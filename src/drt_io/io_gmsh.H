@@ -15,14 +15,8 @@
 #define GMSH_H
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
-#include <string>
-#include <vector>
-
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_geometry/vector_definitions.H"
 
 namespace IO
 {
@@ -256,9 +250,9 @@ namespace IO
 
     //! take an entire DRT::Element and print it with constant scalar value at the given pusition
     std::string elementAtCurrentPositionToString(
-        const double scalar,                                                  ///< scalar value for the entire element
-        const DRT::Element* ele,                                              ///< element to print
-        const map<int,blitz::TinyVector<double,3> >&  currentelepositions     ///< nodal position array
+        const double                scalar,                 ///< scalar value for the entire element
+        const DRT::Element*         ele,                    ///< element to print
+        const map<int,BlitzVec3>&   currentelepositions     ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
@@ -335,7 +329,7 @@ namespace IO
     
     /// print a piece of text at a given position
     inline std::string text3dToString(
-        const blitz::TinyVector<double,3>&    xyz,      ///< 3d Position of text
+        const BlitzVec3&                      xyz,      ///< 3d Position of text
         const std::string                     text,     ///< text to be printed 
         const int                             fontsize  ///< font size
         )
@@ -364,7 +358,7 @@ namespace IO
         const std::string&                         s,
         const double                               scalar,
         const Teuchos::RCP<DRT::Discretization>    dis,
-        std::map<int,blitz::TinyVector<double,3> > currentpositions);
+        std::map<int,BlitzVec3>                    currentpositions);
 
   }
 }

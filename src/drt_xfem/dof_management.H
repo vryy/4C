@@ -14,8 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
-#include "../drt_lib/drt_dofset.H"
-
 #include "dof_management_element.H"
 #include "dofkey.H"
 
