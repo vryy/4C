@@ -571,18 +571,6 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
     // -------------------------------------------------------------------
-    // treat impedance BC
-    // note: these methods return without action, if the problem does not
-    //       have impedance boundary conditions
-    // -------------------------------------------------------------------
-    discret_->ClearState();
-    discret_->SetState("velnp",velnp_);
-    discret_->SetState("hist",hist_);
-
-    impedancebc_->FlowRateCalculation(time_,dta_);
-    impedancebc_->OutflowBoundary(time_,dta_,theta_);
-
-    // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     const int liftdrag = params_.get<int>("liftdrag");
@@ -1493,6 +1481,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
 
+  // update impedance boundary condition
+  impedancebc_->UpdateResidual(residual_);
+
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -1567,8 +1558,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   // prev. acceleration becomes (n-1)-accel. of next time step
   accnm_->Update(1.0,*accn_,0.0);
-  
-  // compute acceleration 
+
+  // compute acceleration
   // note a(n+1) is directly stored in a(n),
   // hence we use a(n-1) as a(n) (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
@@ -1585,6 +1576,18 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     dispnm_->Update(1.0,*dispn_,0.0);
     dispn_ ->Update(1.0,*dispnp_,0.0);
   }
+
+  // -------------------------------------------------------------------
+  // treat impedance BC
+  // note: these methods return without action, if the problem does not
+  //       have impedance boundary conditions
+  // -------------------------------------------------------------------
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist",hist_);
+
+  impedancebc_->FlowRateCalculation(time_,dta_);
+  impedancebc_->OutflowBoundary(time_,dta_,theta_);
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
