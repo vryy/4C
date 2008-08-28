@@ -34,10 +34,10 @@ enum GaussRule3D
     intrule_hex_8point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
     intrule_hex_27point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
     intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 0 (open)
-    intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
-    intrule_tet_4point_alternative, ///< GAUSS INTEGRATION, DEG.OF PRECISION ? (closed)
-    intrule_tet_5point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
-    intrule_tet_10point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (closed)
+    intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
+    intrule_tet_4point_gauss_radau, ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
+    intrule_tet_5point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
+    intrule_tet_10point,            ///< KEAST3           , DEG.OF PRECISION 3 (closed)
     intrule_tet_11point,            ///< KEAST5           , DEG.OF PRECISION 4 (open)
     intrule_tet_24point,            ///< KEAST7           , DEG.OF PRECISION 6 (open)
     intrule_tet_45point,            ///< KEAST9           , DEG.OF PRECISION 8 (open)
@@ -50,29 +50,33 @@ enum GaussRule3D
 
 
 //! supported 2d integration rules
+//!
+//! integration rules can be distinguished into open and closed rules
+//! hereby, open rules are rules where all integration points are inside the domain
+//! and none on the boundary of the integrated domain
 enum GaussRule2D
 {
-    intrule2D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
-    intrule_quad_1point,
-    intrule_quad_4point,
-    intrule_quad_9point,
-    intrule_tri_1point,
-    intrule_tri_3point,    ///< gp on triangular lines/edges
-    intrule_tri_3point_on_corners,
-    intrule_tri_6point,
-    intrule_tri_12point,   ///< degree of precision: 6 (Hughes, The Finite Element Method)
-    intrule_tri_37point    ///< degree of precision: 13 (rule from ACM TOMS algorithm #706)
+    intrule2D_undefined,             ///< use this to initialize a gaussrule, if you don't know the value, yet!
+    intrule_quad_1point,             ///< degree of precision: 1  (open)
+    intrule_quad_4point,             ///< degree of precision: 3  (open)
+    intrule_quad_9point,             ///< degree of precision: 5  (open)
+    intrule_tri_1point,              ///< degree of precision: 1  (open)
+    intrule_tri_3point,              ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
+    intrule_tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite Element Method)
+    intrule_tri_6point,              ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
+    intrule_tri_12point,             ///< degree of precision: 6  (open)   (Hughes, The Finite Element Method)
+    intrule_tri_37point              ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm #706)
 };
 
 //! supported 1d integration rules
 enum GaussRule1D
 {
-    intrule1D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
-    intrule_line_1point,
-    intrule_line_2point,
-    intrule_line_3point,
-    intrule_line_4point,
-    intrule_line_5point
+    intrule1D_undefined,           ///< use this to initialize a gaussrule, if you don't know the value, yet!
+    intrule_line_1point,           ///< degree of precision: 1  (open)
+    intrule_line_2point,           ///< degree of precision: 3  (open)
+    intrule_line_3point,           ///< degree of precision: 5  (open)
+    intrule_line_4point,           ///< degree of precision: 7  (open)
+    intrule_line_5point            ///< degree of precision: 9  (open)
 };
 
 /*!

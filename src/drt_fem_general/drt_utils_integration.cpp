@@ -145,7 +145,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[3]   =  Q124  ;
     break;
   }
-  case intrule_tet_4point_alternative:
+  case intrule_tet_4point_gauss_radau:
   {
     nquad = 4;
     qxg[0][0] = 0.0;
@@ -781,7 +781,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qxg[0][1] = 1.0/3.0;
     break;
   }
-  case intrule_tri_3point:
+  case intrule_tri_3point_gauss_radau:
   {
     nquad = 3;
     qwgt[0]  = 1.0/6.0 ;
@@ -796,7 +796,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qxg[2][1] = 0.5;
     break;
   }
-  case intrule_tri_3point_on_corners:
+  case intrule_tri_3point:
   {
     nquad = 3;
     qwgt[0]  = 1.0/6.0 ;

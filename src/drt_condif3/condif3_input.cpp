@@ -133,7 +133,7 @@ bool DRT::ELEMENTS::Condif3::ReadElement()
             if (strncmp(buffer,"standard",8)==0)
                 gaussrule_ = intrule_tet_4point;
             else if (strncmp(buffer,"gaussrad",8)==0)
-                gaussrule_ = intrule_tet_4point_alternative;
+                gaussrule_ = intrule_tet_4point_gauss_radau;
             else
                 dserror("Reading of CONDIF3 element failed: GP_ALT\n");
             break;

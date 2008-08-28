@@ -152,7 +152,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
             if (strncmp(buffer,"standard",8)==0)
                 gaussrule_ = DRT::UTILS::intrule_tet_4point;
             else if (strncmp(buffer,"gaussrad",8)==0)
-                gaussrule_ = DRT::UTILS::intrule_tet_4point_alternative;
+                gaussrule_ = DRT::UTILS::intrule_tet_4point_gauss_radau;
             else
                 dserror("Reading of SOLID3 element failed: GP_ALT\n");
             break;
