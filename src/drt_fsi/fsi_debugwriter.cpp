@@ -11,15 +11,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*

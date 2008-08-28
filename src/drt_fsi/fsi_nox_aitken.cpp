@@ -19,16 +19,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
-
+#include "../drt_lib/standardtypes_cpp.H"
 extern struct _FILES  allfiles;
 #endif
 

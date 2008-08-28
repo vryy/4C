@@ -19,14 +19,7 @@
 // debug output
 #if 0
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
+#include "../drt_lib/standardtypes_cpp.H"
 
 extern struct _FILES  allfiles;
 #endif
