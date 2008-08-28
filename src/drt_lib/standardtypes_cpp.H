@@ -21,7 +21,7 @@
 #endif
 extern "C" /* stuff which is c and is accessed from c++ */
 {
-#include "../headers/standardtypes.h" // for use of ds_cputime()
+#include "../headers/standardtypes.h"
 }
 
 #endif /* STANDARDTYPES_CPP_H_ */
