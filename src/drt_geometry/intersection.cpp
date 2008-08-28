@@ -42,15 +42,15 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
 
+// This is just here to get the c++ mpi header, otherwise it would
+// use the c version included inside standardtypes.h
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h" // for use of ds_cputime()
 }
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 
 /*----------------------------------------------------------------------*
  |  MAIN:   computes the interface between the xfem          u.may 06/07|
@@ -1550,7 +1550,7 @@ void GEO::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pnnQ";    //o2 Y R
+  char switches[] = "pnnQR";    //o2 Y R
   tetgenio::facet *f;
   tetgenio::polygon *p;
 

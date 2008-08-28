@@ -17,9 +17,14 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 
+// This is just here to get the c++ mpi header, otherwise it would
+// use the c version included inside standardtypes.h
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
 extern "C" /* stuff which is c and is accessed from c++ */
 {
-#include "../headers/standardtypes.h"
+#include "../headers/standardtypes.h" // for use of ds_cputime()
 }
 extern struct _FILES  allfiles;
 
