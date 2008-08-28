@@ -59,12 +59,15 @@ namespace COMBUST
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    /// outer level COMBUST time loop
+    /// time loop of algorithm for dynamic combustion problem
     void TimeLoop();
+
+    /// algorithm for static combustion problem
+    void SolveStationaryProblem();
 
   protected:
 
-	  /// FG iteration number
+    /// FG iteration number
     int FGiter() const { return fgiter_; }
 
     /// reinitialize G-function
@@ -76,7 +79,7 @@ namespace COMBUST
     /// tests if the FGI iteration has converged
     bool NotConvergedFGI();
     
-    /// start a new time step
+    /// prepare a new time step
     void PrepareTimeStep();
     
     /// start a new Fluid-G-function iteration

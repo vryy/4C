@@ -23,11 +23,10 @@ Maintainer: Florian Henke
 #include "../drt_f3/fluid3_stabilization.H"
 #include "combust3_local_assembler.H"
 #include "combust3_interpolation.H"
+#include "../drt_geometry/coordinate_transformation.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-
-//#include "combust3_shapefunction_handle.H"
 
 class DRT::Discretization;
 
@@ -222,6 +221,32 @@ static void Sysmat3(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
+
+        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+        if (ih->ElementIntersected(ele->Id()))
+        {
+            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+            const int labelnp = ih->PositionWithinConditionNP(cellcenter);
+            const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+            bool compute = false;
+            if (labelnp == 0) // fluid
+            {
+              compute = true;
+            }
+            else if (xlabelset.size() > 1) // multiple interface labels
+            {
+              compute = true;
+            }
+            else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+            {
+              compute = true;
+            }
+            if (not compute)
+            {
+              continue;
+            }
+        }
+
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
               ih,
@@ -229,7 +254,7 @@ static void Sysmat3(
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

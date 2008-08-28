@@ -22,9 +22,6 @@ Maintainer: Florian Henke
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -96,16 +93,17 @@ DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStr
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    std::vector<int>&         lm,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix&,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector&,
-                                    Epetra_SerialDenseVector&)
+                                      DRT::Discretization&      discretization,
+                                      std::vector<int>&         lm,
+                                      Epetra_SerialDenseMatrix& elemat1,
+                                      Epetra_SerialDenseMatrix&,
+                                      Epetra_SerialDenseVector& elevec1,
+                                      Epetra_SerialDenseVector&,
+                                      Epetra_SerialDenseVector&)
 {
-  dserror("Das Combust3 Element geht noch nicht! henke 08/08");
-	
+  // This is a temporary security abort for the Combust3 element  henke 08/08
+//  dserror("Das Combust3 Element geht noch nicht! henke 08/08");
+
   // get the action required
   const string action = params.get<string>("action","none");
   const DRT::ELEMENTS::Combust3::ActionType act = convertStringToActionType(action);
@@ -119,25 +117,20 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-      case get_density:
-      {
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
+    case get_density:
+    {
+      // This is a very poor way to transport the density to the outside world. Is there a better one?
+      params.set("density", actmat->m.fluid->density);
+      break;
+    }
+    // One-step-theta scheme
+    case calc_fluid_systemmat_and_residual:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
         break;
-      }
-     //--------------------------------------------------
-     //--------------------------------------------------
-     // the standard one-step-theta implementation
-     //--------------------------------------------------
-     //--------------------------------------------------
-     case calc_fluid_systemmat_and_residual:
-      {
-        // do no calculation, if not needed
-        if (lm.empty())
-            break;
-        
-        // need current velocity/pressure and history vector
+
+/* need current velocity/pressure and history vector
 //        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
 //        if (velnp==null)
 //            dserror("Cannot get state vector 'velnp'");
@@ -149,120 +142,109 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 //        vector<double> myvelnp(lm.size());
 //        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 //        vector<double> myhist(lm.size());
-//        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-        DRT::ELEMENTS::Combust3::MyState mystate;
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
+//        DRT::UTILS::ExtractMyValues(*hist,myhist,lm); */
 
-        if (is_ale_)
+      DRT::ELEMENTS::Combust3::MyState mystate;
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+//  cout << "Hier geht es noch gut" << &endl;
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
+
+      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+
+      // stabilization terms
+      const bool pstab = true;
+      const bool supg  = true;
+      const bool cstab = true;
+
+      // time integration parameters
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const double            dt       = params.get<double>("dt");
+      const double            theta    = params.get<double>("theta");
+
+      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+//  const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("velocity field");
+      if (ivelcol==null)
+        dserror("Cannot get interface velocity from parameters");
+      const Teuchos::RCP<Epetra_Vector> iforcecol = null; //params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+      if (iforcecol==null)
+        dserror("Cannot get interface force from parameters");
+
+      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(eleDofManager_, NumNode(), NodeIds());
+
+      //--------------------------------------------------
+      // calculate element coefficient matrix and rhs
+      //--------------------------------------------------
+      COMBUST::callSysmat4(assembly_type,
+        this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+        actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true);
+
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
+      params.set("density", actmat->m.fluid->density);
+    }
+    break;
+    case calc_fluid_beltrami_error:
+    {
+      // add error only for elements which are not ghosted
+      if(this->Owner() == discretization.Comm().MyPID())
+      {
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+        if (vel_pre_np==null)
+          dserror("Cannot get state vectors 'velnp'");
+
+        // extract local values from the global vectors
+        vector<double> my_vel_pre_np(lm.size());
+        DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+
+        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        const int numnode = NumNode();
+        vector<double> myprenp(numnode);
+        vector<double> myvelnp(3*numnode);
+
+        for (int i=0;i<numnode;++i)
         {
-            dserror("No ALE support within instationary fluid solver.");
+          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+          myprenp[i]=my_vel_pre_np[3+(i*4)];
         }
 
-        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-
-        const bool pstab  = true;
-        const bool supg   = true;
-        const bool cstab  = true;
-
-        // time integration factors
-        const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
-        const double            dt       = params.get<double>("dt");
-        const double            theta    = params.get<double>("theta");
-
-        const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-        if (ivelcol==null)
-            dserror("Cannot get interface velocity from parameters");
-        const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-        if (iforcecol==null)
-            dserror("Cannot get interface force from parameters");        
-
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                eleDofManager_, NumNode(), NodeIds());
-        
-        //--------------------------------------------------
-        // calculate element coefficient matrix and rhs
-        //--------------------------------------------------
-        COMBUST::callSysmat4(assembly_type,
-                this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true);
-
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
-
+        // integrate beltrami error
+        f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
       }
-      break;
-      case calc_fluid_beltrami_error:
-      {
-        // add error only for elements which are not ghosted
-        if(this->Owner() == discretization.Comm().MyPID())
-        {
+    }
+    break;
+    case calc_fluid_stationary_systemmat_and_residual:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
 
-          // need current velocity and history vector
-          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null)
-              dserror("Cannot get state vectors 'velnp'");
+      // extract local values from the global vector
+      DRT::ELEMENTS::Combust3::MyState mystate;
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
 
-          // extract local values from the global vectors
-          vector<double> my_vel_pre_np(lm.size());
-          DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+      if (ivelcol==null)
+        dserror("Cannot get interface velocity from parameters");
+      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+      if (iforcecol==null)
+        dserror("Cannot get interface force from parameters");
 
-          // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-          const int numnode = NumNode();
-          vector<double> myprenp(numnode);
-          vector<double> myvelnp(3*numnode);
+      // time integration factors
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const double            dt       = 1.0;
+      const double            theta    = 1.0;
 
-          for (int i=0;i<numnode;++i)
-          {
-            myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-            myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-            myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      const bool pstab  = true;
+      const bool supg   = true;
+      const bool cstab  = true;
 
-            myprenp[i]=my_vel_pre_np[3+(i*4)];
-          }
-
-          // integrate beltrami error
-          f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
-        }
-      }
-      break;
-      case calc_fluid_stationary_systemmat_and_residual:
-      {
-          // do no calculation, if not needed
-          if (lm.empty())
-              break;
-
-          // extract local values from the global vector
-          DRT::ELEMENTS::Combust3::MyState mystate;
-          DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-          
-          const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-          if (ivelcol==null)
-              dserror("Cannot get interface velocity from parameters");
-          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-          if (iforcecol==null)
-              dserror("Cannot get interface force from parameters");
-          
-          if (is_ale_)
-          {
-              dserror("No ALE support within stationary fluid solver.");
-          }
-          
-          // time integration factors
-          const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
-          const double            dt       = 1.0;
-          const double            theta    = 1.0;
-
-          const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          const bool pstab  = true;
-          const bool supg   = true;
-          const bool cstab  = true;
-
-          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                  eleDofManager_, NumNode(), NodeIds());
+      const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(eleDofManager_, NumNode(), NodeIds());
           
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
@@ -327,35 +309,33 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           }
           else
 #endif
-          {
-          // calculate element coefficient matrix and rhs
-          COMBUST::callSysmat4(assembly_type,
-                  this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false);
-          }
-          break;
-      }
-      case store_xfem_info:
       {
-          // get access to global dofman
-          const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager",null);
-          if (globaldofman == null)
-            dserror("nope, I need a DofManager!");
-          
-          // create local copy of information about dofs
-          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
-          
-          eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
-          
-          // store pointer to interface handle
-          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          break;
+        // calculate element coefficient matrix and rhs
+        COMBUST::callSysmat4(assembly_type,this,ih_,eleDofManager_,mystate,ivelcol,iforcecol,elemat1,elevec1,actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false);
       }
-      default:
-        dserror("Unknown type of action for Combust3");
+    }
+    break;
+    case store_xfem_info:
+    {
+      // get access to global dofman
+      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager",null);
+      if (globaldofman == null)
+        dserror("nope, I need a DofManager!");
+
+      // create local copy of information about dofs
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
+
+      eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
+
+      // store pointer to interface handle
+      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+    }
+    break;
+    default:
+      dserror("Unknown type of action for Combust3");
   } // end of switch(act)
 
-  return 0;
+    return 0;
 } // end of DRT::ELEMENTS::Fluid3::Evaluate
 
 
@@ -367,10 +347,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           std::vector<int>&         lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                             DRT::Discretization&      discretization,
+                                             DRT::Condition&           condition,
+                                             std::vector<int>&         lm,
+                                             Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }

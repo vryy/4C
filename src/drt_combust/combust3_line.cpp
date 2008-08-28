@@ -14,10 +14,6 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust3.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 
 
 
@@ -25,13 +21,13 @@ Maintainer: Florian Henke
  |  ctor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3Line::Combust3Line(
-	const int id,
-	const int owner,
-	const int nnode,
-	const int* nodeids,
-	DRT::Node** nodes,
-	DRT::Element* parent,
-	const int lline) :
+    const int id,
+    const int owner,
+    const int nnode,
+    const int* nodeids,
+    DRT::Node** nodes,
+    DRT::Element* parent,
+    const int lline) :
 DRT::Element(id,element_combust3line,owner),
 parent_(parent),
 lline_(lline)

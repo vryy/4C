@@ -18,7 +18,6 @@ Maintainer: Florian Henke
 #ifndef COMBUST3_H
 #define COMBUST3_H
 
-#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
@@ -155,13 +154,7 @@ namespace DRT
         //@}
         
         //! @name Other
-        
-        //! do we have a moving fluid mesh or not
-        bool IsAle() const { return is_ale_; }
-        
-        //@}
-        
-        
+
       private:
         
         //! action parameters recognized by fluid3
@@ -230,8 +223,8 @@ namespace DRT
         //! map that converts strings to actions (stabilization)
         static map<string,StabilisationAction>          stabstrtoact_;
         
-        //! flag for euler/ale net algorithm
-        bool                                            is_ale_;
+//        //! flag for euler/ale net algorithm
+//        bool                                            is_ale_;
         //! container containing all kind of fluid3 this and that
         DRT::Container                                  data_;
         
@@ -252,8 +245,8 @@ namespace DRT
         void f3_int_beltrami_err(
             std::vector<double>&       myvelnp,
             std::vector<double>&       myprenp,
-            const struct _MATERIAL*     material,
-            ParameterList&    	  params
+            const struct _MATERIAL*    material,
+            ParameterList&             params
         );
         
         /*!
@@ -352,7 +345,7 @@ namespace DRT
          * 
          * Makes a deep copy of a Element
          */
-        Combust3Surface(const Combust3Surface& old);
+        explicit Combust3Surface(const Combust3Surface& old);
         
         DRT::Element* Clone() const;
         

@@ -23,7 +23,6 @@ Maintainer: Florian Henke
 #include "../drt_xfem/physics.H"
 
 
-//! support routines for the combust3 element
 namespace COMBUST
 {
   

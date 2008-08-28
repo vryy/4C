@@ -14,9 +14,6 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust3.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
 
 using namespace DRT::UTILS;
 
@@ -31,7 +28,6 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,element_combust3,owner),
-is_ale_(false),
 data_(),
 eleDofManager_()
 {
@@ -44,7 +40,6 @@ eleDofManager_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
-is_ale_(old.is_ale_),
 data_(old.data_),
 eleDofManager_(old.eleDofManager_)
 {
@@ -99,7 +94,7 @@ void DRT::ELEMENTS::Combust3::Pack(std::vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // is_ale_
-  AddtoPack(data,is_ale_);
+//  AddtoPack(data,is_ale_);
 
   // data_
   vector<char> tmp(0);
@@ -126,7 +121,7 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // is_ale_
-  ExtractfromPack(position,data,is_ale_);
+//  ExtractfromPack(position,data,is_ale_);
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

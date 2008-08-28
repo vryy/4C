@@ -13,18 +13,8 @@ Maintainer: Florian Henke
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 #include "combust3.H"
 #include "../drt_lib/drt_utils.H"
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h" // for use of frchk,...
-}
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
@@ -95,12 +85,14 @@ bool DRT::ELEMENTS::Combust3::ReadElement()
             strncmp(buffer,"ALE",3)==0 ||
             strncmp(buffer,"Ale",3)==0 )
         {
-            is_ale_ = true;
+//            is_ale_ = true;
         }
         else if (strncmp(buffer,"euler",5)==0 ||
                  strncmp(buffer,"EULER",5)==0 ||
                  strncmp(buffer,"Euler",5)==0 )
-            is_ale_ = false;
+        {
+//            is_ale_ = false;
+        }
         else
             dserror("Reading of Combust3 element failed: Euler/Ale\n");
     }

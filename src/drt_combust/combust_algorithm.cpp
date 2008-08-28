@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------*
+/*!-----------------------------------------------------------------------------------------------*
 \file combust_algorithm.cpp
 
 \brief base combustion algorithm
@@ -11,7 +11,7 @@ Maintainer: Florian Henke
             http://www.lnm.mw.tum.de
             089 - 289-15265
 </pre>
-*----------------------------------------------------------------------*/
+ *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "combust_algorithm.H"
@@ -24,14 +24,16 @@ Maintainer: Florian Henke
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn)
 :  ScaTraFluidCouplingAlgorithm(comm, combustdyn)
 {
-  /* Der constructor sollte den gesamten Algorithmus initialisiern.
-   * Das heisst:
+  /* Der constructor sollte den gesamten Algorithmus initialisiern. Zusammenfassend kann an sagen, 
+   * dass hier alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden müssen.
+   * 
+   * das heisst:
    * o G-Funktionsvektor (t und ig+1) auf initial value setzen
    * o Geschwindigkeitsvektor (t und iu+1) auf initial value setzen
    * o alle Zähler auf 0 setzen (step_(0), f_giter_(0), g_iter_(0), f_iter_(0))
    * o alle Normen und Grenzwerte auf 0 setzen
   */ 
-	
+
   // taking time loop control parameters out of fluid dynamics section
   // maximum simulation time
   //timemax_=combustdyn.get<double>("MAXTIME");
@@ -42,23 +44,23 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combust
   // maximum number of Fluid - G-function iterations
   fgitermax_ = combustdyn.get<int>("ITEMAX");
  
-  // set options for reinitialization; they should be read fro the parameter list
+  // set options for reinitialization; they should be read from the parameter list
   signeddistfunc = 1;
   reinitialize_action = 1; // reinitialize_action = signeddistfunc;
 
   // velocitynp_ ist nicht initialisiert!
 }
 
-/*----------------------------------------------------------------------*
- * destructor                                               henke 06/08 * 
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | destructor                                                                         henke 06/08 | 
+ *------------------------------------------------------------------------------------------------*/
 COMBUST::Algorithm::~Algorithm()
 {
 }
 
-/*----------------------------------------------------------------------*
- * public: time loop of combustion algorithm                henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | public: time loop of algorithm for dynamic combustion problem                      henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
 
@@ -111,9 +113,18 @@ void COMBUST::Algorithm::TimeLoop()
 return;
 } // TimeLoop()
 
-/*---------------------------------------------------------------------*
- *  protected: reinitialize G-function                     henke 06/08 *
- *---------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | public: algorithm for static combustion problem                                    henke 08/08 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::SolveStationaryProblem()
+{
+  dserror("Der Algorithmus für statische Verbrennungproblem kann noch nix!");
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ |  protected: reinitialize G-function                                                henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::ReinitializeGfunc()
 {
 	/* Here, the G-function is reinitialized, because we suspect that the
@@ -132,9 +143,9 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 	return;
 }
 
-/*---------------------------------------------------------------------*
- *  protected: build signed distance function              henke 06/08 *
- *---------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ |  protected: build signed distance function                                         henke 06/08 *
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::SignedDistFunc()
 {
 	/* This member function constructs a G-function field that meets the 
@@ -144,9 +155,9 @@ void COMBUST::Algorithm::SignedDistFunc()
 	return;
 }
 
-/*----------------------------------------------------------------------*
- *  protected: FGI iteration converged?                     henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ |  protected: FGI iteration converged?                                               henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 bool COMBUST::Algorithm::NotConvergedFGI()
 {
 	bool notconverged = false;
@@ -157,9 +168,9 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 	return notconverged; // return notconverged;
 }
 
-/*----------------------------------------------------------------------*
- * protected: prepare time step for combustion algorithm    henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | protected: prepare time step for combustion algorithm                              henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
@@ -184,9 +195,9 @@ void COMBUST::Algorithm::PrepareTimeStep()
   return;
 }
 
-/*----------------------------------------------------------------------*
- * protected: prepare time step for combustion algorithm    henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | protected: prepare time step for combustion algorithm                              henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareFGIteration()
 {
 	fgiter_ += 1;
@@ -197,9 +208,9 @@ void COMBUST::Algorithm::PrepareFGIteration()
 	}	
 }
 
-/*----------------------------------------------------------------------*
- * protected: perform a fluid time integration step         henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ * protected: perform a fluid time integration step                                   henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::DoFluidField()
 {
   // determine location of flame interface
@@ -215,9 +226,9 @@ void COMBUST::Algorithm::DoFluidField()
   return;
 }
 
-/*----------------------------------------------------------------------*
- * protected: perform a G-function time integration step    henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | protected: perform a G-function time integration step                              henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::DoGfuncField()
 {
   if (Comm().MyPID()==0)
@@ -244,18 +255,18 @@ void COMBUST::Algorithm::DoGfuncField()
   return;
 }
 
-/*----------------------------------------------------------------------*
- * protected: update                                        henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | protected: update                                                                  henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateFGIteration()
 {
 	// update the Fluid and the FGI vector at the end of the FGI loop
 	return;
 }
 
-/*----------------------------------------------------------------------*
- * protected: update                                        henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ * protected: update                                                                  henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
@@ -263,9 +274,9 @@ void COMBUST::Algorithm::UpdateTimeStep()
   return;
 }
 
-/*----------------------------------------------------------------------*
- * protected: output                                        henke 06/08 *
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | protected: output                                                                  henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::Output()
 {
   // Note: The order is important here! In here control file entries are

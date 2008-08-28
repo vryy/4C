@@ -23,9 +23,11 @@ Maintainer: Florian Henke
 #include "../drt_f3/fluid3_stabilization.H"
 #include "combust3_local_assembler.H"
 #include "combust3_interpolation.H"
+#include "../drt_geometry/coordinate_transformation.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
+#include "../drt_xfem/spacetime_boundary.H"
 
 //#include "combust3_shapefunction_handle.H"
 
@@ -183,12 +185,17 @@ static void SysmatDomain4(
     const int nsd = 3;
     
     // time integration constant
-    double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
     DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
+    // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
+//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+    
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
 
@@ -238,13 +245,35 @@ static void SysmatDomain4(
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        
+        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+        const int labelnp = ih->PositionWithinConditionNP(cellcenter);
+        const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+        bool compute = false;
+        if (labelnp == 0) // fluid
+        {
+          compute = true;
+        }
+        else if (xlabelset.size() > 1) // multiple interface labels
+        {
+          compute = true;
+        }
+        else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+        {
+          compute = true;
+        }
+        if (not compute)
+        {
+          continue;
+        }
+            
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
               ih,
               dofman.getUniqueEnrichments(),
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
            
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -291,7 +320,6 @@ static void SysmatDomain4(
             BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
-            //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
@@ -468,11 +496,130 @@ static void SysmatDomain4(
               }
             }
             
-            // get velocities (n+g,i) at integration point
+            // get velocities and accelerations at integration point
             const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
-            const BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
+            BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
             const BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp, numparamvelx);
-            const BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
+            BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
+            
+            
+            
+            GEO::PosX posx_gp;
+            GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
+            
+            bool is_in_fluid = false;
+            if (labelnp == 0)
+            {
+              is_in_fluid = true;
+            }
+            else
+            {
+              is_in_fluid = false;
+            }
+            
+            if (not is_in_fluid)
+            {
+              std::cout << "should I arrive here?" << std::endl;
+              continue;
+            }
+
+            bool was_in_fluid = false;
+            if (ih->PositionWithinConditionN(posx_gp) == 0)
+            {
+              was_in_fluid = true;
+            }
+            else
+            {
+              was_in_fluid = false;
+            }
+            
+            const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
+            
+            if (in_space_time_slab_area)
+            {
+              XFEM::SpaceTimeBoundaryCell slab;
+              BlitzVec3 rst;
+              
+              ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+              
+              const double delta_slab = -(rst(2)-1.0)*0.5;
+
+              if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
+              {
+                cout << rst(2) <<  "  " << delta_slab << endl;
+                cout << slab.toString() << endl << endl;
+                dserror("wrong value of delta_slab");
+              }
+//              theta_dt = theta_dt_pure;// * delta_slab;
+              
+              DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+              const int numnode_boundary = boundaryele->NumNode();
+              
+              BlitzVec3 iveln;
+              BlitzVec3 iaccn;
+              
+              if (ivelcoln.GlobalLength() > 3)
+              {
+                // get interface velocities at the boundary element nodes
+                BlitzMat veln_boundary(3,numnode_boundary*2);
+                BlitzMat accn_boundary(3,numnode_boundary*2);
+                if (numnode_boundary != 4)
+                  dserror("needs more generalizashun!");
+                const DRT::Node*const* nodes = boundaryele->Nodes();
+                
+                for (int inode = 0; inode < numnode_boundary; ++inode)
+                {
+                  const DRT::Node* node = nodes[inode];
+                  const std::vector<int> lm = ih->cutterdis()->Dof(node);
+                  std::vector<double> myvel(3);
+                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+                  veln_boundary(0,inode) = myvel[0];
+                  veln_boundary(1,inode) = myvel[1];
+                  veln_boundary(2,inode) = myvel[2];
+                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+                  veln_boundary(0,inode+4) = myvel[0];
+                  veln_boundary(1,inode+4) = myvel[1];
+                  veln_boundary(2,inode+4) = myvel[2];
+                  
+                  std::vector<double> myacc(3);
+                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+                  accn_boundary(0,inode) = myacc[0];
+                  accn_boundary(1,inode) = myacc[1];
+                  accn_boundary(2,inode) = myacc[2];
+                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+                  accn_boundary(0,inode+4) = myacc[0];
+                  accn_boundary(1,inode+4) = myacc[1];
+                  accn_boundary(2,inode+4) = myacc[2];
+                }
+//                cout << "veln_boundary: " << veln_boundary << endl;
+//                cout << "accn_boundary: " << accn_boundary << endl;
+                
+                BlitzVec funct_ST(numnode_boundary*2);
+                DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
+                iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+                iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+//                cout << "iveln " << iveln << endl;
+//                cout << "iaccn " << iaccn << endl;
+              }
+              else
+              {
+                iveln = 0.0;
+                iaccn = 0.0;
+              }
+              
+              //cout << "using space time boundary values " << ele->Id() << endl; 
+              gpveln(0) = iveln(0);
+              gpveln(1) = iveln(1);
+              gpveln(2) = iveln(2);
+              
+              gpaccn(0) = iaccn(0);
+              gpaccn(1) = iaccn(1);
+              gpaccn(2) = iaccn(2);
+            }
+            
+//            cout << gpvelnp << endl;
+//            cout << evelnp << endl;
+//            cout << shp << endl;
 
             // get history data (n) at integration point
 //            BlitzVec3 histvec;
@@ -483,7 +630,7 @@ static void SysmatDomain4(
 //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp(iparam);
 //            }
-            BlitzVec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+            const BlitzVec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
@@ -713,11 +860,6 @@ static void SysmatDomain4(
                 const double xi_tau_c = min(re_tau_mp, 1.0);
                 tau_stab_C = 0.5*vel_norm*hk*xi_tau_c;
             }
-            
-            // stabilisation parameter
-            const double tau_M  = fac*tau_stab_M;
-            const double tau_Mp = fac*tau_stab_Mp;
-            const double tau_C  = fac*tau_stab_C;
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -1021,7 +1163,7 @@ static void SysmatDomain4(
             //                 PRESSURE STABILISATION PART
             if(pstab)
             {
-                const double timetauMp  = timefac * tau_Mp;
+                const double timetauMp  = timefac * tau_stab_Mp * fac;
                 if (instationary)
                 {
                     /* pressure stabilisation: inertia */
@@ -1036,7 +1178,7 @@ static void SysmatDomain4(
                     assembler.template Matrix<Pres,Vely>(shp_dy, timetauMp, shp);
                     assembler.template Matrix<Pres,Velz>(shp_dz, timetauMp, shp);
                 }
-                const double ttimetauMp = timefac * timefac * tau_Mp;
+                const double ttimetauMp = timefac * timefac * tau_stab_Mp * fac;
                 /* pressure stabilisation: convection, convective part */
                 /*
                           /                             \
@@ -1114,7 +1256,7 @@ static void SysmatDomain4(
             //                     SUPG STABILISATION PART
             if(supg)
             {
-                const double timetauM   = timefac * tau_M;
+                const double timetauM   = timefac * tau_stab_M * fac;
                 if (instationary)
                 {
                     /* supg stabilisation: inertia  */
@@ -1151,7 +1293,7 @@ static void SysmatDomain4(
                         assembler.template Matrix<Velz,Velz>(shp_dz, timetauM*gpvelnp(2), shp);
                     }
                 }
-                const double ttimetauM  = timefac * timefac * tau_M;
+                const double ttimetauM  = timefac * timefac * tau_stab_M * fac;
                 /* supg stabilisation: convective part ( L_conv_u) */
                 /*
                      /                                          \
@@ -1313,7 +1455,7 @@ static void SysmatDomain4(
             //                     STABILISATION, CONTINUITY PART
             if(cstab)
             {
-                const double timefac_timefac_tau_C=timefac*timefac*tau_C;
+                const double timefac_timefac_tau_C=timefac*timefac*tau_stab_C * fac;
                 const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
                 /* continuity stabilisation on left hand side */
                 /*
@@ -1383,14 +1525,14 @@ static void SysmatBoundary4(
       const int nsd = 3;
       
       // time integration constant
-      double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+      const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
       
       // number of nodes for element
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+      //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
       //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
@@ -1537,7 +1679,6 @@ static void SysmatBoundary4(
             
             if (dofman.getUniqueEnrichments().size() > 1)
               dserror("for an intersected element, we assume only 1 enrichment for now!");
-            
             const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                   ih,
                   dofman.getUniqueEnrichments(),
@@ -1610,7 +1751,7 @@ static void SysmatBoundary4(
             for (int isd = 0; isd < nsd; ++isd)
             {
                 gpvelnp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparampres; ++iparam)
+                for (int iparam = 0; iparam < numparamvelx; ++iparam)
                     gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
             }
             
@@ -1806,8 +1947,7 @@ static void Sysmat4(
 
 /*!
  * \brief entry point for Sysmat call
- * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
- * This is the point.
+
  */
 void COMBUST::callSysmat4(
         const XFEM::AssemblyType          assembly_type,
@@ -1849,10 +1989,15 @@ void COMBUST::callSysmat4(
 //                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
 //                        material, time, timefac, newton, pstab, supg, cstab, instationary);
 //                break;
-//            case DRT::Element::tet4:
+            case DRT::Element::tet4:
+                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                break;
+//            case DRT::Element::tet10:
 //                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
 //                break;
             default:
                 dserror("Sysmat not templated yet");

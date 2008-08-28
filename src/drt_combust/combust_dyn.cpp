@@ -100,21 +100,22 @@ void combust_dyn()
   Epetra_MpiComm comm(MPI_COMM_WORLD);
 #else
   Epetra_SerialComm comm;
-#endif	
+#endif
 
-  // print COMBUST-Logo on screen
+  /*----------------------------------------------------------------------------------------------*
+   * print COMBUST-Logo on screen
+   *----------------------------------------------------------------------------------------------*/
   if (comm.MyPID()==0) COMBUST::printlogo();
 
-  // -------------------------------------------------------------------
-  // prepare the discretizations
-  // -------------------------------------------------------------------
-
+  /*----------------------------------------------------------------------------------------------*
+   * create G-function discretization and set degrees of freedom in fluid and gfunc discretization
+   *----------------------------------------------------------------------------------------------*/
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
   int disnumgff = genprob.numscatra; // discretization number G-function; typically 1
-  // remark: precisely here the convection-diffusion discretization 
-  // (genprob.numscatra) is called and named according to its meaning 
-  // in the combustion context, namely the G-function (disnumgff)
+  /* remark: precisely here the ScaTra discretization (genprob.numscatra) is named according to its 
+   * physical meaning in the combustion context, (namely the G-function (disnumgff)).
+   * -> Here ScaTra becomes Combustion! */
   
   // access fluid discretization
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -135,53 +136,63 @@ void combust_dyn()
     //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
     SCATRA::CreateScaTraDiscretization(fluiddis,gfuncdis,conditions_to_copy,false);
     if (comm.MyPID()==0)
-    cout<<"Created G-function discretization from fluid discretization in...."
-    <<time.ElapsedTime() << " secs\n\n";
+      cout<<"Created G-function discretization from fluid discretization in...."
+          <<time.ElapsedTime() << " secs\n\n";
   }
   else
-    dserror("G-function discretization is not empty. Fluid and G-function already present. This is not supported.");
+    dserror("G-function discretization is not empty. Fluid and G-function already present!");
 
-  
-/*  const int fmyrank = fluiddis->Comm().MyPID();
- *  std::cout << "FluidProc: " << fmyrank << endl;
- * flush(cout);
- * const int smyrank = soliddis->Comm().MyPID();
- * std::cout << "SolidProc: " << smyrank << endl;
- * flush(cout);
- * //cout << *soliddis;
- */
-  
- // -------------------------------------------------------------------
- // set degrees of freedom in the discretization
- // -------------------------------------------------------------------
-//  if (!fluiddis->Filled()) fluiddis->FillComplete();
-//  if (!gfuncdis->Filled()) gfuncdis->FillComplete();
-  
+  /*----------------------------------------------------------------------------------------------*
+   * create a combustion algorithm
+   *----------------------------------------------------------------------------------------------*/
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
-  // create an COMBUST::Algorithm instance
-  /* Muss das nicht eigentlich combust_ heissen? Wegen Konvention   henke 07/08*/
-    Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
+  // create a COMBUST::Algorithm instance
+  Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      combust->ReadRestart(genprob.restart);
-    }
-    
-    // solve the whole combustion problem
-    combust->TimeLoop();
+  // what exactly does this do?
+  if (genprob.restart)
+  {
+    // read the restart information, set vectors and variables
+    combust_->ReadRestart(genprob.restart);
+  }
+  /*----------------------------------------------------------------------------------------------*
+   * switch over the different time integration schemes
+   *----------------------------------------------------------------------------------------------*/
+  FLUID_TIMEINTTYPE timeintscheme = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(combustdyn,"TIMEINTEGR");
 
-    // summarize the performance measurements
-    Teuchos::TimeMonitor::summarize();
+  if (timeintscheme == timeint_one_step_theta)
+  {
+    // solve a dynamic combustion problem
+    combust_->TimeLoop();
+    /* Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der combustion 
+     * Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
+     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat.*/
+  }
+  else if (timeintscheme == timeint_stationary)
+  {
+    // solve a static combustion problem
+    combust_->SolveStationaryProblem();
+  }
+  else
+  {
+    // error: impossible, every time integration scheme is static or dynamic
+    dserror("the combustion module can not handle this time integration scheme");
+  }
 
-    // perform the result test
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(combust->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(combust->CreateScaTraFieldTest());
-    testmanager.TestAll();
+  /*----------------------------------------------------------------------------------------------*
+   * validate the results
+   *----------------------------------------------------------------------------------------------*/
+  // summarize the performance measurements
+  Teuchos::TimeMonitor::summarize();
 
-    return;
+  // perform the result test
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(combust_->FluidField().CreateFieldTest());
+  testmanager.AddFieldTest(combust_->CreateScaTraFieldTest());
+  testmanager.TestAll();
 
-} // combust_dyn()  
+  return;
+
+} // combust_dyn()
 
 #endif  // #ifdef CCADISCRET
