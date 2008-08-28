@@ -37,19 +37,19 @@ public:
 	
 };
 
-//calculates distance between two 3-dim vectors
+//! calculates distance between two 3-dim vectors
 double distance3d(vector<double>,vector<double>);
-//calculates difference of two 3-dim vectors
+//! calculates difference of two 3-dim vectors
 vector<double> substract3d(vector<double>,vector<double>);
-//calculates sum of two 3-dim vectors
+//! calculates sum of two 3-dim vectors
 vector<double> add3d(vector<double>,vector<double>);
-//calculates cross product of two 3-dim vectors
+//! calculates cross product of two 3-dim vectors
 vector<double> cross_product3d(vector<double>,vector<double>);
-//normalizes a vector
+//! normalizes a vector
 void normalize3d(vector<double>&);
-//creates local coordinate systems for each element and returns resulting map
+//! creates local coordinate systems for each element and returns resulting map
 map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&);
-//creates local coordinate systems for each element and creates gmsh-file for visualizing
+//! creates local coordinate systems for each element and creates gmsh-file for visualizing
 void PlotCosys(EXODUS::Centerline&,const EXODUS::Mesh&,const vector<int>&);
 
 }// of namespace EXODUS

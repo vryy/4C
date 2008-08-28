@@ -31,13 +31,13 @@ using namespace Teuchos;
 
 namespace EXODUS
 {
-// differentiate between underlying mesh entity
+//! differentiate between underlying mesh entity
 enum mesh_entity{bceb,bcns,bcss};
 
-// differentiate between corresponding condition_type
+//! differentiate between corresponding condition_type
 enum cond_type{element,dvol,dsurf,dline,dpoint,empty,invalid};
 
-// this is what fully defines a baci element
+//! this is what fully defines a baci element
 struct elem_def{
   int id;                     // refering to mesh_entity id of eb,ns,ss
   mesh_entity me;             // refering to underlying mesh entity
@@ -46,7 +46,7 @@ struct elem_def{
   string ename;               // FLUID3,SOLIDSH8,etc
 };
 
-// this is what fully defines a baci condition
+//! this is what fully defines a baci condition
 struct cond_def{
   int id;                     // refering to mesh_entity id of eb,ns,ss
   mesh_entity me;             // refering to underlying mesh entity
