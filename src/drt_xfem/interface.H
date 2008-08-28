@@ -156,10 +156,11 @@ private:
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
     
+    //! from surface element, create 3d volume space-time cells
     void GenerateSpaceTimeLayer(
         const Teuchos::RCP<DRT::Discretization>  cutterdis,   ///< discretization with boundary elements
-        const std::map<int,BlitzVec3>&           cutterposnp,
-        const std::map<int,BlitzVec3>&           cutterposn
+        const std::map<int,BlitzVec3>&           cutterposnp, ///< nodal displacements at n+1
+        const std::map<int,BlitzVec3>&           cutterposn   ///< nodal displacements at n
     );
   
     //! intersected domain
