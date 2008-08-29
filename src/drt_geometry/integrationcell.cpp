@@ -19,11 +19,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
-//! little helper function
+//! translate between std::vector and blitz array
 template <int dim>
 static BlitzMat ConvertPosArrayToBlitz(
-        const vector<vector<double> >&         pos_array,
-        const DRT::Element::DiscretizationType distype
+        const std::vector<std::vector<double> >&   pos_array,
+        const DRT::Element::DiscretizationType     distype
         )
 {
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
@@ -39,9 +39,7 @@ static BlitzMat ConvertPosArrayToBlitz(
 }
 
 
-/*!
- * \brief create array with physical coordinates based an local coordinates of a parent element
- */
+//! create array with physical coordinates based an local coordinates of a parent element
 template<class Cell>
 static void ComputePhysicalCoordinates(
         const DRT::Element&  ele,  ///< parent element
@@ -81,10 +79,8 @@ static void ComputePhysicalCoordinates(
     return;
 }
 
-
-//
-//  ctor
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::IntCell::IntCell(
         const DRT::Element::DiscretizationType distype) :
             distype_(distype)
@@ -93,7 +89,6 @@ GEO::IntCell::IntCell(
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 GEO::IntCell::IntCell(
         const IntCell& old) : 
@@ -102,21 +97,19 @@ GEO::IntCell::IntCell(
     return;   
 }
  
-//
-// Print method
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::string GEO::IntCell::toString() const
 {
   return "";
 }
 
 
-//
-//  ctor
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
-        const vector< vector<double> >& domainCoordinates) :
+        const std::vector< std::vector<double> >& domainCoordinates) :
             IntCell(distype),
             nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype))
 {
@@ -124,9 +117,8 @@ GEO::DomainIntCell::DomainIntCell(
 }
 
 
-//
-//  ctor
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const BlitzMat&                        domainCoordinates) :
@@ -137,9 +129,8 @@ GEO::DomainIntCell::DomainIntCell(
 }
 
         
-//
-//  ctor for dummy cells
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
@@ -149,7 +140,6 @@ GEO::DomainIntCell::DomainIntCell(
 }
         
 /*----------------------------------------------------------------------*
- |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
@@ -158,16 +148,18 @@ GEO::DomainIntCell::DomainIntCell(
 {
     return;   
 }
-     
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::string GEO::DomainIntCell::toString() const
 {
     std::stringstream s;
     s << "DomainIntCell" << endl;
     s << nodalpos_xi_domain_blitz_ << endl;
-//    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
+//    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";
-//        MPFOREACH(vector<double>, val, coordinate)
+//        MPFOREACH(std::vector<double>, val, coordinate)
 //        {
 //            s << *val << " ";
 //        };
@@ -222,9 +214,8 @@ BlitzMat GEO::DomainIntCell::GetDefaultCoordinates(
     return coords;
 }
 
-//
-// return the center of the cell in physical coordinates
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
@@ -261,14 +252,13 @@ BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
 }
 
 
-//
-//  ctor
-//
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
-        const vector< vector<double> >&           domainCoordinates,
-        const vector< vector<double> >&           boundaryCoordinates) :
+        const std::vector< std::vector<double> >&           domainCoordinates,
+        const std::vector< std::vector<double> >&           boundaryCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
             nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype)),
@@ -286,9 +276,9 @@ GEO::BoundaryIntCell::BoundaryIntCell(
     return;
 }
 
-//
-//  ctor
-//
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
@@ -308,7 +298,6 @@ GEO::BoundaryIntCell::BoundaryIntCell(
         
         
 /*----------------------------------------------------------------------*
- |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
@@ -325,10 +314,10 @@ std::string GEO::BoundaryIntCell::toString() const
     std::stringstream s;
     s << "BoundaryIntCell" << endl;
     s << nodalpos_xi_domain_blitz_ << endl;
-//    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
+//    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";
-//        MPFOREACH(vector<double>, val, coordinate)
+//        MPFOREACH(std::vector<double>, val, coordinate)
 //        {
 //            s << *val << " ";
 //        };

@@ -262,7 +262,25 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /// calculate lift&drag forces and angular momenta
+  /// calculate lift&drag forces and angular moments
+  /*!
+  Lift and drag forces are based upon the right hand side true-residual entities
+  of the corresponding nodes. The contribution of the end node of a line is entirely
+  added to a present L&D force.
+
+  Idea of this routine:
+
+  create
+
+  map< label, std::set<DRT::Node*> >
+
+  which is a set of nodes to each L&D Id
+  nodal forces of all the nodes within one set are added to one L&D force
+
+  Notice: Angular moments obtained from lift&drag forces currently refer to the
+          initial configuration, i.e. are built with the coordinates X of a particular
+          node irrespective of its current position.
+  */
   void LiftDrag() const;
 
   /// integrate shape functions at nodes marked by condition

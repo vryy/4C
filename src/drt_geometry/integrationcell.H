@@ -86,7 +86,7 @@ public:
     //! Standard Constructor
     explicit DomainIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
-            const vector<vector<double> >&          domainCoordinates   ///< coordinates in parent element coordinates
+            const std::vector<std::vector<double> >&          domainCoordinates   ///< coordinates in parent element coordinates
             );
 
     //! Standard Constructor
@@ -175,8 +175,8 @@ public:
     explicit BoundaryIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< shape of the integration cell
             const int                               surface_ele_gid,    ///< global id of the boundary element (cutter)
-            const vector<vector<double> >&          domainCoordinates,  ///< coordinates of the integrationcell in xsi_domain
-            const vector<vector<double> >&          boundaryCoordinates ///< coordinates of the integrationcell in xsi_boundary
+            const std::vector<std::vector<double> >&          domainCoordinates,  ///< coordinates of the integrationcell in xsi_domain
+            const std::vector<std::vector<double> >&          boundaryCoordinates ///< coordinates of the integrationcell in xsi_boundary
             );
 
     //! Standard Constructor

@@ -38,35 +38,14 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of length numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
+extern struct _GENPROB  genprob;
+extern struct _FILES    allfiles;
 extern struct _SOLVAR  *solv;
 
 
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
   std::cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
@@ -90,8 +69,13 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
+  cout << "fillcomplete ...";
+  flush(cout);
   if (!soliddis->Filled()) soliddis->FillComplete();
   if (!fluiddis->Filled()) fluiddis->FillComplete();
+  cout << "done" << endl;
+  
+  flush(cout);
 
   // -------------------------------------------------------------------
   // context for output and restart
