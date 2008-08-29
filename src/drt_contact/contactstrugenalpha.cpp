@@ -73,7 +73,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -213,7 +213,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-    
+
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -251,13 +251,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 #endif
     discret_.ClearState();
 
-    if (surf_stress_man_!=null)
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      p.set("newstep", true);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-    }
-
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -286,7 +279,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     // add mid-inertial force
     mass_->Multiply(false,*accm_,*finert_);
     fresm_->Update(1.0,*finert_,0.0);
-    
+
     // add mid-viscous damping force
     if (damping)
     {
@@ -412,7 +405,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
@@ -459,7 +452,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-    
+
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
   accn_->Update(1.0,*acc_,0.0);
@@ -512,13 +505,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
     discret_.ClearState();
-
-    if (surf_stress_man_!=null)
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      p.set("newstep", true);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-    }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -779,7 +765,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-        
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -814,12 +800,6 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-
-      if (surf_stress_man_!=null)
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -890,7 +870,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     // (again without contact, this is just Gen-alpha stuff here)
     if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
     else
-    { 
+    {
 #ifdef STRUGENALPHA_BE
       stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
@@ -1011,7 +991,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1115,7 +1095,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-        
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -1150,12 +1130,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-
-      if (surf_stress_man_!=null)
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -1350,7 +1324,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
 
   const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   string iostress      = params_.get<string>("io structural stress"   ,"none");
   string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
@@ -1375,14 +1349,14 @@ void CONTACT::ContactStruGenAlpha::Update()
   //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
   //                     - alpham/(1.-alpham) * A_n
   acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
-  
+
   // zerofy velocity and acceleration in case of statics
   if (dynkindstat)
   {
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
-  
+
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
@@ -1475,11 +1449,6 @@ void CONTACT::ContactStruGenAlpha::Update()
   }
 #endif
 
-  //----------------- update surface stress history variables if present
-  if (surf_stress_man_!=null)
-  {
-    surf_stress_man_->Update();
-  }
 } // ContactStruGenAlpha::Update()
 
 
@@ -1529,16 +1498,6 @@ void CONTACT::ContactStruGenAlpha::Output()
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
     output_.WriteVector("lagrmultold",zold);
     output_.WriteVector("activetoggle",activetoggle);
-
-    if (surf_stress_man_!=null)
-    {
-      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A,con);
-      output_.WriteVector("Aold", A);
-      output_.WriteVector("conquot", con);
-    }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
@@ -1814,7 +1773,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // END: options for primal-dual active set strategy (PDASS)
     //********************************************************************
   }
-    
+
   // other types of nonlinear iteration schemes
   else dserror("Unknown type of equilibrium iteration");
 
@@ -1866,26 +1825,6 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
-
-  if (surf_stress_man_!=null)
-  {
-    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A_old, "Aold");
-    reader.ReadVector(con_quot, "conquot");
-    surf_stress_man_->SetHistory(A_old,con_quot);
-  }
-
-  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","multi_readrestart");
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
 
   return;
 } // void ContactStruGenAlpha::ReadRestart()

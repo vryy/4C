@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_impl.cpp
-\brief Implicit time integration for spatial discretised 
+\brief Implicit time integration for spatial discretised
        structural dynamics
 
 <pre>
@@ -281,15 +281,15 @@ void STR::TimIntImpl::Predict()
 }
 
 /*----------------------------------------------------------------------*/
-/* predict solution as constant displacements, velocities 
+/* predict solution as constant displacements, velocities
  * and accelerations */
 void STR::TimIntImpl::PredictConstDisVelAcc()
 {
   // constant predictor
   disn_->Update(1.0, *(*dis_)(0), 0.0);
   veln_->Update(1.0, *(*vel_)(0), 0.0);
-  accn_->Update(1.0, *(*acc_)(0), 0.0);  
-  
+  accn_->Update(1.0, *(*acc_)(0), 0.0);
+
   // see you next time step
   return;
 }
@@ -311,13 +311,13 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
     ParameterList p;
     p.set("surfstr_man", surfstressman_);
 
-    surfstressman_->EvaluateSurfStress(p, dis, fint, stiff);
+    surfstressman_->EvaluateSurfStress(p, dis, disn_, fint, stiff);
   }
 
   // bye bye
   return;
 }
-      
+
 /*----------------------------------------------------------------------*/
 /* evaluate _certain_ potential forces and stiffness
  * evaluation happens internal-force like */
@@ -394,7 +394,7 @@ bool STR::TimIntImpl::Converged()
             or (normfres_/normcharforce_ < tolfres_) );
     break;
   case convcheck_relres_and_absdis:
-    fdc = ( (normdisi_ < toldisi_) 
+    fdc = ( (normdisi_ < toldisi_)
             and (normfres_/normcharforce_ < tolfres_) );
     break;
   case convcheck_relres_or_reldis:
@@ -457,7 +457,7 @@ void STR::TimIntImpl::NewtonFull()
   // the specific time integration has set the following
   // --> On #fres_ is the negative force residuum
   // --> On #stiff_ is the effective dynamic stiffness matrix
-  
+
   // check whether we have a sanely filled stiffness matrix
   if (not stiff_->Filled())
   {
@@ -479,7 +479,7 @@ void STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 
+    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                    zeros_, dirichtoggle_);
 
     // solve for disi_
@@ -587,7 +587,7 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
       std::cout << "Constraint error for computed displacement: " << normcon_
                 << std::endl;
     }
-    
+
     // increment loop counter
     uziter += 1;
   }
@@ -602,12 +602,12 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 void STR::TimIntImpl::UzawaLinearNewtonFull()
 {
   // allocate additional vectors and matrices
-  Teuchos::RCP<LINALG::SparseMatrix> conmatrix 
+  Teuchos::RCP<LINALG::SparseMatrix> conmatrix
     = Teuchos::rcp(new LINALG::SparseMatrix(*(conman_->GetConstrMatrix())));
-  Teuchos::RCP<Epetra_Vector> conrhs 
+  Teuchos::RCP<Epetra_Vector> conrhs
     = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
-  
-  Teuchos::RCP<Epetra_Vector> lagrincr 
+
+  Teuchos::RCP<Epetra_Vector> lagrincr
     = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
 
   // check whether we have a sanely filled stiffness matrix
@@ -638,7 +638,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     lagrincr->PutScalar(0.0);
     // Call Uzawa algorithm to solve system with zeros on diagonal
     uzawasolv_->Solve(stiff_, conmatrix,
-                      disi_, lagrincr, 
+                      disi_, lagrincr,
                       fres_, conrhs);
 
     // update Lagrange multiplier
@@ -729,15 +729,15 @@ void STR::TimIntImpl::PrintPredictor()
     if ( (itercnvchk_ != convcheck_absres_or_absdis)
          and (itercnvchk_ != convcheck_absres_or_absdis) )
     {
-      std::cout << "Predictor scaled res-norm " 
-                << normfres_/normcharforce_ 
+      std::cout << "Predictor scaled res-norm "
+                << normfres_/normcharforce_
                 << std::endl;
     }
     // absolute check of force residual
     else
     {
-      std::cout << "Predictor absolute res-norm " 
-                << normfres_ 
+      std::cout << "Predictor absolute res-norm "
+                << normfres_
                 << std::endl;
     }
     // print it, now
@@ -789,31 +789,31 @@ void STR::TimIntImpl::PrintNewtonIterText
   // relative residual forces AND displacements
   case convcheck_relres_and_reldis:
   case convcheck_relres_or_reldis:
-    oss << " rel-res-norm " 
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+    oss << " rel-res-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_/normcharforce_
         << " rel-dis-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normdisi_/normchardis_;
     break;
   // relative residual forces
   case convcheck_relres_and_absdis:
   case convcheck_relres_or_absdis:
-    oss << " rel-res-norm " 
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+    oss << " rel-res-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_/normcharforce_
-        << " abs-dis-norm " 
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << " abs-dis-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normdisi_;
     break;
   // absolute forces and displacements
   case convcheck_absres_and_absdis:
   case convcheck_absres_or_absdis:
     oss << " abs-res-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_
-        << " abs-dis-norm " 
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << " abs-dis-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normdisi_;
     break;
   default:
@@ -824,8 +824,8 @@ void STR::TimIntImpl::PrintNewtonIterText
   // add constraint norm
   if (conman_->HaveConstraint())
   {
-    oss << " abs-constr-norm " 
-        << std::setw(10) << std::setprecision(5) << std::scientific 
+    oss << " abs-constr-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
         << normcon_;
   }
 
@@ -954,9 +954,9 @@ void STR::TimIntImpl::PrintStepText
 void STR::TimIntImpl::SetSurfaceFSI
 (
   const LINALG::MapExtractor* fsisurface  //!< the FSI surface
-) 
-{ 
-  fsisurface_ = fsisurface; 
+)
+{
+  fsisurface_ = fsisurface;
 }
 
 /*----------------------------------------------------------------------*/
@@ -995,7 +995,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, 
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                  zeros_, dirichtoggle_);
 
   // solve for #disi_

@@ -54,11 +54,14 @@ public:
     due to interfacial energy
 
     \param p (in): parameter list
+    \param dism (in): displacements (n+1-alphaf)
+    \param disn (in): displacements (n+1)
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
   */
   void EvaluateSurfStress(ParameterList& p,
-                          RefCountPtr<Epetra_Vector> disp,
+                          RefCountPtr<Epetra_Vector> dism,
+                          RefCountPtr<Epetra_Vector> disn,
                           RefCountPtr<Epetra_Vector> fint,
                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
@@ -72,8 +75,14 @@ public:
     vectors used for calculations are exported to row map based ones
     needed for writing.
   */
-  void GetHistory(RCP<Epetra_Vector> A_old_row,
-                  RCP<Epetra_Vector> con_quot_row);
+  void GetHistory(RCP<Epetra_Vector> A_last_row,
+                  RCP<Epetra_Vector> con_last_row,
+                  RCP<Epetra_Vector> gamma_last_row)
+  {
+    LINALG::Export(*A_last_, *A_last_row);
+    LINALG::Export(*con_last_, *con_last_row);
+    LINALG::Export(*gamma_last_, *gamma_last_row);
+  }
 
   /*!
     \brief get row map of surface elements
@@ -85,10 +94,13 @@ public:
     based vectors written in case of restart are exported to column
     based ones needed for calculations again.
   */
-  void SetHistory(RCP<Epetra_Vector> A_old, RCP<Epetra_Vector> con_quot)
+  void SetHistory(RCP<Epetra_Vector> A_last,
+                  RCP<Epetra_Vector> con_last,
+                  RCP<Epetra_Vector> gamma_last)
   {
-    LINALG::Export(*A_old, *A_old_);
-    LINALG::Export(*con_quot, *con_quot_);
+    LINALG::Export(*A_last, *A_last_);
+    LINALG::Export(*con_last, *con_last_);
+    LINALG::Export(*gamma_last, *gamma_last_);
   }
 
   /*!
@@ -96,9 +108,11 @@ public:
     stiffnesses due to interfacial phenomena
 
     \param curvenum (in): number of time curve
-    \param A (in): current interfacial area
-    \param Adiff (in): first partial derivatives of surface area
-    \param Adiff2 (in): second partial derivatives of surface area
+    \param A (in): current interfacial area at (n+1-alphaf)
+    \param Adiff (in): first partial derivatives of surface area at (n+1-alphaf)
+    \param Adiff2 (in): second partial derivatives of surface area at (n+1-alphaf)
+    \param A (in): current interfacial area at (n+1)
+    \param Adiff (in): first partial derivatives of surface area at (n+1)
     \param fint (out): element internal force vector
     \param stiff (out): element stiffness matrix
     \param ID (in): ID of surface condition
@@ -116,12 +130,14 @@ public:
     \param con_quot_max (in): maximum surfactant concentration
     \param con_quot_eq (in): equilibrium surfactant concentration
     \param alphaf (in): generalized-alpha parameter alphaf
-    \param update (in): flag for update or calculation phase
+    \param newstep (in): flag for new time step
   */
   void StiffnessAndInternalForces(const int curvenum,
                                   const double& A,
-                                  const Epetra_SerialDenseVector& Adiff,
-                                  const Epetra_SerialDenseMatrix& Adiff2,
+                                  const RCP<Epetra_SerialDenseVector> Adiff,
+                                  const RCP<Epetra_SerialDenseMatrix> Adiff2,
+                                  const double& Anew,
+                                  const RCP<Epetra_SerialDenseVector> Adiffnew,
                                   Epetra_SerialDenseVector& fint,
                                   Epetra_SerialDenseMatrix& stiff,
                                   const int ID,
@@ -145,10 +161,7 @@ public:
     \brief Surfactant model equations
 
     \param ID (in): ID of surface condition
-    \param gamma (out): current surface stress
     \param dgamma (out): current derivative of surface stress
-    \param A_old (in): surface area of last time step
-    \param A_new (in): current surface area
     \param dt (in): timestep size
     \param k1xC (in): adsorption coefficient times bulk concentration
     \param k2 (in): desorption coefficient
@@ -158,9 +171,10 @@ public:
     \param gamma_min (in): minimum surface stress
     \param gamma_min_eq (in): minimum equilibrium surface stress
     \param con_quot_max (in) maximum surfactant concentration
+    \param alphaf (in): generalized-alpha parameter alphaf
+    \param update (in): flag for new time step
   */
   void SurfactantModel(const int ID,
-                       double& gamma,
                        double& dgamma,
                        const double dt,
                        double k1xC,
@@ -189,17 +203,23 @@ private:
   // row map of surfaces
   RCP<Epetra_Map> surfrowmap_;
 
-  // surface areas of former iteration (n+1)^i
-  RefCountPtr<Epetra_Vector> A_old_temp_;
+  // current surface areas (n+1)^i
+  RefCountPtr<Epetra_Vector> A_current_;
 
   // surface areas of former time step (n)
-  RefCountPtr<Epetra_Vector> A_old_;
+  RefCountPtr<Epetra_Vector> A_last_;
 
-  // non-dimensionalized surfactant concentrations of former iteration
-  RefCountPtr<Epetra_Vector> con_quot_temp_;
+  // current non-dimensionalized surfactant concentrations (n+1)^i
+  RefCountPtr<Epetra_Vector> con_current_;
 
-  // non-dimensionalized surfactant concentrations of former time step
-  RefCountPtr<Epetra_Vector> con_quot_;
+  // non-dimensionalized surfactant concentrations of former time step (n)
+  RefCountPtr<Epetra_Vector> con_last_;
+
+  // current surface stresses (n+1)^i
+  RefCountPtr<Epetra_Vector> gamma_current_;
+
+  // surface stresses of former time step (n)
+  RefCountPtr<Epetra_Vector> gamma_last_;
 
   //@}
 }; //class

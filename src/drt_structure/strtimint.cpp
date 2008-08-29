@@ -34,7 +34,7 @@ enum STR::TimInt::DampEnum STR::TimInt::MapDampStringToEnum
   {
     return damp_none;
   }
-  else if ( (name == "yes") or (name == "Yes") or (name ==  "YES") 
+  else if ( (name == "yes") or (name == "Yes") or (name ==  "YES")
             or (name == "Rayleigh") )
   {
     return damp_rayleigh;
@@ -170,7 +170,7 @@ STR::TimInt::TimInt
   output_(output),
   printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
   printscreen_(true),  // ADD INPUT PARAMETER
-  errfile_(xparams.get<FILE*>("err file")), 
+  errfile_(xparams.get<FILE*>("err file")),
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
@@ -221,7 +221,7 @@ STR::TimInt::TimInt
   }
 
 
-  // time state 
+  // time state
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
   step_ = 0;
@@ -287,14 +287,14 @@ STR::TimInt::TimInt
   }
 
   // initialize constraint manager
-  conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_, 
-                                                  (*dis_)(0), 
+  conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_,
+                                                  (*dis_)(0),
                                                   sdynparams));
   // initialize Uzawa solver
-  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(discret_, 
-                                                   *solver_, 
+  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(discret_,
+                                                   *solver_,
                                                    dirichtoggle_,
-                                                   invtoggle_, 
+                                                   invtoggle_,
                                                    sdynparams));
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
@@ -309,8 +309,8 @@ STR::TimInt::TimInt
       surfstressman_ = rcp(new DRT::SurfStressManager(*discret_));
     }
   }
-  
-  // Check for potential conditions 
+
+  // Check for potential conditions
   {
     vector<DRT::Condition*> potentialcond(0);
     discret_->GetCondition("Potential",potentialcond);
@@ -333,9 +333,9 @@ STR::TimInt::TimInt
 void STR::TimInt::DetermineMassDampConsistAccel()
 {
   // temporary force vectors in this routine
-  Teuchos::RCP<Epetra_Vector> fext 
+  Teuchos::RCP<Epetra_Vector> fext
     = LINALG::CreateVector(*dofrowmap_, true); // external force
-  Teuchos::RCP<Epetra_Vector> fint 
+  Teuchos::RCP<Epetra_Vector> fint
     = LINALG::CreateVector(*dofrowmap_, true); // internal force
 
   // overwrite initial state vectors with DirichletBCs
@@ -343,7 +343,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
   // get external force
   ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
-  
+
   // initialise matrices
   stiff_->Zero();
   mass_->Zero();
@@ -385,7 +385,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   //   - surface stress forces
   //   - potential forces
   {
-    Teuchos::RCP<Epetra_Vector> rhs 
+    Teuchos::RCP<Epetra_Vector> rhs
       = LINALG::CreateVector(*dofrowmap_, true);
     if (damping_ == damp_rayleigh)
     {
@@ -415,7 +415,7 @@ void STR::TimInt::ApplyDirichletBC
   // needed parameters
   ParameterList p;
   p.set("total time", time);  // target time
-  
+
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
   discret_->ClearState();
@@ -443,9 +443,9 @@ void STR::TimInt::ResetStep()
   {
     // create the parameters for the discretization
     ParameterList p;
-    p.set("action", "calc_struct_reset_istep");    
+    p.set("action", "calc_struct_reset_istep");
     // go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -531,11 +531,13 @@ void STR::TimInt::ReadRestartSurfstress()
   {
     IO::DiscretizationReader reader(discret_, step_);
     Teuchos::RCP<Epetra_Map> surfmap = surfstressman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap, true);
-    Teuchos::RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap, true);
-    reader.ReadVector(A_old, "Aold");
-    reader.ReadVector(con_quot, "conquot");
-    surfstressman_->SetHistory(A_old, con_quot);
+    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A, "A");
+    reader.ReadVector(con, "con");
+    reader.ReadVector(gamma, "gamma");
+    surfstressman_->SetHistory(A, con, gamma);
   }
 }
 
@@ -549,7 +551,7 @@ void STR::TimInt::ReadRestartMultiScale()
     ParameterList p;
     // action for elements
     p.set("action", "multi_readrestart");
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -573,7 +575,7 @@ void STR::TimInt::OutputStep()
   }
 
   // output results (not necessary if restart in same step)
-  if ( writestate_ 
+  if ( writestate_
        and writestateevery_ and (step_%writestateevery_ == 0)
        and (not datawritten) )
   {
@@ -621,22 +623,25 @@ void STR::TimInt::OutputRestart
   // surface stress
   if (surfstressman_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Map> surfrowmap 
+    Teuchos::RCP<Epetra_Map> surfrowmap
       = surfstressman_->GetSurfRowmap();
     Teuchos::RCP<Epetra_Vector> A
       = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    Teuchos::RCP<Epetra_Vector> con 
+    Teuchos::RCP<Epetra_Vector> con
       = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    surfstressman_->GetHistory(A,con);
-    output_->WriteVector("Aold", A);
-    output_->WriteVector("conquot", con);
+    Teuchos::RCP<Epetra_Vector> gamma
+      = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
+    surfstressman_->GetHistory(A,con,gamma);
+    output_->WriteVector("A", A);
+    output_->WriteVector("con", con);
+    output_->WriteVector("gamma", gamma);
   }
-  
+
   // potential forces
   if (potman_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Map> surfrowmap = potman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A 
+    Teuchos::RCP<Epetra_Vector> A
       = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
     potman_->GetHistory(A);
     output_->WriteVector("Aold", A);
@@ -655,7 +660,7 @@ void STR::TimInt::OutputRestart
 
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_)
-  { 
+  {
     printf("====== Restart written in step %d\n", step_);
     fflush(stdout);
   }
@@ -688,7 +693,7 @@ void STR::TimInt::OutputState
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("fexternal", Fext());
-  output_->WriteElementData(); 
+  output_->WriteElementData();
 
   // leave for good
   return;
@@ -709,7 +714,7 @@ void STR::TimInt::OutputStressStrain
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
-  
+
   // stress
   if (writestress_ == stress_cauchy)
   {
@@ -748,7 +753,7 @@ void STR::TimInt::OutputStressStrain
   discret_->ClearState();
   discret_->SetState("residual displacement", zeros_);
   discret_->SetState("displacement", (*dis_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, 
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -771,7 +776,7 @@ void STR::TimInt::OutputStressStrain
     {
       stresstext = "gauss_2PK_stresses_xyz";
     }
-    output_->WriteVector(stresstext, *stressdata, 
+    output_->WriteVector(stresstext, *stressdata,
                          *(discret_->ElementColMap()));
   }
 
@@ -805,12 +810,12 @@ void STR::TimInt::OutputEnergy()
     ParameterList p;
     // other parameters needed by the elements
     p.set("action", "calc_struct_energy");
-    
+
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
     // get energies
-    Teuchos::RCP<Epetra_SerialDenseVector> energies 
+    Teuchos::RCP<Epetra_SerialDenseVector> energies
       = Teuchos::rcp(new Epetra_SerialDenseVector(1));
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
@@ -820,7 +825,7 @@ void STR::TimInt::OutputEnergy()
   // global calculation of kinetic energy
   double kinergy = 0.0;  // total kinetic energy
   {
-    Teuchos::RCP<Epetra_Vector> linmom 
+    Teuchos::RCP<Epetra_Vector> linmom
       = LINALG::CreateVector(*dofrowmap_, true);
     mass_->Multiply(false, (*vel_)[0], *linmom);
     linmom->Dot((*vel_)[0], &kinergy);
@@ -910,7 +915,7 @@ void STR::TimInt::ApplyForceStiffInternal
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
-  
+
   // that's it
   return;
 }
@@ -929,7 +934,7 @@ void STR::TimInt::ApplyForceInternal
 {
   // create the parameters for the discretization
   ParameterList p;
-  // action for elements 
+  // action for elements
   const std::string action = "calc_struct_internalforce";
   p.set("action", action);
   // other parameters that might be needed by the elements
@@ -944,7 +949,7 @@ void STR::TimInt::ApplyForceInternal
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
-  
+
   // where the fun starts
   return;
 }
@@ -971,7 +976,7 @@ void STR::TimInt::Integrate()
     // update time and step
     time_->UpdateSteps(timen_);
     step_ = stepn_;
-    // 
+    //
     timen_ += (*dt_)[0];
     stepn_ += 1;
 

@@ -452,8 +452,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         int ndof = 3*numnode;                                     // overall number of surface dofs
         double A = 0.;                                            // interfacial area
         // we really want to zero out the following matrices -> no LINALG::SerialDenseMatrix
-        Epetra_SerialDenseVector Adiff(ndof);                     // first partial derivatives
-        Epetra_SerialDenseMatrix Adiff2(ndof,ndof);               // second partial derivatives
+        // first partial derivatives
+        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector(ndof));
+        // second partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix(ndof,ndof)); // second partial derivatives
 
         ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
@@ -470,7 +472,22 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
+          // element geometry update (n+1)
+          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
+          if (disn==null) dserror("Cannot get state vector 'new displacement'");
+          vector<double> mydisn(lm.size());
+          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+          SpatialConfiguration(x,mydisn);
+
+          // set up matrices and parameters needed for the evaluation of
+          // interfacial area and its first derivative w.r.t. the displacements at (n+1)
+          double Anew = 0.;                                            // interfacial area
+          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+
+          ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
+
+
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
                                                     time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                     gamma_min, gamma_min_eq, con_quot_max,
                                                     con_quot_eq, alphaf, newstep);
@@ -479,8 +496,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         {
           int curvenum = cond->Getint("curve");
           double const_gamma = cond->GetDouble("gamma");
-
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
+          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiffnew, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                     0.0, 0.0, 0.0, 0.0, alphaf, newstep);
         }
@@ -528,11 +545,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         double A = 0.;                                            // interfacial area
 
         // we really want to zero out the following matrices -> no LINALG::SerialDenseMatrix
-        Epetra_SerialDenseVector Adiff(ndof);                     // first partial derivatives
-        Epetra_SerialDenseMatrix Adiff2(ndof,ndof);               // second partial derivatives
+        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector(ndof)); // first partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix(ndof,ndof)); // second partial derivatives
 
         ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
-              
+
         if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
         {
           const int curvenum = cond->Getint("curve");
@@ -992,8 +1009,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
                                                         const int numnode,
                                                         const int ndof,
                                                         double& A,
-                                                        Epetra_SerialDenseVector& Adiff,
-                                                        Epetra_SerialDenseMatrix& Adiff2)
+                                                        RCP<Epetra_SerialDenseVector> Adiff,
+                                                        RCP<Epetra_SerialDenseMatrix> Adiff2)
 {
   const DRT::UTILS::IntegrationPoints2D  intpoints =
     getIntegrationPoints2D(gaussrule_);
@@ -1055,58 +1072,61 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
      *----------------------------- with respect to the displacements */
     for (int i=0;i<ndof;++i)
     {
-      Adiff[i] += jacobi_deriv(i)*intpoints.qwgt[gpid];
+      (*Adiff)[i] += jacobi_deriv(i)*intpoints.qwgt[gpid];
     }
 
-    /*--------- second derivates of minor determiants of the Jacobian
-     *----------------------------- with respect to the displacements */
-    for (int n=0;n<numnode;++n)
+    if (Adiff2!=null)
     {
-      for (int o=0;o<numnode;++o)
+      /*--------- second derivates of minor determiants of the Jacobian
+       *----------------------------- with respect to the displacements */
+      for (int n=0;n<numnode;++n)
       {
-        ddet2(0,n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
-        ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
+        for (int o=0;o<numnode;++o)
+        {
+          ddet2(0,n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
+          ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
 
-        ddet2(1,n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
-        ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
+          ddet2(1,n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
+          ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
 
-        ddet2(2,n*3  ,o*3+1) = ddet2(0,n*3+1,o*3+2);
-        ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
-      }
-    }
-
-    /*- calculation of second derivatives of current interfacial areas
-     *----------------------------- with respect to the displacements */
-    for (int i=0;i<ndof;++i)
-    {
-      int var1, var2;
-
-      if (i%3==0)           // displacement in x-direction
-      {
-        var1 = 1;
-        var2 = 2;
-      }
-      else if ((i-1)%3==0)  // displacement in y-direction
-      {
-        var1 = 0;
-        var2 = 2;
-      }
-      else if ((i-2)%3==0)  // displacement in z-direction
-      {
-        var1 = 0;
-        var2 = 1;
-      }
-      else
-      {
-        dserror("calculation of second derivatives of interfacial area failed");
-        exit(1);
+          ddet2(2,n*3  ,o*3+1) = ddet2(0,n*3+1,o*3+2);
+          ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
+        }
       }
 
-      for (int j=0;j<ndof;++j)
+      /*- calculation of second derivatives of current interfacial areas
+       *----------------------------- with respect to the displacements */
+      for (int i=0;i<ndof;++i)
       {
-        Adiff2(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
-                        (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
-                         ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
+        int var1, var2;
+
+        if (i%3==0)           // displacement in x-direction
+        {
+          var1 = 1;
+          var2 = 2;
+        }
+        else if ((i-1)%3==0)  // displacement in y-direction
+        {
+          var1 = 0;
+          var2 = 2;
+        }
+        else if ((i-2)%3==0)  // displacement in z-direction
+        {
+          var1 = 0;
+          var2 = 1;
+        }
+        else
+        {
+          dserror("calculation of second derivatives of interfacial area failed");
+          exit(1);
+        }
+
+        for (int j=0;j<ndof;++j)
+        {
+          (*Adiff2)(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
+                             (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
+                              ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
+        }
       }
     }
   }

@@ -290,7 +290,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
     // complete stiffness matrix
@@ -351,6 +351,7 @@ void MicroStatic::FullNewton()
   string convcheck = params_->get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
+  double alphaf    = params_->get<double>("alpha f",0.459);
   //bool printscreen = params_->get<bool>  ("print to screen",true);
 
   //=================================================== equilibrium loop
@@ -383,6 +384,7 @@ void MicroStatic::FullNewton()
     // on the microscale "lives" exclusively at the pseudo generalized
     // mid point! This is just a quasi-static problem!
     dism_->Update(1.0,*disi_,1.0);
+    disn_->Update(1.0/(1.0-alphaf),*disi_,1.0);
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -418,7 +420,7 @@ void MicroStatic::FullNewton()
       if (surf_stress_man_!=null)
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
     }
 
@@ -510,11 +512,13 @@ void MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     if (surf_stress_man_!=null)
     {
       RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A_old=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con_quot=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A_old, con_quot);
-      output->WriteVector("Aold", A_old);
-      output->WriteVector("conquot", con_quot);
+      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
+      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
+      RCP<Epetra_Vector> gamma=rcp(new Epetra_Vector(*surfrowmap, true));
+      surf_stress_man_->GetHistory(A,con,gamma);
+      output->WriteVector("A", A);
+      output->WriteVector("con", con);
+      output->WriteVector("gamma", gamma);
     }
 
     RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
@@ -671,11 +675,13 @@ void MicroStatic::ReadRestart(int step,
   if (surf_stress_man!=null)
   {
     RCP<Epetra_Map> surfmap=surf_stress_man->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A_old, "Aold");
-    reader.ReadVector(con_quot, "conquot");
-    surf_stress_man->SetHistory(A_old, con_quot);
+    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A, "A");
+    reader.ReadVector(con, "con");
+    reader.ReadVector(gamma, "gamma");
+    surf_stress_man->SetHistory(A,con,gamma);
   }
 
   reader.ReadSerialDenseMatrix(lastalpha, "alpha");
@@ -795,6 +801,7 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
                               RefCountPtr<Epetra_Vector> dism,
+                              RefCountPtr<Epetra_Vector> disn,
                               RefCountPtr<DRT::SurfStressManager> surfman,
                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
@@ -804,6 +811,7 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
 {
   dis_ = dis;
   dism_ = dism;
+  disn_ = disn;
   surf_stress_man_ = surfman;
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
@@ -819,6 +827,7 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
 
 void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                                     RefCountPtr<Epetra_Vector> dism,
+                                    RefCountPtr<Epetra_Vector> disn,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
                                     RefCountPtr<DRT::SurfStressManager> surf_stress_man)
@@ -830,6 +839,7 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   double alphaf = params_->get<double>("alpha f",0.459);
   dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
+  disn->Update(1.0, *dis, 0.0);
 
   if (surf_stress_man!=null)
   {

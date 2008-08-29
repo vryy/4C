@@ -77,6 +77,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   RefCountPtr<DRT::Problem> microproblem = DRT::Problem::Instance(microdisnum_);
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
+  disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   lastalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   oldalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
@@ -218,8 +219,9 @@ void MAT::MicroMaterialGP::ReadRestart()
 {
   istep_ = genprob.restart;
   microstaticmap_[microdisnum_]->ReadRestart(istep_, dis_, lastalpha_, surf_stress_man_, restartname_);
-  // both dis_ and dism_ are the same
+  // both dism_ and disn_ equal dis_
   dism_->Update(1.0, *dis_, 0.0);
+  disn_->Update(1.0, *dis_, 0.0);
   // both lastalpha and oldalpha are the same
   *oldalpha_ = *lastalpha_;
 }
@@ -373,7 +375,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // note that timen_ is set in the following if statement!
   if (time != timen_ && timen_ != 0.)
   {
-    microstatic->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_, surf_stress_man_);
+    microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
     microstatic->SetNewStep(true);           // this is needed for possible surface stresses
                                              // (comparison of A_old and A_new, which are
                                              // nearly the same in the beginning of a new
@@ -384,7 +386,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     build_stiff_ = true;
 
   // set displacements and EAS data of last step
-  microstatic->SetOldState(dis_, dism_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // check if we have to update absolute time and step number
   // in case of restart, timen_ is set to the current total time in

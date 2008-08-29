@@ -391,7 +391,7 @@ void StruGenAlpha::ConstantPredictor()
     {
       p.set("surfstr_man", surf_stress_man_);
       p.set("newstep", true);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
     if (pot_man_!=null)
@@ -679,7 +679,7 @@ void StruGenAlpha::ConsistentPredictor()
     {
       p.set("surfstr_man", surf_stress_man_);
       p.set("newstep", true);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
     if (pot_man_!=null)
@@ -861,7 +861,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
     if (pot_man_!=null)
@@ -1228,6 +1228,7 @@ void StruGenAlpha::FullNewton()
     dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
 #else
     dism_->Update(1.-alphaf,*disi_,1.0);
+    disn_->Update(1.0,*disi_,1.0);
 #endif
     // velocities
 #ifndef STRUGENALPHA_INCRUPDT
@@ -1315,7 +1316,7 @@ void StruGenAlpha::FullNewton()
       if (surf_stress_man_!=null)
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
 
       if (pot_man_!=null)
@@ -2900,9 +2901,11 @@ void StruGenAlpha::Output()
       RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
       RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
       RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A,con);
-      output_.WriteVector("Aold", A);
-      output_.WriteVector("conquot", con);
+      RCP<Epetra_Vector> gamma=rcp(new Epetra_Vector(*surfrowmap, true));
+      surf_stress_man_->GetHistory(A,con,gamma);
+      output_.WriteVector("A", A);
+      output_.WriteVector("con", con);
+      output_.WriteVector("gamma", gamma);
     }
 
     if (pot_man_!=null)
@@ -3336,11 +3339,13 @@ void StruGenAlpha::ReadRestart(int step)
   if (surf_stress_man_!=null)
   {
     RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A_old, "Aold");
-    reader.ReadVector(con_quot, "conquot");
-    surf_stress_man_->SetHistory(A_old,con_quot);
+    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A, "A");
+    reader.ReadVector(con, "con");
+    reader.ReadVector(gamma, "gamma");
+    surf_stress_man_->SetHistory(A,con,gamma);
   }
 
   if (pot_man_!=null)

@@ -321,8 +321,8 @@ protected:
                         const int numnode,
                         const int ndof,
                         double& A,
-                        Epetra_SerialDenseVector& Adiff,
-                        Epetra_SerialDenseMatrix& Adiff2);
+                        RCP<Epetra_SerialDenseVector> Adiff,
+                        RCP<Epetra_SerialDenseMatrix> Adiff2);
 
 }; // class StructuralSurface : public DRT::Element
 

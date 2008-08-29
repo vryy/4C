@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file statmech.cpp
-\brief time integration for structural problems with statistical mechanics 
+\brief time integration for structural problems with statistical mechanics
 
 <pre>
 Maintainer: Christian Cyron
@@ -213,12 +213,6 @@ void StatMech::FullNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-
-      if (surf_stress_man_!=null)
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-      }
 
       if (pot_man_!=null)
       {
@@ -453,12 +447,6 @@ void StatMech::Update()
   }
 #endif
 
-  //----------------- update surface stress history variables if present
-  if (surf_stress_man_!=null)
-  {
-    surf_stress_man_->Update();
-  }
-
   if (pot_man_!=null)
   {
     pot_man_->Update();
@@ -520,16 +508,6 @@ void StatMech::Output()
     }
 #endif
     isdatawritten = true;
-
-    if (surf_stress_man_!=null)
-    {
-      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A,con);
-      output_.WriteVector("Aold", A);
-      output_.WriteVector("conquot", con);
-    }
 
     if (pot_man_!=null)
     {
@@ -678,7 +656,7 @@ void StatMech::Integrate()
   double dt = params_.get<double>("delta time" ,0.01);
   //variable "filename" is assigned the name of the file where output should be written
   std::ostringstream filename;
-  
+
   Epetra_SerialDenseVector  v0;
   v0.Size(num_dof);
   Epetra_SerialDenseVector d0;
@@ -699,32 +677,32 @@ void StatMech::Integrate()
   Delta_v.Size(num_dof);
   int kd = 0;
   double gamma = 0.125663706 / ((num_dof/6) - 1);
-  
+
 
     for (int i=step; i<nstep; ++i)
-    {           
+    {
       double time = params_.get<double>("total time",0.0);
-      
+
       std::cout<<"\n\nSimulation with FEM like forces\n\n";
-      
-      zaehler ++; 
+
+      zaehler ++;
       predictor = 2;
       /*
       if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor(); 
+      else if (predictor==2) ConsistentPredictor();
       */
       //if(i<10000)
         ConsistentPredictor();
       //else
        // BrownianPredictor3D();
-      
-  
+
+
       FullNewton();
       UpdateandOutput();
-      
+
       //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
       //dass alle Freiheitsgrade in Längsrichtung dieselbe Bewegung Delta_x ausführen, die approximiert werden kann durch:
-      // Gamma * Delta_x / dt = fext_axial, wobei fext_axial die Summe der externen Kräfte in Axialrichtung längs des 
+      // Gamma * Delta_x / dt = fext_axial, wobei fext_axial die Summe der externen Kräfte in Axialrichtung längs des
       //gesamten Filaments ist und Gamma die Gesamtreibung eines Filaments der Länge 10 gegenüber axialer Verschiebung ist
       double fext_axial = 0;
       for(int id = 0; id < num_dof; id = id+6)
@@ -735,15 +713,15 @@ void StatMech::Integrate()
       v1_ap(0) = fext_axial / 0.125663706;
       d1_ap(0) = 0.5*dt*(v0(0) + v1_ap(0)) + d0(0);
       double lrefe = 10.0 / (num_dof/6 - 1);
-      
+
       for(int jd = 0; jd < (num_dof/6); jd++)
-      {   
+      {
         //Freiheitsgrade entlang der Filamentachse aus Undehnbarkeitsbedingung:
         //v1_ap(jd*6) = fext_axial / 0.125663706;
         //d1_ap(jd*6) = 0.5*dt*(v0(jd*6) + v1_ap(jd*6)) + d0(jd*6);
 
-        
-        
+
+
         //Freiheitsgrade quer zur Filamentachse
         for(int id = 1; id < 3; id++)
         {
@@ -754,7 +732,7 @@ void StatMech::Integrate()
             v1_ap(kd) = 2*v1_ap(kd);
           d1_ap(kd) = 0.5*dt*(v0(kd) + v1_ap(kd)) + d0(kd);
         }
-        
+
         if(jd>0)
         {
           double dy = d1_ap(jd*6+1) - d1_ap((jd-1)*6+1);
@@ -762,7 +740,7 @@ void StatMech::Integrate()
           d1_ap(jd*6) = pow(lrefe*lrefe - dy*dy - dz*dz  ,0.5) + d1_ap((jd-1)*6) - lrefe;
           v1_ap(jd*6) = 2*(d1_ap(jd*6) - d0(jd*6))/dt - v0(jd*6);
         }
-        
+
         for(int id = 0; id < 6; id++)
         {
           kd = 6*jd + id;
@@ -771,34 +749,34 @@ void StatMech::Integrate()
           Delta_v(kd) = (*velm_)[kd] - v0(kd);
           relerr_d(kd) = ( (d1_ap(kd) - d0(kd) ) - Delta_d(kd) ) / Delta_d(kd);
           relerr_v(kd) = ( (v1_ap(kd) - v0(kd) ) - Delta_v(kd) ) / Delta_v(kd);
-          
+
           //Zwischenspeichern der Endgrößen im abgeschlossenen Zeitschritt
           d0(kd) = (*dis_)[kd];
           v0(kd) = (*velm_)[kd];
           fint0(kd) = (*fint_)[kd];
         }
       }
-      
-      
+
+
       //std::cout<<"\nfext nach update and output"<<*fext_;
       //std::cout<<"\nvelm nach update and output"<<*velm_;
       //std::cout<<"\nfint nach update and output"<<*fint_;
       //std::cout<<"\ndis nach update and output"<< d0;
-      
+
       //std::cout<<"\n*dis_ nach update and output"<<d0;
-      
+
 
       //std::cout<<"\n\nrelerr_d \n" << relerr_d;
       //std::cout<<"\n\nrelerr_v \n" << relerr_v;
       //std::cout<<"\n\nDelta_d \n" << Delta_d;
       //std::cout<<"\n\nDelta_v \n" << Delta_v;
 
-      
-      
-     
+
+
+
       //die Abstandsmessung soll im equilibrierten Zustand beginnen:
      if ( (time >= maxtime *start_factor)  && (schalter == 0) )
-      {            
+      {
         Referenzabstand = pow ( pow((*dis_)[num_dof-3]+10 - (*dis_)[0],2) + pow((*dis_)[num_dof-2] - (*dis_)[1],2) , 0.5);
         schalter = 1;
         i_start = i;
@@ -809,15 +787,15 @@ void StatMech::Integrate()
              Dateinummer++;
              FILE* testdatei = NULL;
              std::ostringstream testname;
-             testname << "EndToEnd"<< Dateinummer << ".dat";     
-             testdatei = fopen(testname.str().c_str(), "r"); 
+             testname << "EndToEnd"<< Dateinummer << ".dat";
+             testdatei = fopen(testname.str().c_str(), "r");
              if (testdatei == NULL)
-               testflag = 1;     
+               testflag = 1;
            }
-     
-       filename << "EndToEnd"<< Dateinummer << ".dat"; 
-              
-      } 
+
+       filename << "EndToEnd"<< Dateinummer << ".dat";
+
+      }
       if ( schalter == 1  && i > i_start)
       {
 
@@ -825,7 +803,7 @@ void StatMech::Integrate()
         DeltaR2 = pow( endzuend - Referenzabstand ,2 );
 
         //writing data
-        
+
         if ( (i - i_start) % int(ceil(pow( 10, floor(log10((time - startzeit) / (10*dt))))) ) == 0 )
           {
           // open file and append new data line
@@ -835,11 +813,11 @@ void StatMech::Integrate()
           filecontent << scientific << time - startzeit << "  " << DeltaR2 << endl;
           // move temporary stringstream to file and close it
           fprintf(fp,filecontent.str().c_str());
-          fclose(fp); 
-          }   
+          fclose(fp);
+          }
       }
- 
-      if (time>=maxtime) break;           
+
+      if (time>=maxtime) break;
     }
 #if 0
     for (int i=0; i<discret_.NumMyRowNodes(); ++i)

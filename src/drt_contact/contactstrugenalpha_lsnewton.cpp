@@ -25,7 +25,7 @@ Maintainer: Alexander Popp
 void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 {
   const int myrank = discret_.Comm().MyPID();
-  
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -69,7 +69,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
   RCP<Epetra_Vector> dismo = rcp(new Epetra_Vector(dism_->Map(),false));
   RCP<Epetra_Vector> velmo = rcp(new Epetra_Vector(velm_->Map(),false));
   RCP<Epetra_Vector> accmo = rcp(new Epetra_Vector(accm_->Map(),false));
-  
+
   int numiter=0;
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
@@ -77,7 +77,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-  
+
   double       f0      = fresmnorm;
   const double sigma0  = 0.1;        // lower bound of lambda
   const double sigma1  = 0.5;        // upper bound of lambda
@@ -85,7 +85,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
   const int    maxarm  = 10;         // max number line search steps
 
   if (!myrank) printf("Initial    residual      %15.5e\n",fresmnorm);
-  
+
   //=================================================== equilibrium loop
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
@@ -114,14 +114,14 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     dismo->Update(1.0,*dism_,0.0);
     velmo->Update(1.0,*velm_,0.0);
     accmo->Update(1.0,*accm_,0.0);
-    
+
     //--------------------------------------------- create the step size
     //                                            trying full step first
     double lambda = 1.0;
     double lamm   = 1.0;
     double lamc   = lambda;
     double iarm   = 0;
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -177,7 +177,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-        
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -218,12 +218,6 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-
-      if (surf_stress_man_!=null)
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -294,7 +288,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     // (again without contact, this is just Gen-alpha stuff here)
     if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
     else
-    { 
+    {
 #ifdef STRUGENALPHA_BE
       stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
@@ -344,7 +338,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     double ff0 = nf0*nf0;
     double ffc = nft*nft;
     double ffm = nft*nft;
-    
+
     //--------------------------------------------------------------------
     // line searching if the step is bad
     //--------------------------------------------------------------------
@@ -354,7 +348,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     {
       //---------------------------- print the rejected step residual norm
       if (!myrank) printf("Bad step                 %15.5e",nft);
-  
+
       // ---------------------------compute lambda (step length reduction)
       if (!iarm)
         lambda = sigma1*lambda;
@@ -376,7 +370,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       //----------------------------- keep track of old lambda values
       lamm = lamc;
       lamc = lambda;
-      
+
       //---------------------------------- update mid configuration values
       // displacements
       // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -425,14 +419,14 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
                     (1.-alpham)/((1.-alphaf)*beta*dt*dt));
   #endif
   #endif
-      
+
       // zerofy velocity and acceleration in case of statics
       if (dynkindstat)
       {
         velm_->PutScalar(0.0);
         accm_->PutScalar(0.0);
       }
-          
+
       //---------------------------- compute internal forces and stiffness
       {
         // zero out stiffness
@@ -473,12 +467,6 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         discret_.Evaluate(p,stiff_,null,fint_,null,null);
   #endif
         discret_.ClearState();
-
-        if (surf_stress_man_!=null)
-        {
-          p.set("surfstr_man", surf_stress_man_);
-          surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-        }
 
         // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -549,7 +537,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       // (again without contact, this is just Gen-alpha stuff here)
       if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
       else
-      { 
+      {
   #ifdef STRUGENALPHA_BE
         stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
   #else
@@ -593,14 +581,14 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);
       fresm_->Norm2(&fresmnorm);
-      
+
       //---------------------------------------------- keep track of norms
       if (!myrank) printf(" now: %10.5e stepsize %10.5e\n",fresmnorm,lambda); fflush(stdout);
       nft = fresmnorm;
       ffm = ffc;
       ffc = nft*nft;
       iarm++;
-      
+
       // yes, this can also fail....
       if (iarm>=maxarm) dserror("Line search finally failed");
     } // while(nft >= (1.0-lsalpha*lambda)*nf0)
@@ -609,7 +597,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     //--------------------------------------------------------------------
     //------------------------------------- update reference residual norm
     f0 = nft;
-        
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
@@ -663,7 +651,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 {
   const int myrank = discret_.Comm().MyPID();
-  
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -707,7 +695,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   RCP<Epetra_Vector> dismo = rcp(new Epetra_Vector(dism_->Map(),false));
   RCP<Epetra_Vector> velmo = rcp(new Epetra_Vector(velm_->Map(),false));
   RCP<Epetra_Vector> accmo = rcp(new Epetra_Vector(accm_->Map(),false));
-  
+
   int numiter=0;
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
@@ -715,7 +703,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-  
+
   double       f0      = fresmnorm;
   const double sigma0  = 0.1;        // lower bound of lambda
   const double sigma1  = 0.5;        // upper bound of lambda
@@ -723,7 +711,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
   const int    maxarm  = 10;         // max number line search steps
 
   if (!myrank) printf("Initial    residual      %15.5e\n",fresmnorm);
-  
+
   //=================================================== equilibrium loop
   // active set search and geometrical nonlinearity are merged into
   // ONE Newton loop, thus we have to check for convergence of the
@@ -756,14 +744,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     dismo->Update(1.0,*dism_,0.0);
     velmo->Update(1.0,*velm_,0.0);
     accmo->Update(1.0,*accm_,0.0);
-    
+
     //--------------------------------------------- create the step size
     //                                            trying full step first
     double lambda = 1.0;
     double lamm   = 1.0;
     double lamc   = lambda;
     double iarm   = 0;
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -819,7 +807,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-        
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -860,12 +848,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
-
-      if (surf_stress_man_!=null)
-      {
-        p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -936,7 +918,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     // (again without contact, this is just Gen-alpha stuff here)
     if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
     else
-    { 
+    {
 #ifdef STRUGENALPHA_BE
       stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
@@ -965,7 +947,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
       contactmanager_->UpdateActiveSetSemiSmooth(disn_);
-            
+
       contactmanager_->Initialize(numiter+1);
       contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
     }
@@ -994,7 +976,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     double ff0 = nf0*nf0;
     double ffc = nft*nft;
     double ffm = nft*nft;
-    
+
     //--------------------------------------------------------------------
     // line searching if the step is bad
     //--------------------------------------------------------------------
@@ -1004,7 +986,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     {
       //---------------------------- print the rejected step residual norm
       if (!myrank) printf("Bad step                 %15.5e",nft);
-  
+
       // ---------------------------compute lambda (step length reduction)
       if (!iarm)
         lambda = sigma1*lambda;
@@ -1026,7 +1008,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       //----------------------------- keep track of old lambda values
       lamm = lamc;
       lamc = lambda;
-      
+
       //---------------------------------- update mid configuration values
       // displacements
       // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1075,14 +1057,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
                     (1.-alpham)/((1.-alphaf)*beta*dt*dt));
   #endif
   #endif
-      
+
       // zerofy velocity and acceleration in case of statics
       if (dynkindstat)
       {
         velm_->PutScalar(0.0);
         accm_->PutScalar(0.0);
       }
-          
+
       //---------------------------- compute internal forces and stiffness
       {
         // zero out stiffness
@@ -1123,12 +1105,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         discret_.Evaluate(p,stiff_,null,fint_,null,null);
   #endif
         discret_.ClearState();
-
-        if (surf_stress_man_!=null)
-        {
-          p.set("surfstr_man", surf_stress_man_);
-          surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-        }
 
         // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -1199,7 +1175,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       // (again without contact, this is just Gen-alpha stuff here)
       if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
       else
-      { 
+      {
   #ifdef STRUGENALPHA_BE
         stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
   #else
@@ -1226,7 +1202,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         // NO update of the active set here, as this would change the
         // system and thus the residual! During line search the active
         // set has to be kept constant!
-        
+
         contactmanager_->Initialize(numiter+1);
         contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
       }
@@ -1249,14 +1225,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);
       fresm_->Norm2(&fresmnorm);
-      
+
       //---------------------------------------------- keep track of norms
       if (!myrank) printf(" now: %10.5e stepsize %10.5e\n",fresmnorm,lambda); fflush(stdout);
       nft = fresmnorm;
       ffm = ffc;
       ffc = nft*nft;
       iarm++;
-      
+
       // yes, this can also fail....
       if (iarm>=maxarm) dserror("Line search finally failed");
     } // while(nft >= (1.0-lsalpha*lambda)*nf0)
@@ -1265,7 +1241,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     //--------------------------------------------------------------------
     //------------------------------------- update reference residual norm
     f0 = nft;
-        
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {

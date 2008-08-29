@@ -110,6 +110,7 @@ public:
   */
   void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                          RefCountPtr<Epetra_Vector> dism,
+                         RefCountPtr<Epetra_Vector> disn,
                          RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
                          RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
                          RefCountPtr<DRT::SurfStressManager> surf_stress_man);
@@ -132,6 +133,7 @@ public:
 
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
                    RefCountPtr<Epetra_Vector> dism,
+                   RefCountPtr<Epetra_Vector> disn,
                    RefCountPtr<DRT::SurfStressManager> surfman,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,

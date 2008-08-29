@@ -77,11 +77,14 @@ private:
   /// microstructure discretization writer
   RefCountPtr<DiscretizationWriter> micro_output_;
 
-  /// my vector of displacements
+  /// my vector of old displacements
   RefCountPtr<Epetra_Vector> dis_;
 
   /// my vector of displacements at the generalized midpoint
   RefCountPtr<Epetra_Vector> dism_;
+
+  /// my vector of new displacements
+  RefCountPtr<Epetra_Vector> disn_;
 
   /// my manager of surface stresses
   RefCountPtr<DRT::SurfStressManager> surf_stress_man_;
