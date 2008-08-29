@@ -3297,10 +3297,8 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
           	if(cnode->Slip() == false)	
           	{
           		// check (tz+ct*tjump)-frbound <= 0
-          		if(abs(tz+ct*tjump)-frbound <= 0)
-          		{
-          			
-          		}
+          		if(abs(tz+ct*tjump)-frbound <= 0) {}
+          		  // do nothing (stick was correct)
           		else
           		{
           			 cnode->Slip() = true;
@@ -3309,22 +3307,21 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
            	}
           	else
           	{
-         		   // check (tz+ct*tjump)-frbound > 0
-          		 if(abs(tz+ct*tjump)-frbound > 0)
-          		 {
-          			 
-          		 }
-          		 else
-          		 {
-          			 cnode->Slip() = false;
-          			 activesetconv_ = false;
-          		 }
+         		  // check (tz+ct*tjump)-frbound > 0
+          		if(abs(tz+ct*tjump)-frbound > 0) {}
+          		  // do nothing (slip was correct)
+          		else
+          		{
+          		 cnode->Slip() = false;
+          		 activesetconv_ = false;
+          		}
           	}
-        	}
-        }	
-      }
-    }
-  }
+        	} // if(ftype=="tresca")
+        } // if (nz <= 0)
+      } // if (cnode->Active()==false)
+    } // loop over all slave nodes
+  } // loop over all interfaces
+  
   // broadcast convergence status among processors
   int convcheck = 0;
   int localcheck = activesetconv_;
@@ -3590,10 +3587,8 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
           	if(cnode->Slip() == false)	
           	{
           		// check (tz+ct*tjump)-frbound <= 0
-          		if(abs(tz+ct*tjump)-frbound <= 0)
-          		{
-          			
-          		}
+          		if(abs(tz+ct*tjump)-frbound <= 0) {}
+          			// do nothing (stick was correct)
           		else
           		{
           			 cnode->Slip() = true;
@@ -3602,22 +3597,20 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
            	}
           	else
           	{
-         		   // check (tz+ct*tjump)-frbound > 0
-          		 if(abs(tz+ct*tjump)-frbound > 0)
-          		 {
-          			 
-          		 }
-          		 else
-          		 {
-          			 cnode->Slip() = false;
-          			 activesetconv_ = false;
-          		 }
+         		  // check (tz+ct*tjump)-frbound > 0
+          		if(abs(tz+ct*tjump)-frbound > 0) {}
+          		 // do nothing (slip was correct)
+          		else
+          		{
+          		 cnode->Slip() = false;
+          		 activesetconv_ = false;
+          		}
           	}
-        	}
-        }        
-      } 
-    }
-  }
+        	} // if (fytpe=="tresca")
+        } // if (nz - cn*wgap <= 0)
+      } // if (cnode->Active()==false)
+    } // loop over all slave nodes
+  } // loop over all interfaces
 
   // broadcast convergence status among processors
   int convcheck = 0;
@@ -3854,12 +3847,12 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
         }
         case Manager::lmupdate:
         {
-          // throw a dserror if a non-DBC inactive dof has a non-zero value
+          // print a warning if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
-          //bool semismooth = scontact_.get<bool>("semismooth newton",false);
-          //if (semismooth && !cnode->Dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
-          //  dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
-          //           cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
+          bool semismooth = scontact_.get<bool>("semismooth newton",false);
+          if (semismooth && !cnode->Dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
+            cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
+                 << cnode->Dofs()[k] << " lm " << (*vectorinterface)[locindex+k] << endl;
           
           // throw a dserror if node is Active and DBC
           if (cnode->Dbc()[k] && cnode->Active())
@@ -3932,7 +3925,7 @@ void CONTACT::Manager::PrintActiveSet()
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)

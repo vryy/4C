@@ -21,7 +21,7 @@ Maintainer: Alexander Popp
 
 //#define CONTACTWNORMAL         /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
-//#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
+//#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
 
 /************************************************************************/
 /* Debugging options                                                    */

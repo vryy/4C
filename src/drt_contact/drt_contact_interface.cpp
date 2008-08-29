@@ -891,10 +891,6 @@ bool CONTACT::Interface::Project2D(CONTACT::CElement& sele,
                                    vector<bool>& hasproj,
                                    vector<double>& xiproj)
 {
-
-  //cout << "Proc " << Comm().MyPID() << " checking pair... Slave ID: "
-  //     << sele.Id() << " Master ID: " << mele.Id() << endl;
-
   // initialize projection status
   hasproj[0] = false;   // slave 0 end node
   hasproj[1] = false;   // slave 1 end node

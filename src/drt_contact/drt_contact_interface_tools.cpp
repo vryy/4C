@@ -36,7 +36,8 @@ extern struct _FILES  allfiles;
  |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
-                                       const int step, const int iter, const bool fric)
+                                       const int step, const int iter,
+                                       const bool fric)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -362,7 +363,7 @@ void CONTACT::Interface::VisualizeGmshLight()
       }
 
       //******************************************************************
-      // plot normal, tangent, contact status and Lagr. mutlipliers
+      // plot normal vectors (2D or 3D)
       //******************************************************************
       for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
@@ -381,9 +382,6 @@ void CONTACT::Interface::VisualizeGmshLight()
           nn[j]=cnode->n()[j];
         }
 
-        //******************************************************************
-        // plot normal and tangent vectors (2D or 3D)
-        //******************************************************************
         gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
         gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
       }

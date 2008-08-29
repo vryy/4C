@@ -73,6 +73,17 @@ namespace CONTACT
  *----------------------------------------------------------------------*/
 void contact_stru_static_drt()
 {
+  //**********************************************************************
+  // This is not used anymore!!!
+  // We now use the DYNAMICTYP = Static option and thus also run
+  // static simulations with the ContactStruGenAlpha class
+  // -popp 08/08
+  //**********************************************************************
+  dserror("ERROR: Static solution routine for contact is outdated!\n"
+          "Please use Dynamics with Generalized-Alpha instead and set\n"
+          "DYNAMICTYP = Static, ALPHA_M = ALPHA_F = 0.0 and DAMPING = No!");
+  //**********************************************************************
+  
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------

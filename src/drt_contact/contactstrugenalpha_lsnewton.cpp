@@ -57,14 +57,14 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
-  // (here you can note the procedural change compared to standard
-  // Gen-alpha, where stiff_ must NOT be filled at this point)
+  // (here you can note the procedural change compared to Gen-alpha
+  // without contact, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
-  // storage of old values to be bla to repeat a step
+  // storage of old values to be able to repeat a step
   RCP<Epetra_Vector> disno = rcp(new Epetra_Vector(disn_->Map(),false));
   RCP<Epetra_Vector> dismo = rcp(new Epetra_Vector(dism_->Map(),false));
   RCP<Epetra_Vector> velmo = rcp(new Epetra_Vector(velm_->Map(),false));
@@ -374,51 +374,51 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       //---------------------------------- update mid configuration values
       // displacements
       // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
       disn_->Update(lambda,*disi_,1.0,*disno,0.0);
       dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  #else
+#else
       disn_->Update(lambda,*disi_,1.0,*disno,0.0);
       dism_->Update(lambda*(1.-alphaf),*disi_,1.0,*dismo,0.0);
-  #endif
+#endif
       // velocities
-  #ifndef STRUGENALPHA_INCRUPDT
+#ifndef STRUGENALPHA_INCRUPDT
       // iterative
       // V_{n+1-alpha_f} := V_{n+1-alpha_f}
       //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
       velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0,*velmo,0.0);
-  #else
+#else
       // incremental (required for constant predictor)
       velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
       velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
                     (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
                     gamma/(delta*dt));
-  #else
+#else
       velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                     (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                     gamma/(beta*dt));
-  #endif
-  #endif
+#endif
+#endif
       // accelerations
-  #ifndef STRUGENALPHA_INCRUPDT
+#ifndef STRUGENALPHA_INCRUPDT
       // iterative
       // A_{n+1-alpha_m} := A_{n+1-alpha_m}
       //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
       accm_->Update(lambda*(1.-alpham)/(beta*dt*dt),*disi_,1.0,*accmo,0.0);
-  #else
+#else
       // incremental (required for constant predictor)
       accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
       accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
                     (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
                     (1.-alpham)/((1.-alphaf)*delta*dt*dt));
-  #else
+#else
       accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                     (2.*beta-1.+alpham)/(2.*beta),*acc_,
                     (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-  #endif
-  #endif
+#endif
+#endif
 
       // zerofy velocity and acceleration in case of statics
       if (dynkindstat)
@@ -441,31 +441,31 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         p.set("alpha f",alphaf);
         // set vector values needed by elements
         discret_.ClearState();
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
         disim->Scale(lambda);
-  #else
+#else
         // do not touch disi_ here!
         // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
         RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
         disim->Scale(lambda*(1.-alphaf));
-  #endif
+#endif
         discret_.SetState("residual displacement",disi_);
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         discret_.SetState("displacement",disn_);
         discret_.SetState("velocity",veln_);
-  #else
+#else
         discret_.SetState("displacement",dism_);
         discret_.SetState("velocity",velm_);
-  #endif
+#endif
         //discret_.SetState("velocity",velm_); // not used at the moment
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         fintn_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-  #else
+#else
         fint_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fint_,null,null);
-  #endif
+#endif
         discret_.ClearState();
 
         // do NOT finalize the stiffness matrix to add masses to it later
@@ -521,13 +521,13 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         }
       }
       // add static mid-balance
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
       fresm_->Update(1.0,*fextm_,-1.0);
       fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
-  #else
+#else
       fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
-  #endif
+#endif
 
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -538,18 +538,18 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
       else
       {
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
         stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-  #else
+#else
         stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-  #endif
+#endif
         if (damping)
         {
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
           stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
-  #else
+#else
           stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-  #endif
+#endif
         }
       }
       stiff_->Complete();
@@ -574,9 +574,9 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       //--------------------------------------------------- contact forces
       contactmanager_->ContactForces(fresmcopy);
 
-  #ifdef CONTACTGMSH2
+#ifdef CONTACTGMSH2
       dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
-  #endif // #ifdef CONTACTGMSH2
+#endif // #ifdef CONTACTGMSH2
 
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);
@@ -683,14 +683,14 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
-  // (here you can note the procedural change compared to standard
-  // Gen-alpha, where stiff_ must NOT be filled at this point)
+  // (here you can note the procedural change compared to Gen-alpha
+  // without contact, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
-  // storage of old values to be bla to repeat a step
+  // storage of old values to be able to repeat a step
   RCP<Epetra_Vector> disno = rcp(new Epetra_Vector(disn_->Map(),false));
   RCP<Epetra_Vector> dismo = rcp(new Epetra_Vector(dism_->Map(),false));
   RCP<Epetra_Vector> velmo = rcp(new Epetra_Vector(velm_->Map(),false));
@@ -1012,51 +1012,51 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       //---------------------------------- update mid configuration values
       // displacements
       // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
       disn_->Update(lambda,*disi_,1.0,*disno,0.0);
       dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  #else
+#else
       disn_->Update(lambda,*disi_,1.0,*disno,0.0);
       dism_->Update(lambda*(1.-alphaf),*disi_,1.0,*dismo,0.0);
-  #endif
+#endif
       // velocities
-  #ifndef STRUGENALPHA_INCRUPDT
+#ifndef STRUGENALPHA_INCRUPDT
       // iterative
       // V_{n+1-alpha_f} := V_{n+1-alpha_f}
       //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
       velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0,*velmo,0.0);
-  #else
+#else
       // incremental (required for constant predictor)
       velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
       velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
                     (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
                     gamma/(delta*dt));
-  #else
+#else
       velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                     (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                     gamma/(beta*dt));
-  #endif
-  #endif
+#endif
+#endif
       // accelerations
-  #ifndef STRUGENALPHA_INCRUPDT
+#ifndef STRUGENALPHA_INCRUPDT
       // iterative
       // A_{n+1-alpha_m} := A_{n+1-alpha_m}
       //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
       accm_->Update(lambda*(1.-alpham)/(beta*dt*dt),*disi_,1.0,*accmo,0.0);
-  #else
+#else
       // incremental (required for constant predictor)
       accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
       accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
                     (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
                     (1.-alpham)/((1.-alphaf)*delta*dt*dt));
-  #else
+#else
       accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                     (2.*beta-1.+alpham)/(2.*beta),*acc_,
                     (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-  #endif
-  #endif
+#endif
+#endif
 
       // zerofy velocity and acceleration in case of statics
       if (dynkindstat)
@@ -1079,31 +1079,31 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         p.set("alpha f",alphaf);
         // set vector values needed by elements
         discret_.ClearState();
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
         disim->Scale(lambda);
-  #else
+#else
         // do not touch disi_ here!
         // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
         RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
         disim->Scale(lambda*(1.-alphaf));
-  #endif
+#endif
         discret_.SetState("residual displacement",disi_);
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         discret_.SetState("displacement",disn_);
         discret_.SetState("velocity",veln_);
-  #else
+#else
         discret_.SetState("displacement",dism_);
         discret_.SetState("velocity",velm_);
-  #endif
+#endif
         //discret_.SetState("velocity",velm_); // not used at the moment
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
         fintn_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-  #else
+#else
         fint_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fint_,null,null);
-  #endif
+#endif
         discret_.ClearState();
 
         // do NOT finalize the stiffness matrix to add masses to it later
@@ -1159,13 +1159,13 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         }
       }
       // add static mid-balance
-  #ifdef STRUGENALPHA_FINTLIKETR
+#ifdef STRUGENALPHA_FINTLIKETR
       fresm_->Update(1.0,*fextm_,-1.0);
       fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
-  #else
+#else
       fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
-  #endif
+#endif
 
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -1176,18 +1176,18 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
       else
       {
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
         stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-  #else
+#else
         stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-  #endif
+#endif
         if (damping)
         {
-  #ifdef STRUGENALPHA_BE
+#ifdef STRUGENALPHA_BE
           stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
-  #else
+#else
           stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-  #endif
+#endif
         }
       }
       stiff_->Complete();
@@ -1216,11 +1216,11 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       //--------------------------------------------------- contact forces
       contactmanager_->ContactForces(fresmcopy);
 
-  #ifdef CONTACTGMSH2
+#ifdef CONTACTGMSH2
       int step  = params_.get<int>("step",0);
       int istep = step + 1;
       contactmanager_->VisualizeGmsh(istep,numiter+1);
-  #endif // #ifdef CONTACTGMSH2
+#endif // #ifdef CONTACTGMSH2
 
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);

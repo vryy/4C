@@ -30,7 +30,6 @@ namespace CONTACT
 /*!
 \brief Main class to control all contact
 
-
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */
 class Manager
@@ -62,7 +61,8 @@ public:
   input discretization.
   
   \param discret (in): A discretization containing contact boundary conditions
-  \param alphaf (in): Generalized-alpha parameter (set to 0.0 for statics)
+  \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
+  
   */
   explicit Manager(DRT::Discretization& discret, double alphaf = 0.0);
 
@@ -194,7 +194,7 @@ public:
   active set are rebuilt based on the restart information.
   
   \param activetoggle (in): A toggle vector with active node information
-                           for restart (0=inactive, 1=active)
+                            for restart (0=inactive, 1=active)
                             
   */
   void ReadRestart(const RCP<Epetra_Vector> activetoggle);
@@ -381,7 +381,7 @@ public:
   to be performed for the current time / load step.
   
   \param disn (in): new displacement state n+1 of current Newton step
-                   Note that we only pass in disn for debugging purposes!
+                    Note that we only pass in disn for debugging purposes!
   
   */
   void UpdateActiveSet(RCP<Epetra_Vector> disn);
@@ -401,7 +401,7 @@ public:
   another Newton step has to be performed.
   
   \param disn (in): new displacement state n+1 of current Newton step
-                   Note that we only pass in disn for debugging purposes!
+                    Note that we only pass in disn for debugging purposes!
                    
   */
   void UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn);
@@ -415,7 +415,7 @@ public:
   matrices of the last converged time / load step n (TR-like interpolation).
   
   \param fresm (in): residual / force vector at state n+1 of current Newton step
-                    Note that we only pass in fresm for debugging purposes!
+                     Note that we only pass in fresm for debugging purposes!
   
   */
   void ContactForces(RCP<Epetra_Vector> fresm);
@@ -464,7 +464,7 @@ public:
   void PrintActiveSet();
   
   /*!
-  \brief Visualize node normals and projections with gmsh
+  \brief Visualize contact stuff with gmsh
   
   \param step (in): current time step index
   \param iter (in): current iteration index
@@ -482,70 +482,67 @@ protected:
   Manager(const Manager& old);
 
 
-  DRT::Discretization&               discret_;        // the underlying problem discretization
-  vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
-  Teuchos::ParameterList             scontact_;       // containing contact input parameters
-  int                                dim_;            // dimension of problem (2D or 3D)
-  double                             alphaf_;         // Generalized-alpha parameter (0.0 for statics)
+  DRT::Discretization&               discret_;         // the underlying problem discretization
+  vector<RCP<CONTACT::Interface> >   interface_;       // contact interfaces
+  Teuchos::ParameterList             scontact_;        // containing contact input parameters
+  int                                dim_;             // dimension of problem (2D or 3D)
+  double                             alphaf_;          // Generalized-alpha parameter (0.0 for statics)
   
-  RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gsdofrowmap_;    // global slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gmdofrowmap_;    // global master dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gndofrowmap_;    // global internal dof row map
+  RCP<Epetra_Map>                    gsnoderowmap_;    // global slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gsdofrowmap_;     // global slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gmdofrowmap_;     // global master dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gndofrowmap_;     // global internal dof row map
   
-  RCP<Epetra_Map>                    gactivenodes_;   // global active slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gactivedofs_;    // global active slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gactiven_;       // global row map of matrix N (of all interfaces)
-  RCP<Epetra_Map>                    gactivet_;       // global row map of matrix T (of all interfaces)
-  RCP<Epetra_Map>                    gslipnodes_;     // global slip slave node row map (of all interfaces)
-  RCP<Epetra_Map>                    gslipdofs_;      // global slip slave dof row map (of all interfaces)
-  RCP<Epetra_Map>                    gslipt_;         // global row map of matrix T for slip dofs (of all interfaces)
-  bool                               activesetconv_;  // convergence flag for active set
-  int                                activesetsteps_; // no. of active sets in this time/load step
+  RCP<Epetra_Map>                    gactivenodes_;    // global active slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gactivedofs_;     // global active slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gactiven_;        // global row map of matrix N (of all interfaces)
+  RCP<Epetra_Map>                    gactivet_;        // global row map of matrix T (of all interfaces)
+  RCP<Epetra_Map>                    gslipnodes_;      // global slip slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gslipdofs_;       // global slip slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gslipt_;          // global row map of matrix T for slip dofs (of all interfaces)
+  bool                               activesetconv_;   // convergence flag for active set
+  int                                activesetsteps_;  // no. of active sets in this time/load step
     
-  RCP<LINALG::SparseMatrix>          dmatrix_;        // global Mortar matrix D
-  RCP<LINALG::SparseMatrix>          mmatrix_;        // global Mortar matrix M
-  RCP<LINALG::SparseMatrix>          mhatmatrix_;     // product of global Mortar matrices inv(D)*M
-  RCP<Epetra_Vector>                 g_;              // global weighted gap vector g
+  RCP<LINALG::SparseMatrix>          dmatrix_;         // global Mortar matrix D
+  RCP<LINALG::SparseMatrix>          mmatrix_;         // global Mortar matrix M
+  RCP<LINALG::SparseMatrix>          mhatmatrix_;      // product of global Mortar matrices inv(D)*M
+  RCP<Epetra_Vector>                 g_;               // global weighted gap vector g
   
-  RCP<LINALG::SparseMatrix>          mhata_;          // active part of mhatmatrix_ (needed for HüeberCheck)
+  RCP<LINALG::SparseMatrix>          mhata_;           // active part of mhatmatrix_ (needed for HüeberCheck)
   
-  RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N containing active node normals
-  RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T containing active node tangents
-  RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing normal+D+M derivatives
-  RCP<LINALG::SparseMatrix>          pmatrix_;        // global Matrix P containing tangent derivatives
-  RCP<LINALG::SparseMatrix>          lindmatrix_;     // global Matrix LinD containing slave fc derivatives
-  RCP<LINALG::SparseMatrix>          linmmatrix_;     // global Matrix LinM containing master fc derivatives
+  RCP<LINALG::SparseMatrix>          nmatrix_;         // global Matrix N containing active node normals
+  RCP<LINALG::SparseMatrix>          tmatrix_;         // global Matrix T containing active node tangents
+  RCP<LINALG::SparseMatrix>          smatrix_;         // global Matrix S containing normal+D+M derivatives
+  RCP<LINALG::SparseMatrix>          pmatrix_;         // global Matrix P containing tangent derivatives
+  RCP<LINALG::SparseMatrix>          lindmatrix_;      // global Matrix LinD containing slave fc derivatives
+  RCP<LINALG::SparseMatrix>          linmmatrix_;      // global Matrix LinM containing master fc derivatives
   
-  RCP<LINALG::SparseMatrix>          dold_;           // global Mortar matrix D (last end-point t_n)
-  RCP<LINALG::SparseMatrix>          mold_;           // global Mortar matrix D (last end-point t_n)
+  RCP<LINALG::SparseMatrix>          dold_;            // global Mortar matrix D (last end-point t_n)
+  RCP<LINALG::SparseMatrix>          mold_;            // global Mortar matrix D (last end-point t_n)
   
-  RCP<Epetra_Vector>                 z_;              // current vector of Lagrange multipliers at t_n+1
-  RCP<Epetra_Vector>                 zold_;           // old vector of Lagrange multipliers at t_n
-  RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
-  RCP<Epetra_Vector>                 jump_;           // displacement jump (slave dofs)
-  RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
-  bool                               isincontact_;    // flag indicating global contact status
+  RCP<Epetra_Vector>                 z_;               // current vector of Lagrange multipliers at t_n+1
+  RCP<Epetra_Vector>                 zold_;            // old vector of Lagrange multipliers at t_n
+  RCP<Epetra_Vector>                 incrjump_;        // incremental displacement jump (slave dofs)
+  RCP<Epetra_Vector>                 jump_;            // displacement jump (slave dofs)
+  RCP<Epetra_Vector>                 fc_;              // vector of current contact forces
+  bool                               isincontact_;     // flag indicating global contact status
   
-  RCP<Epetra_Vector>                 fs_;             // slave side effective forces (needed for LM)
-  RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
-  RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
-  RCP<LINALG::SparseMatrix>          ksm_;            // stiffness block K_sm (needed for LM)
-  RCP<LINALG::SparseMatrix>          kss_;            // stiffness block K_ss (needed for LM)
+  RCP<Epetra_Vector>                 fs_;              // slave side effective forces (needed for LM)
+  RCP<LINALG::SparseMatrix>          invd_;            // inverse of Mortar matrix D (needed for LM)
+  RCP<LINALG::SparseMatrix>          ksn_;             // stiffness block K_sn (needed for LM)
+  RCP<LINALG::SparseMatrix>          ksm_;             // stiffness block K_sm (needed for LM)
+  RCP<LINALG::SparseMatrix>          kss_;             // stiffness block K_ss (needed for LM)
   
-  RCP<Epetra_Map>                    zigzagone_;      // active node set of last active set try
-  RCP<Epetra_Map>                    zigzagtwo_;      // active node set of second-last active set try
-  RCP<Epetra_Map>                    zigzagthree_;    // active node set of third-last active set try
+  RCP<Epetra_Map>                    zigzagone_;       // active node set of last active set try
+  RCP<Epetra_Map>                    zigzagtwo_;       // active node set of second-last active set try
+  RCP<Epetra_Map>                    zigzagthree_;     // active node set of third-last active set try
   
-  RCP<Epetra_Map>                    zigzagslipone_;      // slip node set of last slip set try
-  RCP<Epetra_Map>                    zigzagsliptwo_;      // slip node set of second-last slip set try
-  RCP<Epetra_Map>                    zigzagslipthree_;    // slip node set of third-last slip set try
+  RCP<Epetra_Map>                    zigzagslipone_;   // slip node set of last slip set try
+  RCP<Epetra_Map>                    zigzagsliptwo_;   // slip node set of second-last slip set try
+  RCP<Epetra_Map>                    zigzagslipthree_; // slip node set of third-last slip set try
     
-  
-  
-
-  RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
-  RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
+  RCP<LINALG::SparseMatrix>          lmatrix_;         // global matrix L for Tresca friction slip nodes
+  RCP<Epetra_Vector>                 r_;               // r.h.s vector for Tresca friction slip nodes
 
 }; // class Manager
 } // namespace CONTACT

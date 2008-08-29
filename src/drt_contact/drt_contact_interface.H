@@ -35,7 +35,6 @@ namespace CONTACT
 /*!
 \brief One contact interface
 
-
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */
 class Interface
@@ -51,6 +50,7 @@ public:
   \param id (in): Unique interface id
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
+  
   */
   explicit Interface(const int id, const Epetra_Comm& comm, const int dim);
 
@@ -389,6 +389,7 @@ public:
   \param cnode (in): rcp to a contact node
   
   \return Filled()==false
+  
   */
   inline virtual void AddCNode(RCP<CONTACT::CNode> cnode) 
   { idiscret_->AddNode(cnode); return; }
@@ -399,6 +400,7 @@ public:
   \param cele (in): rcp to a contact element
 
   \return Filled()==false
+  
   */
   inline virtual void AddCElement(RCP<CONTACT::CElement> cele) 
   { idiscret_->AddElement(cele); return; }
@@ -415,6 +417,7 @@ public:
   these can be easily accessed.
   
   \return Filled()==true
+  
   */
   virtual void FillComplete();
   
@@ -433,6 +436,10 @@ public:
 
   /*!
   \brief Evaluate contact interface
+  
+  This is the main routine of the Interface class, where nodal normals
+  are computed, the contact search is performed, contact segments are
+  set up and the entries of the mortar matrices D and M are integrated.
       
   */
   virtual void Evaluate();
@@ -536,6 +543,7 @@ public:
   of the normal contact condition g~ = 0. Concretely, this
   includes assembling the linearizations of the slave side
   nodal normals and of the Mortar matrices D  and M.
+  
   */
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
   
@@ -546,6 +554,7 @@ public:
   of the tangential contact condition (frictionless). Concretely,
   this means assembling the linearization of the slave side
   nodal tangents and the current Lagrange multipliers.
+  
   */
   virtual void AssembleP(LINALG::SparseMatrix& pglobal);
   
@@ -556,6 +565,7 @@ public:
   of the contact force vector. Concretely, this means assembling
   the linearization of the Mortar matrices D and M and the
   current Lagrange multipliers.
+  
   */
   virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                              LINALG::SparseMatrix& linmglobal);
@@ -692,11 +702,6 @@ protected:
 
 // << operator
 ostream& operator << (ostream& os, const CONTACT::Interface& interface);
-
-
-
-
-
 
 
 

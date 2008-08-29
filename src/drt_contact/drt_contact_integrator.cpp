@@ -24,7 +24,13 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
 {
-  // create integration points according to eletype
+  //*********************************************************************
+  // Create integration points according to eletype!
+  // Note that our standard Gauss rules are:
+  // 5 points: for integrals on 1D lines                 (1,2,3,4,5)
+  // 6 points: for integrals on 2D triangles             (1,3,6,7,12,37)
+  // 9 points: for integrals on 2D quadrilaterals        (1,4,9)
+  //**********************************************************************
   switch(eletype)
   {
   case DRT::Element::line2:
@@ -87,7 +93,7 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
   }
   default:
     dserror("ERROR: Integrator: This contact element type is not implemented!");
-  } // switch (ngp_)
+  } // switch(eletype)
 }
 
 
@@ -480,11 +486,6 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   // this means that mxia belongs to sxib and vice versa!
   // *********************************************************************
   
-  //cout << "\nChecking overlap of CElement pair S" << sele.Id() << " M" << mele.Id() << endl;
-  //cout << "Slave Nodes: " << sele.Nodes()[0]->Id() << " " << sele.Nodes()[1]->Id() << endl;
-  //cout << "Master Nodes: " << mele.Nodes()[0]->Id() << " " << mele.Nodes()[1]->Id() << endl;
-  //cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
-  
   bool startslave = false;
   bool endslave = false;
   typedef map<int,double>::const_iterator CI;
@@ -494,27 +495,10 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   if (sxib!=1.0 && mxia!=-1.0)
       dserror("ERROR: Second outer node is neither slave nor master node");
   
-  if (sxia==-1.0)
-  {
-    startslave = true;
-    //cout << "-> Overlap starts at Slave Node " << sele.Nodes()[0]->Id() << endl;
-  }
-  else
-  {
-    startslave = false;
-    //cout << "-> Overlap starts at Master Node " << mele.Nodes()[1]->Id() << endl;
-  }
-  
-  if (sxib==1.0)
-  {
-    endslave = true;
-    //cout << "-> Overlap ends at Slave Node " << sele.Nodes()[1]->Id() << endl;
-  }
-  else
-  {
-    endslave = false;
-    //cout << "-> Overlap ends at Master Node " << mele.Nodes()[0]->Id() << endl;
-  }
+  if (sxia==-1.0) startslave = true;
+  else            startslave = false;
+  if (sxib==1.0) endslave = true;
+  else           endslave = false;
   
   // get directional derivatives of sxia, sxib, mxia, mxib
   vector<map<int,double> > ximaps(4);
@@ -1325,55 +1309,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
     }  
   } // for (int gp=0;gp<nGP();++gp)
   
-  /* OLD VERSION
-  // prepare computation of purely geometric part of Mmod entries
-  CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
-  CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
-
-  // normals
-  double n[2][2];
-  n[0][0] = snode0->n()[0];
-  n[0][1] = snode0->n()[1];
-  n[1][0] = snode1->n()[0];
-  n[1][1] = snode1->n()[1];
-  
-  // tangents
-  double t[2][2];
-  t[0][0] = -n[0][1];
-  t[0][1] =  n[0][0];
-  t[1][0] = -n[1][1];
-  t[1][1] =  n[1][0];
-  
-  // delta normals  
-  double dn[2];
-  dn[0] = n[0][0]-n[1][0];
-  dn[1] = n[0][1]-n[1][1];
-  
-  // delta tangents  
-  double dt[2];
-  dt[0] = t[0][0]-t[1][0];
-  dt[1] = t[0][1]-t[1][1];
-  
-  // loop over all mmodseg matrix entries
-  for (int j=0;j<nrow*nrowdof;++j)
-  {
-    // prepare indices
-    int snode = (int)(j/nrowdof);
-    int sdof = (int)(j%nrowdof);
-    
-    for (int k=0;k<ncol*ncoldof;++k)
-    {
-      // prepare indices
-      int mdof = (int)(k%ncoldof);
-      
-      // multiply geometric part onto Mmod  
-      double val = n[snode][sdof] * dn[mdof] + t[snode][sdof] * dt[mdof];
-      (*mmodseg)(j,k) *= val; 
-    }
-  }  
-  */ //OLD VERSION
-  
-  // NEW VERSION
   // prepare computation of purely geometric part of Mmod entries
   CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
   CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
@@ -1530,11 +1465,6 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
     for (int i=0;i<3;++i)
       gap+=(mgpx[i]-sgpx[i])*gpn[i];
     
-    //if (gap<=0)
-    //  gap = -sqrt(-gap);
-    //else
-    //  gap = sqrt(gap);
-    
 #ifdef DEBUG
     //cout << "GP gap: " << gap << endl;
 #endif // #ifdef DEBUG
@@ -1544,7 +1474,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all gseg vector entries
-       nrow represents the slave side dofs !!!                */
+       nrow represents the slave side dofs !!!  */
     for (int j=0;j<nrow;++j)
     {
       double prod = dualval[j]*gap;
@@ -1566,12 +1496,6 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
                                     CONTACT::CElement& sele,
                                     Epetra_SerialDenseMatrix& dseg)
 {
-  /*
-#ifdef DEBUG
-  cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-  cout << dseg << endl;
-#endif // #ifdef DEBUG
-  */
   // get adjacent nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)
@@ -1661,12 +1585,6 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
                                     CONTACT::CElement& mele,
                                     Epetra_SerialDenseMatrix& mseg)
 {
-  /*
-#ifdef DEBUG
-  cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-  cout << mseg << endl;
-#endif // #ifdef DEBUG
-  */
   // get adjacent slave nodes and master nodes
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)
@@ -1756,13 +1674,6 @@ bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
                                        CONTACT::CElement& mele,
                                        Epetra_SerialDenseMatrix& mmodseg)
 {
-  /*
-#ifdef DEBUG
-  cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-  cout << mmodseg << endl;
-#endif // #ifdef DEBUG
-  */
-  
   // get adjacent slave nodes and master nodes
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)
@@ -1836,13 +1747,6 @@ bool CONTACT::Integrator::AssembleG(CONTACT::Interface& inter,
                                     CONTACT::CElement& sele,
                                     Epetra_SerialDenseVector& gseg)
 {
-  /*
-#ifdef DEBUG
-  cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-  cout << gseg << endl;
-#endif // #ifdef DEBUG
-  */
-  
   // get adjacent slave to assemble to
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)

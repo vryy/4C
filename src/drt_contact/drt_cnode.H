@@ -46,7 +46,6 @@ public:
   */
   friend class DRT::Discretization;
 
-
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -59,8 +58,9 @@ public:
   \param owner  (in): Owner of this node.
   \param numdof (in): Number of degrees of freedom to this node
   \param dofs   (in): list of global degrees of freedom
-  \param isslave(in): flag indicating whether node is slave or master side
+  \param isslave(in): flag indicating whether node is slave or master
   \param initactive (in): flag indicating whether initially set to active
+  
   */
   CNode(int id, const double* coords, const int owner, 
         const int numdof, const vector<int>& dofs, const bool isslave,
@@ -91,6 +91,7 @@ public:
 
   every class implementing ParObject needs a unique id defined at the
   top of drt_lib/drt_parobject.H.
+  
   */
   virtual int UniqueParObjectId() const { return ParObject_CNode;}
 
@@ -137,11 +138,12 @@ public:
   /*!
   \brief Is Node initialized as active node (only slave nodes)
   */
-  inline virtual bool IsInitActive() const { if (!IsSlave()) dserror("ERROR: Initactive status requested for Master node");
-                                        return initactive_; }
+  inline virtual bool IsInitActive() const
+  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+    return initactive_; }
     
   /*!
-  \brief Is Node on slave side boundary of contact interface
+  \brief Is Node on boundary of slave side of contact interface
   */
   inline virtual bool IsOnBound() const { return isonbound_; }
   
@@ -163,7 +165,7 @@ public:
                                       return globaldbc; }
     
   /*!
-  \brief Get no. of degrees of freedom
+  \brief Get number of degrees of freedom
   */
   inline virtual int NumDof() const { return numdof_; }
 
@@ -178,7 +180,7 @@ public:
   virtual inline double* xspatial() { return xspatial_; }
   
   /*!
-  \brief Return current displacement (length 3)
+  \brief Return current displacements (length 3)
   */
   virtual inline double* u() { return u_; }
   
@@ -208,7 +210,7 @@ public:
   virtual inline int& ClosestNode() { return closestnode_; }
   
   /*!
-  \brief Return projection status of this node (slave nodes only)
+  \brief Return projection status of this node (only for slave side!)
   */
   virtual inline bool& HasProj() { return hasproj_; }
     
@@ -218,7 +220,7 @@ public:
   virtual inline bool& Active() { return active_; }
   
   /*!
-  \brief Return friction status of this node (stick=true)
+  \brief Return friction status of this node (slip=true)
   */
   virtual inline bool& Slip() { return slip_; }
   
@@ -231,6 +233,7 @@ public:
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
+  
   */
   void AddDValue(int row, int col, double val);
   
@@ -243,6 +246,7 @@ public:
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
+  
   */
   void AddMValue(int row, int col, double val);
     
@@ -255,6 +259,7 @@ public:
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
+  
   */
   void AddMmodValue(int row, int col, double val);  
 
@@ -265,6 +270,7 @@ public:
   Note that grow_ here is a scalar.
      
   \param val : value to be added
+  
   */
   void AddgValue(double val);
   
@@ -294,6 +300,7 @@ public:
   These maps contain the directional derivatives of the node's
   averaged normal vector with respect to the slave displacements.
   A vector is used because the normal itself is a vector (2 or 3 components).
+  
   */
   virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
   
@@ -303,6 +310,7 @@ public:
   These maps contain the directional derivatives of the node's
   unit tangent vector with respect to the slave displacements.
   A vector is used because the tangent itself is a vector (2 or 3 components).
+  
   */
   virtual inline vector<map<int,double> >& GetDerivT() { return derivt_; }
     
@@ -311,6 +319,7 @@ public:
   
   This map contains the directional derivatives of the node's
   D-matrix diagonal entry with respect to the slave displacements.
+  
   */
   virtual inline map<int,double>& GetDerivD() { return derivd_; }
   
@@ -322,6 +331,7 @@ public:
   It is a "map of maps", with the outer map containing all master
   node indices k adjacent to this node i and the inner map containing
   all directional derivatives l existing for M_ik.
+  
   */
   virtual inline map<int,map<int,double> >& GetDerivM() { return derivm_; }
   
@@ -330,6 +340,7 @@ public:
      
   This method returns the map of directional derivatives of one
   specific M-matrix M_ik entry of this node i.
+  
   */
   virtual inline map<int,double>& GetDerivM(int k)
   {
@@ -363,6 +374,7 @@ public:
   \param elens (in):  Matrix containing normals of adjacent elements
   \param length (in): Modified length of the nodal averaged normal
                       (the modification depends on the flag CONTACTWNORMAL)
+
   */
   virtual void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length);
     
@@ -375,6 +387,7 @@ public:
   \param intdis (in):         Master Node to project
   \param nodesearchmap (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
+  
   */
   virtual CONTACT::CNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
                                           const RCP<Epetra_Map> nodesearchmap,
@@ -401,15 +414,15 @@ protected:
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            slip_;           // true if cnode slips (contact force reaches friction bound)
   
-  vector<map<int,double> >      drows_;         // nodal rows of D matrix
-  vector<map<int,double> >      mrows_;         // nodal rows of M matrix
-  vector<map<int,double> >      mmodrows_;      // nodal rows of Mmod matrix
-  double                        grow_;          // nodal entry of g vector
+  vector<map<int,double> >      drows_;      // nodal rows of D matrix
+  vector<map<int,double> >      mrows_;      // nodal rows of M matrix
+  vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
+  double                        grow_;       // nodal entry of g vector
   
-  vector<map<int,double> >      derivn_;        // directional derivative of nodal normal
-  vector<map<int,double> >      derivt_;        // directional derivative of nodal tangent
-  map<int,double>               derivd_;        // directional derivative of nodal D-matrix value
-  map<int,map<int,double> >     derivm_;        // directional derivative of nodal M-matrix values
+  vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
+  vector<map<int,double> >      derivt_;     // directional derivative of nodal tangent
+  map<int,double>               derivd_;     // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   
 
 }; // class CNode
@@ -418,11 +431,6 @@ protected:
 
 // << operator
 ostream& operator << (ostream& os, const CONTACT::CNode& cnode);
-
-
-
-
-
 
 
 

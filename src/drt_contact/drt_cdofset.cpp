@@ -34,23 +34,11 @@ DRT::DofSet()
  *----------------------------------------------------------------------*/
 int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
-  // Important remark (popp, 04/08):
-  // We explicitly set the flag "unique_and_unchanging_dofnumbers" = false!
-  // This way we have no problems dealing with an arbitrary number of
-  // contact interfaces. The idea for the flag = true comes from monolith.FSI
-  // where we have multiple discretizations and want to have a unique
-  // dof numbering across them. So, when we set the flag to false for contact
-  // at the moment, this is no problem AS LONG AS we do not want to deal
-  // with multiple discretizations! (FIXME)
-  
   // first, we call the standard AssignDegreesOfFreedom from the base class
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
   
-  // now we'll get ourselves the row and column dof maps from the base class and replace
-  // them with our own version of them
-  //RCP<Epetra_Map> oldrowmap = dofrowmap_;
-  //RCP<Epetra_Map> oldcolmap = dofcolmap_;
-
+  // we'll get ourselves the row and column dof maps from the base class
+  // and later replace them with our own version of them
   int nummyrow = dofrowmap_->NumMyElements();
   vector<int> myrow(nummyrow);
   int nummycol = dofcolmap_->NumMyElements();

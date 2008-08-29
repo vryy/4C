@@ -30,7 +30,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
   // *********************************************************************
   // 1D standard linear shape functions
-  // (used for interpolation of displacemt field)
+  // (used for interpolation of displacement field)
   // *********************************************************************
   case CElement::lin1D:
   {
@@ -104,7 +104,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   }
   // *********************************************************************
   // 1D standard quadratic shape functions
-  // (used for interpolation of displacemt field)
+  // (used for interpolation of displacement field)
   // *********************************************************************
   case CElement::quad1D:
   {
@@ -317,7 +317,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   }
   // *********************************************************************
   // 2D standard linear shape functions (triangular)
-  // (used for interpolation of displacemt field)
+  // (used for interpolation of displacement field)
   // *********************************************************************
   case CElement::lin2D:
   {
@@ -331,7 +331,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   }
   // *********************************************************************
   // 2D standard blinear shape functions (quadrilateral)
-  // (used for interpolation of displacemt field)
+  // (used for interpolation of displacement field)
   // *********************************************************************
   case CElement::bilin2D:
   {
@@ -355,56 +355,6 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   return;
 }
 
-
-///*----------------------------------------------------------------------*
-// |  2D shape function repository                              popp 08/08|
-// *----------------------------------------------------------------------*/
-//void CONTACT::CElement::ShapeFunctions2D(CElement::ShapeType shape,
-//                                         const double* xi,
-//                                         vector<double>& val,
-//                                         LINALG::SerialDenseMatrix& deriv)
-//{
-//  switch(shape)
-//  {
-//  // *********************************************************************
-//  // 2D standard linear shape functions (triangular)
-//  // (used for interpolation of displacemt field)
-//  // *********************************************************************
-//  case CElement::lin2D:
-//  {
-//    val[0] = 1-xi[0]-xi[1]; 
-//    val[1] = xi[0];
-//    val[2] = xi[1];
-//    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
-//    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
-//    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
-//    break;
-//  }
-//  // *********************************************************************
-//  // 2D standard blinear shape functions (quadrilateral
-//  // (used for interpolation of displacemt field)
-//  // *********************************************************************
-//  case CElement::bilin2D:
-//  {
-//    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
-//    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
-//    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
-//    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
-//    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
-//    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
-//    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
-//    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
-//    break;
-//  }  
-//  // *********************************************************************
-//  // Unkown shape function type
-//  // *********************************************************************
-//  default:
-//    dserror("ERROR: Unknown 2D shape function type identifier");
-//  }
-//  
-//  return;
-//}
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function linearizations repository            popp 05/08|
@@ -1000,31 +950,6 @@ bool CONTACT::CElement::EvaluateShape(const double* xi, LINALG::SerialDenseVecto
 
   return true;
 }
-
-
-///*----------------------------------------------------------------------*
-// |  Evaluate shape functions - LINEAR 2D                      popp 08/08|
-// *----------------------------------------------------------------------*/
-//bool CONTACT::CElement::EvaluateShape2D(const double* xi, vector<double>& val,
-//                                        LINALG::SerialDenseMatrix& deriv, const int valdim)
-//{
-//  if (!xi)
-//    dserror("ERROR: EvaluateShape2D called with xi=NULL");
-//  
-//  // 3D linear case (3noded triangular element)
-//  if ((valdim==3)&& (Shape()==tri3))
-//    ShapeFunctions2D(CElement::lin2D,xi,val,deriv);
-//
-//  // 3D bilinear case (4noded quadrilateral element)
-//  else if ((valdim==4) && (Shape()==quad4))
-//    ShapeFunctions2D(CElement::bilin2D,xi,val,deriv);
-//  
-//  // unknown case
-//  else
-//    dserror("ERROR: EvaluateShape1D called for unknown CElement type");
-//
-//  return true;
-//}
 
 
 /*----------------------------------------------------------------------*

@@ -34,8 +34,8 @@ class CDofSet : public DRT::DofSet
 {
 public:
 
-
-
+  //! @name Constructors and destructors and related methods
+  
   /*!
   \brief Standard Constructor
 
@@ -47,7 +47,6 @@ public:
 
   */
   virtual ~CDofSet() { return; }
-
 
   //@}
 

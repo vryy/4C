@@ -52,7 +52,7 @@ StruGenAlpha(params,dis,solver,output)
 
 
 /*----------------------------------------------------------------------*
- |  do consistent predictor step (public)                    mwgee 07/07|
+ |  do consistent predictor step (public)                     popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 {
@@ -384,7 +384,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
 
 /*----------------------------------------------------------------------*
- |  do constant predictor step (public)                      mwgee 03/07|
+ |  do constant predictor step (public)                       popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 {
@@ -637,7 +637,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
 
 /*----------------------------------------------------------------------*
- |  do Newton iteration (public)                             mwgee 03/07|
+ |  do Newton iteration (public)                              popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::FullNewton()
 {

@@ -31,7 +31,6 @@ namespace CONTACT
 /*!
 \brief A class to perform projections of nodes onto opposing CElements
 
-
 \author popp (popp@lnm.mw.tum.de)
 */
 
@@ -47,6 +46,7 @@ public:
   performed in parallel by individual processes.
   
   \param dim (in): Global problem dimension
+  
   */
   explicit Projector(int dim);
 
@@ -82,7 +82,8 @@ public:
   
   \param node (in): Slave node to project
   \param ele (in) : Master Celement to project on
-  \param xi (out) : Local coordinates of projection on CElement 
+  \param xi (out) : Local coordinates of projection on CElement
+  
   */
   bool ProjectNodalNormal(CONTACT::CNode& node,
                           CONTACT::CElement& ele,
@@ -104,6 +105,7 @@ public:
   \param node (in): Master Node to project
   \param ele (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
+  
   */
   bool ProjectElementNormal(CONTACT::CNode& node,
                             CONTACT::CElement& ele,
@@ -114,14 +116,15 @@ public:
     
   Used to project a slave side GP onto a CElement of the master side
     
-   This method will compute the coordinates of a projection of a Gauss
-   point in the local coordinate system of a CElement.
+  This method will compute the coordinates of a projection of a Gauss
+  point in the local coordinate system of a CElement.
     
-   \param gpele (in): Slave CElement containing GP to project
-   \param gpeta (in): Local coordinates of GP on gpele
-   \param ele (in)  : Master Celement to project on
-   \param xi (out)  : Local coordinates of projection on CElement 
-   */
+  \param gpele (in): Slave CElement containing GP to project
+  \param gpeta (in): Local coordinates of GP on gpele
+  \param ele (in)  : Master Celement to project on
+  \param xi (out)  : Local coordinates of projection on CElement
+  
+  */
    bool ProjectGaussPoint(CONTACT::CElement& gpele,
                           const double* gpeta,
                           CONTACT::CElement& ele,

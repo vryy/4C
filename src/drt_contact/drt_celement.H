@@ -47,17 +47,17 @@ public:
   //! @name Enums and Friends
   enum ShapeType // shape function types recognized by CElement
     {
-      lin1D,
+      lin1D,                  // standard 1D
       lindual1D,
       lindual1D_edge0,
       lindual1D_edge1,
-      dual1D_base_for_edge0,
+      dual1D_base_for_edge0,  // dual 1D
       dual1D_base_for_edge1,
       quad1D,
       quaddual1D,
       quaddual1D_edge0,
       quaddual1D_edge1,
-      lin2D,
+      lin2D,                  // standard 2D
       bilin2D
     };
       
@@ -108,6 +108,7 @@ public:
 
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
+  
   */
   virtual int UniqueParObjectId() const { return ParObject_CElement; }
 
@@ -130,8 +131,8 @@ public:
   /*!
   \brief Allocate and return a ElementRegister class
 
-   Assuming the contact elements do not need initialization, we return a 
-   dummy base class here.
+  Assuming the contact elements do not need initialization, we return a 
+  dummy base class here.
 
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const
@@ -141,25 +142,27 @@ public:
 
   //! @name Query methods
 
-
   /*!
   \brief Get shape type of element
+  
   */
   virtual DiscretizationType Shape() const { return shape_;}
 
   /*!
   \brief Return number of lines to this element
+  
   */
   virtual int NumLine() const {return 0;}
 
   /*!
   \brief Return number of surfaces to this element
+  
   */
   virtual int NumSurface() const {return 0;}
 
-
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
+  
   */
   virtual vector<RCP<DRT::Element> > Lines()
   {
@@ -169,13 +172,13 @@ public:
 
   /*!
   \brief Get vector of RefCountPtrs to the surfaces of this element
+  
   */
   virtual vector<RCP<DRT::Element> > Surfaces()
   {
    vector<RCP<DRT::Element> > surfaces(0);
    return surfaces;
   }
-
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -196,6 +199,7 @@ public:
 
   For now contact elements do not have degrees of freedom independent of
   the nodes
+  
   */
   virtual int NumDofPerElement() const { return 0; }
 
@@ -204,12 +208,6 @@ public:
 
   */
   virtual void Print(ostream& os) const;
-  
-  /*!
-  \brief Return reference area
-
-  */
-  virtual inline double& RefArea() { return refarea_; }
   
   /*!
   \brief Return current area
@@ -239,7 +237,6 @@ public:
 
   //! @name Construction
 
-
   //@}
 
   //! @name Conditions
@@ -247,8 +244,6 @@ public:
   //@}
 
   //! @name Evaluation methods
-
-
 
   /*!
   \brief Evaluate an element
@@ -351,17 +346,17 @@ public:
                              map<int,double>& derivjac);
   
   /*!
-  \brief Compute length (in 3D area) of the element
+  \brief Compute length/area of the element
   */
   virtual double ComputeArea();
   
   /*!
-  \brief Compute length (in 3D area) derivative of the element
+  \brief Compute length/area derivative of the element
   */
   virtual void DerivArea(map<int,double>& derivarea);
     
   /*!
-  \brief A repository for all kinds of 1D shape functions
+  \brief A repository for all kinds of 1D/2D shape functions
   */
   virtual void ShapeFunctions(CElement::ShapeType shape,
                               const double* xi,
@@ -382,25 +377,25 @@ public:
   void ShapeFunctionLinearizations(CElement::ShapeType shape,
                                    vector<vector<map<int,double> > >& derivdual);
   /*!
-  \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
+  \brief Evaluate shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
                              LINALG::SerialDenseMatrix& deriv, const int valdim);
    
   /*!
-  \brief Evaluate dual shape functions and derivatives - LINEAR / QUAD 1D 
+  \brief Evaluate dual shape functions and derivatives
   */
   virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
                                  LINALG::SerialDenseMatrix& deriv, const int valdim);
   
   /*!
-  \brief Evaluate 2nd derivative of shape functions - LINEAR / QUAD 1D 
+  \brief Evaluate 2nd derivative of shape functions
   */
   virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
                                      const int valdim);
     
   /*!
-  \brief Compute directional derivative of dual shape functions - LINEAR / QUAD 1D 
+  \brief Compute directional derivative of dual shape functions
   
   \param derivdual (in): derivative maps to be filled
                          (= derivatives of the dual coefficient matrix Ae) 
@@ -422,7 +417,7 @@ public:
   virtual bool LocalToGlobal(const double* xi, double* globcoord, bool inttype);
 
   /*!
-  \brief Add CElements to this CElement's potentially contact partners
+  \brief Add CElements to this CElement's potential contact partners
   */
   virtual bool AddSearchElements(const vector<int>& gids);
   
@@ -434,8 +429,7 @@ private:
   DRT::Element::DiscretizationType   shape_;   // shape of this element
   
   bool          isslave_;           // indicating slave or master side
-  double        refarea_;           // element length or area in reference configuration
-  double        area_;              // element length or area in current configuration
+  double        area_;              // element length/area in current configuration
   
   vector<int>   searchelements_;    // global ids of potentially contacting elements 
 
@@ -445,11 +439,6 @@ private:
 
 // << operator
 ostream& operator << (ostream& os, const CONTACT::CElement& ele);
-
-
-
-
-
 
 
 

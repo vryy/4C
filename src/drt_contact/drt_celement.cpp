@@ -32,9 +32,7 @@ shape_(shape),
 isslave_(isslave)
 {
   SetNodeIds(numnode,nodeids);
-  RefArea()=0.0;
-  Area()=RefArea();
-  searchelements_.resize(0);     //FIXME: Is this necessary???
+  Area()=0.0;
   return;
 }
 
@@ -45,7 +43,6 @@ CONTACT::CElement::CElement(const CONTACT::CElement& old) :
 DRT::Element(old),
 shape_(old.shape_),
 isslave_(old.isslave_),
-refarea_(old.refarea_),
 area_(old.area_),
 searchelements_(old.searchelements_)
 {
@@ -104,8 +101,6 @@ void CONTACT::CElement::Pack(vector<char>& data) const
   AddtoPack(data,shape_);
   // add isslave_
   AddtoPack(data,isslave_);
-  // add refarea_
-  AddtoPack(data,refarea_);
   // add area_
   AddtoPack(data,area_);
   // add searchelements_
@@ -134,8 +129,6 @@ void CONTACT::CElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,shape_);
   // isslave_
   ExtractfromPack(position,data,isslave_);
-  // refarea_
-  ExtractfromPack(position,data,refarea_);
   // area_
   ExtractfromPack(position,data,area_);
   // searchelements_
@@ -160,7 +153,7 @@ int CONTACT::CElement::Evaluate(ParameterList&            params,
                                 Epetra_SerialDenseVector& elevec2,
                                 Epetra_SerialDenseVector& elevec3)
 {
-  dserror("CONTACT::CElement::Evaluate not yet impl.");
+  dserror("CONTACT::CElement::Evaluate not implemented!");
   return -1;
 }
 
@@ -678,7 +671,7 @@ void CONTACT::CElement::DerivJacobian(const LINALG::SerialDenseVector& val,
 }
 
 /*----------------------------------------------------------------------*
- |  Compute length (in 3D area) of the element                popp 12/07|
+ |  Compute length / area of the element                      popp 12/07|
  *----------------------------------------------------------------------*/
 double CONTACT::CElement::ComputeArea()
 {
@@ -754,7 +747,7 @@ double CONTACT::CElement::ComputeArea()
     }
   }
   
-  // other cases (3D) not implemented yet
+  // other cases not implemented yet
   else
     dserror("ERROR: Area computation not implemented for this type of CElement");
   
@@ -762,7 +755,7 @@ double CONTACT::CElement::ComputeArea()
 }
 
 /*----------------------------------------------------------------------*
- |  Compute length/area linearization of the element          popp 06/08|
+ |  Compute length / area linearization of the element        popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
 {
@@ -816,7 +809,7 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
     }  
   }
   
-  // other cases (3D) not implemented yet
+  // other cases not implemented yet
   else
     dserror("ERROR: Area derivative not implemented for this type of CElement");
     

@@ -33,7 +33,6 @@ namespace CONTACT
        in 1D (which is equivalent to a 2D contact problem) and in 2D
        (which is equivalent to a 3D contact problem)
 
-
 \author popp (popp@lnm.mw.tum.de)
 */
 
@@ -101,6 +100,7 @@ public:
   is not set. Otherwise we obtain the D-matrix entries via a
   fundamental Mortar equation from the M-matrix entries. Therefore,
   when AssembleM is called, Assemble D is done too in that case.
+  
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateD(CONTACT::CElement& sele,
                                            double sxia, double sxib);
@@ -110,7 +110,8 @@ public:
   
   This method is only called if the flag CONTACTONEMORTARLOOP
   is not set. Linearization of D is not yet implemented for the
-  CONTACTONEMORTARLOOP case and will throw a dserror.    
+  CONTACTONEMORTARLOOP case and will throw a dserror.
+  
   */
   void DerivD(CONTACT::CElement& sele, double sxia, double sxib);
     
@@ -156,7 +157,8 @@ public:
   This modification is based on a paper by Puso/Wohlmuth, 2005.<br>
   It is necessary in the case of linear slave side elements
   and dual shape functions for the Lagrange multipliers, when
-  the interface is curved!
+  the interface is curved (but only for mesh tying)!
+  
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateMmod(CONTACT::CElement& sele,
                                               double sxia, double sxib,
@@ -177,7 +179,8 @@ public:
   
   This method is only called if the flag CONTACTONEMORTARLOOP
   is not set. Otherwise, when AssembleM is called, Assemble D
-  is done too.
+  is done there too.
+  
   */
   bool AssembleD(CONTACT::Interface& inter, CONTACT::CElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
@@ -204,8 +207,7 @@ public:
   */
   bool AssembleG(CONTACT::Interface& inter, CONTACT::CElement& sele,
                  Epetra_SerialDenseVector& g_seg);
-    
-    
+       
   //@}
       
 protected:
@@ -214,10 +216,10 @@ protected:
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
   
-    int                        dim_;            // dimension of problem (2D or 3D)
-    int                        ngp_;            // number of Gauss points
-    LINALG::SerialDenseMatrix  coords_;         // Gauss point coordinates
-    vector<double>             weights_;        // Gauss point weights
+    int                        dim_;         // dimension of problem (2D or 3D)
+    int                        ngp_;         // number of Gauss points
+    LINALG::SerialDenseMatrix  coords_;      // Gauss point coordinates
+    vector<double>             weights_;     // Gauss point weights
 
 }; // class Integrator
 }  // namespace CONTACT

@@ -24,7 +24,8 @@ Maintainer: Alexander Popp
 CONTACT::Projector::Projector(int dim) :
 dim_(dim)
 {
-  if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
+  if (Dim()!=2 && Dim()!=3)
+    dserror("ERROR: Contact problem must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*

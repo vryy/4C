@@ -221,7 +221,6 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   // slip_
   ExtractfromPack(position,data,slip_);
 
-  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -321,6 +320,7 @@ void CONTACT::CNode::AddgValue(double val)
   
   // add given value to grow_
   grow_+=val;
+  
   return;
 }
 
@@ -477,7 +477,7 @@ CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> i
   CNode* closestnode = NULL;
   
   // loop over all nodes of the DRT::Discretization that are
-  // included in the given Epetra_Map
+  // included in the given Epetra_Map ("brute force" search)
   for(int i=0; i<nodesearchmap->NumMyElements();++i)
   {
     int gid = nodesearchmap->GID(i);
