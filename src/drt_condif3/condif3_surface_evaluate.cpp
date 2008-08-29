@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "condif3.H"
+#include "condif3_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -68,7 +69,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     const int ielparent = parent_->NumNode();
     const int nsd=3;
     Epetra_SerialDenseVector evel(nsd*ielparent);
-    parent_->DRT::ELEMENTS::Condif3::ExtractMyNodeBasedValues(evel,velocity);
+    DRT::UTILS::ExtractMyNodeBasedValues(parent_,evel,velocity);
 
     // get actual values of transported scalar
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");

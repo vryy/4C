@@ -1,0 +1,1519 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file condif3_impl.cpp
+
+\brief Internal implementation of Condif3 element
+
+<pre>
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+#ifdef D_FLUID3
+#ifdef CCADISCRET
+
+#include "condif3_impl.H"
+#include "condif3_utils.H"
+#include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include <Epetra_SerialDenseSolver.h>
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Condif3Impl* DRT::ELEMENTS::Condif3Impl::Impl(DRT::ELEMENTS::Condif3* c3)
+{
+  // we assume here, that numdofpernode is equal for every node within
+  // the discretization and does not change during the computations
+  const int numdofpernode = c3->NumDofPerNode(*(c3->Nodes()[0]));
+
+  switch (c3->NumNode())
+  {
+  case 8:
+  {
+    static Condif3Impl* f8;
+    if (f8==NULL)
+      f8 = new Condif3Impl(8,numdofpernode);
+    return f8;
+  }
+  case 20:
+  {
+    static Condif3Impl* f20;
+    if (f20==NULL)
+      f20 = new Condif3Impl(20,numdofpernode);
+    return f20;
+  }
+  case 27:
+  {
+    static Condif3Impl* f27;
+    if (f27==NULL)
+      f27 = new Condif3Impl(27,numdofpernode);
+    return f27;
+  }
+  case 4:
+  {
+    static Condif3Impl* f4;
+    if (f4==NULL)
+      f4 = new Condif3Impl(4,numdofpernode);
+    return f4;
+  }
+  case 10:
+  {
+    static Condif3Impl* f10;
+    if (f10==NULL)
+      f10 = new Condif3Impl(10,numdofpernode);
+    return f10;
+  }
+  case 6:
+  {
+    static Condif3Impl* f6;
+    if (f6==NULL)
+      f6 = new Condif3Impl(6,numdofpernode);
+    return f6;
+  }
+  case 15:
+  {
+    static Condif3Impl* f15;
+    if (f15==NULL)
+      f15 = new Condif3Impl(15,numdofpernode);
+    return f15;
+  }
+  case 5:
+  {
+    static Condif3Impl* f5;
+    if (f5==NULL)
+      f5 = new Condif3Impl(5,numdofpernode);
+    return f5;
+  }
+
+  default:
+    dserror("node number %d not supported", c3->NumNode());
+  }
+  return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Condif3Impl::Condif3Impl(int iel, int numdofpernode)
+  : iel_(iel),
+    numdofpernode_(numdofpernode),
+    xyze_(3,iel_),
+    bodyforce_(iel_*numdofpernode_),
+    diffus_(numdofpernode_),
+    funct_(iel_),
+    deriv_(3,iel_),
+    deriv2_(6,iel_),
+    xjm_(3,3),
+    xij_(3,3),
+    derxy_(3,iel_),
+    derxy2_(6,iel_),
+    edeadng_(numdofpernode_),
+    hist_(numdofpernode_),
+    velint_(3),
+    tau_(numdofpernode_),
+    xder2_(6,3),
+    fac_(0)
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate system matrix and rhs (public)                 g.bau 08/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::Sysmat(
+    const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
+    const vector<double>&           ehist, ///< rhs from beginning of time step
+    Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
+    Epetra_SerialDenseMatrix*       sys_mat_sd, ///< ??????
+    Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
+    Epetra_SerialDenseVector&       sugrvisc, ///< ??????
+    const struct _MATERIAL*         material, ///< material pointer
+    const double                    time, ///< current simulation time
+    const double                    timefac, ///< time discretization factor
+    const Epetra_SerialDenseVector& evel, ///< nodal velocities at n+1
+    const bool                      is_stationary ///< flag indicating stationary formulation
+)
+{
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+
+  // get node coordinates
+  for (int i=0;i<iel_;i++)
+  {
+    xyze_(0,i)=ele->Nodes()[i]->X()[0];
+    xyze_(1,i)=ele->Nodes()[i]->X()[1];
+    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+  }
+
+  // dead load in element nodes
+  BodyForce(ele,time);
+
+  // get diffusivity / diffusivities
+  if (material->mattyp == m_matlist)
+  {
+    for (int k = 0;k<numdofpernode_;++k)
+    {
+      const int matid = material->m.matlist->matids[k];
+      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+#if 0
+      if (singlemat.mattyp == m_ion)
+        cout<<"MatId: "<<material->m.matlist->matids[k]
+        <<" valence["<<k<<"] = "<<singlemat.m.ion->valence 
+        <<" diffusivity["<<k<<"] = "<<singlemat.m.ion->diffusivity<<endl;
+#endif
+      if (singlemat.mattyp != m_condif) dserror("no condif material found");
+      diffus_[k]= singlemat.m.condif->diffusivity;
+#if 0
+      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
+#endif
+    }
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
+    diffus_[0] = material->m.condif->diffusivity;
+  }
+  else
+    dserror("Material type is not supported");
+
+  /*----------------------------------------------------------------------*/
+  // calculation of stabilization parameter(s) tau
+  /*----------------------------------------------------------------------*/
+  CalTau(ele,tau_,evel,distype,funct_,deriv_,xyze_,derxy_,xjm_,velint_,diffus_,iel_,timefac,is_stationary);
+
+  /*----------------------------------------------------------------------*/
+  // integration loop for one condif3 element
+  /*----------------------------------------------------------------------*/
+
+  // flag for higher order elements
+  const bool higher_order_ele = SCATRA::isHigherOrderElement(distype);
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::getOptimalGaussrule(distype));
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,distype,higher_order_ele,ele);
+
+    /*---------------------- get velocity at integration point */
+    // use same shape functions for velocity as for unknown scalar field phi
+    for (int i=0;i<3;i++)
+    {
+        velint_[i]=0.0;
+        for (int j=0;j<iel_;j++)
+        {
+            velint_[i] += funct_[j]*evel[i+(3*j)];
+        }
+    }
+
+    /*------------ get values of variables at integration point */
+    for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
+    {
+      // get history data at integration point
+      hist_[k] = 0;
+      for (int j=0;j<iel_;j++)
+      {
+        hist_[k] += funct_[j]*ehist[j*numdofpernode_+k];
+      }
+
+    // get bodyforce in gausspoint
+      edeadng_[k] = 0;
+      for (int inode=0;inode<iel_;inode++)
+      {
+        edeadng_[k]+= bodyforce_[inode*numdofpernode_+k]*funct_[inode];
+        // note: bodyforce calculation isn't filled with functionality yet.
+        // -> this line has no effect since bodyforce is always zero.
+      }
+    }
+
+    /*-------------- perform integration for entire matrix and rhs ---*/
+    for (int k=0;k<numdofpernode_;++k) // deal with a system of transported scalars
+    {
+      if(is_stationary==false)
+        CalMat(*sys_mat,*residual,velint_,hist_[k],funct_,derxy_,derxy2_,edeadng_[k],tau_[k],fac_,diffus_[k],iel_,timefac,k);
+      else
+        CalMatStationary(*sys_mat,*residual,velint_,hist_[k],funct_,derxy_,derxy2_,edeadng_[k],tau_[k],fac_,diffus_[k],iel_,k);
+    } // loop over each scalar
+
+  } // integration loop
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get the body force  (private)                              gjb 06/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::BodyForce(const DRT::ELEMENTS::Condif3* ele, const double time)
+{
+   vector<DRT::Condition*> myneumcond;
+
+   // check whether all nodes have a unique VolumeNeumann condition
+   DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+
+   if (myneumcond.size()>1)
+   {
+     dserror("More than one VolumeNeumann condition on Condif3 element");
+   }
+
+   if (myneumcond.size()==1)
+   {
+    dserror("Body force not implemented for Condif3 element.");
+   }
+
+  return;
+
+} //Condif3Impl::BodyForce
+
+
+/*----------------------------------------------------------------------*
+ |  calculate stabilization parameter  (private)              gjb 06/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::CalTau(
+    const DRT::ELEMENTS::Condif3*&          ele,
+    vector<double>&                         tau,
+    const Epetra_SerialDenseVector&         evel,
+    const DRT::Element::DiscretizationType& distype,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
+    Epetra_SerialDenseMatrix&               xyze,
+    Epetra_SerialDenseMatrix&               derxy,
+    Epetra_SerialDenseMatrix&               xjm,
+    vector<double>&                         velint,
+    const vector<double>&                   diffus,
+    const int&                              iel,
+    const double&                           timefac,
+    const bool&                             is_stationary
+  )
+{
+  /*------------------------------------------------------- initialize ---*/
+  // use one point gauss rule to calculate tau at element center
+  DRT::UTILS::GaussRule3D integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
+    break;
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
+    break;
+  case DRT::Element::pyramid5:
+    integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
+    break;
+  default:
+    dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(integrationrule_stabili);
+
+  // prepare the standard FE stuff for this single integration point
+  // we do not need second derivatives for the calculation of tau
+  // EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,distype,false,ele);
+
+  // shape functions and derivs at element center
+  const double e1    = intpoints_tau.qxg[0][0];
+  const double e2    = intpoints_tau.qxg[0][1];
+  const double e3    = intpoints_tau.qxg[0][2];
+  const double wquad = intpoints_tau.qwgt[0];
+
+  // shape functions and their derivatives
+  DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+  /*------------------------------ get Jacobian matrix and determinant ---*/
+  /*----------------------------- determine Jacobi Matrix at point r,s ---*/
+  double dum;
+   for (int i=0; i<3; i++)
+   {
+      for (int j=0; j<3; j++)
+      {
+         dum=0.0;
+         for (int l=0; l<iel; l++)
+         {
+            dum += deriv(i,l)*xyze(j,l);
+         }
+         xjm(i,j)=dum;
+      } /* end of loop j */
+   } /* end of loop i */
+   // ------------------------------------- calculate Jacobi determinant
+   const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                      xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                      xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                      xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                      xjm(0,1)*xjm(1,0)*xjm(2,2);
+   if (det < 0.0)
+     dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+   if (abs(det) < 1E-16)
+     dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+   
+   /*------------------------------------------------------------------*/
+   /*                                         compute global derivates */
+   /*------------------------------------------------------------------*/
+    /*------------------------------------------------- initialization */
+   for(int k=0;k<iel;k++)
+    {
+      derxy(0,k)=0.0;
+      derxy(1,k)=0.0;
+      derxy(2,k)=0.0;
+    } /* end of loop over k */
+    
+    // ---------------------------------------inverse of transposed jacobian
+    static Epetra_SerialDenseMatrix       xij(3,3);
+    double idet = 1./det;
+    xij(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))*idet;
+    xij(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))*idet;
+    xij(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))*idet;
+    xij(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))*idet;
+    xij(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))*idet;
+    xij(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))*idet;
+    xij(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))*idet;
+    xij(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))*idet;
+    xij(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))*idet;
+    /*---------------------------------------- calculate global derivatives */
+    for (int k=0;k<iel;k++)
+    {
+      derxy(0,k) +=   xij(0,0) * deriv(0,k) + xij(0,1) * deriv(1,k) + xij(0,2) * deriv(2,k);
+      derxy(1,k) +=   xij(1,0) * deriv(0,k) + xij(1,1) * deriv(1,k) + xij(1,2) * deriv(2,k);
+      derxy(2,k) +=   xij(2,0) * deriv(0,k) + xij(2,1) * deriv(1,k) + xij(2,2) * deriv(2,k);
+    } /* end of loop over k */
+
+   const double vol = wquad*det;
+
+  // get element type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::pyramid5:
+  case DRT::Element::hex8:
+  case DRT::Element::wedge6:
+    mk = 0.333333333333333333333;
+    break;
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
+  case DRT::Element::wedge15:
+    mk = 0.083333333333333333333;
+    break;
+  default:
+    dserror("type unknown!\n");
+  }
+
+  // get velocities at element center
+  // use same shape functions for velocity as for unknown scalar field phi
+  for (int i=0;i<3;i++)
+  {
+    velint[i]=0.0;
+    for (int j=0;j<iel_;j++)
+    {
+      velint[i] += funct_[j]*evel[i+(3*j)];
+    }
+  } //end loop over i
+
+#if 0
+  // get coordinate of element center
+  vector<double> centercoord(3);
+  for (int i=0;i<3;i++)
+  {
+    centercoord[i]=0.0;
+    for (int j=0;j<iel;j++)
+    {
+      centercoord[i] += funct[j]*xyze(i,j);
+    }
+  } //end loop over i
+  cout<<"element center: "<<endl<<centercoord[0]<<endl<<centercoord[1]<<endl<<centercoord[2]<<endl;
+#endif
+
+
+   // there exist different definitions for 'the' characteristic element length hk:
+   // 1)
+   // get element length for tau_Mp/tau_C: volume-equival. diameter
+   // const double hk = pow((6.*vol/PI),(1.0/3.0));
+
+   // 2)
+   // streamlength (based on velocity vector at element centre)
+   
+   // get Euclidean norm of velocity at element center
+   const double vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]) + DSQR(velint[2]));
+
+   double strle = 0.0;
+   if (vel_norm>1e-6)
+   {
+     double val = 0;
+     for (int i=0;i<iel_;++i)
+     {
+       double sum = 0;
+       for (int j=0;j<3;++j)
+       {
+         sum += velint[j]*derxy_(j,i);
+       }
+       val+= abs(sum);
+     } 
+     strle = 2.0*vel_norm/val; //this formula is not working in 3D in case of HEX8 elements!!
+   }
+   else
+   {//case: 'zero' velocity vector => tau will be very small in diffusion dominated regions
+     // => usage of arbitrary vector velint = (1 0 0)^T in the formula above is possible.
+     double val = 0;
+     for (int i=0;i<iel_;++i)
+     {
+       val+=abs(derxy_(0,i));
+     }
+     strle = 2.0/val;
+   }
+   //const double hk = strle;
+
+   // 3) use cubic root of the element volume as characteristic length
+   const double hk = pow(vol,(1.0/3.0));
+
+   double epe1, epe2, xi1, xi2;
+
+   if (is_stationary == false)
+   {// stabilization parameters for instationary case (default)
+     for(int k = 0;k<numdofpernode_;++k)
+     {
+
+       /* parameter relating diffusive : reactive forces */
+       epe1 = 2.0 * timefac * diffus[k] / (mk * DSQR(hk)); 
+       if (diffus[k] == 0.0)
+         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+       /* parameter relating convective : diffusive forces */
+       const double epe2 = mk * vel_norm * hk / diffus[k];
+       xi1 = DMAX(epe1,1.0);
+       xi2 = DMAX(epe2,1.0);
+
+       /*--------------------------------------------------- compute tau ---*/
+       tau[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus[k]/mk)*xi2);
+     } // for k
+   }
+   else
+   {// stabilization parameters for stationary case
+     for (int k = 0;k<numdofpernode_;++k)
+     {
+       /*------------------------------------------------------ compute tau ---*/
+       /* stability parameter definition according to Franca and Valentin (2000) */
+       if (diffus[k] == 0.0)
+         dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+       epe2 = mk * vel_norm * hk / diffus[k];      /* convective : diffusive forces */
+       xi2 = DMAX(epe2,1.0);
+
+       tau[k] = (DSQR(hk)*mk)/(2.0*diffus[k]*xi2);
+     } // for k
+   }
+
+#if 0
+   // some debug output
+   cout<<"hk (volume equiv diam)            = "<<pow((6.*vol/PI),(1.0/3.0))<<endl;
+   cout<<"strle                             = "<<strle<<endl;
+   cout<<"hk (cubic root of element volume) = "<<pow(vol,(1.0/3.0))<<endl;
+   cout<<"tau = "<<tau<<endl;
+#endif
+
+  return;
+} //Condif3Impl::Caltau
+
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at int. point     gjb 08/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::EvalShapeFuncAndDerivsAtIntPoint(
+    const DRT::UTILS::IntegrationPoints3D& intpoints, ///< integration points
+    const int& iquad,                                 ///< id of current Gauss point
+    const DRT::Element::DiscretizationType& distype,  ///< distinguish between DiscretizationType
+    const bool& higher_order_ele,                     ///< are second derivatives needed?
+    const DRT::ELEMENTS::Condif3*   ele               ///< the element
+)
+{
+  // coordinates of the current integration point
+  const double e1 = intpoints.qxg[iquad][0];
+  const double e2 = intpoints.qxg[iquad][1];
+  const double e3 = intpoints.qxg[iquad][2];
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+
+  /*----------------------------------------- compute Jacobian matrix */
+  // get Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+   */
+  double dum;
+  /*-------------------------------- determine jacobian at point r,s ---*/
+  for (int i=0; i<3; i++)
+  {
+    for (int j=0; j<3; j++)
+    {
+      dum=0.0;
+      for (int l=0; l<iel_; l++)
+      {
+        dum += deriv_(i,l)*xyze_(j,l);
+      }
+      xjm_(i,j)=dum;
+    } // end of loop j
+  } // end of loop i
+  // ---------------------------------------- calculate determinant
+  const double det =  xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
+                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
+                      xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
+                      xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
+                      xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
+                      xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+
+  if (det < 0.0)
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+  if (abs(det) < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+
+  fac_ = intpoints.qwgt[iquad]*det; // Gauss weight * det(J)
+
+  /*------------------------------------------------------------------*/
+  /*                                         compute global derivates */
+  /*------------------------------------------------------------------*/
+
+  // ---------------------------------------inverse of transposed jacobian
+  double idet = 1./det;
+  xij_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))*idet;
+  xij_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))*idet;
+  xij_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))*idet;
+  xij_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))*idet;
+  xij_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))*idet;
+  xij_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))*idet;
+  xij_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))*idet;
+  xij_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))*idet;
+  xij_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))*idet;
+
+  /*------------------------------------------------- initialization */
+  for(int k=0;k<iel_;k++)
+  {
+    derxy_(0,k)=0.0;
+    derxy_(1,k)=0.0;
+    derxy_(2,k)=0.0;
+  }
+
+  // ---------------------------------------- calculate global derivatives
+  for (int k=0;k<iel_;k++)
+  {
+    derxy_(0,k) +=   xij_(0,0) * deriv_(0,k) + xij_(0,1) * deriv_(1,k) + xij_(0,2) * deriv_(2,k);
+    derxy_(1,k) +=   xij_(1,0) * deriv_(0,k) + xij_(1,1) * deriv_(1,k) + xij_(1,2) * deriv_(2,k);
+    derxy_(2,k) +=   xij_(2,0) * deriv_(0,k) + xij_(2,1) * deriv_(1,k) + xij_(2,2) * deriv_(2,k);
+  }
+
+  // ------------------------------------ compute second global derivatives
+  if (higher_order_ele) CalSecondDeriv(e1,e2,e3,distype);
+
+  // say goodbye
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
+ |                                            (private)      gammi 07/07
+ |
+ | From the six equations
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ |  ----   = -- | --*-- + --*-- + --*-- |
+ |  dr^2     dr | dr dx   dr dy   dr dz |
+ |              +-                     -+
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ |  ------ = -- | --*-- + --*-- + --*-- |
+ |  ds^2     ds | ds dx   ds dy   ds dz |
+ |              +-                     -+
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ |  ----   = -- | --*-- + --*-- + --*-- |
+ |  dt^2     dt | dt dx   dt dy   dt dz |
+ |              +-                     -+
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ | -----   = -- | --*-- + --*-- + --*-- |
+ | ds dr     ds | dr dx   dr dy   dr dz |
+ |              +-                     -+
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ | -----   = -- | --*-- + --*-- + --*-- |
+ | dt dr     dt | dr dx   dr dy   dr dz |
+ |              +-                     -+
+ |
+ |              +-                     -+
+ |  d^2N     d  | dx dN   dy dN   dz dN |
+ | -----   = -- | --*-- + --*-- + --*-- |
+ | ds dt     ds | dt dx   dt dy   dt dz |
+ |              +-                     -+
+ |
+ | the matrix (jacobian-bar matrix) system
+ |
+ | +-                                                                                         -+   +-    -+
+ | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
+ | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
+ | |   \dr/          \dr/           \dr/             dr dr           dr dr           dr dr     |   | dx^2 |
+ | |                                                                                           |   |      |
+ | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
+ | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
+ | |   \ds/          \ds/           \ds/             ds ds           ds ds           ds ds     |   | dy^2 |
+ | |                                                                                           |   |      |
+ | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
+ | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
+ | |   \dt/          \dt/           \dt/             dt dt           dt dt           dt dt     |   | dz^2 |
+ | |                                                                                           | * |      |
+ | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
+ | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
+ | |   dr ds         dr ds          dr ds        dr ds   ds dr   dr ds   ds dr  dr ds   ds dr  |   | dxdy |
+ | |                                                                                           |   |      |
+ | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
+ | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
+ | |   dr dt         dr dt          dr dt        dr dt   dt dr   dr dt   dt dr  dr dt   dt dr  |   | dxdz |
+ | |                                                                                           |   |      |
+ | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
+ | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
+ | |   dt ds         dt ds          dt ds        dt ds   ds dt   dt ds   ds dt  dt ds   ds dt  |   | dydz |
+ | +-                                                                                         -+   +-    -+
+ |
+ |                  +-    -+     +-                           -+
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | dr^2 |     | dr^2 dx   dr^2 dy   dr^2 dz |
+ |                  |      |     |                             |
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | ds^2 |     | ds^2 dx   ds^2 dy   ds^2 dz |
+ |                  |      |     |                             |
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | dt^2 |     | dt^2 dx   dt^2 dy   dt^2 dz |
+ |              =   |      |  -  |                             |
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | drds |     | drds dx   drds dy   drds dz |
+ |                  |      |     |                             |
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | drdt |     | drdt dx   drdt dy   drdt dz |
+ |                  |      |     |                             |
+ |                  | d^2N |     | d^2x dN   d^2y dN   d^2z dN |
+ |                  | ---- |     | ----*-- + ----*-- + ----*-- |
+ |                  | dtds |     | dtds dx   dtds dy   dtds dz |
+ |                  +-    -+     +-                           -+
+ |
+ |
+ | is derived. This is solved for the unknown global derivatives.
+ |
+ |
+ |             jacobian_bar * derxy2 = deriv2 - xder2 * derxy
+ |                                              |           |
+ |                                              +-----------+
+ |                                              'chainrulerhs'
+ |                                     |                    |
+ |                                     +--------------------+
+ |                                          'chainrulerhs'
+ |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::CalSecondDeriv(
+    const double&                            e1,      ///< first coordinate of GP
+    const double&                            e2,      ///< second coordinate of GP
+    const double&                            e3,      ///< third coordinate of GP
+    const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
+    )
+{
+  /*--- get the second derivatives of standard element at current GP */
+  DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+
+
+  /*----------- now we have to compute the second global derivatives */
+  // initialize and zero out everything
+  static Epetra_SerialDenseMatrix bm(6,6);
+  
+  /*------------------------------------------------- initialization */
+  for(int k=0;k<iel_;k++)
+  {
+    derxy2_(0,k)=0.0;
+    derxy2_(1,k)=0.0;
+    derxy2_(2,k)=0.0;
+    derxy2_(3,k)=0.0;
+    derxy2_(4,k)=0.0;
+    derxy2_(5,k)=0.0;
+  } /* end of loop over k */
+
+  // calculate elements of jacobian_bar matrix
+  bm(0,0) = xjm_(0,0)*xjm_(0,0);
+  bm(1,0) = xjm_(1,0)*xjm_(1,0);
+  bm(2,0) = xjm_(2,0)*xjm_(2,0);
+  bm(3,0) = xjm_(0,0)*xjm_(1,0);
+  bm(4,0) = xjm_(0,0)*xjm_(2,0);
+  bm(5,0) = xjm_(2,0)*xjm_(1,0);
+
+  bm(0,1) = xjm_(0,1)*xjm_(0,1);
+  bm(1,1) = xjm_(1,1)*xjm_(1,1);
+  bm(2,1) = xjm_(2,1)*xjm_(2,1);
+  bm(3,1) = xjm_(0,1)*xjm_(1,1);
+  bm(4,1) = xjm_(0,1)*xjm_(2,1);
+  bm(5,1) = xjm_(2,1)*xjm_(1,1);
+
+  bm(0,2) = xjm_(0,2)*xjm_(0,2);
+  bm(1,2) = xjm_(1,2)*xjm_(1,2);
+  bm(2,2) = xjm_(2,2)*xjm_(2,2);
+  bm(3,2) = xjm_(0,2)*xjm_(1,2);
+  bm(4,2) = xjm_(0,2)*xjm_(2,2);
+  bm(5,2) = xjm_(2,2)*xjm_(1,2);
+
+  bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
+  bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
+  bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
+  bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
+  bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
+  bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
+
+  bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
+  bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
+  bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
+  bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
+  bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
+  bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
+
+  bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
+  bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
+  bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
+  bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
+  bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
+  bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
+
+  /*------------------ determine 2nd derivatives of coord.-functions */
+
+  /*
+  |
+  |         0 1 2              0...iel-1
+  |        +-+-+-+             +-+-+-+-+        0 1 2
+  |        | | | | 0           | | | | | 0     +-+-+-+
+  |        +-+-+-+             +-+-+-+-+       | | | | 0
+  |        | | | | 1           | | | | | 1   * +-+-+-+ .
+  |        +-+-+-+             +-+-+-+-+       | | | | .
+  |        | | | | 2           | | | | | 2     +-+-+-+
+  |        +-+-+-+       =     +-+-+-+-+       | | | | .
+  |        | | | | 3           | | | | | 3     +-+-+-+ .
+  |        +-+-+-+             +-+-+-+-+       | | | | .
+  |        | | | | 4           | | | | | 4   * +-+-+-+ .
+  |        +-+-+-+             +-+-+-+-+       | | | | .
+  |        | | | | 5           | | | | | 5     +-+-+-+
+  |        +-+-+-+             +-+-+-+-+       | | | | iel-1
+  |                                            +-+-+-+
+  |
+  |        xder2               deriv2          xyze^T
+  |
+  |
+  |                                     +-                  -+
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | dr^2   dr^2   dr^2 |
+  |                                     |                    |
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | ds^2   ds^2   ds^2 |
+  |                                     |                    |
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | dt^2   dt^2   dt^2 |
+  |               yields    xder2  =    |                    |
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | drds   drds   drds |
+  |                                     |                    |
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | drdt   drdt   drdt |
+  |                                     |                    |
+  |                                     | d^2x   d^2y   d^2z |
+  |                                     | ----   ----   ---- |
+  |                                     | dsdt   dsdt   dsdt |
+  |                                     +-                  -+
+  |
+  |
+  */
+
+  //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
+  for (int i = 0; i < 6; ++i)
+  {
+      for (int j = 0; j < 3; ++j)
+      {
+          for (int k = 0; k < iel_; ++k)
+          {
+              xder2_(i,j) += deriv2_(i,k)*xyze_(j,k);
+          }
+      }
+  }
+
+  /*
+  |        0...iel-1             0 1 2
+  |        +-+-+-+-+            +-+-+-+
+  |        | | | | | 0          | | | | 0
+  |        +-+-+-+-+            +-+-+-+            0...iel-1
+  |        | | | | | 1          | | | | 1         +-+-+-+-+
+  |        +-+-+-+-+            +-+-+-+           | | | | | 0
+  |        | | | | | 2          | | | | 2         +-+-+-+-+
+  |        +-+-+-+-+       =    +-+-+-+       *   | | | | | 1 * (-1)
+  |        | | | | | 3          | | | | 3         +-+-+-+-+
+  |        +-+-+-+-+            +-+-+-+           | | | | | 2
+  |        | | | | | 4          | | | | 4         +-+-+-+-+
+  |        +-+-+-+-+            +-+-+-+
+  |        | | | | | 5          | | | | 5          derxy
+  |        +-+-+-+-+            +-+-+-+
+  |
+  |       chainrulerhs          xder2
+  */
+
+  //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
+  //derxy2_ = deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k);
+  for (int i = 0; i < 6; ++i)
+  {
+      for (int j = 0; j < iel_; ++j)
+      {
+          derxy2_(i,j) += deriv2_(i,j);
+          for (int k = 0; k < 3; ++k)
+          {
+              derxy2_(i,j) -= xder2_(i,k)*derxy_(k,j);
+          }
+      }
+  }
+
+  /*
+  |        0...iel-1            0...iel-1         0...iel-1
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 0          | | | | | 0       | | | | | 0
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 1          | | | | | 1       | | | | | 1
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 2          | | | | | 2       | | | | | 2
+  |        +-+-+-+-+       =    +-+-+-+-+    +    +-+-+-+-+
+  |        | | | | | 3          | | | | | 3       | | | | | 3
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 4          | | | | | 4       | | | | | 4
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 5          | | | | | 5       | | | | | 5
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |
+  |       chainrulerhs         chainrulerhs        deriv2
+  */
+
+  //derxy2_ += deriv2_;
+
+  /* make LR decomposition and solve system for all right hand sides
+   * (i.e. the components of chainrulerhs)
+  |
+  |          0  1  2  3  4  5         i        i
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 0     | | 0    | | 0
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 1     | | 1    | | 1
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 2     | | 2    | | 2
+  |        +--+--+--+--+--+--+    *  +-+   =  +-+      for i=0...iel-1
+  |        |  |  |  |  |  |  | 3     | | 3    | | 3
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 4     | | 4    | | 4
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 5     | | 5    | | 5
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |                                   |        |
+  |                                   |        |
+  |                                   derxy2[i]|
+  |                                    |
+  |                                    chainrulerhs[i]
+  |
+  |   yields
+  |
+  |                      0...iel-1
+  |                      +-+-+-+-+
+  |                      | | | | | 0 = drdr
+  |                      +-+-+-+-+
+  |                      | | | | | 1 = dsds
+  |                      +-+-+-+-+
+  |                      | | | | | 2 = dtdt
+  |            derxy2 =  +-+-+-+-+
+  |                      | | | | | 3 = drds
+  |                      +-+-+-+-+
+  |                      | | | | | 4 = drdt
+  |                      +-+-+-+-+
+  |                      | | | | | 5 = dsdt
+  |                  +-+-+-+-+
+  */
+
+  Epetra_SerialDenseSolver solver;
+  solver.SetMatrix(bm);
+
+  // No need for a separate rhs. We assemble the rhs to the solution
+  // vector. The solver will destroy the rhs and return the solution.
+  solver.SetVectors(derxy2_,derxy2_);
+  solver.Solve();
+
+  return;
+} //Condif3Impl::gder2
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate instationary convection-diffusion matrix (private)gjb 06/08|
+ *----------------------------------------------------------------------*/
+
+/*
+In this routine the Gauss point contributions to the elemental coefficient
+matrix of a stabilized condif3 element are calculated for the instationary
+case. The procedure is based on the Rothe method of first discretizing in
+time. Hence the resulting terms include coefficients containing time
+integration variables such as theta or delta t which are represented by
+'timefac'.
+
+The stabilization is based on the residuum:
+
+R = phi + timefac * u * grad(phi) - timefac * diffus * laplace(phi) - rhsint
+
+The corresponding weighting operators are
+L = timefac * u * grad(w) +/- timefac * diffus * laplace(w)
+
+'+': USFEM
+'-': GLS
+
+
+time-integration schemes:
+
+one-step-theta:
+rhsint = u_old + Theta dt f + (1-Theta) acc_old
+
+BDF2:
+
+generalised alpha:
+
+
+The calculation proceeds as follows.
+1) obtain single operators of R and L
+2) build Galerkin terms from them
+3) build stabilizing terms from them
+4) build Galerkin and stabilizing terms of RHS
+
+NOTE: Galerkin and stabilization matrices are calculated within one
+      routine.
+
+
+for further comments see comment lines within code.
+
+</pre>
+\param **estif      DOUBLE        (o)   ele stiffness matrix
+\param  *eforce     DOUBLE        (o)   ele force vector
+\param  *velint     DOUBLE        (i)   vel at INT point
+\param  *hist       DOUBLE        (i)   rhs at INT point
+\param  *funct      DOUBLE        (i)   nat. shape funcs
+\param **derxy      DOUBLE        (i)   global coord. deriv
+\param **derxy2     DOUBLE        (i)   2nd global coord. deriv.
+\param   edeadng    DOUBLE        (i)   dead load
+\param   tau        DOUBLE        (i)   stabilization parameter
+\param   fac        DOUBLE        (i)   weighting factor
+\param   diffus     DOUBLE        (i)   diffusivity
+\param   iel        INT           (i)   number of nodes of act. ele
+\return void
+------------------------------------------------------------------------*/
+
+void DRT::ELEMENTS::Condif3Impl::CalMat(
+    Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseVector& eforce,
+    const vector<double>&     velint,
+    const double&             hist,
+    const Epetra_SerialDenseVector& funct,
+    const Epetra_SerialDenseMatrix& derxy,
+    const Epetra_SerialDenseMatrix& derxy2,
+    const double&             edeadng,
+    const double&             tau,
+    const double&             fac,
+    const double&             diffus,
+    const int&                iel,
+    const double&             timefac,
+    const int&                dofindex
+    )
+{
+/*========================= further variables =========================*/
+
+vector<double>            conv(iel);        /* convective part       */
+vector<double>            diff(iel);        /* diffusive part        */
+static double             rhsint;           /* rhs at int. point     */
+
+// stabilization parameter
+const double taufac = tau*fac;
+
+// integration factors and coefficients of single terms
+const double timefacfac  = timefac * fac;
+const double timetaufac  = timefac * taufac;
+
+/*-------------------------------- evaluate rhs at integration point ---*/
+rhsint = hist + edeadng*timefac;
+
+for (int i=0; i<iel; i++) /* loop over nodes of element */
+{
+   /* convective part */
+   /* u_x * N,x  +  u_y * N,y +  u_z * N,z   with  N .. form function matrix */
+   conv[i] = velint[0] * derxy(0,i) + velint[1] * derxy(1,i) + velint[2] * derxy(2,i);
+
+   /* diffusive part */
+   /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+   diff[i] = diffus * (derxy2(0,i) + derxy2(1,i) + derxy2(2,i));
+
+} // end of loop over nodes of element
+
+/*--------------------------------- now build single stiffness terms ---*/
+const int numdof =numdofpernode_;
+// -------------------------------------------System matrix
+for (int vi=0; vi<iel; ++vi)
+{
+    for (int ui=0; ui<iel; ++ui)
+    {
+    /* Standard Galerkin terms: */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac*funct[vi]*funct[ui] ;
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct[vi]*conv[ui] ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi) + derxy(2, ui)*derxy(2, vi)) ;
+
+    /* Stabilization terms: */
+    /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
+    /* transient term */
+    //estif(vi, ui) += -taufac*funct[vi]*funct[ui] ;
+
+    /* convective term */
+    //estif(vi, ui) += -timetaufac*funct[vi]*conv[ui] ;
+
+    /* diffusive term */
+    //estif(vi, ui) += timetaufac*funct[vi]*diff[ui] ;
+
+    /* 2) convective stabilization */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*funct[ui];
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv[vi]*conv[ui] ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv[vi]*diff[ui] ;
+
+    /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*funct[ui] ;
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff[vi]*conv[ui] ; 
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff[vi]*diff[ui] ;
+  }
+}
+
+// ----------------------------------------------RHS
+for (int vi=0; vi<iel; ++vi)
+{
+  /* RHS source term */
+  eforce[vi*numdof+dofindex] += fac*funct[vi]*rhsint ;
+
+  /* transient stabilization of RHS source term */
+  //eforce[vi] += -taufac*funct[vi]*rhsint ;
+
+  /* convective stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
+
+  /* diffusive stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
+}
+
+return;
+} //Condif3Impl::Condif3CalMat
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate stationary convection-diffusion matrix (private)  gjb 06/08|
+ *----------------------------------------------------------------------*/
+
+/*
+In this routine the Gauss point contributions to the elemental coefficient
+matrix of a stabilized condif2 element are calculated for the stationary
+case.
+
+The stabilization is based on the residuum:
+
+R = u * grad(phi) - diffus *  laplace(phi) - rhsint
+
+The corresponding weighting operators are
+L = u * grad(w) +/- diffus *  laplace(w)
+
+'+': USFEM
+'-': GLS
+
+
+The calculation proceeds as follows.
+1) obtain single operators of R and L
+2) build Galerkin terms from them
+3) build stabilizing terms from them
+4) build Galerkin and stabilizing terms of RHS
+
+NOTE: Galerkin and stabilization matrices are calculated within one
+      routine.
+
+
+for further comments see comment lines within code.
+
+</pre>
+\param **estif      DOUBLE        (o)   ele stiffness matrix
+\param  *eforce     DOUBLE        (o)   ele force vector
+\param  *velint     DOUBLE        (i)   vel at INT point
+\param  *hist       DOUBLE        (i)   rhs at INT point
+\param  *funct      DOUBLE        (i)   nat. shape funcs
+\param **derxy      DOUBLE        (i)   global coord. deriv
+\param **derxy2     DOUBLE        (i)   2nd global coord. deriv.
+\param   edeadng    DOUBLE        (i)   dead load
+\param   tau        DOUBLE        (i)   stabilization parameter
+\param   fac        DOUBLE        (i)   weighting factor
+\param   diffus     DOUBLE        (i)   diffusivity
+\param   iel        INT           (i)   number of nodes of act. ele
+\return void
+------------------------------------------------------------------------*/
+
+void DRT::ELEMENTS::Condif3Impl::CalMatStationary(
+    Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseVector& eforce,
+    const vector<double>&     velint,
+    const double&             hist,
+    const Epetra_SerialDenseVector& funct,
+    const Epetra_SerialDenseMatrix& derxy,
+    const Epetra_SerialDenseMatrix& derxy2,
+    const double&             edeadng,
+    const double&             tau,
+    const double&             fac,
+    const double&             diffus,
+    const int&                iel,
+    const int&                dofindex
+    )
+{
+/*========================= further variables =========================*/
+
+vector<double>            conv(iel);        /* convective part       */
+vector<double>            diff(iel);        /* diffusive part        */
+static double             rhsint;           /* rhs at int. point     */
+
+const double fac_diffus = fac*diffus;
+
+// stabilization parameter
+const double taufac = tau*fac;
+
+/*-------------------------------- evaluate rhs at integration point ---*/
+rhsint = hist + edeadng;
+
+for (int i=0; i<iel; i++) /* loop over nodes of element */
+{
+   /* convective part */
+   /* u_x * N,x  +  u_y * N,y +  u_z * N,z   with  N .. form function matrix */
+   conv[i] = velint[0] * derxy(0,i) + velint[1] * derxy(1,i) + velint[2] * derxy(2,i);
+
+   /* diffusive part */
+   /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+   diff[i] = diffus * (derxy2(0,i) + derxy2(1,i) + derxy2(2,i));
+
+} // end of loop over nodes of element
+
+/*--------------------------------- now build single stiffness terms ---*/
+const int numdof =numdofpernode_;
+// -------------------------------------------System matrix
+for (int vi=0; vi<iel; ++vi)
+{
+    for (int ui=0; ui<iel; ++ui)
+    {
+    /* Standard Galerkin terms: */
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac*funct[vi]*conv[ui] ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi)+ derxy(2, ui)*derxy(2, vi)) ;
+
+    /* Stabilization term: */
+    /* 1) convective stabilization */
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*conv[ui] ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -taufac*conv[vi]*diff[ui] ;
+
+    /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*conv[ui] ; 
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += -taufac*diff[vi]*diff[ui] ;
+  }
+}
+
+// ----------------------------------------------RHS
+for (int vi=0; vi<iel; ++vi)
+{
+  /* RHS source term */
+  eforce[vi*numdof+dofindex] += fac*funct[vi]*rhsint ;
+
+  /* convective stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
+
+  /* diffusive stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
+}
+
+return;
+} //Condif3Impl::Condif3CalMatStationary
+
+
+/*----------------------------------------------------------------------*
+ | calculate mass matrix and rhs for initializing OST          gjb 08/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Impl::InitializeOST(
+    const DRT::ELEMENTS::Condif3*   ele,
+    const vector<double>&           ephi0,
+    Epetra_SerialDenseMatrix&       massmat,
+    Epetra_SerialDenseVector&       rhs,
+    const struct _MATERIAL*         material,
+    const double                    time,
+    const double                    timefac,
+    const Epetra_SerialDenseVector& evel
+    )
+{
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+
+  // get node coordinates
+  for (int i=0;i<iel_;i++)
+  {
+    xyze_(0,i)=ele->Nodes()[i]->X()[0];
+    xyze_(1,i)=ele->Nodes()[i]->X()[1];
+    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+  }
+
+  // dead load in element nodes
+  BodyForce(ele,time);
+
+  // get diffusivity / diffusivities
+  if (material->mattyp == m_matlist)
+  {
+    for (int k = 0;k<numdofpernode_;++k)
+    {
+      const int matid = material->m.matlist->matids[k];
+      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+#if 0
+      if (singlemat.mattyp == m_ion)
+        cout<<"MatId: "<<material->m.matlist->matids[k]
+        <<" valence["<<k<<"] = "<<singlemat.m.ion->valence 
+        <<" diffusivity["<<k<<"] = "<<singlemat.m.ion->diffusivity<<endl;
+#endif
+      if (singlemat.mattyp != m_condif) dserror("no condif material found");
+      diffus_[k]= singlemat.m.condif->diffusivity;
+#if 0
+      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
+#endif
+    }
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
+    diffus_[0] = material->m.condif->diffusivity;
+  }
+  else
+    dserror("Material type is not supported");
+
+  /*----------------------------------------------------------------------*/
+  // calculation of stabilization parameter(s) tau
+  /*----------------------------------------------------------------------*/
+  CalTau(ele,tau_,evel,distype,funct_,deriv_,xyze_,derxy_,xjm_,velint_,diffus_,iel_,timefac,true);
+
+  /*----------------------------------------------------------------------*/
+  // integration loop for one condif3 element
+  /*----------------------------------------------------------------------*/
+
+  // flag for higher order elements
+  const bool higher_order_ele = SCATRA::isHigherOrderElement(distype);
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::getOptimalGaussrule(distype));
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,distype,higher_order_ele,ele);
+
+    /*---------------------- get velocity at integration point */
+    // use same shape functions for velocity as for unknown scalar field phi
+    for (int i=0;i<3;i++)
+    {
+        velint_[i]=0.0;
+        for (int j=0;j<iel_;j++)
+        {
+            velint_[i] += funct_[j]*evel[i+(3*j)];
+        }
+    }
+
+    vector<double> phi0(numdofpernode_);
+
+    /*------------ get values of variables at integration point */
+    for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
+    {
+      /*
+      // get initial data at integration point
+      phi0[k] = 0.0;
+      for (int j=0;j<iel_;j++)
+      {
+        phi0[k] += funct_[j]*ephi0[j*numdofpernode_+k];
+      }
+      */
+
+    // get bodyforce in gausspoint
+      edeadng_[k] = 0;
+      for (int inode=0;inode<iel_;inode++)
+      {
+        edeadng_[k]+= bodyforce_[inode*numdofpernode_+k]*funct_[inode];
+        // note: bodyforce calculation isn't filled with functionality yet.
+        // -> this line has no effect since bodyforce is always zero.
+      }
+    }
+
+    /*-------------- perform integration for entire matrix and rhs ---*/
+    for (int dofindex=0;dofindex<numdofpernode_;++dofindex) // deal with a system of transported scalars
+    {
+      /*========================= further variables =========================*/
+
+      vector<double>            conv(iel_);        /* convective part       */
+      vector<double>            diff(iel_);        /* diffusive part        */
+      static double             rhsint;           /* rhs at int. point     */
+
+      // stabilization parameter
+      const double taufac = tau_[dofindex]*fac_;
+
+      /*-------------------------------- evaluate rhs at integration point ---*/
+      rhsint = edeadng_[dofindex];
+
+      for (int i=0; i<iel_; i++) /* loop over nodes of element */
+      {
+         /* convective part */
+         /* u_x * N,x  +  u_y * N,y +  u_z * N,z   with  N .. form function matrix */
+         conv[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i) + velint_[2] * derxy_(2,i);
+
+         /* diffusive part */
+         /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+         diff[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+
+      } // end of loop over nodes of element
+
+      /*--------------------------------- now build single stiffness terms ---*/
+      const int numdof = numdofpernode_;
+      // -------------------------------------------System matrix
+      for (int vi=0; vi<iel_; ++vi)
+      {
+          for (int ui=0; ui<iel_; ++ui)
+          {
+          /* Standard Galerkin terms: */
+          /* transient term */
+          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*funct_[ui] ;
+
+          /* convective term */
+          rhs[vi*numdof+dofindex] += -(fac_*funct_[vi]*conv[ui]*ephi0[ui*numdof+dofindex]) ;
+
+          /* diffusive term */
+          rhs[vi*numdof+dofindex] += -(fac_*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi) + derxy_(2, ui)*derxy_(2, vi))*ephi0[ui*numdof+dofindex]);
+
+          /* Stabilization terms: */
+          /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
+          /* transient term */
+          //massmat(vi, ui) += -taufac*funct[vi]*funct[ui] ;
+
+          /* convective term */
+          //massmat(vi, ui) += -timetaufac*funct[vi]*conv[ui] ;
+
+          /* diffusive term */
+          //massmat(vi, ui) += timetaufac*funct[vi]*diff[ui] ;
+
+          /* 2) convective stabilization */
+          /* transient term */
+          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*funct_[ui]*ephi0[ui*numdof+dofindex];
+
+          /* convective term */
+          rhs[vi*numdof+dofindex] += -(taufac*conv[vi]*conv[ui]*ephi0[ui*numdof+dofindex] );
+
+          /* diffusive term */
+          rhs[vi*numdof+dofindex] += -(-taufac*conv[vi]*diff[ui]*ephi0[ui*numdof+dofindex] );
+
+          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+          /* transient term */
+          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*funct_[ui];
+
+          /* convective term */
+          rhs[vi*numdof+dofindex] += -(taufac*diff[vi]*conv[ui]*ephi0[ui*numdof+dofindex]); 
+
+          /* diffusive term */
+          rhs[vi*numdof+dofindex] += -(-taufac*diff[vi]*diff[ui]*ephi0[ui*numdof+dofindex]);
+        }
+      }
+
+      // ----------------------------------------------RHS
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        /* RHS source term */
+        rhs[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+
+        /* transient stabilization of RHS source term */
+        //eforce[vi] += -taufac*funct[vi]*rhsint ;
+
+        /* convective stabilization of RHS source term */
+        rhs[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
+
+        /* diffusive stabilization of RHS source term */
+        rhs[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
+      }
+
+    } // loop over each scalar
+
+  } // integration loop
+
+  return;
+} // Condif3Impl::InitializeOST
+
+
+#endif
+#endif

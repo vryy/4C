@@ -20,10 +20,6 @@ Maintainer: Georg Bauer
 #define DRT_CONDIF3_H
 
 
-#ifdef PERF
-#include <Teuchos_TimeMonitor.hpp>
-#endif
-
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
@@ -33,7 +29,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
 
 
 // forward declarations
@@ -337,7 +332,8 @@ private:
   {
     none,
     calc_condif_systemmat_and_residual,
-    calc_condif_flux
+    calc_condif_flux,
+    initialize_one_step_theta
   };
 
   //! flux parameters recognized by condif3
@@ -360,126 +356,13 @@ private:
 
   // internal calculation methods
 
-  // don't want = operator
+  //! don't want = operator
   Condif3& operator = (const Condif3& old);
-  
-  //! calculating system matrix and RHS
-  void Condif3SysMat(
-                   vector<double>&           ehist,
-                   Epetra_SerialDenseMatrix* sys_mat,
-                   Epetra_SerialDenseMatrix* sys_mat_sd,
-                   Epetra_SerialDenseVector* residual,
-                   Epetra_SerialDenseVector& sugrvisc,
-                   struct _MATERIAL*         material,
-                   double                    time,
-                   double                    timefac,
-                   Epetra_SerialDenseVector& vel,
-                   bool                      is_stationary
-                   );
 
-  /*!
-   \brief extract local nodal values from a node-rowmap-based Epetra_Multivector
-   */
-  void ExtractMyNodeBasedValues(Epetra_SerialDenseVector& local,const RCP<Epetra_MultiVector>& global);
-
-  /*!
-   \brief get optimal gaussrule for given discretization type
-   \return enum with optimal gausrule for this element
-   */
-  DRT::UTILS::GaussRule3D getOptimalGaussrule(
-    const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
-    );
-
-  /*!
-   * \brief check for higher order derivatives for shape functions
-   */
-  bool isHigherOrderElement(const DRT::Element::DiscretizationType& distype) const;
-
-  /*!
-   * \brief calculate the body force
-   */
-  const Epetra_SerialDenseVector BodyForce(const double time) const;
-
-  /*!
-   * \brief convert action string to condif3 action type
-   */
+  //! convert action string to condif3 action type
   ActionType convertStringToActionType(const string& action) const;
 
-
-  /*!
-   * \brief compute second global derivatives
-   */
-  void gder2(const Epetra_SerialDenseMatrix& xyze,
-      const Epetra_SerialDenseMatrix&        xjm_,
-      const Epetra_SerialDenseMatrix&        derxy,
-      Epetra_SerialDenseMatrix&              derxy2_,
-      const Epetra_SerialDenseMatrix&        deriv2,
-      const int                              iel
-      );
-
-
-  /*!
-   * \brief calculate stabilization parameter
-   */
-  void Caltau(
-      vector<double>&                         tau,
-      const Epetra_SerialDenseVector&         evel,
-      const DRT::Element::DiscretizationType& distype,
-      Epetra_SerialDenseVector&               funct,
-      Epetra_SerialDenseMatrix&               deriv,
-      Epetra_SerialDenseMatrix&               xyze,
-      Epetra_SerialDenseMatrix&               derxy,
-      Epetra_SerialDenseMatrix&               xjm,
-      vector<double>&                         velint,
-      const vector<double>&                   diffus,
-      const int&                              iel,
-      const double&                           timefac,
-      bool&                                   is_stationary
-  );
-
-  /*!
-   * \brief calculate matrix entries for actual Gauss point
-   */
-  void Condif3CalMat(
-      Epetra_SerialDenseMatrix& estif,
-      Epetra_SerialDenseVector& eforce,
-      vector<double>&           velint,
-      const double&             hist,
-      Epetra_SerialDenseVector& funct,
-      Epetra_SerialDenseMatrix& derxy,
-      Epetra_SerialDenseMatrix& derxy2,
-      const double&             edeadng,
-      const double&             tau,
-      const double&             fac,
-      const double&             diffus,
-      const int&                iel,
-      const double&             timefac,
-      const int&                dofindex
-      );
-  
-  /*!
-   * \brief calculate matrix entries for actual Gauss point
-   *        (stationary formulation)
-   */
-  void Condif3CalMatStationary(
-      Epetra_SerialDenseMatrix& estif,
-      Epetra_SerialDenseVector& eforce,
-      vector<double>&           velint,
-      const double&             hist,
-      Epetra_SerialDenseVector& funct,
-      Epetra_SerialDenseMatrix& derxy,
-      Epetra_SerialDenseMatrix& derxy2,
-      const double&             edeadng,
-      const double&             tau,
-      const double&             fac,
-      const double&             diffus,
-      const int&                iel,
-      const int&                dofindex
-      );
-
-  /*!
-   * \brief calculate flux vector for actual solution
-   */
+  //! calculate flux vector for actual solution
   Epetra_SerialDenseMatrix CalculateFlux(
       vector<double>&           phinp,
       struct _MATERIAL*         material,
@@ -487,6 +370,7 @@ private:
       Condif3::FluxType         fluxtype,
       const int&                dofindex
       );
+
 }; // class Condif3
 
 
