@@ -1,3 +1,22 @@
+/*!----------------------------------------------------------------------
+\file hyperpolyconvex_ogden.H
+\brief
+This file contains the routines required for isotropic nearly
+incompressible soft tissue with particular application to alveolar
+parenchyma.
+
+The input line should read
+
+MAT 1 MAT_Struct_HyperPolyconvexOgden YOUNG 8600. NUE 0.499 C 1000. K1 1500. K2 8.5 DENS 0.001
+
+<pre>
+Maintainer: Lena Wiechert
+            wiechert@lnm.mw.tum.de
+            http://www.lnm.mw.tum.delete/Members/wiechert
+            089 - 289-15303
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef HYPERPOLYOGDEN_H_
 #define HYPERPOLYOGDEN_H_
 #ifdef CCADISCRET

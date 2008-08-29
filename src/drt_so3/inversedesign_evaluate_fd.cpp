@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file inversedesign_evaluate.cpp
+\file inversedesign_evaluate_fd.cpp
 
 <pre>
 Maintainer: Michael Gee

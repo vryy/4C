@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file condif_genalpha_integration.H
+\file scatra_timint_genalpha.H
 
 \brief Associated with control routine for con.-diff. instationary solver
        based on generalized-alpha time-integration scheme

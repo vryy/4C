@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file so_shw6.H
+\brief
+
+<pre>
+Maintainer: Moritz Frenzel
+            frenzel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 

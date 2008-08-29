@@ -1,3 +1,22 @@
+/*!----------------------------------------------------------------------
+\file aaaneohooke.H
+\brief
+This file contains the routines required for aneurysmatic artery wall following
+Raghavan and Vorp [2000]
+
+The material is a special case of a generalised pover law neo-Hookean material
+
+the input line should read
+  MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 DENS 1.0
+
+<pre>
+Maintainer: Christiane Förster
+            foerster@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef AAANEOHOOKE_H_
 #define AAANEOHOOKE_H_
 #ifdef CCADISCRET

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file bio_cell.cpp
+\file biocell.cpp
 \brief contains the all shiny cool bio cell model with contraction
 <pre>
 Maintainer: Robert Metzke

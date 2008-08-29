@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file condif_genalpha_integration.cpp
+\file scatra_timint_genalpha.cpp
 \brief Control routine for convection-diffusion instationary solver
        based on generalized-alpha time-integration scheme
 
