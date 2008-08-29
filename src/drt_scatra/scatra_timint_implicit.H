@@ -63,9 +63,9 @@ using namespace Teuchos;
 namespace SCATRA{
 
 /*!
-\brief time integration for convection-diffusion problems
+\brief implicit time integration for scalar transport problems
 
-\author vg (vgravem@lnm.mw.tum.de)
+\author gjb (bauer@lnm.mw.tum.de)
 */
 class ScaTraTimIntImpl
 {
@@ -73,23 +73,14 @@ class ScaTraTimIntImpl
 
 public:
 
-
-  /*!
-  \brief Standard Constructor
-
-  */
+  //! Standard Constructor
   ScaTraTimIntImpl(RCP<DRT::Discretization>       dis,
-                        RCP<LINALG::Solver>            solver,
-                        RCP<ParameterList>             params,
-                        RCP<IO::DiscretizationWriter>  output);
+                   RCP<LINALG::Solver>            solver,
+                   RCP<ParameterList>             params,
+                   RCP<IO::DiscretizationWriter>  output);
 
-
-  /*!
-  \brief Destructor
-
-  */
+  //! Destructor
   virtual ~ScaTraTimIntImpl();
-
 
   //! Provide enum of time integration scheme
   enum INPUTPARAMS::ScaTraTimeIntegrationScheme MethodName(){return timealgo_;}
@@ -97,54 +88,40 @@ public:
   //! Provide title of time integration scheme
   std::string MethodTitle(){return MapTimIntEnumToString(MethodName());}
 
-  /*!
-  \brief Set the part of the righthandside belonging to the last
-         timestep.
-  */
-  virtual void SetOldPartOfRighthandside() = 0;
+  //! Print information about current time step to screen
+  void PrintTimeStepInfo()
+  {
+    if (myrank_==0)
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
+    return;
+  }
 
-
-  /*!
-  \brief start time loop for startingalgo, normal problems and restarts
-
-  */
+  //! start time loop for startingalgo, normal problems and restarts
   void Integrate();
 
-  /*!
-  \brief Do time integration (time loop)
-
-  */
+  //! Do time integration (time loop)
   void TimeLoop();
 
-  /*!
-  \brief Solve stationary problem
-
-  */
+  //! Solve stationary problem
   void SolveStationaryProblem();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
-  
-  /// increment time and step value
-  void IncrementTimeAndStep()
-  {
-    step_ += 1;
-    time_ += dta_;
-  }
-  
+
   //! Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
   (  
-    const double time,  //!< evaluation time
-    Teuchos::RCP<Epetra_Vector> phinp //!< transported scalar(s)
-                                      //!< (may be Teuchos::null) 
+    const double& time,  //!< evaluation time
+    Teuchos::RCP<Epetra_Vector>& phinp //!< transported scalar(s)
+                                       //!< (may be Teuchos::null) 
   );
 
   //! Apply Neumann boundary conditions
   void ApplyNeumannBC
   (
-    const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> phinp,   //!< transported scalar(s) state
+    const double& time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector>& phinp,   //!< transported scalar(s) state
     Teuchos::RCP<Epetra_Vector>& neumann_loads //!< Neumann loads
   );
 
@@ -157,47 +134,21 @@ public:
   */
   virtual void Update() = 0;
 
-  /*!
-  \brief update configuration and output to file/screen
-
-  */
+  //! update configuration and output to file
   void Output();
 
-  /*!
-  \brief write additional data required for restart
-
-  */
-  virtual void OutputRestart()=0;
-
-  /*!
-  \brief read restart data
-
-  */
+  //! read restart data
   virtual void ReadRestart(int step)=0;
 
-  /*!
-  \brief set the velocity field
-
-  */
+  //! set the velocity field
   void SetVelocityField(int veltype, int velfuncno);
 
-  /*!
-  \brief set the velocity field
-
-  */
+  //! set the velocity field
   void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
 
-  /*!
-  \brief set the initial scalar field phi
-
-  */
+  //! set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
-  /*!
-  \brief routine to calculate mass/heat flux vectors
-
-  */
-  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
 protected:
 
@@ -206,14 +157,39 @@ protected:
   //! copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
   
-  // private helper function to get algorithm title
+  //! helper function to get algorithm title
   std::string MapTimIntEnumToString
   (
     const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term  //!< the enum
   );
 
-  RCP<DRT::Discretization>   discret_;
-  RCP<LINALG::Solver>        solver_;
+  /// increment time and step value
+  void IncrementTimeAndStep()
+  {
+    step_ += 1;
+    time_ += dta_;
+  }
+
+  //! initialization procedure before the first time step is done
+  virtual void PrepareFirstTimeStep(){return;};
+
+  //! Set the part of the righthandside belonging to the last timestep.
+  virtual void SetOldPartOfRighthandside() = 0;
+
+  //! write state vectors (phinp and convective velocity) to BINIO
+  void OutputState();
+
+  //! write additional data required for restart
+  virtual void OutputRestart() = 0;
+  
+  //! write flux vectors to BINIO
+  void OutputFlux();
+
+  //! routine to calculate mass/heat flux vectors
+  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
+
+  RCP<DRT::Discretization>   discret_; /// the scalar transport discretization
+  RCP<LINALG::Solver>        solver_;  
   RCP<ParameterList>         params_;
   RCP<IO::DiscretizationWriter>  output_;
   int                        myrank_;

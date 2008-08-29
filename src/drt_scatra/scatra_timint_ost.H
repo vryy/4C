@@ -23,7 +23,9 @@ namespace SCATRA
 
 class TimIntOneStepTheta : public ScaTraTimIntImpl
 {
+
 public:
+
   /// Standard Constructor
   TimIntOneStepTheta(RCP<DRT::Discretization>       dis,
                      RCP<LINALG::Solver>            solver,
@@ -33,31 +35,40 @@ public:
   /// Destructor
   virtual ~TimIntOneStepTheta();
 
-
-  /// Set the part of the righthandside belonging to the last timestep.
-  void SetOldPartOfRighthandside();
-
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update();
 
-  /// write additional data required for restart
-  void OutputRestart();
-
   /// read restart data
   void ReadRestart(int step);
+
 
 protected:
 
   // don't want = operator and cctor
   TimIntOneStepTheta operator = (const TimIntOneStepTheta& old);
+
   //! copy constructor
   TimIntOneStepTheta (const TimIntOneStepTheta& old);
 
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep(){CalcInitialPhidt(); return;}
+
+  /// Set the part of the righthandside belonging to the last timestep.
+  void SetOldPartOfRighthandside();
+
+  /// write additional data required for restart
+  void OutputRestart();
+
+  /// time derivative of solution vector phi at time t_{n}
+  RCP<Epetra_Vector>    phidtn_;
+
+
 private:
 
-  /// time derivative of slution vector phi at time t_{n}
-  RCP<Epetra_Vector>    phidtn_;
+  /// calculate initial value for phidtn_
+  void CalcInitialPhidt();
+
 
 }; // class TimIntOneStepTheta
 

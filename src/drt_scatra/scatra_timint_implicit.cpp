@@ -63,9 +63,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   cdvel_    (params_->get<int>("velocity field")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity","No"))
 {
-  // time measurement: initialization
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + initialization");
-
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -169,35 +166,36 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 } // ScaTraTimIntImpl::ScaTraTimIntImpl
 
 
- /*----------------------------------------------------------------------*
-  | returns matching sring for each time integration scheme    gjb 08/08 |
-  *----------------------------------------------------------------------*/
-    std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
-    (
-      const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term  //!< the enum
-    )
-    {
-      // length of return string is 14 due to usage in formated screen output
-      switch (term)
-      {
-      case INPUTPARAMS::timeint_one_step_theta :
-        return "One-Step-Theta";
-        break;
-      case INPUTPARAMS::timeint_bdf2 :
-        return "    BDF2      ";
-        break;
-      case INPUTPARAMS::timeint_stationary :
-        return "  Stationary  ";
-        break;
-      case INPUTPARAMS::timeint_gen_alpha :
-        return "  Gen. Alpha  ";
-        break;
-      default :
-        dserror("Cannot cope with name enum %d", term);
-        return "";
-        break;
-      }
-    }
+/*----------------------------------------------------------------------*
+| returns matching string for each time integration scheme   gjb 08/08 |
+*----------------------------------------------------------------------*/
+std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
+(
+   const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term
+)
+{
+  // length of return string is 14 due to usage in formated screen output
+  switch (term)
+  {
+  case INPUTPARAMS::timeint_one_step_theta :
+    return "One-Step-Theta";
+    break;
+  case INPUTPARAMS::timeint_bdf2 :
+    return "    BDF2      ";
+    break;
+  case INPUTPARAMS::timeint_stationary :
+    return "  Stationary  ";
+    break;
+  case INPUTPARAMS::timeint_gen_alpha :
+    return "  Gen. Alpha  ";
+    break;
+  default :
+    dserror("Cannot cope with name enum %d", term);
+    return "";
+    break;
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  | Start the time integration. Allows                                   |
@@ -237,7 +235,6 @@ void SCATRA::ScaTraTimIntImpl::Integrate()
 } // ScaTraTimIntImpl::Integrate
 
 
-
 /*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
  *----------------------------------------------------------------------*/
@@ -255,48 +252,16 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     Solve();
 
-
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
-    //
-    // One-step-Theta: (step>1)
-    //
-    //  phidtn_  = (phinp_-phin_)/(Theta * dt) - (1/Theta -1) * phin_"(n+1)"
-    //
-    //  phinm_ =phin_
-    //  phin_  =phinp_
-    //
-    // BDF2:           (step>1)
-    //
-    //               2*dt(n)+dt(n-1)		  dt(n)+dt(n-1)
-    //  phidtn_   = --------------------- phinp_ - --------------- phin_
-    //             dt(n)*[dt(n)+dt(n-1)]	  dt(n)*dt(n-1)
-    //
-    //                     dt(n)
-    //           + ----------------------- phinm_
-    //             dt(n-1)*[dt(n)+dt(n-1)]
-    //
-    //
-    //  phinm_ =phin_
-    //  phin_  =phinp_
-    //
-    // BDF2 and  One-step-Theta: (step==1)
-    //
-    // The given formulas are only valid from the second timestep. In the
-    // first step, the time derivative of phi is simply calculated as
-    //
-    //  phidtn_  = (phinp_-phin_) / (dt)
-    //
     // -------------------------------------------------------------------
     Update();
-
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
     Output();
-
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -316,6 +281,15 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 {
   // time measurement: prepare time step
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + prepare time step");
+  
+  // -------------------------------------------------------------------
+  //              initialization
+  // -------------------------------------------------------------------
+  if (step_==0) 
+  {
+    //ApplyDirichletBC(time_, phin_);
+    //PrepareFirstTimeStep();
+  }
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -331,11 +305,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                         out to screen
   // -------------------------------------------------------------------
-  if (myrank_==0)
-  {
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
-  }
+  PrintTimeStepInfo();
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
@@ -358,8 +328,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 (
-  const double time,
-  Teuchos::RCP<Epetra_Vector> phinp
+  const double& time,
+  Teuchos::RCP<Epetra_Vector>& phinp
 )
 {
   // time measurement: apply Dirichlet conditions
@@ -390,17 +360,17 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 (
-  const double time,
-  const Teuchos::RCP<Epetra_Vector> phinp,
+  const double& time,
+  const Teuchos::RCP<Epetra_Vector>& phinp,
   Teuchos::RCP<Epetra_Vector>& neumann_loads
 )
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
 
+  // set needed parameters in parameter list
   ParameterList p;
-  // needed parameters
-  p.set("total time", time);   // actual time t_{n+1}
+  p.set("total time", time); // actual time t_{n+1}
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -606,78 +576,55 @@ void SCATRA::ScaTraTimIntImpl::Solve(
 
 
 /*----------------------------------------------------------------------*
- | output of solution vector to binio                           vg 05/07|
+ | output of solution vector to BINIO                          gjb 08/08|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Output()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  if (step_%upres_==0)  //write solution
-    {
-      output_->NewStep    (step_,time_);
-      output_->WriteVector("phinp", phinp_);
-      output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
-      //output_->WriteVector("residual", residual_);
+  if (step_%upres_==0)  //yes, output is desired
+  {
+    // write state vectors
+    OutputState(); 
 
-      if (writeflux_!="No")
-      {
-        RCP<Epetra_MultiVector> flux = CalcFlux();
-        int numdofpernode = flux->GlobalLength()/discret_->NumGlobalNodes();
-        // post_drt_ensight does not support multivectors based on the dofmap
-        // for now, I create single vectors that can be handled by the filter
+    // write domain decomposition for visualization (only once!)
+    if (step_==upres_)
+      output_->WriteElementData();
 
-        // get the noderowmap
-        const Epetra_Map* noderowmap = discret_->NodeRowMap();
-        Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-        for(int k=0;k<numdofpernode;++k)
-        {
-          ostringstream temp;
-          temp << k;
-          string name = "flux_phi_"+temp.str();
-          for (int i = 0;i<fluxk->MyLength();++i)
-          {
-            DRT::Node* actnode = discret_->lRowNode(i);
-            int dofgid = discret_->Dof(actnode,k);
-            fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
-            fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
-            fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
-          }
-          if (numdofpernode==1)
-            output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
-          else
-            output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
-        }
-      }
+    //add restart data
+    if (step_%uprestart_==0) 
+      OutputRestart();
 
-      // write domain decomposition for visualization (only once!)
-      if (step_==upres_)
-       output_->WriteElementData();
-
-      if (step_%uprestart_==0) //add restart data
-      {
-        OutputRestart();
-      }
-    }
+    // write flux vector field
+    if (writeflux_!="No") 
+      OutputFlux();
+  }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
   if ((step_%uprestart_== 0) && (step_%upres_!=0))
   {
-    output_->NewStep    (step_,time_);
-    output_->WriteVector("phinp", phinp_);
-    output_->WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
-
-    if (writeflux_!="No")
-    {
-    RCP<Epetra_MultiVector> flux = CalcFlux();
-    output_->WriteVector("flux", flux, IO::DiscretizationWriter::dofvector);
-    }
-
-    OutputRestart(); //add restart data
+    OutputState();   // write state vectors
+    OutputRestart(); // add restart data
+    if (writeflux_!="No") // write flux vector field
+      OutputFlux();
   }
 
   return;
 } // ScaTraTimIntImpl::Output
+
+
+/*----------------------------------------------------------------------*
+ |  write current state to BINIO                             gjb   08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputState()
+{
+  output_->NewStep    (step_,time_);
+  output_->WriteVector("phinp", phinp_);
+  output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
+  //output_->WriteVector("residual", residual_);
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -881,6 +828,42 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
 
 /*----------------------------------------------------------------------*
+ |  write mass / heat flux vector to BINIO                   gjb   08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputFlux()
+{
+  RCP<Epetra_MultiVector> flux = CalcFlux();
+  int numdofpernode = flux->GlobalLength()/discret_->NumGlobalNodes();
+  // post_drt_ensight does not support multivectors based on the dofmap
+  // for now, I create single vectors that can be handled by the filter
+
+  // get the noderowmap
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  for(int k=0;k<numdofpernode;++k)
+  {
+    ostringstream temp;
+    temp << k;
+    string name = "flux_phi_"+temp.str();
+    for (int i = 0;i<fluxk->MyLength();++i)
+    {
+      DRT::Node* actnode = discret_->lRowNode(i);
+      int dofgid = discret_->Dof(actnode,k);
+      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+    }
+    if (numdofpernode==1)
+      output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
+    else
+      output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
+  }
+  // that's it
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
@@ -949,6 +932,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 
   return flux;
 } // ScaTraImplicitTimeInt::CalcNormalFlux
+
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                   gjb 04/08 |
