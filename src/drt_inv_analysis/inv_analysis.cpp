@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+ * \file inv_analysis.cpp
+
+<pre>
+Maintainer: Sophie Rausch
+            rausch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/rausch
+            089 - 289-15255
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "inv_analysis.H"

@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file linalg_precond.H
+
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef LINALG_PRECOND_H
 #define LINALG_PRECOND_H

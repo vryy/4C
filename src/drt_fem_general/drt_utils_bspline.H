@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file drt_utils_bspline.H
+
+<pre>
+Maintainer: Peter Gamnitzer
+            gamnitzer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef BSPLINE_H

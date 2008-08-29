@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file elch_dyn.H
+\file elch_dyn.cpp
 \brief Control routine for Electrochemistry module.
 
 

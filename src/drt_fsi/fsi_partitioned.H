@@ -1,5 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
+ * \file fsi_partitioned.H
 \brief Partitioned FSI base
 
 <pre>
