@@ -1,5 +1,7 @@
 
 #ifdef CCADISCRET
+#ifdef D_SHELL8
+#ifdef D_SOLID3
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_s8/shell8.H"
@@ -248,4 +250,6 @@ int main(int argc,  char** argv)
   return 0;
 }
 
+#endif
+#endif
 #endif
