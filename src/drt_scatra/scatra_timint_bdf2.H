@@ -45,6 +45,7 @@ protected:
 
   // don't want = operator and cctor
   TimIntBDF2 operator = (const TimIntBDF2& old);
+
   //! copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
 
