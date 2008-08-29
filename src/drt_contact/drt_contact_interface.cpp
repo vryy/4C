@@ -574,11 +574,16 @@ void CONTACT::Interface::Evaluate()
     cnode->BuildAveragedNormal();
   }
  
+#ifdef DEBUG
+  // Visualize nodal normal field
+  // VisualizeGmshLight();
+#endif // #ifdef DEBUG
+  
   // contact search algorithm
-  //lComm()->Barrier();
-  //const double t_start = ds_cputime();
+  lComm()->Barrier();
+  const double t_start = ds_cputime();
   EvaluateContactSearch();
-  /*lComm()->Barrier();
+  lComm()->Barrier();
   const double t_end = ds_cputime()-t_start;
   if (lComm()->MyPID()==0)
   {
@@ -596,7 +601,16 @@ void CONTACT::Interface::Evaluate()
   {
     cout << "Octree-based search: " << t_end2 << " seconds\n";
     cout << "************************************************************\n";
-  }*/
+  }
+  
+#ifdef DEBUG
+  lComm()->Barrier();
+  if (lComm()->MyPID()==0 && Dim()==3)
+  {
+    cout << "-> Nodal normal calculation finished SUCCESSFULLY!" << endl;
+    cout << "***WARNING***: No linearization of nodal normals computed for 3d!" << endl;
+  }
+#endif // #ifdef DEBUG
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -853,7 +867,7 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
 bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
 {
   // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(CONTACTNGP,Dim());
+  CONTACT::Integrator integrator(sele.Shape());
   double sxia = -1.0;
   double sxib =  1.0;
 
@@ -1355,7 +1369,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   double mxib = xiproj[3];
 
   // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(CONTACTNGP,Dim());
+  CONTACT::Integrator integrator(sele.Shape());
 
   // do the two integrations
   RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele,sxia,sxib,mele,mxia,mxib);
@@ -2415,8 +2429,7 @@ bool CONTACT::Interface::SplitActiveDofs()
 
   // dimension check
   double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
-  if (dimcheck!=2.0 && dimcheck!=3.0)
-    dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all active row nodes
   for (int i=0;i<activenodes_->NumMyElements();++i)
@@ -2479,8 +2492,7 @@ bool CONTACT::Interface::SplitActiveDofs()
    
   // dimension check
   dimcheck =(slipdofs_->NumGlobalElements())/(slipnodes_->NumGlobalElements());
-  if (dimcheck!=2.0 && dimcheck!=3.0)
-    dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all slip row nodes
   for (int i=0;i<slipnodes_->NumMyElements();++i)

@@ -20,84 +20,76 @@ Maintainer: Alexander Popp
 #include "../drt_fem_general/drt_utils_integration.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 01/08|
+ |  ctor (public)                                             popp 08/08|
  *----------------------------------------------------------------------*/
-CONTACT::Integrator::Integrator(int ngp, int dim) :
-dim_(dim),
-ngp_(ngp)
+CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
 {
-  // chek for problem dimension and create Gauss rule accordingly
-  // case Dim()==2 -> corresponds to 1D integration on interface
-  if (Dim()==2)
+  // create integration points according to eletype
+  switch(eletype)
   {
-    coords_.resize(ngp_);
-    weights_.resize(ngp_);
-    
-    switch(ngp_)
+  case DRT::Element::line2:
+  {
+    dim_=2;
+    const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),1);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
     {
-    case 1:
-    {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_1point);
-      for (int i=0;i<intpoints.nquad;++i)
-      {
-        coords_[i]=intpoints.qxg[i];
-        weights_[i]=intpoints.qwgt[i];
-      }
-      break;
+      coords_(i,0)=intpoints.qxg[i];
+      weights_[i]=intpoints.qwgt[i];
     }
-    case 2:
-    {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_2point);
-      for (int i=0;i<intpoints.nquad;++i)
-      {
-        coords_[i]=intpoints.qxg[i];
-        weights_[i]=intpoints.qwgt[i];
-      }
-      break;
-    }
-    case 3:
-    {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_3point);
-      for (int i=0;i<intpoints.nquad;++i)
-      {
-        coords_[i]=intpoints.qxg[i];
-        weights_[i]=intpoints.qwgt[i];
-      }
-      break;
-    }
-    case 4:
-    {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_4point);
-      for (int i=0;i<intpoints.nquad;++i)
-      {
-        coords_[i]=intpoints.qxg[i];
-        weights_[i]=intpoints.qwgt[i];
-      }
-      break;
-    }
-    case 5:
-    {
-      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
-      for (int i=0;i<intpoints.nquad;++i)
-      {
-        coords_[i]=intpoints.qxg[i];
-        weights_[i]=intpoints.qwgt[i];
-      }
-      break;
-    }  
-    default:
-      dserror("ERROR: Integrator: Given no. of Gauss points not implemented!");
-    } // switch (ngp_)
+    break;
   }
-  
-  // case Dim()==3 -> corresponds to 2D integration on interface
-  else if (Dim()==3)
-    dserror("ERROR: Integrator: 3D case not yet implemented!");
-  
-  // invalid Dim() problem dimension
-  else
-    dserror("ERROR: Integrator: Contact problem must be 2D or 3D");
+  case DRT::Element::line3:
+  {
+    dim_=2;
+    const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),1);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;    
+  }
+  case DRT::Element::tri3:
+  {
+    dim_=3;
+    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),2);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;     
+  }
+  case DRT::Element::quad4:
+  {
+    dim_=3;
+    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),2);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;      
+  }
+  default:
+    dserror("ERROR: Integrator: This contact element type is not implemented!");
+  } // switch (ngp_)
 }
+
 
 /*----------------------------------------------------------------------*
  |  Integrate a 1D slave element overlap                      popp 01/08|
@@ -119,27 +111,22 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
   
   // create empty dseg object and wrap it with RCP
   int nrow = sele.NumNode();
-  int ndof = 2;              // up to now we only consider 2D problems!!!
+  int ndof = Dim();
   int ncol = nrow;
   
   RCP<Epetra_SerialDenseMatrix> dtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
-  // create empty vectors for shape fct. evaluation
-  vector<double> val(nrow);
-  vector<double> deriv(nrow);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
-  
-  // get nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix coord(3,nrow);
-  coord = sele.GetNodalCoords();
-  
+  // create empty objects for shape fct. evaluation
+  LINALG::SerialDenseVector val(nrow);
+  LINALG::SerialDenseMatrix deriv(nrow,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
     
     // coordinate transformation sxi->eta (CElement->Overlap)
@@ -147,11 +134,11 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // evaluate trace space and dual space shape functions
-    sele.EvaluateShape1D(sxi,val,deriv,nrow);
-    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShape(sxi,val,deriv,nrow);
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
     // evaluate the two Jacobians
-    double dxdsxi = sele.Jacobian1D(val,deriv,coord);
+    double dxdsxi = sele.Jacobian(eta);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all dtemp matrix entries
@@ -206,26 +193,24 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
   int nrow = sele.NumNode();
   
   // create empty vectors for shape fct. evaluation
-  vector<double> val(nrow);
-  vector<double> deriv(nrow);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
+  LINALG::SerialDenseVector val(nrow);
+  LINALG::SerialDenseMatrix deriv(nrow,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
   
   // get nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix coord(3,nrow);
-  coord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix coord = sele.GetNodalCoords();
   
   // prepare directional derivative of dual shape functions
   // this is only necessary for qudratic shape functions in 2D
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()==CElement::line3)
-    sele.DerivShapeDual1D(dualmap);
+    sele.DerivShapeDual(dualmap);
   
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
     typedef map<int,double>::const_iterator CI;
     
@@ -234,16 +219,16 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
     
     // evaluate trace space and dual space shape functions
-    sele.EvaluateShape1D(sxi,val,deriv,nrow);
-    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShape(sxi,val,deriv,nrow);
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
     // evaluate the two Jacobians
-    double dxdsxi = sele.Jacobian1D(val,deriv,coord);
+    double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     // evaluate the Jacobian derivative
     map<int,double> testmap;
-    sele.DerivJacobian1D(val,deriv,coord,testmap);
+    sele.DerivJacobian(val,deriv,coord,testmap);
     
     // compute contribution oj J to nodal D-derivative-maps
     DRT::Node** mynodes = sele.Nodes();
@@ -336,8 +321,8 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
           // contribution of current element / current GP
           for (int j=0;j<nrow;++j)
           {
-            vector<double> vallin(nrow-1);
-            vector<double> derivlin(nrow-1);
+            LINALG::SerialDenseVector vallin(nrow-1);
+            LINALG::SerialDenseMatrix derivlin(nrow-1,1);
             if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,sxi,vallin,derivlin);
             else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,sxi,vallin,derivlin);
             double fac = wgt*val[i]*vallin[j]*dsxideta*dxdsxi;
@@ -380,30 +365,24 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
   // create empty mseg object and wrap it with RCP
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = 2;              // up to now we only consider 2D problems!!!
+  int ndof = Dim();
   
   RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty vectors for shape fct. evaluation
-  vector<double> sval(nrow);
-  vector<double> sderiv(nrow);
-  vector<double> mval(ncol);
-  vector<double> mderiv(ncol);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
-
-  // get slave nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix scoord(3,nrow);
-  scoord = sele.GetNodalCoords();
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
   
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
-    
     
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
@@ -431,14 +410,14 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
       dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
     }
     // evaluate dual space shape functions (on slave element)
-    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
-    mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
     
     // evaluate the two slave side Jacobians
-    double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
+    double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all mseg matrix entries
@@ -554,29 +533,27 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   int ncol = mele.NumNode();
   
   // create empty vectors for shape fct. evaluation
-  vector<double> sval(nrow);
-  vector<double> sderiv(nrow);
-  vector<double> ssecderiv(nrow);
-  vector<double> mval(ncol);
-  vector<double> mderiv(ncol);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,1); //only 2D so far
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
   // get slave nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix scoord(3,nrow);
-  scoord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
   
   // prepare directional derivative of dual shape functions
   // this is only necessary for qudratic shape functions in 2D
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()==CElement::line3)
-    sele.DerivShapeDual1D(dualmap);
+    sele.DerivShapeDual(dualmap);
     
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
     
     double sxi[2] = {0.0, 0.0};
@@ -605,19 +582,21 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
       dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
     }
     // evaluate dual space shape functions (on slave element)
-    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
-    sele.Evaluate2ndDerivShape1D(sxi,ssecderiv,nrow);
-    mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
     
     // evaluate the two slave side Jacobians
-    double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
+    double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     // evaluate the derivative dxdsxidsxi = Jac,xi
-    double dxdsxidsxi = sele.DJacDXi1D(sval,sderiv,ssecderiv,scoord);
+    double djacdxi[2] = {0.0, 0.0};
+    sele.DJacDXi(djacdxi,sval,sderiv,ssecderiv,scoord);
+    double dxdsxidsxi=djacdxi[0]; // only 2D so far
     
     // evalute the GP slave coordinate derivatives
     map<int,double> dsxigp;
@@ -638,7 +617,7 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
    
     // evaluate the Jacobian derivative
     map<int,double> testmap;
-    sele.DerivJacobian1D(sval,sderiv,scoord,testmap);
+    sele.DerivJacobian(sval,sderiv,scoord,testmap);
     
     // contributions to DerivM_jk
     DRT::Node** mynodes = sele.Nodes();
@@ -667,12 +646,12 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
         }
         
         // (2) Lin(Phi) - slave GP coordinates
-        fac = wgt*dualderiv[j]*mval[k]*dsxideta*dxdsxi;
+        fac = wgt*dualderiv(j,0)*mval[k]*dsxideta*dxdsxi;
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
           dmmap_jk[p->first] += fac*(p->second);
         
         // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*dualval[j]*mderiv[k]*dsxideta*dxdsxi;
+        fac = wgt*dualval(j,0)*mderiv(k,0)*dsxideta*dxdsxi;
         for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
           dmmap_jk[p->first] += fac*(p->second);
         
@@ -728,12 +707,12 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
       }
       
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualderiv[j]*sval[j]*dsxideta*dxdsxi;
+      fac = wgt*dualderiv(j,0)*sval[j]*dsxideta*dxdsxi;
       for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         ddmap_jj[p->first] += fac*(p->second);
       
       // (3) Lin(NSlave) - slave GP coordinates
-      fac = wgt*dualval[j]*sderiv[j]*dsxideta*dxdsxi;
+      fac = wgt*dualval[j]*sderiv(j,0)*dsxideta*dxdsxi;
       for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         ddmap_jj[p->first] += fac*(p->second);
       
@@ -799,19 +778,19 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   double psxib[2] = {sxib, 0.0};
   double pmxia[2] = {mxia, 0.0};
   double pmxib[2] = {mxib, 0.0};
-  vector<double> valsxia(numsnode);
-  vector<double> valsxib(numsnode);
-  vector<double> valmxia(nummnode);
-  vector<double> valmxib(nummnode);
-  vector<double> derivsxia(numsnode);
-  vector<double> derivsxib(numsnode);
-  vector<double> derivmxia(nummnode);
-  vector<double> derivmxib(nummnode);
+  LINALG::SerialDenseVector valsxia(numsnode);
+  LINALG::SerialDenseVector valsxib(numsnode);
+  LINALG::SerialDenseVector valmxia(nummnode);
+  LINALG::SerialDenseVector valmxib(nummnode);
+  LINALG::SerialDenseMatrix derivsxia(numsnode,1);
+  LINALG::SerialDenseMatrix derivsxib(numsnode,1);
+  LINALG::SerialDenseMatrix derivmxia(nummnode,1);
+  LINALG::SerialDenseMatrix derivmxib(nummnode,1);
   
-  sele.EvaluateShape1D(psxia,valsxia,derivsxia,numsnode);
-  sele.EvaluateShape1D(psxib,valsxib,derivsxib,numsnode);
-  mele.EvaluateShape1D(pmxia,valmxia,derivmxia,nummnode);
-  mele.EvaluateShape1D(pmxib,valmxib,derivmxib,nummnode);
+  sele.EvaluateShape(psxia,valsxia,derivsxia,numsnode);
+  sele.EvaluateShape(psxib,valsxib,derivsxib,numsnode);
+  mele.EvaluateShape(pmxia,valmxia,derivmxia,nummnode);
+  mele.EvaluateShape(pmxib,valmxib,derivmxib,nummnode);
   
   // compute factors and leading constants for master
   double cmxia = 0.0;
@@ -830,8 +809,8 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   {
     for (int i=0;i<nummnode;++i)
     {
-      fac_dxm_b += derivmxib[i]*(mcnodes[i]->xspatial()[0]);
-      fac_dym_b += derivmxib[i]*(mcnodes[i]->xspatial()[1]);
+      fac_dxm_b += derivmxib(i,0)*(mcnodes[i]->xspatial()[0]);
+      fac_dym_b += derivmxib(i,0)*(mcnodes[i]->xspatial()[1]);
       fac_xmsl_b += valmxib[i]*(mcnodes[i]->xspatial()[0]);
       fac_ymsl_b += valmxib[i]*(mcnodes[i]->xspatial()[1]);
     }
@@ -848,8 +827,8 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   {
     for (int i=0;i<nummnode;++i)
     {
-      fac_dxm_a += derivmxia[i]*(mcnodes[i]->xspatial()[0]);
-      fac_dym_a += derivmxia[i]*(mcnodes[i]->xspatial()[1]);
+      fac_dxm_a += derivmxia(i,0)*(mcnodes[i]->xspatial()[0]);
+      fac_dym_a += derivmxia(i,0)*(mcnodes[i]->xspatial()[1]);
       fac_xmsl_a += valmxia[i]*(mcnodes[i]->xspatial()[0]);
       fac_ymsl_a += valmxia[i]*(mcnodes[i]->xspatial()[1]);
     }
@@ -886,12 +865,12 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   {
     for (int i=0;i<numsnode;++i)
     {
-      fac_dxsl_a += derivsxia[i]*(scnodes[i]->xspatial()[0]);
-      fac_dysl_a += derivsxia[i]*(scnodes[i]->xspatial()[1]);
+      fac_dxsl_a += derivsxia(i,0)*(scnodes[i]->xspatial()[0]);
+      fac_dysl_a += derivsxia(i,0)*(scnodes[i]->xspatial()[1]);
       fac_xslm_a += valsxia[i]*(scnodes[i]->xspatial()[0]);
       fac_yslm_a += valsxia[i]*(scnodes[i]->xspatial()[1]);
-      fac_dnx_a  += derivsxia[i]*(scnodes[i]->n()[0]);
-      fac_dny_a  += derivsxia[i]*(scnodes[i]->n()[1]);
+      fac_dnx_a  += derivsxia(i,0)*(scnodes[i]->n()[0]);
+      fac_dny_a  += derivsxia(i,0)*(scnodes[i]->n()[1]);
       fac_nx_a   += valsxia[i]*(scnodes[i]->n()[0]);
       fac_ny_a   += valsxia[i]*(scnodes[i]->n()[1]);
     }
@@ -908,12 +887,12 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   {
     for (int i=0;i<numsnode;++i)
     {
-      fac_dxsl_b  += derivsxib[i]*(scnodes[i]->xspatial()[0]);
-      fac_dysl_b  += derivsxib[i]*(scnodes[i]->xspatial()[1]);
+      fac_dxsl_b  += derivsxib(i,0)*(scnodes[i]->xspatial()[0]);
+      fac_dysl_b  += derivsxib(i,0)*(scnodes[i]->xspatial()[1]);
       fac_xslm_b += valsxib[i]*(scnodes[i]->xspatial()[0]);
       fac_yslm_b += valsxib[i]*(scnodes[i]->xspatial()[1]);
-      fac_dnx_b  += derivsxib[i]*(scnodes[i]->n()[0]);
-      fac_dny_b  += derivsxib[i]*(scnodes[i]->n()[1]);
+      fac_dnx_b  += derivsxib(i,0)*(scnodes[i]->n()[0]);
+      fac_dny_b  += derivsxib(i,0)*(scnodes[i]->n()[1]);
       fac_nx_b   += valsxib[i]*(scnodes[i]->n()[0]);
       fac_ny_b   += valsxib[i]*(scnodes[i]->n()[1]);
     }
@@ -1110,13 +1089,13 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   // we also need shape function derivs in A and B
   double psxigp[2] = {sxigp, 0.0};
   double pmxigp[2] = {mxigp, 0.0};
-  vector<double> valsxigp(numsnode);
-  vector<double> valmxigp(nummnode);
-  vector<double> derivsxigp(numsnode);
-  vector<double> derivmxigp(nummnode);
+  LINALG::SerialDenseVector valsxigp(numsnode);
+  LINALG::SerialDenseVector valmxigp(nummnode);
+  LINALG::SerialDenseMatrix derivsxigp(numsnode,1);
+  LINALG::SerialDenseMatrix derivmxigp(nummnode,1);
   
-  sele.EvaluateShape1D(psxigp,valsxigp,derivsxigp,numsnode);
-  mele.EvaluateShape1D(pmxigp,valmxigp,derivmxigp,nummnode);
+  sele.EvaluateShape(psxigp,valsxigp,derivsxigp,numsnode);
+  mele.EvaluateShape(pmxigp,valmxigp,derivmxigp,nummnode);
   
   // we also need the GP slave coordinates + normal
   double sgpn[3] = {0.0,0.0,0.0};
@@ -1146,8 +1125,8 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   
   for (int i=0;i<nummnode;++i)
   {
-    fac_dxm_gp += derivmxigp[i]*(mcnodes[i]->xspatial()[0]);
-    fac_dym_gp += derivmxigp[i]*(mcnodes[i]->xspatial()[1]);
+    fac_dxm_gp += derivmxigp(i,0)*(mcnodes[i]->xspatial()[0]);
+    fac_dym_gp += derivmxigp(i,0)*(mcnodes[i]->xspatial()[1]);
     
     fac_xmsl_gp += valmxigp[i]*(mcnodes[i]->xspatial()[0]);
     fac_ymsl_gp += valmxigp[i]*(mcnodes[i]->xspatial()[1]);
@@ -1173,8 +1152,8 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
     
     for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
     {
-      double facx = derivsxigp[i]*(scnodes[i]->xspatial()[0]);
-      double facy = derivsxigp[i]*(scnodes[i]->xspatial()[1]);
+      double facx = derivsxigp(i,0)*(scnodes[i]->xspatial()[0]);
+      double facy = derivsxigp(i,0)*(scnodes[i]->xspatial()[1]);
       dmap_xsl_gp[p->first] += facx*(p->second);
       dmap_ysl_gp[p->first] += facy*(p->second);
     }
@@ -1202,9 +1181,9 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
     
     for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
     {
-      double valx =  derivsxigp[i]*scnodes[i]->n()[0];
+      double valx =  derivsxigp(i,0)*scnodes[i]->n()[0];
       dmap_nxsl_gp_mod[p->first] += valx*(p->second);
-      double valy =  derivsxigp[i]*scnodes[i]->n()[1];
+      double valy =  derivsxigp(i,0)*scnodes[i]->n()[1];
       dmap_nysl_gp_mod[p->first] += valy*(p->second);
     }
   }
@@ -1283,29 +1262,24 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
   
   // create empty mmodseg object and wrap it with RCP
   int nrow  = sele.NumNode();
-  int nrowdof = 2;              // up to now we only consider 2D problems!!!
+  int nrowdof = Dim();
   int ncol  = mele.NumNode();
-  int ncoldof = 2;              // up to now we only consider 2D problems!!!
+  int ncoldof = Dim();
   
   RCP<Epetra_SerialDenseMatrix> mmodseg = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
   
   // create empty vectors for shape fct. evaluation
-  vector<double> sval(nrow);
-  vector<double> sderiv(nrow);
-  vector<double> mval(ncol);
-  vector<double> mderiv(ncol);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
-  // get slave nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix scoord(3,nrow);
-  scoord = sele.GetNodalCoords();
-  
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
     
     double sxi[2] = {0.0, 0.0};
@@ -1323,14 +1297,14 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
       dserror("ERROR: IntegrateMmod: Gauss point projection failed!");
     
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
-    mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
     
     // build the delta function of slave side shape functions
     double deltasval = sval[0]-sval[1];
     
     // evaluate the two slave side Jacobians
-    double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
+    double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all mmodseg matrix entries
@@ -1473,18 +1447,16 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
   
   // create empty vectors for shape fct. evaluation
-  vector<double> sval(nrow);
-  vector<double> sderiv(nrow);
-  vector<double> mval(ncol);
-  vector<double> mderiv(ncol);
-  vector<double> dualval(nrow);
-  vector<double> dualderiv(nrow);
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3,nrow);
-  LINALG::SerialDenseMatrix mcoord(3,ncol);
-  scoord = sele.GetNodalCoords();
-  mcoord = mele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix mcoord = mele.GetNodalCoords();
   
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
@@ -1493,8 +1465,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {0.0, 0.0};
-    eta[0] = Coordinate(gp);
+    double eta[2] = {Coordinate(gp,0), 0.0};
     double wgt = Weight(gp);
     
     double sxi[2] = {0.0, 0.0};
@@ -1517,11 +1488,11 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
       dserror("ERROR: IntegrateG: Gauss point projection failed!");
     
     // evaluate dual space shape functions (on slave element)
-    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
-    mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
     
     // build interpolation of slave GP normal and coordinates
     double gpn[3] = {0.0,0.0,0.0};
@@ -1569,7 +1540,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
 #endif // #ifdef DEBUG
     
     // evaluate the two slave side Jacobians
-    double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
+    double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all gseg vector entries

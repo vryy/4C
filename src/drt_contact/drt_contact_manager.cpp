@@ -3782,7 +3782,7 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
+    if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
     
     // get global quantity to be stored in nodes
     RCP<Epetra_Vector> vectorglobal = null;
@@ -3831,13 +3831,14 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
       
-      if (cnode->NumDof() > 2) dserror("ERROR: StoreNodalQuantities: Not yet implemented for 3D!");
+      // be aware of problem dimension
+      int dim = Dim();
       
       // index for first DOF of current node in Epetra_Vector
-      int locindex = vectorinterface->Map().LID(2*gid);
+      int locindex = vectorinterface->Map().LID(dim*gid);
       
       // extract this node's quantity from vectorinterface
-      for (int k=0;k<2;++k)
+      for (int k=0;k<dim;++k)
       {
         switch(type)
         {
@@ -3856,12 +3857,12 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
           // throw a dserror if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
           //bool semismooth = scontact_.get<bool>("semismooth newton",false);
-          //if (semismooth && !cnode->dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
+          //if (semismooth && !cnode->Dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
           //  dserror("ERROR: Non-D.B.C. inactive node %i has non-zero Lag. Mult.: dof %i lm %f",
           //           cnode->Id(), cnode->Dofs()[k], (*vectorinterface)[locindex+k]);
           
           // throw a dserror if node is Active and DBC
-          if (cnode->dbc()[k] && cnode->Active())
+          if (cnode->Dbc()[k] && cnode->Active())
             dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
           
           // explicity set global Lag. Mult. to zero for D.B.C nodes
@@ -3879,7 +3880,7 @@ void CONTACT::Manager::StoreNodalQuantities(Manager::QuantityType type, RCP<Epet
         }
         case Manager::dirichlet:
         {
-          cnode->dbc()[k] = (*vectorinterface)[locindex+k];
+          cnode->Dbc()[k] = (*vectorinterface)[locindex+k];
           break;
         }
         default:

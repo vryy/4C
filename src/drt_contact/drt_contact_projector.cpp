@@ -215,14 +215,14 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
   {
     // collect necessary data (slave side, for GP)
     int nnodes = gpele.NumNode();
-    vector<double> val(nnodes);
-    vector<double> deriv(nnodes);
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
     LINALG::SerialDenseMatrix coord(3,nnodes);
     DRT::Node** mynodes = gpele.Nodes();
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
         
     // get shape function values and derivatives at gpeta
-    ele.EvaluateShape1D(gpeta, val, deriv, nnodes);
+    ele.EvaluateShape(gpeta, val, deriv, nnodes);
 
     // get interpolated GP normal and GP coordinates
     double gpn[3] = {0.0, 0.0, 0.0};
@@ -324,34 +324,43 @@ double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
        xim coords of element nodes (master side)
        xs  coords of node to be projected (slave side)
        ns   outward normal of node to be projected (slave side)          */
+  double fval;
   
-  // collect necessary data (master side)
-  int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
+  if (Dim()==2)
+  {
+    // collect necessary data (master side)
+    int nnodes = ele.NumNode();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    
+    // get shape function values and derivatives at eta
+    ele.EvaluateShape(eta, val, deriv, nnodes);
   
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
-
-  // build interpolation of master node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,true);
+    // build interpolation of master node coordinates for current eta
+    double nx[3] = {0.0, 0.0, 0.0};
+    ele.LocalToGlobal(eta,nx,true);
+    
+    // subtract slave node coordinates
+    nx[0]-=node.xspatial()[0];
+    nx[1]-=node.xspatial()[1];
+    nx[2]-=node.xspatial()[2];
   
-  // subtract slave node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
-
-  // update boolean variable outward and gap
-  gap = nx[0]*node.n()[0]+nx[1]*node.n()[1]+nx[2]*node.n()[2];
-  if (gap<0.0)
-    outward = false;
+    // update boolean variable outward and gap
+    gap = nx[0]*node.n()[0]+nx[1]*node.n()[1]+nx[2]*node.n()[2];
+    if (gap<0.0)
+      outward = false;
+    else
+      outward = true;
+    gap=abs(gap);
+    
+    //calculate F
+    fval = nx[0]*node.n()[1]-nx[1]*node.n()[0];
+  }
+  
   else
-    outward = true;
-  gap=abs(gap);
+    dserror("ERROR: EvaluateFNodalNormal: 3D version not yet implemented!");
   
-  // calculate F
-  return (nx[0]*node.n()[1]-nx[1]*node.n()[0]);
+  return fval;
 }
 
 /*----------------------------------------------------------------------*
@@ -368,21 +377,32 @@ double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
        xim, yim  coords of element nodes (master side)
        nxs, nys   outward normal of node to be projected (slave side)   */
   
-  // collect necessary data (master side)
-  int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
-      
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
-
-  // build interpolation of master node coordinates for current eta
-  // use shape function derivatives for interpolation
-  double nxeta[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta,false);
+  double fgrad;
+    
+  if (Dim()==2)
+  {
+    // collect necessary data (master side)
+    int nnodes = ele.NumNode();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+        
+    // get shape function values and derivatives at eta
+    ele.EvaluateShape(eta, val, deriv, nnodes);
   
-  // calculate GradF
-  return (nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0]);
+    // build interpolation of master node coordinates for current eta
+    // use shape function derivatives for interpolation
+    double nxeta[3] = {0.0, 0.0, 0.0};
+    ele.LocalToGlobal(eta,nxeta,false);
+    
+    // calculate GradF
+    fgrad =  nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0];
+  }
+  
+  else
+    dserror("ERROR: EvaluateGradFNodalNormal: 3D version not yet implemented!");
+    
+  return fgrad;
+    
 }
 
 /*----------------------------------------------------------------------*
@@ -401,52 +421,62 @@ double CONTACT::Projector::EvaluateFElementNormal(CONTACT::CNode& node,
        xis coords of element nodes (slave side)
        xm  coords of node to be projected (master side)
        nis outward normals of element nodes (slave side)                */
+  
+  double fval;
     
-  // collect necessary data (slave side)
-  int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  DRT::Node** mynodes = ele.Nodes();
-  if(!mynodes) dserror("ERROR: EvaluateFElementNormal: Null pointer!");
-      
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
-
-  // get interpolated normal and proj. coordinates for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nx[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
+  if (Dim()==2)
   {
-    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
+    // collect necessary data (slave side)
+    int nnodes = ele.NumNode();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    DRT::Node** mynodes = ele.Nodes();
+    if(!mynodes) dserror("ERROR: EvaluateFElementNormal: Null pointer!");
+        
+    // get shape function values and derivatives at eta
+    ele.EvaluateShape(eta, val, deriv, nnodes);
+  
+    // get interpolated normal and proj. coordinates for current eta
+    double nn[3] = {0.0, 0.0, 0.0};
+    double nx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nnodes;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      nn[0]+=val[i]*mycnode->n()[0];
+      nn[1]+=val[i]*mycnode->n()[1];
+      nn[2]+=val[i]*mycnode->n()[2];
+      
+      coord(0,i) = mycnode->xspatial()[0];
+      coord(1,i) = mycnode->xspatial()[1];
+      coord(2,i) = mycnode->xspatial()[2];
+      
+      nx[0]+=val[i]*coord(0,i);
+      nx[1]+=val[i]*coord(1,i);
+      nx[2]+=val[i]*coord(2,i);
+    }
+      
+    // subtract master node coordinates
+    nx[0]-=node.xspatial()[0];
+    nx[1]-=node.xspatial()[1];
+    nx[2]-=node.xspatial()[2];
     
-    coord(0,i) = mycnode->xspatial()[0];
-    coord(1,i) = mycnode->xspatial()[1];
-    coord(2,i) = mycnode->xspatial()[2];
+    // update boolean variable outward
+    gap = -nx[0]*nn[0]-nx[1]*nn[1]-nx[2]*nn[2];
+    if (gap<0.0)
+      outward = false;
+    else
+      outward = true;
+    gap=abs(gap);
     
-    nx[0]+=val[i]*coord(0,i);
-    nx[1]+=val[i]*coord(1,i);
-    nx[2]+=val[i]*coord(2,i);
+    // calculate F
+    fval = nx[0]*nn[1]-nx[1]*nn[0];
   }
     
-  // subtract master node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
-  
-  // update boolean variable outward
-  gap = -nx[0]*nn[0]-nx[1]*nn[1]-nx[2]*nn[2];
-  if (gap<0.0)
-    outward = false;
   else
-    outward = true;
-  gap=abs(gap);
-  
-  // calculate F
-  return (nx[0]*nn[1]-nx[1]*nn[0]);
+    dserror("ERROR: EvaluateFElementNormal: 3D version not yet implemented!");
+      
+  return fval;
 }
 
 /*----------------------------------------------------------------------*
@@ -466,57 +496,66 @@ double CONTACT::Projector::EvaluateGradFElementNormal(CONTACT::CNode& node,
        xis, yis   coords of element nodes (slave side)
        xm, ym     coords of node to be projected (master side)
        nxjs, nyjs outward normals of element nodes (slave side)         */
+  
+  double fgrad;
       
-  // collect necessary data (slave side)
-  int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  DRT::Node** mynodes = ele.Nodes();
-  if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
-        
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
-
-  // get interpolated normal and proj. coordinates for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nneta[3] = {0.0, 0.0, 0.0};
-  double nx[3] = {0.0, 0.0, 0.0};
-  double nxeta[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
+  if (Dim()==2)
   {
-    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
-    
-    nneta[0]+=deriv[i]*mycnode->n()[0];
-    nneta[1]+=deriv[i]*mycnode->n()[1];
-    nneta[2]+=deriv[i]*mycnode->n()[2];
+    // collect necessary data (slave side)
+    int nnodes = ele.NumNode();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    DRT::Node** mynodes = ele.Nodes();
+    if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
+          
+    // get shape function values and derivatives at eta
+    ele.EvaluateShape(eta, val, deriv, nnodes);
+  
+    // get interpolated normal and proj. coordinates for current eta
+    double nn[3] = {0.0, 0.0, 0.0};
+    double nneta[3] = {0.0, 0.0, 0.0};
+    double nx[3] = {0.0, 0.0, 0.0};
+    double nxeta[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nnodes;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
       
-    coord(0,i) = mycnode->xspatial()[0];
-    coord(1,i) = mycnode->xspatial()[1];
-    coord(2,i) = mycnode->xspatial()[2];
-    
-    nx[0]+=val[i]*coord(0,i);
-    nx[1]+=val[i]*coord(1,i);
-    nx[2]+=val[i]*coord(2,i);
+      nn[0]+=val[i]*mycnode->n()[0];
+      nn[1]+=val[i]*mycnode->n()[1];
+      nn[2]+=val[i]*mycnode->n()[2];
+      
+      nneta[0]+=deriv(i,0)*mycnode->n()[0];
+      nneta[1]+=deriv(i,0)*mycnode->n()[1];
+      nneta[2]+=deriv(i,0)*mycnode->n()[2];
         
-    nxeta[0]+=deriv[i]*coord(0,i);
-    nxeta[1]+=deriv[i]*coord(1,i);
-    nxeta[2]+=deriv[i]*coord(2,i);
-  }
+      coord(0,i) = mycnode->xspatial()[0];
+      coord(1,i) = mycnode->xspatial()[1];
+      coord(2,i) = mycnode->xspatial()[2];
       
-  // subtract master node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
+      nx[0]+=val[i]*coord(0,i);
+      nx[1]+=val[i]*coord(1,i);
+      nx[2]+=val[i]*coord(2,i);
+          
+      nxeta[0]+=deriv(i,0)*coord(0,i);
+      nxeta[1]+=deriv(i,0)*coord(1,i);
+      nxeta[2]+=deriv(i,0)*coord(2,i);
+    }
+        
+    // subtract master node coordinates
+    nx[0]-=node.xspatial()[0];
+    nx[1]-=node.xspatial()[1];
+    nx[2]-=node.xspatial()[2];
+      
+    // calculate GradF
+    fgrad =   nxeta[0]*nn[1] + nx[0]*nneta[1]
+            - nxeta[1]*nn[0] - nx[1]*nneta[0];
+  }
+  
+  else
+      dserror("ERROR: EvaluateGradFElementNormal: 3D version not yet implemented!");
     
-  // calculate GradF
-  double gradf =   nxeta[0]*nn[1] + nx[0]*nneta[1]
-                 - nxeta[1]*nn[0] - nx[1]*nneta[0];
-  return gradf;
+  return fgrad;
 }
 
 /*----------------------------------------------------------------------*
@@ -537,33 +576,44 @@ double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
        gpx coords of GP to be projected (slave side)
        gpn outward normal of GP to be projected (slave side)          */
   
-  // collect necessary data (master side)
-  int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
+  double fval;
+      
+  if (Dim()==2)
+  {
+    // collect necessary data (master side)
+    int nnodes = ele.NumNode();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+      
+    // get shape function values and derivatives at eta
+    ele.EvaluateShape(eta, val, deriv, nnodes);
+  
+    // build interpolation of master node coordinates for current eta
+    double nx[3] = {0.0, 0.0, 0.0};
+    ele.LocalToGlobal(eta,nx,true);
     
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
-
-  // build interpolation of master node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,true);
+    // subtract GP coordinates
+    nx[0]-=gpx[0];
+    nx[1]-=gpx[1];
+    nx[2]-=gpx[2];
   
-  // subtract GP coordinates
-  nx[0]-=gpx[0];
-  nx[1]-=gpx[1];
-  nx[2]-=gpx[2];
-
-  // update boolean variable outward
-  gap = nx[0]*gpn[0]+nx[1]*gpn[1]+nx[2]*gpn[2];
-  if (gap<0.0)
-    outward = false;
+    // update boolean variable outward
+    gap = nx[0]*gpn[0]+nx[1]*gpn[1]+nx[2]*gpn[2];
+    if (gap<0.0)
+      outward = false;
+    else
+      outward = true;
+    gap=abs(gap);
+    
+    // calculate F
+    fval = nx[0]*gpn[1]-nx[1]*gpn[0];
+  }
+  
   else
-    outward = true;
-  gap=abs(gap);
+    dserror("ERROR: EvaluateFGaussPoint: 3D version not yet implemented!");
+        
+  return fval;
   
-  // calculate F
-  return (nx[0]*gpn[1]-nx[1]*gpn[0]);
 }
 
 /*----------------------------------------------------------------------*
@@ -580,13 +630,17 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
        xim, yim   coords of element nodes (master side)
        gpnx, gpny outward normal of GP to be projected (slave side)   */
   
+  double fgrad;
+        
+  if (Dim()==2)
+  {
   // collect necessary data (master side)
   int nnodes = ele.NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,1);
       
   // get shape function values and derivatives at eta
-  ele.EvaluateShape1D(eta, val, deriv, nnodes);
+  ele.EvaluateShape(eta, val, deriv, nnodes);
 
   // build interpolation of master node coordinates for current eta
   // use shape fuvntion derivatives for interpolation
@@ -594,7 +648,13 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
   ele.LocalToGlobal(eta,nxeta,false);
 
   // calculate GradF
-  return (nxeta[0]*gpn[1]-nxeta[1]*gpn[0]);
+  fgrad = nxeta[0]*gpn[1]-nxeta[1]*gpn[0];
+  }
+  
+  else
+    dserror("ERROR: EvaluateGradFGaussPoint: 3D version not yet implemented!");
+      
+  return fgrad;
 }
 
 #endif //#ifdef CCADISCRET

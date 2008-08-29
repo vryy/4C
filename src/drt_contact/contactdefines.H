@@ -45,7 +45,6 @@ Maintainer: Alexander Popp
 #define CONTACTPROJLIM 1.0e-8    /* no problems with exact node projections */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
-#define CONTACTNGP 5             /* no. Gauss points for integration */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
 #define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
 

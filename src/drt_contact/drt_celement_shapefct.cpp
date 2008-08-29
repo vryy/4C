@@ -23,8 +23,8 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
                                        const double* xi,
-                                       vector<double>& val,
-                                       vector<double>& deriv)
+                                       LINALG::SerialDenseVector& val,
+                                       LINALG::SerialDenseMatrix& deriv)
 {
   switch(shape)
   {
@@ -36,8 +36,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = 0.5*(1-xi[0]);
     val[1] = 0.5*(1+xi[0]); 
-    deriv[0] = -0.5;
-    deriv[1] =  0.5;
+    deriv(0,0) = -0.5;
+    deriv(1,0) =  0.5;
     break;
   }
   // *********************************************************************
@@ -48,8 +48,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = 0.5*(1-3*xi[0]);
     val[1] = 0.5*(1+3*xi[0]);
-    deriv[0] = -1.5;
-    deriv[1] =  1.5;
+    deriv(0,0) = -1.5;
+    deriv(1,0) =  1.5;
     break;
   }
   // *********************************************************************
@@ -60,8 +60,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = 0;
     val[1] = 1;
-    deriv[0] = 0;
-    deriv[1] = 0;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
     break;
   }
   // *********************************************************************
@@ -72,8 +72,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = 1;
     val[1] = 0;
-    deriv[0] = 0;
-    deriv[1] = 0;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
     break;
   }
   // *********************************************************************
@@ -85,8 +85,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = xi[0];
     val[1] = 1-xi[0]; 
-    deriv[0] =  1;
-    deriv[1] = -1;
+    deriv(0,0) =  1;
+    deriv(1,0) = -1;
     break;
   }
   // *********************************************************************
@@ -98,8 +98,8 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   {
     val[0] = -xi[0];
     val[1] = 1+xi[0]; 
-    deriv[0] = -1;
-    deriv[1] =  1;
+    deriv(0,0) = -1;
+    deriv(1,0) =  1;
     break;
   }
   // *********************************************************************
@@ -111,9 +111,9 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     val[0] = 0.5*xi[0]*(xi[0]-1);
     val[1] = 0.5*xi[0]*(xi[0]+1);
     val[2] = (1-xi[0])*(1+xi[0]);       
-    deriv[0] = xi[0]-0.5;
-    deriv[1] = xi[0]+0.5;
-    deriv[2] = -2*xi[0];
+    deriv(0,0) = xi[0]-0.5;
+    deriv(1,0) = xi[0]+0.5;
+    deriv(2,0) = -2*xi[0];
     break;
   }
   // *********************************************************************
@@ -126,21 +126,18 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-  
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     
-    Epetra_SerialDenseMatrix me(nnodes,nnodes);
-    Epetra_SerialDenseMatrix de(nnodes,nnodes);
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
     
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
-      EvaluateShape1D(gpc, val, deriv, nnodes);
-      detg = Jacobian1D(val,deriv,coord);
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
+      EvaluateShape(gpc, val, deriv, nnodes);
+      detg = Jacobian(gpc);
       
       for (int j=0;j<nnodes;++j)
         for (int k=0;k<nnodes;++k)
@@ -154,25 +151,22 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     LINALG::SymmetricInverse(me,nnodes);
     
     // get solution matrix with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
     ae.Multiply('N','N',1.0,de,me,0.0);
     
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
-    EvaluateShape1D(xi, val, deriv, nnodes);
+    EvaluateShape(xi, val, deriv, nnodes);
     
-    vector<double> valtemp(nnodes);
-    vector<double> derivtemp(nnodes);
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
     for (int i=0;i<nnodes;++i)
-    {
-      valtemp[i]=0.0;
-      derivtemp[i]=0.0;
       for (int j=0;j<nnodes;++j)
       {
         valtemp[i]+=ae(i,j)*val[j];
-        derivtemp[i]+=ae(i,j)*deriv[j];
+        derivtemp(i,0)+=ae(i,j)*deriv(j,0);
       }
-    }
+    
     val=valtemp;
     deriv=derivtemp;
     break;
@@ -187,29 +181,27 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
     
     // empty shape function vals + derivs
-    vector<double> valquad(nnodes);
-    vector<double> derivquad(nnodes);
-    vector<double> vallin(nnodes-1);
-    vector<double> derivlin(nnodes-1);
-    vector<double> valtemp(nnodes);
-    vector<double> derivtemp(nnodes);
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,1);
+    LINALG::SerialDenseVector vallin(nnodes-1);
+    LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     
-    Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
-    Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
+    LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
     
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
       ShapeFunctions(CElement::quad1D,gpc,valquad,derivquad);
       ShapeFunctions(CElement::dual1D_base_for_edge0,gpc,vallin,derivlin);
-      detg = Jacobian1D(valquad,derivquad,coord);
+      detg = Jacobian(gpc);
       
       for (int j=1;j<nnodes;++j)
         for (int k=1;k<nnodes;++k)
@@ -222,7 +214,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     // invert bi-ortho matrix me
     // CAUTION: This is a non-symmetric inverse operation!
     double detme = me(0,0)*me(1,1)-me(0,1)*me(1,0);
-    Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
     meold=me;
     me(0,0) =  1/detme*meold(1,1);
     me(0,1) = -1/detme*meold(0,1);
@@ -230,7 +222,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     me(1,1) =  1/detme*meold(0,0);
 
     // get solution matrix with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix ae(nnodes-1,nnodes-1);
     ae.Multiply('N','N',1.0,de,me,0.0);
 
     // evaluate dual shape functions at loc. coord. xi
@@ -239,15 +231,15 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
       for (int j=1;j<nnodes;++j)
       {
         valtemp[i]+=ae(i-1,j-1)*vallin[j-1];
-        derivtemp[i]+=ae(i-1,j-1)*derivlin[j-1];
+        derivtemp(i,0)+=ae(i-1,j-1)*derivlin(j-1,0);
       }
     
-    val[0] = 0;
+    val[0] = 0.0;
     val[1] = valtemp[1];
     val[2] = valtemp[2];
-    deriv[0] =  0;
-    deriv[1] = derivtemp[1];
-    deriv[2] = derivtemp[2];
+    deriv(0,0) =  0.0;
+    deriv(1,0) = derivtemp(1,0);
+    deriv(2,0) = derivtemp(2,0);
 
     break;
   }
@@ -261,29 +253,27 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
-    
+
     // empty shape function vals + derivs
-    vector<double> valquad(nnodes);
-    vector<double> derivquad(nnodes);
-    vector<double> vallin(nnodes-1);
-    vector<double> derivlin(nnodes-1);
-    vector<double> valtemp(nnodes);
-    vector<double> derivtemp(nnodes);
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,1);
+    LINALG::SerialDenseVector vallin(nnodes-1);
+    LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     
-    Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
-    Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
+    LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
     
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
       ShapeFunctions(CElement::quad1D,gpc,valquad,derivquad);
       ShapeFunctions(CElement::dual1D_base_for_edge1,gpc,vallin,derivlin);
-      detg = Jacobian1D(valquad,derivquad,coord);
+      detg = Jacobian(gpc);
       
       for (int j=0;j<nnodes-1;++j)
         for (int k=0;k<nnodes-1;++k)
@@ -296,7 +286,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     // invert bi-ortho matrix me
     // CAUTION: This is a non-symmetric inverse operation!
     double detme = me(0,0)*me(1,1)-me(0,1)*me(1,0);
-    Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
     meold=me;
     me(0,0) =  1/detme*meold(1,1);
     me(0,1) = -1/detme*meold(0,1);
@@ -304,7 +294,7 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     me(1,1) =  1/detme*meold(0,0);
 
     // get solution matrix with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix ae(nnodes-1,nnodes-1);
     ae.Multiply('N','N',1.0,de,me,0.0);
 
     // evaluate dual shape functions at loc. coord. xi
@@ -313,18 +303,48 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
       for (int j=0;j<nnodes-1;++j)
       {
         valtemp[2*i]+=ae(i,j)*vallin[j];
-        derivtemp[2*i]+=ae(i,j)*derivlin[j];
+        derivtemp(2*i,0)+=ae(i,j)*derivlin(j,0);
       }
     
     val[0] = valtemp[0];
-    val[1] = 0;
+    val[1] = 0.0;
     val[2] = valtemp[2];
-    deriv[0] = derivtemp[0];
-    deriv[1] = 0;
-    deriv[2] = derivtemp[2];
+    deriv(0,0) = derivtemp(0,0);
+    deriv(1,0) = 0.0;
+    deriv(2,0) = derivtemp(2,0);
     
     break;
   }
+  // *********************************************************************
+  // 2D standard linear shape functions (triangular)
+  // (used for interpolation of displacemt field)
+  // *********************************************************************
+  case CElement::lin2D:
+  {
+    val[0] = 1-xi[0]-xi[1]; 
+    val[1] = xi[0];
+    val[2] = xi[1];
+    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
+    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
+    break;
+  }
+  // *********************************************************************
+  // 2D standard blinear shape functions (quadrilateral)
+  // (used for interpolation of displacemt field)
+  // *********************************************************************
+  case CElement::bilin2D:
+  {
+    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
+    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
+    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
+    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
+    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
+    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
+    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
+    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
+    break;
+  }  
   // *********************************************************************
   // Unkown shape function type
   // *********************************************************************
@@ -334,6 +354,57 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
   
   return;
 }
+
+
+///*----------------------------------------------------------------------*
+// |  2D shape function repository                              popp 08/08|
+// *----------------------------------------------------------------------*/
+//void CONTACT::CElement::ShapeFunctions2D(CElement::ShapeType shape,
+//                                         const double* xi,
+//                                         vector<double>& val,
+//                                         LINALG::SerialDenseMatrix& deriv)
+//{
+//  switch(shape)
+//  {
+//  // *********************************************************************
+//  // 2D standard linear shape functions (triangular)
+//  // (used for interpolation of displacemt field)
+//  // *********************************************************************
+//  case CElement::lin2D:
+//  {
+//    val[0] = 1-xi[0]-xi[1]; 
+//    val[1] = xi[0];
+//    val[2] = xi[1];
+//    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
+//    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
+//    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
+//    break;
+//  }
+//  // *********************************************************************
+//  // 2D standard blinear shape functions (quadrilateral
+//  // (used for interpolation of displacemt field)
+//  // *********************************************************************
+//  case CElement::bilin2D:
+//  {
+//    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
+//    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
+//    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
+//    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
+//    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
+//    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
+//    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
+//    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
+//    break;
+//  }  
+//  // *********************************************************************
+//  // Unkown shape function type
+//  // *********************************************************************
+//  default:
+//    dserror("ERROR: Unknown 2D shape function type identifier");
+//  }
+//  
+//  return;
+//}
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function linearizations repository            popp 05/08|
@@ -353,15 +424,14 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
     
     // prepare computation with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
-    vector<double> val(nnodes);
-    vector<double> deriv(nnodes);
-    Epetra_SerialDenseMatrix me(nnodes,nnodes);
-    Epetra_SerialDenseMatrix de(nnodes,nnodes);
+    CONTACT::Integrator integrator(Shape());
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
     
     // two-dim arrays of maps for linearization of me/de 
     vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
@@ -370,14 +440,14 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // build me, de, derivme, derivde
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
-      EvaluateShape1D(gpc, val, deriv, nnodes);
-      detg = Jacobian1D(val,deriv,coord);
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
+      EvaluateShape(gpc, val, deriv, nnodes);
+      detg = Jacobian(gpc);
       
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian1D(val,deriv,coord,testmap);
+      DerivJacobian(val,deriv,coord,testmap);
       
       // loop over all entries of me/de
       for (int j=0;j<nnodes;++j)
@@ -402,7 +472,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     LINALG::SymmetricInverse(me,nnodes);
     
     // get solution matrix ae with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
     ae.Multiply('N','N',1.0,de,me,0.0);
     
     // build linearization of ae and store in derivdual
@@ -521,22 +591,19 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
     
     // empty shape function vals + derivs
-    vector<double> valquad(nnodes);
-    vector<double> derivquad(nnodes);
-    vector<double> vallin(nnodes-1);
-    vector<double> derivlin(nnodes-1);
-    vector<double> valtemp(nnodes);
-    vector<double> derivtemp(nnodes);
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,1);
+    LINALG::SerialDenseVector vallin(nnodes-1);
+    LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     
-    Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
-    Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
+    LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
     
     // two-dim arrays of maps for linearization of me/de 
     vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
@@ -544,15 +611,15 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
       ShapeFunctions(CElement::quad1D,gpc,valquad,derivquad);
       ShapeFunctions(CElement::dual1D_base_for_edge0,gpc,vallin,derivlin);
-      detg = Jacobian1D(valquad,derivquad,coord);
+      detg = Jacobian(gpc);
       
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian1D(valquad,derivquad,coord,testmap);
+      DerivJacobian(valquad,derivquad,coord,testmap);
       
       // loop over all entries of me/de
       for (int j=1;j<nnodes;++j)
@@ -576,7 +643,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // invert bi-ortho matrix me
     // CAUTION: This is a non-symmetric inverse operation!
     double detme = me(0,0)*me(1,1)-me(0,1)*me(1,0);
-    Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
     meold=me;
     me(0,0) =  1/detme*meold(1,1);
     me(0,1) = -1/detme*meold(0,1);
@@ -584,7 +651,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     me(1,1) =  1/detme*meold(0,0);
 
     // get solution matrix with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix ae(nnodes-1,nnodes-1);
     ae.Multiply('N','N',1.0,de,me,0.0);
 
     // build linearization of ae and store in derivdual
@@ -628,7 +695,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // *******************************************************************
     
     cout << "FD Check for A-derivative of Element: " << Id() << endl;
-    Epetra_SerialDenseMatrix aeref(ae);
+    LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     
     for (int dim=0;dim<2;++dim)
@@ -639,14 +706,14 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         coord(dim,node)+=delta;
         
         // empty shape function vals + derivs
-        vector<double> valquad1(nnodes);
-        vector<double> derivquad1(nnodes);
-        vector<double> vallin1(nnodes-1);
-        vector<double> derivlin1(nnodes-1);
-        vector<double> valtemp1(nnodes);
-        vector<double> derivtemp1(nnodes);
-        Epetra_SerialDenseMatrix me1(nnodes-1,nnodes-1);
-        Epetra_SerialDenseMatrix de1(nnodes-1,nnodes-1);
+        LINALG::SerialDenseVector valquad1(nnodes);
+        LINALG::SerialDenseMatrix derivquad1(nnodes,1);
+        LINALG::SerialDenseVector vallin1(nnodes-1);
+        LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
+        //LINALG::SerialDenseVector valtemp1(nnodes);
+        //LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
+        LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
+        LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
         
         // build me, de
         for (int i=0;i<integrator.nGP();++i)
@@ -654,7 +721,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
           double gpc1[2] = {integrator.Coordinate(i), 0.0};
           ShapeFunctions(CElement::quad1D,gpc1,valquad1,derivquad1);
           ShapeFunctions(CElement::dual1D_base_for_edge0,gpc1,vallin1,derivlin1);
-          detg = Jacobian1D(valquad1,derivquad1,coord);
+          detg = Jacobian(valquad1,derivquad1,coord);
           
           for (int j=1;j<nnodes;++j)
             for (int k=1;k<nnodes;++k)
@@ -669,7 +736,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         
         // invert bi-ortho matrix me1
         double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
-        Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+        LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
         meold=me1;
         me1(0,0) =  1/detme1*meold(1,1);
         me1(0,1) = -1/detme1*meold(0,1);
@@ -677,7 +744,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         me1(1,1) =  1/detme1*meold(0,0);
             
         // get solution matrix ae with dual parameters
-        Epetra_SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+        LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         
         DRT::Node** mynodes = Nodes();
@@ -713,22 +780,19 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
     
     // empty shape function vals + derivs
-    vector<double> valquad(nnodes);
-    vector<double> derivquad(nnodes);
-    vector<double> vallin(nnodes-1);
-    vector<double> derivlin(nnodes-1);
-    vector<double> valtemp(nnodes);
-    vector<double> derivtemp(nnodes);
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,1);
+    LINALG::SerialDenseVector vallin(nnodes-1);
+    LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
     
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     
-    Epetra_SerialDenseMatrix me(nnodes-1,nnodes-1);
-    Epetra_SerialDenseMatrix de(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
+    LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
     
     // two-dim arrays of maps for linearization of me/de 
     vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
@@ -736,15 +800,15 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
       ShapeFunctions(CElement::quad1D,gpc,valquad,derivquad);
       ShapeFunctions(CElement::dual1D_base_for_edge1,gpc,vallin,derivlin);
-      detg = Jacobian1D(valquad,derivquad,coord);
+      detg = Jacobian(gpc);
       
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian1D(valquad,derivquad,coord,testmap);
+      DerivJacobian(valquad,derivquad,coord,testmap);
       
       // loop over all entries of me/de
       for (int j=0;j<nnodes-1;++j)
@@ -768,7 +832,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // invert bi-ortho matrix me
     // CAUTION: This is a non-symmetric inverse operation!
     double detme = me(0,0)*me(1,1)-me(0,1)*me(1,0);
-    Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
     meold=me;
     me(0,0) =  1/detme*meold(1,1);
     me(0,1) = -1/detme*meold(0,1);
@@ -776,7 +840,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     me(1,1) =  1/detme*meold(0,0);
 
     // get solution matrix with dual parameters
-    Epetra_SerialDenseMatrix ae(nnodes-1,nnodes-1);
+    LINALG::SerialDenseMatrix ae(nnodes-1,nnodes-1);
     ae.Multiply('N','N',1.0,de,me,0.0);
 
     // build linearization of ae and store in derivdual
@@ -820,7 +884,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // *******************************************************************
     
     cout << "FD Check for A-derivative of Element: " << Id() << endl;
-    Epetra_SerialDenseMatrix aeref(ae);
+    LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     
     for (int dim=0;dim<2;++dim)
@@ -831,14 +895,14 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         coord(dim,node)+=delta;
         
         // empty shape function vals + derivs
-        vector<double> valquad1(nnodes);
-        vector<double> derivquad1(nnodes);
-        vector<double> vallin1(nnodes-1);
-        vector<double> derivlin1(nnodes-1);
-        vector<double> valtemp1(nnodes);
-        vector<double> derivtemp1(nnodes);
-        Epetra_SerialDenseMatrix me1(nnodes-1,nnodes-1);
-        Epetra_SerialDenseMatrix de1(nnodes-1,nnodes-1);
+        LINALG::SerialDenseVector valquad1(nnodes);
+        LINALG::SerialDenseMatrix derivquad1(nnodes,1);
+        LINALG::SerialDenseVector vallin1(nnodes-1);
+        LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
+        //LINALG::SerialDenseVector valtemp1(nnodes);
+        //LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
+        LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
+        LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
         
         // build me, de
         for (int i=0;i<integrator.nGP();++i)
@@ -846,7 +910,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
           double gpc1[2] = {integrator.Coordinate(i), 0.0};
           ShapeFunctions(CElement::quad1D,gpc1,valquad1,derivquad1);
           ShapeFunctions(CElement::dual1D_base_for_edge1,gpc1,vallin1,derivlin1);
-          detg = Jacobian1D(valquad1,derivquad1,coord);
+          detg = Jacobian(valquad1,derivquad1,coord);
           
           for (int j=0;j<nnodes-1;++j)
             for (int k=0;k<nnodes-1;++k)
@@ -861,7 +925,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         
         // invert bi-ortho matrix me1
         double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
-        Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+        LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
         meold=me1;
         me1(0,0) =  1/detme1*meold(1,1);
         me1(0,1) = -1/detme1*meold(0,1);
@@ -869,7 +933,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         me1(1,1) =  1/detme1*meold(0,0);
             
         // get solution matrix ae with dual parameters
-        Epetra_SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+        LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         
         DRT::Node** mynodes = Nodes();
@@ -906,43 +970,77 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate shape functions - LINEAR / QUAD 1D               popp 01/08|
+ |  Evaluate shape functions                                  popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::EvaluateShape1D(const double* xi, vector<double>& val,
-                                        vector<double>& deriv, const int valdim)
+bool CONTACT::CElement::EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
+                                      LINALG::SerialDenseMatrix& deriv, const int valdim)
 {
   if (!xi)
-    dserror("ERROR: EvaluateShape1D called with xi=NULL");
+    dserror("ERROR: EvaluateShape called with xi=NULL");
   
   // 2D linear case (2noded line element)
-  if ((valdim==2)&& (Shape()==line2))
+  if ((valdim==2) && (Shape()==line2))
     ShapeFunctions(CElement::lin1D,xi,val,deriv);
 
   // 2D quadratic case (3noded line element)
   else if ((valdim==3) && (Shape()==line3))
     ShapeFunctions(CElement::quad1D,xi,val,deriv);
   
+  // 3D linear case (3noded triangular element)
+  else if ((valdim==3)&& (Shape()==tri3))
+    ShapeFunctions(CElement::lin2D,xi,val,deriv);
+
+  // 3D bilinear case (4noded quadrilateral element)
+  else if ((valdim==4) && (Shape()==quad4))
+    ShapeFunctions(CElement::bilin2D,xi,val,deriv);
+  
   // unknown case
   else
-    dserror("ERROR: EvaluateShape1D called for unknown CElement type");
+    dserror("ERROR: EvaluateShape called for unknown CElement type");
 
   return true;
 }
 
+
+///*----------------------------------------------------------------------*
+// |  Evaluate shape functions - LINEAR 2D                      popp 08/08|
+// *----------------------------------------------------------------------*/
+//bool CONTACT::CElement::EvaluateShape2D(const double* xi, vector<double>& val,
+//                                        LINALG::SerialDenseMatrix& deriv, const int valdim)
+//{
+//  if (!xi)
+//    dserror("ERROR: EvaluateShape2D called with xi=NULL");
+//  
+//  // 3D linear case (3noded triangular element)
+//  if ((valdim==3)&& (Shape()==tri3))
+//    ShapeFunctions2D(CElement::lin2D,xi,val,deriv);
+//
+//  // 3D bilinear case (4noded quadrilateral element)
+//  else if ((valdim==4) && (Shape()==quad4))
+//    ShapeFunctions2D(CElement::bilin2D,xi,val,deriv);
+//  
+//  // unknown case
+//  else
+//    dserror("ERROR: EvaluateShape1D called for unknown CElement type");
+//
+//  return true;
+//}
+
+
 /*----------------------------------------------------------------------*
- |  Evaluate dual shape functions - LINEAR / QUAD 1D          popp 12/07|
+ |  Evaluate dual shape functions                             popp 12/07|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& val,
-                                            vector<double>& deriv, const int valdim)
+bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
+                                          LINALG::SerialDenseMatrix& deriv, const int valdim)
 {
   if (!xi)
-    dserror("ERROR: EvaluateShapeDual1D called with xi=NULL");
+    dserror("ERROR: EvaluateShapeDual called with xi=NULL");
   if (!IsSlave())
-    dserror("ERROR: EvaluateShapeDual1D called for master element");
+    dserror("ERROR: EvaluateShapeDual called for master element");
   
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
+  if (!mynodes) dserror("ERROR: EvaluateShapeDual: Null pointer!");
    
   // 2D linear case (2noded line element)
   if ((valdim==2) && (Shape()==line2))
@@ -979,9 +1077,9 @@ bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& va
     CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
     CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
     CNode* mycnode2 = static_cast<CNode*> (mynodes[2]);
-    if (!mycnode0) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
-    if (!mycnode1) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
-    if (!mycnode2) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
+    if (!mycnode0) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode1) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode2) dserror("ERROR: EvaluateShapeDual: Null pointer!");
     bool isonbound0 = mycnode0->IsOnBound();
     bool isonbound1 = mycnode1->IsOnBound();
     bool isonbound2 = mycnode2->IsOnBound();
@@ -1000,48 +1098,48 @@ bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& va
     
     // node 2 is on boundary: infeasible case
     else if (isonbound2)
-      dserror("ERROR: EvlautaeShapeDual1D: Middle boundary node");
+      dserror("ERROR: EvaluateShapeDual: Middle boundary node");
     
     // nodes 0 and 1 are on boundary: infeasible case
     else 
-      dserror("ERROR: EvaluateShapeDual1D: Element with 2 boundary nodes");
+      dserror("ERROR: EvaluateShapeDual: Element with 2 boundary nodes");
   }
   
   // unknown case
   else
-    dserror("ERROR: EvaluateShapeDual1D called for unknown element type");
+    dserror("ERROR: EvaluateShapeDual called for unknown element type");
   
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate 2nd derivative of shape functions - 1D           popp 05/08|
+ |  Evaluate 2nd derivative of shape functions                popp 05/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::Evaluate2ndDerivShape1D(const double* xi,
-                                                vector<double>& secderiv,
-                                                const int valdim)
+bool CONTACT::CElement::Evaluate2ndDerivShape(const double* xi,
+                                              LINALG::SerialDenseMatrix& secderiv,
+                                              const int valdim)
 {
   if (!xi)
-    dserror("ERROR: Evaluate2ndDerivShape1D called with xi=NULL");
+    dserror("ERROR: Evaluate2ndDerivShape called with xi=NULL");
   
   // 2D linear case (2noded line element)
   if ((valdim==2)&& (Shape()==line2))
   {
-    secderiv[0] = 0;
-    secderiv[1] = 0;
+    secderiv(0,0) = 0;
+    secderiv(1,0) = 0;
   }
     
   // 2D quadratic case (3noded line element)
   else if ((valdim==3) && (Shape()==line3))
   {
-    secderiv[0] =  1;
-    secderiv[1] =  1;
-    secderiv[2] = -2;
+    secderiv(0,0) =  1;
+    secderiv(1,0) =  1;
+    secderiv(2,0) = -2;
   }
   
   // unknown case
   else
-    dserror("ERROR: Evaluate2ndDerivShape1D called for unknown CElement type");
+    dserror("ERROR: Evaluate2ndDerivShape called for unknown CElement type");
 
   return true;
 }
@@ -1049,19 +1147,19 @@ bool CONTACT::CElement::Evaluate2ndDerivShape1D(const double* xi,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of dual shape functions    popp 05/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::DerivShapeDual1D(vector<vector<map<int,double> > >& derivdual)
+bool CONTACT::CElement::DerivShapeDual(vector<vector<map<int,double> > >& derivdual)
 {
   if (!IsSlave())
-      dserror("ERROR: DerivShapeDual1D called for master element");
+      dserror("ERROR: DerivShapeDual called for master element");
   
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+  if (!mynodes) dserror("ERROR: DerivShapeDual: Null pointer!");
    
   // 2D linear case (2noded line element)
   if (Shape()==line2)
   {
-    dserror("ERROR: DerivShapeDual1D called for 2D linear shape functions");
+    dserror("ERROR: DerivShapeDual called for 2D linear shape functions");
   }
   
   // 2D quadratic case (3noded line element)
@@ -1071,9 +1169,9 @@ bool CONTACT::CElement::DerivShapeDual1D(vector<vector<map<int,double> > >& deri
     CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
     CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
     CNode* mycnode2 = static_cast<CNode*> (mynodes[2]);
-    if (!mycnode0) dserror("ERROR: DerivShapeDual1D: Null pointer!");
-    if (!mycnode1) dserror("ERROR: DerivShapeDual1D: Null pointer!");
-    if (!mycnode2) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+    if (!mycnode0) dserror("ERROR: DerivShapeDual: Null pointer!");
+    if (!mycnode1) dserror("ERROR: DerivShapeDual: Null pointer!");
+    if (!mycnode2) dserror("ERROR: DerivShapeDual: Null pointer!");
     bool isonbound0 = mycnode0->IsOnBound();
     bool isonbound1 = mycnode1->IsOnBound();
     bool isonbound2 = mycnode2->IsOnBound();
@@ -1092,16 +1190,16 @@ bool CONTACT::CElement::DerivShapeDual1D(vector<vector<map<int,double> > >& deri
     
     // node 2 is on boundary: infeasible case
     else if (isonbound2)
-      dserror("ERROR: DerivShapeDual1D: Middle boundary node");
+      dserror("ERROR: DerivShapeDual: Middle boundary node");
     
     // nodes 0 and 1 are on boundary: infeasible case
     else 
-      dserror("ERROR: DerivShapeDual1D: Element with 2 boundary nodes");
+      dserror("ERROR: DerivShapeDual: Element with 2 boundary nodes");
   }
   
   // unknown case
   else
-    dserror("ERROR: DerivShapeDual1D called for unknown element type");
+    dserror("ERROR: DerivShapeDual called for unknown element type");
     
   return true;
 }

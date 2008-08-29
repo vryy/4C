@@ -38,7 +38,7 @@ grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
   {
-    dbc()[i]=false;
+    Dbc()[i]=false;
     n()[i]=0.0;
     u()[i]=0.0;
     xspatial()[i]=X()[i];
@@ -71,7 +71,7 @@ grow_(old.grow_)
 {
   for (int i=0;i<3;++i)
   {
-    dbc()[i]=old.dbc_[i];
+    Dbc()[i]=old.dbc_[i];
     n()[i]=old.n_[i];
     u()[i]=old.u_[i];
     xspatial()[i]=old.xspatial_[i];
@@ -456,7 +456,6 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   
   // get directional derivative of nodal tangent "for free"
   // (we just have to use the orthogonality of n and t)
-  if (NumDof()==3) dserror("ERROR: Not yet implemented for 3D case");
   map<int,double>& derivtx = GetDerivT()[0];
   map<int,double>& derivty = GetDerivT()[1];
   

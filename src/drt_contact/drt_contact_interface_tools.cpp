@@ -38,6 +38,10 @@ extern struct _FILES  allfiles;
 void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                                        const int step, const int iter, const bool fric)
 {
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
@@ -73,9 +77,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc=0;proc<comm_.NumProc();++proc)
+  for (int proc=0;proc<lComm()->NumProc();++proc)
   {
-    if (proc==comm_.MyPID())
+    if (proc==lComm()->MyPID())
     {
       // open file (overwrite if proc==0, else append)
       if (proc==0) fp = fopen(filename.str().c_str(), "w");
@@ -93,7 +97,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
-        //double area = element->Area();
+        double color = (double)element->IsSlave();
 
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
@@ -103,7 +107,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
           gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+          gmshfilecontent << "{" << scientific << color << "," << color << "};" << endl;
         }
 
         // 2D quadratic case (3noded line elements)
@@ -115,7 +119,32 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                               << coord(2,2) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+        }
+        
+        // 3D linear case (3noded triangular elements)
+        if (element->Shape()==DRT::Element::tri3)
+        {
+          coord = element->GetNodalCoords();
+  
+          gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+        }
+        
+        // 3D bilinear case (4noded quadrilateral elements)
+        if (element->Shape()==DRT::Element::quad4)
+        {
+          coord = element->GetNodalCoords();
+  
+          gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                              << coord(2,3) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
         }
       }
 
@@ -228,13 +257,144 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         }
       }
       
-      if (proc==comm_.NumProc()-1) gmshfilecontent << "};" << endl;
+      if (proc==lComm()->NumProc()-1) gmshfilecontent << "};" << endl;
 
       // move everything to gmsh post-processing file and close it
       fprintf(fp,gmshfilecontent.str().c_str());
       fclose(fp);
     }
-    comm_.Barrier();
+    lComm()->Barrier();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Visualize contact stuff with gmsh                         popp 08/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::VisualizeGmshLight()
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+    
+  // construct unique filename for gmsh output
+  // first index = time step index
+  std::ostringstream filename;
+  filename << "o/gmsh_output/" << "normals_" << allfiles.outputfile_kenner;
+  filename << ".pos";
+
+  // do output to file in c-style
+  FILE* fp = NULL;
+
+  //**********************************************************************
+  // Start GMSH output
+  //**********************************************************************
+  for (int proc=0;proc<lComm()->NumProc();++proc)
+  {
+    if (proc==lComm()->MyPID())
+    {
+      // open file (overwrite if proc==0, else append)
+      if (proc==0) fp = fopen(filename.str().c_str(), "w");
+      else fp = fopen(filename.str().c_str(), "a");
+
+      // write output to temporary stringstream
+      std::stringstream gmshfilecontent;
+      if (proc==0) gmshfilecontent << "View \" Normals \" {" << endl;
+
+      //******************************************************************
+      // plot elements
+      //******************************************************************
+      for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
+      {
+        CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
+        int nnodes = element->NumNode();
+        LINALG::SerialDenseMatrix coord(3,nnodes);
+        double color = (double)element->IsSlave();
+
+        // 2D linear case (2noded line elements)
+        if (element->Shape()==DRT::Element::line2)
+        {
+          coord = element->GetNodalCoords();
+
+          gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "};" << endl;
+        }
+
+        // 2D quadratic case (3noded line elements)
+        if (element->Shape()==DRT::Element::line3)
+        {
+          coord = element->GetNodalCoords();
+
+          gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+        }
+        
+        // 3D linear case (3noded triangular elements)
+        if (element->Shape()==DRT::Element::tri3)
+        {
+          coord = element->GetNodalCoords();
+  
+          gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+        }
+        
+        // 3D bilinear case (4noded quadrilateral elements)
+        if (element->Shape()==DRT::Element::quad4)
+        {
+          coord = element->GetNodalCoords();
+  
+          gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                              << coord(2,3) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+        }
+      }
+
+      //******************************************************************
+      // plot normal, tangent, contact status and Lagr. mutlipliers
+      //******************************************************************
+      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+      {
+        int gid = snoderowmap_->GID(i);
+        DRT::Node* node = idiscret_->gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cnode = static_cast<CNode*>(node);
+        if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
+
+        double nc[3];
+        double nn[3];
+        
+        for (int j=0;j<3;++j)
+        {
+          nc[j]=cnode->xspatial()[j];
+          nn[j]=cnode->n()[j];
+        }
+
+        //******************************************************************
+        // plot normal and tangent vectors (2D or 3D)
+        //******************************************************************
+        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+      }
+      
+      if (proc==lComm()->NumProc()-1) gmshfilecontent << "};" << endl;
+
+      // move everything to gmsh post-processing file and close it
+      fprintf(fp,gmshfilecontent.str().c_str());
+      fclose(fp);
+    }
+    lComm()->Barrier();
   }
 
   return;

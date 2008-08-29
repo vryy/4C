@@ -583,12 +583,18 @@ public:
   //! @name Visualization and Debugging methods
   
   /*!
-  \brief Visualize node normals and projections with gmsh
+  \brief Visualize contact stuff with gmsh
           
   */
   virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                              const int step, const int iter, const bool fric);
   
+  /*!
+  \brief Visualize node normals with gmsh
+            
+  */
+  virtual void VisualizeGmshLight();
+    
   /*!
   \brief Return matrix of contact segment coordinates
   

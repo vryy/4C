@@ -185,6 +185,48 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
     xi[1]=0.0;
   }
   
+  // 3D linear case (triangular element)
+  else if (Shape()==tri3)
+  {
+    if (lid==0)
+    {
+      xi[0]=0.0; xi[1]=0.0;
+    }
+    else if (lid==1)
+    {
+      xi[0]=1.0; xi[1]=0.0;
+    }
+    else if (lid==2)
+    {
+      xi[0]=0.0; xi[1]=1.0;
+    }
+    else
+      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+  }
+  
+  // 3D bilinear case (quadrilateral element)
+  else if (Shape()==quad4)
+  {
+    if (lid==0)
+    {
+      xi[0]=-1.0; xi[1]=-1.0;
+    }
+    else if (lid==1)
+    {
+      xi[0]=1.0; xi[1]=-1.0;
+    }
+    else if (lid==2)
+    {
+      xi[0]=1.0; xi[1]=1.0;
+    }
+    else if (lid==3)
+    {
+      xi[0]=-1.0; xi[1]=1.0;
+    }
+    else
+      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+  }
+  
   // unknown case (3D not implemented yet)
   else
     dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
@@ -199,15 +241,13 @@ int CONTACT::CElement::GetLocalNodeId(int nid)
 {
   int lid = -1;  
   
-  // look for global ID nid in element's modes
+  // look for global ID nid in element's nodes
   for (int i=0;i<NumNode();++i)
-  {
-    if ( *(NodeIds()+i) == nid )
+    if (NodeIds()[i] == nid)
     {
       lid=i;
       break;
     }
-  }
   
   if (lid<0)
     dserror("ERROR: Cannot find node % in segment %", nid, Id());
@@ -220,7 +260,7 @@ int CONTACT::CElement::GetLocalNodeId(int nid)
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n, double& length)
 {
-  if (n.size()!=3) n.resize(3);
+  if (n.size()!=3) dserror("ERROR: Normal vector must be of length 3!");
   
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -259,34 +299,38 @@ void CONTACT::CElement::DerivNormalAtNode(int nid, Epetra_SerialDenseMatrix& ele
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double& length)
 {
-  int nnodes = NumNode();
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
-  vector<double> g(3);
+  // empty local basis vectors
+  vector<double> gxi(3);
+  vector<double> geta(3);
   
-  // get shape function values and derivatives at xi
-  EvaluateShape1D(xi, val, deriv, nnodes);
-
-  // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  coord = GetNodalCoords();
-  
-  // build basis vector g
-  for (int i=0;i<nnodes;++i)
+  if (Shape()==line2 || Shape()==line3)
   {
-    g[0]+=deriv[i]*coord(0,i);
-    g[1]+=deriv[i]*coord(1,i);
-    g[2]+=deriv[i]*coord(2,i);
+    // metrics routine gives local basis vectors
+    Metrics(xi,gxi,geta);
+    
+    // normal easy to compute from gxi in 2D
+    n[0] =  gxi[1];
+    n[1] = -gxi[0];
+    n[2] =  0.0;
   }
   
-  // only 2D case implemented, normal easy to compute from g
-  n[0] = g[1];
-  n[1] =-g[0];
-  n[2] = 0.0;
+  else if (Shape()==tri3 || Shape()==quad4)
+  {
+    // metrics routine gives local basis vectors
+    Metrics(xi,gxi,geta);
+    
+    // n is cross product of gxi and geta
+    n[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    n[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+  }
   
-  length = sqrt(n[0]*n[0]+n[1]*n[1]);
-  if (length==0.0)
-    dserror("ERROR: ComputeNormalAtXi computes normal of length zero!");
+  else
+    dserror("ERROR: ComouteNormalAtXi not implemented for this element type");
+  
+  // compute length of element normal
+  length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  if (length==0.0) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
   
   return;
 }
@@ -297,119 +341,129 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double&
 void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& elens,
                                         vector<map<int,double> >& derivn)
 {
-  int nnodes = NumNode();
-  DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
-  
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
-  vector<double> g(3);
-  
-  // get shape function values and derivatives at xi
-  EvaluateShape1D(xi, val, deriv, nnodes);
-
-  // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  
-  // which column of elens contains this element's normal?
-  int col = 2;
-  for (int i=0;i<elens.N();++i)
+  if (Shape()==line2 || Shape()==line3)
   {
-    if (elens(3,i)==Id())
-    {
-      col=i;
-      break;
-    }
-  }
-  if (col>1) dserror("ERROR: Something wrong with columns of elens");
-  
-  // ... and which does not?
-  int ncol = 0;
-  if (col==0) ncol=1;
-  else ncol=0;
-        
-  // create directional derivative
-  map<int,double>& derivnx = derivn[0];
-  map<int,double>& derivny = derivn[1];
-  
-  //**********************************************************************
-  // For the weighted normal case, the element lengths enter the nodal
-  // normal formulation. They have to be linearized as well, which is an
-  // element operation only. Thus, we can compute this part of th nodal
-  // normal derivative before looping over the element nodes!
-  //**********************************************************************
-#ifdef CONTACTWNORMAL
-  // add directional derivative of element area
-  typedef map<int,double>::const_iterator CI;
-  map<int,double> derivarea;
-  DerivArea(derivarea);
-  
-  // case1: weighted nodal normal (1 adjacent element)
-  if (elens.N()==1)
-  {
-    for (CI p=derivarea.begin();p!=derivarea.end();++p)
-    {
-      derivnx[p->first] += elens(0,col)*(p->second);
-      derivny[p->first] += elens(1,col)*(p->second);
-    }
-  }
-  // case2: weighted nodal normal (2 adjacent elements)
-  else if (elens.N()==2)
-  {
-    for (CI p=derivarea.begin();p!=derivarea.end();++p)
-    {
-      derivnx[p->first] += elens(4,ncol)*elens(0,col)*(p->second);
-      derivny[p->first] += elens(4,ncol)*elens(1,col)*(p->second);
-    }
-  } 
-#endif // #ifdef CONTACTWNORMAL
-  
-  // loop over all nodes for directional derivative
-  // (this is the part we in both the weighted and unweighted normal case)
-  for (int i=0;i<nnodes;++i)
-  {
-    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    if (!mycnode) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+    int nnodes = NumNode();
+    DRT::Node** mynodes = Nodes();
+    if (!mynodes) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
     
-#ifdef CONTACTWNORMAL
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    
+    // get shape function values and derivatives at xi
+    EvaluateShape(xi, val, deriv, nnodes);
+  
+    // get coordinates of element nodes
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    
+    // which column of elens contains this element's normal?
+    int col = 2;
+    for (int i=0;i<elens.N();++i)
+    {
+      if (elens(3,i)==Id())
+      {
+        col=i;
+        break;
+      }
+    }
+    if (col>1) dserror("ERROR: Something wrong with columns of elens");
+    
+    // ... and which does not?
+    int ncol = 0;
+    if (col==0) ncol=1;
+    else ncol=0;
+          
+    // create directional derivative
+    map<int,double>& derivnx = derivn[0];
+    map<int,double>& derivny = derivn[1];
+    
+    //**********************************************************************
+    // For the weighted normal case, the element lengths enter the nodal
+    // normal formulation. They have to be linearized as well, which is an
+    // element operation only. Thus, we can compute this part of th nodal
+    // normal derivative before looping over the element nodes!
+    //**********************************************************************
+  #ifdef CONTACTWNORMAL
+    // add directional derivative of element area
+    typedef map<int,double>::const_iterator CI;
+    map<int,double> derivarea;
+    DerivArea(derivarea);
+    
     // case1: weighted nodal normal (1 adjacent element)
     if (elens.N()==1)
     {
-      derivnx[mycnode->Dofs()[0]] += 0;
-      derivnx[mycnode->Dofs()[1]] += elens(5,col)*deriv[i];
-      derivny[mycnode->Dofs()[0]] -= elens(5,col)*deriv[i];
-      derivny[mycnode->Dofs()[1]] += 0;
+      for (CI p=derivarea.begin();p!=derivarea.end();++p)
+      {
+        derivnx[p->first] += elens(0,col)*(p->second);
+        derivny[p->first] += elens(1,col)*(p->second);
+      }
     }
     // case2: weighted nodal normal (2 adjacent elements)
     else if (elens.N()==2)
     {
-      derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)*elens(5,ncol)/elens(4,col))*deriv[i];
-      derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv[i];
-      derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv[i];
-      derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col))*deriv[i];
-    }
-#else
-    // case3: unweighted nodal normal (1 adjacent element)
-    if (elens.N()==1)
-    {
-      derivnx[mycnode->Dofs()[0]] += 0;
-      derivnx[mycnode->Dofs()[1]] += deriv[i];
-      derivny[mycnode->Dofs()[0]] -= deriv[i];
-      derivny[mycnode->Dofs()[1]] += 0;
-    }
-    // case4: unweighted nodal normal (2 adjacent elements)
-    else if (elens.N()==2)
-    {
-      derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)/elens(4,col))*deriv[i];
-      derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)/elens(4,col)+elens(4,ncol))*deriv[i];
-      derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)/elens(4,col)+elens(4,ncol))*deriv[i];
-      derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)/elens(4,col))*deriv[i];
-    }
-    else
-      dserror("ERROR: ComputeNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
+      for (CI p=derivarea.begin();p!=derivarea.end();++p)
+      {
+        derivnx[p->first] += elens(4,ncol)*elens(0,col)*(p->second);
+        derivny[p->first] += elens(4,ncol)*elens(1,col)*(p->second);
+      }
+    } 
+  #endif // #ifdef CONTACTWNORMAL
     
-#endif // #ifdef CONTACTWNORMAL
+    // loop over all nodes for directional derivative
+    // (this is the part we in both the weighted and unweighted normal case)
+    for (int i=0;i<nnodes;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      if (!mycnode) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+      
+  #ifdef CONTACTWNORMAL
+      // case1: weighted nodal normal (1 adjacent element)
+      if (elens.N()==1)
+      {
+        derivnx[mycnode->Dofs()[0]] += 0;
+        derivnx[mycnode->Dofs()[1]] += elens(5,col)*deriv(i,0);
+        derivny[mycnode->Dofs()[0]] -= elens(5,col)*deriv(i,0);
+        derivny[mycnode->Dofs()[1]] += 0;
+      }
+      // case2: weighted nodal normal (2 adjacent elements)
+      else if (elens.N()==2)
+      {
+        derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)*elens(5,ncol)/elens(4,col))*deriv(i,0);
+        derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv(i,0);
+        derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv(i,0);
+        derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col))*deriv(i,0);
+      }
+  #else
+      // case3: unweighted nodal normal (1 adjacent element)
+      if (elens.N()==1)
+      {
+        derivnx[mycnode->Dofs()[0]] += 0;
+        derivnx[mycnode->Dofs()[1]] += deriv(i,0);
+        derivny[mycnode->Dofs()[0]] -= deriv(i,0);
+        derivny[mycnode->Dofs()[1]] += 0;
+      }
+      // case4: unweighted nodal normal (2 adjacent elements)
+      else if (elens.N()==2)
+      {
+        derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)/elens(4,col))*deriv(i,0);
+        derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)/elens(4,col)+elens(4,ncol))*deriv(i,0);
+        derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)/elens(4,col)+elens(4,ncol))*deriv(i,0);
+        derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)/elens(4,col))*deriv(i,0);
+      }
+      else
+        dserror("ERROR: ComputeNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
+      
+  #endif // #ifdef CONTACTWNORMAL
+    }
   }
+  
+  else if (Shape()==tri3 || Shape()==quad4)
+  {
+    // not yet implemented
+  }
+  
+  else
+    dserror("ERROR: DerivNormalAtXi not implemented for this element type");
   
   return;
 }
@@ -421,8 +475,8 @@ LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  LINALG::SerialDenseMatrix coord(3,nnodes);
   if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
+  LINALG::SerialDenseMatrix coord(3,nnodes);
   
   for (int i=0;i<nnodes;++i)
   {
@@ -437,14 +491,54 @@ LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Jacobian determinant - LINEAR / QUAD 1D          popp 12/07|
+ |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-double CONTACT::CElement::Jacobian1D(const vector<double>& val,
-                                     const vector<double>& deriv,
-                                     const LINALG::SerialDenseMatrix& coord)
+void CONTACT::CElement::Metrics(double* xi, vector<double>& gxi,
+                                vector<double>& geta)
+{
+  int nnodes = NumNode();
+  int dim = 0;
+  if (Shape()==line2 || Shape()==line3) dim = 2;
+  else if (Shape()==tri3 || Shape()==quad4) dim = 3;
+  else dserror("ERROR: Metrics called for unknown element t<pe");
+  
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,dim-1);
+  
+  // get shape function values and derivatives at xi
+  EvaluateShape(xi, val, deriv, nnodes);
+
+  // get coordinates of element nodes
+  LINALG::SerialDenseMatrix coord = GetNodalCoords();
+  
+  // build basis vectors gxi and geta
+  for (int i=0;i<nnodes;++i)
+  {
+    // first local basis vector
+    gxi[0] += deriv(i,0)*coord(0,i);
+    gxi[1] += deriv(i,0)*coord(1,i);
+    gxi[2] += deriv(i,0)*coord(2,i);
+
+    // second local basis vector
+    if (dim==3)
+    {
+      geta[0] += deriv(i,1)*coord(0,i);
+      geta[1] += deriv(i,1)*coord(1,i);
+      geta[2] += deriv(i,1)*coord(2,i);
+    }
+  }
+  
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  Evaluate Jacobian determinant                             popp 12/07|
+ *----------------------------------------------------------------------*/
+double CONTACT::CElement::Jacobian(double* xi)
 {
   double jac = 0.0;
-  
+  vector<double> gxi(3);
+  vector<double> geta(3);
+    
   // 2D linear case (2noded line element)
   if (Shape()==line2)
     jac = Area()/2;
@@ -452,52 +546,70 @@ double CONTACT::CElement::Jacobian1D(const vector<double>& val,
   // 2D quadratic case (3noded line element)
   else if (Shape()==line3)
   {
-    double g[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<static_cast<int>(val.size());++i)
-    {
-      g[0] += deriv[i]*coord(0,i);
-      g[1] += deriv[i]*coord(1,i);
-      g[2] += deriv[i]*coord(2,i);
-    }
-    jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+    // metrics routine gives local basis vectors
+    Metrics(xi,gxi,geta);
+    
+    // length of gxi
+    jac = sqrt(gxi[0]*gxi[0]+gxi[1]*gxi[1]+gxi[2]*gxi[2]);
   }
   
+  // 3D linear case (3noded triangular element)
+  else if (Shape()==tri3)
+    jac = Area()*2;
+  
+  // 3D bilinear case (4noded quadrilateral element)
+  else if (Shape()==quad4)
+  {
+    // metrics routine gives local basis vectors
+    Metrics(xi,gxi,geta);
+    
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+  }
+    
   // unknown case
   else
-    dserror("ERROR: Jacobian1D called for unknown element type!");
+    dserror("ERROR: Jacobian called for unknown element type!");
     
   return jac;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Evaluate derivative J,xi of Jacobian det. -  1D           popp 05/08|
+ |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
-double CONTACT::CElement::DJacDXi1D(const vector<double>& val,
-                                    const vector<double>& deriv,
-                                    const vector<double>& secderiv,
-                                    const LINALG::SerialDenseMatrix& coord)
+void CONTACT::CElement::DJacDXi(double* djacdxi,
+                                const LINALG::SerialDenseVector& val,
+                                const LINALG::SerialDenseMatrix& deriv,
+                                const LINALG::SerialDenseMatrix& secderiv,
+                                const LINALG::SerialDenseMatrix& coord)
 {
   // the derivative dJacdXi
-  double djacdxi = 0.0;
+  djacdxi[0] = 0.0;
+  djacdxi[1] = 0.0;
   
   // 2D linear case (2noded line element)
   if (Shape()==line2)
-    djacdxi = 0.0;
+    djacdxi[0] = 0.0;
   
   // 2D quadratic case (3noded line element)
   else if (Shape()==line3)
   {
     double g[3] = {0.0, 0.0, 0.0};
     double gsec[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<static_cast<int>(val.size());++i)
+    for (int i=0;i<val.Length();++i)
     {
-      g[0] += deriv[i]*coord(0,i);
-      g[1] += deriv[i]*coord(1,i);
-      g[2] += deriv[i]*coord(2,i);
+      g[0] += deriv(i,0)*coord(0,i);
+      g[1] += deriv(i,0)*coord(1,i);
+      g[2] += deriv(i,0)*coord(2,i);
       
-      gsec[0] += secderiv[i]*coord(0,i);
-      gsec[1] += secderiv[i]*coord(1,i);
-      gsec[2] += secderiv[i]*coord(2,i);
+      gsec[0] += secderiv(i,0)*coord(0,i);
+      gsec[1] += secderiv(i,0)*coord(1,i);
+      gsec[2] += secderiv(i,0)*coord(2,i);
     }
     
     // the Jacobian itself
@@ -505,36 +617,36 @@ double CONTACT::CElement::DJacDXi1D(const vector<double>& val,
     
     // compute dJacdXi
     for (int dim=0;dim<3;++dim)
-      djacdxi += g[dim]*gsec[dim]/jac;
+      djacdxi[0] += g[dim]*gsec[dim]/jac;
   }
   
   // unknown case
   else
-    dserror("ERROR: dJacdXi1D called for unknown element type!");
+    dserror("ERROR: dJacdXi called for unknown element type!");
   
-  return djacdxi;
+  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::DerivJacobian1D(const vector<double>& val,
-                                        const vector<double>& deriv,
-                                        const LINALG::SerialDenseMatrix& coord,
-                                        map<int,double>& derivjac)
+void CONTACT::CElement::DerivJacobian(const LINALG::SerialDenseVector& val,
+                                      const LINALG::SerialDenseMatrix& deriv,
+                                      const LINALG::SerialDenseMatrix& coord,
+                                      map<int,double>& derivjac)
 {
   // get element nodes
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: DerivJacobian1D: Null pointer!");
+  if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
   
   // loop over all nodes
   double g[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<nnodes;++i)
   {
-    g[0] += deriv[i]*coord(0,i);
-    g[1] += deriv[i]*coord(1,i);
-    g[2] += deriv[i]*coord(2,i);
+    g[0] += deriv(i,0)*coord(0,i);
+    g[1] += deriv(i,0)*coord(1,i);
+    g[2] += deriv(i,0)*coord(2,i);
   }
   
   // the Jacobian itself
@@ -552,13 +664,13 @@ void CONTACT::CElement::DerivJacobian1D(const vector<double>& val,
   for (int i=0;i<nnodes;++i)
   {
     CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: DerivJacobian1D: Null pointer!");
+    if (!mycnode) dserror("ERROR: DerivJacobian: Null pointer!");
     
     for (int j=0;j<mycnode->NumDof();++j)
     {
       int col = mycnode->Dofs()[j];
-      double val = (1/jac)*deriv[i]*g[j];
-      derivjac[col] += val;
+      double tmp = (1/jac)*deriv(i,0)*g[j];
+      derivjac[col] += tmp;
     } 
   }
   
@@ -576,9 +688,7 @@ double CONTACT::CElement::ComputeArea()
   if (Shape()==line2)
   {
     // no integration necessary (constant Jacobian)
-    int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
     
     // build vector between the two nodes
     double tang[3] = {0.0, 0.0, 0.0};
@@ -593,23 +703,55 @@ double CONTACT::CElement::ComputeArea()
   else if (Shape()==line3)
   {
     // Gauss quadrature with correct NumGP and Dim
-    CONTACT::Integrator integrator(CONTACTNGP,2);
-    int nnodes = NumNode();
+    CONTACT::Integrator integrator(Shape());
     double detg = 0.0;
-    vector<double> val(nnodes);
-    vector<double> deriv(nnodes);
       
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
-    
-      // loop over all Gauss points, build Jacobian and compute area
+    // loop over all Gauss points, build Jacobian and compute area
     for (int j=0;j<integrator.nGP();++j)
     {
-      double gpc[2] = {integrator.Coordinate(j), 0.0};
-      EvaluateShape1D(gpc, val, deriv, nnodes);
-      detg = Jacobian1D(val,deriv,coord);      
+      double gpc[2] = {integrator.Coordinate(j,0), 0.0};
+      detg = Jacobian(gpc);      
       area+= integrator.Weight(j)*detg;
     }  
+  }
+  
+  // 3D linear case (3noded triangular element)
+  else if (Shape()==tri3)
+  {
+    // no integration necessary (constant Jacobian)
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    
+    // build vectors between the three nodes
+    double t1[3] = {0.0, 0.0, 0.0};
+    double t2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      t1[k]=coord(k,1)-coord(k,0);
+      t2[k]=coord(k,2)-coord(k,0);
+    }
+    
+    // cross product of t1 and t2
+    double t1xt2[3] = {0.0, 0.0, 0.0};
+    t1xt2[0] = t1[1]*t2[2]-t1[2]*t2[1];
+    t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
+    t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0];
+    area=0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  }
+  
+  // 3D bilinear case (4noded quadrilateral element)
+  else if (Shape()==quad4)
+  {
+    // Gauss quadrature with correct NumGP and Dim
+    CONTACT::Integrator integrator(Shape());
+    double detg = 0.0;
+   
+    // loop over all Gauss points, build Jacobian and compute area
+    for (int j=0;j<integrator.nGP();++j)
+    {
+      double gpc[2] = {integrator.Coordinate(j,0), integrator.Coordinate(j,1)};
+      detg = Jacobian(gpc);      
+      area+= integrator.Weight(j)*detg;
+    }
   }
   
   // other cases (3D) not implemented yet
@@ -629,17 +771,16 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
   {
     // no integration necessary (constant Jacobian)
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
-    vector<double> val(nnodes);
-    vector<double> deriv(nnodes);
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,1);
         
     // build val, deriv etc. at xi=0.0 (arbitrary)
     double xi[2] = {0.0, 0.0};
-    EvaluateShape1D(xi,val,deriv,nnodes);
+    EvaluateShape(xi,val,deriv,nnodes);
     
     // get Jacobian derivative
-    DerivJacobian1D(val,deriv,coord,derivarea);
+    DerivJacobian(val,deriv,coord,derivarea);
     
     // multiply all entries with factor 2
     typedef map<int,double>::const_iterator CI;
@@ -651,23 +792,22 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
   else if (Shape()==line3)
   {
     // Gauss quadrature with correct NumGP and Dim
-    CONTACT::Integrator integrator(CONTACTNGP,2);
+    CONTACT::Integrator integrator(Shape());
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord(3,nnodes);
-    coord = GetNodalCoords();
-    vector<double> val(nnodes);
-    vector<double> deriv(nnodes);
+    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes);
     
     // loop over all Gauss points, build Jacobian derivative
     for (int j=0;j<integrator.nGP();++j)
     {
       double wgt = integrator.Weight(j);
-      double gpc[2] = {integrator.Coordinate(j), 0.0};
-      EvaluateShape1D(gpc, val, deriv, nnodes);
+      double gpc[2] = {integrator.Coordinate(j,0), 0.0};
+      EvaluateShape(gpc, val, deriv, nnodes);
       
       // get Jacobian derivative
       map<int,double> derivjac;
-      DerivJacobian1D(val,deriv,coord,derivjac);
+      DerivJacobian(val,deriv,coord,derivjac);
       
       // add current GP to Area derivative map
       typedef map<int,double>::const_iterator CI;
@@ -695,18 +835,18 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
   if (!globcoord)
     dserror("ERROR: LocalToGlobal called with globcoord=NULL");
   if (Shape()!=line3 && Shape()!=line2)
-    dserror("ERROR: LocalToGlobal called for CEl type != line3");
+    dserror("ERROR: LocalToGlobal called for CEl type != line2/3");
   
   // collect fundamental data
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
   LINALG::SerialDenseMatrix coord(3,nnodes);
-  vector<double> val(nnodes);
-  vector<double> deriv(nnodes);
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,1);
   
   // Evaluate shape, get nodal coords  and interpolate global coords
-  EvaluateShape1D(xi, val, deriv, nnodes);
+  EvaluateShape(xi, val, deriv, nnodes);
   for (int i=0;i<3;++i)
     globcoord[i]=0.0;
   for (int i=0;i<nnodes;++i)
@@ -727,9 +867,9 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
     else
     {
       // use shape function derivatives for interpolation
-      globcoord[0]+=deriv[i]*coord(0,i);
-      globcoord[1]+=deriv[i]*coord(1,i);
-      globcoord[2]+=deriv[i]*coord(2,i);
+      globcoord[0]+=deriv(i,0)*coord(0,i);
+      globcoord[1]+=deriv(i,0)*coord(1,i);
+      globcoord[2]+=deriv(i,0)*coord(2,i);
     }
   }
   

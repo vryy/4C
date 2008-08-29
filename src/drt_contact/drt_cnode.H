@@ -153,7 +153,7 @@ public:
   /*!
   \brief Return D.B.C. status of this node's dofs (length 3)
   */
-  virtual inline bool* dbc() { return dbc_; }
+  virtual inline bool* Dbc() { return dbc_; }
   
   /*!
   \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)

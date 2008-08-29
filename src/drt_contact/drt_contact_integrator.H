@@ -51,9 +51,8 @@ public:
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
   
-  \param dim (in): Global problem dimension
   */
-  explicit Integrator(int ngp, int dim);
+  explicit Integrator(DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Destructor
@@ -80,10 +79,10 @@ public:
   inline int nGP() {return ngp_;}
   
   /*!
-  \brief Return coordinate of a specific GP in 1D CElement
+  \brief Return coordinates of a specific GP in 1D/2D CElement
     
   */
-  inline double Coordinate(int gp) {return coords_[gp];}
+  inline double Coordinate(int gp, int dir) {return coords_(gp,dir);}
   
   /*!
   \brief Return weight of a specific GP in 1D/2D CElement
@@ -215,10 +214,10 @@ protected:
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
   
-    int              dim_;            // dimension of problem (2D or 3D)
-    int              ngp_;            // number of Gauss points
-    vector<double>   coords_;         // Gauss point coordinates
-    vector<double>   weights_;        // Gauss point weights
+    int                        dim_;            // dimension of problem (2D or 3D)
+    int                        ngp_;            // number of Gauss points
+    LINALG::SerialDenseMatrix  coords_;         // Gauss point coordinates
+    vector<double>             weights_;        // Gauss point weights
 
 }; // class Integrator
 }  // namespace CONTACT

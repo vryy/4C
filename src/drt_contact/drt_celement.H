@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "drt_cnode.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
 using namespace std;
@@ -55,7 +56,9 @@ public:
       quad1D,
       quaddual1D,
       quaddual1D_edge0,
-      quaddual1D_edge1 
+      quaddual1D_edge1,
+      lin2D,
+      bilin2D
     };
       
   //@}
@@ -318,30 +321,34 @@ public:
   \brief Compute element normal at local coordinate xi
   */
   virtual LINALG::SerialDenseMatrix GetNodalCoords();
-    
-  /*!
-  \brief Evaluate Jacobian det for parameter space integration - LINEAR / QUAD 1D
-  */
-  virtual double Jacobian1D(const vector<double>& val,
-                            const vector<double>& deriv,
-                            const LINALG::SerialDenseMatrix& coord);
   
   /*!
-  \brief Evaluate derivative J,xi of Jacobian det - LINEAR / QUAD 1D
+  \brief Evaluate element metrics (local basis vectors)
   */
-  virtual double DJacDXi1D(const vector<double>& val,
-                           const vector<double>& deriv,
-                           const vector<double>& secderiv,
-                           const LINALG::SerialDenseMatrix& coord);
+  virtual void Metrics(double* xi, vector<double>& gxi, vector<double>& geta);
+  
+  /*!
+  \brief Evaluate Jacobian determinant for parameter space integration
+  */
+  virtual double Jacobian(double* xi);
+  
+  /*!
+  \brief Evaluate derivative J,xi of Jacobian determinant
+  */
+  virtual void DJacDXi(double* djacdxi,
+                       const LINALG::SerialDenseVector& val,
+                       const LINALG::SerialDenseMatrix& deriv,
+                       const LINALG::SerialDenseMatrix& secderiv,
+                       const LINALG::SerialDenseMatrix& coord);
     
     
   /*!
-  \brief Compute Jacobian det derivative - LINEAR / QUAD 1D
+  \brief Compute Jacobian determinant derivative
   */
-  virtual void DerivJacobian1D(const vector<double>& val,
-                               const vector<double>& deriv,
-                               const LINALG::SerialDenseMatrix& coord,
-                               map<int,double>& derivjac);
+  virtual void DerivJacobian(const LINALG::SerialDenseVector& val,
+                             const LINALG::SerialDenseMatrix& deriv,
+                             const LINALG::SerialDenseMatrix& coord,
+                             map<int,double>& derivjac);
   
   /*!
   \brief Compute length (in 3D area) of the element
@@ -354,12 +361,12 @@ public:
   virtual void DerivArea(map<int,double>& derivarea);
     
   /*!
-  \brief A repository for all kinds of 1D/2D shape functions
+  \brief A repository for all kinds of 1D shape functions
   */
   virtual void ShapeFunctions(CElement::ShapeType shape,
                               const double* xi,
-                              vector<double>& val,
-                              vector<double>& deriv);
+                              LINALG::SerialDenseVector& val,
+                              LINALG::SerialDenseMatrix& deriv);
   
   /*!
   \brief A repository for 1D/2D shape function linearizations
@@ -377,20 +384,20 @@ public:
   /*!
   \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
   */
-  virtual bool EvaluateShape1D(const double* xi, vector<double>& val,
-                               vector<double>& deriv, const int valdim);
-  
+  virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
+                             LINALG::SerialDenseMatrix& deriv, const int valdim);
+   
   /*!
   \brief Evaluate dual shape functions and derivatives - LINEAR / QUAD 1D 
   */
-  virtual bool EvaluateShapeDual1D(const double* xi, vector<double>& val,
-                                   vector<double>& deriv, const int valdim);
+  virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
+                                 LINALG::SerialDenseMatrix& deriv, const int valdim);
   
   /*!
   \brief Evaluate 2nd derivative of shape functions - LINEAR / QUAD 1D 
   */
-  virtual bool Evaluate2ndDerivShape1D(const double* xi, vector<double>& val,
-                                       const int valdim);
+  virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
+                                     const int valdim);
     
   /*!
   \brief Compute directional derivative of dual shape functions - LINEAR / QUAD 1D 
@@ -398,7 +405,7 @@ public:
   \param derivdual (in): derivative maps to be filled
                          (= derivatives of the dual coefficient matrix Ae) 
   */
-  virtual bool DerivShapeDual1D(vector<vector<map<int,double> > >& derivdual);
+  virtual bool DerivShapeDual(vector<vector<map<int,double> > >& derivdual);
   
   /*!
   \brief Interpolate global coordinates for given local element coordinates
