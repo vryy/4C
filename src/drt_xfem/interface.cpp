@@ -184,13 +184,15 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   
   const bool gmsh_tree_output = false;
   
+  const int myrank = xfemdis_->Comm().MyPID();
+  
   if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -204,8 +206,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
@@ -243,8 +245,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
@@ -275,8 +277,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     // debug: write information about which structure we are in
     std::stringstream filenameP;
     std::stringstream filenamePdel;
-    filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamePdel << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenameP    << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamePdel << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamePdel.str().c_str());
 
     std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
