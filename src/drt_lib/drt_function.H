@@ -23,7 +23,9 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "drt_dserror.H"
-
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
 extern "C"
 {
 #include "../pss_full/pss_parser.h"

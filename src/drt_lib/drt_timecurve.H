@@ -26,6 +26,9 @@ Maintainer: Ulrich Kuettler
 #include "drt_dserror.H"
 #include "drt_parser.H"
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 extern "C"
 {
 #include "../pss_full/pss_parser.h"
