@@ -455,7 +455,7 @@ void STR::TimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
-  // --> On #fres_ is the negative force residuum
+  // --> On #fres_ is the positive force residuum
   // --> On #stiff_ is the effective dynamic stiffness matrix
 
   // check whether we have a sanely filled stiffness matrix
