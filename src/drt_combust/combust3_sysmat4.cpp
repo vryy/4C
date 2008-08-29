@@ -197,7 +197,7 @@ static void SysmatDomain4(
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
-    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+    /////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
 
     // get viscosity
     // check here, if we really have a fluid !!
@@ -1119,9 +1119,9 @@ static void SysmatDomain4(
                 assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
                 assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
                 
-                //             /                  \
+                //             /                  |
                 //            | virt tau , eps(Du) |
-                //             \                  /
+                //             |                  |
                 
                 assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp_dx);
                 assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp_dy);
@@ -1341,11 +1341,11 @@ static void SysmatDomain4(
                 {
                     /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
                     /*
-                               /                                           \
-                              |    /          \   n+1    / n+1        \     |
+                               /                                           |
+                              |   |            |   n+1  | n+1          |   |
                               |   | Du o nabla | u    , | u    o nabla | v  |
-                              |    \          /   (i)    \ (i)        /     |
-                               \                                           /
+                              |   |            |   (i)  | (i)          |   |
+                               \                                           |
                     */
                     assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM*vderxy(0,0), shp);
                     assembler.template Matrix<Velx,Vely>(enr_conv_c_, ttimetauM*vderxy(0,1), shp);
@@ -1360,11 +1360,11 @@ static void SysmatDomain4(
                     assembler.template Matrix<Velz,Velz>(enr_conv_c_, ttimetauM*vderxy(2,2), shp);
                     
                     /*
-                             /                                           \
-                            |    / n+1        \   n+1    /          \     |
+                             /                                            |
+                            |    / n+1         |   n+1    /          |    |
                             |   | u    o nabla | u    , | Du o nabla | v  |
-                            |    \ (i)        /   (i)    \          /     |
-                             \                                           /
+                            |   | (i)          |   (i)   |           |    |
+                             \                                            |
                     */
                     const double con0 = ttimetauM*(gpvelnp(0)*vderxy(0,0) + gpvelnp(1)*vderxy(0,1) + gpvelnp(2)*vderxy(0,2));
                     assembler.template Matrix<Velx,Velx>(shp_dx, con0, shp);
@@ -1635,7 +1635,7 @@ static void SysmatBoundary4(
                 }
             }
       
-            // get jacobian matrix d x / d \xi  (3x2)
+            // get jacobian matrix d x / d xi  (3x2)
             static BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int isd = 0; isd < 3; ++isd)

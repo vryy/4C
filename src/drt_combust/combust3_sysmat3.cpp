@@ -1023,9 +1023,9 @@ static void Sysmat3(
                 assembler.template Vector<Tauzy>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,1));
                 assembler.template Vector<Tauzz>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,2));
                 
-                //             /                  \
+                //             |                  |
                 //            | virt tau , eps(Du) |
-                //             \                  /
+                //             |                  |
                 
                 const double rect_factor = 1.0;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
@@ -1200,11 +1200,11 @@ static void Sysmat3(
 //                {
 //                  /* pressure stabilisation: pressure( L_pres_p) */
 //                  /*
-//                            /                      \
+//                            |                      |
 //                           |                        |
 //                           |  nabla q^e , nabla Dp  |
 //                           |                        |
-//                            \                      /
+//                            |                      |
 //                  */
 //                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp, shp_dx);
 //                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp, shp_dy);
@@ -1217,11 +1217,11 @@ static void Sysmat3(
 //                  
 //                  /* pressure stabilisation: pressure( L_pres_p) */
 //                  /*
-//                            /                        \
+//                            |                        |
 //                           |                          |
-//                         - |  nabla q^e , nabla Dp^e  |
+//                           |  nabla q^e , nabla Dp^e  |
 //                           |                          |
-//                            \                        /
+//                            |                        |
 //                  */
 //                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp, shp_discpres_dx);
 //                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp, shp_discpres_dy);
@@ -1245,11 +1245,11 @@ static void Sysmat3(
                 {
                     /* supg stabilisation: inertia  */
                     /*
-                              /                        \
-                             |        / n+1       \     |
+                              |                        |
+                             |        | n+1       |     |
                              |  Du , | u   o nabla | v  |
-                             |        \ (i)       /     |
-                              \                        /
+                             |        | (i)       |     |
+                              |                        |
                     */
                     assembler.template Matrix<Velx,Velx>(enr_conv_c_, timetauM, shp);
                     assembler.template Matrix<Vely,Vely>(enr_conv_c_, timetauM, shp);
@@ -1259,11 +1259,11 @@ static void Sysmat3(
                     {
                         /* supg stabilisation: inertia, linearisation of testfunction  */
                         /*
-                                   /                           \
-                                  |   n+1      /          \     |
+                                   |                           |
+                                  |   n+1      |          |     |
                                   |  u      , | Du o nabla | v  |
-                                  |   (i)      \          /     |
-                                   \                           /
+                                  |   (i)      |          |     |
+                                   |                           |
     
                         */
                         assembler.template Matrix<Velx,Velx>(shp_dx, timetauM*velint(0), shp);
@@ -1280,11 +1280,11 @@ static void Sysmat3(
                 const double ttimetauM  = timefac * timefac * tau_M;
                 /* supg stabilisation: convective part ( L_conv_u) */
                 /*
-                     /                                          \
-                    |  / n+1        \        / n+1        \      |
+                     |                                          |
+                    |  | n+1        |        | n+1        |      |
                     | | u    o nabla | v ,  | u    o nabla | Du  |
-                    |  \ (i)        /        \ (i)        /      |
-                     \                                          /
+                    |  | (i)        |        | (i)        |      |
+                     |                                          |
                 */
                 assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM, enr_conv_c_);
                 assembler.template Matrix<Vely,Vely>(enr_conv_c_, ttimetauM, enr_conv_c_);
@@ -1303,11 +1303,11 @@ static void Sysmat3(
 
                 /* supg stabilisation: viscous part  (-L_visc_u) */
                 /*
-                      /                                        \
-                     |               /  \    / n+1        \     |
+                      |                                        |
+                     |               |  |    | n+1        |     |
                    - |  nabla o eps | Du |, | u    o nabla | v  |
-                     |               \  /    \ (i)        /     |
-                      \                                        /
+                     |               |  |    | (i)        |     |
+                      |                                        |
                 */
                 assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 0, _));
                 assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 1, _));
@@ -1828,9 +1828,9 @@ static void Sysmat3(
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));
             
-            //            /            \
+            //             |          |
             //            |  v , Dp n  |
-            //            \            /
+            //             |          |
             
             const double vpn_fac = 1.0;
             assembler.template Matrix<Velx,DiscPres>(shp, vpn_fac*timefacfac*normalvec_fluid(0), shp_discpres);
