@@ -215,6 +215,8 @@ OBJS_DRT_STATMECH_LIB =
 #--------------------------------------------------- condif3 (drt version)
 OBJS_DRT_CONDIF3_LIB = src/drt_condif3/condif3.o \
                 src/drt_condif3/condif3_evaluate.o \
+                src/drt_condif3/condif3_impl.o \
+                src/drt_condif3/condif3_utils.o \
                 src/drt_condif3/condif3_input.o \
                 src/drt_condif3/condif3_surface.o \
                 src/drt_condif3/condif3_surface_evaluate.o
