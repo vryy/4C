@@ -11,7 +11,6 @@
  *             089 - 289-15236
  * </pre>
  */
-#ifdef CCADISCRET
 #ifndef STANDARDTYPES_CPP_H
 #define STANDARDTYPES_CPP_H
 
@@ -25,5 +24,4 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../headers/standardtypes.h"
 }
 
-#endif
 #endif
