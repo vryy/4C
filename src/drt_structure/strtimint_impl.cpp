@@ -542,7 +542,9 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
   // now or never, break it
   dserror("Sorry dude, non-linear Uzawa with full Newton-Raphson"
           " iteration is available in source, but it has not been"
-          " tested in silico and should not be used overcredulously");
+          " tested in silico and should not be used overcredulously."
+          " Feel free to remove this dserror but be careful and check"
+          " if things run as expected.");
 
   // do Newton-Raphson iteration, which contains here effects of
   // constraint forces and stiffness
