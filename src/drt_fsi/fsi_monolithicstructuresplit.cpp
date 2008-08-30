@@ -122,8 +122,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     // additional rhs term for ALE equations
     // -dt Aig u(n)
     //
-    //  first order: 1/dt Delta d(n+1) = Delta u(n+1) + 1 u(n)
-    // second order: 2/dt Delta d(n+1) = Delta u(n+1) + 2 u(n)
+    //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
     //
     // And we are concerned with the u(n) part here.
 
@@ -143,56 +142,44 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     Extractor().AddVector(*rhs,2,f);
 
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    // structure
+    Teuchos::RCP<Epetra_Vector> veln = StructureField().Interface().InsertCondVector(sveln);
+    rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
+
+    Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+    s->Apply(*veln,*rhs);
+
+    rhs->Scale(-1.*Dt());
+
+    veln = StructureField().Interface().ExtractOtherVector(rhs);
+    Extractor().AddVector(*veln,0,f);
+
+    veln = StructureField().Interface().ExtractCondVector(rhs);
+    veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
+
+    double scale     = FluidField().ResidualScaling();
+    veln->Scale(1./scale);
+
+    Extractor().AddVector(*veln,1,f);
+
+    // shape derivatives
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+    if (mmm!=Teuchos::null)
     {
-      // add rhs term for second order coupling
-      //
-      // A Delta d(n+1,1) = A dt/2 (Delta u(n+1,1) + u(n))
-      //
-      // Here we are concerned with A dt/2 u(n) where A is any interface
-      // contribution that goes with d(n+1,1) in its original setting
+      LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+      LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-      // structure
-      Teuchos::RCP<Epetra_Vector> veln = StructureField().Interface().InsertCondVector(sveln);
-      rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
+      rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+      fmig.Apply(*fveln,*rhs);
+      veln = FluidField().Interface().InsertOtherVector(rhs);
 
-      Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
-      s->Apply(*veln,*rhs);
+      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+      fmgg.Apply(*fveln,*rhs);
+      FluidField().Interface().InsertCondVector(rhs,veln);
 
-      double scale     = FluidField().ResidualScaling();
-      double timescale = FluidField().TimeScaling();
-      rhs->Scale(-1./timescale);
+      veln->Scale(-1.*Dt());
 
-      veln = StructureField().Interface().ExtractOtherVector(rhs);
-      Extractor().AddVector(*veln,0,f);
-
-      veln = StructureField().Interface().ExtractCondVector(rhs);
-      veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
-      veln->Scale(1./scale);
       Extractor().AddVector(*veln,1,f);
-
-      // shape derivatives
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
-      if (mmm!=Teuchos::null)
-      {
-        LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-        LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-
-        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
-        fmig.Apply(*fveln,*rhs);
-        veln = FluidField().Interface().InsertOtherVector(rhs);
-
-        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
-        fmgg.Apply(*fveln,*rhs);
-        FluidField().Interface().InsertOtherVector(rhs,veln);
-
-        veln->Scale(-1./(timescale*scale));
-
-        Extractor().AddVector(*veln,1,f);
-      }
-
-      // ale already done above
     }
   }
 
