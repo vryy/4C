@@ -110,14 +110,35 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
               AleField().RHS(),
               FluidField().ResidualScaling());
 
+#if 1
   if (firstcall)
   {
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-    {
-      dserror("second order with fluid split not supported");
-    }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
+
+    LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
+    LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+    double timescale = FluidField().TimeScaling();
+    double scale     = FluidField().ResidualScaling();
+
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
+
+    fig.Apply(*fveln,*rhs);
+    rhs->Scale(timescale*Dt());
+
+    Extractor().AddVector(*rhs,1,f);
+
+    rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
+
+    fgg.Apply(*fveln,*rhs);
+    rhs->Scale(scale*timescale*Dt());
+
+    rhs = FluidToStruct(rhs);
+    rhs = StructureField().Interface().InsertCondVector(rhs);
+    Extractor().AddVector(*rhs,0,f);
   }
+#endif
 
   // NOX expects a different sign here.
   f.Scale(-1.);
