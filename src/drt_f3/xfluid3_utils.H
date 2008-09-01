@@ -534,7 +534,7 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
 
 /*!
  \brief get optimal gaussrule for given discretization type
-        template version
+
  \return enum with optimal gausrule for this element
  */
 inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
