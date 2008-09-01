@@ -226,9 +226,14 @@ void Converter::write_element_result(string result_name,
   writer_->WriteVector(result_name, *h8data, *h8map);
 }
 
+#endif
+#endif
+
 
 int main(int argc,  char** argv)
 {
+#ifdef D_SHELL8
+#ifdef D_SOLID3
   Teuchos::CommandLineProcessor My_CLP;
   My_CLP.setDocString("Post DRT shell8 conversion Filter\n");
 
@@ -246,10 +251,10 @@ int main(int argc,  char** argv)
   default:
     dserror("problem type %d not yet supported", problem.Problemtype());
   }
+#endif
+#endif
 
   return 0;
 }
 
-#endif
-#endif
 #endif
