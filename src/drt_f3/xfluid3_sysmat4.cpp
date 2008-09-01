@@ -538,7 +538,10 @@ static void SysmatDomain4(
               XFEM::SpaceTimeBoundaryCell slab;
               BlitzVec3 rst;
               
-              ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+              const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+              
+              if (found_cell)
+              {
               
               const double delta_slab = -(rst(2)-1.0)*0.5;
 
@@ -613,6 +616,7 @@ static void SysmatDomain4(
               gpaccn(0) = iaccn(0);
               gpaccn(1) = iaccn(1);
               gpaccn(2) = iaccn(2);
+              }
             }
             
 //            cout << gpvelnp << endl;

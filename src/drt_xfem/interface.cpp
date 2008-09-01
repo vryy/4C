@@ -488,7 +488,7 @@ int XFEM::PositionWithinConditionBruteForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandle::FindSpaceTimeLayerCell(
+bool XFEM::InterfaceHandle::FindSpaceTimeLayerCell(
     const BlitzVec3&                  querypos,
     XFEM::SpaceTimeBoundaryCell&      stcell,
     BlitzVec3&                        rst
@@ -508,16 +508,16 @@ void XFEM::InterfaceHandle::FindSpaceTimeLayerCell(
       stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
 //      cout << "slabitem " << slabitem.toString() << endl;
       rst = xsi;
-      break;
+      return true;
     }
   }
   
-  if (not in_spacetimecell)
-  {
-    dserror("should be in one space time cell");
-  }
+//  if (not in_spacetimecell)
+//  {
+//    dserror("should be in one space time cell");
+//  }
 //  cout << stcell.toString() << endl;
-  return;
+  return false;
 }
 
 void XFEM::InterfaceHandle::GenerateSpaceTimeLayer(

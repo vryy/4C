@@ -129,7 +129,7 @@ public:
         GEO::NearestObject&               nearestobject
     ) const;
     
-    void FindSpaceTimeLayerCell(
+    bool FindSpaceTimeLayerCell(
         const BlitzVec3&                  querypos,
         XFEM::SpaceTimeBoundaryCell&      slab,
         BlitzVec3&                        rst
