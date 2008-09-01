@@ -632,9 +632,28 @@ void CONTACT::Interface::Evaluate()
     // with the linearization of M in the method Integrator::DerivM()! 
     //********************************************************************
 #ifndef CONTACTONEMORTARLOOP
-    IntegrateSlave2D(*selement);
+    IntegrateSlave(*selement);
 #endif // #ifndef CONTACTONEMORTARLOOP
-
+  }
+  
+#ifdef DEBUG
+  lComm()->Barrier();
+  if (lComm()->MyPID()==0 && Dim()==3)
+  {
+    cout << "-> Integrated mortar matrix D SUCCESSFULLY!" << endl;
+    cout << "***WARNING***: No linearization of nodal normals computed for 3d!" << endl;
+  }
+#endif // #ifdef DEBUG
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+        
     // loop over the contact candidate master elements
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->NumSearchElements();++j)
@@ -864,18 +883,19 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
 /*----------------------------------------------------------------------*
  |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
+bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 {
   // create an integrator instance with correct NumGP and Dim
   CONTACT::Integrator integrator(sele.Shape());
-  double sxia = -1.0;
-  double sxib =  1.0;
+  double sxia[2] = {-1.0, -1.0};
+  double sxib[2] = { 1.0,  1.0};
 
   // do the integration
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
   
   // do the linearization of D
-  integrator.DerivD(sele,sxia,sxib);
+  if (Dim()==2)
+    integrator.DerivD(sele,sxia[0],sxib[0]);
   
   // do the assembly into the slave nodes
   integrator.AssembleD(*this,sele,*dseg);

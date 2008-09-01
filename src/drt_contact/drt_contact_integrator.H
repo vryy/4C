@@ -103,7 +103,7 @@ public:
   
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateD(CONTACT::CElement& sele,
-                                           double sxia, double sxib);
+                                           double* sxia, double* sxib);
   
   /*!
   \brief Compute directional derivative of D on a 1D slave element

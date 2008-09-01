@@ -330,6 +330,20 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D dual linear shape functions (triangular)
+  // (used for interpolation of Lagrange mutliplier field)
+  // *********************************************************************
+  case CElement::lindual2D:
+  {
+    val[0] = 3-4*xi[0]-4*xi[1]; 
+    val[1] = 4*xi[0]-1;
+    val[2] = 4*xi[1]-1;
+    deriv(0,0) = -4.0; deriv(0,1) = -4.0;
+    deriv(1,0) =  4.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  4.0;
+    break;
+  }
+  // *********************************************************************
   // 2D standard blinear shape functions (quadrilateral)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -344,7 +358,64 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
     deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
     break;
-  }  
+  }
+  // *********************************************************************
+  // 2D dual blinear shape functions (quadrilateral)
+  // (used for interpolation of Lagrange mutliplier field)
+  // (including adaption process for distorted elements)
+  // *********************************************************************
+  case CElement::bilindual2D:
+  {
+    // establish fundamental data  
+    double detg = 0.0;
+    int nnodes = NumNode();
+    
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    CONTACT::Integrator integrator(Shape());
+    
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      EvaluateShape(gpc, val, deriv, nnodes);
+      detg = Jacobian(gpc);
+      
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
+        }  
+    }
+    
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+    
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+    
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    EvaluateShape(xi, val, deriv, nnodes);
+    
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,2,true);
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        valtemp[i]+=ae(i,j)*val[j];
+        derivtemp(i,0)+=ae(i,j)*deriv(j,0);
+        derivtemp(i,1)+=ae(i,j)*deriv(j,1);
+      }
+    
+    val=valtemp;
+    deriv=derivtemp;
+        
+    break;
+  }
   // *********************************************************************
   // Unkown shape function type
   // *********************************************************************
@@ -1028,6 +1099,55 @@ bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseV
     // nodes 0 and 1 are on boundary: infeasible case
     else 
       dserror("ERROR: EvaluateShapeDual: Element with 2 boundary nodes");
+  }
+  
+  // 3D linear case (3noded triangular element)
+  else if ((valdim==3) && (Shape()==tri3))
+  {
+    // check for boundary nodes
+    CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
+    CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
+    CNode* mycnode2 = static_cast<CNode*> (mynodes[2]);
+    if (!mycnode0) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode1) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode2) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    bool isonbound0 = mycnode0->IsOnBound();
+    bool isonbound1 = mycnode1->IsOnBound();
+    bool isonbound2 = mycnode2->IsOnBound();
+    
+    // all 3 nodes are interior: use unmodified dual shape functions
+    if (!isonbound0 && !isonbound1 && !isonbound2)
+      ShapeFunctions(CElement::lindual2D,xi,val,deriv);
+    
+    // some nodes are on slave boundary
+    else 
+      dserror("ERROR: EvaluateShapeDual: boundary mod. not yet impl. for tri3!");   
+  }
+  
+  // 3D bilinear case (4noded quadrilateral element)
+  else if ((valdim==4) && (Shape()==quad4))
+  {
+    // check for boundary nodes
+    CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
+    CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
+    CNode* mycnode2 = static_cast<CNode*> (mynodes[2]);
+    CNode* mycnode3 = static_cast<CNode*> (mynodes[3]);
+    if (!mycnode0) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode1) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode2) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mycnode3) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    bool isonbound0 = mycnode0->IsOnBound();
+    bool isonbound1 = mycnode1->IsOnBound();
+    bool isonbound2 = mycnode2->IsOnBound();
+    bool isonbound3 = mycnode3->IsOnBound();
+    
+    // all 3 nodes are interior: use unmodified dual shape functions
+    if (!isonbound0 && !isonbound1 && !isonbound2 && !isonbound3)
+      ShapeFunctions(CElement::bilindual2D,xi,val,deriv);
+    
+    // some nodes are on slave boundary
+    else 
+      dserror("ERROR: EvaluateShapeDual: boundary mod. not yet impl. for quad4!");    
   }
   
   // unknown case

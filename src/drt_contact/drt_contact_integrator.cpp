@@ -104,48 +104,41 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement& sele,
-                                                              double sxia, double sxib)
+                                                              double* sxia, double* sxib)
 {
-  //check for problem dimension
-  if (Dim()==3) dserror("ERROR: Integrator::IntegrateD not yet implemented for 3D");
-  
   //check input data
   if (!sele.IsSlave())
     dserror("ERROR: IntegrateD called on a non-slave CElement!");
-  if ((sxia<-1.0) || (sxib>1.0))
+  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
     dserror("ERROR: IntegrateD called with infeasible slave limits!");
   
   // create empty dseg object and wrap it with RCP
   int nrow = sele.NumNode();
   int ndof = Dim();
   int ncol = nrow;
+  int nint = Dim()-1; // no. of integration directions
   
   RCP<Epetra_SerialDenseMatrix> dtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty objects for shape fct. evaluation
   LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow,1);
+  LINALG::SerialDenseMatrix deriv(nrow,nint);
   LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+  LINALG::SerialDenseMatrix dualderiv(nrow,nint);
 
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {Coordinate(gp,0), 0.0};
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
     double wgt = Weight(gp);
     
-    // coordinate transformation sxi->eta (CElement->Overlap)
-    double sxi[2] = {0.0, 0.0};
-    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
-    
     // evaluate trace space and dual space shape functions
-    sele.EvaluateShape(sxi,val,deriv,nrow);
-    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShape(eta,val,deriv,nrow);
+    sele.EvaluateShapeDual(eta,dualval,dualderiv,nrow);
     
-    // evaluate the two Jacobians
+    // evaluate the Jacobian det
     double dxdsxi = sele.Jacobian(eta);
-    double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all dtemp matrix entries
        nrow represents the Lagrange multipliers !!!
@@ -159,7 +152,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
         // multiply the two shape functions
         double prod = dualval[j]*val[k];
         // add current Gauss point's contribution to dtemp  
-        (*dtemp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+        (*dtemp)(j,k) += prod*dxdsxi*wgt; 
       }
     }  
   } // for (int gp=0;gp<nGP();++gp)

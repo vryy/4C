@@ -47,18 +47,20 @@ public:
   //! @name Enums and Friends
   enum ShapeType // shape function types recognized by CElement
     {
-      lin1D,                  // standard 1D
-      lindual1D,
+      lin1D,                  // linear 1D
+      lindual1D,              // dual linear 1D
       lindual1D_edge0,
       lindual1D_edge1,
-      dual1D_base_for_edge0,  // dual 1D
+      dual1D_base_for_edge0,
       dual1D_base_for_edge1,
-      quad1D,
-      quaddual1D,
+      quad1D,                 // quadratic 1D
+      quaddual1D,             // dual quadratic 1D
       quaddual1D_edge0,
       quaddual1D_edge1,
-      lin2D,                  // standard 2D
-      bilin2D
+      lin2D,                  // linear 2D
+      lindual2D,              // dual linear 2D
+      bilin2D,                // bilinear 2D
+      bilindual2D             // dual bilinear 2D
     };
       
   //@}

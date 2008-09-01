@@ -458,14 +458,14 @@ public:
   virtual bool EvaluateContactSearchOctree();
   
   /*!
-  \brief Integrate Mortar matrix D on slave element (2D)
+  \brief Integrate Mortar matrix D on slave element
   
   This method is only called, if the flag CONTACTONEMORTARLOOP is
   not chosen. Then it integrates the Mortar matrix D on the current
   slave CElement sele (full integration from -1 to 1).
           
   */
-  virtual bool IntegrateSlave2D(CONTACT::CElement& sele);
+  virtual bool IntegrateSlave(CONTACT::CElement& sele);
   
   /*!
   \brief Projection of slave / master pair (2D)
