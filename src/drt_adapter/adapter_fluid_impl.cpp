@@ -411,9 +411,10 @@ void ADAPTER::FluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
-  // [2] Delta d(n+1,i+1) = ( Delta u(n+1,i+1) + [2] u(n) ) * dt
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   //
-  fcx->Update(-1.,*veln,TimeScaling());
+  double timescale = TimeScaling();
+  fcx->Update(-timescale*fluid_.Dt(),*veln,timescale);
 }
 
 
@@ -423,8 +424,13 @@ void ADAPTER::FluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
-  double scale = 1./TimeScaling();
-  fcx->Update(fluid_.Dt(),*veln,scale);
+
+  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
+  //
+  double timescale = 1./TimeScaling();
+  fcx->Update(fluid_.Dt(),*veln,timescale);
 }
 
 
