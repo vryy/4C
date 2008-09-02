@@ -162,7 +162,8 @@ int CONTACT::CElement::Evaluate(ParameterList&            params,
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
 {
-  // 2D linear and quadratic case
+  // 2D linear case (2noded line element)
+  // 2D quadratic case (3noded line element)
   if (Shape()==line2 || Shape()==line3)
   {
     if (lid==0)
@@ -178,8 +179,9 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
     xi[1]=0.0;
   }
   
-  // 3D linear case (triangular element)
-  else if (Shape()==tri3)
+  // 3D linear case (2noded triangular element)
+  // 3D quadratic case (3noded triangular element)
+  else if (Shape()==tri3 || Shape()==tri6)
   {
     if (lid==0)
     {
@@ -193,12 +195,26 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
     {
       xi[0]=0.0; xi[1]=1.0;
     }
+    else if (lid==3)
+    {
+      xi[0]=0.5; xi[1]=0.0;
+    }
+    else if (lid==4)
+    {
+      xi[0]=0.5; xi[1]=0.5;
+    }
+    else if (lid==5)
+    {
+      xi[0]=0.0; xi[1]=0.5;
+    }
     else
       dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
   }
   
-  // 3D bilinear case (quadrilateral element)
-  else if (Shape()==quad4)
+  // 3D bilinear case (4noded quadrilateral element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (Shape()==quad4 || Shape()==quad8 || Shape()==quad9)
   {
     if (lid==0)
     {
@@ -215,6 +231,26 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
     else if (lid==3)
     {
       xi[0]=-1.0; xi[1]=1.0;
+    }
+    else if (lid==4)
+    {
+      xi[0]=0.0; xi[1]=-1.0;
+    }
+    else if (lid==5)
+    {
+      xi[0]=1.0; xi[1]=0.0;
+    }
+    else if (lid==6)
+    {
+      xi[0]=0.0; xi[1]=1.0;
+    }
+    else if (lid==7)
+    {
+      xi[0]=-1.0; xi[1]=0.0;
+    }
+    else if (lid==8)
+    {
+      xi[0]=0.0; xi[1]=0.0;
     }
     else
       dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
@@ -295,8 +331,9 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double&
   // empty local basis vectors
   vector<double> gxi(3);
   vector<double> geta(3);
+  DRT::Element::DiscretizationType dt = Shape();
   
-  if (Shape()==line2 || Shape()==line3)
+  if (dt==line2 || dt==line3)
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -307,7 +344,7 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double&
     n[2] =  0.0;
   }
   
-  else if (Shape()==tri3 || Shape()==quad4)
+  else if (dt==tri3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -319,7 +356,7 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double&
   }
   
   else
-    dserror("ERROR: ComouteNormalAtXi not implemented for this element type");
+    dserror("ERROR: ComPuteNormalAtXi not implemented for this element type");
   
   // compute length of element normal
   length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
@@ -334,7 +371,9 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double&
 void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& elens,
                                         vector<map<int,double> >& derivn)
 {
-  if (Shape()==line2 || Shape()==line3)
+  DRT::Element::DiscretizationType dt = Shape();
+  
+  if (dt==line2 || dt==line3)
   {
     int nnodes = NumNode();
     DRT::Node** mynodes = Nodes();
@@ -450,7 +489,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
     }
   }
   
-  else if (Shape()==tri3 || Shape()==quad4)
+  else if (dt==tri3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // not yet implemented
   }
@@ -491,8 +530,9 @@ void CONTACT::CElement::Metrics(double* xi, vector<double>& gxi,
 {
   int nnodes = NumNode();
   int dim = 0;
-  if (Shape()==line2 || Shape()==line3) dim = 2;
-  else if (Shape()==tri3 || Shape()==quad4) dim = 3;
+  DRT::Element::DiscretizationType dt = Shape();
+  if (dt==line2 || dt==line3) dim = 2;
+  else if (dt==tri3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9) dim = 3;
   else dserror("ERROR: Metrics called for unknown element t<pe");
   
   LINALG::SerialDenseVector val(nnodes);
@@ -531,13 +571,14 @@ double CONTACT::CElement::Jacobian(double* xi)
   double jac = 0.0;
   vector<double> gxi(3);
   vector<double> geta(3);
+  DRT::Element::DiscretizationType dt = Shape();
     
   // 2D linear case (2noded line element)
-  if (Shape()==line2)
+  if (dt==line2)
     jac = Area()/2;
   
   // 2D quadratic case (3noded line element)
-  else if (Shape()==line3)
+  else if (dt==line3)
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -547,11 +588,14 @@ double CONTACT::CElement::Jacobian(double* xi)
   }
   
   // 3D linear case (3noded triangular element)
-  else if (Shape()==tri3)
+  else if (dt==tri3)
     jac = Area()*2;
   
   // 3D bilinear case (4noded quadrilateral element)
-  else if (Shape()==quad4)
+  // 3D quadratic case (6noded triangular element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -676,9 +720,10 @@ void CONTACT::CElement::DerivJacobian(const LINALG::SerialDenseVector& val,
 double CONTACT::CElement::ComputeArea()
 {
   double area = 0.0;
+  DRT::Element::DiscretizationType dt = Shape();
   
   // 2D linear case (2noded line element)
-  if (Shape()==line2)
+  if (dt==line2)
   {
     // no integration necessary (constant Jacobian)
     LINALG::SerialDenseMatrix coord = GetNodalCoords();
@@ -693,10 +738,10 @@ double CONTACT::CElement::ComputeArea()
   }
   
   // 2D quadratic case (3noded line element)
-  else if (Shape()==line3)
+  else if (dt==line3)
   {
     // Gauss quadrature with correct NumGP and Dim
-    CONTACT::Integrator integrator(Shape());
+    CONTACT::Integrator integrator(dt);
     double detg = 0.0;
       
     // loop over all Gauss points, build Jacobian and compute area
@@ -709,7 +754,7 @@ double CONTACT::CElement::ComputeArea()
   }
   
   // 3D linear case (3noded triangular element)
-  else if (Shape()==tri3)
+  else if (dt==tri3)
   {
     // no integration necessary (constant Jacobian)
     LINALG::SerialDenseMatrix coord = GetNodalCoords();
@@ -731,11 +776,14 @@ double CONTACT::CElement::ComputeArea()
     area=0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
   }
   
-  // 3D bilinear case (4noded quadrilateral element)
-  else if (Shape()==quad4)
+  // 3D bilinear case    (4noded quadrilateral element)
+  // 3D quadratic case   (6noded triangular element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // Gauss quadrature with correct NumGP and Dim
-    CONTACT::Integrator integrator(Shape());
+    CONTACT::Integrator integrator(dt);
     double detg = 0.0;
    
     // loop over all Gauss points, build Jacobian and compute area

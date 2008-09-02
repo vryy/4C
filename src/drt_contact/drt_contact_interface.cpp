@@ -887,8 +887,21 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 {
   // create an integrator instance with correct NumGP and Dim
   CONTACT::Integrator integrator(sele.Shape());
-  double sxia[2] = {-1.0, -1.0};
-  double sxib[2] = { 1.0,  1.0};
+  
+  // create correct integration limits
+  double sxia[2] = {0.0, 0.0};
+  double sxib[2] = {0.0, 0.0};
+  if (sele.Shape()==DRT::Element::tri3 || sele.Shape()==DRT::Element::tri6)
+  {
+    // parameter space is [0,1] for triangles
+    sxib[0] = 1.0; sxib[1] = 1.0;
+  }
+  else
+  {
+    // parameter space is [-1,1] for quadrilaterals
+    sxia[0] = -1.0; sxia[1] = -1.0;
+    sxib[0] =  1.0; sxib[1] =  1.0;
+  }
 
   // do the integration
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);

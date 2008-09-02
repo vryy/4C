@@ -34,6 +34,7 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
   switch(eletype)
   {
   case DRT::Element::line2:
+  case DRT::Element::line3:
   {
     dim_=2;
     const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
@@ -47,21 +48,8 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
     }
     break;
   }
-  case DRT::Element::line3:
-  {
-    dim_=2;
-    const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
-    ngp_ = intpoints.nquad;
-    coords_.Reshape(nGP(),1);
-    weights_.resize(nGP());
-    for (int i=0;i<nGP();++i)
-    {
-      coords_(i,0)=intpoints.qxg[i];
-      weights_[i]=intpoints.qwgt[i];
-    }
-    break;    
-  }
   case DRT::Element::tri3:
+  case DRT::Element::tri6:
   {
     dim_=3;
     const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
@@ -77,6 +65,8 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
     break;     
   }
   case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
   {
     dim_=3;
     const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);

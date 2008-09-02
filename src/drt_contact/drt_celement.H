@@ -60,7 +60,13 @@ public:
       lin2D,                  // linear 2D
       lindual2D,              // dual linear 2D
       bilin2D,                // bilinear 2D
-      bilindual2D             // dual bilinear 2D
+      bilindual2D,            // dual bilinear 2D
+      quad2D,                 // quadratic 2D
+      quaddual2D,             // dual quadratic 2D
+      serendipity2D,          // serendipity 2D
+      serendipitydual2D,      // dual serendipity 2D
+      biquad2D,               // biquadratic 2D
+      biquaddual2D            // dual biquadratic 2D
     };
       
   //@}
