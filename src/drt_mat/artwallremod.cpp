@@ -27,6 +27,8 @@ extern struct _MATERIAL *mat;
 //#define PI        (asin(1.0)*2.0)
 
 
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/
@@ -69,19 +71,19 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
   {
     histsize=0;
   }
-  else 
+  else
   {
     histsize = gamma_->size();
   }
   AddtoPack(data,histsize);  // lenght of history vector(s)
-  for (int var = 0; var < histsize; ++var) 
+  for (int var = 0; var < histsize; ++var)
   {
     AddtoPack(data,gamma_->at(var));
     AddtoPack(data,phi_->at(var));
     AddtoPack(data,stresses_->at(var));
     AddtoPack(data,remtime_->at(var));
   }
-  
+
   return;
 }
 
@@ -106,7 +108,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   isinit_ = true;
   int histsize;
   ExtractfromPack(position,data,histsize);
-  
+
   if (histsize == 0) isinit_=false;
   gamma_ = rcp(new vector<double>);
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
@@ -128,7 +130,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  
+
   return;
 }
 
@@ -177,10 +179,10 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   } else if (initflag==2){
     dserror("Random init not yet implemented for ARTWALLREMOD");
   } else dserror("Unknown init for ARTWALLREMOD");
-  
-  // check for remodelling option and initialize 
+
+  // check for remodelling option and initialize
   if (matdata_->m.artwallremod->rembegt != -1.){
-    // history 
+    // history
     gamma_ = rcp(new vector<double> (numgp));  // of alignment angles
     lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
     phi_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
@@ -220,7 +222,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double kappa = matdata_->m.artwallremod->kappa;
   const double k1 = matdata_->m.artwallremod->k1;
   const double k2 = matdata_->m.artwallremod->k2;
-  
+
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   Epetra_SerialDenseVector Id(6);
@@ -228,7 +230,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseVector C(*glstrain);
   C.Scale(2.0);
   C += Id;
-  
+
   // invariants
   const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
   const double I3 = C(0)*C(1)*C(2)
@@ -238,7 +240,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);
   const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
-  
+
   // invert C
   Epetra_SerialDenseVector Cinv(6);
 
@@ -249,9 +251,9 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
   Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
   Cinv.Scale(1.0/I3);
-  
+
   // isotropic part: NeoHooke  ************************************************
-  // NeoHooke with penalty W = W^dev(C) + U(J) 
+  // NeoHooke with penalty W = W^dev(C) + U(J)
   // W = 1/2 mue (^I1-3) + 1/2 kappa (J-1)^2
 
   // S = Svol + Siso
@@ -266,41 +268,41 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   }
 
   // Elasticity = Cvol + Ciso, via projection see Holzapfel p. 255
-  
+
   // Cvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
   // Ciso = 0 + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
-  
+
   AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
-  
+
   const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
   //AddtoCmatHolzapfelProduct((*cmat),Cinv,fac);  // fac Cinv o Cinv
 
   Epetra_SerialDenseMatrix Psl(6,6);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
-  
+
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
       double Siso_i = incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
       double Siso_j = incJ* (mue*Id(j) - third*mue*I1*Cinv(j));
       (*cmat)(i,j) += J*(p+J*kappa) * Cinv(i) * Cinv(j)  // J(p + J dp/dJ) Cinv x Cinv
-             + fac * Psl(i,j)                            // fac Cinv o Cinv 
+             + fac * Psl(i,j)                            // fac Cinv o Cinv
              - fac*third * Cinv(i) * Cinv(j)             // - fac/3 Cinv x Cinv
              - 2*third * Cinv(i) * Siso_j                // -2/3 Cinv x Siso
              - 2*third * Cinv(j) * Siso_i;               // -2/3 Siso x Cinv
       Psl(i,j) += (-third) * Cinv(i) * Cinv(j);    // on the fly complete Psl needed later
     }
   }
-  
+
   // anisotropic part: ***************************************************
   // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
-  
+
   // decide whether its time to remodel
   const double time = params.get("total time",-1.0);
   if ((remtime_->at(gp) != -1.) && (time > remtime_->at(gp))){
     Remodel(gp,time);
   }
-  
+
   // structural tensors in voigt notation
   Epetra_SerialDenseVector A1(6);
   Epetra_SerialDenseVector A2(6);
@@ -314,20 +316,20 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
   // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
   // however factor 2 for shear terms is already in C
-  const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2) 
+  const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2)
                     + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
-  const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2) 
+  const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
                     + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
-  
+
   // fibers take compression only
   double fib1_tension = 1.;
   double fib2_tension = 1.;
   if (J4 < 0.0) fib1_tension = 0.;
   if (J6 < 0.0) fib2_tension = 0.;
-  
-  // PK2 fiber part in splitted formulation, see Holzapfel p. 271 
+
+  // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   Epetra_SerialDenseVector Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
   const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
   const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
@@ -335,22 +337,22 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseVector Stemp(A2);
   Stemp.Scale(fib2);
   Sfiso += Stemp;
-  
-  const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2) 
+
+  const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2)
                  + 1.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
   // compute Sfiso = J^{-2/3} * (Sfbar - 1/3 trace(Sfbar C) Cinv
   for (int i = 0; i < 6; ++i) {
     Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
   }
   (*stress) += Sfiso;
-  
+
   // Elasticity fiber part in splitted fromulation, see Holzapfel p. 255 and 272
   const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
   const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
-  
+
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
-      double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv 
+      double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv
       double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);
       double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
       double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
@@ -360,14 +362,14 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
                     - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
     }
   }
-  
+
   // store current stress in case of remodeling
   if (remtime_->at(gp) != -1.){
     for (int i = 0; i < 3; ++i) stresses_->at(gp)(i,i) = (*stress)(i);
     stresses_->at(gp)(0,1) = (*stress)(3); stresses_->at(gp)(1,0) = (*stress)(3);
     stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
     stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
-    
+
     // store Cauchy stresses and use those for remodeling driver
     double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                   defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
@@ -390,15 +392,15 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   Epetra_SerialDenseVector lambda(3);
   // watch out! stress matrix will temporarily hold eigenvectors!
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
-  
+
 #if DEBUG
   cout << "eigenvectors: " << stresses_->at(gp);
   cout << "eigenvalues: " << lambda << endl;
 #endif
-  
+
   // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
   double newgamma = atan(lambda(1)/lambda(2));
-  
+
   // check whether delta gamma is larger than tolerance
 //  const double gammatol = 0.001;
 //  if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
@@ -406,17 +408,17 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
 //    remtime_->at(gp) = time; // no remodelling, but update time
 //    return; // get out here
 //  }
-  
+
   EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
-  
+
   // update
   gamma_->at(gp) = newgamma;
   remtime_->at(gp) = time; // we remodel only once per timestep, not during iteration
-  
+
   // debug/plotting storage
   phi_->at(gp) = stresses_->at(gp);
   for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = lambda(i);
-  
+
   return;
 }
 
@@ -428,7 +430,7 @@ void MAT::ArtWallRemod::EvaluateFiberVecs(const int gp, const double gamma, cons
     // a2 = cos gamma e1 - sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
     a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
   }
-  
+
   return;
 }
 
@@ -465,7 +467,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
         double remtime = remo->Getremtimes()->at(gp);
         vector<double> lamb = remo->Getlambdas()->at(gp);
         Epetra_SerialDenseMatrix phi = remo->Getphis()->at(gp);
-        
+
         // time
         outfile << time << ",";
         // iter
@@ -474,7 +476,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
         outfile << iele << ",";
         // gp
         outfile << gp << ",";
-        
+
         outfile << gamma << ",";
         outfile << gamma*180./PI << ",";
         outfile << remtime << ",";
@@ -505,7 +507,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
   {
     const DRT::Element* actele = dis->lColElement(iele);
-    
+
     // build current configuration
     vector<int> lm;
     vector<int> lmowner;
@@ -524,46 +526,46 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     }
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         1.0, xyze) << endl;
-    
+
     vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
     RCP<vector<vector<double> > > a1s = remo->Geta1();
     RCP<vector<vector<double> > > a2s = remo->Geta2();
-    
-   
+
+
     // material plot at gauss points
     int ngp = remo->Geta1()->size();
     for (int gp = 0; gp < ngp; ++gp){
       vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
-      
+
       vector<vector<double> > fibgp(2);
       fibgp.at(0) = a1s->at(gp);
-      fibgp.at(1) = a2s->at(gp); 
-      
+      fibgp.at(1) = a2s->at(gp);
+
       for (int k=0; k<2; ++k){
-        
+
         gmshfilecontent << "VP(" << scientific << point[0] << ",";
         gmshfilecontent << scientific << point[1] << ",";
         gmshfilecontent << scientific << point[2] << ")";
         gmshfilecontent << "{" << scientific
-        <<        fibgp.at(k)[0] 
-        << "," << fibgp.at(k)[1] 
+        <<        fibgp.at(k)[0]
+        << "," << fibgp.at(k)[1]
         << "," << fibgp.at(k)[2]
         << "};" << endl;
-        
+
         // draw also negative direction to avoid "jumping"
         gmshfilecontent << "VP(" << scientific << point[0] << ",";
         gmshfilecontent << scientific << point[1] << ",";
         gmshfilecontent << scientific << point[2] << ")";
         gmshfilecontent << "{" << scientific
-        <<        -fibgp.at(k)[0] 
-        << "," << -fibgp.at(k)[1] 
+        <<        -fibgp.at(k)[0]
+        << "," << -fibgp.at(k)[1]
         << "," << -fibgp.at(k)[2]
         << "};" << endl;
 
       }
-      
+
 //      Epetra_SerialDenseMatrix Phi= remo->Getphis()->at(gp);
 //      vector<double> lambda = remo->Getlambdas()->at(gp);
 //      const double scale = 100.0;
@@ -572,8 +574,8 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //        gmshfilecontent << scientific << point[1] << ",";
 //        gmshfilecontent << scientific << point[2] << ")";
 //        gmshfilecontent << "{" << scientific
-//        <<        scale*lambda[k]*Phi(0,k) 
-//        << "," << scale*lambda[k]*Phi(1,k) 
+//        <<        scale*lambda[k]*Phi(0,k)
+//        << "," << scale*lambda[k]*Phi(1,k)
 //        << "," << scale*lambda[k]*Phi(2,k)
 //        << "};" << endl;
 //      }
@@ -584,7 +586,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 
   f_system << gmshfilecontent.str();
   f_system.close();
-  
+
   return;
 }
 
