@@ -351,6 +351,7 @@ OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
                   src/drt_f3/xfluid3_line_evaluate.o \
                   src/drt_f3/xfluid3_sysmat3.o \
                   src/drt_f3/xfluid3_sysmat4.o \
+                  src/drt_f3/xfluid3_sysmat_tp1.o \
                   src/drt_fluid/time_integration_element.o
 OBJS_DRT_F3   = 
 #------------------------------------------------------------------ fluid3
