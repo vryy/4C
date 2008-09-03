@@ -1389,12 +1389,15 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     f_system.close();
     std::cout << " done" << endl;
   }
-#if 0
+#if 1
   if (gmshdebugout)
   {
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
     << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
@@ -1438,9 +1441,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           //cout << "eleval DiscPres" << endl;
           //cout << elementvalues << endl;
         }
-        const XFEM::DomainIntCells& domainintcells =
+        const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
-        for (XFEM::DomainIntCells::const_iterator cell =
+        for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
