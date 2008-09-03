@@ -40,7 +40,10 @@ enum GaussRule3D
     intrule_tet_10point,            ///< KEAST3           , DEG.OF PRECISION 3 (closed)
     intrule_tet_11point,            ///< KEAST5           , DEG.OF PRECISION 4 (open)
     intrule_tet_24point,            ///< KEAST7           , DEG.OF PRECISION 6 (open)
+    intrule_tet_64point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 6 (open)   (Peano, 1982)
     intrule_tet_45point,            ///< KEAST9           , DEG.OF PRECISION 8 (open)
+    intrule_tet_343point_peano,     ///< GAUSS-LOBATTO    , DEG.OF PRECISION 12 (open)  (Peano, 1982)
+    intrule_tet_729point_peano,     ///< GAUSS-LOBATTO    , DEG.OF PRECISION 16 (open)  (Peano, 1982)
     intrule_wedge_1point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
     intrule_wedge_6point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
     intrule_wedge_9point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
@@ -66,7 +69,8 @@ enum GaussRule2D
     intrule_tri_6point,              ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
     intrule_tri_7point,              ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An Analysis of the Finite Element Method, Cambridge, 1973,ISBN: 096140888X,LC: TA335.S77.)
     intrule_tri_12point,             ///< degree of precision: 6  (open)   (Hughes, The Finite Element Method)
-    intrule_tri_37point              ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm #706)
+    intrule_tri_37point,             ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm #706)
+    intrule_tri_64point              ///< degree of precision: 15 (open)   (essentially a product of two 8 point 1D Gauss-Legendre rules)
 };
 
 //! supported 1d integration rules
@@ -154,8 +158,8 @@ struct IntegrationPoints3D
       const GaussRule3D gaussrule   ///< 3d rule
       );
   int           nquad;         ///< number of gausspoints
-  double        qxg[45][3];    ///< coordinates
-  double        qwgt[45];      ///< weights
+  double        qxg[729][3];   ///< coordinates
+  double        qwgt[729];     ///< weights
 };
 
 /*!
@@ -173,9 +177,9 @@ struct IntegrationPoints2D
   explicit IntegrationPoints2D(
       const GaussRule2D gaussrule   ///< 2d rule
       );
-  int           nquad;        ///< number of gausspoints
-  double        qxg[37][2];    ///< coordinates
-  double        qwgt[37];      ///< weights
+  int           nquad;         ///< number of gausspoints
+  double        qxg[64][2];    ///< coordinates
+  double        qwgt[64];      ///< weights
 };
 
 /*!
