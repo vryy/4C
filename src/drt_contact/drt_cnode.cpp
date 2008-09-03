@@ -40,6 +40,8 @@ grow_(1.0e12)
   {
     Dbc()[i]=false;
     n()[i]=0.0;
+    txi()[i]=0.0;
+    teta()[i]=0.0;
     u()[i]=0.0;
     xspatial()[i]=X()[i];
     lm()[i]=0.0;
@@ -73,6 +75,8 @@ grow_(old.grow_)
   {
     Dbc()[i]=old.dbc_[i];
     n()[i]=old.n_[i];
+    txi()[i]=old.txi_[i];
+    teta()[i]=old.teta_[i];
     u()[i]=old.u_[i];
     xspatial()[i]=old.xspatial_[i];
     lm()[i]=old.lm_[i];
@@ -153,6 +157,10 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,xspatial_,3);
   // add n_
   AddtoPack(data,n_,3);
+  // add txi_
+  AddtoPack(data,txi_,3);
+  // add teta_
+  AddtoPack(data,teta_,3);
   // add u_
   AddtoPack(data,u_,3);
   // add lm_
@@ -204,6 +212,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,xspatial_,3);
   // n_
   ExtractfromPack(position,data,n_,3);
+  // txi_
+  ExtractfromPack(position,data,txi_,3);
+  // teta_
+  ExtractfromPack(position,data,teta_,3);
   // u_
   ExtractfromPack(position,data,u_,3);
   // lm_
@@ -329,8 +341,20 @@ void CONTACT::CNode::AddgValue(double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::BuildAveragedNormal()
 {
-  // reset normal when this method is called
-  for (int j=0;j<3;++j) n()[j]=0.0;
+  // TO DO ***************************************************************
+  // What we actually want do here is to build the av. nodal tangent(s).
+  // From the basic metric connection in 2D (n = t x e3) or in 3D
+  // (n = t1 x t2) we can then compute the averaged nodal normal vector.
+  // The same is true for the linearization in DerivAveragedNormal()!
+  //**********************************************************************
+  
+  // reset normal and tangents when this method is called
+  for (int j=0;j<3;++j)
+  {
+    n()[j]=0.0;
+    txi()[j]=0.0;
+    teta()[j]=0.0;
+  }
     
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -342,7 +366,7 @@ void CONTACT::CNode::BuildAveragedNormal()
   // elens(2,i): z-coord of element normal
   // elens(3,i): id of adjacent element i
   // elens(4,i): length of element normal
-  // elens(5,i): length of element itself
+  // elens(5,i): length/area of element itself
   //**********************************************************************
   Epetra_SerialDenseMatrix elens(6,nseg);
   
@@ -383,6 +407,11 @@ void CONTACT::CNode::BuildAveragedNormal()
   else
     for (int j=0;j<3;++j) n()[j]/=length;
   
+  // store unit tangent vector, too (only 2D so far)
+  txi()[0] = -n()[1];
+  txi()[1] =  n()[0];
+  txi()[2] =  0.0;
+  
   // computation of nodal normal is finished here...!!!
   
   //**********************************************************************
@@ -407,9 +436,9 @@ void CONTACT::CNode::BuildAveragedNormal()
 void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                                          double length)
 {
-  // prepare nodal storage maps for derivative
+  // prepare nodal storage maps for derivative (only 2D so far)
   if ((int)GetDerivN().size()==0) GetDerivN().resize(NumDof());
-  if ((int)GetDerivT().size()==0) GetDerivT().resize(NumDof());
+  if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(NumDof());
   
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -428,7 +457,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
-  // (be careful with refernce / copy of derivative maps!)
+  // (be careful with reference / copy of derivative maps!)
   typedef map<int,double>::const_iterator CI;
   map<int,double>& derivnx = GetDerivN()[0];
   map<int,double>& derivny = GetDerivN()[1];
@@ -456,8 +485,8 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   
   // get directional derivative of nodal tangent "for free"
   // (we just have to use the orthogonality of n and t)
-  map<int,double>& derivtx = GetDerivT()[0];
-  map<int,double>& derivty = GetDerivT()[1];
+  map<int,double>& derivtx = GetDerivTxi()[0];
+  map<int,double>& derivty = GetDerivTxi()[1];
   
   for (CI p=derivny.begin();p!=derivny.end();++p)
     derivtx[p->first] = -(p->second);

@@ -377,7 +377,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
   {
     int nnodes = NumNode();
     DRT::Node** mynodes = Nodes();
-    if (!mynodes) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+    if (!mynodes) dserror("ERROR: DerivNormalAtXi: Null pointer!");
     
     LINALG::SerialDenseVector val(nnodes);
     LINALG::SerialDenseMatrix deriv(nnodes,1);
@@ -389,7 +389,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
     LINALG::SerialDenseMatrix coord(3,nnodes);
     
     // which column of elens contains this element's normal?
-    int col = 2;
+    int col = -1;
     for (int i=0;i<elens.N();++i)
     {
       if (elens(3,i)==Id())
@@ -398,7 +398,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
         break;
       }
     }
-    if (col>1) dserror("ERROR: Something wrong with columns of elens");
+    if (col==-1) dserror("ERROR: Something wrong with columns of elens");
     
     // ... and which does not?
     int ncol = 0;
@@ -412,7 +412,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
     //**********************************************************************
     // For the weighted normal case, the element lengths enter the nodal
     // normal formulation. They have to be linearized as well, which is an
-    // element operation only. Thus, we can compute this part of th nodal
+    // element operation only. Thus, we can compute this part of the nodal
     // normal derivative before looping over the element nodes!
     //**********************************************************************
   #ifdef CONTACTWNORMAL
@@ -446,7 +446,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
     for (int i=0;i<nnodes;++i)
     {
       CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-      if (!mycnode) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+      if (!mycnode) dserror("ERROR: DerivNormalAtXi: Null pointer!");
       
   #ifdef CONTACTWNORMAL
       // case1: weighted nodal normal (1 adjacent element)
@@ -483,7 +483,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
         derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)/elens(4,col))*deriv(i,0);
       }
       else
-        dserror("ERROR: ComputeNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
+        dserror("ERROR: DerivNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
       
   #endif // #ifdef CONTACTWNORMAL
     }

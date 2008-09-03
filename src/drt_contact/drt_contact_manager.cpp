@@ -588,8 +588,8 @@ void CONTACT::Manager::Initialize(int numiter)
   string ftype   = scontact_.get<string>("friction type","none");
   if (ftype=="tresca")
   {
-	lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
-	r_       = LINALG::CreateVector(*gslipt_,true);
+	  lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
+	  r_       = LINALG::CreateVector(*gslipt_,true);
   }
   
   // (re)setup global matrices containing derivatives
@@ -3222,18 +3222,11 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       
       if(ftype=="tresca")
       {	
-        // friction
-        // get tangent of contact node
-        double tangent[3];
-        tangent[0] = -cnode->n()[1];
-        tangent[1] =  cnode->n()[0];
-        tangent[2] =  0.0;
+        // compute tangential part of Lagrange multiplier
+        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
         
         // compute tangential part of Lagrange multiplier
-        tz = tangent[0]*cnode->lm()[0] + tangent[1]*cnode->lm()[1];
-        
-        // compute tangential part of Lagrange multiplier
-        tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
+        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
       }  
       
       // check nodes of inactive set *************************************
@@ -3376,7 +3369,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   // that within a load/time-step the algorithm can have more than one
   // solution due to the fact that the active set is not unique. Hence the
   // algorithm jumps between the solutions of the active set. The non-
-  // uniquenesss results either from hoghly curved contact surfaces or
+  // uniquenesss results either from highly curved contact surfaces or
   // from the FE discretization, Thus the uniqueness of the closest-point-
   // projection cannot be guaranteed.
   // *********************************************************************
@@ -3516,18 +3509,11 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       
       if(ftype=="tresca")
       {	
-        // friction
-        // get tangent of contact node
-        double tangent[3];
-        tangent[0] = -cnode->n()[1];
-        tangent[1] =  cnode->n()[0];
-        tangent[2] =  0.0;
+        // compute tangential part of Lagrange multiplier
+        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
         
         // compute tangential part of Lagrange multiplier
-        tz = tangent[0]*cnode->lm()[0] + tangent[1]*cnode->lm()[1];
-        
-        // compute tangential part of Lagrange multiplier
-        tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
+        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
       }  
 
       // check nodes of inactive set *************************************
@@ -3959,19 +3945,12 @@ void CONTACT::Manager::PrintActiveSet()
       double tjump;
            
       if(ftype=="tresca")
-      {	
-        // friction
-        // get tangent of contact node
-        double tangent[3];
-        tangent[0] = -cnode->n()[1];
-        tangent[1] =  cnode->n()[0];
-        tangent[2] =  0.0;
-              
+      {	    
         // compute tangential part of Lagrange multiplier
-        tz = tangent[0]*cnode->lm()[0] + tangent[1]*cnode->lm()[1];
+        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
            
         // compute tangential part of Lagrange multiplier
-        tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
+        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
       }  
       
       // get D.B.C. status of current node

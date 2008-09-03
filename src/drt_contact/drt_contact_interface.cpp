@@ -425,19 +425,26 @@ void CONTACT::Interface::Initialize()
   {
     CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
 
-    //reset nodal normal vector
+    //reset nodal normal and tangents
     for (int j=0;j<3;++j)
+    {
       node->n()[j]=0.0;
-
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
+    
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->GetDerivN()).size());++j)
       (node->GetDerivN())[j].clear();
     (node->GetDerivN()).resize(0);
     
-    // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-      (node->GetDerivT())[j].clear();
-    (node->GetDerivT()).resize(0);
+    // reset derivative maps of tangent vectors
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+      (node->GetDerivTeta())[j].clear();
+    (node->GetDerivTeta()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -1720,16 +1727,10 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
     /**************************************************** T-matrix ******/
     Epetra_SerialDenseMatrix Tnode(1,colsize);
 
-    // we need tangent vector of this node (only 2D case so far!)
-    double tangent[3];
-    tangent[0] = -cnode->n()[1];
-    tangent[1] =  cnode->n()[0];
-    tangent[2] =  0.0;
-
     for (int j=0;j<colsize;++j)
     {
       lmcol[j] = cnode->Dofs()[j];
-      Tnode(0,j) = tangent[j];
+      Tnode(0,j) = cnode->txi()[j];
     }
 
     // assemble into matrix of normal vectors T
@@ -1785,9 +1786,9 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     // we need the tangent vector, the vector of lagrange multipliers and 
     // the vector of displacement jumps per timestep of this node (only 2D case so far!)
     double tangent[3];
-    tangent[0] = -cnode->n()[1];
-    tangent[1] =  cnode->n()[0];
-    tangent[2] =  0.0;
+    tangent[0] = cnode->txi()[0];
+    tangent[1] = cnode->txi()[1];
+    tangent[2] = 0.0;
     double z[3];
     z[0] = cnode->lm()[0];
     z[1] = cnode->lm()[1];
@@ -2060,7 +2061,7 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
       dserror("ERROR: AssembleP: Node ownership inconsistency!");
     
     // prepare assembly
-    vector<map<int,double> > dtmap = cnode->GetDerivT();
+    vector<map<int,double> > dtmap = cnode->GetDerivTxi();
     map<int,double>::iterator colcurr;
     int colsize = (int)dtmap[0].size();
     int mapsize = (int)dtmap.size();

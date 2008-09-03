@@ -163,9 +163,6 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         double nc[3];
         double nn[3];
         double nt[3];
-        nt[0] = -cnode->n()[1];
-        nt[1] =  cnode->n()[0];
-        nt[2] = 0.0;
         double lmn = 0.0;
         double lmt = 0.0;
         
@@ -173,6 +170,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         {
           nc[j]=cnode->xspatial()[j];
           nn[j]=cnode->n()[j];
+          nt[j]=cnode->txi()[j];
           lmn +=  (cnode->Active())*nn[j]* cnode->lm()[j];
           lmt +=  (cnode->Active())*nt[j]* cnode->lm()[j];
         }
@@ -186,7 +184,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         if (fric)
         {
           gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << -nn[1] << "," << nn[0] << "," << nn[2] << "};" << endl;
+          gmshfilecontent << "{" << scientific << nt[0] << "," << nt[1] << "," << nt[2] << "};" << endl;
         }
          
         //******************************************************************
@@ -460,18 +458,18 @@ void CONTACT::Interface::FDCheckNormalDeriv()
           cout << p->first << '\t' << p->second << endl;
         cout << "Tangent-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->GetDerivT()[0]).begin();p!=(jcnode->GetDerivT()[0]).end();++p)
+        for (CI p=(jcnode->GetDerivTxi()[0]).begin();p!=(jcnode->GetDerivTxi()[0]).end();++p)
           cout << p->first << '\t' << p->second << endl;    
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->GetDerivT()[1]).begin();p!=(jcnode->GetDerivT()[1]).end();++p)
+        for (CI p=(jcnode->GetDerivTxi()[1]).begin();p!=(jcnode->GetDerivTxi()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
       }
       
       // store reference normals / tangents
       refnx[j] = jcnode->n()[0];
       refny[j] = jcnode->n()[1];
-      reftx[j] =-jcnode->n()[1];
-      refty[j] = jcnode->n()[0];
+      reftx[j] = jcnode->txi()[0];
+      refty[j] = jcnode->txi()[1];
     }
     
     // now fincally get the node we want to apply the FD scheme to
@@ -520,8 +518,8 @@ void CONTACT::Interface::FDCheckNormalDeriv()
             
       newnx[k] = kcnode->n()[0];
       newny[k] = kcnode->n()[1];
-      newtx[k] =-kcnode->n()[1];
-      newty[k] = kcnode->n()[0];
+      newtx[k] = kcnode->txi()[0];
+      newty[k] = kcnode->txi()[1];
       
       // get reference normal / tangent
       double refn[2] = {0.0, 0.0};
@@ -757,7 +755,11 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     //reset nodal normal vector
     for (int j=0;j<3;++j)
+    {
       node->n()[j]=0.0;
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -765,9 +767,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     (node->GetDerivN()).resize(0);
     
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-      (node->GetDerivT())[j].clear();
-    (node->GetDerivT()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -941,7 +943,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -949,9 +955,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -1151,7 +1157,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -1159,9 +1169,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -1359,7 +1369,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     //reset nodal normal vector
     for (int j=0;j<3;++j)
+    {
       node->n()[j]=0.0;
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -1367,9 +1381,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     (node->GetDerivN()).resize(0);
     
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-      (node->GetDerivT())[j].clear();
-    (node->GetDerivT()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -1566,7 +1580,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -1574,9 +1592,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -1803,7 +1821,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -1811,9 +1833,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2038,7 +2060,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
     //reset nodal normal vector
     for (int j=0;j<3;++j)
+    {
       node->n()[j]=0.0;
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -2046,9 +2072,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
     (node->GetDerivN()).resize(0);
     
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-      (node->GetDerivT())[j].clear();
-    (node->GetDerivT()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -2187,11 +2213,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     CNode* cnode = static_cast<CNode*>(node);
     
     double val = 0.0;
-    double tang[3] = {0.0, 0.0, 0.0};
-    tang[0] = -cnode->n()[1];
-    tang[1] =  cnode->n()[0];
     for (int dim=0;dim<3;++dim)
-      val += tang[dim]*(cnode->lm()[dim]);
+      val += (cnode->txi()[dim])*(cnode->lm()[dim]);
     
     // store gap-values into refTLM
     refTLM[i]=val;
@@ -2209,7 +2232,11 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -2217,9 +2244,9 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2366,11 +2393,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       CNode* kcnode = static_cast<CNode*>(knode);
       
       double val = 0.0;
-      double tang[3] = {0.0, 0.0, 0.0};
-      tang[0] = -kcnode->n()[1];
-      tang[1] =  kcnode->n()[0];
       for (int dim=0;dim<3;++dim)
-        val += tang[dim]*(kcnode->lm()[dim]);
+        val += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
       
       // store gap-values into newTLM
       newTLM[k]=val;
@@ -2410,7 +2434,11 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
+      {
         node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
 
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -2418,9 +2446,9 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       (node->GetDerivN()).resize(0);
       
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-        (node->GetDerivT())[j].clear();
-      (node->GetDerivT()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2566,11 +2594,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       CNode* kcnode = static_cast<CNode*>(knode);
       
       double val = 0.0;
-      double tang[3] = {0.0, 0.0, 0.0};
-      tang[0] = -kcnode->n()[1];
-      tang[1] =  kcnode->n()[0];
       for (int dim=0;dim<3;++dim)
-        val += tang[dim]*(kcnode->lm()[dim]);
+        val += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
       
       // store gap-values into newTLM
       newTLM[k]=val;
@@ -2609,7 +2634,11 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     //reset nodal normal vector
     for (int j=0;j<3;++j)
+    {
       node->n()[j]=0.0;
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->GetDerivN()).size());++j)
@@ -2617,9 +2646,9 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     (node->GetDerivN()).resize(0);
     
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
-      (node->GetDerivT())[j].clear();
-    (node->GetDerivT()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next

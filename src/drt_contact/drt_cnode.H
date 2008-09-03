@@ -190,6 +190,16 @@ public:
   virtual inline double* n() { return n_; }
   
   /*!
+  \brief Return current nodal tangent t_xi (only for slave side!) (length 3)
+  */
+  virtual inline double* txi() { return txi_; }
+   
+  /*!
+  \brief Return current nodal tangent t_eta (only for slave side!) (length 3)
+  */
+  virtual inline double* teta() { return teta_; }
+    
+  /*!
   \brief Return current Lagrange mutliplier (only for slave side!) (length 3)
   */
   virtual inline double* lm() { return lm_; }
@@ -305,14 +315,24 @@ public:
   virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
   
   /*!
-  \brief Return the 'DerivT' map (vector) of this node
+  \brief Return the 'DerivTxi' map (vector) of this node
     
   These maps contain the directional derivatives of the node's
-  unit tangent vector with respect to the slave displacements.
+  unit tangent vector t_xi with respect to the slave displacements.
   A vector is used because the tangent itself is a vector (2 or 3 components).
   
   */
-  virtual inline vector<map<int,double> >& GetDerivT() { return derivt_; }
+  virtual inline vector<map<int,double> >& GetDerivTxi() { return derivtxi_; }
+  
+  /*!
+  \brief Return the 'DerivTeta' map (vector) of this node
+    
+  These maps contain the directional derivatives of the node's
+  unit tangent vector t_eta with respect to the slave displacements.
+  A vector is used because the tangent itself is a vector (2 or 3 components).
+  
+  */
+  virtual inline vector<map<int,double> >& GetDerivTeta() { return derivteta_; }
     
   /*!
   \brief Return the 'DerivD' map of this node
@@ -404,6 +424,8 @@ protected:
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
   double          n_[3];           // nodal normal for contact methods
+  double          txi_[3];         // nodal tangent t_xi for contact methods
+  double          teta_[3];        // nodal tangent t_eta for contact methods
   double          xspatial_[3];    // current configuration
   double          u_[3];           // current displacement
   double          lm_[3];          // current Lagrange multiplier value (n+1)
@@ -420,7 +442,8 @@ protected:
   double                        grow_;       // nodal entry of g vector
   
   vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
-  vector<map<int,double> >      derivt_;     // directional derivative of nodal tangent
+  vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
+  vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
   map<int,double>               derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   
