@@ -24,7 +24,7 @@ Maintainer: Florian Henke
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn)
 :  ScaTraFluidCouplingAlgorithm(comm, combustdyn)
 {
-  /* Der constructor sollte den gesamten Algorithmus initialisiern. Zusammenfassend kann an sagen, 
+  /* Der constructor sollte den gesamten Algorithmus initialisieren. Zusammenfassend kann an sagen, 
    * dass hier alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden müssen.
    * 
    * das heisst:
@@ -158,8 +158,8 @@ void COMBUST::Algorithm::SignedDistFunc()
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::Algorithm::NotConvergedFGI()
 {
-  //if (fgiter_ < fgitermax_ and true) // (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
-  return true;
+  // if (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
+  return (fgiter_ < fgitermax_ and true);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -184,9 +184,12 @@ void COMBUST::Algorithm::PrepareTimeStep()
   FluidField().PrepareTimeStep();
   ScaTraField().PrepareTimeStep();
   
-  /* Ich wuerde hier gerne vergleichen, ob die Zeitschritte des Fluids und des ConDif
-   * identisch sind. Es existiert eine Variable time_ in jedem feld. Andererseits muss man halt
-   * aufpassen, dass man nur über die Funktionen des ScatraFluidCouplingAlgorithmus zugreift. */
+  // synchronicity check between combust algorithm and base algorithms
+  if (FluidField().Time() != Time())
+    dserror("Time in Fluid differs from time in combustion algorithm");
+  if (ScaTraField().Time() != Time())
+    dserror("Time in ScaTra differs from time in combustion algorithm");
+
   return;
 }
 

@@ -48,21 +48,6 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-// übernommen von Axels xfluid_dyn_nln_drt.cpp
-// die grünen Ergänzungen sind bei Georg zusätzlich eingebunden
-// Dinge die Georg hat, aber Axel nicht, sind mit "? nötig" markiert
-
-#include <ctime>   // ? nötig
-#include <cstdlib> // ? nötig
-#include <iostream>
-#include <string>  // ? nötig
-
-#include <Teuchos_Time.hpp>  // ? nötig
-#include <Teuchos_TimeMonitor.hpp>
-//#include <Teuchos_StandardParameterEntryValidators.hpp> // von Axel!
-
-#include <Epetra_Time.h>  // ? nötig
-
 #ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
@@ -75,13 +60,6 @@ Maintainer: Florian Henke
 #include "combust_utils.H"
 #include "combust_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
-//#include "xfluidimplicitintegration.H"
-//#include "../drt_lib/drt_resulttest.H"
-//#include "xfluidresulttest.H"
-//
-//#include "../drt_lib/drt_validparameters.H" // ? nötig
-//#include "../drt_lib/drt_condition_utils.H" // ? nötig
-
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -145,18 +123,21 @@ void combust_dyn()
   /*----------------------------------------------------------------------------------------------*
    * create a combustion algorithm
    *----------------------------------------------------------------------------------------------*/
+  // get the combustion parameter list
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 
-  // what exactly does this do?
+  /*----------------------------------------------------------------------------------------------* 
+   * restart stuff; what exactly does this do?; comment has to be completed
+   *----------------------------------------------------------------------------------------------*/ 
   if (genprob.restart)
   {
     // read the restart information, set vectors and variables
     combust_->ReadRestart(genprob.restart);
   }
   /*----------------------------------------------------------------------------------------------*
-   * switch over the different time integration schemes
+   * call one of the available time integration schemes
    *----------------------------------------------------------------------------------------------*/
   FLUID_TIMEINTTYPE timeintscheme = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(combustdyn,"TIMEINTEGR");
 
@@ -176,7 +157,7 @@ void combust_dyn()
   else
   {
     // error: impossible, every time integration scheme is static or dynamic
-    dserror("the combustion module can not handle this time integration scheme");
+    dserror("the combustion module can not handle this type of time integration scheme");
   }
 
   /*----------------------------------------------------------------------------------------------*

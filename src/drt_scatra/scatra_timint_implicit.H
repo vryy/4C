@@ -149,6 +149,8 @@ public:
   //! set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
+  double Time() const { return time_; }
+  int Step() const { return step_; }
 
 protected:
 
