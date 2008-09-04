@@ -361,7 +361,7 @@ void CONTACT::Interface::VisualizeGmshLight()
       }
 
       //******************************************************************
-      // plot normal vectors (2D or 3D)
+      // plot normal + tangent vectors (2D or 3D)
       //******************************************************************
       for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
@@ -373,15 +373,25 @@ void CONTACT::Interface::VisualizeGmshLight()
 
         double nc[3];
         double nn[3];
+        double ntxi[3];
+        double nteta[3];
         
         for (int j=0;j<3;++j)
         {
           nc[j]=cnode->xspatial()[j];
           nn[j]=cnode->n()[j];
+          ntxi[j]=cnode->txi()[j];
+          nteta[j]=cnode->teta()[j];
         }
 
         gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-        gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+        gmshfilecontent << "{" << scientific << 4*nn[0] << "," << 4*nn[1] << "," << 4*nn[2] << "};" << endl;
+        
+        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontent << "{" << scientific << 2*ntxi[0] << "," << 2*ntxi[1] << "," << 2*ntxi[2] << "};" << endl;
+        
+        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontent << "{" << scientific << 3*nteta[0] << "," << 3*nteta[1] << "," << 3*nteta[2] << "};" << endl;
       }
       
       if (proc==lComm()->NumProc()-1) gmshfilecontent << "};" << endl;
@@ -401,12 +411,16 @@ void CONTACT::Interface::VisualizeGmshLight()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckNormalDeriv()
 {
+  /****************************************************/
+  /* NOTE: This is a combined 2D / 3D method already! */
+  /****************************************************/
+  
   // get out of here if not participating in interface
   if (!lComm())
     return;
     
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int i=0; i<2*snodefullmap_->NumMyElements();++i)
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
   {
     // reset normal etc.
     Initialize();
@@ -424,13 +438,24 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     // create storage for normals / tangents
     vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
     vector<double> refny(int(snodecolmapbound_->NumMyElements()));
+    vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
     vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
     vector<double> newny(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
     
-    vector<double> reftx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> refty(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newty(int(snodecolmapbound_->NumMyElements()));
+    vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
+    vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
+    vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
+    
+    vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
+    vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
+    vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
         
     // compute and print all nodal normals / derivatives (reference)
     for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
@@ -449,6 +474,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
       if (i==0)
       {
         cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
+        
         cout << "Normal-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
         for (CI p=(jcnode->GetDerivN()[0]).begin();p!=(jcnode->GetDerivN()[0]).end();++p)
@@ -456,43 +482,72 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
         for (CI p=(jcnode->GetDerivN()[1]).begin();p!=(jcnode->GetDerivN()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
-        cout << "Tangent-derivative-maps: " << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+        for (CI p=(jcnode->GetDerivN()[2]).begin();p!=(jcnode->GetDerivN()[2]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
+        
+        cout << "Tangent txi-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
         for (CI p=(jcnode->GetDerivTxi()[0]).begin();p!=(jcnode->GetDerivTxi()[0]).end();++p)
           cout << p->first << '\t' << p->second << endl;    
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
         for (CI p=(jcnode->GetDerivTxi()[1]).begin();p!=(jcnode->GetDerivTxi()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+        for (CI p=(jcnode->GetDerivTxi()[2]).begin();p!=(jcnode->GetDerivTxi()[2]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
+        
+        cout << "Tangent teta-derivative-maps: " << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+        for (CI p=(jcnode->GetDerivTeta()[0]).begin();p!=(jcnode->GetDerivTeta()[0]).end();++p)
+          cout << p->first << '\t' << p->second << endl;    
+        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+        for (CI p=(jcnode->GetDerivTeta()[1]).begin();p!=(jcnode->GetDerivTeta()[1]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+        for (CI p=(jcnode->GetDerivTeta()[2]).begin();p!=(jcnode->GetDerivTeta()[2]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
       }
       
       // store reference normals / tangents
       refnx[j] = jcnode->n()[0];
       refny[j] = jcnode->n()[1];
-      reftx[j] = jcnode->txi()[0];
-      refty[j] = jcnode->txi()[1];
+      refnz[j] = jcnode->n()[2];
+      reftxix[j] = jcnode->txi()[0];
+      reftxiy[j] = jcnode->txi()[1];
+      reftxiz[j] = jcnode->txi()[2];
+      reftetax[j] = jcnode->teta()[0];
+      reftetay[j] = jcnode->teta()[1];
+      reftetaz[j] = jcnode->teta()[2];
+      
     }
     
     // now fincally get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(i/2);
+    int gid = snodefullmap_->GID(i/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
     
     // apply finite difference scheme
-    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%2
-         << " Dof(g): " << snode->Dofs()[i%2] << endl;
+    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
+         << " Dof(g): " << snode->Dofs()[i%3] << endl;
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (i%2==0)
+    if (i%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
     }
-    else
+    else if (i%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
     }
   
     // loop over all elements to set current element length / area
@@ -518,27 +573,44 @@ void CONTACT::Interface::FDCheckNormalDeriv()
             
       newnx[k] = kcnode->n()[0];
       newny[k] = kcnode->n()[1];
-      newtx[k] = kcnode->txi()[0];
-      newty[k] = kcnode->txi()[1];
+      newnz[k] = kcnode->n()[2];
+      newtxix[k] = kcnode->txi()[0];
+      newtxiy[k] = kcnode->txi()[1];
+      newtxiz[k] = kcnode->txi()[2];
+      newtetax[k] = kcnode->teta()[0];
+      newtetay[k] = kcnode->teta()[1];
+      newtetaz[k] = kcnode->teta()[2];
       
       // get reference normal / tangent
-      double refn[2] = {0.0, 0.0};
-      double reft[2] = {0.0, 0.0};
+      double refn[3] = {0.0, 0.0, 0.0};
+      double reftxi[3] = {0.0, 0.0, 0.0};
+      double refteta[3] = {0.0, 0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
-      reft[0] = reftx[k];
-      reft[1] = refty[k];
+      refn[2] = refnz[k];
+      reftxi[0] = reftxix[k];
+      reftxi[1] = reftxiy[k];
+      reftxi[2] = reftxiz[k];
+      refteta[0] = reftetax[k];
+      refteta[1] = reftetay[k];
+      refteta[2] = reftetaz[k];
       
       // get modified normal / tangent
-      double newn[2] = {0.0, 0.0};
-      double newt[2] = {0.0, 0.0};
+      double newn[3] = {0.0, 0.0, 0.0};
+      double newtxi[3] = {0.0, 0.0, 0.0};
+      double newteta[3] = {0.0, 0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
-      newt[0] = newtx[k];
-      newt[1] = newty[k];
+      newn[2] = newnz[k];
+      newtxi[0] = newtxix[k];
+      newtxi[1] = newtxiy[k];
+      newtxi[2] = newtxiz[k];
+      newteta[0] = newtetax[k];
+      newteta[1] = newtetay[k];
+      newteta[2] = newtetaz[k];
       
       // print results (derivatives) to screen
-      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12)
+      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12 || abs(newn[2]-refn[2])>1e-12)
       {
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
         cout << "Normal derivative (FD):" << endl;
@@ -546,48 +618,93 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         { 
           double val = (newn[0]-refn[0])/delta;
           cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       
         if (abs(newn[1]-refn[1])>1e-12)
         {
           double val = (newn[1]-refn[1])/delta;
           cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+        }
+        
+        if (abs(newn[2]-refn[2])>1e-12)
+        {
+          double val = (newn[2]-refn[2])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
       
-      if (abs(newt[0]-reft[0])>1e-12 || abs(newt[1]-reft[1])>1e-12)
+      if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 | abs(newtxi[2]-reftxi[2])>1e-12)
       {
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        cout << "Tangent derivative (FD):" << endl;
-        if (abs(newt[0]-reft[0])>1e-12)
+        cout << "Tangent txi derivative (FD):" << endl;
+        if (abs(newtxi[0]-reftxi[0])>1e-12)
         { 
-          double val = (newt[0]-reft[0])/delta;
+          double val = (newtxi[0]-reftxi[0])/delta;
           cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       
-        if (abs(newt[1]-reft[1])>1e-12)
+        if (abs(newtxi[1]-reftxi[1])>1e-12)
         {
-          double val = (newt[1]-reft[1])/delta;
+          double val = (newtxi[1]-reftxi[1])/delta;
           cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+        }
+        
+        if (abs(newtxi[2]-reftxi[2])>1e-12)
+        {
+          double val = (newtxi[2]-reftxi[2])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+        }
+      }
+      
+      if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 | abs(newteta[2]-refteta[2])>1e-12)
+      {
+        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        cout << "Tangent teta derivative (FD):" << endl;
+        if (abs(newteta[0]-refteta[0])>1e-12)
+        { 
+          double val = (newteta[0]-refteta[0])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+        }
+      
+        if (abs(newteta[1]-refteta[1])>1e-12)
+        {
+          double val = (newteta[1]-refteta[1])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+        }
+        
+        if (abs(newteta[2]-refteta[2])>1e-12)
+        {
+          double val = (newteta[2]-refteta[2])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
       
     }
     
     // undo finite difference modification
-    if (i%2==0)
+    if (i%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
     }
-    else
+    else if (i%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
     }
   }
  

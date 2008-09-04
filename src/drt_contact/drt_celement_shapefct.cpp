@@ -614,7 +614,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian(val,deriv,coord,testmap);
+      DerivJacobian(gpc,testmap);
       
       // loop over all entries of me/de
       for (int j=0;j<nnodes;++j)
@@ -786,7 +786,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian(valquad,derivquad,coord,testmap);
+      DerivJacobian(gpc,testmap);
       
       // loop over all entries of me/de
       for (int j=1;j<nnodes;++j)
@@ -975,7 +975,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
       // directional derivative of Jacobian
       map<int,double> testmap;
       typedef map<int,double>::const_iterator CI;
-      DerivJacobian(valquad,derivquad,coord,testmap);
+      DerivJacobian(gpc,testmap);
       
       // loop over all entries of me/de
       for (int j=0;j<nnodes-1;++j)

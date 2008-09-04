@@ -301,23 +301,23 @@ public:
   /*!
   \brief Build element normal at node passed in
   */
-  virtual void BuildNormalAtNode(int nid, vector<double>& n, double& length);
+  virtual void BuildNormalAtNode(int nid, int i, Epetra_SerialDenseMatrix& elens);
   
   /*!
   \brief Build element normal derivative at node passed in
   */
-  virtual void DerivNormalAtNode(int nid, Epetra_SerialDenseMatrix& elens,
+  virtual void DerivNormalAtNode(int nid, int i, Epetra_SerialDenseMatrix& elens,
                                  vector<map<int,double> >& derivn);
     
   /*!
   \brief Compute element normal at local coordinate xi
   */
-  virtual void ComputeNormalAtXi(double* xi, vector<double>& n, double& length);
+  virtual void ComputeNormalAtXi(double* xi, int i, Epetra_SerialDenseMatrix& elens);
   
   /*!
   \brief Compute element normal derivative at local coordinate xi
   */
-  virtual void DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& elens,
+  virtual void DerivNormalAtXi(double* xi, int i, Epetra_SerialDenseMatrix& elens,
                                vector<map<int,double> >& derivn);
     
   /*!
@@ -348,10 +348,7 @@ public:
   /*!
   \brief Compute Jacobian determinant derivative
   */
-  virtual void DerivJacobian(const LINALG::SerialDenseVector& val,
-                             const LINALG::SerialDenseMatrix& deriv,
-                             const LINALG::SerialDenseMatrix& coord,
-                             map<int,double>& derivjac);
+  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
   
   /*!
   \brief Compute length/area of the element

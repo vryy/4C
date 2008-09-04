@@ -1880,8 +1880,9 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     int row = activen_->GID(i);
     double* xi = cnode->xspatial();
     double* n = cnode->n();
-        
-    if (mapsize==3) dserror("ERROR: AssembleS: 3D case not yet implemented!");
+    
+    // only 2D so far
+    if (mapsize==3) mapsize=2;
     
     for (int j=0;j<mapsize-1;++j)
       if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
@@ -2067,7 +2068,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
     int mapsize = (int)dtmap.size();
     int row = activet_->GID(i);
         
-    if (mapsize==3) dserror("ERROR: AssembleP: 3D case not yet implemented!");
+    // only 2D so far
+    if (mapsize==3) mapsize=2;
     
     for (int j=0;j<mapsize-1;++j)
       if ((int)dtmap[j].size() != (int)dtmap[j+1].size())

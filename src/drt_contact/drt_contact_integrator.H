@@ -218,7 +218,7 @@ protected:
   
     int                        dim_;         // dimension of problem (2D or 3D)
     int                        ngp_;         // number of Gauss points
-    LINALG::SerialDenseMatrix  coords_;      // Gauss point coordinates
+    Epetra_SerialDenseMatrix   coords_;      // Gauss point coordinates
     vector<double>             weights_;     // Gauss point weights
 
 }; // class Integrator

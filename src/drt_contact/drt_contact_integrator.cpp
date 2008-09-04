@@ -217,7 +217,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     
     // evaluate the Jacobian derivative
     map<int,double> testmap;
-    sele.DerivJacobian(val,deriv,coord,testmap);
+    sele.DerivJacobian(sxi,testmap);
     
     // compute contribution oj J to nodal D-derivative-maps
     DRT::Node** mynodes = sele.Nodes();
@@ -584,7 +584,7 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
    
     // evaluate the Jacobian derivative
     map<int,double> testmap;
-    sele.DerivJacobian(sval,sderiv,scoord,testmap);
+    sele.DerivJacobian(sxi,testmap);
     
     // contributions to DerivM_jk
     DRT::Node** mynodes = sele.Nodes();

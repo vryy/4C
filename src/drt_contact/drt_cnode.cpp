@@ -337,17 +337,10 @@ void CONTACT::CNode::AddgValue(double val)
 }
 
 /*----------------------------------------------------------------------*
- |  Build averaged nodal normal                               popp 12/07|
+ |  Build averaged nodal normal + tangents                    popp 12/07|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::BuildAveragedNormal()
 {
-  // TO DO ***************************************************************
-  // What we actually want do here is to build the av. nodal tangent(s).
-  // From the basic metric connection in 2D (n = t x e3) or in 3D
-  // (n = t1 x t2) we can then compute the averaged nodal normal vector.
-  // The same is true for the linearization in DerivAveragedNormal()!
-  //**********************************************************************
-  
   // reset normal and tangents when this method is called
   for (int j=0;j<3;++j)
   {
@@ -376,69 +369,93 @@ void CONTACT::CNode::BuildAveragedNormal()
     CElement* adjcele = static_cast<CElement*> (adjeles[i]);
 
     // build element normal at current node
-    vector<double> elen(3);
-    double elenlength;
-    adjcele->BuildNormalAtNode(Id(),elen,elenlength);
-    double wgt = adjcele->Area();
+    // (we have to pass in the index i to be able to store the
+    // normal and other information at the right place in elens)
+    adjcele->BuildNormalAtNode(Id(),i,elens);
     
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
     {
-      elens(j,i) = elen[j];
-      
 #ifdef CONTACTWNORMAL
-      n()[j]+=wgt*elen[j]/elenlength;
+      n()[j]+=elens(5,i)*elens(j,i)/elens(4,i);
 #else
-      n()[j]+=elen[j]/elenlength;
+      n()[j]+=elens(j,i)/elens(4,i);
 #endif // #ifdef CONTACTWNORMAL
     }
-    
-    // store some element info for normal linearization
-    elens(3,i) = adjcele->Id();
-    elens(4,i) = elenlength;
-    elens(5,i) = wgt;
   }
   
   // create unit normal vector
   double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+  if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
+  else             for (int j=0;j<3;++j) n()[j]/=length;
   
-  if (length==0.0)
-    dserror("ERROR: Nodal normal of length zero, node ID %i",Id());
+  // create unit tangent vectors
+  // (note that this definition is not unique in 3D!)
+  double ltxi = 1.0;
+  
+  if (NumDof()==2)
+  {
+    // simple definition for txi
+    txi()[0] = -n()[1];
+    txi()[1] =  n()[0];
+    txi()[2] =  0.0;
+    
+    // teta is z-axis
+    teta()[0] = 0.0;
+    teta()[1] = 0.0;
+    teta()[2] = 1.0;
+  }
+  else if (NumDof()==3)
+  {
+    // arbitrary definition for txi
+    if (abs(n()[2])>1.0e-6)
+    {
+      txi()[0]=1.0;
+      txi()[1]=1.0;
+      txi()[2]=(-n()[0]-n()[1])/n()[2];
+    }
+    else if (abs(n()[1])>1.0e-6)
+    {
+      txi()[0]=1.0;
+      txi()[2]=1.0;
+      txi()[1]=(-n()[0]-n()[2])/n()[1];
+    }
+    else if (abs(n()[0])>1.0e-6)
+    {
+      txi()[1]=1.0;
+      txi()[2]=1.0;
+      txi()[0]=(-n()[1]-n()[2])/n()[0];
+    }
+    else
+      dserror("ERROR: Something wrong with nodal normal");
+    
+    ltxi = sqrt(txi()[0]*txi()[0]+txi()[1]*txi()[1]+txi()[2]*txi()[2]);
+    for (int j=0;j<3;++j) txi()[j]/=ltxi;
+    
+    // teta follows from corkscrew rule (teta = n x txi)
+    teta()[0] = n()[1]*txi()[2]-n()[2]*txi()[1];
+    teta()[1] = n()[2]*txi()[0]-n()[0]*txi()[2];
+    teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0]; 
+  }
   else
-    for (int j=0;j<3;++j) n()[j]/=length;
+    dserror("ERROR: Contact problems must be either 2D or 3D");
   
-  // store unit tangent vector, too (only 2D so far)
-  txi()[0] = -n()[1];
-  txi()[1] =  n()[0];
-  txi()[2] =  0.0;
-  
-  // computation of nodal normal is finished here...!!!
-  
-  //**********************************************************************
-  // Redefine length for directional derivative
-  // (this step is necessary due to the fact that the unnormalized
-  // nodal normal is scaled for making its linearization easier.
-  // In both weighted and unweighted case this is done by muliplying
-  // with the lengths of all adjacent elements!
-  //**********************************************************************
-  for (int i=0;i<nseg;++i)
-    length *= elens(4,i);
-  
-  // build directional derivative of averaged nodal normal
-  DerivAveragedNormal(elens,length);
+  // build linearization of averaged nodal normal and tangents
+  DerivAveragedNormal(elens,length,ltxi);
  
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Build directional derivative of nodal normal              popp 05/08|
+ |  Build directional deriv. of nodal normal + tangents       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
-                                         double length)
+                                         double length, double ltxi)
 {
-  // prepare nodal storage maps for derivative (only 2D so far)
-  if ((int)GetDerivN().size()==0) GetDerivN().resize(NumDof());
-  if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(NumDof());
+  // prepare nodal storage maps for derivative
+  if ((int)GetDerivN().size()==0) GetDerivN().resize(3);
+  if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(3);
+  if ((int)GetDerivTeta().size()==0) GetDerivTeta().resize(3);
   
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -449,11 +466,8 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     CElement* adjcele = static_cast<CElement*> (adjeles[i]);
     
     // build element normal derivative at current node
-    adjcele->DerivNormalAtNode(Id(),elens,GetDerivN());
+    adjcele->DerivNormalAtNode(Id(),i,elens,GetDerivN());
   }
-  
-  // computation of directional derivative of unnormalized nodal
-  // normal is finished here...!!!
   
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
@@ -461,37 +475,224 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   typedef map<int,double>::const_iterator CI;
   map<int,double>& derivnx = GetDerivN()[0];
   map<int,double>& derivny = GetDerivN()[1];
-  map<int,double> copyderivnx = GetDerivN()[0];
-  map<int,double> copyderivny = GetDerivN()[1];
+  map<int,double>& derivnz = GetDerivN()[2];
+  map<int,double> cderivnx = GetDerivN()[0];
+  map<int,double> cderivny = GetDerivN()[1];
+  map<int,double> cderivnz = GetDerivN()[2];
   double nxnx = n()[0] * n()[0];
   double nxny = n()[0] * n()[1];
+  double nxnz = n()[0] * n()[2];
   double nyny = n()[1] * n()[1];
+  double nynz = n()[1] * n()[2];
+  double nznz = n()[2] * n()[2];
   
-  // normalize x-components
+  // build a vector with all keys from x,y,z maps
+  // (we need this in order not to miss any entry!)
+  vector<int> allkeysn;
   for (CI p=derivnx.begin();p!=derivnx.end();++p)
   {
-    int col = p->first;
-    double val = p->second;
-    derivnx[col] = (val-nxnx*val-nxny*copyderivny[col])/length;
+    bool found = false;
+    for (int j=0;j<(int)allkeysn.size();++j)
+      if ((p->first)==allkeysn[j]) found = true;
+    if (!found) allkeysn.push_back(p->first);
+    
+  }
+  for (CI p=derivny.begin();p!=derivny.end();++p)
+  {
+    bool found = false;
+    for (int j=0;j<(int)allkeysn.size();++j)
+      if ((p->first)==allkeysn[j]) found = true;
+    if (!found) allkeysn.push_back(p->first);
+    
+  }
+  for (CI p=derivnz.begin();p!=derivnz.end();++p)
+  {
+    bool found = false;
+    for (int j=0;j<(int)allkeysn.size();++j)
+      if ((p->first)==allkeysn[j]) found = true;
+    if (!found) allkeysn.push_back(p->first);
+  }
+  
+  // normalize x-components
+  for (int j=0;j<(int)allkeysn.size();++j)
+  {
+    double val = cderivnx[allkeysn[j]];
+    derivnx[allkeysn[j]] = (val-nxnx*val-nxny*cderivny[allkeysn[j]]-nxnz*cderivnz[allkeysn[j]])/length;
   }
   
   // normalize y-components
-  for (CI p=derivny.begin();p!=derivny.end();++p)
+  for (int j=0;j<(int)allkeysn.size();++j)
   {
-    int col = p->first;
-    double val = p->second;
-    derivny[col] = (val-nxny*copyderivnx[col]-nyny*val)/length;
+    double val = cderivny[allkeysn[j]];
+    derivny[allkeysn[j]] = (val-nxny*cderivnx[allkeysn[j]]-nyny*val-nynz*cderivnz[allkeysn[j]])/length;
   }
   
-  // get directional derivative of nodal tangent "for free"
-  // (we just have to use the orthogonality of n and t)
-  map<int,double>& derivtx = GetDerivTxi()[0];
-  map<int,double>& derivty = GetDerivTxi()[1];
+  // normalize z-components
+  for (int j=0;j<(int)allkeysn.size();++j)
+  {
+    double val = cderivnz[allkeysn[j]];
+    derivnz[allkeysn[j]] = (val-nxnz*cderivnx[allkeysn[j]]-nynz*cderivny[allkeysn[j]]-nznz*val)/length;
+  }
   
-  for (CI p=derivny.begin();p!=derivny.end();++p)
-    derivtx[p->first] = -(p->second);
-  for (CI p=derivnx.begin();p!=derivnx.end();++p)
-    derivty[p->first] = (p->second);
+  //**********************************************************************
+  // tangent derivatives 2D
+  //**********************************************************************
+  if (NumDof()==2)
+  {
+    // get directional derivative of nodal tangent txi "for free"
+    // (we just have to use the orthogonality of n and t)
+    // the directional derivative of nodal tangent teta is 0
+    map<int,double>& derivtxix = GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetDerivTxi()[1];
+    
+    for (CI p=derivny.begin();p!=derivny.end();++p)
+      derivtxix[p->first] = -(p->second);
+    for (CI p=derivnx.begin();p!=derivnx.end();++p)
+      derivtxiy[p->first] = (p->second);
+  }
+  
+  //**********************************************************************
+  // tangent derivatives 3D
+  //**********************************************************************
+  else
+  {
+    // unnormalized tangent derivative txi
+    // use definitions for txi from BuildAveragedNormal()
+    if (abs(n()[2])>1.0e-6)
+    {
+      map<int,double>& derivtxiz = GetDerivTxi()[2];
+      for (CI p=derivnx.begin();p!=derivnx.end();++p)
+        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+      for (CI p=derivny.begin();p!=derivny.end();++p)
+        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+      for (CI p=derivnz.begin();p!=derivnz.end();++p)
+        derivtxiz[p->first] += (n()[0]+n()[1])/(n()[2]*n()[2])*(p->second);
+  
+    }
+    else if (abs(n()[1])>1.0e-6)
+    {
+      map<int,double>& derivtxiy = GetDerivTxi()[1];
+      for (CI p=derivnx.begin();p!=derivnx.end();++p)
+        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+      for (CI p=derivny.begin();p!=derivny.end();++p)
+        derivtxiy[p->first] += (n()[0]+n()[2])/(n()[1]*n()[1])*(p->second);
+      for (CI p=derivnz.begin();p!=derivnz.end();++p)
+        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+    }
+    else if (abs(n()[0])>1.0e-6)
+    {
+      map<int,double>& derivtxix = GetDerivTxi()[0];
+      for (CI p=derivnx.begin();p!=derivnx.end();++p)
+        derivtxix[p->first] += (n()[1]+n()[2])/(n()[0]*n()[0])*(p->second);
+      for (CI p=derivny.begin();p!=derivny.end();++p)
+        derivtxix[p->first] -= 1/n()[0]*(p->second);
+      for (CI p=derivnz.begin();p!=derivnz.end();++p)
+        derivtxix[p->first] -= 1/n()[0]*(p->second);
+    }
+    else
+      dserror("ERROR: Something wrong with nodal normal");
+    
+    // normalize txi directional derivative
+    // (identical to normalization of normal derivative)
+    typedef map<int,double>::const_iterator CI;
+    map<int,double>& derivtxix = GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetDerivTxi()[1];
+    map<int,double>& derivtxiz = GetDerivTxi()[2];
+    map<int,double> cderivtxix = GetDerivTxi()[0];
+    map<int,double> cderivtxiy = GetDerivTxi()[1];
+    map<int,double> cderivtxiz = GetDerivTxi()[2];
+    double txtx = txi()[0] * txi()[0];
+    double txty = txi()[0] * txi()[1];
+    double txtz = txi()[0] * txi()[2];
+    double tyty = txi()[1] * txi()[1];
+    double tytz = txi()[1] * txi()[2];
+    double tztz = txi()[2] * txi()[2];
+    
+    // build a vector with all keys from x,y,z maps
+    // (we need this in order not to miss any entry!)
+    vector<int> allkeyst;
+    for (CI p=derivtxix.begin();p!=derivtxix.end();++p)
+    {
+      bool found = false;
+      for (int j=0;j<(int)allkeyst.size();++j)
+        if ((p->first)==allkeyst[j]) found = true;
+      if (!found) allkeyst.push_back(p->first);
+      
+    }
+    for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
+    {
+      bool found = false;
+      for (int j=0;j<(int)allkeyst.size();++j)
+        if ((p->first)==allkeyst[j]) found = true;
+      if (!found) allkeyst.push_back(p->first);
+      
+    }
+    for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
+    {
+      bool found = false;
+      for (int j=0;j<(int)allkeyst.size();++j)
+        if ((p->first)==allkeyst[j]) found = true;
+      if (!found) allkeyst.push_back(p->first);
+    }
+    
+    // normalize x-components
+    for (int j=0;j<(int)allkeyst.size();++j)
+    {
+      double val = cderivtxix[allkeyst[j]];
+      derivtxix[allkeyst[j]] = (val-txtx*val-txty*cderivtxiy[allkeyst[j]]-txtz*cderivtxiz[allkeyst[j]])/ltxi;
+    }
+    
+    // normalize y-components
+    for (int j=0;j<(int)allkeyst.size();++j)
+    {
+      double val =cderivtxiy[allkeyst[j]];
+      derivtxiy[allkeyst[j]] = (val-txty*cderivtxix[allkeyst[j]]-tyty*val-tytz*cderivtxiz[allkeyst[j]])/ltxi;
+    }
+    
+    // normalize z-components
+    for (int j=0;j<(int)allkeyst.size();++j)
+    {
+      double val = cderivtxiz[allkeyst[j]];
+      derivtxiz[allkeyst[j]] = (val-txtz*cderivtxix[allkeyst[j]]-tytz*cderivtxiy[allkeyst[j]]-tztz*val)/ltxi;
+    }
+    
+    // get normalized tangent derivative teta
+    // use corkscrew rule from BuildAveragedNormal()
+    map<int,double>& derivtetax = GetDerivTeta()[0];
+    map<int,double>& derivtetay = GetDerivTeta()[1];
+    map<int,double>& derivtetaz = GetDerivTeta()[2];
+    
+    for (CI p=derivnx.begin();p!=derivnx.end();++p)
+    {
+      derivtetay[p->first] -= txi()[2]*(p->second);
+      derivtetaz[p->first] += txi()[1]*(p->second);
+    }
+    for (CI p=derivny.begin();p!=derivny.end();++p)
+    {
+      derivtetax[p->first] += txi()[2]*(p->second);
+      derivtetaz[p->first] -= txi()[0]*(p->second);
+    }
+    for (CI p=derivnz.begin();p!=derivnz.end();++p)
+    {
+      derivtetax[p->first] -= txi()[1]*(p->second);
+      derivtetay[p->first] += txi()[0]*(p->second);
+    }
+    for (CI p=derivtxix.begin();p!=derivtxix.end();++p)
+    {
+      derivtetay[p->first] += n()[2]*(p->second);
+      derivtetaz[p->first] -= n()[1]*(p->second);
+    }
+    for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
+    {
+      derivtetax[p->first] -= n()[2]*(p->second);
+      derivtetaz[p->first] += n()[0]*(p->second); 
+    }
+    for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
+    {
+      derivtetax[p->first] += n()[1]*(p->second);
+      derivtetay[p->first] -= n()[0]*(p->second);
+    }
+  }
   
   return;
 }

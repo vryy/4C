@@ -381,22 +381,23 @@ public:
   virtual void BuildAveragedNormal();
   
   /*!
-  \brief Build directional derivative of nodal normal (+tangent)
+  \brief Build directional derivative of nodal normal + tangents
   
   This method will be called after having finished the method
   BuildAveragedNormal() for the computation of nodal normals. The result
   (directional derivatives) will be stored in the nodal maps derivn_ and
   will later be assembled to the global system of equations.
   Please note that we also compute the directional derivative of the
-  nodal tangent here, as this is very easy due to orthogonality. The
-  result will be stored analogously in the nodal maps derivt_.
+  nodal tangent here,and the results will be stored analogously in
+  the nodal maps derivtxi_ (2D and 3D) and derivteta_ (only 3D).
   
   \param elens (in):  Matrix containing normals of adjacent elements
-  \param length (in): Modified length of the nodal averaged normal
-                      (the modification depends on the flag CONTACTWNORMAL)
+  \param length (in): Length of the nodal averaged normal
+  \param ltxi (in):   Length of the nodal tangent txi
 
   */
-  virtual void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length);
+  virtual void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
+                                   double length, double ltxi);
     
   /*!
   \brief Find closest node from given node set and return global ID
