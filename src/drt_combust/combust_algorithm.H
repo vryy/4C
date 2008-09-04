@@ -27,9 +27,6 @@ Maintainer: Florian Henke
 #include <Epetra_Comm.h>
 
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-//#include "../drt_adapter/adapter_fluid_base_algorithm.H"
-//#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
 
 /*!
 \brief COMBUST: namespace of the combustion module in BACI
@@ -41,10 +38,9 @@ namespace COMBUST
   /// COMBUST algorithm base
   /*!
 
-    Base class of COMBUST algorithms. Derives from FluidBaseAlgorithm
-    and ConDifBaseAlgorithm.
-    There can (and will) be different subclasses that implement
-    different coupling schemes.
+    Base class of COMBUST algorithms. Derives from the Scatra-Fluid Coupling Algorithm. Therefore it
+    has a Fluid Base Algorithm and a Scatra Base Algorithm.
+    There can (and will) be different subclasses that implement different coupling schemes.
 
     \author henke
     \date 06/08
@@ -110,17 +106,15 @@ namespace COMBUST
     //double dt_;
     //@}
     
-    //! @name FG iteration variables
-    // FG iteration counter
+    //! @name Fluid-G-function iteration variables
+    // Fluid-G-function iteration counter
     int fgiter_;
-    // maximum number of FG iterations
+    // maximum number of Fluid-G-function iterations
     int fgitermax_;
-    // L2-norm of velocity in FG iteration
+    // L2-norm of velocity in Fluid-G-function iteration
     double fgvelnormL2_;
-    // L2-norm of g-function in FG iteration
+    // L2-norm of g-function in Fluid-G-function iteration
     double fggfuncnormL2_;
-    // ?
-    bool notconverged_;
     //@}
     
     // this is a parameter that should be read from the parameter list

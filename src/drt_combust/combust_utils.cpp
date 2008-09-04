@@ -41,6 +41,6 @@ void COMBUST::printlogo()
  *----------------------------------------------------------------------*/
 void COMBUST::CreateIntegrationCells()
 {
-	return;
+  return;
 }
 #endif  // #ifdef CCADISCRET

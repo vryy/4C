@@ -67,13 +67,13 @@ namespace ADAPTER
 
   protected:
 
-	/// time step size
+    /// time step size
     double Dt() const { return dt_;}
 
     /// time step number
     int Step() const { return step_;}
     
-	/// total number of time steps
+    /// total number of time steps
     int NStep() const { return nstep_;}
 
     /// maximum simulation time
@@ -105,12 +105,11 @@ namespace ADAPTER
 
     /// actual velocity field at time n+1
     RCP<const Epetra_Vector>    velocitynp_;
-    
+
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
 
     //! @name Time stepping variables
-
     /// step counter
     int step_;
     /// maximum number of time steps

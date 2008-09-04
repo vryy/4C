@@ -71,14 +71,13 @@ void COMBUST::Algorithm::TimeLoop()
 		cout<<"\n time step in timeloop: "<< Step() << &endl;
 	}
 */
-	
+
   // time loop
   while (NotFinished())
   {
-
     // prepare next time step
     PrepareTimeStep();
-    
+
     //create integration cells
     CreateIntegrationCells();
 
@@ -88,18 +87,18 @@ void COMBUST::Algorithm::TimeLoop()
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
     {
-    	// prepare Fluid-G-function iteration
-    	PrepareFGIteration();
-    	
-    	// solve nonlinear Navier-Stokes system
-    	DoFluidField();
+      // prepare Fluid-G-function iteration
+      PrepareFGIteration();
 
-    	// solve linear G-function equation
-    	DoGfuncField();
-    	
-    	// update field vectors
-    	UpdateFGIteration();
-    	
+      // solve nonlinear Navier-Stokes system
+      DoFluidField();
+
+      // solve linear G-function equation
+      DoGfuncField();
+
+      // update field vectors
+      UpdateFGIteration();
+      
     } // Fluid-G-function-Interaction loop
     
     // update all field solvers
@@ -107,10 +106,9 @@ void COMBUST::Algorithm::TimeLoop()
 
     // write output to screen and files
     Output();
-
   } // time loop
 
-return;
+  return;
 } // TimeLoop()
 
 /*------------------------------------------------------------------------------------------------*
@@ -127,20 +125,20 @@ void COMBUST::Algorithm::SolveStationaryProblem()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::ReinitializeGfunc()
 {
-	/* Here, the G-function is reinitialized, because we suspect that the
-	 * signed distance property has been lost due to inaccuracies. There
-	 * are various options to reinitialize the G-function.
-	 * For the time being we use an exact, but expensive, procedure to ensure
-	 * this property (SignedDistFunc()).                    henke 06/08 */
-	switch (reinitialize_action)
-	{
-		case 1:
-			SignedDistFunc();
-			break;
-		default:
-			dserror ("Unknown option to reinitialize the G-function");
-	}
-	return;
+  /* Here, the G-function is reinitialized, because we suspect that the
+   * signed distance property has been lost due to inaccuracies. There
+   * are various options to reinitialize the G-function.
+   * For the time being we use an exact, but expensive, procedure to ensure
+   * this property (SignedDistFunc()).                    henke 06/08 */
+  switch (reinitialize_action)
+  {
+    case 1:
+      SignedDistFunc();
+      break;
+    default:
+      dserror ("Unknown option to reinitialize the G-function");
+  }
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -148,11 +146,11 @@ void COMBUST::Algorithm::ReinitializeGfunc()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::SignedDistFunc()
 {
-	/* This member function constructs a G-function field that meets the 
-	 * signed distance property. The algorithm assigns the value of the 
-	 * distance between each node and the surface defined by G=0 as a scalar 
-	 * value to every node in the G-function discretization.*/
-	return;
+  /* This member function constructs a G-function field that meets the 
+   * signed distance property. The algorithm assigns the value of the 
+   * distance between each node and the surface defined by G=0 as a scalar 
+   * value to every node in the G-function discretization.*/
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -160,12 +158,8 @@ void COMBUST::Algorithm::SignedDistFunc()
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::Algorithm::NotConvergedFGI()
 {
-	bool notconverged = false;
-	if (fgiter_ < fgitermax_ and true) // (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
-	{
-		notconverged = true;
-	}
-	return notconverged; // return notconverged;
+  //if (fgiter_ < fgitermax_ and true) // (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
+  return true;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -191,7 +185,8 @@ void COMBUST::Algorithm::PrepareTimeStep()
   ScaTraField().PrepareTimeStep();
   
   /* Ich wuerde hier gerne vergleichen, ob die Zeitschritte des Fluids und des ConDif
-   * identisch sind. Es existiert eine Variable time_ in jedem feld */
+   * identisch sind. Es existiert eine Variable time_ in jedem feld. Andererseits muss man halt
+   * aufpassen, dass man nur über die Funktionen des ScatraFluidCouplingAlgorithmus zugreift. */
   return;
 }
 
@@ -250,8 +245,8 @@ void COMBUST::Algorithm::DoGfuncField()
   // solve convection-diffusion equation
   ScaTraField().Solve();
   /* Hier muss später eine nichtlineare G-Funktion gelöst werden. Diese function existiert aber noch 
-   * nicht im condifimplicitintegration.cpp */
-  //ConDifField().NonlinearSolve();
+   * nicht in einem ScaTra Zeitintegrationsverfahren*/
+  //ScaTraField().NonlinearSolve();
   return;
 }
 
