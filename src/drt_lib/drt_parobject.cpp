@@ -99,6 +99,7 @@ void DRT::ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseVecto
   AddtoPack(data,A,m*sizeof(double));
   return;
 }
+
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
@@ -181,7 +182,6 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
     ExtractfromPack(position,data,a,m*sizeof(double));
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |

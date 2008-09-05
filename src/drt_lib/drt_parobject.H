@@ -13,10 +13,11 @@ Maintainer: Michael Gee
 #ifndef PAROBJECT_H
 #define PAROBJECT_H
 
-#include "vector"
-#include "string"
+#include <vector>
+#include <string>
 #include "linalg_serialdensematrix.H"
-#include "Epetra_SerialDenseVector.h"
+#include <Epetra_SerialDenseVector.h>
+#include "linalg_fixedsizematrix.H"
 
 using namespace std;
 
@@ -379,6 +380,20 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  This method is an overload of the above template for FixedSizeSerialDenseMatrix
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : FixedSizeSerialDenseMatrix that get's added to data
+
+  */
+  template<unsigned i, unsigned j>
+  static void AddtoPack(vector<char>& data, const LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
+  {
+    AddtoPack(data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
+  }
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
   This method is an overload of the above template for string
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : string that get's added to stuff
@@ -481,6 +496,22 @@ public:
 
   */
   static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseVector& stuff);
+
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+
+  This method is an overload of the above template for stuff of type FixedSizeSerialDenseMatrix
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : FixedSizeSerialDenseMatrix to extract from data
+
+  */
+  template <unsigned int i, unsigned int j>
+  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
+  {
+    ExtractfromPack(position, data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
+  }
 
   /*!
   \brief Extract stuff from a char vector data and increment position
