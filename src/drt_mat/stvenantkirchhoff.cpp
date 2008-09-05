@@ -73,17 +73,17 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
   (*cmat)(0,1)=b1;
   (*cmat)(0,2)=0.;
   (*cmat)(0,3)=b1;
-  
+
   (*cmat)(1,0)=b1;
   (*cmat)(1,1)=a1;
   (*cmat)(1,2)=0.;
   (*cmat)(1,3)=b1;
-  
+
   (*cmat)(2,0)=0.;
   (*cmat)(2,1)=0.;
   (*cmat)(2,2)=c1/2.;
   (*cmat)(2,3)=0.;
-  
+
   (*cmat)(3,0)=b1;
   (*cmat)(3,1)=b1;
   (*cmat)(3,2)=0.;
@@ -132,7 +132,7 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain,
 {
   SetupCmat(cmat);
   // evaluate stresses
-  (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
+  (*cmat).Multiply(false,(*glstrain),(*stress));   // sigma = C . epsilon
 }
 
 
