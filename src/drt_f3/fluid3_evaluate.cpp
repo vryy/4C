@@ -153,80 +153,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
     //--------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
-        // the number of nodes
-        const int numnode = NumNode();
-
-        //--------------------------------------------------
-        // get all state vectors
-        //--------------------------------------------------
-        //
-        // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
-        if (velnp==null || hist==null)
-          dserror("Cannot get state vectors 'velnp' and/or 'hist'");
-
-        // extract local values from the global vectors
-        vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-        vector<double> myhist(lm.size());
-        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-
-        RefCountPtr<const Epetra_Vector> dispnp;
-        vector<double> mydispnp;
-        RefCountPtr<const Epetra_Vector> gridv;
-        vector<double> mygridv;
-
-        if (is_ale_)
-        {
-          dispnp = discretization.GetState("dispnp");
-          if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
-          mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-
-          gridv = discretization.GetState("gridv");
-          if (gridv==null) dserror("Cannot get state vectors 'gridv'");
-          mygridv.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*gridv,mygridv,lm);
-        }
-
-        // create blitz objects for element arrays
-        blitz::Array<double, 1> eprenp(numnode);
-        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
-
-        // split velocity and pressure, insert into element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          evelnp(0,i) = myvelnp[0+(i*4)];
-          evelnp(1,i) = myvelnp[1+(i*4)];
-          evelnp(2,i) = myvelnp[2+(i*4)];
-
-          eprenp(i) = myvelnp[3+(i*4)];
-
-          // the history vector contains the information of time step t_n (mass rhs!)
-          evhist(0,i) = myhist[0+(i*4)];
-          evhist(1,i) = myhist[1+(i*4)];
-          evhist(2,i) = myhist[2+(i*4)];
-        }
-
-        if (is_ale_)
-        {
-          // assign grid velocity and grid displacement to element arrays
-          for (int i=0;i<numnode;++i)
-          {
-            edispnp(0,i) = mydispnp[0+(i*4)];
-            edispnp(1,i) = mydispnp[1+(i*4)];
-            edispnp(2,i) = mydispnp[2+(i*4)];
-
-            egridv(0,i) = mygridv[0+(i*4)];
-            egridv(1,i) = mygridv[1+(i*4)];
-            egridv(2,i) = mygridv[2+(i*4)];
-          }
-        }
-
+        //std::cout << "case 'calc_fluid_systemmat_and_residual'\n";
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
@@ -256,391 +183,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
         }
 
-
-        // get coarse- and fine-scale velocity as well as coarse-scale convective stress
-        RCP<const Epetra_Vector> csvelnp;
-        RCP<const Epetra_Vector> fsvelnp;
-        RCP<const Epetra_Vector> csconvnp;
-        blitz::Array<double, 2> csevelnp (3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> fsevelnp (3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> cseconvnp(3,numnode,blitz::ColumnMajorArray<2>());
-
-        // get flag for fine-scale subgrid viscosity
-        StabilisationAction fssgv =
-          ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
-        if (fssgv != fssgv_no)
-        {
-          fsvelnp = discretization.GetState("fsvelnp");
-          if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-          vector<double> myfsvelnp(lm.size());
-          DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
-
-          // get fine-scale velocity and insert into element arrays
-          for (int i=0;i<numnode;++i)
-          {
-            fsevelnp(0,i) = myfsvelnp[0+(i*4)];
-            fsevelnp(1,i) = myfsvelnp[1+(i*4)];
-            fsevelnp(2,i) = myfsvelnp[2+(i*4)];
-          }
-          if (fssgv == fssgv_mixed_Smagorinsky_all ||
-              fssgv == fssgv_mixed_Smagorinsky_small ||
-              fssgv == fssgv_scale_similarity)
-          {
-            csvelnp = discretization.GetState("csvelnp");
-            if (csvelnp==null) dserror("Cannot get state vector 'csvelnp'");
-            vector<double> mycsvelnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*csvelnp,mycsvelnp,lm);
-
-            // get coarse-scale velocity and insert into element arrays
-            for (int i=0;i<numnode;++i)
-            {
-              csevelnp(0,i) = mycsvelnp[0+(i*4)];
-              csevelnp(1,i) = mycsvelnp[1+(i*4)];
-              csevelnp(2,i) = mycsvelnp[2+(i*4)];
-            }
-
-            csconvnp = discretization.GetState("csconvnp");
-            if (csconvnp==null) dserror("Cannot get state vector 'csconvnp'");
-            vector<double> mycsconvnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*csconvnp,mycsconvnp,lm);
-
-            // get coarse-scale velocity and insert into element arrays
-            for (int i=0;i<numnode;++i)
-            {
-              cseconvnp(0,i) = mycsconvnp[0+(i*4)];
-              cseconvnp(1,i) = mycsconvnp[1+(i*4)];
-              cseconvnp(2,i) = mycsconvnp[2+(i*4)];
-            }
-          }
-        }
-        else
-        {
-          for (int i=0;i<numnode;++i)
-          {
-            fsevelnp(0,i) = 0.0;
-            fsevelnp(1,i) = 0.0;
-            fsevelnp(2,i) = 0.0;
-          }
-        }
-
-        //--------------------------------------------------
-        // get all control parameters for time integration
-        // and stabilization
-        //--------------------------------------------------
-        //
-        // get control parameter
-        const double time = params.get<double>("total time",-1.0);
-
-
-        // --------------------------------------------------
-        // set parameters for nonlinear treatment
-	string newtonstr=params.get<string>("Linearisation");
-	
-        bool newton = false;
-	if(newtonstr=="Newton")
-	{
-	  newton=true;
-	}
-
-
-        // set parameters for stabilization
-        ParameterList& stablist = params.sublist("STABILIZATION");
-
-        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
-        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
-        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
-
-        // select tau definition
-        TauType whichtau = tau_not_defined;
-        {
-          const string taudef = stablist.get<string>("DEFINITION_TAU");
-
-          if(taudef == "Barrenechea_Franca_Valentin_Wall")
-          {
-            whichtau = franca_barrenechea_valentin_wall;
-          }
-          else if(taudef == "Bazilevs")
-          {
-            whichtau = bazilevs;
-          }
-          else if(taudef == "Codina")
-          {
-            whichtau = codina;
-          }
-        }
-
-        // flag for higher order elements
-        bool higher_order_ele = isHigherOrderElement(Shape());
-
-        // overrule higher_order_ele if input-parameter is set
-        // this might be interesting for fast (but slightly
-        // less accurate) computations
-        if(stablist.get<string>("STABTYPE") == "inconsistent")
-        {
-          higher_order_ele = false;
-        }
-
-        // get time step size
-        const double dt = params.get<double>("dt");
-
-        // One-step-Theta: timefac = theta*dt
-        // BDF2:           timefac = 2/3 * dt
-        const double timefac = params.get<double>("thsl",-1.0);
-        if (timefac < 0.0) dserror("No thsl supplied");
-
-        // --------------------------------------------------
-        // set parameters for classical turbulence models
-        // --------------------------------------------------
-        ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
-
-        // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
-        double Cs            = 0.0;
-        double Cs_delta_sq   = 0.0;
-        double l_tau         = 0.0;
-        double visceff       = 0.0;
-
-        // get Smagorinsky model parameter for fine-scale subgrid viscosity
-        // (Since either all-scale Smagorinsky model (i.e., classical LES model
-        // as will be inititalized below) or fine-scale Smagorinsky model is
-        // used (and never both), the same input parameter can be exploited.)
-        if (fssgv != fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-        dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-        if (fssgv != fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-        // the default action is no model
-        TurbModelAction turb_mod_action = no_model;
-
-        // remember the layer of averaging for the dynamic Smagorinsky model
-        int  nlayer=0;
-
-        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-        {
-          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-          // --------------------------------------------------
-          // standard constant coefficient Smagorinsky model
-          if (physical_turbulence_model == "Smagorinsky")
-          {
-            // the classic Smagorinsky model only requires one constant parameter
-            turb_mod_action = smagorinsky;
-            Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-          }
-          // --------------------------------------------------
-          // Smagorinsky model with van Driest damping
-          else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-          {
-            // that's only implemented for turbulent channel flow
-            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-                !=
-                "channel_flow_of_height_2")
-            {
-              dserror("van_Driest_damping only for channel_flow_of_height_2\n");
-            }
-
-            // for the Smagorinsky model with van Driest damping, we need
-            // a viscous length to determine the y+ (heigth in wall units)
-            turb_mod_action = smagorinsky_with_wall_damping;
-
-            // get parameters of model
-            Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-            l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-
-            // this will be the y-coordinate of a point in the element interior
-            // we will determine the element layer in which he is contained to
-            // be able to do the output of visceff etc.
-            double center = 0;
-
-            for(int inode=0;inode<numnode;inode++)
-            {
-              center+=Nodes()[inode]->X()[1];
-            }
-            center/=numnode;
-
-            // node coordinates of plane to the element layer
-            RefCountPtr<vector<double> > planecoords
-              =
-              turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-            bool found = false;
-            for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-            {
-                if(center<(*planecoords)[nlayer+1])
-                {
-                  found = true;
-                  break;
-                }
-                nlayer++;
-            }
-            if (found ==false)
-            {
-              dserror("could not determine element layer");
-            }
-          }
-          // --------------------------------------------------
-          // Smagorinsky model with dynamic Computation of Cs
-          else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-          {
-            turb_mod_action = dynamic_smagorinsky;
-
-            // for turbulent channel flow, use averaged quantities
-            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-                ==
-                "channel_flow_of_height_2")
-            {
-              RCP<vector<double> > averaged_LijMij
-                =
-                turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-              RCP<vector<double> > averaged_MijMij
-                =
-                turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-
-              //this will be the y-coordinate of a point in the element interior
-              // here, the layer is determined in order to get the correct
-              // averaged value from the vector of averaged (M/L)ijMij
-              double center = 0;
-              for(int inode=0;inode<numnode;inode++)
-              {
-                center+=Nodes()[inode]->X()[1];
-              }
-              center/=numnode;
-
-              RCP<vector<double> > planecoords
-                =
-                turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-              bool found = false;
-              for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-              {
-                if(center<(*planecoords)[nlayer+1])
-                {
-                  found = true;
-                  break;
-                }
-                nlayer++;
-              }
-              if (found ==false)
-              {
-                dserror("could not determine element layer");
-              }
-
-              // Cs_delta_sq is set by the averaged quantities
-              Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-              // clipping to get algorithm stable
-              if (Cs_delta_sq<0)
-              {
-                Cs_delta_sq=0;
-              }
-            }
-            else
-            {
-              // when no averaging was done, we just keep the calculated (clipped) value
-              Cs_delta_sq = Cs_delta_sq_;
-            }
-          }
-          else
-          {
-            dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-          }
-        }
-
-        //--------------------------------------------------
-        // wrap epetra serial dense objects in blitz objects
-        //--------------------------------------------------
-        blitz::Array<double, 2> estif(elemat1.A(),
-                                      blitz::shape(elemat1.M(),elemat1.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> emesh(elemat2.A(),
-                                      blitz::shape(elemat2.M(),elemat2.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 1> eforce(elevec1.Values(),
-                                       blitz::shape(elevec1.Length()),
-                                       blitz::neverDeleteData);
-
-        //--------------------------------------------------
-        // calculate element coefficient matrix and rhs
-        //--------------------------------------------------
-        DRT::ELEMENTS::Fluid3Impl::Impl(this)->Sysmat(this,
-                       evelnp,
-                       csevelnp,
-                       fsevelnp,
-                       cseconvnp,
-                       eprenp,
-                       evhist,
-                       edispnp,
-                       egridv,
-                       estif,
-                       emesh,
-                       eforce,
-                       actmat,
-                       time,
-                       dt,
-                       timefac,
-                       newton,
-                       higher_order_ele,
-                       fssgv,
-                       pspg,
-                       supg,
-                       vstab,
-                       cstab,
-                       cross,
-                       reynolds,
-                       whichtau,
-                       turb_mod_action,
-                       Cs,
-                       Cs_delta_sq,
-                       visceff,
-                       l_tau);
-
-        //--------------------------------------------------
-        // output values of Cs, visceff and Cs_delta_sq
-        //--------------------------------------------------
-        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-        {
-          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-          if (physical_turbulence_model == "Dynamic_Smagorinsky"
-              ||
-              physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
-            )
-          {
-            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-                ==
-                "channel_flow_of_height_2")
-            {
-              // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
-              // Smagorinsky Cs
-
-              if(this->Owner() == discretization.Comm().MyPID())
-              {
-                (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
-                (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-                (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
-              }
-            }
-          }
-        }
-
-
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        double dens = 0.0;
-        if(mat->MaterialType()== m_fluid)
-          dens = actmat->m.fluid->density;
-        else if(mat->MaterialType()== m_carreauyasuda)
-          dens = actmat->m.carreauyasuda->density;
-        else if(mat->MaterialType()== m_modpowerlaw)
-          dens = actmat->m.modpowerlaw->density;
-        else
-          dserror("no fluid material found");
-
-        params.set("density", dens);
-
+        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(this,
+                                                                        params,
+                                                                        discretization,
+                                                                        lm,
+                                                                        elemat1,
+                                                                        elemat2,
+                                                                        elevec1,
+                                                                        elevec2,
+                                                                        elevec3,
+                                                                        mat,
+                                                                        actmat);
       }
       break;
       case calc_linear_fluid:
@@ -1056,7 +609,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // set parameters for nonlinear treatment
 	string newtonstr=params.get<string>("Linearisation");
-	
+
 	Fluid3::LinearisationAction newton=Fluid3::no_linearisation;
 	if(newtonstr=="Newton")
 	{
@@ -1363,14 +916,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 	// --------------------------------------------------
 	// Now do the nurbs specific stuff
 	std::vector<blitz::Array<double,1> > myknots(3);
-	
+
 	// for isogeometric elements
 	if(this->Shape()==nurbs8 || this->Shape()==nurbs27)
 	{
 	  DRT::NURBS::NurbsDiscretization* nurbsdis
             =
 	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-	  
+
 	  (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 	}
 
@@ -1741,17 +1294,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 	  // --------------------------------------------------
 	  // Now do the nurbs specific stuff
 	  std::vector<blitz::Array<double,1> > myknots(3);
-	
+
 	  // for isogeometric elements
 	  if(this->Shape()==nurbs8 || this->Shape()==nurbs27)
 	  {
 	    DRT::NURBS::NurbsDiscretization* nurbsdis
 	      =
 	      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-	    
+
 	    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 	  }
-	  
+
 	  // --------------------------------------------------
           // calculate element coefficient matrix
           DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->CalcRes(this,
@@ -1873,7 +1426,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
 	  string newtonstr=params.get<string>("Linearisation");
-	
+
 	  bool newton = false;
 	  if(newtonstr=="Newton")
 	  {
@@ -2125,7 +1678,6 @@ GaussRule3D DRT::ELEMENTS::Fluid3::getOptimalGaussrule(const DiscretizationType&
   return rule;
 }
 
-
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
@@ -2152,11 +1704,13 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 
   // get node coordinates of element
   Epetra_SerialDenseMatrix xyze(3,iel);
+  DRT::Node** nodes = Nodes();
   for(int inode=0;inode<iel;inode++)
   {
-    xyze(0,inode)=Nodes()[inode]->X()[0];
-    xyze(1,inode)=Nodes()[inode]->X()[1];
-    xyze(2,inode)=Nodes()[inode]->X()[2];
+    const double* x = nodes[inode]->X();
+    xyze(0,inode)=x[0];
+    xyze(1,inode)=x[1];
+    xyze(2,inode)=x[2];
   }
 
   // set constants for analytical solution
@@ -2211,7 +1765,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
       |     +-            -+        +-            -+
       |
       *----------------------------------------------------------------------*/
-    Epetra_SerialDenseMatrix    xjm(NSD,NSD);
+    LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>    xjm;
 
     for (int isd=0; isd<NSD; isd++)
     {
@@ -2227,12 +1781,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
     }
 
     // determinant of jacobian matrix
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double det = xjm.Determinant();
 
     if(det < 0.0)
     {
@@ -2315,7 +1864,6 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 
   return;
 }
-
 /*---------------------------------------------------------------------*
  | Calculate spatial mean values for channel flow (cartesian mesh)
  |                                                           gammi 07/07
@@ -2440,21 +1988,23 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 
 
-  if(distype == DRT::Element::hex8 
-     || 
-     distype == DRT::Element::hex27 
-     || 
+  if(distype == DRT::Element::hex8
+     ||
+     distype == DRT::Element::hex27
+     ||
      distype == DRT::Element::hex20)
   {
   // get node coordinates of element
     Epetra_SerialDenseMatrix xyze(3,iel);
+    DRT::Node** nodes = Nodes();
     for(int inode=0;inode<iel;inode++)
     {
-      xyze(0,inode)=Nodes()[inode]->X()[0];
-      xyze(1,inode)=Nodes()[inode]->X()[1];
-      xyze(2,inode)=Nodes()[inode]->X()[2];
+      const double* x = nodes[inode]->X();
+      xyze(0,inode)=x[0];
+      xyze(1,inode)=x[1];
+      xyze(2,inode)=x[2];
     }
-    
+
     double min = xyze(normdirect,0);
     double max = xyze(normdirect,0);
 
@@ -2470,7 +2020,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	max=xyze(normdirect,inode);
       }
     }
-    
+
     // determine the ids of the homogeneous planes intersecting this element
     set<int> planesinele;
     for(unsigned nplane=0;nplane<planes->size();++nplane)
@@ -2484,32 +2034,32 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	}
       }
     }
-    
+
     // remove lowest layer from planesinele to avoid double calculations. This is not done
     // for the first level (index 0) --- if deleted, shift the first integration point in
     // wall normal direction
     // the shift depends on the number of sampling planes in the element
     double shift=0;
-    
+
     // set the number of planes which cut the element
     const int numplanesinele = planesinele.size();
-    
+
     if(*planesinele.begin() != 0)
     {
       // this is not an element of the lowest element layer
       planesinele.erase(planesinele.begin());
-      
-      shift=2.0/((double) numplanesinele - 1.0);
+
+      shift=2.0/(static_cast<double>(numplanesinele-1));
     }
     else
     {
       // this is an element of the lowest element layer. Increase the counter
       // in order to compute the total number of elements in one layer
       int* count = params.get<int*>("count processed elements");
-      
+
       (*count)++;
     }
-    
+
     // determine the orientation of the rst system compared to the xyz system
     int elenormdirect=-1;
     bool upsidedown =false;
@@ -2563,23 +2113,23 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	inplanedirectset.insert(i);
       }
       inplanedirectset.erase(elenormdirect);
-      
+
       for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
       {
 	inplanedirect.push_back(*id);
       }
     }
-    
+
     // allocate vector for shapefunctions
     Epetra_SerialDenseVector  funct(iel);
-    
+
     // get the quad9 gaussrule for the in plane integration
     const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
-    
+
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
     double layershift=0;
-    
+
     // loop all levels in element
     for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
@@ -2596,16 +2146,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double uwbar =0;
       double vwbar =0;
       double psqbar=0;
-      
+
       // get the intgration point in wall normal direction
       double e[3];
-      
+
       e[elenormdirect]=-1.0+shift+layershift;
       if(upsidedown)
       {
 	e[elenormdirect]*=-1;
       }
-      
+
       // start loop over integration points in layer
       for (int iquad=0;iquad<intpoints.nquad;iquad++)
       {
@@ -2614,10 +2164,10 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	{
 	  e[inplanedirect[i]]=intpoints.qxg[iquad][i];
 	}
-	
+
 	// compute the shape function values
 	shape_function_3D(funct,e[0],e[1],e[2],distype);
-	
+
 	// check whether this gausspoint is really inside the desired plane
 	{
 	  double x[3];
@@ -2630,13 +2180,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	    x[1]+=funct[inode]*xyze(1,inode);
 	    x[2]+=funct[inode]*xyze(2,inode);
 	  }
-	  
+
 	  if(abs(x[normdirect]-(*planes)[*id])>2e-9)
 	  {
 	    dserror("Mixing up element cut planes during integration");
 	  }
 	}
-	
+
 	//interpolated values at gausspoints
 	double ugp=0;
 	double vgp=0;
@@ -2648,7 +2198,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	// 1/4 is necessary since we use a reference element of size 2x2
 	// the factor fac is omitting the element area up to now
 	double fac=0.25*intpoints.qwgt[iquad];
-	
+
 	for(int inode=0;inode<iel;inode++)
 	{
 	  ugp += funct[inode]*sol[inode*4  ];
@@ -2662,7 +2212,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	vbar   += vgp*fac;
 	wbar   += wgp*fac;
 	pbar   += pgp*fac;
-	
+
 	usqbar += ugp*ugp*fac;
 	vsqbar += vgp*vgp*fac;
 	wsqbar += wgp*wgp*fac;
@@ -2677,7 +2227,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumv  )[*id] += vbar;
       (*sumw  )[*id] += wbar;
       (*sump  )[*id] += pbar;
-      
+
       (*sumsqu)[*id] += usqbar;
       (*sumsqv)[*id] += vsqbar;
       (*sumsqw)[*id] += wsqbar;
@@ -2690,18 +2240,18 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       // in case of an hex8 element, the two coordinates are -1 and 1(+2)
       // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
 
-      layershift+=2.0/((double) numplanesinele - 1.0);
+      layershift+=2.0/(static_cast<double>(numplanesinele-1));
     }
   }
   else if(distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
   {
     // get size of planecoords
     int size = planes->size();
-    
+
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    
+
     if(nurbsdis == NULL)
     {
       dserror("we need a nurbs discretisation for nurbs elements\n");
@@ -2713,16 +2263,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     // use size of planes and mele to determine number of layers
     int numsublayers=(size-1)/nele_x_mele_x_lele[1];
 
-    // get the knotvector itself 
+    // get the knotvector itself
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     DRT::Node**   nodes = Nodes();
-	
+
     // get gid, location in the patch
     int gid = Id();
-	
+
     vector<int> ele_cart_id;
-    
+
     int npatch = -1;
 
     knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
@@ -2731,29 +2281,29 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       dserror("expected single patch nurbs problem for calculating means");
     }
 
-    // want to loop all control points of the element, 
+    // want to loop all control points of the element,
     // so get the number of points
     const int numnp = NumNode();
-      
+
     // access elements knot span
     std::vector<blitz::Array<double,1> > eleknots(3);
     knots->GetEleKnots(eleknots,gid);
-      
+
     // aquire weights from nodes
     blitz::Array<double,1> weights(numnp);
-      
+
     for (int inode=0; inode<numnp; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp 
-	= 
+      DRT::NURBS::ControlPoint* cp
+	=
 	dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
+
       weights(inode) = cp->W();
     }
-    
+
     // get shapefunctions, compute all visualisation point positions
     blitz::Array<double,1> nurbs_shape_funct(numnp);
-    
+
     // there's one additional plane for the last element layer
     int endlayer=0;
     if(ele_cart_id[1]!=nele_x_mele_x_lele[1]-1)
@@ -2772,7 +2322,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       blitz::Array<double, 1> gp(3);
 
       gp(1)=-1.0+rr*2.0/((double)numsublayers);
-    
+
       // get the quad9 gaussrule for the in plane integration
       const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
 
@@ -2790,7 +2340,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double vwbar =0;
       double psqbar=0;
 
-      
+
       // start loop over integration points in layer
       for (int iquad=0;iquad<intpoints.nquad;iquad++)
       {
@@ -2798,7 +2348,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	// get the other gauss point coordinates
 	gp(0)=intpoints.qxg[iquad][0];
 	gp(2)=intpoints.qxg[iquad][1];
-	
+
 	// compute the shape function values
 	DRT::NURBS::UTILS::nurbs_get_3D_funct
 	  (nurbs_shape_funct,
@@ -2806,7 +2356,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	   eleknots         ,
 	   weights          ,
 	   distype          );
-	
+
 	//interpolated values at gausspoints
 	double ugp=0;
 	double vgp=0;
@@ -2818,7 +2368,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	// 1/4 is necessary since we use a reference element of size 2x2
 	// the factor fac is omitting the element area up to now
 	double fac=0.25*intpoints.qwgt[iquad];
-	
+
 	for(int inode=0;inode<iel;inode++)
 	{
 	  ugp += nurbs_shape_funct(inode)*sol[inode*4  ];
@@ -2832,7 +2382,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	vbar   += vgp*fac;
 	wbar   += wgp*fac;
 	pbar   += pgp*fac;
-	
+
 	usqbar += ugp*ugp*fac;
 	vsqbar += vgp*vgp*fac;
 	wsqbar += wgp*wgp*fac;
@@ -2842,13 +2392,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	psqbar += pgp*pgp*fac;
       } // end loop integration points
 
-      
+
       // add increments from this layer to processor local vectors
       (*sumu  )[ele_cart_id[1]*numsublayers+rr] += ubar;
       (*sumv  )[ele_cart_id[1]*numsublayers+rr] += vbar;
       (*sumw  )[ele_cart_id[1]*numsublayers+rr] += wbar;
       (*sump  )[ele_cart_id[1]*numsublayers+rr] += pbar;
-      
+
       (*sumsqu)[ele_cart_id[1]*numsublayers+rr] += usqbar;
       (*sumsqv)[ele_cart_id[1]*numsublayers+rr] += vsqbar;
       (*sumsqw)[ele_cart_id[1]*numsublayers+rr] += wsqbar;
@@ -2857,7 +2407,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumvw) [ele_cart_id[1]*numsublayers+rr] += vwbar;
       (*sumsqp)[ele_cart_id[1]*numsublayers+rr] += psqbar;
     }
-    
+
   }
   else
   {

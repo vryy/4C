@@ -29,6 +29,7 @@ Maintainer: Georg Bauer
 #endif
 
 #include <blitz/array.h>
+#include "../drt_lib/linalg_serialdensematrix.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
@@ -38,6 +39,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 // forward declarations
@@ -53,7 +55,7 @@ namespace ELEMENTS
 // forward declarations
 class Fluid3Surface;
 class Fluid3Line;
-class Fluid3Impl;
+template<int iel_>  class Fluid3Impl;
 class Fluid3lin_Impl;
 class Fluid3GenalphaResVMM;
 class Fluid3Stationary;
@@ -72,7 +74,17 @@ public:
   friend class Fluid3Register;
   friend class Fluid3Surface;
   friend class Fluid3Line;
-  friend class Fluid3Impl;
+  friend class Fluid3ImplInterface;
+  // All the template specializations that are used, new ones must be
+  // added here.
+  friend class Fluid3Impl<4>;
+  friend class Fluid3Impl<5>;
+  friend class Fluid3Impl<6>;
+  friend class Fluid3Impl<8>;
+  friend class Fluid3Impl<10>;
+  friend class Fluid3Impl<15>;
+  friend class Fluid3Impl<20>;
+  friend class Fluid3Impl<27>;
   friend class Fluid3lin_Impl;
   friend class Fluid3GenalphaResVMM;
   friend class Fluid3Stationary;
@@ -425,17 +437,17 @@ private:
   double                                        Cs_delta_sq_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
-  blitz::Array<double,2>                        sub_acc_old_;
+  blitz::Array<double,2>                     sub_acc_old_;
 
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_;
+  blitz::Array<double,2>                    sub_vel_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_old_;
+  blitz::Array<double,2>                    sub_vel_old_;
 
   //! vector of subscale pressure values, current iteration value, in gausspoints
-  blitz::Array<double,1>                        sub_pre_;
+  blitz::Array<double,1>                    sub_pre_;
   //! vector of subscale pressure values (history values) in gausspoints
-  blitz::Array<double,1>                        sub_pre_old_;
+  blitz::Array<double,1>                    sub_pre_old_;
 
   // internal calculation methods
 
