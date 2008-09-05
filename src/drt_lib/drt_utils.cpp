@@ -1118,7 +1118,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
                                  vector<double>& local,
-                                 const vector<int> lm)
+                                 const vector<int>& lm)
 {
   const int ldim = (int)lm.size();
   local.resize(ldim);

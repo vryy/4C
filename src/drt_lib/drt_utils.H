@@ -96,7 +96,7 @@ namespace UTILS
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */
-  void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
+  void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int>& lm);
 
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
@@ -182,7 +182,7 @@ namespace UTILS
    * a common task is to get an array of the positions of all nodes of this element
    *
    * template version
-   * 
+   *
    * \note array is defined as (3,numnode)
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
@@ -226,28 +226,28 @@ namespace UTILS
       const DRT::Element*                            ele,                   ///< element with nodal pointers
       const map<int,blitz::TinyVector<double,3> >&   currentcutterpositions ///< current positions of all cutter nodes
       );
-  
+
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {
     buildSurfaces,  ///< build surfaces
     buildLines      ///< build lines
   };
-  
+
   /*!
    * create new instances of surface / line elements for a given parent element
    *
    * template version
-   * 
+   *
    * \tparam BoundaryEle class name of desired surface/line element, e.g. Fluid3Surface
    * \tparam ParentEle   class name of parent element, e.g. Fluid3
    *
    * this templated function creates all surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements
-   * This method is a very powerful helper function for implementing the necessary 
+   * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D) using
    * the BACI conventions for element connectivity
-   * 
+   *
    * \return boundaryeles   vector filled with RCPs of allocated boundary elements
    *
    * \author gjb
@@ -307,7 +307,7 @@ namespace UTILS
 
     return boundaryeles;
   }
-  
+
   /// setup the extractor object to couple ndim dofs at the named condition
   /*!
 
