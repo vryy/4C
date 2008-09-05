@@ -271,7 +271,7 @@ static void SysmatDomain4(
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -1977,11 +1977,11 @@ void XFLUID::callSysmat4(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
                 break;
-//            case DRT::Element::hex20:
-//                Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
-//                break;
+            case DRT::Element::hex20:
+                Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
@@ -2010,11 +2010,11 @@ void XFLUID::callSysmat4(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
                 break;
-//            case DRT::Element::hex20:
-//                Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
-//                break;
+            case DRT::Element::hex20:
+                Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,

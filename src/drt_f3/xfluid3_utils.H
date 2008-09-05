@@ -539,19 +539,30 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
  */
 inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
     const bool                              intersected,
-    const DRT::Element::DiscretizationType  distype
+    const DRT::Element::DiscretizationType  celldistype,
+    const DRT::Element::DiscretizationType  xeledistype
     )
 {
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
   if (not intersected)
   {
-    rule = getOptimalVelocityGaussrule(distype);
+    rule = getOptimalVelocityGaussrule(celldistype);
   }
   else
   {
-    if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+    if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
-      rule = DRT::UTILS::intrule_tet_24point;
+      switch (xeledistype)
+      {
+        case DRT::Element::hex8:
+          rule = DRT::UTILS::intrule_tet_45point;
+          break;
+        case DRT::Element::hex20: case DRT::Element::hex27:
+          rule = DRT::UTILS::intrule_tet_343point_peano;
+          break;
+        default:
+          dserror("no rule defined for this xele");
+      }
     }
     else
     {
