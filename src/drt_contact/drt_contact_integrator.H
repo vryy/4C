@@ -94,7 +94,7 @@ public:
   //! @name 2D and 3D integration methods
   
   /*!
-  \brief Integrate Mortar matrix D on a 1D slave element
+  \brief Integrate Mortar matrix D on a 1D/2D slave element
   
   This method is only called if the flag CONTACTONEMORTARLOOP
   is not set. Otherwise we obtain the D-matrix entries via a
@@ -106,14 +106,14 @@ public:
                                            double* sxia, double* sxib);
   
   /*!
-  \brief Compute directional derivative of D on a 1D slave element
+  \brief Compute directional derivative of D on a 1D/2D slave element
   
   This method is only called if the flag CONTACTONEMORTARLOOP
   is not set. Linearization of D is not yet implemented for the
   CONTACTONEMORTARLOOP case and will throw a dserror.
   
   */
-  void DerivD(CONTACT::CElement& sele, double sxia, double sxib);
+  void DerivD(CONTACT::CElement& sele, double* sxia, double* sxib);
     
   /*!
   \brief Integrate Mortar matrix M on a 1D slave / master overlap

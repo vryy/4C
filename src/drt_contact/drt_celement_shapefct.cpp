@@ -41,6 +41,190 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D standard linear shape functions (tri3)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::lin2D:
+  {
+    val[0] = 1-xi[0]-xi[1]; 
+    val[1] = xi[0];
+    val[2] = xi[1];
+    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
+    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
+    break;
+  }
+  // *********************************************************************
+  // 2D standard blinear shape functions (quad4)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::bilin2D:
+  {
+    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
+    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
+    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
+    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
+    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
+    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
+    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
+    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
+    break;
+  }
+  // *********************************************************************
+  // 1D standard quadratic shape functions (line3)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::quad1D:
+  {
+    val[0] = 0.5*xi[0]*(xi[0]-1);
+    val[1] = 0.5*xi[0]*(xi[0]+1);
+    val[2] = (1-xi[0])*(1+xi[0]);       
+    deriv(0,0) = xi[0]-0.5;
+    deriv(1,0) = xi[0]+0.5;
+    deriv(2,0) = -2*xi[0];
+    break;
+  }
+  // *********************************************************************
+  // 2D standard quadratic shape functions (tri6)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::quad2D:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double t1 = 1.0-r-s;
+    const double t2 = r;
+    const double t3 = s;
+
+    val[0] = t1*(2.0*t1-1.0);
+    val[1] = t2*(2.0*t2-1.0);
+    val[2] = t3*(2.0*t3-1.0);
+    val[3] = 4.0*t2*t1;
+    val[4] = 4.0*t2*t3;
+    val[5] = 4.0*t3*t1;
+    
+    deriv(0,0)= -3.0+4.0*(r+s);
+    deriv(0,1)= -3.0+4.0*(r+s);
+    deriv(1,0)= 4.0*r-1.0;
+    deriv(1,1)= 0.0;
+    deriv(2,0)= 0.0;
+    deriv(2,1)= 4.0*s-1.0;
+    deriv(3,0)= 4.0*(1.0-2.0*r-s);
+    deriv(3,1)=-4.0*r;
+    deriv(4,0)= 4.0*s;
+    deriv(4,1)= 4.0*r;
+    deriv(5,0)=-4.0*s;
+    deriv(5,1)= 4.0*(1.0-r-2.0*s);
+    
+    break;
+  }
+  // *********************************************************************
+  // 2D serendipity shape functions (quad8)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::serendipity2D:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+
+    // values for centernodes are straight forward
+    //      0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
+    //                             0 for xi=0    and eta= 1
+    //                             1 for xi=0    and eta=-1    )
+    // use shape functions on centernodes to zero out the corner node
+    // shape functions on the centernodes
+    // (0.5 is the value of the linear shape function in the centernode)
+    //
+    //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
+
+    val[0]=0.25*(rm*sm-(r2*sm+s2*rm));
+    val[1]=0.25*(rp*sm-(r2*sm+s2*rp));
+    val[2]=0.25*(rp*sp-(s2*rp+r2*sp));
+    val[3]=0.25*(rm*sp-(r2*sp+s2*rm));
+    val[4]=0.5*r2*sm;
+    val[5]=0.5*s2*rp;
+    val[6]=0.5*r2*sp;
+    val[7]=0.5*s2*rm;
+    
+    deriv(0,0)= 0.25*sm*(2*r+s);
+    deriv(0,1)= 0.25*rm*(r+2*s);
+    deriv(1,0)= 0.25*sm*(2*r-s);
+    deriv(1,1)= 0.25*rp*(2*s-r);
+    deriv(2,0)= 0.25*sp*(2*r+s);
+    deriv(2,1)= 0.25*rp*(r+2*s);
+    deriv(3,0)= 0.25*sp*(2*r-s);
+    deriv(3,1)= 0.25*rm*(2*s-r);
+    deriv(4,0)=-sm*r;
+    deriv(4,1)=-0.5*rm*rp;
+    deriv(5,0)= 0.5*sm*sp;
+    deriv(5,1)=-rp*s;
+    deriv(6,0)=-sp*r;
+    deriv(6,1)= 0.5*rm*rp;
+    deriv(7,0)=-0.5*sm*sp;
+    deriv(7,1)=-rm*s;
+    
+    break;
+  }
+  // *********************************************************************
+  // 2D standard biquadratic shape functions (quad9)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case CElement::biquad2D:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+    const double rh=0.5*r;
+    const double sh=0.5*s;
+    const double rs=rh*sh;
+    const double rhp=r+0.5;
+    const double rhm=r-0.5;
+    const double shp=s+0.5;
+    const double shm=s-0.5;
+
+    val[0]= rs*rm*sm;
+    val[1]=-rs*rp*sm;
+    val[2]= rs*rp*sp;
+    val[3]=-rs*rm*sp;
+    val[4]=-sh*sm*r2;
+    val[5]= rh*rp*s2;
+    val[6]= sh*sp*r2;
+    val[7]=-rh*rm*s2;
+    val[8]= r2*s2;
+    
+    deriv(0,0)=-rhm*sh*sm;
+    deriv(0,1)=-shm*rh*rm;
+    deriv(1,0)=-rhp*sh*sm;
+    deriv(1,1)= shm*rh*rp;
+    deriv(2,0)= rhp*sh*sp;
+    deriv(2,1)= shp*rh*rp;
+    deriv(3,0)= rhm*sh*sp;
+    deriv(3,1)=-shp*rh*rm;
+    deriv(4,0)= 2.0*r*sh*sm;
+    deriv(4,1)= shm*r2;
+    deriv(5,0)= rhp*s2;
+    deriv(5,1)=-2.0*s*rh*rp;
+    deriv(6,0)=-2.0*r*sh*sp;
+    deriv(6,1)= shp*r2;
+    deriv(7,0)= rhm*s2;
+    deriv(7,1)= 2.0*s*rh*rm;
+    deriv(8,0)=-2.0*r*s2;
+    deriv(8,1)=-2.0*s*r2;
+    
+    break;
+  }
+  // *********************************************************************
   // 1D dual linear shape functions (line2)
   // (used for interpolation of Lagrange mutliplier field)
   // *********************************************************************
@@ -52,6 +236,85 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     deriv(1,0) =  1.5;
     break;
   }
+  // *********************************************************************
+  // 2D dual linear shape functions (tri3)
+  // (used for interpolation of Lagrange mutliplier field)
+  // *********************************************************************
+  case CElement::lindual2D:
+  {
+    val[0] = 3-4*xi[0]-4*xi[1]; 
+    val[1] = 4*xi[0]-1;
+    val[2] = 4*xi[1]-1;
+    deriv(0,0) = -4.0; deriv(0,1) = -4.0;
+    deriv(1,0) =  4.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  4.0;
+    break;
+  }
+  // *********************************************************************
+  // 1D dual quadratic shape functions (line3)
+  // 2D dual bilinear shape functions (quad4)
+  // 2D dual quadratic shape functions (tri6)
+  // 2D dual serendipity shape functions (quad8)
+  // 2D dual biquadratic shape functions (quad9)
+  // (used for interpolation of Lagrange mutliplier field)
+  // (including adaption process for distorted elements)
+  // *********************************************************************
+  case CElement::quaddual1D:
+  case CElement::bilindual2D:
+  case CElement::quaddual2D:
+  case CElement::serendipitydual2D:
+  case CElement::biquaddual2D:
+  {
+    // establish fundamental data  
+    double detg = 0.0;
+    int nnodes = NumNode();
+    
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    CONTACT::Integrator integrator(Shape());
+    
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      EvaluateShape(gpc, val, deriv, nnodes);
+      detg = Jacobian(gpc);
+      
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
+        }  
+    }
+    
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+    
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+    
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    EvaluateShape(xi, val, deriv, nnodes);
+    
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,2,true);
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        valtemp[i]+=ae(i,j)*val[j];
+        derivtemp(i,0)+=ae(i,j)*deriv(j,0);
+        derivtemp(i,1)+=ae(i,j)*deriv(j,1);
+      }
+    
+    val=valtemp;
+    deriv=derivtemp;
+        
+    break;
+  }  
   // *********************************************************************
   // 1D modified dual shape functions (const replacing linear, line2)
   // (used for interpolation of Lagrange mult. field near boundaries)
@@ -100,75 +363,6 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     val[1] = 1+xi[0]; 
     deriv(0,0) = -1;
     deriv(1,0) =  1;
-    break;
-  }
-  // *********************************************************************
-  // 1D standard quadratic shape functions (line3)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::quad1D:
-  {
-    val[0] = 0.5*xi[0]*(xi[0]-1);
-    val[1] = 0.5*xi[0]*(xi[0]+1);
-    val[2] = (1-xi[0])*(1+xi[0]);       
-    deriv(0,0) = xi[0]-0.5;
-    deriv(1,0) = xi[0]+0.5;
-    deriv(2,0) = -2*xi[0];
-    break;
-  }
-  // *********************************************************************
-  // 1D dual quadratic shape functions (line3)
-  // (used for interpolation of displacement field)
-  // (including adaption process for distorted elements)
-  // *********************************************************************
-  case CElement::quaddual1D:
-  {
-    // establish fundamental data  
-    double detg = 0.0;
-    int nnodes = NumNode();
-    
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(Shape());
-    
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    
-    for (int i=0;i<integrator.nGP();++i)
-    {
-      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
-      EvaluateShape(gpc, val, deriv, nnodes);
-      detg = Jacobian(gpc);
-      
-      for (int j=0;j<nnodes;++j)
-        for (int k=0;k<nnodes;++k)
-        {
-          me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
-          de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
-        }  
-    }
-    
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    
-    // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
-    
-    // evaluate dual shape functions at loc. coord. xi
-    // need standard shape functions at xi first
-    EvaluateShape(xi, val, deriv, nnodes);
-    
-    LINALG::SerialDenseVector valtemp(nnodes,true);
-    LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
-    for (int i=0;i<nnodes;++i)
-      for (int j=0;j<nnodes;++j)
-      {
-        valtemp[i]+=ae(i,j)*val[j];
-        derivtemp(i,0)+=ae(i,j)*deriv(j,0);
-      }
-    
-    val=valtemp;
-    deriv=derivtemp;
     break;
   }
   // *********************************************************************
@@ -316,253 +510,6 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
     break;
   }
   // *********************************************************************
-  // 2D standard linear shape functions (tri3)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::lin2D:
-  {
-    val[0] = 1-xi[0]-xi[1]; 
-    val[1] = xi[0];
-    val[2] = xi[1];
-    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
-    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
-    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
-    break;
-  }
-  // *********************************************************************
-  // 2D dual linear shape functions (tri3)
-  // (used for interpolation of Lagrange mutliplier field)
-  // *********************************************************************
-  case CElement::lindual2D:
-  {
-    val[0] = 3-4*xi[0]-4*xi[1]; 
-    val[1] = 4*xi[0]-1;
-    val[2] = 4*xi[1]-1;
-    deriv(0,0) = -4.0; deriv(0,1) = -4.0;
-    deriv(1,0) =  4.0; deriv(1,1) =  0.0;
-    deriv(2,0) =  0.0; deriv(2,1) =  4.0;
-    break;
-  }
-  // *********************************************************************
-  // 2D standard blinear shape functions (quad4)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::bilin2D:
-  {
-    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
-    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
-    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
-    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
-    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
-    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
-    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
-    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
-    break;
-  }
-  // *********************************************************************
-  // 2D dual bilinear shape functions (quad4)
-  // 2D dual quadratic shape functions (tri6)
-  // 2D dual serendipity shape functions (quad8)
-  // 2D dual biquadratic shape functions (quad9)
-  // (used for interpolation of Lagrange mutliplier field)
-  // (including adaption process for distorted elements)
-  // *********************************************************************
-  case CElement::bilindual2D:
-  case CElement::quaddual2D:
-  case CElement::serendipitydual2D:
-  case CElement::biquaddual2D:
-  {
-    // establish fundamental data  
-    double detg = 0.0;
-    int nnodes = NumNode();
-    
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    CONTACT::Integrator integrator(Shape());
-    
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    
-    for (int i=0;i<integrator.nGP();++i)
-    {
-      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-      EvaluateShape(gpc, val, deriv, nnodes);
-      detg = Jacobian(gpc);
-      
-      for (int j=0;j<nnodes;++j)
-        for (int k=0;k<nnodes;++k)
-        {
-          me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
-          de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
-        }  
-    }
-    
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    
-    // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
-    
-    // evaluate dual shape functions at loc. coord. xi
-    // need standard shape functions at xi first
-    EvaluateShape(xi, val, deriv, nnodes);
-    
-    LINALG::SerialDenseVector valtemp(nnodes,true);
-    LINALG::SerialDenseMatrix derivtemp(nnodes,2,true);
-    for (int i=0;i<nnodes;++i)
-      for (int j=0;j<nnodes;++j)
-      {
-        valtemp[i]+=ae(i,j)*val[j];
-        derivtemp(i,0)+=ae(i,j)*deriv(j,0);
-        derivtemp(i,1)+=ae(i,j)*deriv(j,1);
-      }
-    
-    val=valtemp;
-    deriv=derivtemp;
-        
-    break;
-  }
-  // *********************************************************************
-  // 2D standard quadratic shape functions (tri6)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::quad2D:
-  {
-    const double r=xi[0];
-    const double s=xi[1];
-    const double t1 = 1.0-r-s;
-    const double t2 = r;
-    const double t3 = s;
-
-    val[0] = t1*(2.0*t1-1.0);
-    val[1] = t2*(2.0*t2-1.0);
-    val[2] = t3*(2.0*t3-1.0);
-    val[3] = 4.0*t2*t1;
-    val[4] = 4.0*t2*t3;
-    val[5] = 4.0*t3*t1;
-    
-    deriv(0,0)= -3.0+4.0*(r+s);
-    deriv(0,1)= -3.0+4.0*(r+s);
-    deriv(1,0)= 4.0*r-1.0;
-    deriv(1,1)= 0.0;
-    deriv(2,0)= 0.0;
-    deriv(2,1)= 4.0*s-1.0;
-    deriv(3,0)= 4.0*(1.0-2.0*r-s);
-    deriv(3,1)=-4.0*r;
-    deriv(4,0)= 4.0*s;
-    deriv(4,1)= 4.0*r;
-    deriv(5,0)=-4.0*s;
-    deriv(5,1)= 4.0*(1.0-r-2.0*s);
-    
-    break;
-  }
-  // *********************************************************************
-  // 2D serendipity shape functions (quad8)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::serendipity2D:
-  {
-    const double r=xi[0];
-    const double s=xi[1];
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double r2=1.0-r*r;
-    const double s2=1.0-s*s;
-
-    // values for centernodes are straight forward
-    //      0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
-    //                             0 for xi=0    and eta= 1
-    //                             1 for xi=0    and eta=-1    )
-    // use shape functions on centernodes to zero out the corner node
-    // shape functions on the centernodes
-    // (0.5 is the value of the linear shape function in the centernode)
-    //
-    //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
-
-    val[0]=0.25*(rm*sm-(r2*sm+s2*rm));
-    val[1]=0.25*(rp*sm-(r2*sm+s2*rp));
-    val[2]=0.25*(rp*sp-(s2*rp+r2*sp));
-    val[3]=0.25*(rm*sp-(r2*sp+s2*rm));
-    val[4]=0.5*r2*sm;
-    val[5]=0.5*s2*rp;
-    val[6]=0.5*r2*sp;
-    val[7]=0.5*s2*rm;
-    
-    deriv(0,0)= 0.25*sm*(2*r+s);
-    deriv(0,1)= 0.25*rm*(r+2*s);
-    deriv(1,0)= 0.25*sm*(2*r-s);
-    deriv(1,1)= 0.25*rp*(2*s-r);
-    deriv(2,0)= 0.25*sp*(2*r+s);
-    deriv(2,1)= 0.25*rp*(r+2*s);
-    deriv(3,0)= 0.25*sp*(2*r-s);
-    deriv(3,1)= 0.25*rm*(2*s-r);
-    deriv(4,0)=-sm*r;
-    deriv(4,1)=-0.5*rm*rp;
-    deriv(5,0)= 0.5*sm*sp;
-    deriv(5,1)=-rp*s;
-    deriv(6,0)=-sp*r;
-    deriv(6,1)= 0.5*rm*rp;
-    deriv(7,0)=-0.5*sm*sp;
-    deriv(7,1)=-rm*s;
-    
-    break;
-  }
-  // *********************************************************************
-  // 2D standard biquadratic shape functions (quad9)
-  // (used for interpolation of displacement field)
-  // *********************************************************************
-  case CElement::biquad2D:
-  {
-    const double r=xi[0];
-    const double s=xi[1];
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double r2=1.0-r*r;
-    const double s2=1.0-s*s;
-    const double rh=0.5*r;
-    const double sh=0.5*s;
-    const double rs=rh*sh;
-    const double rhp=r+0.5;
-    const double rhm=r-0.5;
-    const double shp=s+0.5;
-    const double shm=s-0.5;
-
-    val[0]= rs*rm*sm;
-    val[1]=-rs*rp*sm;
-    val[2]= rs*rp*sp;
-    val[3]=-rs*rm*sp;
-    val[4]=-sh*sm*r2;
-    val[5]= rh*rp*s2;
-    val[6]= sh*sp*r2;
-    val[7]=-rh*rm*s2;
-    val[8]= r2*s2;
-    
-    deriv(0,0)=-rhm*sh*sm;
-    deriv(0,1)=-shm*rh*rm;
-    deriv(1,0)=-rhp*sh*sm;
-    deriv(1,1)= shm*rh*rp;
-    deriv(2,0)= rhp*sh*sp;
-    deriv(2,1)= shp*rh*rp;
-    deriv(3,0)= rhm*sh*sp;
-    deriv(3,1)=-shp*rh*rm;
-    deriv(4,0)= 2.0*r*sh*sm;
-    deriv(4,1)= shm*r2;
-    deriv(5,0)= rhp*s2;
-    deriv(5,1)=-2.0*s*rh*rp;
-    deriv(6,0)=-2.0*r*sh*sp;
-    deriv(6,1)= shp*r2;
-    deriv(7,0)= rhm*s2;
-    deriv(7,1)= 2.0*s*rh*rm;
-    deriv(8,0)=-2.0*r*s2;
-    deriv(8,1)=-2.0*s*r2;
-    
-    break;
-  }  
-  // *********************************************************************
   // Unkown shape function type
   // *********************************************************************
   default:
@@ -582,11 +529,19 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
   switch(shape)
   {
   // *********************************************************************
-  // 1D dual quadratic shape functions
+  // 1D dual quadratic shape functions (line3)
+  // 2D dual bilinear shape functions (quad4)
+  // 2D dual quadratic shape functions (tri6)
+  // 2D dual serendipity shape functions (quad8)
+  // 2D dual biquadratic shape functions (quad9)
   // (used for interpolation of displacement field)
   // (linearization necessary due to adaption for distorted elements !!!)
   // *********************************************************************
   case CElement::quaddual1D:
+  case CElement::bilindual2D:
+  case CElement::quaddual2D:
+  case CElement::serendipitydual2D:
+  case CElement::biquaddual2D:
   {
     // establish fundamental data  
     double detg = 0.0;
@@ -596,7 +551,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // prepare computation with Gauss quadrature
     CONTACT::Integrator integrator(Shape());
     LINALG::SerialDenseVector val(nnodes);
-    LINALG::SerialDenseMatrix deriv(nnodes,1);
+    LINALG::SerialDenseMatrix deriv(nnodes,2,true);
     LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
     LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
     
@@ -607,7 +562,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // build me, de, derivme, derivde
     for (int i=0;i<integrator.nGP();++i)
     {
-      double gpc[2] = {integrator.Coordinate(i,0), 0.0};
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
       EvaluateShape(gpc, val, deriv, nnodes);
       detg = Jacobian(gpc);
       
@@ -687,7 +642,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     
-    for (int dim=0;dim<2;++dim)
+    for (int dim=0;dim<3;++dim)
     {
       for (int node=0;node<nnodes;++node)
       {
@@ -695,16 +650,16 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         coord(dim,node)+=delta;
         
         vector<double> val1(nnodes);
-        vector<double> deriv1(nnodes);
-        Epetra_SerialDenseMatrix me1(nnodes,nnodes);
-        Epetra_SerialDenseMatrix de1(nnodes,nnodes);
+        LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+        LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+        LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
         
         // build me, de
         for (int i=0;i<integrator.nGP();++i)
         {
-          double gpc1[2] = {integrator.Coordinate(i), 0.0};
-          EvaluateShape1D(gpc1, val1, deriv1, nnodes);
-          detg = Jacobian1D(val1,deriv1,coord);
+          double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+          EvaluateShape(gpc1, val1, deriv1, nnodes);
+          detg = Jacobian1D(gpc1);
           
           for (int j=0;j<nnodes;++j)
             for (int k=0;k<nnodes;++k)
@@ -721,7 +676,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         LINALG::SymmetricInverse(me1,nnodes);
         
         // get solution matrix ae with dual parameters
-        Epetra_SerialDenseMatrix ae1(nnodes,nnodes);
+        LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         
         DRT::Node** mynodes = Nodes();
@@ -1375,15 +1330,20 @@ bool CONTACT::CElement::DerivShapeDual(vector<vector<map<int,double> > >& derivd
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: DerivShapeDual: Null pointer!");
-   
-  // 2D linear case (2noded line element)
-  if (Shape()==line2)
+  
+  switch(Shape())
   {
-    dserror("ERROR: DerivShapeDual called for 2D linear shape functions");
+  // 2D linear case (2noded line element)
+  // 3D linear case (3noded triangular element)
+  case DRT::Element::line2:
+  case DRT::Element::tri3:
+  {
+    dserror("ERROR: DerivShapeDual called for line2 or tri3!");
+    break;
   }
   
   // 2D quadratic case (3noded line element)
-  else if (Shape()==line3)
+  case DRT::Element::line3:
   {
     // check for boundary nodes
     CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
@@ -1415,12 +1375,46 @@ bool CONTACT::CElement::DerivShapeDual(vector<vector<map<int,double> > >& derivd
     // nodes 0 and 1 are on boundary: infeasible case
     else 
       dserror("ERROR: DerivShapeDual: Element with 2 boundary nodes");
+    
+    break;
+  }
+  
+  // all other 3D cases
+  case DRT::Element::quad4:
+  case DRT::Element::tri6:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    // check for boundary nodes
+    bool bound = false;
+    for (int i=0;i<NumNode();++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      if (!mycnode) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+      bound += mycnode->IsOnBound();
+    }
+    
+    // all nodes are interior: use unmodified dual shape functions
+    if (!bound)
+    {
+      if (Shape()==quad4)      ShapeFunctionLinearizations(CElement::bilindual2D,derivdual);
+      else if (Shape()==tri6)  ShapeFunctionLinearizations(CElement::quaddual2D,derivdual);
+      else if (Shape()==quad8) ShapeFunctionLinearizations(CElement::serendipitydual2D,derivdual);
+      else /*Shape()==quad9*/  ShapeFunctionLinearizations(CElement::biquaddual2D,derivdual);
+    }
+    
+    // some nodes are on slave boundary
+    else 
+      dserror("ERROR: DerivShapeDual: boundary mod. not yet impl. for 3D contact!");
+        
+    break;
   }
   
   // unknown case
-  else
+  default:
     dserror("ERROR: DerivShapeDual called for unknown element type");
-    
+  }
+  
   return true;
 }
 

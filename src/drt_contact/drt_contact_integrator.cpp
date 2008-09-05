@@ -106,16 +106,15 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
   int nrow = sele.NumNode();
   int ndof = Dim();
   int ncol = nrow;
-  int nint = Dim()-1; // no. of integration directions
   
   RCP<Epetra_SerialDenseMatrix> dtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty objects for shape fct. evaluation
   LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow,nint);
+  LINALG::SerialDenseMatrix deriv(nrow,2,true);
   LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,nint);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
 
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
@@ -168,56 +167,52 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
  |  Compute directional derivative of D                       popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
-                                 double sxia, double sxib)
+                                 double* sxia, double* sxib)
 {
-  //check for problem dimension
-  if (Dim()==3) dserror("ERROR: Integrator::DerivD not yet implemented for 3D");
-    
   //check input data
   if (!sele.IsSlave())
     dserror("ERROR: DerivD called on a non-slave CElement!");
-  if ((sxia<-1.0) || (sxib>1.0))
+  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
     dserror("ERROR: DerivD called with infeasible slave limits!");
   
   int nrow = sele.NumNode();
   
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow,1);
+  LINALG::SerialDenseMatrix deriv(nrow,2,true);
   LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
   
   // get nodal coords for Jacobian evaluation
   LINALG::SerialDenseMatrix coord = sele.GetNodalCoords();
   
   // prepare directional derivative of dual shape functions
-  // this is only necessary for qudratic shape functions in 2D
+  // this necessary for all slave element types except line2 (1D) and tri3 (2D)
+  bool duallin = false;
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
-  if (sele.Shape()==CElement::line3)
+  if (sele.Shape()!=CElement::line2 && sele.Shape()!=CElement::tri3)
+  {
+    duallin = true;
     sele.DerivShapeDual(dualmap);
+  }
   
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {Coordinate(gp,0), 0.0};
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
     double wgt = Weight(gp);
     typedef map<int,double>::const_iterator CI;
     
-    // coordinate transformation sxi->eta (CElement->Overlap)
-    double sxi[2] = {0.0, 0.0};
-    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
-    
     // evaluate trace space and dual space shape functions
-    sele.EvaluateShape(sxi,val,deriv,nrow);
-    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    sele.EvaluateShape(eta,val,deriv,nrow);
+    sele.EvaluateShapeDual(eta,dualval,dualderiv,nrow);
     
-    // evaluate the two Jacobians
-    double dxdsxi = sele.Jacobian(sxi);
-    double dsxideta = -0.5*sxia + 0.5*sxib;
+    // evaluate the Jacobian det
+    double dxdsxi = sele.Jacobian(eta);
     
     // evaluate the Jacobian derivative
     map<int,double> testmap;
-    sele.DerivJacobian(sxi,testmap);
+    sele.DerivJacobian(eta,testmap);
     
     // compute contribution oj J to nodal D-derivative-maps
     DRT::Node** mynodes = sele.Nodes();
@@ -226,7 +221,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     for (int i=0;i<nrow;++i)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
-      if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      if (!mycnode) dserror("ERROR: DerivD: Null pointer!");
       bool bound = mycnode->IsOnBound();
       map<int,double>& nodemap = mycnode->GetDerivD();
       
@@ -236,7 +231,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
       if (!bound)
       {
         // contribution of current element / current GP
-        double fac = wgt*val[i]*dualval[i]*dsxideta;
+        double fac = wgt*val[i]*dualval[i];
         for (CI p=testmap.begin();p!=testmap.end();++p)
           nodemap[p->first] += fac*(p->second);
       }
@@ -246,6 +241,10 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
       //******************************************************************
       else
       {
+        //check for problem dimension
+        if (Dim()==3)
+          dserror("ERROR: Integrator::DerivD Edge node mod. called for 3D");
+            
         // get gid of current boundary node
         int bgid = mycnode->Id();
         
@@ -253,13 +252,13 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
         for (int k=0;k<nrow;++k)
         {
           CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
-          if (!mycnode2) dserror("ERROR: Integrate1D: Null pointer!");
+          if (!mycnode2) dserror("ERROR: DerivD: Null pointer!");
           bool bound2 = mycnode2->IsOnBound();
           if (bound2) continue;
           map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
           
           // contribution to DerivM of current element / current GP
-          double fac = wgt*val[i]*dualval[k]*dsxideta;
+          double fac = wgt*val[i]*dualval[k];
           for (CI p=testmap.begin();p!=testmap.end();++p)
             nodemmap[p->first] -= fac*(p->second);
         }
@@ -267,11 +266,11 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     }
     
     // compute contribution of dual shape fct. to nodal D-derivative-maps
-    if (sele.Shape()!=CElement::line3) continue;
+    if (!duallin) continue;
     for (int i=0;i<nrow;++i)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
-      if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      if (!mycnode) dserror("ERROR: DerivD: Null pointer!");
       bool bound = mycnode->IsOnBound();
       map<int,double>& nodemap = mycnode->GetDerivD();
       
@@ -283,7 +282,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
         // contribution of current element / current GP
         for (int j=0;j<nrow;++j)
         {
-          double fac = wgt*val[i]*val[j]*dsxideta*dxdsxi;
+          double fac = wgt*val[i]*val[j]*dxdsxi;
           for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
             nodemap[p->first] += fac*(p->second);
         }
@@ -294,7 +293,9 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
       //******************************************************************
       else
       {
-        dserror("ERROR: edge node modification + quad elements + full lin not yet working");
+        //check for problem dimension
+        if (Dim()==3) dserror("ERROR: edge node mod. not yet implemented for 3D");
+        
         // get gid of current boundary node
         int bgid = mycnode->Id();
         
@@ -302,7 +303,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
         for (int k=0;k<nrow;++k)
         {
           CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
-          if (!mycnode2) dserror("ERROR: Integrate1D: Null pointer!");
+          if (!mycnode2) dserror("ERROR: DerivD: Null pointer!");
           bool bound2 = mycnode2->IsOnBound();
           if (bound2) continue;
           map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
@@ -312,9 +313,9 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
           {
             LINALG::SerialDenseVector vallin(nrow-1);
             LINALG::SerialDenseMatrix derivlin(nrow-1,1);
-            if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,sxi,vallin,derivlin);
-            else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,sxi,vallin,derivlin);
-            double fac = wgt*val[i]*vallin[j]*dsxideta*dxdsxi;
+            if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,eta,vallin,derivlin);
+            else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,eta,vallin,derivlin);
+            double fac = wgt*val[i]*vallin[j]*dxdsxi;
             for (CI p=dualmap[k][j].begin();p!=dualmap[k][j].end();++p)
               nodemmap[p->first] -= fac*(p->second);
           }
@@ -1472,8 +1473,8 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
 
 /*----------------------------------------------------------------------*
  |  Assemble D contribution                                   popp 01/08|
- |  This method assembles the contrubution of a 1D slave element        |
- |  to the D map of the adjacent slave nodes.                           |
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the D map of the adjacent slave nodes.                   |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
                                     CONTACT::CElement& sele,

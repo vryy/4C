@@ -730,6 +730,10 @@ void CONTACT::Interface::FDCheckNormalDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckMortarDDeriv()
 {
+  /****************************************************/
+  /* NOTE: This is a combined 2D / 3D method already! */
+  /****************************************************/
+  
   // get out of here if not participating in interface
   if (!lComm())
     return;
@@ -761,8 +765,8 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       cout << p->first << '\t' << p->second << endl;
   }
       
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int i=0; i<2*snodefullmap_->NumMyElements();++i)
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
   {
     // reset Mortar map D
     // loop over all nodes (use fully overlapping column map)
@@ -778,7 +782,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     }  
     
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(i/2);
+    int gid = snodefullmap_->GID(i/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -786,21 +790,26 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%2
-           << " Dof(g): " << snode->Dofs()[i%2] << endl;
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
+           << " Dof(g): " << snode->Dofs()[i%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (i%2==0)
+    if (i%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
     }
-    else
+    else if (i%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -844,20 +853,25 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
         //cout << "Ref-D: " << refD[k] << endl;
         //cout << "New-D: " << newD[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[i%2] << " " << (newD[k]-refD[k])/delta << endl;
+        cout << "Deriv: " << snode->Dofs()[i%3] << " " << (newD[k]-refD[k])/delta << endl;
       }
     }
     
     // undo finite difference modification
-    if (i%2==0)
+    if (i%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
     }
-    else
+    else if (i%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
     }
   }
   
@@ -887,6 +901,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+      (node->GetDerivTeta())[j].clear();
+    (node->GetDerivTeta()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -967,8 +984,6 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#else
-    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -997,7 +1012,6 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   }
   // *******************************************************************
   
-  //exit(0);
   return;
 }
 

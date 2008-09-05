@@ -610,15 +610,6 @@ void CONTACT::Interface::Evaluate()
     cout << "************************************************************\n";
   }
   
-#ifdef DEBUG
-  lComm()->Barrier();
-  if (lComm()->MyPID()==0 && Dim()==3)
-  {
-    cout << "-> Nodal normal calculation finished SUCCESSFULLY!" << endl;
-    cout << "***WARNING***: No linearization of nodal normals computed for 3d!" << endl;
-  }
-#endif // #ifdef DEBUG
-  
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -647,10 +638,17 @@ void CONTACT::Interface::Evaluate()
   lComm()->Barrier();
   if (lComm()->MyPID()==0 && Dim()==3)
   {
+    cout << "-> Calculated nodal normals and tangents SUCCESSFULLY!" << endl;
     cout << "-> Integrated mortar matrix D SUCCESSFULLY!" << endl;
-    cout << "***WARNING***: No linearization of nodal normals computed for 3d!" << endl;
+    cout << "-> Linearized nodal normals and tangents SUCCESSFULLY!" << endl;
+    cout << "-> Linearized mortar matrix D SUCCESSFULLY!" << endl;
   }
 #endif // #ifdef DEBUG
+
+#ifdef CONTACTFDMORTARD
+  // FD check of Mortar matrix D derivatives
+  FDCheckMortarDDeriv();
+#endif // #ifdef CONTACTFDMORTARD
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -914,8 +912,7 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
   
   // do the linearization of D
-  if (Dim()==2)
-    integrator.DerivD(sele,sxia[0],sxib[0]);
+  integrator.DerivD(sele,sxia,sxib);
   
   // do the assembly into the slave nodes
   integrator.AssembleD(*this,sele,*dseg);

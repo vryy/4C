@@ -638,7 +638,7 @@ void CONTACT::CElement::DerivJacobian(double* xi, map<int,double>& derivjac)
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
     jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
   
   else
@@ -775,10 +775,11 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
   }
   
   // 2D quadratic case   (3noded line element)
+  // 3D bilinear case    (4noded quadrilateral element)
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // Gauss quadrature with correct NumGP and Dim
     CONTACT::Integrator integrator(dt);
