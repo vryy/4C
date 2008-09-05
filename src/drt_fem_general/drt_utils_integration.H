@@ -42,7 +42,7 @@ enum GaussRule3D
     intrule_tet_24point,            ///< KEAST7           , DEG.OF PRECISION 6 (open)
     intrule_tet_64point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 6 (open)   (Peano, 1982)
     intrule_tet_45point,            ///< KEAST9           , DEG.OF PRECISION 8 (open)
-    intrule_tet_343point_peano,     ///< GAUSS-LOBATTO    , DEG.OF PRECISION 12 (open)  (Peano, 1982)
+    intrule_tet_343point_peano,     ///< GAUSS-LOBATTO    , DEG.OF PRECISION 13 (open)  (Peano, 1982)
     intrule_tet_729point_peano,     ///< GAUSS-LOBATTO    , DEG.OF PRECISION 16 (open)  (Peano, 1982)
     intrule_wedge_1point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
     intrule_wedge_6point,           ///< GAUSS INTEGRATION, DEG.OF PRECISION ?
