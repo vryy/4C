@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 void StruGenAlpha::LineSearchNewton()
 {
   const int myrank = discret_.Comm().MyPID();
-  
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -55,9 +55,8 @@ void StruGenAlpha::LineSearchNewton()
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  // check whether mass and damping are present
+  // note: the stiffness matrix might be filled already
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
@@ -81,7 +80,7 @@ void StruGenAlpha::LineSearchNewton()
   const double sigma1  = 0.5;        // upper bound of lambda
   const double lsalpha = 1.0e-04;    // decrease requirement to be accept a step
   const int    maxarm  = 10;         // max number line search steps
-  
+
   if (!myrank) printf("Initial    residual      %15.5e\n",fresmnorm);
 
   //=================================================== equilibrium loop
@@ -108,7 +107,7 @@ void StruGenAlpha::LineSearchNewton()
       }
     }
     stiff_->Complete();
-    
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -129,18 +128,18 @@ void StruGenAlpha::LineSearchNewton()
     dismo->Update(1.0,*dism_,0.0);
     velmo->Update(1.0,*velm_,0.0);
     accmo->Update(1.0,*accm_,0.0);
-    
+
     //--------------------------------------------- create the step size
     //                                            trying full step first
     double lambda = 1.0;
     double lamm   = 1.0;
     double lamc   = lambda;
     double iarm   = 0;
-    
+
     //---------------------------------- update mid configuration values
     LineSearchUpdateMidConfiguration(lambda,disi_,disno,dismo,velmo,accmo,
                                      dt,alphaf,alpham,beta,gamma);
-    
+
 
     // zerofy velocity and acceleration in case of quasistatics
     if (dynkindstat)
@@ -148,7 +147,7 @@ void StruGenAlpha::LineSearchNewton()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-    
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -237,7 +236,7 @@ void StruGenAlpha::LineSearchNewton()
     double ff0 = nf0*nf0;
     double ffc = nft*nft;
     double ffm = nft*nft;
-    
+
     //--------------------------------------------------------------------
     // line searching if the step is bad
     //--------------------------------------------------------------------
@@ -273,7 +272,7 @@ void StruGenAlpha::LineSearchNewton()
       //----------------------------- update with new steplength alpha
       LineSearchUpdateMidConfiguration(lambda,disi_,disno,dismo,velmo,accmo,
                                        dt,alphaf,alpham,beta,gamma);
-      
+
       //----- zerofy velocity and acceleration in case of quasistatics
       if (dynkindstat)
       {
@@ -281,12 +280,12 @@ void StruGenAlpha::LineSearchNewton()
         accm_->PutScalar(0.0);
       }
 
-      // scale IncD_{n+1} by (1-alphaf) to obtain 
+      // scale IncD_{n+1} by (1-alphaf) to obtain
       // mid residual displacements IncD_{n+1-alphaf}
       RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
       disim->Scale(lambda*(1.-alphaf));
-      
-      //-------------------------------------- compute internal forces  
+
+      //-------------------------------------- compute internal forces
       {
         // zero out stiffness
         stiff_->Zero();
@@ -311,14 +310,14 @@ void StruGenAlpha::LineSearchNewton()
 #ifdef STRUGENALPHA_FINTLIKETR
         fintn_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-#else 
+#else
         fint_->PutScalar(0.0);  // initialise internal force vector
         discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
         discret_.ClearState();
         // do NOT finalize the stiffness matrix to add masses to it later
       }
-      
+
       // ----------------------------------------------compute residual
       {
         if (dynkindstat)
@@ -356,29 +355,29 @@ void StruGenAlpha::LineSearchNewton()
           Epetra_Vector fresmcopy(*fresm_);
           fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
         }
-        
+
         //------------------------------------------------ recompute norms
         disim->Norm2(&disinorm);
         fresm_->Norm2(&fresmnorm);
       }
-      
+
       //---------------------------------------------- keep track of norms
       if (!myrank) printf(" now: %10.5e stepsize %10.5e\n",fresmnorm,lambda); fflush(stdout);
       nft = fresmnorm;
       ffm = ffc;
       ffc = nft*nft;
       iarm++;
-      
+
       // yes, this can also fail....
       if (iarm>=maxarm) dserror("Line search finally failed");
-          
+
     } // while(nft >= (1.0-lsalpha*lambda)*nf0)
     //--------------------------------------------------------------------
     //                                                  end of line search
     //--------------------------------------------------------------------
     //------------------------------------- update reference residual norm
     f0 = nft;
-      
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
