@@ -431,11 +431,11 @@ void contact_stru_static_drt()
     fresm->Scale(-1.0);     // rhs = -R = -fresm
     contactmanager->SetState("displacement",disn);
     
-    contactmanager->InitializeMortar(0);
-    contactmanager->EvaluateMortar(0);
+    contactmanager->InitializeMortar();
+    contactmanager->EvaluateMortar();
     
-    contactmanager->Initialize(0);
-    contactmanager->Evaluate(stiff_mat,fresm,0);
+    contactmanager->Initialize();
+    contactmanager->Evaluate(stiff_mat,fresm);
     
     // blank residual at DOFs on Dirichlet BC
     {
@@ -529,17 +529,17 @@ void contact_stru_static_drt()
       fresm->Scale(-1.0);     // rhs = -R = -fresm
       contactmanager->SetState("displacement",disn);
       
-      contactmanager->InitializeMortar(numiter+1);
-      contactmanager->EvaluateMortar(numiter+1);
+      contactmanager->InitializeMortar();
+      contactmanager->EvaluateMortar();
       
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
-      contactmanager->UpdateActiveSetSemiSmooth(disn);
+      contactmanager->UpdateActiveSetSemiSmooth();
       
-      contactmanager->Initialize(numiter+1);
-      contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
+      contactmanager->Initialize();
+      contactmanager->Evaluate(stiff_mat,fresm);
       
       // blank residual at DOFs on Dirichlet BC
       {
@@ -657,11 +657,11 @@ void contact_stru_static_drt()
       fresm->Scale(-1.0);     // rhs = -R = -fresm
       contactmanager->SetState("displacement",disn);
       
-      contactmanager->InitializeMortar(0);
-      contactmanager->EvaluateMortar(0);
+      contactmanager->InitializeMortar();
+      contactmanager->EvaluateMortar();
       
-      contactmanager->Initialize(0);
-      contactmanager->Evaluate(stiff_mat,fresm,0);
+      contactmanager->Initialize();
+      contactmanager->Evaluate(stiff_mat,fresm);
       
       // blank residual at DOFs on Dirichlet BC
       {
@@ -748,11 +748,11 @@ void contact_stru_static_drt()
         fresm->Scale(-1.0);     // rhs = -R = -fresm
         contactmanager->SetState("displacement",disn);
         
-        contactmanager->InitializeMortar(numiter+1);
-        contactmanager->EvaluateMortar(numiter+1);
+        contactmanager->InitializeMortar();
+        contactmanager->EvaluateMortar();
         
-        contactmanager->Initialize(numiter+1);
-        contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
+        contactmanager->Initialize();
+        contactmanager->Evaluate(stiff_mat,fresm);
         
         // blank residual at DOFs on Dirichlet BC
         {
@@ -793,7 +793,7 @@ void contact_stru_static_drt()
       // update active set
       // (in the fixed-point-approach this is done only after convergence
       // of the Newton loop representing the geometrical nonlinearity)
-      contactmanager->UpdateActiveSet(disn);
+      contactmanager->UpdateActiveSet();
     }
     //================================================ end active set loop
   }

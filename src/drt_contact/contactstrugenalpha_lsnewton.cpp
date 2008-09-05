@@ -309,11 +309,11 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     {
       contactmanager_->SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar(numiter+1);
-      contactmanager_->EvaluateMortar(numiter+1);
+      contactmanager_->InitializeMortar();
+      contactmanager_->EvaluateMortar();
 
-      contactmanager_->Initialize(numiter+1);
-      contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+      contactmanager_->Initialize();
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     // blank residual DOFs that are on Dirichlet BC
@@ -558,11 +558,11 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       {
         contactmanager_->SetState("displacement",disn_);
 
-        contactmanager_->InitializeMortar(numiter+1);
-        contactmanager_->EvaluateMortar(numiter+1);
+        contactmanager_->InitializeMortar();
+        contactmanager_->EvaluateMortar();
 
-        contactmanager_->Initialize(numiter+1);
-        contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+        contactmanager_->Initialize();
+        contactmanager_->Evaluate(stiff_,fresm_);
       }
 
       // blank residual DOFs that are on Dirichlet BC
@@ -939,17 +939,17 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     {
       contactmanager_->SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar(numiter+1);
-      contactmanager_->EvaluateMortar(numiter+1);
+      contactmanager_->InitializeMortar();
+      contactmanager_->EvaluateMortar();
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
-      contactmanager_->UpdateActiveSetSemiSmooth(disn_);
+      contactmanager_->UpdateActiveSetSemiSmooth();
 
-      contactmanager_->Initialize(numiter+1);
-      contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+      contactmanager_->Initialize();
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     // blank residual DOFs that are on Dirichlet BC
@@ -1196,15 +1196,15 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       {
         contactmanager_->SetState("displacement",disn_);
 
-        contactmanager_->InitializeMortar(numiter+1);
-        contactmanager_->EvaluateMortar(numiter+1);
+        contactmanager_->InitializeMortar();
+        contactmanager_->EvaluateMortar();
 
         // NO update of the active set here, as this would change the
         // system and thus the residual! During line search the active
         // set has to be kept constant!
 
-        contactmanager_->Initialize(numiter+1);
-        contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+        contactmanager_->Initialize();
+        contactmanager_->Evaluate(stiff_,fresm_);
       }
 
       // blank residual DOFs that are on Dirichlet BC

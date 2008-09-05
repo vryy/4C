@@ -338,11 +338,11 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
 
-  contactmanager_->InitializeMortar(0);
-  contactmanager_->EvaluateMortar(0);
+  contactmanager_->InitializeMortar();
+  contactmanager_->EvaluateMortar();
 
-  contactmanager_->Initialize(0);
-  contactmanager_->Evaluate(stiff_,fresm_,0);
+  contactmanager_->Initialize();
+  contactmanager_->Evaluate(stiff_,fresm_);
 
   // blank residual DOFs that are on Dirichlet BC
   {
@@ -591,11 +591,11 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
 
-  contactmanager_->InitializeMortar(0);
-  contactmanager_->EvaluateMortar(0);
+  contactmanager_->InitializeMortar();
+  contactmanager_->EvaluateMortar();
 
-  contactmanager_->Initialize(0);
-  contactmanager_->Evaluate(stiff_,fresm_,0);
+  contactmanager_->Initialize();
+  contactmanager_->Evaluate(stiff_,fresm_);
 
   // blank residual DOFs that are on Dirichlet BC
   {
@@ -891,11 +891,11 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     {
       contactmanager_->SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar(numiter+1);
-      contactmanager_->EvaluateMortar(numiter+1);
+      contactmanager_->InitializeMortar();
+      contactmanager_->EvaluateMortar();
 
-      contactmanager_->Initialize(numiter+1);
-      contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+      contactmanager_->Initialize();
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     // blank residual DOFs that are on Dirichlet BC
@@ -1222,17 +1222,17 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     {
       contactmanager_->SetState("displacement",disn_);
 
-      contactmanager_->InitializeMortar(numiter+1);
-      contactmanager_->EvaluateMortar(numiter+1);
+      contactmanager_->InitializeMortar();
+      contactmanager_->EvaluateMortar();
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
-      contactmanager_->UpdateActiveSetSemiSmooth(disn_);
+      contactmanager_->UpdateActiveSetSemiSmooth();
 
-      contactmanager_->Initialize(numiter+1);
-      contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+      contactmanager_->Initialize();
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     // blank residual DOFs that are on Dirichlet BC
@@ -1692,7 +1692,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         FullNewton();
 
         // update of active set (fixed-point)
-        contactmanager_->UpdateActiveSet(disn_);
+        contactmanager_->UpdateActiveSet();
       }
 
       UpdateandOutput();
@@ -1761,7 +1761,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         FullNewtonLineSearch();
 
         // update of active set (fixed-point)
-        contactmanager_->UpdateActiveSet(disn_);
+        contactmanager_->UpdateActiveSet();
       }
 
       UpdateandOutput();
@@ -1818,8 +1818,8 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 
   // build restart Mortar matrices D and M
   contactmanager_->SetState("displacement",dis_);
-  contactmanager_->InitializeMortar(0);
-  contactmanager_->EvaluateMortar(0);
+  contactmanager_->InitializeMortar();
+  contactmanager_->EvaluateMortar();
   contactmanager_->StoreDM("old");
 
   // override current time and step with values from file

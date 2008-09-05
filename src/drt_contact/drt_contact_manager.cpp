@@ -526,13 +526,8 @@ void CONTACT::Manager::SetState(const string& statename,
 /*----------------------------------------------------------------------*
  |  initialize Mortar stuff for next Newton step (public)     popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::InitializeMortar(int numiter)
+void CONTACT::Manager::InitializeMortar()
 {
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-    
   // initialize / reset interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -562,24 +557,15 @@ void CONTACT::Manager::InitializeMortar(int numiter)
    // (re)setup global matrices containing fc derivatives
    lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
    linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-       
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
-  
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  initialize contact for next Newton step (public)          popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Initialize(int numiter)
+void CONTACT::Manager::Initialize()
 {
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-    
   // (re)setup global normal and tangent matrices
   nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
@@ -596,9 +582,6 @@ void CONTACT::Manager::Initialize(int numiter)
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   return;
 }
 
@@ -607,17 +590,12 @@ void CONTACT::Manager::Initialize(int numiter)
 /*----------------------------------------------------------------------*
  |  evaluate Mortar matrices D,M & gap g~ only (public)       popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::EvaluateMortar(int numiter)
+void CONTACT::Manager::EvaluateMortar()
 {
   /**********************************************************************/
   /* evaluate interfaces                                                */
   /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
   /**********************************************************************/
-  #ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->Evaluate();
@@ -628,10 +606,6 @@ void CONTACT::Manager::EvaluateMortar(int numiter)
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
-    
   return;
 }
 
@@ -639,7 +613,7 @@ void CONTACT::Manager::EvaluateMortar(int numiter)
  |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
-                                RCP<Epetra_Vector> feff, int numiter)
+                                RCP<Epetra_Vector> feff)
 { 
   // check if Tresca friction and/or basis transformation should be applied
   string ftype   = scontact_.get<string>("friction type","none");
@@ -649,18 +623,18 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   if (ftype=="tresca")
   {
 	  if (btrafo)
-	    EvaluateTrescaBasisTrafo(kteff,feff,numiter);
+	    EvaluateTrescaBasisTrafo(kteff,feff);
 	  else
-	  	EvaluateTrescaNoBasisTrafo(kteff,feff,numiter);
+	  	EvaluateTrescaNoBasisTrafo(kteff,feff);
   }
   
   // Other cases (Frictionless, Stick, MeshTying)
   else
   {
   if (btrafo)
-    EvaluateBasisTrafo(kteff,feff,numiter);
+    EvaluateBasisTrafo(kteff,feff);
   else
-    EvaluateNoBasisTrafo(kteff,feff,numiter);
+    EvaluateNoBasisTrafo(kteff,feff);
   }
   
   return;
@@ -670,7 +644,7 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
  |  evaluate Tresca friction with basis trafo (public)        mgit 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
-                                                RCP<Epetra_Vector> feff, int numiter)
+                                                RCP<Epetra_Vector> feff)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -707,10 +681,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // the two violations via ct!
   double ct = scontact_.get<double>("semismooth ct",0.0);
 
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
@@ -721,9 +691,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
   if(gslipt_->NumGlobalElements()) lmatrix_->Complete(*gslipt_,*gslipt_);
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
 
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
@@ -778,34 +745,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "k:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kss!=null) cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kss: null" << endl;
-    if (ksm!=null) cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksm: null" << endl;
-    if (ksn!=null) cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksn: null" << endl;
-    if (kms!=null) cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kms: null" << endl;
-    if (kmm!=null) cout << "kmm: " << kmm->EpetraMatrix()->NumGlobalRows() << " x " << kmm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmm: null" << endl;
-    if (kmn!=null) cout << "kmn: " << kmn->EpetraMatrix()->NumGlobalRows() << " x " << kmn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmn: null" << endl;
-    if (kns!=null) cout << "kns: " << kns->EpetraMatrix()->NumGlobalRows() << " x " << kns->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kns: null" << endl;
-    if (knm!=null) cout << "knm: " << knm->EpetraMatrix()->NumGlobalRows() << " x " << knm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knm: null" << endl;
-    if (knn!=null) cout << "knn: " << knn->EpetraMatrix()->NumGlobalRows() << " x " << knn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knn: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
   /**********************************************************************/
@@ -818,19 +757,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // do the vector splitting smn -> sm+n -> s+m+n
   LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
   LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "f:  " << feff->GlobalLength() << endl;
-    cout << "fs: " << fs->GlobalLength() << endl;
-    cout << "fm: " << fm->GlobalLength() << endl;
-    cout << "fn: " << fn->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -887,34 +813,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // knn: nothing to do
   RCP<LINALG::SparseMatrix> knnmod = knn;
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kmod:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kssmod!=null) cout << "kssmod: " << kssmod->EpetraMatrix()->NumGlobalRows() << " x " << kssmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kssmod: null" << endl;
-    if (ksmmod!=null) cout << "ksmmod: " << ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksmmod: null" << endl;
-    if (ksnmod!=null) cout << "ksnmod: " << ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksnmod: null" << endl;
-    if (kmsmod!=null) cout << "kmsmod: " << kmsmod->EpetraMatrix()->NumGlobalRows() << " x " << kmsmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmsmod: null" << endl;
-    if (kmmmod!=null) cout << "kmmmod: " << kmmmod->EpetraMatrix()->NumGlobalRows() << " x " << kmmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmmmod: null" << endl;
-    if (kmnmod!=null) cout << "kmnmod: " << kmnmod->EpetraMatrix()->NumGlobalRows() << " x " << kmnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmnmod: null" << endl;
-    if (knsmod!=null) cout << "knsmod: " << knsmod->EpetraMatrix()->NumGlobalRows() << " x " << knsmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knsmod: null" << endl;
-    if (knmmod!=null) cout << "knmmod: " << knmmod->EpetraMatrix()->NumGlobalRows() << " x " << knmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knmmod: null" << endl;
-    if (knnmod!=null) cout << "knnmod: " << knnmod->EpetraMatrix()->NumGlobalRows() << " x " << knnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knnmod: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Apply basis transformation to f                                    */
   /**********************************************************************/
@@ -928,19 +826,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // fn: nothing to be done
   RCP<Epetra_Vector> fnmod = fn;
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "fmod:  " << feff->GlobalLength() << endl;
-    cout << "fsmod: " << fsmod->GlobalLength() << endl;
-    cout << "fmmod: " << fmmod->GlobalLength() << endl;
-    cout << "fnmod: " << fnmod->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Split slave quantities into active / inactive                      */
@@ -985,40 +870,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(kammod,gslipdofs_,gstdofs,gmdofrowmap_,temp1map,kslmmod,temp1mtx1,kstmmod,temp1mtx2);
   LINALG::SplitMatrix2x2(kaimod,gslipdofs_,gstdofs,gidofs,temp1map,kslimod,temp1mtx1,kstimod,temp1mtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kssmod: " << kssmod->EpetraMatrix()->NumGlobalRows() << " x " << kssmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kaamod!=null) cout << "kaamod: " << kaamod->EpetraMatrix()->NumGlobalRows() << " x " << kaamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaamod: null" << endl;
-    if (kaimod!=null) cout << "kaimod: " << kaimod->EpetraMatrix()->NumGlobalRows() << " x " << kaimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaimod: null" << endl;
-    if (kiamod!=null) cout << "kiamod: " << kiamod->EpetraMatrix()->NumGlobalRows() << " x " << kiamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kiamod: null" << endl;
-    if (kiimod!=null) cout << "kiimod: " << kiimod->EpetraMatrix()->NumGlobalRows() << " x " << kiimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kiimod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksnmod: " << ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kanmod!=null) cout << "kanmod: " << kanmod->EpetraMatrix()->NumGlobalRows() << " x " << kanmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kanmod: null" << endl;
-    if (kinmod!=null) cout << "kinmod: " << kinmod->EpetraMatrix()->NumGlobalRows() << " x " << kinmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kinmod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksmmod: " << ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kammod!=null) cout << "kammod: " << kammod->EpetraMatrix()->NumGlobalRows() << " x " << kammod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kammod: null" << endl;
-    if (kimmod!=null) cout << "kimmod: " << kimmod->EpetraMatrix()->NumGlobalRows() << " x " << kimmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kimmod: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   // we want to split fsmod into 2 groups a,i
   RCP<Epetra_Vector> famod, fimod;
   
@@ -1031,21 +882,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   {
     LINALG::SplitVector(*fsmod,*gactivedofs_,famod,*gidofs,fimod);
   }
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    if (fsmod!=null) cout << "fsmod: " << fsmod->GlobalLength() << endl;
-    else cout << "fsmod: null" << endl;
-    if (famod!=null) cout << "famod: " << famod->GlobalLength() << endl;
-    else cout << "famod: null" << endl;
-    if (fimod!=null) cout << "fimod: " << fimod->GlobalLength() << endl;
-    else cout << "fimod: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Isolate active and slip part from invd and dold                              */
@@ -1160,28 +996,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     tfslmod->Update(1.0,*r_,1.0);
   }
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    if (tkanmod!=null) cout << "tkanmod: " << tkanmod->EpetraMatrix()->NumGlobalRows() << " x " << tkanmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkanmod: null" << endl;
-    if (tkammod!=null) cout << "tkammod: " << tkammod->EpetraMatrix()->NumGlobalRows() << " x " << tkammod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkammod: null" << endl;
-    if (tkaimod!=null) cout << "tkaimod: " << tkaimod->EpetraMatrix()->NumGlobalRows() << " x " << tkaimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkaimod: null" << endl;
-    if (tkaamod!=null) cout << "tkaamod: " << tkaamod->EpetraMatrix()->NumGlobalRows() << " x " << tkaamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkaamod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "**********" << endl;
-    if (tfamod!=null) cout << "tfamod: " << tfamod->GlobalLength() << endl;
-    else cout << "tfamod: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
@@ -1255,7 +1069,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
  |  evaluate trecsa friction without basis trafo (public) gitterle 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
-                                            RCP<Epetra_Vector> feff, int numiter)
+                                            RCP<Epetra_Vector> feff)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -1297,10 +1111,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   // the two violations via ct!
   double ct = scontact_.get<double>("semismooth ct",0.0);
 
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
@@ -1331,10 +1141,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
-   
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -1385,34 +1191,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "k:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kss!=null) cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kss: null" << endl;
-    if (ksm!=null) cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksm: null" << endl;
-    if (ksn!=null) cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksn: null" << endl;
-    if (kms!=null) cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kms: null" << endl;
-    if (kmm!=null) cout << "kmm: " << kmm->EpetraMatrix()->NumGlobalRows() << " x " << kmm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmm: null" << endl;
-    if (kmn!=null) cout << "kmn: " << kmn->EpetraMatrix()->NumGlobalRows() << " x " << kmn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmn: null" << endl;
-    if (kns!=null) cout << "kns: " << kns->EpetraMatrix()->NumGlobalRows() << " x " << kns->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kns: null" << endl;
-    if (knm!=null) cout << "knm: " << knm->EpetraMatrix()->NumGlobalRows() << " x " << knm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knm: null" << endl;
-    if (knn!=null) cout << "knn: " << knn->EpetraMatrix()->NumGlobalRows() << " x " << knn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knn: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
   /**********************************************************************/
@@ -1425,19 +1203,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   // do the vector splitting smn -> sm+n -> s+m+n
   LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
   LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "f:  " << feff->GlobalLength() << endl;
-    cout << "fs: " << fs->GlobalLength() << endl;
-    cout << "fm: " << fm->GlobalLength() << endl;
-    cout << "fn: " << fn->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -1489,48 +1254,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   LINALG::SplitMatrix2x2(kam,gslipdofs_,gstdofs,gmdofrowmap_,temp1map,kslm,temp1mtx1,kstm,temp1mtx2);
   LINALG::SplitMatrix2x2(kai,gslipdofs_,gstdofs,gidofs,temp1map,ksli,temp1mtx1,ksti,temp1mtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kaa!=null) cout << "kaa: " << kaa->EpetraMatrix()->NumGlobalRows() << " x " << kaa->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaa: null" << endl;
-    if (kai!=null) cout << "kai: " << kai->EpetraMatrix()->NumGlobalRows() << " x " << kai->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kai: null" << endl;
-    if (kia!=null) cout << "kia: " << kia->EpetraMatrix()->NumGlobalRows() << " x " << kia->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kia: null" << endl;
-    if (kii!=null) cout << "kii: " << kii->EpetraMatrix()->NumGlobalRows() << " x " << kii->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kii: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kan!=null) cout << "kan: " << kan->EpetraMatrix()->NumGlobalRows() << " x " << kan->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kan: null" << endl;
-    if (kin!=null) cout << "kin: " << kin->EpetraMatrix()->NumGlobalRows() << " x " << kin->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kin: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kam!=null) cout << "kam: " << kam->EpetraMatrix()->NumGlobalRows() << " x " << kam->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kam: null" << endl;
-    if (kim!=null) cout << "kim: " << kim->EpetraMatrix()->NumGlobalRows() << " x " << kim->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kim: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kma!=null) cout << "kma: " << kma->EpetraMatrix()->NumGlobalRows() << " x " << kma->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kma: null" << endl;
-    if (kmi!=null) cout << "kmi: " << kmi->EpetraMatrix()->NumGlobalRows() << " x " << kmi->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmi: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   // we want to split fs into 2 groups a,i
   RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*gactivedofs_));
   RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
@@ -1544,21 +1267,6 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   {
     LINALG::SplitVector(*fs,*gactivedofs_,fa,*gidofs,fi);
   }
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    if (fs!=null) cout << "fs: " << fs->GlobalLength() << endl;
-    else cout << "fs: null" << endl;
-    if (fa!=null) cout << "fa: " << fa->GlobalLength() << endl;
-    else cout << "fa: null" << endl;
-    if (fi!=null) cout << "fi: " << fi->GlobalLength() << endl;
-    else cout << "fi: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Isolate active and slip part from mhat, invd and dold              */
@@ -1882,7 +1590,7 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
  |  evaluate contact with basis transformation (public)       popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
-                                          RCP<Epetra_Vector> feff, int numiter)
+                                          RCP<Epetra_Vector> feff)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -1906,19 +1614,13 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
   /**********************************************************************/
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     
   // FillComplete() global matrices N and T
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
+
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -1972,34 +1674,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "k:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kss!=null) cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kss: null" << endl;
-    if (ksm!=null) cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksm: null" << endl;
-    if (ksn!=null) cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksn: null" << endl;
-    if (kms!=null) cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kms: null" << endl;
-    if (kmm!=null) cout << "kmm: " << kmm->EpetraMatrix()->NumGlobalRows() << " x " << kmm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmm: null" << endl;
-    if (kmn!=null) cout << "kmn: " << kmn->EpetraMatrix()->NumGlobalRows() << " x " << kmn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmn: null" << endl;
-    if (kns!=null) cout << "kns: " << kns->EpetraMatrix()->NumGlobalRows() << " x " << kns->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kns: null" << endl;
-    if (knm!=null) cout << "knm: " << knm->EpetraMatrix()->NumGlobalRows() << " x " << knm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knm: null" << endl;
-    if (knn!=null) cout << "knn: " << knn->EpetraMatrix()->NumGlobalRows() << " x " << knn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knn: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
   /**********************************************************************/
@@ -2012,19 +1686,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // do the vector splitting smn -> sm+n -> s+m+n
   LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
   LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "f:  " << feff->GlobalLength() << endl;
-    cout << "fs: " << fs->GlobalLength() << endl;
-    cout << "fm: " << fm->GlobalLength() << endl;
-    cout << "fn: " << fn->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -2081,34 +1742,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // knn: nothing to do
   RCP<LINALG::SparseMatrix> knnmod = knn;
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kmod:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kssmod!=null) cout << "kssmod: " << kssmod->EpetraMatrix()->NumGlobalRows() << " x " << kssmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kssmod: null" << endl;
-    if (ksmmod!=null) cout << "ksmmod: " << ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksmmod: null" << endl;
-    if (ksnmod!=null) cout << "ksnmod: " << ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksnmod: null" << endl;
-    if (kmsmod!=null) cout << "kmsmod: " << kmsmod->EpetraMatrix()->NumGlobalRows() << " x " << kmsmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmsmod: null" << endl;
-    if (kmmmod!=null) cout << "kmmmod: " << kmmmod->EpetraMatrix()->NumGlobalRows() << " x " << kmmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmmmod: null" << endl;
-    if (kmnmod!=null) cout << "kmnmod: " << kmnmod->EpetraMatrix()->NumGlobalRows() << " x " << kmnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmnmod: null" << endl;
-    if (knsmod!=null) cout << "knsmod: " << knsmod->EpetraMatrix()->NumGlobalRows() << " x " << knsmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knsmod: null" << endl;
-    if (knmmod!=null) cout << "knmmod: " << knmmod->EpetraMatrix()->NumGlobalRows() << " x " << knmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knmmod: null" << endl;
-    if (knnmod!=null) cout << "knnmod: " << knnmod->EpetraMatrix()->NumGlobalRows() << " x " << knnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knnmod: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Apply basis transformation to f                                    */
   /**********************************************************************/
@@ -2122,19 +1755,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // fn: nothing to be done
   RCP<Epetra_Vector> fnmod = fn;
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "fmod:  " << feff->GlobalLength() << endl;
-    cout << "fsmod: " << fsmod->GlobalLength() << endl;
-    cout << "fmmod: " << fmmod->GlobalLength() << endl;
-    cout << "fnmod: " << fnmod->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Split slave quantities into active / inactive                      */
@@ -2152,39 +1772,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(kssmod,gactivedofs_,gidofs,gactivedofs_,gidofs,kaamod,kaimod,kiamod,kiimod);
   LINALG::SplitMatrix2x2(ksnmod,gactivedofs_,gidofs,gndofrowmap_,tempmap,kanmod,tempmtx1,kinmod,tempmtx2);
   LINALG::SplitMatrix2x2(ksmmod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kammod,tempmtx1,kimmod,tempmtx2);
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kssmod: " << kssmod->EpetraMatrix()->NumGlobalRows() << " x " << kssmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kaamod!=null) cout << "kaamod: " << kaamod->EpetraMatrix()->NumGlobalRows() << " x " << kaamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaamod: null" << endl;
-    if (kaimod!=null) cout << "kaimod: " << kaimod->EpetraMatrix()->NumGlobalRows() << " x " << kaimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaimod: null" << endl;
-    if (kiamod!=null) cout << "kiamod: " << kiamod->EpetraMatrix()->NumGlobalRows() << " x " << kiamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kiamod: null" << endl;
-    if (kiimod!=null) cout << "kiimod: " << kiimod->EpetraMatrix()->NumGlobalRows() << " x " << kiimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kiimod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksnmod: " << ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kanmod!=null) cout << "kanmod: " << kanmod->EpetraMatrix()->NumGlobalRows() << " x " << kanmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kanmod: null" << endl;
-    if (kinmod!=null) cout << "kinmod: " << kinmod->EpetraMatrix()->NumGlobalRows() << " x " << kinmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kinmod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksmmod: " << ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kammod!=null) cout << "kammod: " << kammod->EpetraMatrix()->NumGlobalRows() << " x " << kammod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kammod: null" << endl;
-    if (kimmod!=null) cout << "kimmod: " << kimmod->EpetraMatrix()->NumGlobalRows() << " x " << kimmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kimmod: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   // we want to split fsmod into 2 groups a,i
   RCP<Epetra_Vector> famod, fimod;
@@ -2198,21 +1785,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   {
     LINALG::SplitVector(*fsmod,*gactivedofs_,famod,*gidofs,fimod);
   }
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    if (fsmod!=null) cout << "fsmod: " << fsmod->GlobalLength() << endl;
-    else cout << "fsmod: null" << endl;
-    if (famod!=null) cout << "famod: " << famod->GlobalLength() << endl;
-    else cout << "famod: null" << endl;
-    if (fimod!=null) cout << "fimod: " << fimod->GlobalLength() << endl;
-    else cout << "fimod: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Isolate active / inactive part from dold                           */
@@ -2259,28 +1831,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     tfamod = rcp(new Epetra_Vector(tmatrix_->RowMap()));
     tmatrix_->Multiply(false,*famod,*tfamod);
   }
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    if (tkanmod!=null) cout << "tkanmod: " << tkanmod->EpetraMatrix()->NumGlobalRows() << " x " << tkanmod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkanmod: null" << endl;
-    if (tkammod!=null) cout << "tkammod: " << tkammod->EpetraMatrix()->NumGlobalRows() << " x " << tkammod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkammod: null" << endl;
-    if (tkaimod!=null) cout << "tkaimod: " << tkaimod->EpetraMatrix()->NumGlobalRows() << " x " << tkaimod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkaimod: null" << endl;
-    if (tkaamod!=null) cout << "tkaamod: " << tkaamod->EpetraMatrix()->NumGlobalRows() << " x " << tkaamod->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "tkaamod: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "**********" << endl;
-    if (tfamod!=null) cout << "tfamod: " << tfamod->GlobalLength() << endl;
-    else cout << "tfamod: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
@@ -2366,7 +1916,7 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
  |  evaluate contact without basis transformation (public)    popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
-                                            RCP<Epetra_Vector> feff, int numiter)
+                                            RCP<Epetra_Vector> feff)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -2396,10 +1946,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // (this map is NOT allowed to have an overlap !!!)
   RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
   
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
@@ -2426,9 +1972,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -2479,34 +2022,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "k:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kss!=null) cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kss: null" << endl;
-    if (ksm!=null) cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksm: null" << endl;
-    if (ksn!=null) cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "ksn: null" << endl;
-    if (kms!=null) cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kms: null" << endl;
-    if (kmm!=null) cout << "kmm: " << kmm->EpetraMatrix()->NumGlobalRows() << " x " << kmm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmm: null" << endl;
-    if (kmn!=null) cout << "kmn: " << kmn->EpetraMatrix()->NumGlobalRows() << " x " << kmn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmn: null" << endl;
-    if (kns!=null) cout << "kns: " << kns->EpetraMatrix()->NumGlobalRows() << " x " << kns->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kns: null" << endl;
-    if (knm!=null) cout << "knm: " << knm->EpetraMatrix()->NumGlobalRows() << " x " << knm->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knm: null" << endl;
-    if (knn!=null) cout << "knn: " << knn->EpetraMatrix()->NumGlobalRows() << " x " << knn->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "knn: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
   /**********************************************************************/
@@ -2519,19 +2034,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // do the vector splitting smn -> sm+n -> s+m+n
   LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
   LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    cout << "f:  " << feff->GlobalLength() << endl;
-    cout << "fs: " << fs->GlobalLength() << endl;
-    cout << "fm: " << fm->GlobalLength() << endl;
-    cout << "fn: " << fn->GlobalLength() << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   // store some stuff for static condensation of LM
   fs_   = fs;
@@ -2558,48 +2060,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksm,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kam,tempmtx1,kim,tempmtx2);
   LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
   
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "*****************" << endl;
-    cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kaa!=null) cout << "kaa: " << kaa->EpetraMatrix()->NumGlobalRows() << " x " << kaa->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kaa: null" << endl;
-    if (kai!=null) cout << "kai: " << kai->EpetraMatrix()->NumGlobalRows() << " x " << kai->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kai: null" << endl;
-    if (kia!=null) cout << "kia: " << kia->EpetraMatrix()->NumGlobalRows() << " x " << kia->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kia: null" << endl;
-    if (kii!=null) cout << "kii: " << kii->EpetraMatrix()->NumGlobalRows() << " x " << kii->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kii: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kan!=null) cout << "kan: " << kan->EpetraMatrix()->NumGlobalRows() << " x " << kan->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kan: null" << endl;
-    if (kin!=null) cout << "kin: " << kin->EpetraMatrix()->NumGlobalRows() << " x " << kin->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kin: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kam!=null) cout << "kam: " << kam->EpetraMatrix()->NumGlobalRows() << " x " << kam->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kam: null" << endl;
-    if (kim!=null) cout << "kim: " << kim->EpetraMatrix()->NumGlobalRows() << " x " << kim->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kim: null" << endl;
-    cout << "*****************" << endl;
-    
-    cout << endl << "*****************" << endl;
-    cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
-    if (kma!=null) cout << "kma: " << kma->EpetraMatrix()->NumGlobalRows() << " x " << kma->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kma: null" << endl;
-    if (kmi!=null) cout << "kmi: " << kmi->EpetraMatrix()->NumGlobalRows() << " x " << kmi->EpetraMatrix()->NumGlobalCols() << endl;
-    else cout << "kmi: null" << endl;
-    cout << "*****************" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
-  
   // we want to split fsmod into 2 groups a,i
   RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*gactivedofs_));
   RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
@@ -2613,21 +2073,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   {
     LINALG::SplitVector(*fs,*gactivedofs_,fa,*gidofs,fi);
   }
-  
-  // output for checking everything
-#ifdef CONTACTDIMOUTPUT
-  if(Comm().MyPID()==0)
-  {
-    cout << endl << "**********" << endl;
-    if (fs!=null) cout << "fs: " << fs->GlobalLength() << endl;
-    else cout << "fs: null" << endl;
-    if (fa!=null) cout << "fa: " << fa->GlobalLength() << endl;
-    else cout << "fa: null" << endl;
-    if (fi!=null) cout << "fi: " << fi->GlobalLength() << endl;
-    else cout << "fi: null" << endl;
-    cout << "**********" << endl;
-  }
-#endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
   /* Isolate active part from mhat, invd and dold                       */
@@ -2924,24 +2369,6 @@ void CONTACT::Manager::Recover(RCP<Epetra_Vector> disi)
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
 { 
-#ifdef CONTACTCHECKHUEEBER
-  // debugging (check S. Hüeber)
-  if (IsInContact())
-  {
-    RCP<Epetra_Vector> gupdate = rcp(new Epetra_Vector(*gactiven_));
-    RCP<Epetra_Vector> activedisi =rcp(new Epetra_Vector(*gactivedofs_));
-    LINALG::Export(*disi,*activedisi);
-    nmatrix_->Multiply(false,*activedisi,*gupdate);
-    gupdate->ReplaceMap(*gactivenodes_);
-    RCP<Epetra_Vector> gupdateexp = rcp(new Epetra_Vector(*gsnoderowmap_));
-    LINALG::Export(*gupdate,*gupdateexp);
-    gupdateexp->Update(1.0,*g_,-1.0);
-    g_=gupdateexp;
-    //cout << *g_;
-    //cout << *gupdateexp;
-  } 
-#endif // #ifdef CONTACTCHECKHUEEBER
-  
   // extract incremental jump from disi (for active set)
   incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*disi,*incrjump_);
@@ -3036,32 +2463,6 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
 {
-#ifdef CONTACTCHECKHUEEBER
-  // debugging (check S. Hüeber)
-  if (IsInContact())
-  {
-    RCP<LINALG::SparseMatrix> nmhata = LINALG::Multiply(*nmatrix_,false,*mhata_,false,true);
-    
-    RCP<Epetra_Vector> gupdate = rcp(new Epetra_Vector(*gactiven_));
-    RCP<Epetra_Vector> gupdate2 = rcp(new Epetra_Vector(*gactiven_));
-    RCP<Epetra_Vector> activedisi =rcp(new Epetra_Vector(*gactivedofs_));
-    RCP<Epetra_Vector> masterdisi =rcp(new Epetra_Vector(*gmdofrowmap_));
-    LINALG::Export(*disi,*activedisi);
-    LINALG::Export(*disi,*masterdisi);
-    nmatrix_->Multiply(false,*activedisi,*gupdate);
-    nmhata->Multiply(false,*masterdisi,*gupdate2);
-    gupdate->ReplaceMap(*gactivenodes_);
-    gupdate2->ReplaceMap(*gactivenodes_);
-    RCP<Epetra_Vector> gupdateexp = rcp(new Epetra_Vector(*gsnoderowmap_));
-    RCP<Epetra_Vector> gupdateexp2 = rcp(new Epetra_Vector(*gsnoderowmap_));
-    LINALG::Export(*gupdate,*gupdateexp);
-    LINALG::Export(*gupdate2,*gupdateexp2);
-    gupdateexp->Update(1.0,*g_,-1.0);
-    gupdateexp->Update(1.0,*gupdateexp2,1.0);
-    g_=gupdateexp;
-  } 
-#endif // #ifdef CONTACTCHECKHUEEBER
-  
   // extract slave displacements from disi
   RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*disi,*disis);
@@ -3163,7 +2564,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
+void CONTACT::Manager::UpdateActiveSet()
 {
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
@@ -3171,18 +2572,6 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   
   // assume that active set has converged and check for opposite
   activesetconv_=true;
-  
-#ifdef CONTACTCHECKHUEEBER
-  Initialize(0);
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-    interface_[i]->SetState("displacement",disn);
-    interface_[i]->Evaluate();
-    interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
-  }
-#endif
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -3440,7 +2829,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
+void CONTACT::Manager::UpdateActiveSetSemiSmooth()
 {
   // FIXME: Here we do not consider zig-zagging yet!
   
@@ -3458,18 +2847,6 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
         
   // assume that active set has converged and check for opposite
   activesetconv_=true;
-  
-#ifdef CONTACTCHECKHUEEBER
-  Initialize(0);
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
-    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
-    interface_[i]->SetState("displacement",disn);
-    interface_[i]->Evaluate();
-    interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
-  }
-#endif
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)

@@ -219,11 +219,9 @@ public:
   resets all kind of nodal quantities like normal vector, weighted
   gap or Mortar and linearization maps. It also resets the global
   Mortar matrices D and M and the global gap vector g.
-  
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
     
   */
-  void InitializeMortar(int numiter);
+  void InitializeMortar();
     
   /*!
   \brief Initialize contact for next Newton step
@@ -233,10 +231,8 @@ public:
   includes the global normal / tangent matrices N and T, the global
   derivative matrices S and P and Tresca friction matrix L + vector r.
   
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
-  
   */
-  void Initialize(int numiter);
+  void Initialize();
   
   /*!
   \brief Evaluate Mortar matrices D,M and weighted gap
@@ -251,11 +247,9 @@ public:
   assembled into global matrices and vectors respectively. No setup of
   the global system is to be done here yet, so there is no need to pass
   in the effective stiffness K or the effective load vector f.
-  
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
       
   */
-  void EvaluateMortar(int numiter);
+  void EvaluateMortar();
     
   /*!
   \brief Evaluate contact
@@ -265,30 +259,27 @@ public:
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
         
   */
-  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
   
   /*!
   \brief Evaluate Tresca friction (with basis transformation)
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
     
   */
-  void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
   
   /*!
   \brief Evaluate Tresca friction (without basis transformation)
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
       
   */
-  void EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
    
   /*!
   \brief Evaluate contact (with basis transformation)
@@ -304,10 +295,9 @@ public:
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
   
   */
-  void EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
   
   /*!
   \brief Evaluate contact (without basis transformation)
@@ -323,10 +313,9 @@ public:
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
        
   */
-  void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
     
   /*!
   \brief Recovery method (for displacements and Lagrange multipliers)
@@ -380,11 +369,8 @@ public:
   is a change in the active set, another full Newton iteration has
   to be performed for the current time / load step.
   
-  \param disn (in): new displacement state n+1 of current Newton step
-                    Note that we only pass in disn for debugging purposes!
-  
   */
-  void UpdateActiveSet(RCP<Epetra_Vector> disn);
+  void UpdateActiveSet();
   
   /*!
   \brief Update active set and check for convergence
@@ -399,12 +385,9 @@ public:
   (not yet converged) Newton step. If there is a change in the active
   set or the residual and disp norm are still above their limits,
   another Newton step has to be performed.
-  
-  \param disn (in): new displacement state n+1 of current Newton step
-                    Note that we only pass in disn for debugging purposes!
-                   
+
   */
-  void UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn);
+  void UpdateActiveSetSemiSmooth();
   
   /*!
   \brief Compute contact force vector
