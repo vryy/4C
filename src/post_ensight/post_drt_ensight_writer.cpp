@@ -20,6 +20,14 @@
 using namespace std;
 
 
+//! 6 Surfaces of a Hex27 element with 9 nodes per surface
+const int Hex20_BaciToEnsightGold[20] = 
+        { 0,  1,  2,  3,
+          4,  5,  6,  7,
+          8,  9, 10, 11,
+         16, 17, 18, 19,
+         12, 13, 14, 15};
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EnsightWriter::EnsightWriter(PostField* field,
@@ -1876,7 +1884,6 @@ void EnsightWriter::WriteCells(
         switch (actele->Shape())
         {
         case DRT::Element::line2:
-        case DRT::Element::hex20:
         case DRT::Element::hex8:
         case DRT::Element::quad4:
         case DRT::Element::quad8:
@@ -1894,6 +1901,19 @@ void EnsightWriter::WriteCells(
           {
             if (myrank_==0) // proc0 can write its elements immediately
               Write(geofile, proc0map->LID(nodes[inode]->Id())+1);
+            else // elements on other procs have to store their global node ids
+              nodevector.push_back(nodes[inode]->Id());
+          }
+          break;
+        }
+        case DRT::Element::hex20:
+        {
+          // standard case with direct support
+          const int numnp = actele->NumNode();
+          for (int inode=0; inode<numnp; ++inode)
+          {
+            if (myrank_==0) // proc0 can write its elements immediately
+              Write(geofile, proc0map->LID(nodes[Hex20_BaciToEnsightGold[inode]]->Id())+1);
             else // elements on other procs have to store their global node ids
               nodevector.push_back(nodes[inode]->Id());
           }
