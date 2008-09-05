@@ -29,6 +29,7 @@ Maintainer: Sophie Rausch
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_adapter/adapter_structure.H"
 #include "../drt_structure/strugenalpha.H"
 #include <math.h>
 
@@ -39,7 +40,8 @@ class Inv_analysis : public StruGenAlpha {
                                // paramters should be fittet to
                 vector<int>    surfneum_nodes_;
 		vector<double>   disp_;		                // displacment vector in all three direction
-                Epetra_SerialDenseVector final_disp_;		// calculated displacment
+
+                Epetra_SerialDenseVector final_disp_;                                                // calculated displacment
                 Epetra_SerialDenseVector final_disp_o_;		// calculated displacment of the previous loop
 		Epetra_SerialDenseVector measured_disp_;	// measured displacment of the experiments (target value)
 		Epetra_SerialDenseVector residual_disp_;	// final_disp_ - measured_disp
@@ -87,6 +89,7 @@ class Inv_analysis : public StruGenAlpha {
                 void calculate_new_parameters();
 		void evaluate();
 		void Integrate();
+                Teuchos::RCP<Epetra_Map> ConditionDofMap(const DRT::Discretization& dis, std::string condname);
 
 		// virtual void Integrate();
 
