@@ -1915,7 +1915,7 @@ void EnsightWriter::WriteCells(
             if (myrank_==0) // proc0 can write its elements immediately
               Write(geofile, proc0map->LID(nodes[Hex20_BaciToEnsightGold[inode]]->Id())+1);
             else // elements on other procs have to store their global node ids
-              nodevector.push_back(nodes[inode]->Id());
+              nodevector.push_back(nodes[Hex20_BaciToEnsightGold[inode]]->Id());
           }
           break;
         }
