@@ -87,6 +87,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owner
   */
   So_hex8(int id, int owner);
 
