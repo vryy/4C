@@ -107,6 +107,8 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
     {
     case DRT::Element::hex8: 
       ValidateElementJacobian(mymesh,distype,eb); break;
+    case DRT::Element::hex20: 
+      ValidateElementJacobian(mymesh,distype,eb); break;
     case DRT::Element::tet4: case DRT::Element::tet10:
       ValidateElementJacobian(mymesh,distype,eb); break;
     case DRT::Element::wedge6: 
