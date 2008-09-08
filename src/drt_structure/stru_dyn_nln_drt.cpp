@@ -196,8 +196,8 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
       genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
 
-      genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
-      genalphaparams.set<int>   ("uzawa maxiter",sdyn.get<int>("UZAWAMAXITER"));
+      genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
+      genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
       genalphaparams.set<string>("uzawa algorithm",sdyn.get<string>("UZAWAALGO"));
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
