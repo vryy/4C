@@ -612,8 +612,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
+  //Reading kind of background fluid stream in the thermal bath
   setStringToIntegralParameter("THERMALBATH","None","Type of thermal bath applied to elements",
-                               //listing possible strings in input file in category FLOWFIELD
+                               //listing possible strings in input file in category THERMALBATH
                                tuple<std::string>("None","none",
                                                   "Uniform","uniform",
                                                   "ShearFlow","shearflow","Shearflow"),
@@ -622,7 +623,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPUTPARAMS::thermalbath_uniform,INPUTPARAMS::thermalbath_uniform,
                                           INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow),
                                &statmech);
-
+  //Reading which kind of special output should be written to files
+  setStringToIntegralParameter("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
+                                 //listing possible strings in input file in category SPECIAL_OUTPUT
+                                 tuple<std::string>("None","none",
+                                                    "EndToEnd_log","endtoend","EndtoEnd",
+                                                    "EndToEnd_Ergodicity","endtoend_ergodicity",
+                                                    "Viscoelasticity","viscoelasticity","ViscoElasticity"),
+                                 //translating input strings into BACI input parameters
+                                 tuple<int>(INPUTPARAMS::statout_none,INPUTPARAMS::statout_none,
+                                            INPUTPARAMS::statout_endtoend,INPUTPARAMS::statout_endtoend,INPUTPARAMS::statout_endtoend,
+                                            INPUTPARAMS::statout_endtoend_ergodicity,INPUTPARAMS::statout_endtoend_ergodicity,
+                                            INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity),
+                                 &statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);

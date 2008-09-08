@@ -55,6 +55,14 @@ namespace INPUTPARAMS
     thermalbath_uniform,
     thermalbath_shearflow
   };
+  /// (this enum represents the input file parameter STAT_OUTPUT)
+  enum StatOutput
+  {
+    statout_none,
+    statout_endtoend,
+    statout_endtoend_ergodicity,
+    statout_viscoelasticity
+  };
   //-------------------------------------------STRUCTURAL CONTACT
 
   /// Type of structural contact problem
