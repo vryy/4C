@@ -543,6 +543,8 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
     const DRT::Element::DiscretizationType  xeledistype
     )
 {
+  GEO::EleGeoType eleGeoType = GEO::CARTESIAN;
+  
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
   if (not intersected)
   {
@@ -555,9 +557,18 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
       switch (xeledistype)
       {
         case DRT::Element::hex8:
-          rule = DRT::UTILS::intrule_tet_45point;
+          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_24point;
+          else
+            rule = DRT::UTILS::intrule_tet_45point;
           break;
-        case DRT::Element::hex20: case DRT::Element::hex27:
+        case DRT::Element::hex20:
+          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_45point;
+          else
+            rule = DRT::UTILS::intrule_tet_125point_peano;
+          break;
+        case DRT::Element::hex27:
           rule = DRT::UTILS::intrule_tet_343point_peano;
           break;
         default:
