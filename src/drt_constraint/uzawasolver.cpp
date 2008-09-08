@@ -60,8 +60,8 @@ invtoggle_(&(*invtoggle),false)
     isadapttol_   = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
   }
   adaptolbetter_  = params.get<double>("ADAPTCONV_BETTER",0.01);
-  maxIter_        = params.get<int>   ("uzawa maxiter"         ,50);
-  uzawaParam_     = params.get<double>("uzawa parameter",1);
+  maxIter_        = params.get<int>   ("UZAWAMAXITER"         ,50);
+  uzawaParam_     = params.get<double>("UZAWAPARAM",1);
   counter_        = 0;
   return;
 }
@@ -86,12 +86,13 @@ void UTILS::UzawaSolver::Solve(
   double norm_uzawa_old;
   double quotient;
   double norm_constr_uzawa;
-  int numiter_uzawa=0;
+  int numiter_uzawa = 0;
+  //const double convecscale = sqrt(rhsconstr->GlobalLength());
   //counter used for adaptivity
-  int count_paramadapt=1;
+  int count_paramadapt = 1;
 
-  RCP<Epetra_Vector> constrTLagrInc=rcp(new Epetra_Vector(rhsstand->Map()));
-  RCP<Epetra_Vector> constrTDispInc= rcp(new Epetra_Vector(rhsconstr->Map()));
+  RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
+  RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
 
   // Compute residual of the uzawa algorithm
 
@@ -110,6 +111,7 @@ void UTILS::UzawaSolver::Solve(
   
   constr_res.Update(1.0,*(rhsconstr),0.0);
   constr_res.Norm2(&norm_constr_uzawa);
+  //constr_res.NormInf(&norm_constr_uzawa);
   quotient =1;
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
   //Solve one iteration step with augmented lagrange
@@ -151,7 +153,7 @@ void UTILS::UzawaSolver::Solve(
 
       constr_res.Update(1.0,*constrTDispInc,1.0,*rhsconstr,0.0);
       constr_res.Norm2(& norm_constr_uzawa);
-
+      //constr_res.NormInf(& norm_constr_uzawa);
       //-------------Adapt Uzawa parameter--------------
       // For a constant parameter the quotient of two successive residual norms
       // stays constant during the computation. So this quotient seems to be a good
