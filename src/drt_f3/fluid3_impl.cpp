@@ -725,7 +725,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
   // add displacement, when fluid nodes move in the ALE case
   if (ele->is_ale_)
   {
-    xyze_.Update(edispnp);
+    xyze_.Update(1.0,edispnp,1.0);
   }
 
   // dead load in element nodes
@@ -940,7 +940,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
     // We handle the ale case very implicitely here using the (possible mesh
     // movement dependent) convective velocity. This avoids a lot of ale terms
     // we used to calculate.
-    convvelint_.Copy(velint_);
+    convvelint_.Update(velint_);
     if (ele->is_ale_)
     {
       convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
@@ -987,7 +987,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
     //rhsint_ = histvec_(i) + bodyforce_(i)*timefac;
-    rhsint_.Update(1.0,histvec_,timefac,bodyforce_,0.0);
+    rhsint_.Update(1.0,histvec_,timefac,bodyforce_);
 
     /*----------------- get numerical representation of single operators ---*/
 
@@ -2785,7 +2785,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Caltau(
   // normed velocity at element centre
   if (vel_norm>=1e-6)
   {
-    velino_.Copy(velint_);
+    velino_.Update(velint_);
     velino_.Scale(1.0/vel_norm);
   }
   else
@@ -3798,7 +3798,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::gder2(Fluid3* ele)
   */
 
   //derxy2_ += deriv2_;
-  derxy2_.Update(deriv2_);
+  derxy2_.Update(1.0,deriv2_,1.0);
 #ifdef PRINTDEBUG
   writeArray(derxy2_,"derxy2_#2");
 #endif
