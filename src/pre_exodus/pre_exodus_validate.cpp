@@ -80,7 +80,7 @@ void EXODUS::ValidateInputFile(const string datfile)
 
   // materials cannot be checked via problem->ReadMaterial()
   // since the filters use a dummy definition for this method
-  
+
   // do not read the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
 
@@ -96,28 +96,14 @@ void EXODUS::ValidateInputFile(const string datfile)
 void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
   if (mymesh.GetNumDim() != 3) dserror("Element Validation only for 3 Dimensions");
-  
+
   map<int,RCP<ElementBlock> > myebs = mymesh.GetElementBlocks();
   map<int,RCP<ElementBlock> >::iterator i_eb;
-  
+
   for(i_eb=myebs.begin(); i_eb!=myebs.end(); ++i_eb){
     RCP<ElementBlock> eb = i_eb->second;
     const DRT::Element::DiscretizationType distype = PreShapeToDrt(eb->GetShape());
-    switch(distype)
-    {
-    case DRT::Element::hex8: 
-      ValidateElementJacobian(mymesh,distype,eb); break;
-    case DRT::Element::hex20: 
-      ValidateElementJacobian(mymesh,distype,eb); break;
-    case DRT::Element::tet4: case DRT::Element::tet10:
-      ValidateElementJacobian(mymesh,distype,eb); break;
-    case DRT::Element::wedge6: 
-      ValidateElementJacobian(mymesh,distype,eb); break;
-    case DRT::Element::pyramid5:
-      ValidateElementJacobian(mymesh,distype,eb); break;
-    default:
-        cout << "Warning: No ElementJacobian Validation for this distype: " << DRT::DistypeToString(distype) << endl;
-    }
+    ValidateElementJacobian(mymesh,distype,eb); break;
   }
   return;
 }
@@ -187,7 +173,7 @@ bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetr
                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
                      xjm(0,1)*xjm(1,0)*xjm(2,2);
   if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
-  
+
   if (det < 0.0) return false;
   else return true;
 }
@@ -237,7 +223,7 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
   int n_posdet = 0;
   int n_negdet = 0;
   double tonode = sqrt(3);
-  
+
   for (int i = 0; i < intpoints.nquad; ++i) {
     DRT::UTILS::shape_function_3D_deriv1(deriv,tonode*intpoints.qxg[i][0],tonode*intpoints.qxg[i][1],tonode*intpoints.qxg[i][2],distype);
     xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
@@ -253,7 +239,7 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
     }
     else ++n_posdet;
   }
-  
+
   if (intpoints.nquad == 1){
     if (n_posdet==1 && n_negdet==0) return 1;
     else return -1;
@@ -262,7 +248,7 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
     else if (n_posdet==0 && n_negdet==intpoints.nquad) return -1;
     else return 0;
   }
-  
+
   return 0;
 }
 
@@ -289,7 +275,7 @@ vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::Discr
     new_nodeids[6] = old_nodeids[4];
     new_nodeids[7] = old_nodeids[7];
     new_nodeids[8] = old_nodeids[8];
-    new_nodeids[9] = old_nodeids[9];          
+    new_nodeids[9] = old_nodeids[9];
     break;
   }
   case DRT::Element::hex8:{
