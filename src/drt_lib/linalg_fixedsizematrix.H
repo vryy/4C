@@ -53,6 +53,7 @@ namespace LINALG
       static inline void Cannot_compute_inverse_of_nonsquare_matrix() { };
       static inline void Transpose_argument_must_be_N_or_T() { };
       static inline void Matrix_size_in_solver_must_be_square() { };
+      static inline void Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3() { };
     };
 
     /// Compile time error definitions: missing functions raise errors
@@ -570,6 +571,9 @@ namespace LINALG
       they must be the same number. The sizes of \e in and \e out are
       expected to be (\c i)x(\c j), and they must be square.
 
+      \note This function only works for matrices with sizes up to
+      3x3. For larger matrices use the FixedSizeSerialDenseSolver.
+
       \param out
         matrix the result should be stored in, size (\c i)x(\c j)
       \param in
@@ -585,6 +589,9 @@ namespace LINALG
       number. The size of \e mat is expected to be (\c i)x(\c j), and it must
       be square.
 
+      \note This function only works for matrices with sizes up to
+      3x3. For larger matrices use the FixedSizeSerialDenseSolver.
+
       \param mat
         matrix to be inverted in place, size (\c i)x(\c j)
      */
@@ -597,6 +604,7 @@ namespace LINALG
       interface there are two template parameters \c i and \c j, but they
       must be the same number. The size of \e mat is expected to be
       (\c i)x(\c j), and it must be square.
+
       \param mat
         pointer to the matrix, size (\c i)x(\c j)
       \return determinant
@@ -1065,15 +1073,8 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline double invert(double* out, const double* in)
     {
-      DENSEERROR::Checker<i == j>::Cannot_compute_inverse_of_nonsquare_matrix();
-      /* Looks like a decent solution, but where can I get the
-       * determinant from?
-       * Ok, one wouldnt call the solver but call LAPACK directly instead...
-      FixedSizeSerialDenseMatrix<i,j> mat(out,true); // a view to out
-      mat.Copy(in);
-      FixedSizeSerialDenseSolver<i,j> solver;
-      solver.SetMatrix(mat);
-      solver.Invert(); */
+      DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
+      DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
       return 0.0;
     }
 
@@ -1130,25 +1131,8 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline double invert(double* mat)
     {
-      DENSEERROR::Checker<i == j>::Cannot_compute_inverse_of_nonsquare_matrix();
-      /*
-       * A first attempt, but with a few problems. Allocating memory is not good here,
-       * and where can I get the determinant from?
-      int errnum;
-      // should a stl vector be used here?
-      double* pivot = new double [i];
-      lapack_.GETRF(i, j, mat, i, pivot, &errnum);
-      if (errnum != 0) {
-          delete [] pivot;
-          return errnum;
-      }
-      int lwork = 4*cols;
-      double* work = new double[lwork];
-      lapack_.GETRI(j, mat, i, pivot, work, &lwork, &errnum);
-      delete [] pivot;
-      delete [] work;
-      if (errnum != 0) return errnum;
-      */
+      DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
+      DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
       return 0.0;
     }
 
