@@ -231,7 +231,7 @@ void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
                                     Epetra_SerialDenseMatrix& nodalstresses)
 {
   const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
-  const DiscretizationType distype = this->Shape();
+  const DiscretizationType dt = this->Shape();
   int numgp = intpoints.nquad;
   int numnode = NumNode();
   Epetra_SerialDenseVector funct(numnode);
@@ -245,8 +245,8 @@ void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
   }
   else
   { 
-  	// quad4 and quad9
-    if (numgp==4 or numgp==9)
+  	// tri3, quad4, tri6, quad8 and quad9
+    if (dt==tri3 or dt==tri6 or dt==quad4 or dt==quad8 or dt==quad9)
     { 
     	// loop over gaussian points 
       for (int ip=0; ip<intpoints.nquad; ++ip)
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
         }
         
         // shape functions for the extrapolated coordinates
-        DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,distype);
+        DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,dt);
         
         // extrapolation matrix
         for(int i=0;i<numnode;++i)     
@@ -290,13 +290,6 @@ void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
       isfilled = true;
     }
         
-    // for tri3 elements the extrapolated values are the same as those at
-    // gaussian points
-    else if (numgp==3)
-    {
-   	nodalstresses=stresses;
-   	isfilled = true;
-    }   
     else dserror("extrapolation not yet implemented for this element type");
   }
 }
