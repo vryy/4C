@@ -397,7 +397,6 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   cout << "eigenvectors: " << stresses_->at(gp);
   cout << "eigenvalues: " << lambda << endl;
 #endif
-
   // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
   double newgamma = atan(lambda(1)/lambda(2));
 

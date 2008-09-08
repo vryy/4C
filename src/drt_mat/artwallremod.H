@@ -79,7 +79,8 @@ namespace MAT
 
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_artwallremod; }
-    
+
+    /// evaluate stress and elasticity matrix
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const Epetra_SerialDenseMatrix& defgrd,
                   const int gp,
@@ -87,23 +88,25 @@ namespace MAT
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
 
+    /// return density
     double Density() {return matdata_->m.artwallremod->density;}
-    
+
+    /// check whether internal variables are initialized
     bool Initialized() const
       { return isinit_&&(gamma_!=Teuchos::null);}
-    
+
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
-    
+
     RCP<vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
-    
+
     RCP<vector<double> > Getgammas() const {return gamma_;}
 
     RCP<vector<double> > Getremtimes() const {return remtime_;}
 
     RCP<vector<vector<double> > > Geta1() const {return a1_;}
-    
+
     RCP<vector<vector<double> > > Geta2() const {return a2_;}
-    
+
     void Setup(const int numgp, const int eleid);
 
     void Remodel(const int gp, const double time);
@@ -111,12 +114,12 @@ namespace MAT
     void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);
 
     std::string PrintVec(const vector<double> actvec);
-    
+
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
-    
+
     /// angle of alignment at gp
     Teuchos::RCP<vector<double> > gamma_;
     /// first fiber vector per gp
@@ -129,12 +132,12 @@ namespace MAT
     Teuchos::RCP<vector<vector<double> > > lambda_;
     /// current stress
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
-    
-    // remember time
+
+    /// remember time
     Teuchos::RCP<vector<double> > remtime_;
-    
+
     bool isinit_;
-    
+
   };
 
 void ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
