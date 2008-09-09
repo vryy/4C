@@ -31,6 +31,7 @@ UTILS::UzawaSolver::UzawaSolver(
     RCP<Epetra_Vector>    invtoggle,
     ParameterList params):
 actdisc_(discr),
+maxIter_(params.get<int>   ("UZAWAMAXITER", 50)),
 dirichtoggle_(&(*dirichtoggle),false),
 invtoggle_(&(*invtoggle),false)
 {
@@ -57,8 +58,9 @@ invtoggle_(&(*invtoggle),false)
     isadapttol_   = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
   }
   adaptolbetter_  = params.get<double>("ADAPTCONV_BETTER", 0.01);
-  maxIter_        = params.get<int>   ("UZAWAMAXITER", 50);
+//  maxIter_        = params.get<int>   ("UZAWAMAXITER", 50);
   uzawaparam_     = params.get<double>("UZAWAPARAM", 1);
+  minparam_       = uzawaparam_*1E-3;
   uzawatol_       = params.get<double>("UZAWATOL", 1E-8);
   counter_        = 0;
   return;
@@ -91,8 +93,7 @@ void UTILS::UzawaSolver::Solve(
   //counter used for adaptivity
   int count_paramadapt = 1;
 
-  const double computol=1E-8;
-  const double minparam=1E-6;
+  const double computol = 1E-8;
   
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
@@ -164,7 +165,7 @@ void UTILS::UzawaSolver::Solve(
       // In case of divergence the parameter must be too high
       if (quotient_new>(1.+computol))
       {
-        if (uzawaparam_>2.*minparam)
+        if (uzawaparam_>2.*minparam_)
           uzawaparam_ = uzawaparam_/2.;
         quotient=1;
       }
@@ -181,13 +182,13 @@ void UTILS::UzawaSolver::Solve(
         // previous parameter, the parameter is decreased by a factor 1/(1+quotient_new)
         else 
         {
-          if (uzawaparam_>2.*minparam)
+          if (uzawaparam_>2.*minparam_)
             uzawaparam_=uzawaparam_/(1.+quotient_new);
           quotient=quotient_new;
         }
       }
       
-      if (uzawaparam_<=minparam)
+      if (uzawaparam_<=minparam_)
       {
         if (!myrank)
           cout<<"leaving uzawa loop since Uzawa parameter is too low"<<endl;
