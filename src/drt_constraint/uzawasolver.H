@@ -79,7 +79,7 @@ namespace UTILS
     */
     double GetUzawaParameter()
     {
-      return uzawaParam_;
+      return uzawaparam_;
     }
 
     /*!
@@ -90,7 +90,7 @@ namespace UTILS
       double restartval ///< value to replace Uzawa Parameter with
     )
     {
-      uzawaParam_=restartval;
+      uzawaparam_=restartval;
       counter_=1;
       return;
     }
@@ -98,17 +98,13 @@ namespace UTILS
 private:
 
     // do not want = operator, cctor
-
     UzawaSolver operator = (const UzawaSolver& old);
     UzawaSolver(const UzawaSolver& old);
 
-
     RCP<DRT::Discretization> actdisc_; ///<standard discretization
     int maxIter_;  ///< number of maximal iterations
-    double uzawaParam_; ///< parameter for Uzawa algorithm
-    double norm_uzawa_;  ///< error norm of extended linear system
-    double quotient_;  ///< quotient of error norms between current and previous iteration
-    double toldisp_;  ///< tolerance for displacement
+    double uzawaparam_; ///< parameter for Uzawa algorithm
+    double uzawatol_;  //< tolerance
     double tolres_;  ///< tolerance for residual
     double tolconstr_;  ///< tolerance for constraint
     RCP<Epetra_Vector>    dirichtoggle_;  ///< 
@@ -117,7 +113,6 @@ private:
     bool adaptolbetter_ ; ///< adaptive tolerance for solver usefull?
     RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counter used for adaptation of uzawa parameter
-
 
   }; //class
 }

@@ -84,7 +84,8 @@ namespace UTILS
     double GetErrorNorm()
     {
       double foo;
-      constrainterr_->Norm2(&foo);
+      constrainterr_->NormInf(&foo);
+      //constrainterr_->Norm2(&foo);
       return foo;
     };
   
