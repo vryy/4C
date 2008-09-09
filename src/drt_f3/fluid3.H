@@ -55,10 +55,10 @@ namespace ELEMENTS
 // forward declarations
 class Fluid3Surface;
 class Fluid3Line;
-template<int iel_>  class Fluid3Impl;
-class Fluid3lin_Impl;
+template<int iel>  class Fluid3Impl;
+template<int iel>  class Fluid3lin_Impl;
 class Fluid3GenalphaResVMM;
-class Fluid3Stationary;
+template<int iel> class Fluid3StationaryImpl;
 class Fluid3Register;
 
 /*!
@@ -85,9 +85,25 @@ public:
   friend class Fluid3Impl<15>;
   friend class Fluid3Impl<20>;
   friend class Fluid3Impl<27>;
-  friend class Fluid3lin_Impl;
+  friend class Fluid3lin_ImplInterface;
+  friend class Fluid3lin_Impl<4>;
+  friend class Fluid3lin_Impl<5>;
+  friend class Fluid3lin_Impl<6>;
+  friend class Fluid3lin_Impl<8>;
+  friend class Fluid3lin_Impl<10>;
+  friend class Fluid3lin_Impl<15>;
+  friend class Fluid3lin_Impl<20>;
+  friend class Fluid3lin_Impl<27>;
   friend class Fluid3GenalphaResVMM;
-  friend class Fluid3Stationary;
+  friend class Fluid3StationaryImplInterface;
+  friend class Fluid3StationaryImpl<4>;
+  friend class Fluid3StationaryImpl<5>;
+  friend class Fluid3StationaryImpl<6>;
+  friend class Fluid3StationaryImpl<8>;
+  friend class Fluid3StationaryImpl<10>;
+  friend class Fluid3StationaryImpl<15>;
+  friend class Fluid3StationaryImpl<20>;
+  friend class Fluid3StationaryImpl<27>;
   friend class Fluid3SystemEvaluator;
 
   //@}
@@ -704,9 +720,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
-
-  /// Internal implementation class for fluid element -- stationary formulation
-  Fluid3Stationary* StationaryImpl();
 
 }; // class Fluid3
 

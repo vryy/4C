@@ -198,69 +198,18 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_linear_fluid:
       {
-        // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
-        if (velnp==null || hist==null)
-          dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+        return DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(this)->Evaluate(this,
+                                                                            params,
+                                                                            discretization,
+                                                                            lm,
+                                                                            elemat1,
+                                                                            elemat2,
+                                                                            elevec1,
+                                                                            elevec2,
+                                                                            elevec3,
+                                                                            mat,
+                                                                            actmat);
 
-        // extract local values from the global vectors
-        vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-        vector<double> myhist(lm.size());
-        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-
-        RefCountPtr<const Epetra_Vector> dispnp;
-        vector<double> mydispnp;
-
-        // create blitz objects for element arrays
-        const int numnode = NumNode();
-        blitz::Array<double, 1> eprenp(numnode);
-        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-
-        // split velocity and pressure, insert into element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          evelnp(0,i) = myvelnp[0+(i*4)];
-          evelnp(1,i) = myvelnp[1+(i*4)];
-          evelnp(2,i) = myvelnp[2+(i*4)];
-
-          eprenp(i) = myvelnp[3+(i*4)];
-
-          // the history vector contains the information of time step t_n (mass rhs!)
-          evhist(0,i) = myhist[0+(i*4)];
-          evhist(1,i) = myhist[1+(i*4)];
-          evhist(2,i) = myhist[2+(i*4)];
-        }
-
-        // get control parameter
-        const double time = params.get<double>("total time",-1.0);
-
-        // One-step-Theta: timefac = theta*dt
-        // BDF2:           timefac = 2/3 * dt
-        const double timefac = params.get<double>("thsl",-1.0);
-        if (timefac < 0.0) dserror("No thsl supplied");
-
-        // wrap epetra serial dense objects in blitz objects
-        blitz::Array<double, 2> estif(elemat1.A(),
-                                      blitz::shape(elemat1.M(),elemat1.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 1> eforce(elevec1.Values(),
-                                       blitz::shape(elevec1.Length()),
-                                       blitz::neverDeleteData);
-
-        // calculate element coefficient matrix and rhs
-        DRT::ELEMENTS::Fluid3lin_Impl::Impl(this)->Sysmat(this,
-			    evelnp,
-			    eprenp,
-			    evhist,
-			    estif,
-			    eforce,
-			    actmat,
-			    time,
-			    timefac);
       }
       break;
       case calc_fluid_beltrami_error:
@@ -1390,53 +1339,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
-          // need current velocity/pressure
-          RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          if (velnp==null)
-            dserror("Cannot get state vector 'velnp'");
-
-          // extract local values from the global vector
-          vector<double> myvelnp(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-          if (is_ale_)
-          {
-        	  dserror("No ALE support within stationary fluid solver.");
-          }
-
-          // split velocity and pressure
-          // create blitz objects
-
-          const int numnode = NumNode();
-          blitz::Array<double, 1> eprenp(numnode);
-          blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-
-          for (int i=0;i<numnode;++i)
-          {
-            evelnp(0,i) = myvelnp[0+(i*4)];
-            evelnp(1,i) = myvelnp[1+(i*4)];
-            evelnp(2,i) = myvelnp[2+(i*4)];
-
-            eprenp(i) = myvelnp[3+(i*4)];
-          }
-
-          // get control parameter
-          const double pseudotime = params.get<double>("total time",-1.0);
-          if (pseudotime < 0.0)
-        	  dserror("no value for total (pseudo-)time in the parameter list");
-
-	  string newtonstr=params.get<string>("Linearisation");
-
-	  bool newton = false;
-	  if(newtonstr=="Newton")
-	  {
-	    newton=true;
-	  }
-
-          // --------------------------------------------------
-          // set parameters for stabilisation
-          ParameterList& stablist = params.sublist("STABILIZATION");
-
           // if not available, define map from string to action
           if(stabstrtoact_.empty())
           {
@@ -1466,127 +1368,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
           }
 
-          StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
-          StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
-          StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-          StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-          StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-          StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
-
-          // get flag for fine-scale subgrid viscosity
-          StabilisationAction fssgv =
-            ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
-
-          // get coarse- and fine-scale velocity as well as coarse-scale convective stress
-          RCP<const Epetra_Vector> csvelnp;
-          RCP<const Epetra_Vector> fsvelnp;
-          RCP<const Epetra_Vector> csconvnp;
-          blitz::Array<double, 2> csevelnp (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> fsevelnp (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> cseconvnp(3,numnode,blitz::ColumnMajorArray<2>());
-
-          if (fssgv != fssgv_no)
-          {
-            fsvelnp = discretization.GetState("fsvelnp");
-            if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-            vector<double> myfsvelnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
-
-            // get fine-scale velocity and insert into element arrays
-            for (int i=0;i<numnode;++i)
-            {
-              fsevelnp(0,i) = myfsvelnp[0+(i*4)];
-              fsevelnp(1,i) = myfsvelnp[1+(i*4)];
-              fsevelnp(2,i) = myfsvelnp[2+(i*4)];
-            }
-            if (fssgv == fssgv_mixed_Smagorinsky_all ||
-                fssgv == fssgv_mixed_Smagorinsky_small ||
-                fssgv == fssgv_scale_similarity)
-            {
-              csvelnp = discretization.GetState("csvelnp");
-              if (csvelnp==null) dserror("Cannot get state vector 'csvelnp'");
-              vector<double> mycsvelnp(lm.size());
-              DRT::UTILS::ExtractMyValues(*csvelnp,mycsvelnp,lm);
-
-              // get coarse-scale velocity and insert into element arrays
-              for (int i=0;i<numnode;++i)
-              {
-                csevelnp(0,i) = mycsvelnp[0+(i*4)];
-                csevelnp(1,i) = mycsvelnp[1+(i*4)];
-                csevelnp(2,i) = mycsvelnp[2+(i*4)];
-              }
-
-              csconvnp = discretization.GetState("csconvnp");
-              if (csconvnp==null) dserror("Cannot get state vector 'csconvnp'");
-              vector<double> mycsconvnp(lm.size());
-              DRT::UTILS::ExtractMyValues(*csconvnp,mycsconvnp,lm);
-
-              // get coarse-scale velocity and insert into element arrays
-              for (int i=0;i<numnode;++i)
-              {
-                cseconvnp(0,i) = mycsconvnp[0+(i*4)];
-                cseconvnp(1,i) = mycsconvnp[1+(i*4)];
-                cseconvnp(2,i) = mycsconvnp[2+(i*4)];
-              }
-            }
-          }
-          else
-          {
-            for (int i=0;i<numnode;++i)
-            {
-              fsevelnp(0,i) = 0.0;
-              fsevelnp(1,i) = 0.0;
-              fsevelnp(2,i) = 0.0;
-            }
-          }
-
-          // get Smagorinsky model parameter for fine-scale subgrid viscosity
-          ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
-          const double Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-          // wrap epetra serial dense objects in blitz objects
-          blitz::Array<double, 2> estif(elemat1.A(),
-                                        blitz::shape(elemat1.M(),elemat1.N()),
-                                        blitz::neverDeleteData,
-                                        blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 1> eforce(elevec1.Values(),
-                                         blitz::shape(elevec1.Length()),
-                                         blitz::neverDeleteData);
-
-          // calculate element coefficient matrix and rhs
-          StationaryImpl()->Sysmat(this,
-                                   evelnp,
-                                   csevelnp,
-                                   fsevelnp,
-                                   cseconvnp,
-                                   eprenp,
-                                   estif,
-                                   eforce,
-                                   actmat,
-                                   pseudotime,
-                                   newton,
-                                   fssgv,
-                                   pspg,
-                                   supg,
-                                   vstab,
-                                   cstab,
-                                   cross,
-                                   reynolds,
-                                   Cs);
-
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        double dens = 0.0;
-        if(mat->MaterialType()== m_fluid)
-          dens = actmat->m.fluid->density;
-        else if(mat->MaterialType()== m_carreauyasuda)
-          dens = actmat->m.carreauyasuda->density;
-        else if(mat->MaterialType()== m_modpowerlaw)
-          dens = actmat->m.modpowerlaw->density;
-        else
-          dserror("no fluid material found");
-
-        params.set("density", dens);
+          return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(this,
+                                                                                    params,
+                                                                                    discretization,
+                                                                                    lm,
+                                                                                    elemat1,
+                                                                                    elemat2,
+                                                                                    elevec1,
+                                                                                    elevec2,
+                                                                                    elevec3,
+                                                                                    mat,
+                                                                                    actmat);
       }
       break;
       case calc_convective_stresses:

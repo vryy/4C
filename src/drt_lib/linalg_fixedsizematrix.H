@@ -14,7 +14,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-
 namespace LINALG
 {
 
@@ -81,7 +80,7 @@ namespace LINALG
     in column-major mode, just like the function A() of Epetra- or
     fixed size serial dense matrices return them.
 
-    \author Martin
+    \author Martin Kuettler
     \date 09/08
    */
   namespace DENSEFUNCTIONS
@@ -407,6 +406,9 @@ namespace LINALG
 
     /// 1-norm
     /*!
+      This function computes the norm of the whole matrix. It returns
+      a different result than Epetra_SerialDenseMatrix::OneNorm(),
+      which returns the maximum of the norms of the columns.
       The template arguments \c i and \c j are the size of the matrix.
 
       \param mat
@@ -429,6 +431,7 @@ namespace LINALG
 
     /// Inf-norm
     /*!
+      This function does not do the same as Epetra_SerialDenseMatrix::InfNorm().
       The template arguments \c i and \c j are the size of the matrix.
 
       \param mat
@@ -1007,6 +1010,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(const double outfac, double* out, double infac, const double* left, const double* right)
     {
+      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+        multiply<i,j,k>(out,infac,left,right);
+        return;
+      }
       double tmp;
       for (unsigned int d1 = 0; d1 < k; ++d1) {
         for (unsigned int d2 = 0; d2 < i; ++d2 ) {
@@ -1032,6 +1039,10 @@ namespace LINALG
     void multiply(const double outfac, double* out, const double infac, const double* left, const double* right)
     {
       DENSEERROR::Checker<(trans1 == 'N' or trans1 == 'T') and (trans2 == 'N' or trans2 == 'T')>::Transpose_argument_must_be_N_or_T();
+      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+        multiply<i,j,k,trans1,trans2>(out,infac,left,right);
+        return;
+      }
       double tmp;
       for (unsigned int d1 = 0; d1 < k; ++d1) {
         for (unsigned int d2 = 0; d2 < i; ++d2 ) {
@@ -1244,6 +1255,35 @@ namespace LINALG
     /* add matrices */
 
     template <unsigned int i, unsigned int j>
+    inline void update(double* out, const double* in)
+    {
+      std::memcpy(out, in, i*j*sizeof(double));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void update(double* out, const double infac, const double* in)
+    {
+      *out = infac*(*in);
+      for (unsigned int c = 1; c < i*j; ++c)
+        *(++out) = infac*(*(++in));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void update(const double outfac, double* out, const double infac, const double* in)
+    {
+      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+        update<i,j>(out,infac,in);
+        return;
+      }
+      *out *= outfac;
+      *out += infac*(*in);
+      for (unsigned int c = 1; c < i*j; ++c){
+        *(++out) *= outfac;
+        *out += infac*(*(++in));
+      }
+    }
+
+    template <unsigned int i, unsigned int j>
     inline
     void update(double* out, const double* left, const double* right)
     {
@@ -1266,36 +1306,15 @@ namespace LINALG
     void update(const double outfac, double* out, const double leftfac, const double* left,
                    const double rightfac, const double* right)
     {
+      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+        update<i,j>(out,leftfac,left,rightfac,right);
+        return;
+      }
       *out *= outfac;
       *out += leftfac*(*left) + rightfac*(*right);
       for (unsigned int c = 1; c < i*j; ++c) {
         *(++out) *= outfac;
         *out += leftfac*(*(++left)) + rightfac*(*(++right));
-      }
-    }
-
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double* in)
-    {
-      std::memcpy(out, in, i*j*sizeof(double));
-    }
-
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double infac, const double* in)
-    {
-      *out = infac*(*in);
-      for (unsigned int c = 1; c < i*j; ++c)
-        *(++out) = infac*(*(++in));
-    }
-
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, double* out, const double infac, const double* in)
-    {
-      *out *= outfac;
-      *out += infac*(*in);
-      for (unsigned int c = 1; c < i*j; ++c){
-        *(++out) *= outfac;
-        *out += infac*(*(++in));
       }
     }
 
@@ -1761,7 +1780,7 @@ namespace LINALG
   Epetra_SerialDenseMatrix and Epetra_SerialDenseVector, and is not
   needed in either of them.
 
-  \author Martin
+  \author Martin Kuettler
   \date 09/08
  */
 template <unsigned int rows, unsigned int cols /* =1  ?*/ >
@@ -2061,6 +2080,8 @@ public:
 
   /// Calculate 1-norm
   /*!
+    This is *not* the same as Epetra_SerialDenseMatrix::NormOne.
+
     \return 1-norm
    */
   inline double Norm1() const;
@@ -2073,6 +2094,8 @@ public:
 
   /// Calculate inf-norm
   /*!
+    This is *not* the same as Epetra_SerialDenseMatrix::NormInf.
+
     \return inf-norm
    */
   inline double NormInf() const;
@@ -2769,7 +2792,7 @@ void FixedSizeSerialDenseMatrix<rows,cols>::Print(std::ostream& out) const
   out << "FixedSizeSerialDenseMatrix<" << rows << ',' << cols << '>';
   if (isview_) out << " (view to memory only)";
   if (data_ == NULL) {
-    out << " data is NULL!\n";
+    out << " with data_==NULL!\n";
     return;
   }
   out << "\n[";
@@ -2809,6 +2832,7 @@ inline FixedSizeSerialDenseMatrix<rows,cols>
 FixedSizeSerialDenseMatrix<rows, cols>::operator=(const double other)
 {
   DENSEFUNCTIONS::putScalar<rows,cols>(other, data_);
+  return *this;
 }
 
 template<unsigned int rows, unsigned int cols>
@@ -2874,7 +2898,7 @@ inline const double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned
     return data_[r];
 }
 
-/// Solver for fixed size serial dense matrices
+/// A solver for fixed size serial dense matrices
 /*!
   This solver is intended to provide the funcionality of
   Epetra_SerialDenseSolver for fixed size matrices. So far only a

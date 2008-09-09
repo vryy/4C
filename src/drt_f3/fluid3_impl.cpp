@@ -136,8 +136,8 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <int iel_>
-DRT::ELEMENTS::Fluid3Impl<iel_>::Fluid3Impl()
+template <int iel>
+DRT::ELEMENTS::Fluid3Impl<iel>::Fluid3Impl()
   : vart_(),
     xyze_(),
     edeadng_(),
@@ -178,25 +178,26 @@ DRT::ELEMENTS::Fluid3Impl<iel_>::Fluid3Impl()
 }
 
 
-template <int iel_>
-int DRT::ELEMENTS::Fluid3Impl<iel_>::Evaluate(Fluid3*                   ele,
-                                               ParameterList& params,
-                                               DRT::Discretization&      discretization,
-                                               vector<int>&              lm,
-                                               Epetra_SerialDenseMatrix& elemat1_epetra,
-                                               Epetra_SerialDenseMatrix& elemat2_epetra,
-                                               Epetra_SerialDenseVector& elevec1_epetra,
-                                               Epetra_SerialDenseVector& elevec2_epetra,
-                                               Epetra_SerialDenseVector& elevec3_epetra,
-                                               RefCountPtr<MAT::Material> mat,
-                                               MATERIAL* actmat)
+template <int iel>
+int DRT::ELEMENTS::Fluid3Impl<iel>::Evaluate(Fluid3*                   ele,
+                                             ParameterList& params,
+                                             DRT::Discretization&      discretization,
+                                             vector<int>&              lm,
+                                             Epetra_SerialDenseMatrix& elemat1_epetra,
+                                             Epetra_SerialDenseMatrix& elemat2_epetra,
+                                             Epetra_SerialDenseVector& elevec1_epetra,
+                                             Epetra_SerialDenseVector& elevec2_epetra,
+                                             Epetra_SerialDenseVector& elevec3_epetra,
+                                             RefCountPtr<MAT::Material> mat,
+                                             MATERIAL* actmat)
 {
   // the number of nodes
-  const int numnode = iel_;
+  const int numnode = iel;
 
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,     1> elevec1(elevec1_epetra.A(),true);
+  // construct views
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,     1> elevec1(elevec1_epetra.A(),true);
   // elevec2 and elevec3 are never used anyway
 
   //--------------------------------------------------
@@ -656,20 +657,20 @@ int DRT::ELEMENTS::Fluid3Impl<iel_>::Evaluate(Fluid3*                   ele,
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-template <int iel_>
-void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
+template <int iel>
+void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
   Fluid3*                                 ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        csevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        cseconvnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel_,1>&        eprenp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        evhist,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        edispnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        egridv,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_>&       estif,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_>&       emesh,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,     1>&       eforce,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        csevelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        fsevelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        cseconvnp,
+  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&        eprenp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evhist,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        edispnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        egridv,
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&       estif,
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&       emesh,
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,     1>&       eforce,
   struct _MATERIAL*                       material,
   double                                  time,
   double                                  dt,
@@ -705,7 +706,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
 */
 // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
-  const int numnode = iel_;
+  const int numnode = iel;
 #ifdef PRINTDEBUG
   std::stringstream s;
   s << "Element:" << ele->Id();
@@ -1033,14 +1034,6 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
        with  N .. form function matrix                                   */
     //conv_c_ = blitz::sum(derxy_(j,i)*convvelint_(j), j);
     conv_c_.MultiplyTN(derxy_,convvelint_);
-    //std::cout << iel_ << '\n';
-    //LINALG::FixedSizeSerialDenseMatrix<(unsigned)4,1> dummy1(conv_c_.A(),true);
-    //LINALG::FixedSizeSerialDenseMatrix<iel_,1> dummy1_5(conv_c_.A(),true);
-    //std::cout << dummy1 << dummy1_5 << '\n';
-    //LINALG::FixedSizeSerialDenseMatrix<3,(unsigned)4> dummy2(derxy_.A(),true);
-    //LINALG::FixedSizeSerialDenseMatrix<3,1> dummy3(convvelint_,true);
-    //dummy1.Multiply<'T','N'>(dummy2,dummy3);
-    //reinterpret_cast<Epetra_SerialDenseVector*>(NULL)->M();
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                                     \
@@ -2667,11 +2660,11 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Sysmat(
 //
 // calculate stabilization parameter
 //
-template <int iel_>
-void DRT::ELEMENTS::Fluid3Impl<iel_>::Caltau(
+template <int iel>
+void DRT::ELEMENTS::Fluid3Impl<iel>::Caltau(
   Fluid3* ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&           evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&           fsevelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           fsevelnp,
   const DRT::Element::DiscretizationType  distype,
   const enum Fluid3::TauType              whichtau,
   struct _MATERIAL*                       material,
@@ -2785,8 +2778,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Caltau(
   // normed velocity at element centre
   if (vel_norm>=1e-6)
   {
-    velino_.Update(velint_);
-    velino_.Scale(1.0/vel_norm);
+    velino_.Update(1.0/vel_norm,velint_);
   }
   else
   {
@@ -2795,11 +2787,9 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Caltau(
   }
 
   // get streamlength
-  LINALG::FixedSizeSerialDenseMatrix<iel_,1> tmp;
-  tmp.template MultiplyTN(derxy_,velino_);
-  double val = abs(tmp(0,0));
-  for (unsigned int i = 1; i < iel_; ++i)
-    val += abs(tmp(i,0));
+  LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+  tmp.MultiplyTN(derxy_,velino_);
+  const double val = tmp.Norm1();
   const double strle = 2.0/val;
 #ifdef PRINTDEBUG
   writeArray(derxy_,"derxy_");
@@ -3387,8 +3377,8 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::Caltau(
 //
 // calculate material viscosity    u.may 05/08
 //
-template <int iel_>
-void DRT::ELEMENTS::Fluid3Impl<iel_>::CalVisc(
+template <int iel>
+void DRT::ELEMENTS::Fluid3Impl<iel>::CalVisc(
   const struct _MATERIAL*                 material,
   double&                           	  visc)
 {
@@ -3446,8 +3436,8 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::CalVisc(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-template <int iel_>
-void DRT::ELEMENTS::Fluid3Impl<iel_>::BodyForce( Fluid3* ele,
+template <int iel>
+void DRT::ELEMENTS::Fluid3Impl<iel>::BodyForce( Fluid3* ele,
 					   const double time,
 					   struct _MATERIAL* material)
 {
@@ -3521,7 +3511,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::BodyForce( Fluid3* ele,
     for(int isd=0;isd<3;isd++)
     {
       double num = (*onoff)[isd]*(*val)[isd]*curvefac*invdensity;
-      for (int jnode=0; jnode<iel_; jnode++)
+      for (int jnode=0; jnode<iel; jnode++)
       {
         edeadng_(isd,jnode) = num;
       }
@@ -3646,8 +3636,8 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::BodyForce( Fluid3* ele,
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-template <int iel_>
-void DRT::ELEMENTS::Fluid3Impl<iel_>::gder2(Fluid3* ele)
+template <int iel>
+void DRT::ELEMENTS::Fluid3Impl<iel>::gder2(Fluid3* ele)
 {
   // initialize and zero out everything
   static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
@@ -3850,7 +3840,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel_>::gder2(Fluid3* ele)
 #endif
 
 
-  LINALG::FixedSizeSerialDenseSolver<6,6,iel_> solver;
+  LINALG::FixedSizeSerialDenseSolver<6,6,iel> solver;
   solver.SetMatrix(bm);
 
   // No need for a separate rhs. We assemble the rhs to the solution

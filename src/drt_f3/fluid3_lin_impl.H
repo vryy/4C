@@ -28,6 +28,41 @@ namespace DRT
 namespace ELEMENTS
 {
 
+  /// Interface base class for Fluid3lin_Impl
+  /*!
+    This class exists to provide a common interface for all template
+    versions of Fluid3StationaryImpl. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of Fluid3lin_Impl.
+   */
+  class Fluid3lin_ImplInterface
+  {
+  public:
+    /// Empty constructor
+    Fluid3lin_ImplInterface() {}
+    /// Empty destructor
+    virtual ~Fluid3lin_ImplInterface() {}
+    /// Evaluate the element
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3lin_Impl.
+     */
+    virtual int Evaluate(Fluid3*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat) = 0;
+
+    /// Internal implementation class for linear fluid element
+    static Fluid3lin_ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
+  };
+
   /// Internal Fluid3 implementation
   /*!
     This internal class keeps all the working arrays needed to
@@ -58,8 +93,6 @@ namespace ELEMENTS
     terms. An additional stabilisation term is required to ensure stability
     of the linearised matrix.
 
-    For matrix calculation the blitz library is used.
-
     <h3>Properties</h3>
 
     The linearisation reduces the element generally to first order accuracy
@@ -78,11 +111,30 @@ namespace ELEMENTS
     \author chfoe
     \date 02/08
   */
-  class Fluid3lin_Impl
+  template <int iel>
+  class Fluid3lin_Impl : public Fluid3lin_ImplInterface
   {
   public:
-    /// Constructor with number of nodes
-    explicit Fluid3lin_Impl(int iel);
+    /// Constructor
+    explicit Fluid3lin_Impl();
+
+    /// Evaluate
+    /*!
+      The evaluate function for the linear fluid case.
+      Why doesn't someone who actually knows what this function does
+      write a usefull comment?
+     */
+    virtual int Evaluate(Fluid3*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat);
 
     /// calculating element matrix and rhs
     /*!
@@ -106,16 +158,14 @@ namespace ELEMENTS
       \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
       */
     void Sysmat(Fluid3* ele,
-                const blitz::Array<double,2>&     evelnp,
-                const blitz::Array<double,1>&     eprenp,
-                const blitz::Array<double,2>&     evhist,
-                blitz::Array<double,2>&           estif,
-                blitz::Array<double,1>&           eforce,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     eprenp,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evhist,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&           estif,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&           eforce,
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac);
-
-    static Fluid3lin_Impl* Impl(Fluid3* f3);
 
   private:
 
@@ -124,7 +174,7 @@ namespace ELEMENTS
     */
     void Caltau(
       Fluid3* ele,
-      const blitz::Array<double,2>&           evelnp,
+      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const double                            timefac);
@@ -140,30 +190,32 @@ namespace ELEMENTS
     void gder2(Fluid3* ele);
 
   private:
-    int iel_;
-    blitz::Array<double,2> xyze_;
-    blitz::Array<double,2> edeadng_;
-    blitz::Array<double,1> funct_;
-    blitz::Array<double,2> deriv_;
-    blitz::Array<double,2> deriv2_;
-    blitz::Array<double,2> xjm_;
-    blitz::Array<double,2> xji_;
-    blitz::Array<double,2> vderxy_;
-    blitz::Array<double,1> pderxy_;
-    blitz::Array<double,2> vderxy2_;
-    blitz::Array<double,2> derxy_;
-    blitz::Array<double,2> derxy2_;
-    blitz::Array<double,1> bodyforce_;
-    blitz::Array<double,1> histvec_;
-    blitz::Array<double,1> velino_;
-    blitz::Array<double,1> velint_; /* newest, i.e. previous time leve velocity*/
-    blitz::Array<double,1> gradp_;
-    blitz::Array<double,1> tau_;
-    blitz::Array<double,3> viscs2_; /* viscous term including 2nd derivatives */
-    blitz::Array<double,1> conv_;   /* linearisation of convect, convective part */
-    blitz::Array<double,1> rhsint_; /* total right hand side terms at int.-point */
-    blitz::Array<double,2> xder2_;
-    blitz::Array<int,1> numepn_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
+    LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
+    LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;
+    LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> pderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
+    LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> histvec_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> velint_; /* newest, i.e. previous time leve velocity*/
+    LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
+    // this array once had three dimensions, I combined the first two
+    // to one.
+    LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_; /* viscous term including 2nd derivatives */
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_;   /* linearisation of convect, convective part */
+    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint_; /* total right hand side terms at int.-point */
+    LINALG::FixedSizeSerialDenseMatrix<6,3> xder2_;
+    // this was a blitz::Array<int,1>
+    std::vector<int> numepn_;
   };
 
 }

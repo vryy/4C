@@ -27,6 +27,42 @@ namespace DRT
 namespace ELEMENTS
 {
 
+  /// Interface base class for Fluid3Impl
+  /*!
+    This class exists to provide a common interface for all template
+    versions of Fluid3StationaryImpl. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of Fluid3Impl.
+   */
+  class Fluid3ImplInterface
+  {
+  public:
+    /// Empty constructor
+    Fluid3ImplInterface() {}
+    /// Empty destructor
+    virtual ~Fluid3ImplInterface() {}
+    /// Evaluate the element
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
+    virtual int Evaluate(Fluid3*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat) = 0;
+
+    /// Internal implementation class for fluid element
+    static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
+
+  };
+
   /// Internal Fluid3 implementation
   /*!
     This internal class keeps all the working arrays needed to
@@ -50,8 +86,6 @@ namespace ELEMENTS
     a minimum so that the element fits into the cache. (There might be
     room for improvements.)
 
-    For matrix calculation the blitz library is used.
-
     <h3>History</h3>
 
     The implementation here is based on the work by Christiane
@@ -64,45 +98,28 @@ namespace ELEMENTS
     \author u.kue
     \date 07/07
   */
-  class Fluid3ImplInterface
-  {
-  public:
-    Fluid3ImplInterface() {}
-    virtual ~Fluid3ImplInterface() {}
-    virtual int Evaluate(Fluid3*                                  ele,
-                         ParameterList& params,
-                         DRT::Discretization&      discretization,
-                         vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elemat1,
-                         Epetra_SerialDenseMatrix& elemat2,
-                         Epetra_SerialDenseVector& elevec1,
-                         Epetra_SerialDenseVector& elevec2,
-                         Epetra_SerialDenseVector& elevec3,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat) = 0;
-
-    /// Internal implementation class for specific fluid element
-    static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
-
-  };
-
-  template<int iel_>
+  template<int iel>
   class Fluid3Impl: public Fluid3ImplInterface
   {
   public:
-    /// Constructor with number of nodes
+    /// Constructor
     Fluid3Impl();
 
-
+    /// Evaluate
+    /*!
+      The evaluate function for the general fluid case.
+      Why doesn't someone who actually knows what this function does
+      write a usefull comment?
+     */
     virtual int Evaluate(Fluid3*                                  ele,
                          ParameterList& params,
                          DRT::Discretization&      discretization,
                          vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elemat1,
-                         Epetra_SerialDenseMatrix& elemat2,
-                         Epetra_SerialDenseVector& elevec1,
-                         Epetra_SerialDenseVector& elevec2,
-                         Epetra_SerialDenseVector& elevec3,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
                          RefCountPtr<MAT::Material> mat,
                          _MATERIAL* actmat);
 
@@ -150,17 +167,17 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        evelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        csevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        fsevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        cseconvnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<iel_,1>&        eprenp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        evhist_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        edispnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        egridv_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_>&              estif_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_>&              emesh_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel_,     1>&              eforce_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        csevelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        fsevelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        cseconvnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&        eprenp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evhist_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        edispnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        egridv_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&              estif_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&              emesh_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,     1>&              eforce_epetra,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   dt,
@@ -223,8 +240,8 @@ namespace ELEMENTS
     */
     void Caltau(
       Fluid3* ele,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        evelnp,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel_>&        fsevelnp,
+      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evelnp,
+      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const enum Fluid3::TauType              whichtau,
       struct _MATERIAL*                       material,
@@ -263,15 +280,15 @@ namespace ELEMENTS
     //! ????
     double vart_;
     //! node coordinates
-    LINALG::FixedSizeSerialDenseMatrix<3,iel_> xyze_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
     //! dead load in nodes
-    LINALG::FixedSizeSerialDenseMatrix<3,iel_> edeadng_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
     //! array for shape functions
-    LINALG::FixedSizeSerialDenseMatrix<iel_,1> funct_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::FixedSizeSerialDenseMatrix<3,iel_> deriv_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::FixedSizeSerialDenseMatrix<6,iel_> deriv2_;
+    LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
     //! transposed jacobian "dx/ds"
     LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
     //! inverse of transposed jacobian "ds/dx"
@@ -285,9 +302,9 @@ namespace ELEMENTS
     //! global second velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,iel_> derxy_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<6,iel_> derxy2_;
+    LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
     //! bodyforce in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
     //! vector containing all values from previous timelevel n
@@ -308,10 +325,12 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;
     //! the stabilisation parameters
     LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
+    // this array once had three dimensions, I combined the first two
+    // to one.
     //! viscous term including 2nd derivatives
-    LINALG::FixedSizeSerialDenseMatrix<3*3,iel_> viscs2_;
+    LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_;
     //! linearisation of convect, convective part
-    LINALG::FixedSizeSerialDenseMatrix<iel_,1> conv_c_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_;
     //! total right hand side terms at int.-point
     LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint_;
     //! (u_old*nabla)u_old
@@ -323,7 +342,7 @@ namespace ELEMENTS
     //! the old residual
     LINALG::FixedSizeSerialDenseMatrix<3,1> res_old_;
     //! convection by subgrid-scale velocity
-    LINALG::FixedSizeSerialDenseMatrix<iel_,1> conv_resM_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::FixedSizeSerialDenseMatrix<6,3> xder2_;
 
