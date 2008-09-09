@@ -152,7 +152,7 @@ namespace UTILS
   //!          3|   4   |5
   //!           |       |
   //!           +---+---+
-  //!          0    1    2  
+  //!          0    1    2
   //!            (0)
   //!
   //! \endverbatim
@@ -204,8 +204,8 @@ namespace UTILS
                                                              {1,  2,  5},
                                                              {2,  3,  5},
                                                              {3,  4,  5}};
-  
-  
+
+
   //! for each of the 8 corner nodes, tell me the 3 neighbouring lines
   const int eleNodeNumbering_hex27_nodes_lines[8][3] = { {0,  3,  4},
                                                          {0,  1,  5},
@@ -229,7 +229,7 @@ namespace UTILS
                                                          {0,  1,  4},
                                                          {1,  2,  5},
                                                          {3,  4,  5}};
-  
+
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {    {-1.0,  -1.0,  -1.0},
                                                                     { 1.0,  -1.0,  -1.0},
@@ -289,7 +289,7 @@ namespace UTILS
    const DRT::Element::DiscretizationType&     distype
    );
 
-  
+
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToNumNodePerEle {};
@@ -310,6 +310,8 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex27>    {static const int numNodePerElement = 27;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tet4>     {static const int numNodePerElement = 4;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tet10>    {static const int numNodePerElement = 10;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge6>   {static const int numNodePerElement = 6;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge15>  {static const int numNodePerElement = 15;};
 
    /*!
   \brief Returns the number of corner nodes
@@ -375,7 +377,7 @@ namespace UTILS
   vector< vector<int> > getEleNodeNumbering_nodes_lines(
       const DRT::Element::DiscretizationType      distype
       );
-  
+
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every node
          for each discretization type
@@ -404,8 +406,8 @@ namespace UTILS
     const BlitzVec3&                            rst,        ///< point in reference coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
-  
-  
+
+
   /*!
    \brief Returns a vector with the line ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
@@ -414,7 +416,7 @@ namespace UTILS
       const BlitzVec3&                            rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
-  
+
    /*!
    \brief Returns the node ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
@@ -423,7 +425,7 @@ namespace UTILS
       const BlitzVec3&                            rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
-    
+
 
   /*!
   \brief Returns a vector with coordinates in reference system of the cutter element
@@ -487,7 +489,7 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::hex27>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::tet4>     {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::tet10>    {static const int dim = 3;};
-  
+
   /*!
     \brief    Returns the order of an element based on its discretization-type
               Template version
@@ -521,7 +523,7 @@ namespace UTILS
   );
   /*!
    * Returns the geometric center of the element in local coordinates
-   * 
+   *
    * \tparam   dim  dimension of the element space (e.g. dim=2 for quad4)
    */
   template<int dim>
@@ -562,11 +564,11 @@ namespace UTILS
     }
     return pos;
   }
-  
+
   /*!
    *  returns the element size in local coordinates
-   */    
-  double getSizeInLocalCoordinates( 
+   */
+  double getSizeInLocalCoordinates(
       const DRT::Element::DiscretizationType     distype);
 
 } // namespace UTILS

@@ -57,6 +57,8 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::hex27:        return 27;   break;
     case DRT::Element::tet4:         return 4;    break;
     case DRT::Element::tet10:        return 10;   break;
+    case DRT::Element::wedge6:       return 6;    break;
+    case DRT::Element::wedge15:      return 15;   break;
     default:
         cout << DRT::DistypeToString(distype) << endl;
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
@@ -81,13 +83,13 @@ int DRT::UTILS::getNumberOfElementCornerNodes(
             numCornerNodes = 8;
             break;
         }
-        case DRT::Element::tet4: case DRT::Element::tet10: 
+        case DRT::Element::tet4: case DRT::Element::tet10:
         case DRT::Element::quad9: case DRT::Element::quad8: case DRT::Element::quad4:
         {
             numCornerNodes = 4;
             break;
         }
-        case DRT::Element::tri6: case DRT::Element::tri3: 
+        case DRT::Element::tri6: case DRT::Element::tri3:
         {
             numCornerNodes = 3;
             break;
@@ -119,10 +121,10 @@ int DRT::UTILS::getNumberOfElementLines(
         case DRT::Element::tet4: case DRT::Element::tet10:
             numLines = 6;
             break;
-        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9: 
+        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
             numLines = 4;
             break;
-        case DRT::Element::nurbs4: case DRT::Element::nurbs9: 
+        case DRT::Element::nurbs4: case DRT::Element::nurbs9:
             numLines = 4;
             break;
         case DRT::Element::tri3: case DRT::Element::tri6:
@@ -515,8 +517,8 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
 vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
     const DRT::Element::DiscretizationType      distype)
 {
-    vector< vector<int> >   map;  
-  
+    vector< vector<int> >   map;
+
     const int nCornerNode = getNumberOfElementCornerNodes(distype);
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
@@ -669,7 +671,7 @@ vector<int> DRT::UTILS::getSurfaces(
 {
     const double TOL = 1e-7;
     vector<int> surfaces;
-    
+
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         if(fabs(rst(0)-1.0) < TOL)      surfaces.push_back(2);
@@ -708,16 +710,16 @@ vector<int> DRT::UTILS::getLines(
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(0);  // -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(1);  // +r -t 
-        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(2);  // +s -t 
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(3);  // -r -t 
-        
+        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(0);  // -s -t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(1);  // +r -t
+        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(2);  // +s -t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(3);  // -r -t
+
         if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines.push_back(4);  // -r -s
         if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines.push_back(5);  // +r -s
         if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines.push_back(6);  // +r +s
         if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines.push_back(7);  // -r +s
-        
+
         if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(8);  // -s +t
         if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(9);  // +r +t
         if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(10); // +s +t
@@ -726,10 +728,10 @@ vector<int> DRT::UTILS::getLines(
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
     {
         const double tcoord = 1.0 - rst(0) - rst(1) - rst(2);
-        if(fabs(rst(1)) < TOL && fabs(rst(2)) < TOL)      lines.push_back(0); 
-        if(fabs(rst(2)) < TOL && fabs(tcoord) < TOL)      lines.push_back(1); 
+        if(fabs(rst(1)) < TOL && fabs(rst(2)) < TOL)      lines.push_back(0);
+        if(fabs(rst(2)) < TOL && fabs(tcoord) < TOL)      lines.push_back(1);
         if(fabs(rst(0)) < TOL && fabs(rst(2)) < TOL)      lines.push_back(2);
-        if(fabs(rst(0)) < TOL && fabs(rst(1)) < TOL)      lines.push_back(3); 
+        if(fabs(rst(0)) < TOL && fabs(rst(1)) < TOL)      lines.push_back(3);
         if(fabs(rst(1)) < TOL && fabs(tcoord) < TOL)      lines.push_back(4);
         if(fabs(rst(0)) < TOL && fabs(tcoord) < TOL)      lines.push_back(5);
     }
@@ -751,23 +753,23 @@ int DRT::UTILS::getNode(
 {
     const double TOL = 1e-7;
     int node = -1;
-    
+
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 0;  // -r -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 1;  // +r -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 2;  // +r +s -t 
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 3;  // -r +s -t 
-        
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 0;  // -r -s -t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 1;  // +r -s -t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 2;  // +r +s -t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 3;  // -r +s -t
+
         if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 4;  // -r -s +t
         if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 5;  // +r -s +t
         if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 6;  // +r +s +t
         if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 7 ; // -r +s +t
-        
+
     }
     else
         dserror("discretization type not yet implemented");
-    
+
     return node;
 }
 
@@ -784,7 +786,7 @@ vector<double> DRT::UTILS::getNodeCoordinates(  const int                       
 {
 
     vector<double> coord(3,0.0);
-    
+
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
     {
         switch(nodeId)
@@ -846,7 +848,7 @@ vector<double> DRT::UTILS::getNodeCoordinates(  const int                       
         coord[2] = 0.0;
     }
     else dserror("discretizationtype is not yet implemented");
-    
+
     return coord;
 }
 
@@ -929,7 +931,7 @@ vector<double> DRT::UTILS::getLineCoordinates(
   }
   else
     dserror("discretization type not yet implemented");
-  
+
   return coord;
 }
 
