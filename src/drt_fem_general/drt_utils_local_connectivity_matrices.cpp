@@ -1038,22 +1038,22 @@ int DRT::UTILS::getOrder(const DRT::Element::DiscretizationType distype)
 
     switch(distype)
     {
-        case DRT::Element::line2  : order = DisTypeToOrder<DRT::Element::line2>::order; break;
-        case DRT::Element::line3  : order = DisTypeToOrder<DRT::Element::line3>::order; break;
-        case DRT::Element::nurbs2 : order = DisTypeToOrder<DRT::Element::nurbs2>::order; break;
-        case DRT::Element::nurbs3 : order = DisTypeToOrder<DRT::Element::nurbs3>::order; break;
-        case DRT::Element::quad4  : order = DisTypeToOrder<DRT::Element::quad4>::order; break;
-        case DRT::Element::quad8  : order = DisTypeToOrder<DRT::Element::quad8>::order; break;
-        case DRT::Element::quad9  : order = DisTypeToOrder<DRT::Element::quad9>::order; break;
-        case DRT::Element::tri3   : order = DisTypeToOrder<DRT::Element::tri3>::order; break;
-        case DRT::Element::tri6   : order = DisTypeToOrder<DRT::Element::tri6>::order; break;
-        case DRT::Element::nurbs4 : order = DisTypeToOrder<DRT::Element::nurbs4>::order; break;
-        case DRT::Element::nurbs9 : order = DisTypeToOrder<DRT::Element::nurbs9>::order; break;
-        case DRT::Element::hex8 :   order = DisTypeToOrder<DRT::Element::hex8>::order; break;
-        case DRT::Element::hex20 :  order = DisTypeToOrder<DRT::Element::hex20>::order; break;
-        case DRT::Element::hex27 :  order = DisTypeToOrder<DRT::Element::hex27>::order; break;
-        case DRT::Element::tet4 :   order = DisTypeToOrder<DRT::Element::tet4>::order; break;
-        case DRT::Element::tet10 :  order = DisTypeToOrder<DRT::Element::tet10>::order; break;
+        case DRT::Element::line2  : order = DisTypeToEdgeOrder<DRT::Element::line2>::order; break;
+        case DRT::Element::line3  : order = DisTypeToEdgeOrder<DRT::Element::line3>::order; break;
+        case DRT::Element::nurbs2 : order = DisTypeToEdgeOrder<DRT::Element::nurbs2>::order; break;
+        case DRT::Element::nurbs3 : order = DisTypeToEdgeOrder<DRT::Element::nurbs3>::order; break;
+        case DRT::Element::quad4  : order = DisTypeToEdgeOrder<DRT::Element::quad4>::order; break;
+        case DRT::Element::quad8  : order = DisTypeToEdgeOrder<DRT::Element::quad8>::order; break;
+        case DRT::Element::quad9  : order = DisTypeToEdgeOrder<DRT::Element::quad9>::order; break;
+        case DRT::Element::tri3   : order = DisTypeToEdgeOrder<DRT::Element::tri3>::order; break;
+        case DRT::Element::tri6   : order = DisTypeToEdgeOrder<DRT::Element::tri6>::order; break;
+        case DRT::Element::nurbs4 : order = DisTypeToEdgeOrder<DRT::Element::nurbs4>::order; break;
+        case DRT::Element::nurbs9 : order = DisTypeToEdgeOrder<DRT::Element::nurbs9>::order; break;
+        case DRT::Element::hex8 :   order = DisTypeToEdgeOrder<DRT::Element::hex8>::order; break;
+        case DRT::Element::hex20 :  order = DisTypeToEdgeOrder<DRT::Element::hex20>::order; break;
+        case DRT::Element::hex27 :  order = DisTypeToEdgeOrder<DRT::Element::hex27>::order; break;
+        case DRT::Element::tet4 :   order = DisTypeToEdgeOrder<DRT::Element::tet4>::order; break;
+        case DRT::Element::tet10 :  order = DisTypeToEdgeOrder<DRT::Element::tet10>::order; break;
         default:
             dserror("discretization type is not yet implemented");
     }

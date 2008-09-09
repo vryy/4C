@@ -491,32 +491,32 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::tet10>    {static const int dim = 3;};
 
   /*!
-    \brief    Returns the order of an element based on its discretization-type
+    \brief    Returns the order of an element edges based on its discretization-type
               Template version
    */
   template<DRT::Element::DiscretizationType DISTYPE>
-  struct DisTypeToOrder {};
-  template<> struct DisTypeToOrder<DRT::Element::point1>   {static const int order = 0;};
-  template<> struct DisTypeToOrder<DRT::Element::line2>    {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::line3>    {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::nurbs2>   {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::nurbs3>   {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::quad4>    {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::quad8>    {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::quad9>    {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::nurbs4>   {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::nurbs9>   {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::tri3>     {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::tri6>     {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::hex8>     {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::hex20>    {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::hex27>    {static const int order = 2;};
-  template<> struct DisTypeToOrder<DRT::Element::tet4>     {static const int order = 1;};
-  template<> struct DisTypeToOrder<DRT::Element::tet10>    {static const int order = 2;};
+  struct DisTypeToEdgeOrder {};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::point1>   {static const int order = 0;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::line2>    {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::line3>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::nurbs2>   {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::nurbs3>   {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::quad4>    {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::quad8>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::quad9>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::nurbs4>   {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::nurbs9>   {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::tri3>     {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::tri6>     {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::hex8>     {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::hex20>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::hex27>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::tet4>     {static const int order = 1;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::tet10>    {static const int order = 2;};
 
 
   /*!
-    \brief    returns the order of the element-shape
+    \brief    returns the order of the element-edges
    */
   int getOrder(
       const DRT::Element::DiscretizationType distype///< element-discretization type
