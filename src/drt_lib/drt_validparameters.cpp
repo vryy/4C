@@ -628,15 +628,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
                                  //listing possible strings in input file in category SPECIAL_OUTPUT
                                  tuple<std::string>("None","none",
-                                                    "EndToEnd_log","endtoend","EndtoEnd",
+                                                    "EndToEnd_Log","endtoend_log","EndtoEnd_log",
                                                     "EndToEnd_Ergodicity","endtoend_ergodicity",
                                                     "Viscoelasticity","viscoelasticity","ViscoElasticity"),
                                  //translating input strings into BACI input parameters
                                  tuple<int>(INPUTPARAMS::statout_none,INPUTPARAMS::statout_none,
-                                            INPUTPARAMS::statout_endtoend,INPUTPARAMS::statout_endtoend,INPUTPARAMS::statout_endtoend,
-                                            INPUTPARAMS::statout_endtoend_ergodicity,INPUTPARAMS::statout_endtoend_ergodicity,
+                                            INPUTPARAMS::statout_endtoendlog,INPUTPARAMS::statout_endtoendlog,INPUTPARAMS::statout_endtoendlog,
+                                            INPUTPARAMS::statout_endtoendergodicity,INPUTPARAMS::statout_endtoendergodicity,
                                             INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity),
                                  &statmech);
+  //percentage of total simulation time after which writing of statistical output is started
+  DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
