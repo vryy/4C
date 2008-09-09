@@ -113,7 +113,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
-  
+
   // get density from elements
   {
     ParameterList eleparams;
@@ -213,14 +213,14 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   cutterdiscret->SetState("idispcolnp",idispcolnp);
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-  
+
   cutterdiscret->SetState("idispcoln",idispcoln);
   cutterdiscret->SetState("ivelcoln",ivelcoln);
   cutterdiscret->SetState("iacccoln",iacccoln);
@@ -323,7 +323,7 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   {
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
-  
+
   // do a backward Euler step for the first timestep
   if (step_==1)
   {
@@ -477,7 +477,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
   const Epetra_Vector& ivelcoln = *cutterdiscret->GetState("ivelcoln");
   const Epetra_Vector& iacccoln = *cutterdiscret->GetState("iacccoln");
-  
+
   BlitzVec3 rigidveln;
   BlitzVec3 rigidaccn;
 
@@ -486,12 +486,12 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     rigidveln(0) = (ivelcoln)[0];
     rigidveln(1) = (ivelcoln)[1];
     rigidveln(2) = (ivelcoln)[2];
-    
+
     // falsch!!!
     rigidaccn(0) = (iacccoln)[0];
     rigidaccn(1) = (iacccoln)[1];
     rigidaccn(2) = (iacccoln)[2];
-    
+
   }
   else
   {
@@ -525,7 +525,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //    {
 //      is_in_fluid = false;
 //    }
-//    
+//
 //    bool was_in_fluid = false;
 //    if (ih->PositionWithinConditionN(nodalpos) == 0)
 //    {
@@ -535,7 +535,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //    {
 //      was_in_fluid = false;
 //    }
-//    
+//
 //    if (not is_in_fluid)
 //    {
 //      std::set<XFEM::FieldEnr> nodalDofSet = dofmanager->getNodeDofSet(node->Id());
@@ -548,14 +548,14 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //            XFEM::Enrichment enr = iter->getEnrichment();
 //            XFEM::PHYSICS::Field field = iter->getField();
 //            XFEM::DofKey<XFEM::onNode> newdofkey(node->Id(),*iter);
-//            
+//
 //            std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos>::const_iterator newdof = state_.nodalDofDistributionMap_.find(newdofkey);
 //            if (newdof == state_.nodalDofDistributionMap_.end())
 //            {
 //              dserror("should definitely be there!");
 //            }
 //            const int newdofpos = newdof->second;
-//            
+//
 //            if (field == XFEM::PHYSICS::Velx)
 //            {
 //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(0);
@@ -575,7 +575,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //            {
 //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
 //            }
-//  
+//
 //          }
 //        }
 //        else
@@ -583,12 +583,12 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //          dserror("works only for 4 dofs per node");
 //        }
 //      }
-//      
+//
 //    }
 //
-//    
+//
 //  };
-  
+
 //  if (alefluid_)
 //  {
 //      dofswitch.mapVectorToNewDofDistribution(state_.dispnp_);
@@ -690,7 +690,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // get new interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
   const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
-  
+
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
     std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
@@ -706,7 +706,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     f.close();
   }
-  
+
   if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
   {
     std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
@@ -759,7 +759,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -810,7 +810,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
-      
+
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
       //cout << "interface velocity" << endl;
@@ -1041,7 +1041,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   // macht der FSI algorithmus
   iforcecolnp->Scale(-1.0);
-  
+
   cutterdiscret->SetState("iforcenp", iforcecolnp);
 
 
@@ -1060,20 +1060,20 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-  
+
   {
     std::stringstream s;
     std::stringstream header;
-    
-    header << left  << std::setw(10) << "Time" 
+
+    header << left  << std::setw(10) << "Time"
            << right << std::setw(16) << "F_x"
            << right << std::setw(16) << "F_y"
            << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << time_ 
+    s << left  << std::setw(10) << scientific << time_
       << right << std::setw(16) << scientific << c(0)
       << right << std::setw(16) << scientific << c(1)
       << right << std::setw(16) << scientific << c(2);
-    
+
     std::ofstream f;
     if (step_ <= 1)
     {
@@ -1086,10 +1086,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
     f << s.str() << endl;
     f.close();
-    
+
     //cout << header.str() << endl << s.str() << endl;
   }
-  
+
   if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
   {
     std::ofstream f;
@@ -1102,7 +1102,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     f.close();
   }
-  
+
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1188,8 +1188,8 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
 
   // prev. acceleration becomes (n-1)-accel. of next time step
   const Teuchos::RCP<Epetra_Vector> accn_tmp = rcp(new Epetra_Vector(*state_.accn_));
-  
-  // compute acceleration 
+
+  // compute acceleration
   // note a(n+1) is directly stored in a(n),
   // hence we use a(n-1) as a(n) to save a vector copy (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
@@ -1810,18 +1810,18 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
     Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    
+
     Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    
+
     cutterdiscret->SetState("idispcolnp",idispcolnp);
     cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-    
+
     cutterdiscret->SetState("idispcoln",idispcoln);
     cutterdiscret->SetState("ivelcoln",ivelcoln);
     cutterdiscret->SetState("iacccoln",iacccoln);
-  
+
     ComputeInterfaceAndSetDOFs(cutterdiscret);
     cutterdiscret->ClearState();
   }
@@ -2026,7 +2026,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);
   cutterdiscret->SetState("ivelcoln", ivelcoln);
   cutterdiscret->SetState("iacccoln", iacccoln);
-  
+
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 
   PrepareNonlinearSolve();
@@ -2337,7 +2337,7 @@ void FLD::XFluidImplicitTimeInt::UseBlockMatrix(
   }
 
   // if we never build the matrix nothing will be done
-  if (params_.get<bool>("mesh movement linearization"))
+  if (params_.get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));

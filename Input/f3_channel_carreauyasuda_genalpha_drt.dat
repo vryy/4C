@@ -218,7 +218,6 @@ ITECHAPP                        1
 ITEMAX                          100
 MAXOMEGA                        0
 MAXTIME                         1000
-MESHLINEARIZATION               No
 NUMSTEP                         200
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)

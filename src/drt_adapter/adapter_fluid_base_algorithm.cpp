@@ -226,8 +226,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
-    fluidtimeparams->set<bool>("mesh movement linearization",
-                               Teuchos::getIntegralValue<int>(fsidyn,"MESHLINEARIZATION"));
+    fluidtimeparams->set<bool>("shape derivatives",
+                               Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithic or

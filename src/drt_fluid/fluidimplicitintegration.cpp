@@ -2868,7 +2868,7 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > cond
   }
 
   // if we never build the matrix nothing will be done
-  if (params_.get<bool>("mesh movement linearization"))
+  if (params_.get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
@@ -2923,7 +2923,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     residual_->PutScalar(0.0);
 
     // Get matrix for mesh derivatives. This is not meant to be efficient.
-    if (params_.get<bool>("mesh movement linearization"))
+    if (params_.get<bool>("shape derivatives"))
     {
       if (meshmatrix_==Teuchos::null)
       {

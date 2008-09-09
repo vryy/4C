@@ -109,7 +109,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
-  
+
   // get density from elements
   {
     ParameterList eleparams;
@@ -201,7 +201,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
 
 /*
  * This function is commented out because it should not be used by any combustion simulation.
- * The time loop to be called is the one in the class COMBUST::Algorithm. It accesses directly e.g. 
+ * The time loop to be called is the one in the class COMBUST::Algorithm. It accesses directly e.g.
  * NonlinearSolve in this class CombustFluidImplicitTimeInt.
  */
 
@@ -224,14 +224,14 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   cutterdiscret->SetState("idispcolnp",idispcolnp);
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-  
+
   cutterdiscret->SetState("idispcoln",idispcoln);
   cutterdiscret->SetState("ivelcoln",ivelcoln);
   cutterdiscret->SetState("iacccoln",iacccoln);
@@ -334,7 +334,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   {
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
-  
+
   // do a backward Euler step for the first timestep
   if (step_==1)
   {
@@ -485,7 +485,7 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
   const Epetra_Vector& ivelcoln = *cutterdiscret->GetState("ivelcoln");
   const Epetra_Vector& iacccoln = *cutterdiscret->GetState("iacccoln");
-  
+
   BlitzVec3 rigidveln;
   BlitzVec3 rigidaccn;
 
@@ -494,12 +494,12 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     rigidveln(0) = (ivelcoln)[0];
     rigidveln(1) = (ivelcoln)[1];
     rigidveln(2) = (ivelcoln)[2];
-    
+
     // falsch!!!
     rigidaccn(0) = (iacccoln)[0];
     rigidaccn(1) = (iacccoln)[1];
     rigidaccn(2) = (iacccoln)[2];
-    
+
   }
   else
   {
@@ -617,7 +617,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   // get new interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
-  
+
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
     std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcolnp)[0] << std::endl;
@@ -669,7 +669,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -720,7 +720,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
-      
+
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
       //cout << "interface velocity" << endl;
@@ -951,7 +951,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   // macht der FSI algorithmus
   iforcecolnp->Scale(-1.0);
-  
+
   cutterdiscret->SetState("iforcenp", iforcecolnp);
 
 
@@ -970,20 +970,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-  
+
   {
     std::stringstream s;
     std::stringstream header;
-    
-    header << left  << std::setw(10) << "Time" 
+
+    header << left  << std::setw(10) << "Time"
            << right << std::setw(16) << "F_x"
            << right << std::setw(16) << "F_y"
            << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << time_ 
+    s << left  << std::setw(10) << scientific << time_
       << right << std::setw(16) << scientific << c(0)
       << right << std::setw(16) << scientific << c(1)
       << right << std::setw(16) << scientific << c(2);
-    
+
     std::ofstream f;
     if (step_ <= 1)
     {
@@ -996,7 +996,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     }
     f << s.str() << endl;
     f.close();
-    
+
     //cout << header.str() << endl << s.str() << endl;
   }
 
@@ -1083,8 +1083,8 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 
   // prev. acceleration becomes (n-1)-accel. of next time step
   state_.accnm_->Update(1.0,*state_.accn_,0.0);
-  
-  // compute acceleration 
+
+  // compute acceleration
   // note a(n+1) is directly stored in a(n),
   // hence we use a(n-1) as a(n) (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
@@ -1688,18 +1688,18 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
     Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    
+
     Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    
+
     cutterdiscret->SetState("idispcolnp",idispcolnp);
     cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-    
+
     cutterdiscret->SetState("idispcoln",idispcoln);
     cutterdiscret->SetState("ivelcoln",ivelcoln);
     cutterdiscret->SetState("iacccoln",iacccoln);
-  
+
     ComputeInterfaceAndSetDOFs(cutterdiscret);
     cutterdiscret->ClearState();
   }
@@ -1891,7 +1891,7 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
 
 /*
  * This function is commented out because it should not be used by any combustion simulation.
- * The algorithm to be called is the one in the class COMBUST::Algorithm. It accesses directly e.g. 
+ * The algorithm to be called is the one in the class COMBUST::Algorithm. It accesses directly e.g.
  * NonlinearSolve in this class CombustFluidImplicitTimeInt.
  */
 
@@ -1911,7 +1911,7 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);
   cutterdiscret->SetState("ivelcoln", ivelcoln);
   cutterdiscret->SetState("iacccoln", iacccoln);
-  
+
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 
   PrepareNonlinearSolve();
@@ -2212,7 +2212,7 @@ void FLD::CombustFluidImplicitTimeInt::UseBlockMatrix(
   }
 
   // if we never build the matrix nothing will be done
-  if (params_.get<bool>("mesh movement linearization"))
+  if (params_.get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
