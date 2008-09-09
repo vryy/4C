@@ -212,18 +212,18 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
   const double time = params.get("total time",-1.0);
-  const double gen_alphaf = params.get("alpha f",-1.0);
+  const double gen_alphaf = params.get("alpha f",0.0);
   if (gen_alphaf < 0) dserror("Visco only for dynamics! Negative Alpha_f detected!");
   
   double tau1=tau;
-  //check for meaningfull values
+  //check for meaningful values
   if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
   else if (E_f>E_s)
   {
     if (tau<=0.0) dserror("Relaxation time tau has to be positive in case E_Fast > E_Slow!");
     tau1=tau*E_s/(E_f-E_s);
   }
-  else if (tau==0.0) tau1=1.0; // for algorithmic reasons tau has to be positiv 
+  else if (tau==0.0) tau1=1.0; // for algorithmic reasons tau has to be positive 
   
   // this is supposed to be consistent with strugenalpha
   if (time == dt) dt = (1.0-gen_alphaf)*dt;
@@ -241,7 +241,7 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   if (E_f/E_s<=1E10)  // generalized Maxwell model in case stiffness ratio is not too high
   {
     tau=tau1;
-    // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
+    // evaluate "alpha" factors which distribute stress or stiffness between parallel springs
     // sum_0^i alpha_j = 1
     alpha0 = E_s / E_f;
     alpha1 = 1.0 - alpha0;    
@@ -251,7 +251,7 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
     mue = E_f / (2.0*(1.0+nue));
     kappa = lambda + 2.0/3.0 * mue;
     
-    // evaluate sclars to compute
+    // evaluate scalars to compute
     // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
     artscalar1=(tau - dt + theta*dt)/tau;
     artscalar2=tau/(tau + theta*dt);
