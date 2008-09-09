@@ -14,6 +14,8 @@ Maintainer: Christian Cyron
 #define STATMECH_H
 
 #include "../drt_structure/strugenalpha.H"
+#include "../drt_statmech/statmech_manager.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 // forward declarations
@@ -38,9 +40,6 @@ public:
 
   //! \brief Do time integration
   void Integrate();
-
-  //! \brief do full Newton iteration
-  void FullNewton();
     
 
 protected:
@@ -48,6 +47,7 @@ protected:
   // don't want = operator and cctor
   StatMechTime operator = (const StatMechTime& old);
   StatMechTime(const StatMechTime& old);
+  StatMechManager statmechmanager_;
 
 
 }; // class StatMechTime
