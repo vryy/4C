@@ -22,7 +22,7 @@ Maintainer: Christian Cyron
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params):
-  statmechparams_( DRT::Problem::Instance()->StructuralContactParams() ),
+  statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
@@ -69,7 +69,8 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
         if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
         { 
           endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
-          DeltaR2 = pow( endtoend - endtoendref_ ,2 );
+          //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
+          DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
       
           //writing output
           if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
