@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_reader.H
 
-\brief preprocessor reader for exodusII format 
+\brief preprocessor reader for exodusII format
 
 <pre>
 Maintainer: Moritz & Georg
@@ -56,7 +56,7 @@ class Mesh
 public:
   //! constructor
   Mesh(string exofilename);
-  
+
   //! extension constructor, adds Elementblock and nodes to a basemesh
   Mesh(const Mesh& basemesh,
        const RCP<map<int,vector<double> > > extNodes,
@@ -64,76 +64,76 @@ public:
        const map<int,NodeSet>& extNodesets,
        const map<int,SideSet>& extSidesets,
        const string newtitle);
-  
+
   //! destructor
   virtual ~Mesh();
-  
+
   //! Print mesh info
   void Print(ostream& os, bool verbose = false) const;
-  
+
   //! Print Nodes and Coords
   void PrintNodes(ostream& os, bool storeid=false) const;
-  
+
   //! Get numer of nodes in mesh
   int GetNumNodes() const {return nodes_->size();}
-  
+
   //! Get number of elements in mesh
   int GetNumEle() const {return num_elem_;}
-  
+
   //! Get number of dimensions
   int GetNumDim() const {return num_dim_;}
-  
+
   //! Get exodus file id
   int GetExoId() const {return exoid_;}
-  
+
   //! Get mesh title
-  string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;} 
-  
+  string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;}
+
   //! Get ElementBlock map
   map<int,RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
-  
+
   //! Get Number of ElementBlocks
   int GetNumElementBlocks() const {return elementBlocks_.size();}
-  
+
   //! Get one ElementBlock
   RCP<ElementBlock> GetElementBlock(const int id) const;
-  
+
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
-  
+
   //! Get Number of NodeSets
   int GetNumNodeSets() const {return nodeSets_.size();}
-  
+
   //! Get one NodeSet
-  NodeSet GetNodeSet(const int id) const; 
-  
+  NodeSet GetNodeSet(const int id) const;
+
   //! Get SideSet map
   map<int,SideSet> GetSideSets() const {return sideSets_;}
-  
+
   //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
-  
+
   //! Get one SideSet
   SideSet GetSideSet(const int id) const;
-  
+
   //! Get Side Set Connectivity with Global Nodes
   map<int,vector<int> > GetSideSetConn(const SideSet sideset) const;
 
   //! Get Side Set Connectivity with Global Nodes
   map<int,vector<int> > GetSideSetConn(const SideSet sideset, bool checkoutside) const;
-  
+
   //! Make sure child ele (SideSet) is outward oriented w.r.t. parent ele
   vector<int> OutsideOrientedSide(const vector<int> parentele, const vector<int> sidemap) const;
-  
+
   //! Get egde Normal at node
   vector<double> Normal(const int head1, const int origin, const int head2) const;
-  
+
   //! Get normalized Vector between 2 nodes
   vector<double> NodeVec(const int tail, const int head) const;
 
   //! Transform SideSet into ElementBlock
   vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const map<int,vector<int> >& sidesetconn) const;
-  
+
   //! Transform SideSet into NodeSet
   NodeSet SideSetToNodeSet(const SideSet& sideset, const map<int,vector<int> >& sideconn) const;
 
@@ -142,47 +142,47 @@ public:
 
   //! Get Node map
   RCP<map<int,vector<double> > > GetNodes() const {return nodes_;}
-  
+
   //! Get one nodal coords
   vector<double> GetNode(const int NodeID) const;
 
   //! Close Exodus File
   void CloseExo() const;
-  
+
   //! Write Mesh into exodus file
   void WriteMesh(const string newexofilename) const;
-  
+
   //! Add Element Block to mesh
   void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
-  
+
   //! Erase Element Block from mesh
   void EraseElementBlock(const int id);
-  
+
   //! Erase SideSet from mesh
   void EraseSideSet(const int id);
-  
+
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
   map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
-  
+
   //! Adjust local element ids referenced in SideSet to global ids
   map<int,vector<int> > GlobalifySSeleids(const int ssid) const;
-  
+
   //! Plot Nodes in Gmsh-file
   void PlotNodesGmsh() const;
-  
+
   //! Plot all ElementBlocks into Gmsh-file
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const;
-  
+
 private:
   RCP<map<int,vector<double> > > nodes_;
-  
+
   map<int,RCP<ElementBlock> > elementBlocks_;
-  
+
   map<int,NodeSet> nodeSets_;
-  
+
   map<int,SideSet> sideSets_;
-  
+
   //! number of dimensions
   int num_dim_;
   //! number of elements
@@ -232,31 +232,31 @@ public:
   ElementBlock(ElementBlock::Shape DisType,
                RCP<map<int,vector<int> > >& eleconn,    // Element connectivity
                string name);
-               
+
   virtual ~ElementBlock();
-  
+
   ElementBlock::Shape GetShape() const {return distype_;}
-  
+
   int GetNumEle() const {return eleconn_->size();}
-  
+
   RCP<map<int,vector<int> > > GetEleConn() const {return eleconn_;}
-  
+
   vector<int> GetEleNodes(int i) const;
-  
+
   string GetName() const {return name_;}
-  
+
   int GetEleNode(int ele, int node) const;
-  
+
   void FillEconnArray(int *connarray) const;
-  
+
   void Print(ostream& os, bool verbose=false) const;
-  
+
 private:
   Shape distype_;
-  
+
   //! Element Connectivity
   RCP<map<int,vector<int> > > eleconn_;
-  
+
   string name_;
 };
 
@@ -264,19 +264,19 @@ class NodeSet
 {
 public:
   NodeSet(const set<int>& nodeids, const string& name, const string& propname);
-  
+
   virtual ~NodeSet();
-  
+
   set<int> GetNodeSet() const {return nodeids_;};
-  
+
   string GetName() const {return name_;};
-  
+
   string GetPropName() const {return propname_;};
-  
+
   void FillNodelistArray(int *nodelist) const;
-  
+
   inline int GetNumNodes() const {return nodeids_.size();}
-  
+
   void Print(ostream& os, bool verbose=false) const;
 
 private:
@@ -289,24 +289,24 @@ class SideSet
 {
 public:
   SideSet(const map<int,vector<int> >& sides, const string& name);
-  
+
   virtual ~SideSet();
-  
+
   inline int GetNumSides() const {return sides_.size();}
-  
+
   string GetName() const {return name_;}
-  
+
   map<int,vector<int> > GetSideSet() const {return sides_;}
-  
+
   void ReplaceSides(map<int,vector<int> >newsides) {sides_ = newsides; return;};
-  
+
   vector<int> GetFirstSideSet() const {return sides_.begin()->second;}
-  
+
   void FillSideLists(int* elemlist, int* sidelist) const;
   void FillSideLists(int* elemlist, int* sidelist, const map<int,vector<int> >& sides) const;
-  
+
   void Print(ostream& os, bool verbose=false) const;
-  
+
 private:
   map<int,vector<int> > sides_;
   string name_;
@@ -368,7 +368,7 @@ inline std::string ShapeToString(const ElementBlock::Shape shape)
   case ElementBlock::pyramid5: return "PYRAMID5";break;
   case ElementBlock::bar2:     return "BAR2";   break;
   case ElementBlock::bar3:     return "BAR3";   break;
-  default: dserror("Unknown ElementBlock::Shape"); 
+  default: dserror("Unknown ElementBlock::Shape");
   }
   return "xxx";
 }
@@ -395,10 +395,10 @@ inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape 
   case ElementBlock::pyramid5: return DRT::Element::pyramid5;break;
   case ElementBlock::bar2:     return DRT::Element::line2;   break;
   case ElementBlock::bar3:     return DRT::Element::line3;   break;
-  default: dserror("Unknown ElementBlock::Shape"); 
+  default: dserror("Unknown ElementBlock::Shape");
   }
   return DRT::Element::max_distype;
-  
+
 }
 
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
@@ -406,6 +406,7 @@ void PrintMap(ostream& os, const map<int,vector<double> >mymap);
 void PrintMap(ostream& os,const map<int,set<int> > mymap);
 void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,pair<int,int> > mymap);
+void PrintMap(ostream& os,const map<int,int> mymap);
 void PrintMap(ostream& os,const map<double,int> mymap);
 void PrintVec(ostream& os, const vector<int> actvec);
 void PrintVec(ostream& os, const vector<double> actvec);
