@@ -209,7 +209,8 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_integrator.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
-                src/drt_statmech/statmech.o
+                src/drt_statmech/statmech_time.o \
+                src/drt_statmech/statmech_manager.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH_LIB = 
 #--------------------------------------------------- condif3 (drt version)

@@ -33,7 +33,7 @@ Maintainer: Michael Gee
 #include "stru_resulttest.H"
 
 #include "../drt_inv_analysis/inv_analysis.H"
-#include "../drt_statmech/statmech.H"
+#include "../drt_statmech/statmech_time.H"
 
 
 /*----------------------------------------------------------------------*
@@ -346,7 +346,7 @@ void dyn_nlnstructural_drt()
         if (inv_analysis)
           tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
         if (thermalbath)
-          tintegrator = rcp(new StatMech(genalphaparams,*actdis,solver,output));
+          tintegrator = rcp(new StatMechTime(genalphaparams,*actdis,solver,output));
       }
 
       // do restart if demanded from input file

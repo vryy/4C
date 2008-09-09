@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file statmech.H
+\file statmech_time.H
 
 <pre>
 Maintainer: Christian Cyron
@@ -23,18 +23,18 @@ Maintainer: Christian Cyron
 
 \author cyron (cyron@lnm.mw.tum.de)
 */
-class StatMech : public virtual StruGenAlpha
+class StatMechTime : public virtual StruGenAlpha
 {
 public:
 
   //! \brief Standard Constructor
-  explicit StatMech(ParameterList& params,
+  explicit StatMechTime(ParameterList& params,
                    DRT::Discretization& dis,
                    LINALG::Solver& solver,
                    IO::DiscretizationWriter& output);
 
   //! \brief Destructor
-  virtual ~StatMech() {};
+  virtual ~StatMechTime() {};
 
   //! \brief Do time integration
   void Integrate();
@@ -42,22 +42,15 @@ public:
   //! \brief do full Newton iteration
   void FullNewton();
     
-  //! \brief update configuration
-  virtual void Update();
-
-  //! \brief output to file/screen
-  virtual void Output();
-
-
 
 protected:
 
   // don't want = operator and cctor
-  StatMech operator = (const StatMech& old);
-  StatMech(const StatMech& old);
+  StatMechTime operator = (const StatMechTime& old);
+  StatMechTime(const StatMechTime& old);
 
 
-}; // class StatMech
+}; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H
 #endif  // #ifdef CCADISCRET

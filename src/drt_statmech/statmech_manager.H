@@ -1,0 +1,4 @@
+#ifndef STATMECH_MANAGER_H_
+#define STATMECH_MANAGER_H_
+
+#endif /*STATMECH_MANAGER_H_*/

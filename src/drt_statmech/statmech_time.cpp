@@ -12,7 +12,7 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "statmech.H"
+#include "statmech_time.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -22,14 +22,14 @@ Maintainer: Christian Cyron
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
-StatMech::StatMech(ParameterList& params,
-                                                  DRT::Discretization& dis,
-                                                  LINALG::Solver& solver,
-                                                  IO::DiscretizationWriter& output) :
+StatMechTime::StatMechTime(ParameterList& params,
+                          DRT::Discretization& dis,
+                          LINALG::Solver& solver,
+                          IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
   return;
-} // StatMech::StatMech
+} // StatMechTime::StatMechTime
 
 
 
@@ -37,7 +37,7 @@ StruGenAlpha(params,dis,solver,output)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             cyron 08/08|
  *----------------------------------------------------------------------*/
-void StatMech::FullNewton()
+void StatMechTime::FullNewton()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -319,311 +319,20 @@ void StatMech::FullNewton()
   params_.set<int>("num iterations",numiter);
 
   return;
-} // StatMech::FullNewton()
-
-
-
-/*----------------------------------------------------------------------*
- |  do update (public)                                       cyron 08/08|
- *----------------------------------------------------------------------*/
-void StatMech::Update()
-{
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time          = params_.get<double>("total time"             ,0.0);
-  double dt            = params_.get<double>("delta time"             ,0.01);
-  double timen         = time + dt;  // t_{n+1}
-  int    step          = params_.get<int>   ("step"                   ,0);
-  int    istep         = step + 1;  // n+1
-
-  double alpham        = params_.get<double>("alpha m"                ,0.378);
-  double alphaf        = params_.get<double>("alpha f"                ,0.459);
-
-  const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
-
-  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
-  FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
-  if (!errfile) printerr = false;
-
-  //----------------------------------------------- update time and step
-  params_.set<double>("total time", timen);
-  params_.set<int>("step", istep);
-
-  //---------------------- determine new end-point quantities and update
-  // new displacements at t_{n+1} -> t_n
-  //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
-  //                     - alphaf/(1.-alphaf) * D_n
-  dis_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-  // new velocities at t_{n+1} -> t_n
-  //    V_{n} := V_{n+1} = 1./(1.-alphaf) * V_{n+1-alpha_f}
-  //                     - alphaf/(1.-alphaf) * V_n
-  vel_->Update(1./(1.-alphaf),*velm_,-alphaf/(1.-alphaf));
-  // new accelerations at t_{n+1} -> t_n
-  //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
-  //                     - alpham/(1.-alpham) * A_n
-  acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
-
-  // zerofy velocity and acceleration in case of statics
-  if (dynkindstat)
-  {
-    vel_->PutScalar(0.0);
-    acc_->PutScalar(0.0);
-  }
-
-  // update new external force
-  //    F_{ext;n} := F_{ext;n+1}
-  fext_->Update(1.0,*fextn_,0.0);
-  // zerofy external force, such that there is no history from load step to load step
-  if (dynkindstat)
-  {
-    fext_->PutScalar(0.0);
-  }
-#ifdef STRUGENALPHA_FINTLIKETR
-  // update new internal force
-  //    F_{int;n} := F_{int;n+1}
-  fint_->Update(1.0,*fintn_,0.0);
-#endif
-
-
-#ifdef PRESTRESS
-  //----------- save the current green-lagrange strains in the material
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_prestress_update");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.SetState("displacement",dis_);
-    discret_.SetState("velocity",vel_);
-    discret_.SetState("residual displacement",zeros_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
-  }
-
-  //----------------------------- reset the current disp/vel/acc to zero
-  // (the structure does not move while prestraining it )
-  // (prestraining with DBCs != 0 not allowed!)
-  //dis_->Update(1.0,disold,0.0);
-  //vel_->Update(1.0,velold,0.0);
-  //acc_->Update(1.0,accold,0.0);
-  dis_->Scale(0.0);
-  vel_->Scale(0.0);
-  acc_->Scale(0.0);
-#endif
-
-
-  //------ update anything that needs to be updated at the element level
-#ifdef STRUGENALPHA_FINTLIKETR
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_update_istep");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.Evaluate(p,null,null,null,null,null);
-  }
-#else
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    //p.set("action","calc_struct_update_istep");
-    p.set("action","calc_struct_update_imrlike");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.Evaluate(p,null,null,null,null,null);
-  }
-#endif
-
-  if (pot_man_!=null)
-  {
-    pot_man_->Update();
-  }
-} // StatMech::Update()
-
-
-/*----------------------------------------------------------------------*
- |  do output (public)                                       cyron 08/08|
- *----------------------------------------------------------------------*/
-void StatMech::Output()
-{
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double timen         = params_.get<double>("total time"             ,0.0);
-  double dt            = params_.get<double>("delta time"             ,0.01);
-  double alphaf        = params_.get<double>("alpha f"                ,0.459);
-  int    istep         = params_.get<int>   ("step"                   ,0);
-  int    nstep         = params_.get<int>   ("nstep"                  ,5);
-  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
-
-  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
-  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
-  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
-
-  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
-
-  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
-  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
-  FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
-  if (!errfile) printerr = false;
-
-  bool isdatawritten = false;
-
-  //------------------------------------------------- write restart step
-  if (writeresevry and istep%writeresevry==0)
-  {
-    output_.WriteMesh(istep,timen);
-    output_.NewStep(istep, timen);
-    output_.WriteVector("displacement",dis_);
-    output_.WriteVector("velocity",vel_);
-    output_.WriteVector("acceleration",acc_);
-    output_.WriteVector("fexternal",fext_);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    {
-      RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
-      RCP<Epetra_Map> snrowmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",false);
-      Epetra_MultiVector xhiscol(*sncolmap,12,true);
-      Epetra_MultiVector xhisrow(*snrowmap,12,true);
-      ParameterList p;
-      p.set("action","prestress_writerestart");
-      p.set<Epetra_MultiVector*>("prestress_restartvector",&xhiscol);
-      discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
-      LINALG::Export(xhiscol,xhisrow);
-      output_.WriteVector("prestress_surfaceneumann",rcp(&xhisrow,false));
-    }
-#endif
-    isdatawritten = true;
-
-    if (pot_man_!=null)
-    {
-      RCP<Epetra_Map> surfrowmap=pot_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      pot_man_->GetHistory(A);
-      output_.WriteVector("Aold", A);
-    }
-
-    if (discret_.Comm().MyPID()==0 and printscreen)
-    {
-      cout << "====== Restart written in step " << istep << endl;
-      fflush(stdout);
-    }
-    if (errfile and printerr)
-    {
-      fprintf(errfile,"====== Restart written in step %d\n",istep);
-      fflush(errfile);
-    }
-  }
-
-  //----------------------------------------------------- output results
-  if (iodisp and updevrydisp and istep%updevrydisp==0 and !isdatawritten)
-  {
-    output_.NewStep(istep, timen);
-    output_.WriteVector("displacement",dis_);
-    output_.WriteVector("velocity",vel_);
-    output_.WriteVector("acceleration",acc_);
-    output_.WriteVector("fexternal",fext_);
-    output_.WriteElementData();
-    isdatawritten = true;
-  }
-
-  //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress!="none")
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
-    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
-    p.set("stress", stress);
-    p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
-    p.set("iostrain", iostrain);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    discret_.SetState("velocity",vel_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-    if (!isdatawritten) output_.NewStep(istep, timen);
-    isdatawritten = true;
-    if (iostress == "cauchy")
-    {
-      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
-    }
-    else
-    {
-      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
-    }
-    if (iostrain != "none")
-    {
-      if (iostrain == "euler_almansi")
-      {
-        output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
-      }
-      else
-      {
-        output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
-      }
-    }
-  }
-
-  //---------------------------------------------------------- print out
-  if (!myrank_)
-  {
-    if (printscreen)
-    {
-      printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-             istep,nstep,timen,dt,numiter);
-      printf("----------------------------------------------------------------------------------\n");
-      fflush(stdout);
-    }
-    if (printerr)
-    {
-      fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-              istep,nstep,timen,dt,numiter);
-      fprintf(errfile,"----------------------------------------------------------------------------------\n");
-      fflush(errfile);
-    }
-  }
-} // StatMech::Output()
+} // StatMechTime::FullNewton()
 
 
 /*----------------------------------------------------------------------*
  |  integrate in time          (static/public)               cyron 08/08|
  *----------------------------------------------------------------------*/
-void StatMech::Integrate()
+void StatMechTime::Integrate()
 {
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
   double maxtime = params_.get<double>("max time",0.0);
+  //special parameters for problem type STATISTICHAL MECHANICS
+  
+  
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -899,7 +608,7 @@ void StatMech::Integrate()
   else dserror("Unknown type of equilibrium iteration");
 
   return;
-} // void StruGenAlpha::Integrate()
+} // void StatMechTime::Integrate()
 
 
 #endif  // #ifdef CCADISCRET
