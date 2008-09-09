@@ -277,6 +277,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
     ranlib::Normal<double> normalGenTrans(0,standdevtrans);
     ranlib::Normal<double> normalGenRot(0,standdevrot);
     
+    
     //adding statistical forces 
     for (int i=0; i<3; ++i)
     {
@@ -285,6 +286,24 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       elevec1(i+6) += normalGenTrans.random();
       //elevec1(i+9) += normalGenRot.random();
     }    
+    
+    
+/*
+      double kraft1 = normalGenTrans.random();
+      double kraft2 = normalGenTrans.random();
+      
+      elevec1(0) += normalGenTrans.random();
+      elevec1(6) += normalGenTrans.random();
+      
+      elevec1(1) += kraft1 / 1.414;
+      elevec1(2) += kraft1 / 1.414;
+      elevec1(7) += kraft2 / 1.414;
+      elevec1(8) += kraft2 / 1.414;
+      
+      //elevec1(1) += kraft1;
+      //elevec1(7) += kraft2;
+       * */
+  
   }
   
   return 0;
@@ -579,7 +598,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   //auxiliary variables
   BlitzVec3 deltabetaplusalpha;
   BlitzVec3 deltabetaminusalpha;
-  BlitzMat3x3 Raux;
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
   BlitzMat3x3 Tnew;
 
@@ -608,6 +626,12 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   
   deltabetaminusalpha  = betaminusalphanew_;
   deltabetaminusalpha -= betaminusalphaold_;
+  
+  if(Id() == 8)
+  {
+    //std::cout<<"\ndeltabetaplusalpha\n"<<deltabetaplusalpha<<"\n";
+    //std::cout<<"\ndeltabetaminusalpha\n"<<deltabetaminusalpha<<"\n";
+  }
 
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
@@ -615,10 +639,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   //updating local curvature
   updatecurvature(Tnew, deltabetaplusalpha,deltabetaminusalpha);
   
-  if(Id() == 8)
-  {
-    //std::cout<<"\nTnew\n"<<Tnew<<"\n";
-  }
    
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   BLITZTINY::MtV_product<3,3>(Tnew,x21,epsilonn);
@@ -650,12 +670,37 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }  
+  
  
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
   epsilonn(0) *= ym*crosssec_;
   epsilonn(1) *= sm*crosssecshear_;
   epsilonn(2) *= sm*crosssecshear_;
   BLITZTINY::MV_product<3,3>(Tnew,epsilonn,stressn);  
+  
+  
+  /*
+  //alternative Möglichkeit, um stressn zu berechnen:
+  BlitzMat3x3 Aux1;
+  BlitzMat3x3 Aux2;
+  BlitzMat3x3 Mat;
+  //Konstitutivmatrix erstellen
+  BLITZTINY::PutScalar<3,3>(Mat,0.0);
+  Mat(0,0) = ym*crosssec_;
+  Mat(1,1) = sm*crosssecshear_;
+  Mat(2,2) = sm*crosssecshear_;
+  BLITZTINY::MM_product<3,3,3>(Tnew,Mat,Aux1);
+  BLITZTINY::MMt_product<3,3,3>(Aux1,Tnew,Aux2);
+  BLITZTINY::MV_product<3,3>(Aux2,x21,stressn);
+  BLITZTINY::V_scale<3>(stressn,1/lrefe_);
+  stressn(0) -= Tnew(0,0)*Mat(0,0);
+  stressn(1) -= Tnew(1,0)*Mat(0,0);
+  stressn(2) -= Tnew(2,0)*Mat(0,0);
+  */
+  
+  //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
+  BlitzMat3x3 spinx21;
+  computespin(spinx21,x21,0.5);
 
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
@@ -664,9 +709,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   epsilonm(2) *= ym*Izz_;
   BLITZTINY::MV_product<3,3>(Tnew,epsilonm,stressm); 
   
-  //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
-  BlitzMat3x3 spinx21;
-  computespin(spinx21,x21,0.5);
+  
   
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
@@ -684,10 +727,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
       for (int j=0; j<3; ++j)
       {      
         (*force)(i+3) -= stressn(j)*spinx21(i,j);      
-        (*force)(i+9) -= stressn(j)*spinx21(i,j);       
+        (*force)(i+9) -= stressn(j)*spinx21(i,j);    
       }
     }
   }
+  
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
@@ -710,6 +754,22 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     computeKsig2(Ksig2,stressn,x21);
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
+    
+    
+    if(Id() == 8)
+    {
+      //std::cout<<"\nx21\n"<<x21<<"\n";
+      //std::cout<<"\nTnew\n"<<Tnew<<"\n";
+      //std::cout<<"\nepsilonn\n"<<epsilonn<<"\n";
+      //std::cout<<"\nepsilonm\n"<<epsilonm<<"\n";
+      //std::cout<<"\nstressn\n"<<stressn<<"\n";
+      //std::cout<<"\nstressm\n"<<stressm<<"\n";
+      //std::cout<<"\nspinx21\n"<<spinx21<<"\n";
+      //std::cout<<"\ncurvnew_\n"<<curvnew_<<"\n";
+      //std::cout<<"\nxcurr\n"<<xcurr<<"\n";
+      //std::cout<<"\nforce\n"<<*force<<"\n";
+    }
+    
 
 
     //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
@@ -760,8 +820,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
          }    
        }
       } 
-    
-      */
+   */ 
+      
         
    
   }
@@ -824,7 +884,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xc
   BlitzVec3 deltabetaplusalpha;
   BlitzVec3 deltabetaminusalpha;
   BlitzVec3 curvnew;
-  BlitzMat3x3 Raux;
+  BlitzVec4 Qnew;
   BlitzMat3x3 Tnew;
   BlitzMat6x2 xcurr_aux;
   Epetra_SerialDenseMatrix stiff_approx;
@@ -853,16 +913,53 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xc
       deltabetaminusalpha  = betaminusalphanew;
       deltabetaminusalpha -= betaminusalphanew_;
 
-      //auxiliary matrix for update of Tnew, Crisfield, Vol 2, equation (17.65)
-      computerotation(Raux,deltabetaplusalpha,0.5);
-      BLITZTINY::MM_product<3,3,3>(Raux,Tnew_,Tnew);
-      
-     
-      //applying proper scaling for rotation angle
+      //calculating angle theta by which triad is rotated according to Crisfield, Vol. 2, equation (17.64)
       BLITZTINY::V_scale<3>(deltabetaplusalpha,0.5);
-     
-      //absolute value of rotation vector theta
-      double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);  
+      
+      //absolute value of rotation angle theta
+      double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);
+        
+      //computing quaterion for rotation by angle theta
+      BlitzVec4 Qrot;
+      if (abs_theta > 0)
+      {
+        Qrot(0) = deltabetaplusalpha(0) * sin(abs_theta / 2) / abs_theta;
+        Qrot(1) = deltabetaplusalpha(1) * sin(abs_theta / 2) / abs_theta;
+        Qrot(2) = deltabetaplusalpha(2) * sin(abs_theta / 2) / abs_theta;
+        Qrot(3) = cos(abs_theta / 2);
+      }
+      else
+      {
+        BLITZTINY::PutScalar<4>(Qrot,0);
+        Qrot(3) = 1;
+      }
+      
+      //computing quaterion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
+      Qnew(0) = Qrot(3)*Qnew_(0) + Qnew_(3)*Qrot(0) + Qrot(1)*Qnew_(2) - Qnew_(1)*Qrot(2);
+      Qnew(1) = Qrot(3)*Qnew_(1) + Qnew_(3)*Qrot(1) + Qrot(2)*Qnew_(0) - Qnew_(2)*Qrot(0);
+      Qnew(2) = Qrot(3)*Qnew_(2) + Qnew_(3)*Qrot(2) + Qrot(0)*Qnew_(1) - Qnew_(0)*Qrot(1);
+      Qnew(3) = Qrot(3)*Qnew_(3) - Qrot(2)*Qnew_(2) - Qrot(1)*Qnew_(1) - Qrot(0)*Qnew_(0);
+      
+      //separate storage of vector part of Qnew_
+      BlitzVec3 Qnewvec;
+      for(int j = 0; j<3; j++)
+      {
+        Qnewvec(j) = Qnew(j);
+      }
+      
+      //computing the rotation matrix from Crisfield, Vol. 2, equation (17.70) with respect to Qnew_,
+      //which is the new center triad Tnew
+      computespin(Tnew, Qnewvec, 2*Qnew(3));
+      for(int n = 0; n<3; n++)
+      {
+        for(int j = 0; j<3; j++)
+        {
+          Tnew(n,j) += 2*Qnew(n)*Qnew(j);
+          if(n == j)
+            Tnew(n,j) += Qnew(3)*Qnew(3) - Qnew(2)*Qnew(2) - Qnew(1)*Qnew(1) - Qnew(0)*Qnew(0);
+        }
+      }
+  
       
       BlitzVec3 omega = deltabetaplusalpha;
       BlitzVec3 omegaprime = deltabetaplusalpha;
