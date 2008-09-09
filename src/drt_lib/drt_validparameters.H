@@ -59,8 +59,8 @@ namespace INPUTPARAMS
   enum StatOutput
   {
     statout_none,
-    statout_endtoendlog,
-    statout_endtoendergodicity,
+    statout_endtoend,
+    statout_endtoend_ergodicity,
     statout_viscoelasticity
   };
   //-------------------------------------------STRUCTURAL CONTACT
