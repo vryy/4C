@@ -69,7 +69,7 @@ invtoggle_(&(*invtoggle),false)
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 11/07|
 |Compute difference between current and prescribed values.              |
-|Change Stiffnessmatrix and internal force vector                       |
+|Change stiffness matrix and internal force vector                       |
 *-----------------------------------------------------------------------*/
 void UTILS::UzawaSolver::Solve(
         RCP<LINALG::SparseMatrix> stiff,
@@ -89,7 +89,6 @@ void UTILS::UzawaSolver::Solve(
   double quotient;
   double norm_constr_uzawa;
   int numiter_uzawa = 0;
-  //const double convecscale = sqrt(rhsconstr->GlobalLength());
   //counter used for adaptivity
   int count_paramadapt = 1;
 
