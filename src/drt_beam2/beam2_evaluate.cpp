@@ -254,7 +254,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 		      default:
 		      dserror("unknown or improper type of material law");
 		 }	
-	  /*
+	  
 	  //calculating diagonal entry of damping matrix  
 	  double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/2;
 	  double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_/2;
@@ -275,10 +275,11 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   	elevec1[3] += normalGen_trans.random();
   	elevec1[4] += normalGen_trans.random(); 
   	elevec1[5] += normalGen_rot.random();    	  
-  	*/
   	
   	
   	
+  	/*
+	  
     //calculating diagonal entry of damping matrix  
      double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_;
      double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_;
@@ -302,7 +303,10 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
      elevec1[2] += f3/2;
      elevec1[3] += f1/2;
      elevec1[4] += f2/2; 
-     elevec1[5] += f3/2;  
+     elevec1[5] += f3/2; 
+     
+     */
+      
   }   
   return 0;
 }
