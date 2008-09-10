@@ -42,7 +42,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  InvDesign(const int numnod, const int ngp);
+  InvDesign(const int numnod, const int ngp,  const bool istet4=false);
 
   /*!
   \brief Copy Constructor
@@ -97,6 +97,19 @@ public:
     return;
   }
   
+  /// get history of deformation gradient
+  inline Epetra_SerialDenseMatrix& FHistory() const { return *Fhist_; }
+
+  /// get history of reference configuration (inverse of Jacobian)
+  inline Epetra_SerialDenseMatrix& JHistory() const { return *invJhist_; }
+
+  /// get history of determinant of J in reference configuration
+  inline vector<double>& DetJHistory() { return detJ_; }
+
+  /// access the init flag
+  inline bool& IsInit() { return isinit_; }
+
+  /// id problem for hex8 element
   void soh8_nlnstiffmass(
       DRT::ELEMENTS::So_hex8*   ele,            ///< this element
       vector<int>&              lm,             ///< location matrix
@@ -110,22 +123,37 @@ public:
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
-
+  
+  /// store material config for hex8 element
+  void soh8_StoreMaterialConfiguration(DRT::ELEMENTS::So_hex8* ele,
+                                       const vector<double>& disp);
+  
+  
 private:
 
-  int                      numnod_;
-  int                      ngp_;
+  int                                     numnod_;
+  int                                     ngp_;
+  bool                                    isinit_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  Fhist_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  invJhist_;
+  vector<double>                          detJ_;
 
-  void BuildLambda(double Lambda4[][3][3][3], LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& F) const;
-  void BuildLambdaT(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& F) const;
+  /// get number of gaussian points considered
+  inline int NGP() { return Fhist_->M(); }
+  
+  /// get no. of nodal points
+  inline int NumNode() { return numnod_; }
+
+  void BuildLambda(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& F) const;
   void BuildIF(LINALG::SerialDenseMatrix& IF, const LINALG::SerialDenseMatrix& F) const;
-  void BuildTheta(double Theta4[][3][3][3],LINALG::SerialDenseMatrix& Theta, const LINALG::SerialDenseMatrix& F) const;
-  void BuildYpsilon(double Y4[][3][3][3],
-                    LINALG::SerialDenseMatrix& Y, 
+  void BuildTheta(LINALG::SerialDenseMatrix& Theta, const LINALG::SerialDenseMatrix& F) const;
+  void BuildYpsilon(LINALG::SerialDenseMatrix& Y, 
                     const LINALG::SerialDenseMatrix& F,
                     const LINALG::SerialDenseMatrix& S) const;
 
+
   // these were for debugging
+#if 0
   void FDLambda(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& f) const;
   void FDLambdaT(LINALG::SerialDenseMatrix& L, const LINALG::SerialDenseMatrix& f) const;
   void FDTheta(double Theta4[][3][3][3],LINALG::SerialDenseMatrix& Theta, const LINALG::SerialDenseMatrix& F) const;
@@ -151,6 +179,8 @@ private:
                 const LINALG::SerialDenseMatrix& f) const;
   void TensorMultiply(Epetra_SerialDenseMatrix& sum,double fac,
                       double Y4[][3][3][3], double L4[][3][3][3]);
+#endif
+
  
 }; // class InvDesign
 } // namespace ELEMENTS
