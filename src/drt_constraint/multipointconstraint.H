@@ -24,7 +24,7 @@ using namespace Teuchos;
 namespace UTILS
 {
   /*!
-  \brief This pure virtual class is the commen interface for multi point constraints. 
+  \brief This pure virtual class is the common interface for multi point constraints. 
   It is derived from the basic constraint class.
   
   \author Kloeppel (kloeppel@lnm.mw.tum.de)
@@ -33,16 +33,13 @@ namespace UTILS
   {
   public:
   
-    //! @name Constructors and destructors and related methods
-  
     /*!
     \brief Standard Constructor
     */
-  
     MPConstraint
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName, ///< Name of condition to creat constraint from
+      const string& CondName, ///< Name of condition to create constraint from
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far   
     );  
@@ -53,7 +50,7 @@ namespace UTILS
     MPConstraint
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName ///< Name of condition to creat constraint from
+      const string& CondName ///< Name of condition to create constraint from
     );  
   
     /*!
@@ -82,10 +79,6 @@ namespace UTILS
       }
     };
       
-    //@}
-  
-    //! @name Public Member Functions
-  
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     virtual void Initialize
     (
@@ -110,37 +103,31 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     )=0; 
     
-    bool HaveConstraint()
-    {
-        return constrtype_!=none;
-    };
-  
-    //@}
+    //! Is there a constraint defined in this class?
+     bool HaveConstraint()
+     {
+         return constrtype_!=none;
+     };
   
   protected:
       
-    // don't want = operator, cctor and destructor
-  
-//    MPConstraint operator = (const MPConstraint& old);
+    //cctor  
     MPConstraint(const MPConstraint& old);
   
   
     //! additional discretization consisting of constraint elements
     map<int,RCP<DRT::Discretization> > constraintdis_;
   
-    
-    //! @name Private Member Functions
-      
-    //! Evaluate constraint discretization and assemble the results
+   //! Evaluate constraint discretization and assemble the results
     virtual void EvaluateConstraint
     ( 
         RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by aasembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by assembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by assembly of element contributions
     )=0;
     
     //! creating a new discretization based on conditions containing constraint elements
@@ -165,35 +152,6 @@ namespace UTILS
              const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
              const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
              ) const;
-  
-    void PrintVec(ostream& os, const vector<int> actvec)
-    {
-      vector<int>::const_iterator i;
-      for (i=actvec.begin(); i<actvec.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-    }
-
-    void PrintVec(ostream& os, const vector<double> actvec)
-    {
-      vector<double>::const_iterator i;
-      for (i=actvec.begin(); i<actvec.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-    }
-
-    void PrintSet(ostream& os, const set<int> actset)
-    {
-      set<int>::iterator i;
-      for (i=actset.begin(); i != actset.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-      
-    }
-    //@}
   
   }; //class
 }

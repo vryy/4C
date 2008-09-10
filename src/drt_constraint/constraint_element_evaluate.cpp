@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       SpatialConfiguration(xscurr,mydisp,numdim);
       
       LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeElementNormal3D(xscurr,elementnormal);
+      ComputeNormal3D(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
       {
         dserror("Bad plane, points almost on a line!");
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec3[condID-minID]=normaldistance;      
     }
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       SpatialConfiguration(xscurr,mydisp,numdim);
       
       LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeElementNormal3D(xscurr,elementnormal);
+      ComputeNormal3D(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
       {
         dserror("Bad plane, points almost on a line!");
@@ -124,13 +124,12 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       
       ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
       ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
-      //const int ID =params.get("ConditionID",-1);
       
       RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec1.Scale((*lambdav)[condID-minID]);
@@ -149,7 +148,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp,numdim);
       LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeElementNormal2D(xscurr,elementnormal);
+      ComputeNormal2D(xscurr,elementnormal);
       double normaldistance =ComputeNormalDist2D(xscurr,elementnormal);
       ComputeFirstDerivDist2D(xscurr,elevec1,elementnormal);
       ComputeSecondDerivDist2D(xscurr,elemat1,elementnormal);
@@ -157,7 +156,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
@@ -177,7 +176,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp,numdim);
       
-      double angle=ComputeElementAngle2D(xscurr);
+      double angle=ComputeAngle2D(xscurr);
       
       ComputeFirstDerivAngle2D(xscurr,elevec1);
       ComputeSecondDerivAngle2D(xscurr,elemat1);
@@ -186,7 +185,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
 
       const int minID =params.get("MinID",0);
       const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec1.Scale(-1*(*lambdav)[condID-minID]);
@@ -204,17 +203,24 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
 
 } // end of DRT::ELEMENTS::ConstraintElement::Evaluate
 
-int DRT::ELEMENTS::ConstraintElement::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+/*----------------------------------------------------------------------*
+ * Evaluate Neumann (->dserror) */
+int DRT::ELEMENTS::ConstraintElement::EvaluateNeumann
+(
+  ParameterList& params,
+  DRT::Discretization&      discretization,
+  DRT::Condition&           condition,
+  vector<int>&              lm,
+  Epetra_SerialDenseVector& elevec1
+)
 {
   dserror("You called Evaluate Neumann of constraint element.");
   return 0;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal3D(const LINALG::SerialDenseMatrix& xc,
+/*----------------------------------------------------------------------*
+ * compute 3d normal */
+void DRT::ELEMENTS::ConstraintElement::ComputeNormal3D(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseVector& elenorm)
 {
   elenorm[0]=-(xc(0,2)*xc(1,1)) + xc(0,1)*xc(1,2) + xc(0,2)*xc(2,1) -
@@ -226,7 +232,9 @@ void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal3D(const LINALG::Seri
   return ;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal2D(const LINALG::SerialDenseMatrix& xc,
+/*----------------------------------------------------------------------*
+ * compute 2d normal */
+void DRT::ELEMENTS::ConstraintElement::ComputeNormal2D(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseVector& elenorm)
 {
   elenorm[0]=xc(0,1) - xc(1,1);
@@ -234,29 +242,46 @@ void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal2D(const LINALG::Seri
   return ;
 }
 
-double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist3D(const LINALG::SerialDenseMatrix& xc,
-    const LINALG::SerialDenseVector& normal)
+/*----------------------------------------------------------------------*
+ * normal distance between fourth point and plane */
+double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist3D
+(
+  const LINALG::SerialDenseMatrix& xc,
+  const LINALG::SerialDenseVector& normal
+)
 {
-   return (-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) - normal[2]*
+  return (-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) - normal[2]*
       (xc(0,2) - xc(3,2)))/(-normal.Norm2());
 }
 
-double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist2D(const LINALG::SerialDenseMatrix& xc,
-    const LINALG::SerialDenseVector& normal)
+/*----------------------------------------------------------------------*
+ * normal distance between third point and line */
+double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist2D
+(
+  const LINALG::SerialDenseMatrix& xc,
+  const LINALG::SerialDenseVector& normal
+)
 {
-   return (normal[0]*(-xc(0,0) + xc(2,0)) - normal[1]*(xc(0,1) - xc(2,1)))/normal.Norm2();
+  return (normal[0]*(-xc(0,0) + xc(2,0)) - normal[1]*(xc(0,1) - xc(2,1)))/normal.Norm2();
 }
 
-double DRT::ELEMENTS::ConstraintElement::ComputeElementAngle2D(const LINALG::SerialDenseMatrix& xc)
+/*----------------------------------------------------------------------*
+ * compute angle at second point */
+double DRT::ELEMENTS::ConstraintElement::ComputeAngle2D(const LINALG::SerialDenseMatrix& xc)
 {
-   return (acos((xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))/
+  return (acos((xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))/
        sqrt((pow(xc(0,0) - xc(1,0),2) + pow(xc(0,1) - xc(1,1),2))*(pow(xc(1,0) - xc(2,0),2) + pow(xc(1,1) - xc(2,1),2))))+acos(0));
    
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseVector& elevector,
-                                                          const LINALG::SerialDenseVector& normal)
+/*----------------------------------------------------------------------*
+ * first derivatives */
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D
+(
+  const LINALG::SerialDenseMatrix& xc,
+  Epetra_SerialDenseVector& elevector,
+  const LINALG::SerialDenseVector& normal
+)
 { 
   
   double normsquare=pow(normal.Norm2(),2);
@@ -335,8 +360,13 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D(const LINALG::SerialD
   return;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseVector& elevector, const LINALG::SerialDenseVector& normal)
+/*----------------------------------------------------------------------*
+ * second derivatives */
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D
+(
+  const LINALG::SerialDenseMatrix& xc,
+  Epetra_SerialDenseVector& elevector, const LINALG::SerialDenseVector& normal
+)
 { 
   double normcube=pow(normal.Norm2(),3);
   
@@ -363,8 +393,13 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D(const LINALG::Ser
   return;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseVector& elevector)
+/*----------------------------------------------------------------------*
+ * first derivatives */
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
+( 
+  const LINALG::SerialDenseMatrix& xc,
+  Epetra_SerialDenseVector& elevector
+)
 {
   LINALG::SerialDenseVector vec1(2);
   vec1[1]=xc(0,0) - xc(1,0);
@@ -429,9 +464,14 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D(const LINALG::Se
   ;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseMatrix& elematrix,
-    const LINALG::SerialDenseVector& normal)
+/*----------------------------------------------------------------------*
+ * second derivatives */
+void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D
+(
+  const LINALG::SerialDenseMatrix& xc,
+  Epetra_SerialDenseMatrix& elematrix,
+  const LINALG::SerialDenseVector& normal
+)
 {
   
   double normsquare=pow(normal.Norm2(),2);
@@ -1965,6 +2005,8 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D(const LINALG::Serial
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * second derivatives */
 void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix,
     const LINALG::SerialDenseVector& normal)
@@ -2128,6 +2170,8 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::Se
   
 }
 
+/*----------------------------------------------------------------------*
+ * second derivatives */
 void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix)
 {

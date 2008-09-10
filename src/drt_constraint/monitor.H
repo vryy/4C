@@ -28,10 +28,6 @@ Maintainer: Thomas Kloeppel
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief UTILS: namespace constaining general utils for BACI, as constraints, monitors, ...
-
-*/
 namespace UTILS
 {
   /*!
@@ -93,11 +89,11 @@ namespace UTILS
       actdisc_->SetState(state,V);
     };
     
-    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
+    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateMonitor routine is called 
     void Evaluate
     ( 
-      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector> systemvector1 ///< distributed vector that may be filled by assembly of element contributions
+      ParameterList&  params,  ///< parameter list to communicate between elements and discretization
+      RCP<Epetra_Vector> systemvector1 ///< distributed vector that may be filled by assembly of element contributions
     ); 
     
     
@@ -110,11 +106,11 @@ namespace UTILS
 
   protected:
     
-    RCP<DRT::Discretization> actdisc_; /// standard discretization
-    vector<DRT::Condition*> moncond_; /// conditions, that define the monitor (all of the same kind)
-    MoniType montype_; /// monitor type
-    map<int,double>  inittimes_; /// map with times at which monitor is supposed to become active
-    map<int,bool> activemons_; /// map with indicator if monitors are active
+    RCP<DRT::Discretization> actdisc_; ///< standard discretization
+    vector<DRT::Condition*> moncond_; ///< conditions, that define the monitor (all of the same kind)
+    MoniType montype_; ///< monitor type
+    map<int,double>  inittimes_; ///< map with times at which monitor is supposed to become active
+    map<int,bool> activemons_; ///< map with indicator if monitors are active
       
   private:
     
@@ -133,8 +129,8 @@ namespace UTILS
     //! Evaluate monitor values and assemble the results
     void EvaluateMonitor
     (
-      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
+      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
     ); 
   }; //class
 } //namespace

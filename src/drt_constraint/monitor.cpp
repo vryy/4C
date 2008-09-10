@@ -102,9 +102,11 @@ void UTILS::Monitor::Evaluate(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::Monitor::EvaluateMonitor(
-    ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+void UTILS::Monitor::EvaluateMonitor
+(
+  ParameterList&        params,
+  RCP<Epetra_Vector>    systemvector
+)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");

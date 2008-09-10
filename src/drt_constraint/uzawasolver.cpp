@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file uzawasolver.cpp
 
-\brief Class constaining uzawa algorithm to solve linear system.
+\brief Class containing uzawa algorithm to solve linear system.
 
 <pre>
 Maintainer: Thomas Kloeppel

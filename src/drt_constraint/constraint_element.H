@@ -55,8 +55,6 @@ public:
 
   /*!
   \brief Standard Constructor
-
-  \param id : A unique global id
   
   */
   ConstraintElement(
@@ -122,7 +120,7 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
 
   /*!
@@ -193,54 +191,41 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate fluid2 element stiffness, mass, internal forces etc
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
-               DRT::Discretization&      discretization,
-               vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+  int Evaluate
+  (
+    ParameterList& params, ///< ParameterList for communication
+    DRT::Discretization& discretization,  ///< discretization
+    vector<int>& lm,  ///< location vector
+    Epetra_SerialDenseMatrix& elemat1, ///< first matrix to be filled by element
+    Epetra_SerialDenseMatrix& elemat2,///< second matrix to be filled by element
+    Epetra_SerialDenseVector& elevec1,  ///< third matrix to be filled by element
+    Epetra_SerialDenseVector& elevec2,  ///< first vector to be filled by element
+    Epetra_SerialDenseVector& elevec3  ///< second vector to be filled by element
+  );  
 
 
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a line Neumann condition on the fluid2 element
+  Since the element has no physics attached this method will give a dserror
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+  virtual int EvaluateNeumann
+  (
+    ParameterList& params,  ///< ParameterList for communication
+    DRT::Discretization& discretization,  ///< discretization
+    DRT::Condition& condition,  ///< Neumann condition to evaluate
+    vector<int>& lm,  ///< location vector
+    Epetra_SerialDenseVector& elevec1   ///< vector to be filled by element
+  );
 
 
 private:
 
-  //! action parameters recognized by bele3
+  //! action parameters recognized by constraint element
   enum ActionType
   {
     none,
@@ -250,7 +235,7 @@ private:
     calc_MPC2D_angle_stiff
   };
 
-  //! container containing all kind of fluid2 thisandthat
+  //! container containing all kind of constraint element data
   DRT::Container                                  data_;
 
   //! vector of surfaces of this element (length 1)
@@ -265,9 +250,12 @@ private:
   /*!
   \brief Create matrix with material configuration
 
-  \param x  (out)  : nodal coords in material frame
   */
-  inline void MaterialConfiguration(LINALG::SerialDenseMatrix& x, const int& numdim) const
+  inline void MaterialConfiguration
+  (
+    LINALG::SerialDenseMatrix& x, ///< nodal coords in material frame
+    const int& numdim             ///< number of dimensions
+  ) const
   {
     const int numnode = NumNode();
     for (int i=0; i<numnode; ++i)
@@ -283,12 +271,13 @@ private:
   /*!
   \brief Create matrix with spatial configuration
 
-  \param x     (out)  : nodal coords in spatial frame
-  \param disp  (int)  : displacements
   */
-  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x, 
-                                   const vector<double> disp,
-                                   const int& numdim) const
+  inline void SpatialConfiguration
+  (
+    LINALG::SerialDenseMatrix& x, ///< nodal coords in spatial frame
+    const vector<double> disp,  ///< displacements
+    const int& numdim   ///< number of dimensions
+  ) const
   {
     const int numnode = NumNode();
     for (int i=0; i<numnode; ++i)
@@ -301,41 +290,85 @@ private:
     return;
   }
   
-  void ComputeElementNormal3D(const LINALG::SerialDenseMatrix& xc,
-      LINALG::SerialDenseVector& elenormal);
+  /// compute normal for 3D case using the first three nodes to specify a plane
+  void ComputeNormal3D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    LINALG::SerialDenseVector& elenormal  ///< resulting element normal
+  );
   
-  double ComputeNormalDist3D(const LINALG::SerialDenseMatrix& xc,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute normal distance between plane and fourth node
+  double ComputeNormalDist3D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
   
-  void ComputeFirstDeriv3D(const LINALG::SerialDenseMatrix& xc,
-      Epetra_SerialDenseVector& elevector,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute first derivative of normal distance with respect to the nodal displacements
+  void ComputeFirstDeriv3D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseVector& elevector,  ///< vector to store results into
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
   
-  void ComputeSecondDeriv3D(const LINALG::SerialDenseMatrix&,
-      Epetra_SerialDenseMatrix& elematrix,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute first derivative of normal distance with respect to the nodal displacements
+  void ComputeSecondDeriv3D
+  (
+    const LINALG::SerialDenseMatrix&,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseMatrix& elematrix,  ///< vector to store results into
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
 
-  void ComputeElementNormal2D(const LINALG::SerialDenseMatrix& xc,
-      LINALG::SerialDenseVector& elenormal);
+  /// compute normal for 2D case using the first two nodes to specify a line
+  void ComputeNormal2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    LINALG::SerialDenseVector& elenormal  ///< resulting element normal
+  );
   
-  double ComputeNormalDist2D(const LINALG::SerialDenseMatrix& xc,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute normal distance between line and third node
+  double ComputeNormalDist2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
   
-  void ComputeFirstDerivDist2D(const LINALG::SerialDenseMatrix& xc,
-      Epetra_SerialDenseVector& elevector,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute first derivatives of normal distance with respect to the nodal displacements
+  void ComputeFirstDerivDist2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseVector& elevector,  ///< vector to store results into
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
   
-  void ComputeSecondDerivDist2D(const LINALG::SerialDenseMatrix&,
-      Epetra_SerialDenseMatrix& elematrix,
-      const LINALG::SerialDenseVector& elenormal);
+  /// Compute second derivatives of normal distance with respect to the nodal displacements
+  void ComputeSecondDerivDist2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseMatrix& elevector,  ///< matrix to store results into
+    const LINALG::SerialDenseVector& elenormal  ///< element normal
+  );
 
-  double ComputeElementAngle2D(const LINALG::SerialDenseMatrix& xc);
+  /// Compute angle at second node 
+  double ComputeAngle2D
+  (
+    const LINALG::SerialDenseMatrix& xc  ///< nodal coords in spatial frame
+  );
   
-  void ComputeFirstDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
-      Epetra_SerialDenseVector& elevector);
+  /// Compute first derivatives of angle at second node with respect to the nodal displacements
+  void ComputeFirstDerivAngle2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseVector& elevector  ///< vector to store results into
+  );
   
-  void ComputeSecondDerivAngle2D(const LINALG::SerialDenseMatrix& xs,
-      Epetra_SerialDenseMatrix& elematrix);
+  /// Compute second derivatives of angle at second node with respect to the nodal displacements
+  void ComputeSecondDerivAngle2D
+  (
+    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    Epetra_SerialDenseMatrix& elematrix  ///< matrix to store results into
+  );
 
 
 }; // class ConstraintElement

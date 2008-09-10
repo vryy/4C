@@ -210,12 +210,12 @@ namespace UTILS
         return (*actvalues_)[i];
     };
   
-    /*
+    /*!
          \brief Print out the values of current monitor values
      */
     void PrintMonitorValues();
   
-    /*
+    /*!
        \brief Compute values described by a monitor boundary condition
     */
     void ComputeMonitorValues
@@ -240,6 +240,7 @@ namespace UTILS
       return;
     }
     
+    /// Return Reference base values to write restart
     RCP<Epetra_Vector> GetRefBaseValues()
     {
       return refbasevalues_;
@@ -281,7 +282,7 @@ namespace UTILS
     RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
     RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
     RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
-    RCP<Epetra_Vector> referencevalues_;  ///< reference at current time stepto constrain values to
+    RCP<Epetra_Vector> referencevalues_;  ///< reference at current time step to constrain values to
     RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures 
     RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
     RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
@@ -297,7 +298,6 @@ namespace UTILS
     bool haveconstraint_;  ///< are there constraints at all?
     bool havemonitor_;  ///< are there monitor conditions?
     double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used) 
-    double alphaf_;
     
     RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces 
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces

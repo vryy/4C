@@ -58,7 +58,6 @@ actdisc_(discr)
     ParameterList p;
     uzawaparam_ = params.get<double>("uzawa parameter",1);
     double time = params.get<double>("total time"      ,0.0);
-    alphaf_ = params.get<double>("alpha f"         ,0.459);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constrMatrix

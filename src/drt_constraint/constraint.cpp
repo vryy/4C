@@ -219,9 +219,7 @@ void UTILS::Constraint::EvaluateConstraint(
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
-{
-  
-  
+{  
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
@@ -260,7 +258,7 @@ void UTILS::Constraint::EvaluateConstraint(
     // is conditions supposed to be active?
     if(inittimes_.find(condID)->second<=time)
     {
-      // is conditions already labelled as active?
+      // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
         const string action = params.get<string>("action"); 

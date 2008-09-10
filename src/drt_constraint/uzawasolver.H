@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file uzawasolver.H
 
-\brief Class constaining uzawa algorithm to solve linear system.
+\brief Class containing uzawa algorithm to solve linear system.
 
 <pre>
 Maintainer: Thomas Kloeppel
@@ -70,7 +70,7 @@ namespace UTILS
         RCP<LINALG::SparseMatrix> constr, ///< constraint matrix
         RCP<Epetra_Vector> disp_inc,      ///< displacement increment to compute
         RCP<Epetra_Vector> disp_lagr,     ///< lagrange multiplier increment to compute
-        RCP<Epetra_Vector> rhs_standard,  ///< standard rhs
+        RCP<Epetra_Vector> rhs_standard,  ///< standard right hand side
         RCP<Epetra_Vector> rhs_constr     ///< constraint errors
         );
 
@@ -105,13 +105,13 @@ private:
     int maxIter_;  ///< number of maximal iterations
     double uzawaparam_; ///< parameter for Uzawa algorithm
     double minparam_; ///< minimal possible parameter for Uzawa algorithm
-    double uzawatol_;  //< tolerance
+    double uzawatol_;  ///< tolerance
     double tolres_;  ///< tolerance for residual
     double tolconstr_;  ///< tolerance for constraint
-    RCP<Epetra_Vector>    dirichtoggle_;  ///< 
+    RCP<Epetra_Vector>    dirichtoggle_;  ///< dirichlet toggle
     RCP<Epetra_Vector>    invtoggle_; ///< inverse dirichlet toggle
     bool isadapttol_;  ///< adaptive tolerance for solver?
-    bool adaptolbetter_ ; ///< adaptive tolerance for solver usefull?
+    bool adaptolbetter_ ; ///< adaptive tolerance for solver useful?
     RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counter used for adaptation of uzawa parameter
 
