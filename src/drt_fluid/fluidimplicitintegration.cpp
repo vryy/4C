@@ -1631,7 +1631,7 @@ void FLD::FluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (step_%uprestart_ == 0) //add restart data
+    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
       output_.WriteVector("accn", accn_);
       output_.WriteVector("veln", veln_);
@@ -1649,7 +1649,7 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (step_%uprestart_ == 0)
+  else if (uprestart_ != 0 && step_%uprestart_ == 0)
   {
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
