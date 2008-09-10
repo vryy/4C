@@ -312,6 +312,7 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tet10>    {static const int numNodePerElement = 10;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge6>   {static const int numNodePerElement = 6;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge15>  {static const int numNodePerElement = 15;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::pyramid5> {static const int numNodePerElement = 5;};
 
    /*!
   \brief Returns the number of corner nodes
