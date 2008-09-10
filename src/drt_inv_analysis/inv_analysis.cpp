@@ -52,12 +52,7 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   // measured points, gives the number how many displacment steps are measured
   mp_   = params_.get<int>   ("nstep",5);
 
-
   // displacment vectors
-
-  //Epetra_Map final_disp_map(mp_, 0, discret_.Comm());
-  //final_disp_ = Teuchos::rcp(new Epetra_Vector(final_disp_map,  true));
-
   final_disp_o_.Resize(mp_);                   // calculated displacment
   final_disp_.Resize(mp_);                     // calculated displacment of the previous run
   measured_disp_.Resize(mp_);                  // measured displacment of the experiment
@@ -74,6 +69,7 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   // material parameters
   p_.Resize(3);
   p_o_.Resize(3);
+
   p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c);
   p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1);
   p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2);
@@ -90,17 +86,17 @@ Inv_analysis::Inv_analysis(ParameterList& params,
 
 void Inv_analysis::Integrate()
 {
-  int max_itter = 100000;
+  int max_itter = 10000;
 
   do {
     int    step    = params_.get<int>   ("step" ,0);
     double maxtime = params_.get<double>("max time",0.0);
-
     string equil = params_.get<string>("equilibrium iteration","full newton");
 
     // can have values takes values "constant" consistent"
     string pred  = params_.get<string>("predictor","constant");
     int predictor=-1;
+
     if      (pred=="constant")   predictor = 1;
     else if (pred=="consistent") predictor = 2;
     else dserror("Unknown type of predictor");
@@ -152,8 +148,15 @@ void Inv_analysis::evaluate()
   }
   discret_.Comm().Barrier();
 
-  numb_run_++;
   reset_parameters();
+  discret_.Comm().Broadcast(&p_[0],  3,  0);
+
+  numb_run_++;
+
+  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = (p_(0)*p_(0));
+  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = (p_(1)*p_(1));
+  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = (p_(2)*p_(2));
+
   return;
 }
 
@@ -178,7 +181,10 @@ void Inv_analysis::calculate_new_parameters()
   }
 
   // calculating the errors
-  error_o_ = error_;
+  if (abs(error_-error_o_)<0.1)
+    error_o_=0.0;
+  else
+    error_o_ = error_;
   error_ = residual_disp_.Norm1();
 
   // store the error and mu_
@@ -204,7 +210,6 @@ void Inv_analysis::calculate_new_parameters()
   //calculating J.T*J
   storage.Multiply('T',  'N',  1,  J, J,  0);
 
-
   //calculating J.T*J+mu*I
   for (int i=0; i<3; i++)
   {
@@ -212,7 +217,7 @@ void Inv_analysis::calculate_new_parameters()
     {
       if (i==j)
       {
-        storage[i][j] = (storage[i][j] + mu_);
+        storage[i][j] = (storage[i][j] + storage[i][j]* mu_);
       }
     }
   }
@@ -229,7 +234,7 @@ void Inv_analysis::calculate_new_parameters()
   p_o_ = p_;
   for (int i=0; i<3; i++)
   {
-    p_(i)   = p_(i) - delta_p(i);
+    p_(i)   = p_(i) + delta_p(i);
   }
 
   if (error_o_<error_) mu_ = mu_plus_;
@@ -237,22 +242,17 @@ void Inv_analysis::calculate_new_parameters()
 
   final_disp_o_ = final_disp_;
 
-  // if there is no more convergence the algorithm starts fresh
-  if (abs(error_-error_o_)<0.4)
+  if (abs(error_-error_o_)<0.1)
   {
     cout << "Reset old parameters to Null!!!" << endl;
     p_=p_o_;
-    p_o_[0]=0.0;
-    p_o_[1]=0.0;
-    p_o_[2]=0.0;
+    p_o_.Scale(0.0);
+    final_disp_o_.Scale(0.0);
   }
-  else
-  {
-    // write back new material properties
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = (p_(0)*p_(0));
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = (p_(1)*p_(1));
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = (p_(2)*p_(2));
-  }
+
+  //numb_run_++;
+
+  cout << "********************************************ENDE********************************************" << endl;
 
   return;
 }
@@ -286,10 +286,26 @@ void Inv_analysis::get_disp_curve(const RefCountPtr<Epetra_Vector> disp,  int nu
     }
   }
 
+  discret_.Comm().Barrier();
+
+  for (int proc=0; proc<discret_.Comm().NumProc(); ++proc)
+       {
+         if (proc==discret_.Comm().MyPID())
+         {
+           //cout << "Processor: " << proc << " Nodal Sum: \t" << nodal_disp_sum << endl;
+         }
+       }
+  discret_.Comm().Barrier();
+
   // summing up over all processors
   discret_.Comm().SumAll(&nodal_disp_sum, &nodal_disp_sum_2, 1);
 
+
+  //cout << "Nodal Sum 2: \t" << nodal_disp_sum_2 << endl;
+
   final_disp_[numb] =  nodal_disp_sum_2/surfneum_nodes_.size();
+
+
 
   return;
 }
