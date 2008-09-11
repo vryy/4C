@@ -47,7 +47,9 @@ protected:
   // don't want = operator and cctor
   StatMechTime operator = (const StatMechTime& old);
   StatMechTime(const StatMechTime& old);
-  StatMechManager statmechmanager_;
+  
+  //! \brief manager for administration of statistical mechanics stuff
+  RCP<StatMechManager>         statmechmanager_;
 
 
 }; // class StatMechTime

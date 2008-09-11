@@ -14,20 +14,39 @@ Maintainer: Christian Cyron
 
 #include "statmech_manager.H"
 #include "../drt_lib/drt_validparameters.H"
+#include "../drt_lib/drt_utils.H"
 
 #include <iostream>
+#include <iomanip>
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
-StatMechManager::StatMechManager(ParameterList& params):
+StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
-  istart_(0)
+  istart_(0),
+  rlink_(params.get<double>("R_LINK",0.0)),
+  discret_(discret)
 { 
+  /*crosslinkerpartner_ and crosslinkerelements_ are generated based on the discretization
+   * as it is generated from the input data file; this discretization does not yet comprise
+   * any additional crosslinker elements which is o.K. since both variables are applied in 
+   * order to administrate only the nodes of the original discretization*/
+  crosslinkerpartner_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
+  crosslinkerelements_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
+  
+  /*initializing crosslinkerpartner_ and crosslinkerelements with -1 for each element by looping
+   * over all local indices assigned by the map dis.NodeRowMap() to a processor*/
+  for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+  {
+    (*crosslinkerpartner_)[i] = -1;
+    (*crosslinkerelements_)[i] = -1;
+  }
+
   return;
 } // StatMechManager::StatMechManager
 
@@ -72,14 +91,49 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
           //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
           DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
       
-          //writing output
+          //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
           if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
             {
             // open file and append new data line
             fp = fopen(outputfilename_.str().c_str(), "a");
             //defining temporary stringstream variable
             std::stringstream filecontent;
-            filecontent << scientific << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+            filecontent << scientific << setprecision(12) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+            // move temporary stringstream to file and close it
+            fprintf(fp,filecontent.str().c_str());
+            fclose(fp);
+            }
+        }
+    }
+    break;
+    case INPUTPARAMS::statout_endtoendergodicity:
+    {
+      FILE* fp = NULL; //file pointer for statistical output file
+      double endtoend = 0; //end to end length at a certain time step in single filament dynamics
+       
+      //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
+      if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
+      {
+       endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
+       starttimeoutput_ = time;
+       istart_ = istep;   
+       //setting up an empty file "EndToEndErgo.dat"
+       fp = fopen("EndToEndErgo.dat", "w");
+       fclose(fp);
+      }
+       
+        if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
+        { 
+          endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+      
+          //writing output: current time and end to end distance are stored without any further postprocessing
+          if ( (istep - istart_) % 100 == 0 )
+            {
+            // open file and append new data line
+            fp = fopen("EndToEndErgo.dat", "a");
+            //defining temporary stringstream variable
+            std::stringstream filecontent;
+            filecontent << scientific << setprecision(12) << time << "  " << endtoend << endl;
             // move temporary stringstream to file and close it
             fprintf(fp,filecontent.str().c_str());
             fclose(fp);
@@ -88,7 +142,6 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
     }
     break;
     case INPUTPARAMS::statout_none:
-    case INPUTPARAMS::statout_endtoendergodicity:
     case INPUTPARAMS::statout_viscoelasticity:
     default:
     {
@@ -100,6 +153,71 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
 
   return;
 } // StatMechManager::StatMechOutput()
+
+
+/*----------------------------------------------------------------------*
+ | write special output for statistical mechanics (public)    cyron 09/08|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StatMechUpdate()
+{  
+  //create random numbers in order to decide whether a crosslinker should be established
+  Epetra_Vector setcrosslinker(*discret_.NodeRowMap());
+  setcrosslinker.Random();
+  
+  //create random numbers in order to decide whether a crosslinker should be deleted
+  Epetra_Vector delcrosslinker(*discret_.NodeRowMap());
+  delcrosslinker.Random();
+  
+  //probability with which a crosslinker is established between neighbouring nodes
+  double plink = 1;
+  double punlink = 1;
+  
+   
+  //searching locally with a tree all nodes forming neighbouring couples and establishing crosslinkers between them
+  for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+  {
+    //if the node is already crosslinked the crosslinker is removed with probability punlink
+    if ((*crosslinkerpartner_)[i] != -1.0 && delcrosslinker[i] <  -1.0 + 2*punlink)
+    {
+      (*crosslinkerpartner_)[i] = -1;
+      (*crosslinkerelements_)[i] = -1;
+    }
+    
+    //checking which of these potential new crosslinkers have already been established before
+    
+    //defining global Id of new crosslinker element
+    int globalid_a = 1;
+    //global Id of the current node
+    int globalid_b = 1;
+    //global Id of the neighbouring node
+    int globalid_c = 1;
+    
+    /*crosslinkers are always established from the node with lower global Id to the one with higher
+     * global Id only, in order to make sure that the crosslinker is not established twice; furthermore
+     * crosslinkers are established only with a certain probability, which is accounted for by menas
+     * of the randomized condition setcrosslinker[i] <  -1.0 + 2*plink*/
+    if (globalid_b < globalid_c && setcrosslinker[i] <  -1.0 + 2*plink)
+    {
+      
+      //testing if there is already a crosslink installed between these two nodes
+
+      
+
+      
+      /*the owner of the newly established crosslinker element is the current processor on which the search
+       * is carried out and whose processor Id can be requested by the command discret.Comm().MyPID(); the
+       * global Id of the new element is chosen appropirately by a special algorithm*/     
+      discret_.AddElement( DRT::UTILS::Factory("Beam3","Polynomial",globalid_a,discret_.Comm().MyPID()) );    
+    }
+  }
+  
+  //settling administrative stuff in order to make the discretization ready for the next time step
+  discret_.FillComplete(true,true,true);
+ 
+  
+ 
+  return;
+} // StatMechManager::StatMechUpdate()
 
 
 #endif  // #ifdef CCADISCRET

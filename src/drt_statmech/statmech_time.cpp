@@ -23,9 +23,9 @@ StatMechTime::StatMechTime(ParameterList& params,
                           DRT::Discretization& dis,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
-statmechmanager_(params),
 StruGenAlpha(params,dis,solver,output)
 {
+  statmechmanager_ = rcp(new StatMechManager(params,dis));
   return;
 } // StatMechTime::StatMechTime
 
@@ -93,6 +93,10 @@ void StatMechTime::Integrate()
 
       FullNewton();
       UpdateandOutput();
+      
+      //special update and output for statistical mechanics
+      statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
+      statmechmanager_->StatMechUpdate();
 
       //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
       //dass alle Freiheitsgrade in Längsrichtung dieselbe Bewegung Delta_x ausführen, die approximiert werden kann durch:
@@ -164,7 +168,6 @@ void StatMechTime::Integrate()
       //std::cout<<"\n\nDelta_v \n" << Delta_v;
 
 
-      statmechmanager_.StatMechOutput(time,num_dof,i,dt,*dis_);
 
       if (time>=maxtime) break;
     }
