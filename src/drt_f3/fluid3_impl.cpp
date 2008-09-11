@@ -170,8 +170,8 @@ DRT::ELEMENTS::Fluid3Impl<iel>::Fluid3Impl()
     conv_old_(),
     conv_s_(),
     visc_old_(),
-    res_old_(),
-    conv_resM_(),
+    res_old_(true),  // initialize to zero
+    conv_resM_(true),
     xder2_(),
     vderiv_()
 {
@@ -692,18 +692,6 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
   double&                                 l_tau
   )
 {
-/*  LINALG::FixedSizeSerialDenseMatrix<3,iel_> evelnp(evelnp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> csevelnp(csevelnp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> fsevelnp(fsevelnp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> cseconvnp(cseconvnp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<iel_,1> eprenp(eprenp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> evhist(evhist_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> edispnp(edispnp_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,iel_> egridv(egridv_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_> estif(estif_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,4*iel_> emesh(emesh_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel_,1> eforce(eforce_epetra.A(),true);
-*/
 // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
   const int numnode = iel;
@@ -1117,13 +1105,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
       for (int ui=0; ui<numnode; ++ui)
       {
-        double v = fac*funct_(ui)
+        const int fui   = 4*ui;
+        const int fuip  = fui+1;
+        const int fuipp = fui+2;
+        const double v = fac*funct_(ui)
 #if 1
                    + timefacfac*conv_c_(ui)
 #endif
                    ;
         for (int vi=0; vi<numnode; ++vi)
         {
+          const int fvi = 4*vi;
 
           /* inertia (contribution to mass matrix) */
           /*
@@ -1146,17 +1138,27 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
           */
           double v2 = v*funct_(vi) ;
-          estif(vi*4, ui*4)         += v2;
-          estif(vi*4 + 1, ui*4 + 1) += v2;
-          estif(vi*4 + 2, ui*4 + 2) += v2;
+          estif(fvi, fui)       += v2;
+          estif(fvi + 1, fuip)  += v2;
+          estif(fvi + 2, fuipp) += v2;
         }
       }
 
+      const double visceff_timefacfac = visceff*timefacfac;
       for (int ui=0; ui<numnode; ++ui)
       {
+        const int fui   = 4*ui;
+        const int fuip  = fui+1;
+        const int fuipp = fui+2;
         for (int vi=0; vi<numnode; ++vi)
         {
+          const int fvi   = 4*vi;
+          const int fvip  = fvi+1;
+          const int fvipp = fvi+2;
 
+          const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
+          const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
+          const double derxy_2ui_2vi = derxy_(2, ui)*derxy_(2, vi);
           /* Viskositaetsterm */
           /*
             /                          \
@@ -1165,36 +1167,40 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
             |       \  /         \ /   |
             \                          /
           */
-          estif(vi*4, ui*4)         += visceff*timefacfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
-                                                           +
-                                                           derxy_(1, ui)*derxy_(1, vi)
-                                                           +
-                                                           derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(vi*4, ui*4 + 1)     += visceff*timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
-          estif(vi*4, ui*4 + 2)     += visceff*timefacfac*derxy_(0, ui)*derxy_(2, vi) ;
-          estif(vi*4 + 1, ui*4)     += visceff*timefacfac*derxy_(0, vi)*derxy_(1, ui) ;
-          estif(vi*4 + 1, ui*4 + 1) += visceff*timefacfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                           +
-                                                           2.0*derxy_(1, ui)*derxy_(1, vi)
-                                                           +
-                                                           derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(vi*4 + 1, ui*4 + 2) += visceff*timefacfac*derxy_(1, ui)*derxy_(2, vi) ;
-          estif(vi*4 + 2, ui*4)     += visceff*timefacfac*derxy_(0, vi)*derxy_(2, ui) ;
-          estif(vi*4 + 2, ui*4 + 1) += visceff*timefacfac*derxy_(1, vi)*derxy_(2, ui) ;
-          estif(vi*4 + 2, ui*4 + 2) += visceff*timefacfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                           +
-                                                           derxy_(1, ui)*derxy_(1, vi)
-                                                           +
-                                                           2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+          estif(fvi, fui)     += visceff_timefacfac*(2.0*derxy_0ui_0vi
+                                                     +
+                                                     derxy_1ui_1vi
+                                                     +
+                                                     derxy_2ui_2vi) ;
+          estif(fvi , fuip)   += visceff_timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
+          estif(fvi , fuipp)  += visceff_timefacfac*derxy_(0, ui)*derxy_(2, vi) ;
+          estif(fvip, fui)    += visceff_timefacfac*derxy_(0, vi)*derxy_(1, ui) ;
+          estif(fvip, fuip)   += visceff_timefacfac*(derxy_0ui_0vi
+                                                     +
+                                                     2.0*derxy_1ui_1vi
+                                                     +
+                                                     derxy_2ui_2vi) ;
+          estif(fvip , fuipp) += visceff_timefacfac*derxy_(1, ui)*derxy_(2, vi) ;
+          estif(fvipp, fui)   += visceff_timefacfac*derxy_(0, vi)*derxy_(2, ui) ;
+          estif(fvipp, fuip)  += visceff_timefacfac*derxy_(1, vi)*derxy_(2, ui) ;
+          estif(fvipp, fuipp) += visceff_timefacfac*(derxy_0ui_0vi
+                                                     +
+                                                     derxy_1ui_1vi
+                                                     +
+                                                     2.0*derxy_2ui_2vi) ;
 
         }
       }
 
       for (int ui=0; ui<numnode; ++ui)
       {
-        double v = -timefacfac*funct_(ui);
+        const int fuippp = 4*ui+3;
+
+        const double v = -timefacfac*funct_(ui);
         for (int vi=0; vi<numnode; ++vi)
         {
+          const int fvi   = 4*vi;
+
           /* Druckterm */
           /*
 
@@ -1205,18 +1211,21 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
           \                  /
           */
 
-          estif(vi*4, ui*4 + 3)     += (v*derxy_(0, vi)) ;
-          estif(vi*4 + 1, ui*4 + 3) += (v*derxy_(1, vi)) ;
-          estif(vi*4 + 2, ui*4 + 3) += (v*derxy_(2, vi)) ;
+          estif(fvi,     fuippp) += (v*derxy_(0, vi)) ;
+          estif(fvi + 1, fuippp) += (v*derxy_(1, vi)) ;
+          estif(fvi + 2, fuippp) += (v*derxy_(2, vi)) ;
 
         }
       }
 
       for (int vi=0; vi<numnode; ++vi)
       {
-        double v = timefacfac*funct_(vi);
+        const double v = timefacfac*funct_(vi);
+
+        const int fvippp = 4*vi+3;
         for (int ui=0; ui<numnode; ++ui)
         {
+          const int fui   = 4*ui;
 
           /* Divergenzfreiheit */
           /*
@@ -1226,9 +1235,9 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
             |                  |
             \                  /
           */
-          estif(vi*4 + 3, ui*4)     += v*derxy_(0, ui) ;
-          estif(vi*4 + 3, ui*4 + 1) += v*derxy_(1, ui) ;
-          estif(vi*4 + 3, ui*4 + 2) += v*derxy_(2, ui) ;
+          estif(fvippp, fui)     += v*derxy_(0, ui) ;
+          estif(fvippp, fui + 1) += v*derxy_(1, ui) ;
+          estif(fvippp, fui + 2) += v*derxy_(2, ui) ;
         }
       }
 
@@ -1236,10 +1245,18 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
       {
         for (int vi=0; vi<numnode; ++vi)
         {
-          double v = timefacfac*funct_(vi);
+          const double v = timefacfac*funct_(vi);
+          const int fvi   = 4*vi;
+          const int fvip  = fvi+1;
+          const int fvipp = fvi+2;
+
           for (int ui=0; ui<numnode; ++ui)
           {
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
 
+            const double v2 = v*funct_(ui);
             /*  convection, reactive part
 
             /                           \
@@ -1248,99 +1265,105 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
             |  \          /   (i)       |
             \                           /
             */
-            estif(vi*4, ui*4)         += v*vderxy_(0, 0)*funct_(ui) ;
-            estif(vi*4, ui*4 + 1)     += v*vderxy_(0, 1)*funct_(ui) ;
-            estif(vi*4, ui*4 + 2)     += v*vderxy_(0, 2)*funct_(ui) ;
-            estif(vi*4 + 1, ui*4)     += v*vderxy_(1, 0)*funct_(ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += v*vderxy_(1, 1)*funct_(ui) ;
-            estif(vi*4 + 1, ui*4 + 2) += v*vderxy_(1, 2)*funct_(ui) ;
-            estif(vi*4 + 2, ui*4)     += v*vderxy_(2, 0)*funct_(ui) ;
-            estif(vi*4 + 2, ui*4 + 1) += v*vderxy_(2, 1)*funct_(ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += v*vderxy_(2, 2)*funct_(ui) ;
+            estif(fvi,   fui)   += v2*vderxy_(0, 0) ;
+            estif(fvi,   fuip)  += v2*vderxy_(0, 1) ;
+            estif(fvi,   fuipp) += v2*vderxy_(0, 2) ;
+            estif(fvip,  fui)   += v2*vderxy_(1, 0) ;
+            estif(fvip,  fuip)  += v2*vderxy_(1, 1) ;
+            estif(fvip,  fuipp) += v2*vderxy_(1, 2) ;
+            estif(fvipp, fui)   += v2*vderxy_(2, 0) ;
+            estif(fvipp, fuip)  += v2*vderxy_(2, 1) ;
+            estif(fvipp, fuipp) += v2*vderxy_(2, 2) ;
           }
         }
       }
 
       for (int vi=0; vi<numnode; ++vi)
       {
+        const int fvi = 4*vi;
         /* inertia */
-        double v = -fac*funct_(vi);
-        eforce(vi*4)     += (v*velint_(0)) ;
-        eforce(vi*4 + 1) += (v*velint_(1)) ;
-        eforce(vi*4 + 2) += (v*velint_(2)) ;
+        const double v = -fac*funct_(vi);
+        eforce(fvi)     += (v*velint_(0)) ;
+        eforce(fvi + 1) += (v*velint_(1)) ;
+        eforce(fvi + 2) += (v*velint_(2)) ;
       }
 
 #if 1
       for (int vi=0; vi<numnode; ++vi)
       {
+        const int fvi = 4*vi;
         /* convection */
-        double v = -timefacfac*funct_(vi);
-        eforce(vi*4)     += (v*(convvelint_(0)*vderxy_(0, 0)
-                                +
-                                convvelint_(1)*vderxy_(0, 1)
-                                +
-                                convvelint_(2)*vderxy_(0, 2))) ;
-        eforce(vi*4 + 1) += (v*(convvelint_(0)*vderxy_(1, 0)
-                                +
-                                convvelint_(1)*vderxy_(1, 1)
-                                +
-                                convvelint_(2)*vderxy_(1, 2))) ;
-        eforce(vi*4 + 2) += (v*(convvelint_(0)*vderxy_(2, 0)
-                                +
-                                convvelint_(1)*vderxy_(2, 1)
-                                +
-                                convvelint_(2)*vderxy_(2, 2))) ;
+        const double v = -timefacfac*funct_(vi);
+        eforce(fvi)     += (v*(convvelint_(0)*vderxy_(0, 0)
+                               +
+                               convvelint_(1)*vderxy_(0, 1)
+                               +
+                               convvelint_(2)*vderxy_(0, 2))) ;
+        eforce(fvi + 1) += (v*(convvelint_(0)*vderxy_(1, 0)
+                               +
+                               convvelint_(1)*vderxy_(1, 1)
+                               +
+                               convvelint_(2)*vderxy_(1, 2))) ;
+        eforce(fvi + 2) += (v*(convvelint_(0)*vderxy_(2, 0)
+                               +
+                               convvelint_(1)*vderxy_(2, 1)
+                               +
+                               convvelint_(2)*vderxy_(2, 2))) ;
       }
 #endif
 
       for (int vi=0; vi<numnode; ++vi)
       {
+        const int fvi = 4*vi;
         /* pressure */
-        double v = press*timefacfac;
-        eforce(vi*4)     += v*derxy_(0, vi) ;
-        eforce(vi*4 + 1) += v*derxy_(1, vi) ;
-        eforce(vi*4 + 2) += v*derxy_(2, vi) ;
+        const double v = press*timefacfac;
+        eforce(fvi)     += v*derxy_(0, vi) ;
+        eforce(fvi + 1) += v*derxy_(1, vi) ;
+        eforce(fvi + 2) += v*derxy_(2, vi) ;
       }
 
       for (int vi=0; vi<numnode; ++vi)
       {
+        const int fvi = 4*vi;
+        const double v = -visceff*timefacfac;
         /* viscosity */
-        eforce(vi*4)     += -(visceff*timefacfac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
-                                                  +
-                                                  derxy_(1, vi)*vderxy_(0, 1)
-                                                  +
-                                                  derxy_(1, vi)*vderxy_(1, 0)
-                                                  +
-                                                  derxy_(2, vi)*vderxy_(0, 2)
-                                                  +
-                                                  derxy_(2, vi)*vderxy_(2, 0))) ;
-        eforce(vi*4 + 1) += -(visceff*timefacfac*(derxy_(0, vi)*vderxy_(0, 1)
-                                                  +
-                                                  derxy_(0, vi)*vderxy_(1, 0)
-                                                  +
-                                                  2.0*derxy_(1, vi)*vderxy_(1, 1)
-                                                  +
-                                                  derxy_(2, vi)*vderxy_(1, 2)
-                                                  +
-                                                  derxy_(2, vi)*vderxy_(2, 1))) ;
-        eforce(vi*4 + 2) += -(visceff*timefacfac*(derxy_(0, vi)*vderxy_(0, 2)
-                                                  +
-                                                  derxy_(0, vi)*vderxy_(2, 0)
-                                                  +
-                                                  derxy_(1, vi)*vderxy_(1, 2)
-                                                  +
-                                                  derxy_(1, vi)*vderxy_(2, 1)
-                                                  +
-                                                  2.0*derxy_(2, vi)*vderxy_(2, 2))) ;
+        eforce(fvi)     += v*(2.0*derxy_(0, vi)*vderxy_(0, 0)
+                              +
+                              derxy_(1, vi)*vderxy_(0, 1)
+                              +
+                              derxy_(1, vi)*vderxy_(1, 0)
+                              +
+                              derxy_(2, vi)*vderxy_(0, 2)
+                              +
+                              derxy_(2, vi)*vderxy_(2, 0)) ;
+        eforce(fvi + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
+                              +
+                              derxy_(0, vi)*vderxy_(1, 0)
+                              +
+                              2.0*derxy_(1, vi)*vderxy_(1, 1)
+                              +
+                              derxy_(2, vi)*vderxy_(1, 2)
+                              +
+                              derxy_(2, vi)*vderxy_(2, 1)) ;
+        eforce(fvi + 2) += v*(derxy_(0, vi)*vderxy_(0, 2)
+                              +
+                              derxy_(0, vi)*vderxy_(2, 0)
+                              +
+                              derxy_(1, vi)*vderxy_(1, 2)
+                              +
+                              derxy_(1, vi)*vderxy_(2, 1)
+                              +
+                              2.0*derxy_(2, vi)*vderxy_(2, 2)) ;
       }
 
       for (int vi=0; vi<numnode; ++vi)
       {
+        const int fvi = 4*vi;
         // source term of the right hand side
-        double v = fac*funct_(vi);
-        eforce(vi*4)     += v*rhsint_(0) ;
-        eforce(vi*4 + 1) += v*rhsint_(1) ;
-        eforce(vi*4 + 2) += v*rhsint_(2) ;
+        const double v = fac*funct_(vi);
+        eforce(fvi)     += v*rhsint_(0) ;
+        eforce(fvi + 1) += v*rhsint_(1) ;
+        eforce(fvi + 2) += v*rhsint_(2) ;
       }
 
       for (int vi=0; vi<numnode; ++vi)
@@ -1365,13 +1388,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
       {
         for (int ui=0; ui<numnode; ++ui)
         {
-          double v = timetauMp*funct_(ui)
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+          const double v = timetauMp*funct_(ui)
 #if 1
-                     + ttimetauMp*conv_c_(ui)
+                           + ttimetauMp*conv_c_(ui)
 #endif
-                     ;
+                           ;
           for (int vi=0; vi<numnode; ++vi)
           {
+            const int fvippp = 4*vi+3;
 
             /* pressure stabilisation: inertia */
             /*
@@ -1392,9 +1419,9 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
             */
 
-            estif(vi*4 + 3, ui*4)     += v*derxy_(0, vi) ;
-            estif(vi*4 + 3, ui*4 + 1) += v*derxy_(1, vi) ;
-            estif(vi*4 + 3, ui*4 + 2) += v*derxy_(2, vi) ;
+            estif(fvippp, fui)   += v*derxy_(0, vi) ;
+            estif(fvippp, fuip)  += v*derxy_(1, vi) ;
+            estif(fvippp, fuipp) += v*derxy_(2, vi) ;
           }
         }
 
@@ -1402,9 +1429,15 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         {
           for (int ui=0; ui<numnode; ++ui)
           {
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+
+            const double two_visceff_ttimetauMp = 2.0*visceff*ttimetauMp;
             for (int vi=0; vi<numnode; ++vi)
             {
 
+              const int fvippp = 4*vi+3;
               /* pressure stabilisation: viscosity (-L_visc_u) */
               /*
                 /                              \
@@ -1413,27 +1446,28 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                 |               \  /             |
                 \                              /
               */
-              estif(vi*4 + 3, ui*4)     -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, ui)
-                                                                   +
-                                                                   derxy_(1, vi)*viscs2_(1, ui)
-                                                                   +
-                                                                   derxy_(2, vi)*viscs2_(2, ui)) ;
-              estif(vi*4 + 3, ui*4 + 1) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(1, ui)
-                                                                   +
-                                                                   derxy_(1, vi)*viscs2_(4, ui)
-                                                                   +
-                                                                   derxy_(2, vi)*viscs2_(5, ui)) ;
-              estif(vi*4 + 3, ui*4 + 2) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(2, ui)
-                                                                   +
-                                                                   derxy_(1, vi)*viscs2_(5, ui)
-                                                                   +
-                                                                   derxy_(2, vi)*viscs2_(8, ui)) ;
+              estif(fvippp, fui)   -= two_visceff_ttimetauMp*(derxy_(0, vi)*viscs2_(0, ui)
+                                                              +
+                                                              derxy_(1, vi)*viscs2_(1, ui)
+                                                              +
+                                                              derxy_(2, vi)*viscs2_(2, ui)) ;
+              estif(fvippp, fuip)  -= two_visceff_ttimetauMp*(derxy_(0, vi)*viscs2_(1, ui)
+                                                              +
+                                                              derxy_(1, vi)*viscs2_(4, ui)
+                                                              +
+                                                              derxy_(2, vi)*viscs2_(5, ui)) ;
+              estif(fvippp, fuipp) -= two_visceff_ttimetauMp*(derxy_(0, vi)*viscs2_(2, ui)
+                                                              +
+                                                              derxy_(1, vi)*viscs2_(5, ui)
+                                                              +
+                                                              derxy_(2, vi)*viscs2_(8, ui)) ;
             }
           }
         }
 
         for (int ui=0; ui<numnode; ++ui)
         {
+          const int fuippp = 4*ui+3;
           for (int vi=0; vi<numnode; ++vi)
           {
             /* pressure stabilisation: pressure( L_pres_p) */
@@ -1444,11 +1478,11 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
               |                      |
               \                    /
             */
-            estif(vi*4 + 3, ui*4 + 3) += ttimetauMp*(derxy_(0, ui)*derxy_(0, vi)
-                                                     +
-                                                     derxy_(1, ui)*derxy_(1, vi)
-                                                     +
-                                                     derxy_(2, ui)*derxy_(2, vi)) ;
+            estif(vi*4 + 3, fuippp) += ttimetauMp*(derxy_(0, ui)*derxy_(0, vi)
+                                                   +
+                                                   derxy_(1, ui)*derxy_(1, vi)
+                                                   +
+                                                   derxy_(2, ui)*derxy_(2, vi)) ;
 
           } // vi
         } // ui
@@ -1457,9 +1491,13 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         {
           for (int ui=0; ui<numnode; ++ui)
           {
-            double v = ttimetauMp*funct_(ui);
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            const double v = ttimetauMp*funct_(ui);
             for (int vi=0; vi<numnode; ++vi)
             {
+              const int fvippp = 4*vi + 3;
               /*  pressure stabilisation: convection, reactive part
 
               /                             \
@@ -1469,21 +1507,21 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
               \                             /
 
               */
-              estif(vi*4 + 3, ui*4)     += v*(derxy_(0, vi)*vderxy_(0, 0)
-                                              +
-                                              derxy_(1, vi)*vderxy_(1, 0)
-                                              +
-                                              derxy_(2, vi)*vderxy_(2, 0)) ;
-              estif(vi*4 + 3, ui*4 + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
-                                              +
-                                              derxy_(1, vi)*vderxy_(1, 1)
-                                              +
-                                              derxy_(2, vi)*vderxy_(2, 1)) ;
-              estif(vi*4 + 3, ui*4 + 2) += v*(derxy_(0, vi)*vderxy_(0, 2)
-                                              +
-                                              derxy_(1, vi)*vderxy_(1, 2)
-                                              +
-                                              derxy_(2, vi)*vderxy_(2, 2)) ;
+              estif(fvippp, fui)   += v*(derxy_(0, vi)*vderxy_(0, 0)
+                                         +
+                                         derxy_(1, vi)*vderxy_(1, 0)
+                                         +
+                                         derxy_(2, vi)*vderxy_(2, 0)) ;
+              estif(fvippp, fuip)  += v*(derxy_(0, vi)*vderxy_(0, 1)
+                                         +
+                                         derxy_(1, vi)*vderxy_(1, 1)
+                                         +
+                                         derxy_(2, vi)*vderxy_(2, 1)) ;
+              estif(fvippp, fuipp) += v*(derxy_(0, vi)*vderxy_(0, 2)
+                                         +
+                                         derxy_(1, vi)*vderxy_(1, 2)
+                                         +
+                                         derxy_(2, vi)*vderxy_(2, 2)) ;
 
             } // vi
           } // ui
@@ -1514,9 +1552,15 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 #if 1
         for (int ui=0; ui<numnode; ++ui)
         {
-          double v = timetauM*funct_(ui) + ttimetauM*conv_c_(ui);
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+          const double v = timetauM*funct_(ui) + ttimetauM*conv_c_(ui);
           for (int vi=0; vi<numnode; ++vi)
           {
+            const int fvi   = 4*vi;
+            const int fvip  = fvi+1;
+            const int fvipp = fvi+2;
             /* supg stabilisation: inertia  */
             /*
               /                        \
@@ -1538,18 +1582,21 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
             */
 
-            estif(vi*4, ui*4)         += v*conv_c_(vi);
-            estif(vi*4 + 1, ui*4 + 1) += v*conv_c_(vi);
-            estif(vi*4 + 2, ui*4 + 2) += v*conv_c_(vi);
+            estif(fvi,   fui)   += v*conv_c_(vi);
+            estif(fvip,  fuip)  += v*conv_c_(vi);
+            estif(fvipp, fuipp) += v*conv_c_(vi);
           }
         }
 
         for (int vi=0; vi<numnode; ++vi)
         {
-          double v = ttimetauM*conv_c_(vi,0);
+          const int fvi   = 4*vi;
+          const int fvip  = fvi+1;
+          const int fvipp = fvi+2;
+          const double v = ttimetauM*conv_c_(vi,0);
           for (int ui=0; ui<numnode; ++ui)
           {
-
+            const int fuippp = 4*ui + 3;
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
               /                              \
@@ -1558,9 +1605,9 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
               |              \ (i)       /     |
               \                              /
             */
-            estif(vi*4, ui*4 + 3)     += v*derxy_(0, ui) ;
-            estif(vi*4 + 1, ui*4 + 3) += v*derxy_(1, ui) ;
-            estif(vi*4 + 2, ui*4 + 3) += v*derxy_(2, ui) ;
+            estif(fvi,   fuippp) += v*derxy_(0, ui) ;
+            estif(fvip,  fuippp) += v*derxy_(1, ui) ;
+            estif(fvipp, fuippp) += v*derxy_(2, ui) ;
           }
         }
 
@@ -1568,9 +1615,15 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         {
           for (int vi=0; vi<numnode; ++vi)
           {
-            double v = 2.0*visceff*ttimetauM*conv_c_(vi);
+            const int fvi   = 4*vi;
+            const int fvip  = fvi+1;
+            const int fvipp = fvi+2;
+            const double v = 2.0*visceff*ttimetauM*conv_c_(vi);
             for (int ui=0; ui<numnode; ++ui)
             {
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
 
               // Keine zweiten Ableitungen hier!
 
@@ -1582,17 +1635,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                 |               \  /    \ (i)        /     |
                 \                                        /
               */
-              estif(vi*4, ui*4)         -= v*viscs2_(0, ui) ;
-              estif(vi*4 + 1, ui*4)     -= v*viscs2_(1, ui) ;
-              estif(vi*4 + 2, ui*4)     -= v*viscs2_(2, ui) ;
+              estif(fvi, fui)     -= v*viscs2_(0, ui) ;
+              estif(fvip, fui)    -= v*viscs2_(1, ui) ;
+              estif(fvipp, fui)   -= v*viscs2_(2, ui) ;
 
-              estif(vi*4, ui*4 + 1)     -= v*viscs2_(1, ui) ;
-              estif(vi*4 + 1, ui*4 + 1) -= v*viscs2_(4, ui) ;
-              estif(vi*4 + 2, ui*4 + 1) -= v*viscs2_(5, ui) ;
+              estif(fvi, fuip)    -= v*viscs2_(1, ui) ;
+              estif(fvip, fuip)   -= v*viscs2_(4, ui) ;
+              estif(fvipp, fuip)  -= v*viscs2_(5, ui) ;
 
-              estif(vi*4, ui*4 + 2)     -= v*viscs2_(2, ui) ;
-              estif(vi*4 + 1, ui*4 + 2) -= v*viscs2_(5, ui) ;
-              estif(vi*4 + 2, ui*4 + 2) -= v*viscs2_(8, ui) ;
+              estif(fvi, fuipp)   -= v*viscs2_(2, ui) ;
+              estif(fvip, fuipp)  -= v*viscs2_(5, ui) ;
+              estif(fvipp, fuipp) -= v*viscs2_(8, ui) ;
             }
           }
         }
@@ -1602,9 +1655,20 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         {
           for (int ui=0; ui<numnode; ++ui)
           {
-            double v = timetauM*funct_(ui);
+
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            const double v = timetauM*funct_(ui);
             for (int vi=0; vi<numnode; ++vi)
             {
+              const int fvi   = 4*vi;
+              const int fvip  = fvi+1;
+              const int fvipp = fvi+2;
+
+              const double v0 = v*velint_(0);
+              const double v1 = v*velint_(1);
+              const double v2 = v*velint_(2);
               /* supg stabilisation: inertia, linearisation of testfunction  */
               /*
                 /                           \
@@ -1614,31 +1678,37 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                 \                           /
 
               */
-              estif(vi*4, ui*4)         += v*velint_(0)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4)     += v*velint_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4)     += v*velint_(2)*derxy_(0, vi) ;
+              estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+              estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+              estif(fvipp, fui)    += v2*derxy_(0, vi) ;
 
-              estif(vi*4, ui*4 + 1)     += v*velint_(0)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += v*velint_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += v*velint_(2)*derxy_(1, vi) ;
+              estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+              estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+              estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
 
-              estif(vi*4, ui*4 + 2)     += v*velint_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += v*velint_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += v*velint_(2)*derxy_(2, vi) ;
+              estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+              estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+              estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
             }
           }
 
 #if 1
           {
-            double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
-            double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
-            double v2 = convvelint_(0)*vderxy_(2, 0) + convvelint_(1)*vderxy_(2, 1) + convvelint_(2)*vderxy_(2, 2);
+            const double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
+            const double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
+            const double v2 = convvelint_(0)*vderxy_(2, 0) + convvelint_(1)*vderxy_(2, 1) + convvelint_(2)*vderxy_(2, 2);
 
             for (int ui=0; ui<numnode; ++ui)
             {
-              double v = ttimetauM*funct_(ui);
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = ttimetauM*funct_(ui);
               for (int vi=0; vi<numnode; ++vi)
               {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
 
                 /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
                 /*
@@ -1654,17 +1724,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                   |    \          /   (i)    \ (i)        /     |
                   \                                           /
                 */
-                estif(vi*4, ui*4)         += (conv_c_(vi,0)*vderxy_(0, 0) + v0*derxy_(0, vi))*v;
-                estif(vi*4 + 1, ui*4)     += (conv_c_(vi,0)*vderxy_(1, 0) + v1*derxy_(0, vi))*v;
-                estif(vi*4 + 2, ui*4)     += (conv_c_(vi,0)*vderxy_(2, 0) + v2*derxy_(0, vi))*v;
+                estif(fvi, fui)     += (conv_c_(vi,0)*vderxy_(0, 0) + v0*derxy_(0, vi))*v;
+                estif(fvip, fui)    += (conv_c_(vi,0)*vderxy_(1, 0) + v1*derxy_(0, vi))*v;
+                estif(fvipp, fui)   += (conv_c_(vi,0)*vderxy_(2, 0) + v2*derxy_(0, vi))*v;
 
-                estif(vi*4, ui*4 + 1)     += (conv_c_(vi,0)*vderxy_(0, 1) + v0*derxy_(1, vi))*v;
-                estif(vi*4 + 1, ui*4 + 1) += (conv_c_(vi,0)*vderxy_(1, 1) + v1*derxy_(1, vi))*v;
-                estif(vi*4 + 2, ui*4 + 1) += (conv_c_(vi,0)*vderxy_(2, 1) + v2*derxy_(1, vi))*v;
+                estif(fvi, fuip)    += (conv_c_(vi,0)*vderxy_(0, 1) + v0*derxy_(1, vi))*v;
+                estif(fvip, fuip)   += (conv_c_(vi,0)*vderxy_(1, 1) + v1*derxy_(1, vi))*v;
+                estif(fvipp, fuip)  += (conv_c_(vi,0)*vderxy_(2, 1) + v2*derxy_(1, vi))*v;
 
-                estif(vi*4, ui*4 + 2)     += (conv_c_(vi,0)*vderxy_(0, 2) + v0*derxy_(2, vi))*v;
-                estif(vi*4 + 1, ui*4 + 2) += (conv_c_(vi,0)*vderxy_(1, 2) + v1*derxy_(2, vi))*v;
-                estif(vi*4 + 2, ui*4 + 2) += (conv_c_(vi,0)*vderxy_(2, 2) + v2*derxy_(2, vi))*v;
+                estif(fvi, fuipp)   += (conv_c_(vi,0)*vderxy_(0, 2) + v0*derxy_(2, vi))*v;
+                estif(fvip, fuipp)  += (conv_c_(vi,0)*vderxy_(1, 2) + v1*derxy_(2, vi))*v;
+                estif(fvipp, fuipp) += (conv_c_(vi,0)*vderxy_(2, 2) + v2*derxy_(2, vi))*v;
               }
             }
           }
@@ -1672,9 +1742,15 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
           for (int ui=0; ui<numnode; ++ui)
           {
-            double v = ttimetauM*funct_(ui);
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            const double v = ttimetauM*funct_(ui);
             for (int vi=0; vi<numnode; ++vi)
             {
+              const int fvi   = 4*vi;
+              const int fvip  = fvi+1;
+              const int fvipp = fvi+2;
 
               /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
               /*
@@ -1684,17 +1760,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                 |         (i)    \          /     |
                 \                               /
               */
-              estif(vi*4, ui*4)         += v*gradp_(0,0)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4)     += v*gradp_(1,0)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4)     += v*gradp_(2,0)*derxy_(0, vi) ;
+              estif(fvi, fui)     += v*gradp_(0,0)*derxy_(0, vi) ;
+              estif(fvip, fui)    += v*gradp_(1,0)*derxy_(0, vi) ;
+              estif(fvipp, fui)   += v*gradp_(2,0)*derxy_(0, vi) ;
 
-              estif(vi*4, ui*4 + 1)     += v*gradp_(0,0)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += v*gradp_(1,0)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += v*gradp_(2,0)*derxy_(1, vi) ;
+              estif(fvi, fuip)    += v*gradp_(0,0)*derxy_(1, vi) ;
+              estif(fvip, fuip)   += v*gradp_(1,0)*derxy_(1, vi) ;
+              estif(fvipp, fuip)  += v*gradp_(2,0)*derxy_(1, vi) ;
 
-              estif(vi*4, ui*4 + 2)     += v*gradp_(0,0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += v*gradp_(1,0)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += v*gradp_(2,0)*derxy_(2, vi) ;
+              estif(fvi, fuipp)   += v*gradp_(0,0)*derxy_(2, vi) ;
+              estif(fvip, fuipp)  += v*gradp_(1,0)*derxy_(2, vi) ;
+              estif(fvipp, fuipp) += v*gradp_(2,0)*derxy_(2, vi) ;
 
             }
           }
@@ -1703,9 +1779,18 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
           {
             for (int ui=0; ui<numnode; ++ui)
             {
-              double v = 2.0*visceff*ttimetauM*funct_(ui,0);
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = 2.0*visceff*ttimetauM*funct_(ui,0);
               for (int vi=0; vi<numnode; ++vi)
               {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                const double v0 = v*visc_old_(0);
+                const double v1 = v*visc_old_(1);
+                const double v2 = v*visc_old_(2);
 
                 /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
                 /*
@@ -1715,17 +1800,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                   |               \ (i) /    \          /     |
                   \                                           /
                 */
-                estif(vi*4, ui*4)         -= v*visc_old_(0)*derxy_(0, vi) ;
-                estif(vi*4 + 1, ui*4)     -= v*visc_old_(1)*derxy_(0, vi) ;
-                estif(vi*4 + 2, ui*4)     -= v*visc_old_(2)*derxy_(0, vi) ;
+                estif(fvi, fui)     -= v0*derxy_(0, vi) ;
+                estif(fvip, fui)    -= v1*derxy_(0, vi) ;
+                estif(fvipp, fui)   -= v2*derxy_(0, vi) ;
 
-                estif(vi*4, ui*4 + 1)     -= v*visc_old_(0)*derxy_(1, vi) ;
-                estif(vi*4 + 1, ui*4 + 1) -= v*visc_old_(1)*derxy_(1, vi) ;
-                estif(vi*4 + 2, ui*4 + 1) -= v*visc_old_(2)*derxy_(1, vi) ;
+                estif(fvi, fuip)    -= v0*derxy_(1, vi) ;
+                estif(fvip, fuip)   -= v1*derxy_(1, vi) ;
+                estif(fvipp, fuip)  -= v2*derxy_(1, vi) ;
 
-                estif(vi*4, ui*4 + 2)     -= v*visc_old_(0)*derxy_(2, vi) ;
-                estif(vi*4 + 1, ui*4 + 2) -= v*visc_old_(1)*derxy_(2, vi) ;
-                estif(vi*4 + 2, ui*4 + 2) -= v*visc_old_(2)*derxy_(2, vi) ;
+                estif(fvi, fuipp)   -= v0*derxy_(2, vi) ;
+                estif(fvip, fuipp)  -= v1*derxy_(2, vi) ;
+                estif(fvipp, fuipp) -= v2*derxy_(2, vi) ;
 
               }
             }
@@ -1733,9 +1818,18 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
 
           for (int ui=0; ui<numnode; ++ui)
           {
-            double v = -timetauM*funct_(ui,0);
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            const double v = -timetauM*funct_(ui,0);
             for (int vi=0; vi<numnode; ++vi)
             {
+              const int fvi   = 4*vi;
+              const int fvip  = fvi+1;
+              const int fvipp = fvi+2;
+              const double v0 = v*rhsint_(0);
+              const double v1 = v*rhsint_(1);
+              const double v2 = v*rhsint_(2);
 
               /* supg stabilisation: bodyforce part, linearisation of test function */
 
@@ -1747,17 +1841,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
                 \                             /
 
               */
-              estif(vi*4    , ui*4)     += (v*derxy_(0, vi)*rhsint_(0)) ;
-              estif(vi*4 + 1, ui*4)     += (v*derxy_(0, vi)*rhsint_(1)) ;
-              estif(vi*4 + 2, ui*4)     += (v*derxy_(0, vi)*rhsint_(2)) ;
+              estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
+              estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
+              estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
 
-              estif(vi*4    , ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(0)) ;
-              estif(vi*4 + 1, ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(1)) ;
-              estif(vi*4 + 2, ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(2)) ;
+              estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
+              estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
+              estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
 
-              estif(vi*4    , ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(0)) ;
-              estif(vi*4 + 1, ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(1)) ;
-              estif(vi*4 + 2, ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(2)) ;
+              estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
+              estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
+              estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
 
             } // vi
           } // ui
@@ -1769,11 +1863,12 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         // term. This seems unreasonable and wrong.
         for (int vi=0; vi<numnode; ++vi)
         {
+          const int fvi = 4*vi;
           // supg stabilisation
-          double v = -timetauM*conv_c_(vi);
-          eforce(vi*4)     += (v*res_old_(0)) ;
-          eforce(vi*4 + 1) += (v*res_old_(1)) ;
-          eforce(vi*4 + 2) += (v*res_old_(2)) ;
+          const double v = -timetauM*conv_c_(vi);
+          eforce(fvi)     += (v*res_old_(0)) ;
+          eforce(fvi + 1) += (v*res_old_(1)) ;
+          eforce(fvi + 2) += (v*res_old_(2)) ;
         }
 #endif
       }
@@ -3762,7 +3857,7 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::gder2(Fluid3* ele)
   */
 
   //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
-  derxy2_.Multiply(-1.0,xder2_,derxy_,0.0);
+  derxy2_.Multiply(-1.0,xder2_,derxy_);
 #ifdef PRINTDEBUG
   writeArray(derxy_,"derxy_");
   writeArray(derxy2_,"derxy2_#1");
