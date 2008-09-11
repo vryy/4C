@@ -68,7 +68,7 @@ void MAT::ViscoNeoHooke::Pack(vector<char>& data) const
   {
     histsize = histstresslast_->size();
   }
-  AddtoPack(data,2*histsize);  // lenght of history vector(s)
+  AddtoPack(data,2*histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var) 
   {
     AddtoPack(data,histstresslast_->at(var));
@@ -211,9 +211,6 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
  
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
-  const double time = params.get("total time",-1.0);
-  const double gen_alphaf = params.get("alpha f",0.0);
-  if (gen_alphaf < 0) dserror("Visco only for dynamics! Negative Alpha_f detected!");
   
   double tau1=tau;
   //check for meaningful values
@@ -224,9 +221,6 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
     tau1=tau*E_s/(E_f-E_s);
   }
   else if (tau==0.0) tau1=1.0; // for algorithmic reasons tau has to be positive 
-  
-  // this is supposed to be consistent with strugenalpha
-  if (time == dt) dt = (1.0-gen_alphaf)*dt;
   
   //initialize scalars
   double alpha0;
