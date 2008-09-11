@@ -736,7 +736,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Multi point constraint in 3D for a node over a plane
 
   Teuchos::RCP<ConditionDefinition> nodeonplaneconst3D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN MULTIPOINT CONSTRAINT 3D",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE MULTIPNT CONSTRAINT 3D",
                                          "MPC_NodeOnPlane_3D",
                                          "Node on Plane Constraint",
                                          DRT::Condition::MPC_NodeOnPlane_3D,
@@ -757,7 +757,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
   Teuchos::RCP<ConditionDefinition> nodeonlineconst2D =
-      Teuchos::rcp(new ConditionDefinition("DESIGN MULTIPOINT CONSTRAINT 2D",
+      Teuchos::rcp(new ConditionDefinition("DESIGN LINE MULTIPNT CONSTRAINT 2D",
                                            "MPC_NodeOnLine_2D",
                                            "Node on Line Constraint",
                                            DRT::Condition::MPC_NodeOnLine_2D,

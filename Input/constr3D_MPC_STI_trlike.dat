@@ -117,7 +117,7 @@ FUNCT2 EXPR 0 0 0 FUNCTION -y
 ---------------------------------------------------------------------LOCSYS5
 ----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
 -------------------------------------------------DESIGN LINE AREA MONITOR 2D
----------------------------------------------DESIGN MULTIPOINT CONSTRAINT 3D
+---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF 1
 E 1 -  1 0.01 3 0.0 2 3 4 abs 
 ----------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS

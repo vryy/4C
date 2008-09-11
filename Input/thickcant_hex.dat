@@ -684,11 +684,11 @@ DSURF 0
 DSURF 0
 ---------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
 DSURF 0
----------------------------------- DESIGN MULTIPOINT CONSTRAINT 3D
-DVOL 0
+-----------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
+DSURF 0
 ------------------------------------DESIGN LINE AREA CONSTRAINT 2D
 DLINE 0
----------------------------------- DESIGN MULTIPOINT CONSTRAINT 2D
+--------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE 0
 ----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF 0
