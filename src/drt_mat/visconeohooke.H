@@ -19,7 +19,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-const int  NUM_STRESS_3D = 6; //6 stresses for 3D
+const int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
 
 using namespace Teuchos;
 
@@ -80,7 +80,11 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
     
-    void Initialize(const int numgp) ;
+    /// Initialize internal stress variables
+    void Initialize
+    (
+      const int numgp  ///< number of Gauss points
+    );
     
     /// Update internal stress variables
     void Update();
@@ -88,14 +92,23 @@ namespace MAT
     /// Reset internal stress variables 
     void Reset();
     
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  const int gp,
-                  Teuchos::ParameterList& params,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+    /// Evaluate material 
+    void Evaluate
+    (
+      const Epetra_SerialDenseVector* glstrain,  ///<green lagrange strain
+      const int gp,   ///< number of Gauss points
+      Teuchos::ParameterList& params,  ///< parameter list for communication
+      Epetra_SerialDenseMatrix* cmat,  ///< material stiffness matrix
+      Epetra_SerialDenseVector* stress  ///< 2nd PK-stress 
+    );
 
-    double Density();
+    /// Return density
+    double Density() 
+    { 
+      return matdata_->m.visconeohooke->density;
+    };
     
+    /// Check if history variables are already initialized
     bool Initialized() const
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
     
@@ -105,12 +118,12 @@ namespace MAT
     MATERIAL* matdata_;
     
     /// visco history stresses
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_; ///< current stress
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;  ///< current artificial stress
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;  ///< artificial stress in last converged state
     
-    bool isinit_;
+    bool isinit_;  ///< indicates if #Initialize routine has been called
     
   };
 }

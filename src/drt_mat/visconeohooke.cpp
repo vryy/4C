@@ -19,7 +19,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "../drt_lib/linalg_serialdensevector.H"
 
 
-extern struct _MATERIAL *mat;
+extern struct _MATERIAL *mat;  ///< C-style material struct
 
 
 /*----------------------------------------------------------------------*
@@ -119,15 +119,6 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Return density                                (public)         05/08|
- *----------------------------------------------------------------------*/
-double MAT::ViscoNeoHooke::Density()
-{
-  return matdata_->m.visconeohooke->density;  // density, returned to evaluate mass matrix
 }
 
 /*----------------------------------------------------------------------*
