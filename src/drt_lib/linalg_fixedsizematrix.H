@@ -324,6 +324,164 @@ namespace LINALG
     inline void update(const double outfac, double* out, const double leftfac, const double* left,
                           const double rightfac, const double* right);
 
+    /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
+    /*!
+      Multiply \e out and \e in, storing the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to first factor and result, size (\c i)x(\c j)
+      \param in
+        pointer to second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double* in);
+
+    /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
+    /*!
+      Multiply \e out and \e in, scale by \e fac and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param fac
+        scaling factor for the product
+      \param out
+        pointer to first factor and result, size (\c i)x(\c j)
+      \param in
+        pointer to second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double fac, double* out, const double* in);
+
+    /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param left
+        pointer to first factor, size (\c i)x(\c j)
+      \param right
+        pointer to second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double* left, const double* right);
+
+    /// Multiply element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right, scale by \e infac and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param infac
+        scaling factor
+      \param left
+        pointer to first factor, size (\c i)x(\c j)
+      \param right
+         pointer to second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double infac, const double* left, const double* right);
+
+    /// Multiply element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right, scale by \e infac and add the result to \e out, scaled by \e outfac.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param outfac
+        scaling factor for \e out
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param infac
+        scaling factor the product
+      \param left
+        pointer to first factor, size (\c i)x(\c j)
+      \param right
+        pointer to second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double outfac, double* out, const double infac, const double* left, const double* right);
+
+    /// Divide element-wise, \e out(m,n) = \e out(m,n)/\e in(m,n)
+    /*!
+      Devide \e out by \e in, storing the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to dividend and result, size (\c i)x(\c j)
+      \param in
+        pointer to divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double* in);
+
+    /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)/\e in(m,n)
+    /*!
+      Divide \e out by \e in, scale by \e fac and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param fac
+        scaling factor for the product
+      \param out
+        pointer to dividend and result, size (\c i)x(\c j)
+      \param in
+        pointer to divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double fac, double* out, const double* in);
+
+    /// Divide element-wise, \e out(m,n) = \e left(m,n)/\e right(m,n)
+    /*!
+      Divide \e left by \e right and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param left
+        pointer to dividend, size (\c i)x(\c j)
+      \param right
+        pointer to divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double* left, const double* right);
+
+    /// Divide element-wise, \e out(m,n) = \e infac*\e left(m,n)/\e right(m,n)
+    /*!
+      Divide \e left by \e right, scale by \e infac and store the result in \e out.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param infac
+        scaling factor
+      \param left
+        pointer to dividend, size (\c i)x(\c j)
+      \param right
+         pointer to divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double infac, const double* left, const double* right);
+
+    /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)/\e right(m,n)
+    /*!
+      Divide \e left by \e right, scale by \e infac and add the result to \e out, scaled by \e outfac.
+      This function takes two template parameters, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param outfac
+        scaling factor for \e out
+      \param out
+        pointer to result, size (\c i)x(\c j)
+      \param infac
+        scaling factor the product
+      \param left
+        pointer to dividend, size (\c i)x(\c j)
+      \param right
+        pointer to divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double outfac, double* out, const double infac, const double* left, const double* right);
+
     /// Scale matrix
     /*!
       Scale \e mat by \e fac. This function takes
@@ -723,6 +881,170 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void update(const double outfac, Epetra_SerialDenseMatrix& out, const double leftfac,
                           const Epetra_SerialDenseMatrix& left, const double rightfac, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
+    /*!
+      Multiply \e out and \e in, storing the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        first factor and result, size (\c i)x(\c j)
+      \param in
+        second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+
+    /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
+    /*!
+      Multiply \e out and \e in, scale by \e fac and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param fac
+        scaling factor for the product
+      \param out
+        first factor and result, size (\c i)x(\c j)
+      \param in
+        second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+
+    /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        result, size (\c i)x(\c j)
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
+                                const Epetra_SerialDenseMatrix right);
+
+    /// Multiply element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right, scale by \e infac and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        result, size (\c i)x(\c j)
+      \param infac
+        scaling factor
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const double infac, const
+                                Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
+
+    /// Multiply element-wise, \e out(m,n) = \e outfac*out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Multiply \e left and \e right, scale by \e infac and add the result to \e out, scaled by \e outfac.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param outfac
+        scaling factor for \e out
+      \param out
+        result, size (\c i)x(\c j)
+      \param infac
+        scaling factor the product
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+                                Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
+
+    /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
+    /*!
+      Multiply \e out and \e in, storing the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        dividend and result, size (\c i)x(\c j)
+      \param in
+        divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+
+    /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
+    /*!
+      Divide \e out and \e in, scale by \e fac and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param fac
+        scaling factor for the product
+      \param out
+        dividend and result, size (\c i)x(\c j)
+      \param in
+        divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+
+    /// Divide element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
+    /*!
+      Divide \e left and \e right and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        result, size (\c i)x(\c j)
+      \param left
+        dividend, size (\c i)x(\c j)
+      \param right
+        divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
+                              const Epetra_SerialDenseMatrix right);
+
+    /// Divide element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Divide \e left and \e right, scale by \e infac and store the result in \e out.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param out
+        result, size (\c i)x(\c j)
+      \param infac
+        scaling factor
+      \param left
+        dividend, size (\c i)x(\c j)
+      \param right
+        divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const double infac, const
+                              Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
+
+    /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
+    /*!
+      Divide \e left by \e right, scale by \e infac and add the result to \e out, scaled by \e outfac.
+      This function takes two template argumens, unsigned ints \c i and \c j
+      denoting the size of the matrices.
+      \param outfac
+        scaling factor for \e out
+      \param out
+        result, size (\c i)x(\c j)
+      \param infac
+        scaling factor the product
+      \param left
+        dividend, size (\c i)x(\c j)
+      \param right
+        divisor, size (\c i)x(\c j)
+     */
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+                              Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
 
     /// Scale matrix
     /*!
@@ -1319,6 +1641,100 @@ namespace LINALG
     }
 
     template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double* in)
+    {
+      *out *= *in;
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) *= *(++in);
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double fac, double* out, const double* in)
+    {
+      *out *= fac*(*in);
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) *= fac*(*(++in));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double* left, const double* right)
+    {
+      *out = (*left) * (*right);
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) = (*(++left)) * (*(++right));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(double* out, const double infac, const double* left, const double* right)
+    {
+      *out = infac * (*left) * (*right);
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) = infac * (*(++left)) * (*(++right));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double outfac, double* out, const double infac, const double* left, const double* right)
+    {
+      if (outfac == 0.0) {
+        eMultiply<i,j>(out,infac,left,right);
+        return;
+      }
+      *out = outfac * (*out) + infac * (*left) * (*right);
+      for (unsigned c=1; c < i*j; ++c) {
+        ++out;
+        *out = outfac * (*out) +infac * (*(++left)) * (*(++right));
+      }
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double* in)
+    {
+      *out /= *in;
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) /= *(++in);
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double fac, double* out, const double* in)
+    {
+      *out = fac * (*out) / (*in);
+      for (unsigned c=1; c < i*j; ++c) {
+        ++out; ++in;
+        *out = fac * (*out) / (*in);
+      }
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double* left, const double* right)
+    {
+      *out = (*left) / (*right);
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) = (*(++left)) / (*(++right));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(double* out, const double infac, const double* left, const double* right)
+    {
+      *out = infac * (*left) / (*right);
+      for (unsigned c=1; c < i*j; ++c)
+        *(++out) = infac * (*(++left)) / (*(++right));
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double outfac, double* out, const double infac, const double* left, const double* right)
+    {
+      if (outfac == 0.0) {
+        eDivide<i,j>(out,infac,left,right);
+        return;
+      }
+      *out = outfac * (*out) + infac * (*left) / (*right);
+      for (unsigned c=1; c < i*j; ++c) {
+        ++out;
+        *out = outfac * (*out) +infac * (*(++left)) / (*(++right));
+      }
+    }
+
+    template <unsigned int i, unsigned int j>
     inline
     void scaleMatrix(const double scalar, double* mat)
     {
@@ -1716,6 +2132,124 @@ namespace LINALG
     }
 
     template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)",
+                i,j,out.M(),out.N(),in.M(),in.N());
+#endif
+      eMultiply<i,j>(out.A(),in.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)",
+                i,j,out.M(),out.N(),in.M(),in.N());
+#endif
+      eMultiply<i,j>(fac,out.A(),in.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
+                                const Epetra_SerialDenseMatrix right)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or right.N() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+                i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+      eMultiply<i,j>(out.A(),left.A(),right.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const double infac, const Epetra_SerialDenseMatrix left,
+                                const Epetra_SerialDenseMatrix right)
+  {
+#ifdef DEBUG
+    if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or
+        right.M() != i or right.N() != j)
+      dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+              i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+    eMultiply<i,j>(out.A(),infac,left.A(),right.A());
+  }
+
+    template <unsigned int i, unsigned int j>
+    inline void eMultiply(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+                                Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or right.N() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+                i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+      eMultiply<i,j>(outfac,out.A(),infac,left.A(),right.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)",
+                i,j,out.M(),out.N(),in.M(),in.N());
+#endif
+      eDivide<i,j>(out.A(),in.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)",
+                i,j,out.M(),out.N(),in.M(),in.N());
+#endif
+      eDivide<i,j>(fac,out.A(),in.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
+                              const Epetra_SerialDenseMatrix right)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or right.N() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+                i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+      eDivide<i,j>(out.A(),left.A(),right.A());
+    }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const double infac, const Epetra_SerialDenseMatrix left,
+                              const Epetra_SerialDenseMatrix right)
+  {
+#ifdef DEBUG
+    if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or
+        right.M() != i or right.N() != j)
+      dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+              i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+    eDivide<i,j>(out.A(),infac,left.A(),right.A());
+  }
+
+    template <unsigned int i, unsigned int j>
+    inline void eDivide(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+                              Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
+    {
+#ifdef DEBUG
+      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or right.N() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+                i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
+#endif
+      eDivide<i,j>(outfac,out.A(),infac,left.A(),right.A());
+    }
+
+    template <unsigned int i, unsigned int j>
     inline void abs(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& src)
     {
 #ifdef DEBUG
@@ -1948,7 +2482,8 @@ public:
     Sets every value in this matrix to zero. This is equivalent to
     PutScalar(0.0), but it should be faster.
    */
-  inline void Clear();
+  inline void Clear()
+    { DENSEFUNCTIONS::clearMatrix<rows,cols>(data_); }
 
   // Epetra-style Functions
   /// Fill with scalar
@@ -1958,7 +2493,8 @@ public:
     \param scalar
       value to fill matrix with
    */
-  inline void PutScalar(const double scalar);
+  inline void PutScalar(const double scalar)
+    { DENSEFUNCTIONS::putScalar<rows, cols>(scalar, data_); }
 
   /// Dot product
   /*!
@@ -1968,7 +2504,8 @@ public:
       second factor
     \return dot product
    */
-  inline double Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline double Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+    { return DENSEFUNCTIONS::dot<rows, cols>(data_, other.data_); }
 
   /// Compute absolute value
   /*!
@@ -1977,7 +2514,8 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Abs(const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline void Abs(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+    { DENSEFUNCTIONS::abs<rows, cols>(data_, other.data_); }
 
   /// Compute reciprocal value
   /*!
@@ -1986,7 +2524,8 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Reciprocal(const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline void Reciprocal(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+    { DENSEFUNCTIONS::reciprocal<rows, cols>(data_, other.data_); }
 
   /// Scale
   /*!
@@ -1995,7 +2534,8 @@ public:
     \param scalar
       scaling factor
    */
-  inline void Scale(const double scalar);
+  inline void Scale(const double scalar)
+    { DENSEFUNCTIONS::scaleMatrix<rows, cols>(scalar, data_); }
 
   /// Copy: \e this = \e other
   /*!
@@ -2004,7 +2544,8 @@ public:
     \param other
       matrix to copy
    */
-  inline void Update(const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline void Update(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+    { DENSEFUNCTIONS::update<rows,cols>(data_,other.data_); }
 
   /// Scaled copy: \e this = \e scalarOther * \e other
   /*!
@@ -2015,7 +2556,8 @@ public:
     \param other
       matrix to read from
    */
-  inline void Update(const double scalarOther, const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline void Update(const double scalarOther, const FixedSizeSerialDenseMatrix<rows, cols>& other)
+    { DENSEFUNCTIONS::update<rows,cols>(data_,scalarOther,other.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
   /*!
@@ -2029,7 +2571,8 @@ public:
       scaling factor for \e this
    */
   inline void Update(const double scalarOther, const FixedSizeSerialDenseMatrix<rows, cols>& other,
-                     const double scalarThis);
+                     const double scalarThis)
+    { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarOther, other.data_); }
 
   /// Add: \e this = \e left + \e right
   /*!
@@ -2041,7 +2584,8 @@ public:
       second matrix to add
    */
   inline void Update(const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                     const FixedSizeSerialDenseMatrix<rows, cols>& right);
+                     const FixedSizeSerialDenseMatrix<rows, cols>& right)
+    { DENSEFUNCTIONS::update<rows, cols>(data_, left.data_, right.data_); }
 
   /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -2057,7 +2601,8 @@ public:
       second matrix to add
    */
   inline void Update(const double scalarLeft, const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                     const double scalarRight, const FixedSizeSerialDenseMatrix<rows, cols>& right);
+                     const double scalarRight, const FixedSizeSerialDenseMatrix<rows, cols>& right)
+    { DENSEFUNCTIONS::update<rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -2076,7 +2621,141 @@ public:
    */
   inline void Update(const double scalarLeft, const FixedSizeSerialDenseMatrix<rows, cols>& left,
                      const double scalarRight, const FixedSizeSerialDenseMatrix<rows, cols>& right,
-                     const double scalarThis);
+                     const double scalarThis)
+    { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_); }
+
+  /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
+  /*!
+    Multiply \e this and \e other, storing the result in \e this.
+
+    \param other
+      factor
+   */
+  inline void EMultiply(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,other.data_); }
+
+  /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
+  /*!
+    Multiply \e this and \e other, scale by \e scalar and store the result in \e this.
+
+    \param scalar
+      scaling factor for the product
+    \param other
+      factor
+   */
+  inline void EMultiply(const double scalar, const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::eMultiply<rows,cols>(scalar,data_,other.data_); }
+
+  /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
+  /*!
+    Multiply \e left and \e right and store the result in \e this.
+
+    \param left
+      first factor
+    \param right
+      second factor
+   */
+  inline void EMultiply(const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,left.data_,right.data_); }
+
+  /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
+  /*!
+    Multiply \e left and \e right, scale by \e scalarOther and store the
+    result in \e this.
+
+    \param scalarOther
+      scaling factor
+    \param left
+      first factor
+    \param right
+      second factor
+   */
+  inline void EMultiply(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_, scalarOther, left.data_, right.data_); }
+
+  /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)*\e right(m,n)
+  /*!
+    Multiply \e left and \e right, scale by \e scalarOther and add the result to \e this, scaled by \e scalarThis.
+
+    \param scalarOther
+      scaling factor the product
+    \param left
+      first factor, size (\c i)x(\c j)
+    \param right
+      second factor, size (\c i)x(\c j)
+    \param scalarThis
+      scaling factor for \e this
+   */
+  inline void EMultiply(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left,
+                         const FixedSizeSerialDenseMatrix<rows,cols>& right, const double scalarThis)
+    { DENSEFUNCTIONS::eMultiply<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+
+  /// Divide element-wise: \e this(m,n) *= \e other(m,n)
+  /*!
+    Divide \e this by \e other, storing the result in \e this.
+
+    \param other
+      factor
+   */
+  inline void EDivide(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::eDivide<rows,cols>(data_,other.data_); }
+
+  /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
+  /*!
+    Divide \e this by \e other, scale by \e scalar and store the result in \e this.
+
+    \param scalar
+      scaling factor for the product
+    \param other
+      factor
+   */
+  inline void EDivide(const double scalar, const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::eDivide<rows,cols>(scalar,data_,other.data_); }
+
+  /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
+  /*!
+    Divide \e left by \e right and store the result in \e this.
+
+    \param left
+      dividend
+    \param right
+      divisor
+   */
+  inline void EDivide(const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+    { DENSEFUNCTIONS::eDivide<rows,cols>(data_,left.data_,right.data_); }
+
+  /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
+  /*!
+    Divide \e left by \e right, scale by \e scalarOther and store the
+    result in \e this.
+
+    \param scalarOther
+      scaling factor
+    \param left
+      dividend
+    \param right
+      divisor
+   */
+  inline void EDivide(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+    { DENSEFUNCTIONS::eDivide<rows,cols>(data_, scalarOther, left.data_, right.data_); }
+
+  /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)/\e right(m,n)
+  /*!
+    Divide \e left by \e right, scale by \e scalarOther and add the result to \e this, scaled by \e scalarThis.
+
+    \param scalarOther
+      scaling factor the product
+    \param left
+      dividend, size (\c i)x(\c j)
+    \param right
+      divisor, size (\c i)x(\c j)
+    \param scalarThis
+      scaling factor for \e this
+   */
+  inline void EDivide(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left,
+                         const FixedSizeSerialDenseMatrix<rows,cols>& right, const double scalarThis)
+    { DENSEFUNCTIONS::eDivide<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+
 
   /// Calculate 1-norm
   /*!
@@ -2084,13 +2763,15 @@ public:
 
     \return 1-norm
    */
-  inline double Norm1() const;
+  inline double Norm1() const
+    { return DENSEFUNCTIONS::norm1<rows, cols>(data_); }
 
   /// Calculate 2-norm (Euclidean norm)
   /*!
     \return 2-norm
    */
-  inline double Norm2() const;
+  inline double Norm2() const
+    { return DENSEFUNCTIONS::norm2<rows, cols>(data_); }
 
   /// Calculate inf-norm
   /*!
@@ -2098,25 +2779,29 @@ public:
 
     \return inf-norm
    */
-  inline double NormInf() const;
+  inline double NormInf() const
+    { return DENSEFUNCTIONS::normInf<rows, cols>(data_); }
 
   /// Calculate minimum value
   /*!
     \return minimum value
    */
-  inline double MinValue() const;
+  inline double MinValue() const
+    { return DENSEFUNCTIONS::minValue<rows, cols>(data_); }
 
   /// Calculate maximum value
   /*!
     \return maximum value
    */
-  inline double MaxValue() const;
+  inline double MaxValue() const
+    { return DENSEFUNCTIONS::maxValue<rows, cols>(data_); }
 
   /// Calculate mean value
   /*!
     \return mean value
    */
-  inline double MeanValue() const;
+  inline double MeanValue() const
+    { return DENSEFUNCTIONS::meanValue<rows, cols>(data_); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -2129,7 +2814,8 @@ public:
    */
   template <unsigned int inner>
   inline void Multiply(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -2140,7 +2826,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNN(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right^T
   /*!
@@ -2151,7 +2838,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNT(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right
   /*!
@@ -2162,7 +2850,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTN(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right^T
   /*!
@@ -2173,7 +2862,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTT(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,left.A(),right.A()); }
 
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -2187,7 +2877,8 @@ public:
    */
   template <unsigned int inner>
   inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
   /*!
@@ -2202,7 +2893,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right^T
   /*!
@@ -2215,7 +2907,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right
   /*!
@@ -2228,7 +2921,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
   /*!
@@ -2241,7 +2935,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -2258,7 +2953,8 @@ public:
    */
   template <unsigned int inner>
   inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -2273,7 +2969,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
   /*!
@@ -2288,7 +2985,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
   /*!
@@ -2303,7 +3001,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis);
+                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
   /*!
@@ -2318,7 +3017,8 @@ public:
    */
   template <unsigned int inner>
   inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis);
+                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
+    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Write \e this to \e out
   /*!
@@ -2352,7 +3052,7 @@ public:
     Compare \e this with \e other.
 
     \param other
-      scalar value
+      matrix to compare with
    */
   inline bool operator==(const FixedSizeSerialDenseMatrix<rows,cols>& other) const;
 
@@ -2361,9 +3061,29 @@ public:
     Compare \e this with \e other.
 
     \param other
-      scalar value
+      matrix to compare with
    */
   inline bool operator!=(const FixedSizeSerialDenseMatrix<rows,cols>& other) const;
+
+  /// += operator
+  /*!
+    Add \e other to \e this.
+
+    \param other
+      matrix to add
+   */
+  inline FixedSizeSerialDenseMatrix<rows,cols>& operator+=(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, 1.0, other.data_); return *this; }
+
+  /// -= operator
+  /*!
+    Subtract \e other from \e this.
+
+    \param other
+      matrix to subtract
+   */
+  inline FixedSizeSerialDenseMatrix<rows,cols>& operator-=(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+    { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, -1.0, other.data_); return *this; }
 
   /// Access data
   /*!
@@ -2530,263 +3250,6 @@ inline double FixedSizeSerialDenseMatrix<rows,cols>::Invert(const FixedSizeSeria
 }
 
 template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Clear()
-{
-  DENSEFUNCTIONS::clearMatrix<rows,cols>(data_);
-}
-
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::PutScalar(const double scalar)
-{
-  DENSEFUNCTIONS::putScalar<rows, cols>(scalar, data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other)
-{
-    return DENSEFUNCTIONS::dot<rows, cols>(data_, other.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Abs(const FixedSizeSerialDenseMatrix<rows, cols>& other)
-{
-  return DENSEFUNCTIONS::abs<rows, cols>(data_, other.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Reciprocal(const FixedSizeSerialDenseMatrix<rows, cols>& other)
-{
-  return DENSEFUNCTIONS::reciprocal<rows, cols>(data_, other.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Scale(const double scalar)
-{
-    DENSEFUNCTIONS::scaleMatrix<rows, cols>(scalar, data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const FixedSizeSerialDenseMatrix<rows, cols>& other)
-{
-  DENSEFUNCTIONS::update<rows,cols>(data_,other.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const double scalarOther,
-                                                          const FixedSizeSerialDenseMatrix<rows, cols>& other)
-{
-  DENSEFUNCTIONS::update<rows,cols>(data_,scalarOther,other.data_);
-}
-
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const double scalarOther,
-                                                            const FixedSizeSerialDenseMatrix<rows, cols>& other,
-                                                            const double scalarThis)
-{
-    DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarOther, other.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                                                          const FixedSizeSerialDenseMatrix<rows, cols>& right)
-{
-    DENSEFUNCTIONS::update<rows, cols>(data_, left.data_, right.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const double scalarLeft,
-                                                          const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                                                          const double scalarRight,
-                                                          const FixedSizeSerialDenseMatrix<rows, cols>& right)
-{
-    DENSEFUNCTIONS::update<rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Update(const double scalarLeft,
-                                                            const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                                                            const double scalarRight,
-                                                            const FixedSizeSerialDenseMatrix<rows, cols>& right,
-                                                            const double scalarThis)
-{
-    DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Norm1() const
-{
-  return DENSEFUNCTIONS::norm1<rows, cols>(data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Norm2() const
-{
-  return DENSEFUNCTIONS::norm2<rows, cols>(data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::NormInf() const
-{
-  return DENSEFUNCTIONS::normInf<rows, cols>(data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::MinValue() const
-{
-  return DENSEFUNCTIONS::minValue<rows, cols>(data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::MaxValue() const
-{
-  return DENSEFUNCTIONS::maxValue<rows, cols>(data_);
-}
-
-template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::MeanValue() const
-{
-  return DENSEFUNCTIONS::meanValue<rows, cols>(data_);
-}
-
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Multiply(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNN(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNT(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTN(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTT(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-  template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Multiply(const double scalarOthers,
-                                                              const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                              const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNN(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                                const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNT(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                                const FixedSizeSerialDenseMatrix<cols, inner>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTN(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                                                                const FixedSizeSerialDenseMatrix<inner, cols>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTT(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                                                                const FixedSizeSerialDenseMatrix<cols, inner>& right)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-  template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::Multiply(const double scalarOthers,
-                                                              const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                              const FixedSizeSerialDenseMatrix<inner, cols>& right,
-                                                              const double scalarThis)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNN(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                                const FixedSizeSerialDenseMatrix<inner, cols>& right,
-                                                                const double scalarThis)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyNT(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                                                                const FixedSizeSerialDenseMatrix<cols, inner>& right,
-                                                                const double scalarThis)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(scalarThis,data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTN(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                                                                const FixedSizeSerialDenseMatrix<inner, cols>& right,
-                                                                const double scalarThis)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(scalarThis,data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows, unsigned int cols>
-template <unsigned int inner>
-inline void FixedSizeSerialDenseMatrix<rows,cols>::MultiplyTT(const double scalarOthers,
-                                                                const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                                                                const FixedSizeSerialDenseMatrix<cols, inner>& right,
-                                                                const double scalarThis)
-{
-  DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(scalarThis,data_,scalarOthers,left.A(),right.A());
-}
-
-template <unsigned int rows,  unsigned int cols>
 void FixedSizeSerialDenseMatrix<rows,cols>::Print(std::ostream& out) const
 {
   out << "FixedSizeSerialDenseMatrix<" << rows << ',' << cols << '>';
@@ -2860,7 +3323,7 @@ template<unsigned int rows, unsigned int cols>
 inline double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r, unsigned int c)
 {
 #ifdef DEBUG
-    if (r < 0 or r >= rows or c < 0 or c>= cols)
+    if (r < 0 or r >= rows or c < 0 or c >= cols)
       dserror("Indices %i,%i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
@@ -2870,7 +3333,7 @@ template<unsigned int rows, unsigned int cols>
 inline const double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r, unsigned int c) const
 {
 #ifdef DEBUG
-    if (r < 0 or r >= rows or c < 0 or c>= cols)
+    if (r < 0 or r >= rows or c < 0 or c >= cols)
       dserror("Indices %i,%i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
@@ -2892,7 +3355,7 @@ inline const double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned
 {
     DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
-    if (r < 0 or r >= (cols == 1 ? rows : cols)-1)
+    if (r < 0 or r >= (cols == 1 ? rows : cols))
       dserror("Index %i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,rows,cols);
 #endif
     return data_[r];
