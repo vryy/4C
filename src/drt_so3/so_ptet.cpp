@@ -27,9 +27,9 @@ DRT::ELEMENTS::Ptet::Ptet(int id, int owner) :
 DRT::Element(id,element_ptet,owner),
 material_(0),
 V_(-1.0),
-nxyz_(0,0),
+nxyz_(),
 FisNew_(false),
-F_(0,0)
+F_()
 {
   return;
 }
@@ -113,15 +113,15 @@ void DRT::ELEMENTS::Ptet::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::so_ptet_expol(Epetra_SerialDenseMatrix& stresses,
-                                        Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::Ptet::so_ptet_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_PTET,NUMSTR_PTET>& stresses,
+                                        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET>& nodalstresses)
 {
-  Epetra_SerialDenseMatrix expol(NUMNOD_PTET, NUMGPT_PTET);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET, NUMGPT_PTET> expol;
   expol(0,0)=1.0;
   expol(1,0)=1.0;
   expol(2,0)=1.0;
   expol(3,0)=1.0;
-  nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  nodalstresses.Multiply(expol,stresses);
   return;
 }
 
@@ -181,9 +181,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ptet::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Ptet::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -196,9 +196,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ptet::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Ptet::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

@@ -296,6 +296,39 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | compute the "elasticity tensor product" A x B of                     |
+ | two 2nd order tensors (in matrix notation) and add the result to     |
+ | a 4th order tensor (in Voigt matrix notation!) using the             |
+ | symmetry-conditions inherent to elasticity tensors                   |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+// This is a copy of the above function, using the fixed size matrix.
+void MAT::ElastSymTensorMultiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+                                 const double ScalarAB,
+                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                 const double ScalarThis)
+{
+  // everything in Voigt-Notation
+  LINALG::FixedSizeSerialDenseMatrix<6,1> AVoigt;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> BVoigt;
+
+  AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
+  /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
+   * however, this is not the case here to arrive at the consistent elasticity */
+  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+
+  BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
+  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+
+  C.MultiplyNT(ScalarAB,AVoigt,BVoigt,ScalarThis);
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | compute the "elasticity tensor product" (A x B + B x A) of           |
  | two 2nd order tensors (in matrix notation) and add the result to     |
@@ -514,6 +547,70 @@ void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
 
 }
 
+/*----------------------------------------------------------------------*
+ | compute the "material tensor product" A o B (also known as           |
+ | kronecker-tensor-product) of two 2nd order tensors                   |
+ | (in matrix notation) and add the result to a 4th order tensor        |
+ | (also in matrix notation) using the symmetry-conditions inherent to  |
+ | material tensors, or tangent matrices, respectively                  |
+ | AND the Voigt notation of E,S, and C with the famous factor 2!       |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+// This is a copy of the above function, using the fixed size matrix.ss
+void MAT::ElastSymTensor_o_Multiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+                                    const double ScalarAB,
+                                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+                                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                    const double ScalarThis)
+{
+  // To keep the code somewhat shorter I removed the explanation comment here,
+  // but they are still in the Epetra Version
+  const double ScalarABhalf = ScalarAB * 0.5;
+  C(0,0)= ScalarThis*C(0,0) + ScalarAB     * (A(0,0)*B(0,0)                );//C1111
+  C(0,1)= ScalarThis*C(0,1) + ScalarAB     * (A(0,1)*B(0,1)                );//C1122
+  C(0,2)= ScalarThis*C(0,2) + ScalarAB     * (A(0,2)*B(0,2)                );//C1133
+  C(0,3)= ScalarThis*C(0,3) + ScalarABhalf * (A(0,0)*B(0,1) + A(0,1)*B(0,0));//C1112
+  C(0,4)= ScalarThis*C(0,4) + ScalarABhalf * (A(0,1)*B(0,2) + A(0,2)*B(0,1));//C1123
+  C(0,5)= ScalarThis*C(0,5) + ScalarABhalf * (A(0,0)*B(0,2) + A(0,2)*B(0,0));//C1113
+
+  C(1,0)= ScalarThis*C(1,0) + ScalarAB     * (A(1,0)*B(1,0)                );//C2211
+  C(1,1)= ScalarThis*C(1,1) + ScalarAB     * (A(1,1)*B(1,1)                );//C2222
+  C(1,2)= ScalarThis*C(1,2) + ScalarAB     * (A(1,2)*B(1,2)                );//C2233
+  C(1,3)= ScalarThis*C(1,3) + ScalarABhalf * (A(1,0)*B(1,1) + A(1,1)*B(1,0));//C2212
+  C(1,4)= ScalarThis*C(1,4) + ScalarABhalf * (A(1,1)*B(1,2) + A(1,2)*B(1,1));//C2223
+  C(1,5)= ScalarThis*C(1,5) + ScalarABhalf * (A(1,0)*B(1,2) + A(1,2)*B(1,0));//C2213
+
+  C(2,0)= ScalarThis*C(2,0) + ScalarAB     * (A(2,0)*B(2,0)                );//C3311
+  C(2,1)= ScalarThis*C(2,1) + ScalarAB     * (A(2,1)*B(2,1)                );//C3322
+  C(2,2)= ScalarThis*C(2,2) + ScalarAB     * (A(2,2)*B(2,2)                );//C3333
+  C(2,3)= ScalarThis*C(2,3) + ScalarABhalf * (A(2,1)*B(2,1) + A(2,1)*B(2,0));//C3312
+  C(2,4)= ScalarThis*C(2,4) + ScalarABhalf * (A(2,1)*B(2,2) + A(2,2)*B(2,1));//C3323
+  C(2,5)= ScalarThis*C(2,5) + ScalarABhalf * (A(2,0)*B(2,2) + A(2,2)*B(2,0));//C3313
+
+  C(3,0)= ScalarThis*C(3,0) + ScalarAB     * (A(0,0)*B(1,0)                );//C1211
+  C(3,1)= ScalarThis*C(3,1) + ScalarAB     * (A(0,1)*B(1,1)                );//C1222
+  C(3,2)= ScalarThis*C(3,2) + ScalarAB     * (A(0,2)*B(1,2)                );//C1233
+  C(3,3)= ScalarThis*C(3,3) + ScalarABhalf * (A(0,0)*B(1,1) + A(0,1)*B(1,0));//C1212
+  C(3,4)= ScalarThis*C(3,4) + ScalarABhalf * (A(0,1)*B(1,2) + A(0,2)*B(1,1));//C1223
+  C(3,5)= ScalarThis*C(3,5) + ScalarABhalf * (A(0,0)*B(1,2) + A(0,2)*B(1,0));//C1213
+
+  C(4,0)= ScalarThis*C(4,0) + ScalarAB     * (A(1,0)*B(2,0)                );//C2311
+  C(4,1)= ScalarThis*C(4,1) + ScalarAB     * (A(1,1)*B(2,1)                );//C2322
+  C(4,2)= ScalarThis*C(4,2) + ScalarAB     * (A(1,2)*B(2,2)                );//C2333
+  C(4,3)= ScalarThis*C(4,3) + ScalarABhalf * (A(1,0)*B(2,1) + A(1,1)*B(2,0));//C2312
+  C(4,4)= ScalarThis*C(4,4) + ScalarABhalf * (A(1,1)*B(2,2) + A(1,2)*B(2,1));//C2323
+  C(4,5)= ScalarThis*C(4,5) + ScalarABhalf * (A(1,0)*B(2,2) + A(1,2)*B(2,0));//C2313
+
+  C(5,0)= ScalarThis*C(5,0) + ScalarAB     * (A(0,0)*B(2,0)                );//C1311
+  C(5,1)= ScalarThis*C(5,1) + ScalarAB     * (A(0,1)*B(2,1)                );//C1322
+  C(5,2)= ScalarThis*C(5,2) + ScalarAB     * (A(0,2)*B(2,2)                );//C1333
+  C(5,3)= ScalarThis*C(5,3) + ScalarABhalf * (A(0,0)*B(2,1) + A(0,1)*B(2,0));//C1312
+  C(5,4)= ScalarThis*C(5,4) + ScalarABhalf * (A(0,1)*B(2,2) + A(0,2)*B(2,1));//C1323
+  C(5,5)= ScalarThis*C(5,5) + ScalarABhalf * (A(0,0)*B(2,2) + A(0,2)*B(2,0));//C1313
+
+  return;
+
+}
 
 
 #endif

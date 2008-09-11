@@ -22,7 +22,7 @@ Maintainer: Lena Wiechert
 #include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 /// MAT: materials
 namespace MAT
@@ -59,7 +59,7 @@ public:
 
   /// return type of this material
   virtual MATERIAL_TYP MaterialType() const = 0;
- 
+
   /// create element material object given the number of a material definition
   static Teuchos::RefCountPtr<Material> Factory(int matnum);
 };
@@ -68,11 +68,11 @@ public:
   \brief Multiply two 2nd order tensors A x B and add the result to a
    4th order symmetric material tensor in matrix notation
 
-   compute the "elasticity tensor product" A x B of                   
-   two 2nd order tensors (in matrix notation) and add the result to  
-   a 4th order tensor (in Voigt matrix notation!) using the        
-   symmetry-conditions inherent to elasticity tensors                
-   The implementation is based on the Epetra-Method Matrix.Multiply. 
+   compute the "elasticity tensor product" A x B of
+   two 2nd order tensors (in matrix notation) and add the result to
+   a 4th order tensor (in Voigt matrix notation!) using the
+   symmetry-conditions inherent to elasticity tensors
+   The implementation is based on the Epetra-Method Matrix.Multiply.
 
   \param C (in/out): Material tangent matrix to be modified
   \param AB (in)   : Scalar to multiply with A x B
@@ -87,13 +87,35 @@ public:
                                    const double ScalarThis);
 
   /*!
+  \brief Multiply two 2nd order tensors A x B and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+   compute the "elasticity tensor product" A x B of
+   two 2nd order tensors (in matrix notation) and add the result to
+   a 4th order tensor (in Voigt matrix notation!) using the
+   symmetry-conditions inherent to elasticity tensors.
+   This is another version of this function using the fixed size matrix.
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A x B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A x B
+  */
+  void ElastSymTensorMultiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+                              const double ScalarAB,
+                              const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+                              const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                              const double ScalarThis);
+
+  /*!
   \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    4th order symmetric material tensor in matrix notation
 
-   compute the "elasticity tensor product" (A x B + B x A) of 
+   compute the "elasticity tensor product" (A x B + B x A) of
    two 2nd order tensors (in matrix notation) and add the result to
-   a 4th order tensor (in Voigt matrix notation!) using the 
-   symmetry-conditions inherent to elasticity tensors 
+   a 4th order tensor (in Voigt matrix notation!) using the
+   symmetry-conditions inherent to elasticity tensors
 
   \param C (in/out): Material tangent matrix to be modified
   \param AB (in)   : Scalar to multiply with (A x B + B x A)
@@ -122,6 +144,24 @@ public:
                                    const Epetra_SerialDenseMatrix& A,
                                    const Epetra_SerialDenseMatrix& B,
                                    const double ScalarThis);
+
+  /*!
+  \brief Multiply two 2nd order tensors A o B and add the result to a
+   4th order symmetric material tensor in matrix notation
+   This is another version of this function using the fixed size matrix.
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A o B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A o B
+  */
+  void ElastSymTensor_o_Multiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+                                 const double ScalarAB,
+                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                 const double ScalarThis);
+
 
   /*!
   \brief Add 'Holzapfel product' contribution to constitutive tensor
