@@ -14,48 +14,45 @@ Maintainer: Georg Bauer
 #include "condif3_utils.H"
 
 
-  /*-------------------------------------------------------------------------*
-   | check for higher order derivatives for shape functions         gjb 08/08|
-   *-------------------------------------------------------------------------*/
-  bool SCATRA::isHigherOrderElement(
-    const DRT::Element::DiscretizationType& distype)
+/*-------------------------------------------------------------------------*
+ | check for higher order derivatives for shape functions         gjb 08/08|
+ *-------------------------------------------------------------------------*/
+bool SCATRA::is3DHigherOrderElement(const DRT::Element::DiscretizationType& distype)
+{
+  bool hoel = true;
+  switch (distype)
   {
-    bool hoel = true;
-    switch (distype)
-    {
-    case DRT::Element::hex8: 
-    case DRT::Element::hex20: 
-    case DRT::Element::hex27: 
-    case DRT::Element::tet10: 
-      hoel = true;
-      break;
-    case DRT::Element::tet4: 
+    case DRT::Element::hex8:
+    case DRT::Element::tet4:
       hoel = false;
       break;
-    case DRT::Element::wedge6: 
-    case DRT::Element::pyramid5: 
-    case DRT::Element::wedge15: 
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    case DRT::Element::tet10:
+      hoel = true;
+      break;
+    case DRT::Element::wedge6:
+    case DRT::Element::pyramid5:
+    case DRT::Element::wedge15:
       //!!!TODO:  wedge und pyramid have 2nd derivatives!!!!!!!!!!!!!!!!!!!!!!!!
       dserror("wedges and pyramids have second derivatives!");
       break;
     default:
       dserror("distype unknown!");
-    }
-    return hoel;
   }
+  return hoel;
+}
 
 
-  /*----------------------------------------------------------------------*
-   |  get optimal gaussrule for discretization type              gjb 08/08|
-   *----------------------------------------------------------------------*/
-  DRT::UTILS::GaussRule3D SCATRA::getOptimalGaussrule
-  (
-      const DRT::Element::DiscretizationType& distype
-  )
+/*----------------------------------------------------------------------*
+ |  get optimal gaussrule for discretization type              gjb 08/08|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::GaussRule3D SCATRA::get3DOptimalGaussrule
+(const DRT::Element::DiscretizationType& distype)
+{
+  DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+  switch (distype)
   {
-    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
-    switch (distype)
-    {
     case DRT::Element::hex8:
       rule = DRT::UTILS::intrule_hex_8point;
       break;
@@ -70,9 +67,9 @@ Maintainer: Georg Bauer
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
-    }
-    return rule;
   }
+  return rule;
+}
 
 
 #endif  // #ifdef CCADISCRET

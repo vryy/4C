@@ -223,6 +223,7 @@ typedef struct _MODPOWERLAW
 typedef struct _CONDIF
 {
      DOUBLE                    diffusivity; /* kinematic diffusivity */
+     DOUBLE                    shc;     /* specific heat capacity */
 } CONDIF;
 
 /*----------------------------------------------------------------------*

@@ -35,11 +35,11 @@ namespace TIMEINT_THETA_BDF2
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
-                       +-                                      -+
-                       | /     dta \          dta  veln_-velnm_ |
-   velnp_ =veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
-                       | \     dtp /          dtp     dtp       |
-                       +-                                      -+
+                        +-                                      -+
+                        | /     dta \          dta  veln_-velnm_ |
+   velnp_ = veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
+                        | \     dtp /          dtp     dtp       |
+                        +-                                      -+
   */
   void ExplicitPredictor(
       const Teuchos::RCP<Epetra_Vector>&   veln,
@@ -52,18 +52,39 @@ namespace TIMEINT_THETA_BDF2
 
   /*!
   \brief Set the part of the righthandside belonging to the last
-         timestep.
+         timestep for incompressible or low-Mach-number flow
 
-   set part of the rhs vector belonging to the old timestep
+  Stationary:
 
-           One-step-Theta:
+                 hist_ = 0.0
 
-                   hist_ = veln_ + dta*(1-Theta)*accn_
+  One-step-Theta:
+
+                 hist_ = veln_ + dt*(1-Theta)*accn_
 
 
-           BDF2: for constant time step:
+  BDF2: for constant time step:
 
-                   hist_ = 4/3 veln_ - 1/3 velnm_
+                 hist_ = 4/3 veln_ - 1/3 velnm_
+
+  for low-Mach-number flow: distinguish momentum and continuity part
+
+  Stationary:
+
+                 mom: hist_ = 0.0
+                 con: hist_ = 0.0
+
+  One-step-Theta:
+
+                 mom: hist_ = densn_*veln_ + dt*(1-Theta)*modedtn_
+                 con: hist_ = densn_       + dt*(1-Theta)*densdtn_
+
+
+  BDF2: for constant time step:
+
+                 mom: hist_ = 4/3 densn_*veln_ - 1/3 densnm_*velnm_
+                 con: hist_ = 4/3 densn_       - 1/3 densnm_
+
   */
   void SetOldPartOfRighthandside(
       const Teuchos::RCP<Epetra_Vector>&   veln,
@@ -72,10 +93,13 @@ namespace TIMEINT_THETA_BDF2
       const FLUID_TIMEINTTYPE              timealgo,
       const double                         dta,
       const double                         theta,
-      Teuchos::RCP<Epetra_Vector>&         hist
+      Teuchos::RCP<Epetra_Vector>&         histmom
   );
-  
-  //! Calculate time derivatives for Stationary/OST/BDF2 time integration
+
+  /*!
+  \brief Calculate time derivatives for Stationary/OST/BDF2 time integration
+         for incompressible and low-Mach-number flow
+  */
   void CalculateAcceleration(
       const Teuchos::RCP<Epetra_Vector>&   velnp,    ///< velocity at     n+1
       const Teuchos::RCP<Epetra_Vector>&   veln,     ///< velocity at     n
@@ -83,12 +107,12 @@ namespace TIMEINT_THETA_BDF2
       const Teuchos::RCP<Epetra_Vector>&   accn,     ///< acceleration at n
       const FLUID_TIMEINTTYPE              timealgo, ///< time integration id
       const int                            step,     ///< time step
-      const double                         theta,    ///< factor for one-step-theta method
+      const double                         theta,    ///< factor for OST method
       const double                         dta,      ///< time step size (delta t)
-      const double                         dtp,      
+      const double                         dtp,
       Teuchos::RCP<Epetra_Vector>&         accnp     ///< acceleration at n+1
   );
-  
+
 }
 }
 

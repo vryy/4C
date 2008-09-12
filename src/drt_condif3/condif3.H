@@ -95,8 +95,8 @@ public:
     unpacked along with its element.
 
     \param matnum : material number from input file
-    
-    \note reimplementation of this method, due to initialising 
+
+    \note reimplementation of this method, due to initialising
           numdofpernode_, since the material is known now.
    */
   virtual void SetMaterial(int matnum);
@@ -194,7 +194,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
+  virtual int NumDofPerNode(const DRT::Node& node) const
   {
     dsassert(numdofpernode_!=-1,"NumDofPerNode is -1");
     return numdofpernode_;
@@ -247,26 +247,11 @@ public:
 
   Following implementations of the element are allowed:
   <pre>
-    o Evaluation of fluid system matrix and residual for the One-Step-Theta or BDF2
+    o Evaluation of condif system matrix and residual for the One-Step-Theta or BDF2
       method
 
-    o Evaluation of fluid system matrix and residual for the stationary fluid solver
-
-    o Evaluation of fluid system matrix and residual for the Generalised alpha method
-      ---
-      the element matrix computation could be skipped, this is useful for a
-      speedup if itemax is reached in the nonlinear iteration and the matrix is not
-      used in further steps
+    o Evaluation of condif system matrix and residual for the stationary fluid solver
   </pre>
-
-  Up to now, forther evaluation of element integrals is done to
-  <pre>
-    o evaluate the L2 error for beltrami flows
-
-    o compute integrals over homogeneous planes for turbulent channel flow simulations
-  </pre>
-
-
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -346,8 +331,6 @@ private:
 
   //! Gaussrule
   DRT::UTILS::GaussRule3D   gaussrule_;
-  //! flag for euler/ale net algorithm
-  bool                      is_ale_;
   //! container containing all kind of condif3 thisandthat
   DRT::Container            data_;
   //! number of dofs per node (for systems of transport equations)

@@ -280,6 +280,12 @@ void DRT::Problem::InputControl()
     genprob.numtf = 1;  /* thermal field index */
     break;
   }
+  case prb_loma:
+  {
+    genprob.numff = 0;  /* fluid field index */
+    genprob.numscatra = 1; /* scalar transport field index */
+    break;
+  }
   case prb_elch:
   {
     genprob.numff = 0;  /* fluid field index */
@@ -494,6 +500,24 @@ void DRT::Problem::InputControl()
 
     solv[genprob.numsf].fieldtyp = structure;
     InputSolverControl("STRUCT SOLVER",&(solv[genprob.numsf]));
+    break;
+  }
+
+  /* for low-Mach-number flow (LOMA)*/
+  case prb_loma:
+  {
+    if (genprob.numfld!=2) dserror("numfld != 2 for low-Mach-number flow problem");
+    solver_.resize(genprob.numfld);
+    solv = &solver_[0];
+
+    // solver for fluid problem
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+
+    // solver for temperature equation
+    solv[genprob.numscatra].fieldtyp = scatra;
+    InputSolverControl("SCALAR TRANSPORT SOLVER",&(solv[genprob.numscatra]));
+
     break;
   }
 
@@ -1101,6 +1125,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
+
+  case prb_loma:
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=2) dserror("numfld != 2 for low-Mach-number flow problem");
+
+    // create empty discretizations
+    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    AddDis(genprob.numff, fluiddis);
+
+    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    AddDis(genprob.numscatra, scatradis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.Read();
+
+    break;
+  } // end of else if (genprob.probtyp==prb_loma)
 
   case prb_elch:
   {

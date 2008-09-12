@@ -259,6 +259,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Ale",
                                  "Thermal_Structure_Interaction")
                                .append("Structure_Multiscale")
+                               .append("Low_Mach_Number_Flow")
                                .append("Electrochemistry")
                                .append("Combustion"),
                                tuple<PROBLEM_TYP>(
@@ -273,6 +274,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_ale,
                                  prb_tsi)
                                .append(prb_struct_multi)
+                               .append(prb_loma)
                                .append(prb_elch)
                                .append(prb_combust),
                                &type);
@@ -651,6 +653,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
+
+  setStringToIntegralParameter("LOWMACH","No",
+                               "low-mach-number or incompressible flow",
+                               tuple<std::string>(
+                                 "No",
+                                 "Yes"
+                                 ),
+                               tuple<int>(0,1),
+                               &fdyn);
 
   setStringToIntegralParameter("DYNAMICTYP","Nlin_Time_Int",
                                "Nonlinear Time Integraton Scheme",
@@ -1083,6 +1094,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "SCALAR TRANSPORT DYNAMIC",
       false,
       "control parameters for scalar transport problems\n");
+
+  setStringToIntegralParameter("SCALARTYPE","Standard",
+                               "type of scalar to be transported",
+                               tuple<std::string>(
+                                 "Standard",
+                                 "Temperature",
+                                 "Concentration",
+                                 "G_equation"
+                                 ),
+                               tuple<int>(0,1,2,3),
+                               &scatradyn);
 
   setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",

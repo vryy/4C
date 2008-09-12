@@ -15,7 +15,6 @@ Maintainer: Volker Gravemeier
 
 #include "condif2.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -25,14 +24,14 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                               vg 08/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Condif2Line::Evaluate(       ParameterList&            params,
-                                                DRT::Discretization&      discretization,
-                                                vector<int>&              lm,
-                                                Epetra_SerialDenseMatrix& elemat1,
-                                                Epetra_SerialDenseMatrix& elemat2,
-                                                Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseVector& elevec2,
-                                                Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Condif2Line::Evaluate(ParameterList&            params,
+                                         DRT::Discretization&      discretization,
+                                         vector<int>&              lm,
+                                         Epetra_SerialDenseMatrix& elemat1,
+                                         Epetra_SerialDenseMatrix& elemat2,
+                                         Epetra_SerialDenseVector& elevec1,
+                                         Epetra_SerialDenseVector& elevec2,
+                                         Epetra_SerialDenseVector& elevec3)
 {
     DRT::ELEMENTS::Condif2Line::ActionType act = Condif2Line::none;
     string action = params.get<string>("action","none");
@@ -40,20 +39,17 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(       ParameterList&            params
     else if (action == "condif_calc_flux")
         act = Condif2Line::calc_condif_flux;	
     else dserror("Unknown type of action for Condif2Line");
-    
+
     switch(act)
     {
-    case calc_condif_flux:
-    {
-        dserror("No implementation of flux evaluation for condif2line elements.");
-        break;
-    }
-    default:
+      case calc_condif_flux:
+        dserror("No implementation of flux evaluation for condif2line elements");
+      default:
         dserror("Unknown type of action for Condif2Line");
     } // end of switch(act)
 
     return 0;
-    
+
 } // DRT::ELEMENTS::Condif2Line::Evaluate
 
 
@@ -66,8 +62,8 @@ int DRT::ELEMENTS::Condif2Line::EvaluateNeumann(
     DRT::Condition&           condition,
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
-{  
-  dserror("No implementation yet for convection-diffusion problems");
+{
+  dserror("EvaluateNeumann not yet implemented for 2D convection-diffusion");
   return 0;
 }
 

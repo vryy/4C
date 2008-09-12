@@ -135,6 +135,15 @@ namespace ADAPTER
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno){ dserror("not implemented!");
                                                                              return; };
 
+    ///  set time-step-related fields for low-Mach-number flow
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
+                                   RCP<const Epetra_Vector> noddensnm){ dserror("not implemented!");
+                                                                             return; };
+
+    /// set outer-iteration-related fields for low-Mach-number flow
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp){ dserror("not implemented!");
+                                                                             return; };
+
     /*--------------------------------------------------------------------------------------------* 
      * group member functions which are implemented and used
      * 

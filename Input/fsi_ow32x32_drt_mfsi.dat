@@ -62,7 +62,7 @@ NUMSTEP      1000
 TIMESTEP     0.05
 THETA        1.0
 NONLINITER   fixed_point_like
-ITEMAX       10 
+ITEMAX       10
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-8
 STEADYCHECK  L_2_norm
@@ -73,6 +73,17 @@ NUMSTASTEPS  0
 START_THETA  1.00
 INITIALFIELD zero_field
 STARTFUNCNO  2
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based  // no_stabilization residual_based inconsistent
+TDS                   quasistatic     // quasistatic time_dependent
+DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall // Barrenechea_Franca_Valentin_Wall Bazilevs Codina
+TRANSIENT             no_transient    // no_transient yes_transient
+SUPG                  yes_supg        // no_supg yes_supg
+PSPG                  yes_pspg        // no_pspg yes_pspg
+VSTAB                 no_vstab        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
+CSTAB                 cstab_qs        // no_cstab cstab_qs cstab_td
+CROSS-STRESS          no_cross        // no_cross cross_complete cross_rhs
+REYNOLDS-STRESS       no_reynolds     // no_reynolds reynolds_rhs
 -------------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
 NUMSTEP      41 
@@ -7392,8 +7403,8 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ------------------------------------------------RESULT DESCRIPTION
 //FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.228156619e-04 TOLERANCE 1e-8
 //FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.328153747e-03 TOLERANCE 1e-8
-FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.226425866e-04 TOLERANCE 1e-8
-FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.333580793e-03 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.421061270e-04 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.448013133e-03 TOLERANCE 1e-8
 //STRUCTURE DIS 1 NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

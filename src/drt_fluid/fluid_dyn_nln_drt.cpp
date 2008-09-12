@@ -142,6 +142,9 @@ void dyn_fluid_drt()
   // number of degrees of freedom
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
+  // ---------------------------- low-Mach-number or incompressible flow
+  fluidtimeparams.set<string>("low-Mach-number solver"   ,fdyn.get<string>("LOWMACH"));
+
   // ------------------------------------------------ basic scheme, i.e.
   // --------------------- solving nonlinear or linearised flow equation
   fluidtimeparams.set<int>("type of nonlinear solve" ,

@@ -74,6 +74,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_adapter/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
+#include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
 #endif
@@ -325,6 +326,14 @@ case prb_tsi:
 #endif
   break;
 #endif
+
+case prb_loma:
+#ifndef CCADISCRET
+  dserror("Module for low-Mach-number flow not available in CCARAT");
+#else
+  loma_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+#endif
+  break;
 
 case prb_elch:
 #ifndef CCADISCRET

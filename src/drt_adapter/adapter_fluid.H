@@ -113,6 +113,13 @@ namespace ADAPTER {
     /// set initial flow field
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno) = 0;
 
+    ///  set time-step-related fields for low-Mach-number flow
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
+                                   RCP<const Epetra_Vector> noddensnm) = 0;
+
+    /// set outer-iteration-related fields for low-Mach-number flow
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp) = 0;
+
     //@}
 
     //! @name Time step helpers

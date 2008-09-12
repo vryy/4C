@@ -35,13 +35,15 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class Fluid2Register;
 
 namespace ELEMENTS
 {
 // forward declarations
 class Fluid2Line;
+class Fluid2Impl;
+class Fluid2Stationary;
 class Fluid2GenalphaResVMM;
+class Fluid2Register;
 
 /*!
 \brief A C++ wrapper for the fluid2 element
@@ -55,6 +57,8 @@ public:
   //! @name Friends
   friend class Fluid2Register;
   friend class Fluid2Line;
+  friend class Fluid2Impl;
+  friend class Fluid2Stationary;
   friend class Fluid2GenalphaResVMM;
 
   //@}
@@ -276,7 +280,8 @@ private:
     calc_fluid_stationary_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
-    calc_fluid_genalpha_average_for_subscales_and_residual
+    calc_fluid_genalpha_average_for_subscales_and_residual,
+    get_density
   };
 
   //! stabilisation actions recognized by fluid2 (genalpha implementation)
@@ -303,7 +308,29 @@ private:
     cross_stress_stab,
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
-    reynolds_stress_stab_only_rhs
+    reynolds_stress_stab_only_rhs,
+    fssgv_no,
+    fssgv_artificial_all,
+    fssgv_artificial_small,
+    fssgv_Smagorinsky_all,
+    fssgv_Smagorinsky_small
+  };
+
+  //! possible options for the stabilisation parameter
+  enum TauType
+  {
+    franca_barrenechea_valentin_wall,
+    codina                          ,
+    bazilevs                        ,
+    tau_not_defined
+  };
+
+
+  //! physical turbulence models recognized by fluid3_genalpha implementation
+  enum TurbModelAction
+  {
+    no_model,
+    smagorinsky
   };
 
   //! map that converts strings to actions (stabilisation)
@@ -311,32 +338,6 @@ private:
 
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
-
-
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype
-    ) const
-    {
-      bool hoel = true;
-      switch (distype)
-      {
-          case quad4: case quad8: case quad9: case tri6: case nurbs4: case nurbs9:
-            hoel = true;
-            break;
-          case tri3:
-            hoel = false;
-            break;
-          default:
-            dserror("distype unknown!");
-      }
-      return hoel;
-    };
-
-  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
   //! Gaussrule
   DRT::UTILS::GaussRule2D                         gaussrule_;
@@ -365,117 +366,20 @@ private:
   // don't want = operator
   Fluid2& operator = (const Fluid2& old);
 
-  // calculating system matrix
-  void f2_sys_mat(vector<int>&              lm,
-                  vector<double>&           evelnp,
-                  vector<double>&           fsevelnp,
-                  vector<double>&           eprenp,
-                  vector<double>&           ehist,
-                  vector<double>&           edispnp,
-                  vector<double>&           egridv,
-                  Epetra_SerialDenseMatrix* sys_mat,
-                  Epetra_SerialDenseMatrix* mesh_mat,
-                  Epetra_SerialDenseVector* residual,
-                  struct _MATERIAL*         material,
-                  double                    time,
-                  double                    timefac,
-                  string                    fssgv,
-                  const double              Cs,
-                  bool                      is_stationary
-		  );
 
-  // calculate Jacobian matrix and it's determinant
-  void f2_jaco(const Epetra_SerialDenseMatrix& xyze,
-	       const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-	       double* 		det,
-               const int 	iel
-	       );
+  /// set number of gauss points to element shape default
+  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
   /*!
-   * \brief get the body force from the nodes condition
-   * \return ???
+   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+   * \return boolean indicating higher order status
    */
-  Epetra_SerialDenseMatrix f2_getbodyforce(
-					   const double time,         ///< needed to evaluate time courve
-					   struct _MATERIAL* material
-    );
-
-  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
-    void f2_gder(Epetra_SerialDenseMatrix& derxy,
-		 const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-		 double& det,
-                 const int iel
-		 );
-
-  // calculate second global derivatives w.r.t x/y/z at point r,s,t
-    void f2_gder2(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-				    Epetra_SerialDenseMatrix& derxy2,
-				    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-				    );
-
-  // evaluate fluid coefficient matrix
-    void f2_calmat( Epetra_SerialDenseMatrix& estif,
-                    Epetra_SerialDenseMatrix& emesh,
-                Epetra_SerialDenseVector&  	eforce,
-                vector<double>&  	velint,
-                vector<double>&   	histvec,
-                vector<double>&   	gridvint,
-                double&   		press,
-                    Epetra_SerialDenseMatrix& vderiv,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& fsvderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	  gradp,
-                Epetra_SerialDenseVector& funct,
-                    const Epetra_SerialDenseMatrix& deriv,
-		        vector<double>&   tau,
-                const double&             vart,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                const vector<double>&     edeadng,
-                    double                det,
-                const double&   	fac,
-                const double&   	visc,
-                const int&      	iel,
-                string                  fssgv,
-		double                  timefac
-      		);
-
-  // evaluate fluid coefficient matrix for stationary problems
-    void f2_calmat_stationary( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&  	eforce,
-                vector<double>&  	velint,
-                vector<double>&   	histvec,
-                vector<double>&   	gridvint,
-                double&   		press,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& fsvderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	gradp,
-                Epetra_SerialDenseVector& funct,
-		vector<double>&   	tau,
-                const double&             vart,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                const vector<double>&     edeadng,
-                const double&   	fac,
-                const double&   	visc,
-                const int&      	iel,
-                string                  fssgv
-      );
-
+  bool isHigherOrderElement(
+    const DRT::Element::DiscretizationType  distype  ///< discretization type
+    ) const;
 
   /// Residual based genalpha implementation class for fluid element
   Fluid2GenalphaResVMM* GenalphaResVMM();
-
-
-  // set number of gauss points to element shape default
-  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
 }; // class Fluid2
 
@@ -780,8 +684,8 @@ private:
   {
      none,
      integrate_Shapefunction,
-     calc_node_normal       ,
-     calc_surface_tension   ,
+     calc_node_normal,
+     calc_surface_tension,
      enforce_weak_dbc
   };
 
@@ -832,10 +736,6 @@ private:
                              const std::vector<double>& edispnp,
                              std::vector<double>& enormals);
 
-
-
-
-
   /*!
     \brief Evaluate weakly imposed Dirichlet conditions
 
@@ -878,7 +778,10 @@ private:
     double                     afgdt
     );
 
+
 }; // class Fluid2Line
+
+
 
 
 } // namespace ELEMENTS

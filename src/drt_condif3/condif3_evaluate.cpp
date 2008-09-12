@@ -80,25 +80,27 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
 
   if(mat->MaterialType()== m_condif)
     actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
-    else if (mat->MaterialType()== m_matlist)
-    {
-      actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
-    }
-    else
-      dserror("condif material expected but got type %d", mat->MaterialType());
+  else if (mat->MaterialType()== m_matlist)
+    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
+  else
+    dserror("condif material expected but got type %d", mat->MaterialType());
 
   switch(act)
   {
   // the standard one-step-theta implementation
   case calc_condif_systemmat_and_residual:
   {
-    // need current velocity and history vector
+    // need current history vector and density vector
     RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-    if (hist==null) dserror("Cannot get state vector 'hist'");
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    if (hist==null || densnp==null)
+      dserror("Cannot get state vector 'hist' and/or 'densnp'");
 
     // extract local values from the global vector
     vector<double> myhist(lm.size());
+    vector<double> mydensnp(lm.size());
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
 
     // get control parameter
     const bool is_stationary = params.get<bool>("using stationary formulation");
@@ -113,7 +115,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
       if (timefac < 0.0) dserror("thsl is negative.");
     }
 
-    // get velocity values at the nodes
+    // get (weighted) velocity at the nodes
     // compare also with DRT::UTILS::ExtractMyValues()
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     const int iel = NumNode();
@@ -123,12 +125,17 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
 
     // get flag for fine-scale subgrid diffusivity
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
-    if (fssgd != "No") dserror("fssgd not yet implemented!");
+
+    // set flag for type of scalar whether it is temperature or not
+    string scaltypestr=params.get<string>("type of scalar");
+    bool temperature = false;
+    if(scaltypestr =="Temperature") temperature = true;
 
     // calculate element coefficient matrix and rhs
     DRT::ELEMENTS::Condif3Impl::Impl(this)->Sysmat(
         this,
         myhist,
+        mydensnp,
         &elemat1,
         &elemat2,
         &elevec1,
@@ -137,6 +144,8 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
         time,
         timefac,
         evel,
+        temperature,
+        fssgd,
         is_stationary);
   }
   break;
@@ -150,11 +159,10 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     const int nsd=3;
     Epetra_SerialDenseVector evel(nsd*iel);
     DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
-    
-    // need current values of transported scalar
+
+    // need current values of transported scalar and density*specific heat capacity at constant pressure
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null)
-      dserror("Cannot get state vector 'phinp'");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors
     vector<double> myphinp(lm.size());
@@ -185,7 +193,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
       fluxtype = Condif3::diffusiveflux;
     else
       fluxtype=Condif3::noflux;  //default value
-    
+
     // do a loop for systems of transported scalars
     for (int i = 0; i<numdofpernode_; ++i)
     {
@@ -208,14 +216,18 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     const double time = params.get<double>("total time");
     //const double timefac = params.get<double>("time factor",1.0);
     const double timefac = 0.0;
-    
+
     // need initial field
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    if (phi0==null || densnp==null)
+      dserror("Cannot get state vector 'phi0' and/or 'densnp'");
 
     // extract local values from the global vector
     vector<double> myphi0(lm.size());
+    vector<double> mydensnp(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
 
     // get initial velocity values at the nodes
     // compare also with DRT::UTILS::ExtractMyValues()
@@ -225,9 +237,28 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     Epetra_SerialDenseVector evel(nsd*iel);
     DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
 
+    // get flag for fine-scale subgrid diffusivity
+    string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+    // set flag for type of scalar whether it is temperature or not
+    string scaltypestr=params.get<string>("type of scalar");
+    bool temperature = false;
+    if(scaltypestr =="Temperature") temperature = true;
+
     // calculate mass matrix and rhs
-    DRT::ELEMENTS::Condif3Impl::Impl(this)->
-      InitializeOST(this,myphi0,elemat1,elevec1,actmat,time,timefac,evel);
+    DRT::ELEMENTS::Condif3Impl::Impl(this)->InitializeOST(
+         this,
+         myphi0,
+         mydensnp,
+         elemat1,
+         elevec1,
+         elevec2,
+         actmat,
+         time,
+         timefac,
+         evel,
+         temperature,
+         fssgd);
   }
   break;
   default:
@@ -404,23 +435,23 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
-    case Condif3::totalflux:
-      //convective flux terms
+      case Condif3::totalflux:
+        //convective flux terms
         flux(0,iquad)+=evel[iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
         flux(1,iquad)+=evel[1+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
         flux(2,iquad)+=evel[2+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
-      // no break statement here!
-    case Condif3::diffusiveflux:
-      //diffusive flux terms
-      for (int k=0;k<iel;k++)
-      {
-        flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k*numdofpernode_+dofindex];
-        flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k*numdofpernode_+dofindex];
-        flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k*numdofpernode_+dofindex];
-      }
-      break;
-    case Condif3::noflux:
-      dserror("received noflux flag inside CONDIF3 flux evaluation");
+        // no break statement here!
+      case Condif3::diffusiveflux:
+        //diffusive flux terms
+        for (int k=0;k<iel;k++)
+        {
+          flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k*numdofpernode_+dofindex];
+          flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k*numdofpernode_+dofindex];
+          flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k*numdofpernode_+dofindex];
+        }
+        break;
+      case Condif3::noflux:
+        dserror("received noflux flag inside CONDIF3 flux evaluation");
     };
 
   } // loop over nodes

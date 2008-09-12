@@ -111,7 +111,7 @@ public:
 
   //! Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
-  (  
+  (
     const double& time,  //!< evaluation time
     Teuchos::RCP<Epetra_Vector>& phinp //!< transported scalar(s)
                                        //!< (may be Teuchos::null) 
@@ -149,6 +149,18 @@ public:
   //! set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
+  //! set time-step-related fields for low-Mach-number flow
+  void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
+                         RCP<const Epetra_Vector> noddensnm);
+
+  //! set outer-iteration-related fields for low-Mach-number flow
+  void SetIterLomaFields(int veltype,
+                         RCP<const Epetra_Vector> extvel,
+                         RCP<const Epetra_Vector> noddensnp);
+
+  //! routine to return scalar field
+  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
+
   double Time() const { return time_; }
   int Step() const { return step_; }
 
@@ -158,7 +170,7 @@ protected:
   //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
   //! copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
-  
+
   //! helper function to get algorithm title
   std::string MapTimIntEnumToString
   (
@@ -183,7 +195,7 @@ protected:
 
   //! write additional data required for restart
   virtual void OutputRestart() = 0;
-  
+
   //! write flux vectors to BINIO
   void OutputFlux();
 
@@ -191,13 +203,15 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
   RCP<DRT::Discretization>   discret_; /// the scalar transport discretization
-  RCP<LINALG::Solver>        solver_;  
+  RCP<LINALG::Solver>        solver_;
   RCP<ParameterList>         params_;
   RCP<IO::DiscretizationWriter>  output_;
   int                        myrank_;
 
   double time_;
   int step_;
+  /// flag defining type of scalar to be transported
+  string scaltype_;
   int stepmax_;
   double maxtime_;
 
@@ -236,8 +250,13 @@ protected:
   /// phi at time n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
-  
+
   RCP<Epetra_Vector>    phinm_; // this has to go away!!
+
+  /// density at time n+1, n and n-1
+  RCP<Epetra_Vector>    densnp_;
+  RCP<Epetra_Vector>    densn_;
+  RCP<Epetra_Vector>    densnm_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)

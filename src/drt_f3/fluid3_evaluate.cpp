@@ -20,9 +20,9 @@ Maintainer: Georg Bauer
 
 #include "fluid3.H"
 #include "fluid3_impl.H"
+#include "fluid3_stationary.H"
 #include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
-#include "fluid3_stationary.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nurbs_discret.H"
@@ -66,6 +66,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_fluid_stationary_systemmat_and_residual")
+    act = Fluid3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_linear_fluid")
     act = Fluid3::calc_linear_fluid;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
@@ -74,8 +76,6 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_update_for_subscales;
   else if (action == "time average for subscales and residual")
     act = Fluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
-  else if (action == "calc_fluid_stationary_systemmat_and_residual")
-    act = Fluid3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
@@ -86,6 +86,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_smagorinsky_const;
   else if (action == "calc_convective_stresses")
     act = Fluid3::calc_convective_stresses;
+  else if (action == "get_density")
+    act = Fluid3::get_density;
   else
     dserror("Unknown type of action for Fluid3");
   return act;
@@ -183,33 +185,79 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
         }
 
-        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        elemat1,
-                                                                        elemat2,
-                                                                        elevec1,
-                                                                        elevec2,
-                                                                        elevec3,
-                                                                        mat,
-                                                                        actmat);
+        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(
+               this,
+               params,
+               discretization,
+               lm,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3,
+               mat,
+               actmat);
+      }
+      break;
+      case calc_fluid_stationary_systemmat_and_residual:
+      {
+        // if not available, define map from string to action
+        if(stabstrtoact_.empty())
+        {
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete" ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+          stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+          stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+          stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
+        }
+
+        return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(
+               this,
+               params,
+               discretization,
+               lm,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3,
+               mat,
+               actmat);
       }
       break;
       case calc_linear_fluid:
       {
-        return DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(this)->Evaluate(this,
-                                                                            params,
-                                                                            discretization,
-                                                                            lm,
-                                                                            elemat1,
-                                                                            elemat2,
-                                                                            elevec1,
-                                                                            elevec2,
-                                                                            elevec3,
-                                                                            mat,
-                                                                            actmat);
-
+        return DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(this)->Evaluate(
+               this,
+               params,
+               discretization,
+               lm,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3,
+               mat,
+               actmat);
       }
       break;
       case calc_fluid_beltrami_error:
@@ -1337,50 +1385,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
       }
       break;
-      case calc_fluid_stationary_systemmat_and_residual:
-      {
-          // if not available, define map from string to action
-          if(stabstrtoact_.empty())
-          {
-            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-            stabstrtoact_["no_supg"        ]=convective_stab_none;
-            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-            stabstrtoact_["cross_complete" ]=cross_stress_stab;
-            stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-            stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
-            stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-            stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-            stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-            stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-            stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
-            stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
-            stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
-            stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
-          }
-
-          return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(this,
-                                                                                    params,
-                                                                                    discretization,
-                                                                                    lm,
-                                                                                    elemat1,
-                                                                                    elemat2,
-                                                                                    elevec1,
-                                                                                    elevec2,
-                                                                                    elevec3,
-                                                                                    mat,
-                                                                                    actmat);
-      }
-      break;
       case calc_convective_stresses:
       {
         // the number of nodes
@@ -1420,6 +1424,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         ConvStresses(evelnp,
                      econv);
 
+      }
+      break;
+      case get_density:
+      {
+        // This is a very poor way to transport the density to the
+        // outside world. Is there a better one?
+        if(mat->MaterialType()== m_fluid)
+          params.set("density", actmat->m.fluid->density);
+        else if(mat->MaterialType()== m_carreauyasuda)
+          params.set("density", actmat->m.carreauyasuda->density);
+        else if(mat->MaterialType()== m_modpowerlaw)
+          params.set("density", actmat->m.modpowerlaw->density);
+        else
+          dserror("no fluid material found");
       }
       break;
       default:
@@ -1656,6 +1674,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 
   return;
 }
+
 /*---------------------------------------------------------------------*
  | Calculate spatial mean values for channel flow (cartesian mesh)
  |                                                           gammi 07/07
@@ -1786,7 +1805,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
      ||
      distype == DRT::Element::hex20)
   {
-  // get node coordinates of element
+    // get node coordinates of element
     Epetra_SerialDenseMatrix xyze(3,iel);
     DRT::Node** nodes = Nodes();
     for(int inode=0;inode<iel;inode++)

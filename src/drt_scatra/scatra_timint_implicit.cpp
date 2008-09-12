@@ -51,6 +51,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   output_ (output),
   time_(0.0),
   step_(0),
+  scaltype_ (params_->get<string>("type of scalar")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
   timealgo_ (params_->get<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo")),
@@ -61,7 +62,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtp_      (params_->get<double>("time step size")),
   theta_    (params_->get<double>("theta")),
   cdvel_    (params_->get<int>("velocity field")),
-  fssgd_    (params_->get<string>("fs subgrid diffusivity","No"))
+  fssgd_    (params_->get<string>("fs subgrid diffusivity"))
 {
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -108,11 +109,23 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_        = LINALG::CreateVector(*dofrowmap,true);
   phin_         = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // state vector for solution at time n-1
   if (timealgo_==INPUTPARAMS::timeint_bdf2)
   {phinm_      = LINALG::CreateVector(*dofrowmap,true);}
 
+  // density at time n+1
+  densnp_        = LINALG::CreateVector(*dofrowmap,true);
+
+  if (scaltype_ == "Temperature")
+  {
+    // density at times n and n-1
+    densn_        = LINALG::CreateVector(*dofrowmap,true);
+    densnm_       = LINALG::CreateVector(*dofrowmap,true);
+  }
+  else
+    // specific initial setting for non-temperature case
+    densnp_->PutScalar(1.0);
 
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta)
@@ -281,11 +294,11 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 {
   // time measurement: prepare time step
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + prepare time step");
-  
+
   // -------------------------------------------------------------------
   //              initialization
   // -------------------------------------------------------------------
-  if (step_==0) 
+  if (step_==0)
   {
     //ApplyDirichletBC(time_, phin_);
     //PrepareFirstTimeStep();
@@ -375,6 +388,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp);
+  discret_->SetState("densnp",densnp_);
   // evaluate Neumann conditions at actual time t_{n+1}
   discret_->EvaluateNeumann(p,*neumann_loads);
   discret_->ClearState();
@@ -418,6 +432,7 @@ void SCATRA::ScaTraTimIntImpl::Solve(
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
+    eleparams.set("type of scalar",scaltype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
 
@@ -431,6 +446,7 @@ void SCATRA::ScaTraTimIntImpl::Solve(
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
+    discret_->SetState("densnp",densnp_);
     discret_->SetState("hist" ,hist_ );
 
 #if 0
@@ -732,6 +748,66 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, RCP<const Epetra_Ve
 
 
 /*----------------------------------------------------------------------*
+ | set time-step-related fields for low-Mach-number flow       vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetTimeLomaFields(
+  RCP<const Epetra_Vector> noddensn,
+  RCP<const Epetra_Vector> noddensnm)
+{
+  // set dof-based vectors for density
+  densn_->Update(1.0,*noddensn,0.0);
+  densnm_->Update(1.0,*noddensnm,0.0);
+
+  return;
+
+} // ScaTraTimIntImpl::SetTimeLomaFields
+
+
+/*----------------------------------------------------------------------*
+ | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetIterLomaFields(
+  int veltype,
+  RCP<const Epetra_Vector> extvel,
+  RCP<const Epetra_Vector> noddensnp)
+{
+  if (veltype != cdvel_)
+    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
+
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  if (extvel->MyLength()== (2* convel_->MyLength()))
+    numdim = 2;
+  else if (extvel->MyLength()== (3* convel_->MyLength()))
+    numdim = 3;
+  else
+    dserror("velocity vectors do not match in size");
+
+  // set node-based convective velocity vector weighted by density
+  if ((numdim == 3) or (numdim == 2))
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      double dens  = (*noddensnp)[lnodeid];
+      // get the processor local node
+      for(int index=0;index<numdim;++index)
+      {
+        double velocity = (*extvel)[lnodeid*numdim + index];
+        convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
+      }
+    }
+  }
+
+  // set dof-based vector for density
+  densnp_->Update(1.0,*noddensnp,0.0);
+
+  return;
+
+} // ScaTraTimIntImpl::SetIterLomaFields
+
+
+/*----------------------------------------------------------------------*
  |  set initial field for phi                                 gjb 04/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
@@ -884,6 +960,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");

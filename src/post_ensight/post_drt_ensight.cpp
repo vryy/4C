@@ -137,6 +137,19 @@ int main(
         fluidwriter.WriteFiles();
         break;
     }
+    case prb_loma:
+    {
+        string basename = problem.outname();
+
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+
+        PostField* scatrafield = problem.get_discretization(1);
+        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+        break;
+    }
     case prb_elch:
     {
         string basename = problem.outname();

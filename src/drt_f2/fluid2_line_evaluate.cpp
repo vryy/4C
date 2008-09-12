@@ -266,40 +266,6 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
   const double thsl = params.get("thsl",0.0);
 
-  // we need the material here to denormalise the body force making sure that 
-  // we can cope with physical parameters (force per volume) in the input file
-  // check here, if we really have a fluid !!
-  // get density
-  double invdensity=0.0;
-  // get material of volume element this surface belongs to
-  RCP<MAT::Material> mat = parent_->Material();
-
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
-          dserror("Material law is not a fluid");
-
-  MATERIAL* actmat = NULL;
-
-  // we shall need the inverse of rho
-  if(mat->MaterialType()== m_fluid)
-  {
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.fluid->density;
-  }
-  else if(mat->MaterialType()== m_carreauyasuda)
-  {
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.carreauyasuda->density;
-  }
-  else if(mat->MaterialType()== m_modpowerlaw)
-  {
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.modpowerlaw->density;
-  }
-  else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
-
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -476,7 +442,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 	}
 	
 	elevec1[node*numdf+dim]+=
-          funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functionfac*invdensity;
+          funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functionfac;
       }
     }
   } //end of loop over integrationen points
@@ -715,7 +681,6 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
 
   MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
-  const double density  = actmat->m.fluid->density;
   // isotropic and isothermal surface tension coefficient
   const double SFgamma = actmat->m.fluid->gamma;
 
@@ -778,10 +743,9 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
     const double dr = f2_substitution(xye,deriv,iel);
 
     // Values are multiplied by the product from inf. area element,
-    // the gauss weight, the constant belonging to the time integration
+    // the gauss weight and the constant belonging to the time integration
     // algorithm (theta*dt for one step theta, 2/3 for bdf with dt const.)
-    // and the inverse of the fluid's density
-    const double fac = dr * intpoints.qwgt[gpid] * thsl * (1.0/density);
+    const double fac = dr * intpoints.qwgt[gpid] * thsl;
 
     //------ calculate surface tension force
     // Determinant of the metric-tensor. metric-tensor for surface element (a line) is 1x1

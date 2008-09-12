@@ -1,5 +1,11 @@
-/*!----------------------------------------------------------------------
-\file condif2.H
+/*!
+\file condif3.H
+
+\brief A C++ wrapper for the fluid2 element
+
+This file contains the element specific service routines like
+Pack, Unpack, NumDofPerNode etc.
+
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -7,8 +13,7 @@ Maintainer: Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
 #ifndef CONDIF2_H
@@ -28,19 +33,17 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-struct _FLUID_DATA;
-
 
 namespace DRT
 {
 // forward declarations
 class Discretization;
-class Condif2Register;
 
 namespace ELEMENTS
 {
 // forward declarations
 class Condif2Line;
+class Condif2Register;
 
 /*!
 \brief A C++ wrapper for the condif2 element
@@ -81,6 +84,21 @@ public:
 
   */
   DRT::Element* Clone() const;
+
+  /// Set element material
+  /*!
+    Material numbers are read from the input file. The element stores
+    a corresponding material object. These material objects can be
+    anything from very simple (just a little calculation) to highly
+    sophisticated with history data. The material is packed and
+    unpacked along with its element.
+
+    \param matnum : material number from input file
+
+    \note reimplementation of this method, due to initialising
+          numdofpernode_, since the material is known now.
+   */
+  virtual void SetMaterial(int matnum);
 
   /*!
   \brief Get shape type of element
@@ -165,7 +183,11 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    dsassert(numdofpernode_!=-1,"NumDofPerNode is -1");
+    return numdofpernode_;
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -208,12 +230,22 @@ public:
   //! @name Evaluation
 
   /*!
-  \brief Evaluate an element
+  \brief Evaluate an element, i.e. call the implementation to evaluate condif2
+  element stiffness, mass, internal forces or evaluate errors, statistics or updates
+  etc. directly.
 
-  Evaluate condif2 element stiffness, mass, internal forces etc
+  Following implementations of the element are allowed:
+  <pre>
+    o Evaluation of condif system matrix and residual for the One-Step-Theta or BDF2
+      method
+
+    o Evaluation of condif system matrix and residual for the stationary fluid solver
+  </pre>
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in):         location vector of this element
   \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
@@ -257,9 +289,6 @@ public:
 
   //@}
 
-  //! @name Other
-
-
   //@}
 
 
@@ -273,100 +302,24 @@ private:
     calc_condif_flux
   };
 
-  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
-
+  //! Gaussrule
+  DRT::UTILS::GaussRule2D   gaussrule_;
   //! container containing all kind of condif2 thisandthat
-  DRT::Container                                  data_;
+  DRT::Container            data_;
+  //! number of dofs per node (for systems of transport equations)
+  //! (storage neccessary because we dont know the material in the post filters anymore)
+  int                       numdofpernode_;
 
   // internal calculation methods
 
-  // don't want = operator
+  //! don't want = operator
   Condif2& operator = (const Condif2& old);
 
-  // calculating system matrix
-  void condif2_sys_mat(vector<int>&              lm,
-                   vector<double>&           ehist,
-                   Epetra_SerialDenseMatrix* sys_mat,
-                   Epetra_SerialDenseMatrix* sys_mat_sd,
-                   Epetra_SerialDenseVector* residual,
-                   Epetra_SerialDenseVector& sugrvisc,
-                   struct _MATERIAL*         material,
-                   double                    time,
-                   double                    timefac,
-                   Epetra_SerialDenseVector& vel,
-                   string                    fssgd,
-                   bool                      is_stationary
-		   );
+  //! convert action string to condif3 action type
+  ActionType convertStringToActionType(const string& action) const;
 
-  // calculate Jacobian matrix and it's determinant
-  void condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
-	       const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-	       double* 		det,
-               const int 	iel
-	       );
-
-  /*!
-   * \brief get the body force from the nodes condition
-   * \return ???
-   */
-  Epetra_SerialDenseVector condif2_getbodyforce(const double time);
-
-  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
-  void condif2_gder(Epetra_SerialDenseMatrix& derxy,
-		 const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-		 double& det,
-                 const int iel
-		 );
-
-  // calculate second global derivatives w.r.t x/y/z at point r,s,t
-  void condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-				    Epetra_SerialDenseMatrix& derxy2,
-				    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-				    );
-
-  // evaluate convection-diffusion coefficient matrix
-  void condif2_calmat(Epetra_SerialDenseMatrix& estif,
-                    Epetra_SerialDenseMatrix& esd,
-                    Epetra_SerialDenseVector& eforce,
-                    vector<double>&           velint,
-                    const double&             hist,
-                    Epetra_SerialDenseVector& funct,
-                    Epetra_SerialDenseMatrix& derxy,
-                    Epetra_SerialDenseMatrix& derxy2,
-                    const double&             edeadng,
-                    const double&             tau,
-                    const double&             kart,
-                    const double&             fac,
-                    const double&             diffus,
-                    const int&                iel,
-                    string                    fssgd,
-                    double                    timefac);
-		
-  // evaluate convection-diffusion coefficient matrix for stationary problems
-  void condif2_calmat_stat(Epetra_SerialDenseMatrix& estif,
-                         Epetra_SerialDenseMatrix& esd,
-                         Epetra_SerialDenseVector& eforce,
-                         vector<double>&           velint,
-                         const double&             hist,
-                         Epetra_SerialDenseVector& funct,
-                         Epetra_SerialDenseMatrix& derxy,
-                         Epetra_SerialDenseMatrix& derxy2,
-                         const double&             edeadng,
-                         const double&             tau,
-                         const double&             kart,
-                         const double&             fac,
-                         const double&             diffus,
-                         const int&                iel,
-                         string                    fssgd);
-
-  // set number of gauss points to element shape default
-  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
-
+  //! extract local nodal values from a node-rowmap-based Epetra_Multivector (2D)
+  void ExtractMyNodeBasedValues2D(Epetra_SerialDenseVector& local,const RCP<Epetra_MultiVector>& global);
 
 }; // class Condif2
 
@@ -460,7 +413,7 @@ public:
   The method performs all steps needed to init the condif2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

@@ -201,7 +201,7 @@ public:
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
-  double ResidualScaling() const { return density_/dta_/theta_; }
+  double ResidualScaling() const { return 1.0/dta_/theta_; }
   double Dt() const { return dta_; }
 
   double Time() const { return time_; }
@@ -209,6 +209,19 @@ public:
 
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+
+  /*!
+  \brief set time-step-related fields for low-Mach-number flow
+
+  */
+  void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
+                         RCP<const Epetra_Vector> noddensnm);
+
+  /*!
+  \brief set outer-iteration-related fields for low-Mach-number flow
+
+  */
+  void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp);
 
   /// introduce free surface extractor object
   /*!
@@ -288,7 +301,7 @@ protected:
   /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
 
-  /// density extracted from element material
+  /// constant density extracted from element material for incompressible flow
   double density_;
 
   //! use (or not) linearisation of reactive terms on the element
@@ -314,6 +327,9 @@ protected:
   int samstop_;
   int dumperiod_;
   //@}
+
+  /// flag for low-Mach-number solver (no: standard incompressible solver)
+  string loma_;
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
@@ -364,10 +380,21 @@ protected:
   RCP<Epetra_Vector>    accnm_;
   //@}
 
+  //! @name momentum/density time derivatives at time n and n-1
+  RCP<Epetra_Vector>    modedtn_;
+  RCP<Epetra_Vector>    modedtnm_;
+  //@}
+
   //! @name velocities and pressures at time n+1, n and n-1
   RCP<Epetra_Vector>    velnp_;
   RCP<Epetra_Vector>    veln_;
   RCP<Epetra_Vector>    velnm_;
+  //@}
+
+  //! @name momentum/density at time n+1, n and n-1
+  RCP<Epetra_Vector>    modenp_;
+  RCP<Epetra_Vector>    moden_;
+  RCP<Epetra_Vector>    modenm_;
   //@}
 
   //! @name displacemets at time n+1, n and n-1

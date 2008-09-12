@@ -137,37 +137,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
   const DiscretizationType distype = this->Shape();
 
-  double invdensity = 0.0; // inverse density of my parent element
-
-  // get material of volume element this surface belongs to
-  RefCountPtr<MAT::Material> mat = parent_->Material();
-
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
-          dserror("Material law is not a fluid");
-
-  MATERIAL* actmat = NULL;
-
-  // we shall need the inverse of rho
-  if(mat->MaterialType()== m_fluid)
-  {
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.fluid->density;
-  }
-  else if(mat->MaterialType()== m_carreauyasuda)
-  {
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.carreauyasuda->density;
-  }
-  else if(mat->MaterialType()== m_modpowerlaw)
-  {
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    invdensity = 1.0 / actmat->m.modpowerlaw->density;
-  }
-  else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
-
   // set number of nodes
   const int iel   = this->NumNode();
 
@@ -281,7 +250,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
         shape_function_2D_deriv1(deriv, e0, e1, distype);
         f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
-        const double fac = intpoints.qwgt[gpid] * drs * thsl * invdensity * normvel;
+        const double fac = intpoints.qwgt[gpid] * drs * thsl * normvel;
 
         for (int node=0;node<iel;++node)
         {
@@ -332,9 +301,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
       // the gauss weight, the timecurve factor and the constant
       // belonging to the time integration algorithm (theta*dt for
       // one step theta, 2/3 for bdf with dt const.)
-      // further our equation is normalised by the density, hence we need to
-      // normalise also our rhs contribution
-      const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * invdensity;
+      const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
 
       for (int node=0;node<iel;++node)
       {
@@ -913,37 +880,6 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
 
-  double invdensity=0.0; // inverse density of my parent element
-
-  // get material of volume element this surface belongs to
-  RefCountPtr<MAT::Material> mat = parent_->Material();
-
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
-          dserror("Material law is not a fluid");
-
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_fluid)
-  {
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.fluid->density;
-  }
-  else if(mat->MaterialType()== m_carreauyasuda)
-  {
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.carreauyasuda->density;
-  }
-  else if(mat->MaterialType()== m_modpowerlaw)
-  {
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.modpowerlaw->density;
-  }
-  else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
-
-
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector  	funct       (iel);
   LINALG::SerialDenseMatrix  	deriv       (2,iel);
@@ -1018,7 +954,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
 
-    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
+    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure ;
 
     for (int node=0;node<iel;++node)
     {

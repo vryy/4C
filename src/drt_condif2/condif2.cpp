@@ -17,6 +17,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_mat/matlist.H"
 
 using namespace DRT::UTILS;
 
@@ -27,7 +28,9 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif2::Condif2(int id, int owner) :
 DRT::Element(id,element_condif2,owner),
-data_()
+gaussrule_(intrule2D_undefined),
+data_(),
+numdofpernode_(-1)
 {
   return;
 }
@@ -38,6 +41,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif2::Condif2(const DRT::ELEMENTS::Condif2& old) :
 DRT::Element(old),
+gaussrule_(old.gaussrule_),
 data_(old.data_)
 {
   return;
@@ -52,6 +56,35 @@ DRT::Element* DRT::ELEMENTS::Condif2::Clone() const
   DRT::ELEMENTS::Condif2* newelement = new DRT::ELEMENTS::Condif2(*this);
   return newelement;
 }
+
+/*----------------------------------------------------------------------*
+ |  create material class (public)                            gjb 07/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif2::SetMaterial(int matnum)
+{
+  // the standard part:
+  //mat_ = MAT::Material::Factory(matnum);  // not allowed since mat_ is private
+  DRT::Element::SetMaterial(matnum);
+
+  // the special part:
+  // now the element knows its material, and we can use it to determine numdofpernode
+  RefCountPtr<MAT::Material> mat = Material();
+  MATERIAL* actmat = NULL;
+  if(mat->MaterialType()== m_condif)
+  {
+    numdofpernode_=1; // we only have a single scalar
+  }
+  else if (mat->MaterialType()== m_matlist) // we have a system of scalars
+  {
+    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
+    numdofpernode_=actmat->m.matlist->nummat;
+  }
+  else
+    dserror("condif material expected but got type %d", mat->MaterialType());
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -87,6 +120,11 @@ void DRT::ELEMENTS::Condif2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  // Gaussrule
+  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  // numdofpernode
+  AddtoPack(data,numdofpernode_);
+
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -106,12 +144,18 @@ void DRT::ELEMENTS::Condif2::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // data_
+  // Gaussrule
+  int gausrule_integer;
+  ExtractfromPack(position,data,gausrule_integer);
+  gaussrule_ = GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
+  // numdofpernode
+  ExtractfromPack(position,data,numdofpernode_);
+
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -177,29 +221,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif2::Surfaces()
   return surfaces;
 }
 
-
-GaussRule2D DRT::ELEMENTS::Condif2::getOptimalGaussrule(const DiscretizationType& distype)
-{
-    GaussRule2D rule = intrule2D_undefined;
-    switch (distype)
-    {
-    case quad4:
-        rule = intrule_quad_4point;
-        break;
-    case quad8: case quad9:
-        rule = intrule_quad_9point;
-        break;
-    case tri3:
-        rule = intrule_tri_3point;
-        break;
-    case tri6:
-        rule = intrule_tri_6point;
-        break;
-    default:
-        dserror("unknown number of nodes for gaussrule initialization");
-  }
-  return rule;
-}
 
 //=======================================================================
 //=======================================================================

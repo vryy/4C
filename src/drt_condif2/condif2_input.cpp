@@ -16,155 +16,123 @@ Maintainer: Volker Gravemeier
 #include "condif2.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
+using namespace DRT::UTILS;
+
 /*----------------------------------------------------------------------*
- |  read element input (public)                              gammi 04/07|
+ |  read element input (public)                                vg 08/08 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Condif2::ReadElement()
 {
-  // read element's nodes
-  int   ierr = 0;
-  int   nnode = 0;
-  int   nodes[27];
-  char  buffer[50];
-  int   ngp_[2];
+    typedef map<string, DiscretizationType> Gid2DisType;
+    Gid2DisType gid2distype;
+    gid2distype["QUAD4"]    = quad4;
+    gid2distype["QUAD8"]    = quad8;
+    gid2distype["QUAD9"]    = quad9;
+    gid2distype["TRI3"]     = tri3;
+    gid2distype["TRI6"]     = tri6;
 
-  frchk("QUAD4",&ierr);
-  if (ierr==1)
-  {
-    nnode=4;
-    frint_n("QUAD4",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
+    typedef map<DiscretizationType, int> DisType2NumNodes;
+    DisType2NumNodes distype2NumNodes;
+    distype2NumNodes[quad4]    = 4;
+    distype2NumNodes[quad8]    = 8;
+    distype2NumNodes[quad9]    = 9;
+    distype2NumNodes[tri3]     = 3;
+    distype2NumNodes[tri6]     = 6;
 
-  frchk("QUAD8",&ierr);
-  if (ierr==1)
-  {
-    nnode=8;
-    frint_n("QUAD8",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
+    // read element's nodes
+    int   ierr = 0;
+    int   nnode = 0;
+    int   nodes[9];
+    DiscretizationType distype = dis_none;
 
-  frchk("QUAD9",&ierr);
-  if (ierr==1)
-  {
-    nnode=9;
-    frint_n("QUAD9",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TRI3",&ierr);
-  if (ierr==1)
-  {
-    nnode=3;
-    frint_n("TRI3",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TRI6",&ierr); /* rearrangement??????? */
-  if (ierr==1)
-  {
-    nnode=6;
-    frint_n("TRI6",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
-
-  SetNodeIds(nnode,nodes);
-
-  // read number of material model
-  int material = 0;
-  frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading Material for CONDIF2 element failed");
-  if (material==0) dserror("No material defined for CONDIF2 element");
-  SetMaterial(material);
-
-  // read gaussian points
-
-  if (nnode==4 || nnode==8 || nnode==9)
-  {
-    frint_n("GP",ngp_,2,&ierr);
-    if (ierr!=1) dserror("Reading of CONDIF2 element failed: GP\n");
-  }
-
-  // read number of gaussian points for triangle elements */
-  if (nnode==3 || nnode==6)
-  {
-    frint("GP_TRI",&ngp_[0],&ierr);
-    if (ierr!=1) dserror("Reading of CONDIF2 element failed: GP_TRI\n");
-
-    frchar("GP_ALT",buffer,&ierr);
-    if (ierr!=1) dserror("Reading of CONDIF2 element failed: GP_ALT\n");
-    /*
-     * integration for TRI-elements is distinguished into different cases.
-     * This is necessary to get the right integration parameters from
-     * FLUID_DATA.
-     * The flag for the integration case is saved in nGP[1].
-     * For detailed informations see /fluid3/f3_intg.c.
-     */
-
-    switch(ngp_[0])
+    Gid2DisType::const_iterator iter;
+    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
     {
-      case 1:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=0;
-        else
-          dserror("Reading of CONDIF2 element failed: GP_ALT: gauss-radau not possible!\n");
-        break;
-      case 3:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=1;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=2;
-        else
-          dserror("Reading of CONDIF2 element failed: GP_ALT\n");
-        break;
-      case 4:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=3;
-        else
-          dserror("Reading of CONDIF2 element failed: gauss-radau not possible!\n");
-        break;
-      case 6:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=4;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=5;
-        else
-          dserror("Reading of CONDIF2 element failed: GP_ALT\n");
-        break;
-      case 7:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=6;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=7;
-        else
-        dserror("Reading of CONDIF2 element failed: GP_ALT\n");
-      case 9:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=8;
-        else
-          dserror("Reading of CONDIF2 element failed: gauss-radau not possible!\n");
-        break;
-      case 12:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=9;
-        else
-          dserror("Reading of CONDIF2 element failed: gauss-radau not possible!\n");
-        break;
-      case 13:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=10;
-        else
-          dserror("Reading of CONDIF2 element failed: gauss-radau not possible!\n");
-        break;
-        
-      default:
-        dserror("Reading of CONDIF2 element failed: integration points\n");
+        const string eletext = iter->first;
+        frchk(eletext.c_str(), &ierr);
+        if (ierr == 1)
+        {
+            distype = gid2distype[eletext];
+            nnode = distype2NumNodes[distype];
+            frint_n(eletext.c_str(), nodes, nnode, &ierr);
+            dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
+            break;
+        }
     }
-  } // end reading gaussian points for tetrahedral elements
+
+    // reduce node numbers by one
+    for (int i=0; i<nnode; ++i) nodes[i]--;
+
+    SetNodeIds(nnode,nodes);
+
+    // read number of material model
+    int material = 0;
+    frint("MAT",&material,&ierr);
+    dsassert(ierr==1, "Reading of material for CONDIF2 element failed\n");
+    dsassert(material!=0, "No material defined for CONDIF2 element\n");
+    SetMaterial(material);
+
+    // read gaussian points and set gaussrule
+    char  buffer[50];
+    int ngp[2];
+    switch (distype)
+    {
+    case quad4: case quad8: case quad9:
+    {
+        frint_n("GP",ngp,2,&ierr);
+        dsassert(ierr==1, "Reading of CONDIF2 element failed: GP\n");
+        switch (ngp[0])
+        {
+        case 1:
+            gaussrule_ = intrule_quad_1point;
+            break;
+        case 2:
+            gaussrule_ = intrule_quad_4point;
+            break;
+        case 3:
+            gaussrule_ = intrule_quad_9point;
+            break;
+        default:
+            dserror("Reading of CONDIF2 element failed: Gaussrule for quad not supported!\n");
+        }
+        break;
+    }
+    case tri3: case tri6:
+    {
+        frint("GP_TRI",&ngp[0],&ierr);
+        dsassert(ierr==1, "Reading of CONDIF2 element failed: GP_TRI\n");
+
+        frchar("GP_ALT",buffer,&ierr);
+        dsassert(ierr==1, "Reading of CONDIF2 element failed: GP_ALT\n");
+
+        switch(ngp[0])
+        {
+        case 1:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tri_1point;
+            else
+                dserror("Reading of CONDIF2 element failed: GP_ALT: gauss-radau not possible!\n");
+            break;
+        case 3:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tri_3point;
+            else
+                dserror("Reading of CONDIF2 element failed: GP_ALT\n");
+            break;
+        case 6:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tri_6point;
+            else
+                dserror("Reading of CONDIF2 element failed: GP_ALT: gauss-radau not possible!\n");
+            break;
+        default:
+            dserror("Reading of CONDIF2 element failed: Gaussrule for triangle not supported!\n");
+        }
+        break;
+    } // end reading gaussian points for triangular elements
+    default:
+        dserror("Reading of CONDIF2 element failed: integration points\n");
+    } // end switch distype
 
 
   return true;

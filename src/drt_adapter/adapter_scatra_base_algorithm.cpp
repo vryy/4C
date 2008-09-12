@@ -99,8 +99,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
 
+  // -----------------------------------------------------type of scalar
+  scatratimeparams->set<string>("type of scalar",scatradyn.get<string>("SCALARTYPE"));
+
   // --------------------type of time-integration (or stationary) scheme
-  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme = 
+  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme =
     Teuchos::getIntegralValue<INPUTPARAMS::ScaTraTimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
   scatratimeparams->set<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo",timintscheme);
 

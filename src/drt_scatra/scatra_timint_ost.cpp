@@ -56,12 +56,23 @@ SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
+{
+  if (scaltype_ == "Temperature")
   {
-    // One-step-Theta:   hist_ = phin_ + dt*(1-Theta)*phidtn_
-
-    hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
-    return;
+    // Temperature equation:
+    // hist_ = rhon_*phin_ + dt*(1-Theta)*rho_phidtn_
+    hist_->Multiply(1.0, *phin_, *densn_, 0.0);
+    hist_->Update(dta_*(1.0-theta_), *phidtn_, 1.0);
   }
+  else
+  {
+    // Non-temperature equation:
+    // hist_ = phin_ + dt*(1-Theta)*phidtn_
+    hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
+  }
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -74,23 +85,43 @@ void SCATRA::TimIntOneStepTheta::Update()
   if (step_ == 1)
   {
     // do just a linear interpolation within the first timestep
-    phidtn_->Update( 1.0/dta_,*phinp_,1.0);
-    phidtn_->Update(-1.0/dta_,*phin_ ,1.0);
+    if (scaltype_ == "Temperature")
+    {
+      // Temperature equation: 
+      // rho_phidt(n) = rho(n)*phi(n)-rho(n-1)*phi(n-1) / dt(n)
+      phidtn_->Multiply( 1.0/dta_, *phinp_, *densnp_, 0.0);
+      phidtn_->Multiply(-1.0/dta_, *phin_,  *densn_,  1.0);
+    }
+    else
+    {
+      // Non-temperature equation:
+      // phidt(n) = phi(n)-phi(n-1) / dt(n)
+      phidtn_->Update( 1.0/dta_,*phinp_,1.0);
+      phidtn_->Update(-1.0/dta_,*phin_ ,1.0);
+    }
   }
   else
   {
-    /*
-    One-step-Theta:
+    double fact1 = 1.0/(theta_*dta_);
+    double fact2 = (-1.0/theta_) +1.0;
 
-      phidt(n+1) = (phi(n+1)-phi(n)) / (Theta * dt(n)) - (1/Theta -1) * phidt(n)
-
-   */
-
-  double fact1 = 1.0/(theta_*dta_);
-  double fact2 = (-1.0/theta_) +1.0;
-  phidtn_->Update(fact1,*phinp_,-fact1,*phin_,fact2);
-
+    if (scaltype_ == "Temperature")
+    {
+      // Temperature equation: 
+      // rho_phidt(n) = (rho(n)*phi(n)-rho(n-1)*phi(n-1)) / (Theta*dt(n))
+      // - (1/Theta -1)*rho_phidt(n-1)
+      phidtn_->Update( fact2,*phidtn_ ,0.0);
+      phidtn_->Multiply( fact1, *phinp_, *densnp_, 1.0);
+      phidtn_->Multiply(-fact1, *phin_,  *densn_,  1.0);
+    }
+    else
+    {
+      // Non-temperature equation:
+      // phidt(n) = (phi(n)-phi(n-1)) / (Theta*dt(n)) - (1/Theta -1)*phidt(n-1)
+      phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+    }
   }
+
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 

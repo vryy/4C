@@ -72,7 +72,7 @@ namespace ADAPTER
 
     /// time step number
     int Step() const { return step_;}
-    
+
     /// total number of time steps
     int NStep() const { return nstep_;}
 
@@ -84,13 +84,19 @@ namespace ADAPTER
 
     /// tests if there are more time steps to do
     bool NotFinished() { return ((step_ < nstep_) and (time_ <= maxtime_)); }
-    
+
     /// get current velocity from fluid solver
     void GetCurrentFluidVelocity(){ velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp()); }
-    
+
     /// get current velocity from fluid solver
     RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_; }
-    
+
+    /// get current scalar from scalar transport solver
+    void GetCurrentScalar(){ scalarnp_=ScaTraField().Phinp(); }
+
+    /// get current scalar from scalar transport solver
+    RCP<const Epetra_Vector> Scalar(){ return scalarnp_; }
+
     /// increment time and step value
     void IncrementTimeAndStep()
     {
@@ -98,13 +104,19 @@ namespace ADAPTER
       time_ += dt_;
     }
 
+    /// tests if this is not the first time step
+    bool NotFirstTimeStep() { return (step_ > 1); }
+
   private:
 
     /// communication (mainly for screen output)
     Epetra_Comm& comm_;
 
-    /// actual velocity field at time n+1
+    /// current velocity field at time n+1
     RCP<const Epetra_Vector>    velocitynp_;
+
+    /// current scalar field at time n+1
+    RCP<const Epetra_Vector>    scalarnp_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

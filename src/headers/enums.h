@@ -32,6 +32,7 @@ typedef enum _PROBLEM_TYP
                        prb_scatra,       /*  scalar transport problem (e.g. convection-diffusion) */
                        prb_pfsi,         /*  projection fsi */
                        prb_struct_multi, /*  multi-scale problem (structure) */
+                       prb_loma,         /*  low-Mach-number flow problem */
                        prb_elch,         /*  electrochemical problem */
                        prb_combust       /*  combustion problem */
 } PROBLEM_TYP;
@@ -39,7 +40,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","scatra","pfsi","struct_multi","elch","combustion",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

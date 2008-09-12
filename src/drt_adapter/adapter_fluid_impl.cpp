@@ -506,4 +506,20 @@ void ADAPTER::FluidImpl::SetInitialFlowField(int whichinitialfield,int startfunc
    return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,RCP<const Epetra_Vector> noddensnm)
+{
+   fluid_.SetTimeLomaFields(noddensn,noddensnm);
+   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+{
+   fluid_.SetIterLomaFields(noddensnp);
+   return;
+}
+
 #endif  // #ifdef CCADISCRET

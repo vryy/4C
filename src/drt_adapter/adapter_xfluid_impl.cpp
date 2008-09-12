@@ -676,4 +676,20 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,RCP<const Epetra_Vector> noddensnm)
+{
+   dserror("not implemented!");
+   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+{
+   dserror("not implemented!");
+   return;
+}
+
 #endif  // #ifdef CCADISCRET

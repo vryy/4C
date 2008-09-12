@@ -91,6 +91,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.mattyp = m_condif;
       localmat.m.condif = new _CONDIF();
       frdouble("DIFFUSIVITY",&(localmat.m.condif->diffusivity),&ierr);
+      if (localmat.m.condif->diffusivity <= 0.0) dserror("MAT_condif: diffusivity is not positive: %f",localmat.m.condif->diffusivity);
+      frdouble("SHC",&(localmat.m.condif->shc)  ,&ierr);
    }
    frchk("MAT_ion",&ierr);
    if (ierr==1)

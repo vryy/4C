@@ -111,17 +111,17 @@ namespace ELEMENTS
       Why doesn't someone who actually knows what this function does
       write a usefull comment?
      */
-    virtual int Evaluate(Fluid3*                                  ele,
-                         ParameterList& params,
-                         DRT::Discretization&      discretization,
-                         vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
+    virtual int Evaluate(Fluid3*                    ele,
+                         ParameterList&             params,
+                         DRT::Discretization&       discretization,
+                         vector<int>&               lm,
+                         Epetra_SerialDenseMatrix&  elemat1_epetra,
+                         Epetra_SerialDenseMatrix&  elemat2_epetra,
+                         Epetra_SerialDenseVector&  elevec1_epetra,
+                         Epetra_SerialDenseVector&  elevec2_epetra,
+                         Epetra_SerialDenseVector&  elevec3_epetra,
                          RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat);
+                         _MATERIAL*                 actmat);
 
     /// calculating element matrix and rhs
     /*!
@@ -131,11 +131,13 @@ namespace ELEMENTS
 
       \param ele              (i) the element those matrix is calculated
       \param evelnp           (i) nodal velocities at n+1
-      \param csevelnp         (i) ???????????????????????
+      \param csevelnp         (i) coarse-scale nodal velocities at n+1
       \param fsevelnp         (i) fine-scale nodal velocities at n+1
-      \param cseconvnp        (i) ???????????????????????
+      \param cseconvnp        (i) coarse-scale nodal convective stresses at n+1
       \param eprenp           (i) nodal pressure
-      \param evhist           (i) rhs from beginning of time step
+      \param edensnp          (i) nodal density
+      \param emhist           (i) time rhs for momentum equation
+      \param echist           (i) time rhs for continuity equation
       \param edispnp          (i) nodal displacements (on moving mesh)
       \param egridv           (i) grid velocity (on moving mesh)
       \param estif            (o) element matrix to calculate
@@ -146,9 +148,9 @@ namespace ELEMENTS
       \param dt               (i) timestep
       \param timefac          (i) time discretization factor
       \param newton           (i) boolean flag for linearisation
-      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
+      \param loma             (i) boolean flag for potential low-Mach-number solver
       \param higher_order_ele (i) keep or drop second derivatives
-      \param fssgv            (i) ?????????????????????????
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
       \param pspg             (i) boolean flag for stabilisation
       \param supg             (i) boolean flag for stabilisation
       \param vstab            (i) boolean flag for stabilisation
@@ -167,22 +169,25 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        csevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        fsevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        cseconvnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&        eprenp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evhist_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        edispnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        egridv_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&              estif_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&              emesh_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,     1>&              eforce_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            evelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            csevelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            fsevelnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            cseconvnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            emhist_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            echist_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            edispnp_epetra,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            egridv_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&                  estif_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&                  emesh_epetra,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,     1>&                  eforce_epetra,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   dt,
                 double                                   timefac,
                 bool                                     newton,
+                bool                                     loma,
                 const bool                               higher_order_ele,
                 const enum Fluid3::StabilisationAction   fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
@@ -231,29 +236,28 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
       \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
                                   approach (Cs*h*h)
-      \param viscturb         (o) kinematic viscosity turbulence
       \param visceff          (i) nu+nu_turbulent
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
-      \param fssgv            (i) ?????????????????????????
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
 
     */
-    void Caltau(
-      Fluid3* ele,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        evelnp,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&        fsevelnp,
-      const DRT::Element::DiscretizationType  distype,
-      const enum Fluid3::TauType              whichtau,
-      struct _MATERIAL*                       material,
-      double&                                 visc,
-      const double                            timefac,
-      const double                            dt,
-      const enum Fluid3::TurbModelAction      turb_mod_action,
-      double&                                 Cs,
-      double&                                 Cs_delta_sq,
-      double&                                 visceff,
-      double&                                 l_tau,
-      const enum Fluid3::StabilisationAction  fssgv);
+    void Caltau(Fluid3*                                 ele,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           fsevelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
+                const DRT::Element::DiscretizationType  distype,
+                const enum Fluid3::TauType              whichtau,
+                struct _MATERIAL*                       material,
+                double&                                 visc,
+                const double                            timefac,
+                const double                            dt,
+                const enum Fluid3::TurbModelAction      turb_mod_action,
+                double&                                 Cs,
+                double&                                 Cs_delta_sq,
+                double&                                 visceff,
+                double&                                 l_tau,
+                const enum Fluid3::StabilisationAction  fssgv);
 
 
     /*!
@@ -262,14 +266,14 @@ namespace ELEMENTS
        \param material  (i) material
        \param visc      (o) kinematic material viscosity
      */
-    void CalVisc(
-      const struct _MATERIAL*   material,
-      double&                   visc);
+    void CalVisc(const struct _MATERIAL*   material,
+                 double&                   visc);
 
     /*!
      * \brief calculate the body force from the nodes condition
      */
-    void BodyForce(Fluid3* ele, const double time, struct _MATERIAL* material);
+    void BodyForce(Fluid3*      ele,
+                   const double time);
 
     /*!
      * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
@@ -277,7 +281,7 @@ namespace ELEMENTS
     void gder2(Fluid3* ele);
 
   private:
-    //! ????
+    //! artificial viscosity
     double vart_;
     //! node coordinates
     LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
@@ -285,6 +289,10 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
     //! array for shape functions
     LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
+    //! array for density-weighted shape functions
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_;
+    //! array for shape functions divided by density
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
@@ -295,29 +303,35 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
-    //! ???????
+    //! global momentum derivatives in gausspoint w.r.t x,y,z
+    LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;
+    //! coarse-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> csvderxy_;
-    //! ???????
+    //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> fsvderxy_;
     //! global second velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
     //! global derivatives of shape functions w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
+    //! density-weighted global derivatives of shape functions w.r.t x,y,z
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> densderxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
     //! bodyforce in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
-    //! vector containing all values from previous timelevel n
-    LINALG::FixedSizeSerialDenseMatrix<3,1> histvec_;
+    //! vector containing all values from previous timelevel n for momentum equation
+    LINALG::FixedSizeSerialDenseMatrix<3,1> histmom_;
+    //! value from previous timelevel n for continuity equation
+    double histcon_;
     //! direction of flow (normed velocity vector)
     LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
     //! velocity vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> velint_;
-    //! ??????????
+    //! coarse-scale velocity vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> csvelint_;
-    //! ??????????
+    //! fine-scale velocity vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> fsvelint_;
-    //! ??????????
+    //! fine-scale convective-stress vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> csconvint_;
     //! ale convective velocity in gausspoint, c=u-u_G
     LINALG::FixedSizeSerialDenseMatrix<3,1> convvelint_;
@@ -331,8 +345,14 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_;
     //! linearisation of convect, convective part
     LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_;
-    //! total right hand side terms at int.-point
-    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint_;
+    //! momentum divergence
+    double mdiv_;
+    //! velocity divergence
+    double vdiv_;
+    //! total right hand side terms at int.-point for momentum equation
+    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsmom_;
+    //! total right hand side term at int.-point for continuity equation
+    double rhscon_;
     //! (u_old*nabla)u_old
     LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old_;
     //! convective part of scale-similarity term

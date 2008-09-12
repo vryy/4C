@@ -688,6 +688,8 @@ OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
                 src/drt_f2/fluid2_line_evaluate.o \
                 src/drt_condif2/condif2_evaluate.o \
+                src/drt_condif2/condif2_impl.o \
+                src/drt_condif2/condif2_utils.o \
                 src/drt_condif2/condif2_input.o \
                 src/drt_condif2/condif2_line_evaluate.o \
                 src/drt_f2/fluid2.o \
@@ -695,6 +697,8 @@ OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_line.o \
                 src/drt_condif2/condif2.o \
                 src/drt_condif2/condif2_line.o\
+                src/drt_f2/fluid2_impl.o \
+                src/drt_f2/fluid2_stationary.o \
                 src/drt_f2/fluid2_genalpha_resVMM.o
 OBJS_DRT_F2 = 
 #------------------------------------------------- fluid2
@@ -1234,9 +1238,12 @@ OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
                   src/drt_timada/ta_zienkiewiczxie.o
 #               inverse analysis
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
+#               low-Mach-number flow
+OBJS_DRT_LOMA = src/drt_loma/loma_dyn.o \
+                src/drt_loma/loma_algorithm.o
 #               electrochemistry
 OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
-                src/drt_elch/elch_algorithm.o 
+                src/drt_elch/elch_algorithm.o
 #------------------------------------------------ combustion (drt version)
 OBJS_DRT_COMBUST =  src/drt_combust/combust_dyn.o \
                     src/drt_combust/combust_algorithm.o \

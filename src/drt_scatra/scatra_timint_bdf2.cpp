@@ -61,19 +61,32 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   /*
   BDF2: for variable time step:
 
-                 hist_ = (1+omega)^2/(1+ 2*omega) * phin_ 
+                 hist_ = (1+omega)^2/(1+ 2*omega) * phin_
                            - omega^2/(1+ 2*omega) * phinm_
 
   BDF2: for constant time step:
 
                  hist_ = 4/3 phin_ - 1/3 phinm_
+
+  For a temperature equation, rhon_*phin_ and rhonm_*phinm_ are
+  used instead of phin_ and phinm_, respectively.
   */
 
   double omega = dta_/dtp_;
   double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
   double fact2 = -(omega*omega)/(1+ (2.0*omega));
 
-  hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+  if (scaltype_ == "Temperature")
+  {
+    // Temperature equation:
+    hist_->Multiply(fact1, *phin_, *densn_, 0.0);
+    hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
+  }
+  else
+  {
+    // Non-temperature equation:
+    hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+  }
 
   return;
 }

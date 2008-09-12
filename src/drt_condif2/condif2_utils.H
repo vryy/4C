@@ -1,20 +1,20 @@
 /*!
-\file condif3_utils.H
+\file condif2_utils.H
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef CONDIF3_UTILS_H
-#define CONDIF3_UTILS_H
+#ifndef CONDIF2_UTILS_H
+#define CONDIF2_UTILS_H
 
 
-#include "condif3.H"
+#include "condif2.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -22,14 +22,14 @@ Maintainer: Georg Bauer
 namespace SCATRA
 {
   //! check for higher order derivatives for shape functions
-  bool is3DHigherOrderElement
+  bool is2DHigherOrderElement
   (
    const DRT::Element::DiscretizationType& distype ///< distype of the element
   );
 
 
   //! get optimal gaussrule for discretization type
-  DRT::UTILS::GaussRule3D get3DOptimalGaussrule
+  DRT::UTILS::GaussRule2D get2DOptimalGaussrule
   (
    const DRT::Element::DiscretizationType& distype ///< distype of the element
   );

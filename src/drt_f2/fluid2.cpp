@@ -17,7 +17,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 
@@ -140,7 +139,7 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -243,29 +242,6 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Fluid2::Surfaces()
   return surfaces;
 }
 
-
-GaussRule2D DRT::ELEMENTS::Fluid2::getOptimalGaussrule(const DiscretizationType& distype)
-{
-    GaussRule2D rule = intrule2D_undefined;
-    switch (distype)
-    {
-    case quad4: case nurbs4:
-        rule = intrule_quad_4point;
-        break;
-    case quad8: case quad9: case nurbs9:
-        rule = intrule_quad_9point;
-        break;
-    case tri3:
-        rule = intrule_tri_3point;
-        break;
-    case tri6:
-        rule = intrule_tri_6point;
-        break;
-    default:
-        dserror("unknown number of nodes for gaussrule initialization");
-  }
-  return rule;
-}
 
 //=======================================================================
 //=======================================================================

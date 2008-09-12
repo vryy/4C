@@ -181,26 +181,6 @@ bool DRT::ELEMENTS::Condif3::ReadElement()
         dserror("Reading of CONDIF3 element failed: integration points\n");
     } // end switch distype
 
-    // read net algo
-    frchar("NA",buffer,&ierr);
-    if (ierr==1)
-    {
-        if (strncmp(buffer,"ale",3)==0 ||
-            strncmp(buffer,"ALE",3)==0 ||
-            strncmp(buffer,"Ale",3)==0 )
-        {
-            is_ale_ = true;
-        }
-        else if (strncmp(buffer,"euler",5)==0 ||
-                 strncmp(buffer,"EULER",5)==0 ||
-                 strncmp(buffer,"Euler",5)==0 )
-            is_ale_ = false;
-        else
-            dserror("Reading of CONDIF3 element failed: Euler/Ale\n");
-    }
-    else
-        dserror("Reading of CONDIF3 element net algorithm failed: NA\n");
-
   return true;
 
 } // Condif3::ReadElement()

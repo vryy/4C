@@ -1,0 +1,291 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid2_impl.H
+
+\brief Internal implementation of Fluid2 element (one-step-theta/BDF2)
+
+<pre>
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+#ifdef D_FLUID2
+#ifdef CCADISCRET
+
+#ifndef FLUID2_IMPL_H
+#define FLUID2_IMPL_H
+
+#include "fluid2.H"
+#include <blitz/array.h>
+
+namespace DRT
+{
+namespace ELEMENTS
+{
+
+  /// Internal Fluid2 implementation
+  /*!
+    This internal class keeps all the working arrays needed to
+    calculate the Fluid2 element. Additionally the method Sysmat()
+    provides a clean and fast element implementation.
+
+    <h3>Purpose</h3>
+
+    The idea is to separate the element maintenance (class Fluid2)
+    from the mathematical contents (this class). Of course there are
+    different implementations of the Fluid2 element, this is just one
+    such implementation.
+
+    The Fluid2 will allocate exactly one object of this class for all
+    fluid elements with the same number of nodes in the mesh. This
+    allows us to use exactly matching working arrays (and keep them
+    around.)
+
+    The code is meant to be as clean as possible. This is the only way
+    to keep it fast. The number of working arrays has to be reduced to
+    a minimum so that the element fits into the cache. (There might be
+    room for improvements.)
+
+    For matrix calculation the blitz library is used.
+
+    \author vg
+    \date 08/08
+  */
+  class Fluid2Impl
+  {
+  public:
+    /// Constructor with number of nodes
+    explicit Fluid2Impl(int iel);
+
+    /// calculating element matrix and rhs
+    /*!
+      Calculate matrix and rhs. Here the whole thing is hidden.
+
+      \note Stationary calculations are not (yet) supported.
+
+      \param ele              (i) the element those matrix is calculated
+      \param evelnp           (i) nodal velocities at n+1
+      \param fsevelnp         (i) fine-scale nodal velocities at n+1
+      \param eprenp           (i) nodal pressure
+      \param edensnp          (i) nodal density
+      \param emhist           (i) time rhs for momentum equation
+      \param echist           (i) time rhs for continuity equation
+      \param edispnp          (i) nodal displacements (on moving mesh)
+      \param egridv           (i) grid velocity (on moving mesh)
+      \param estif            (o) element matrix to calculate
+      \param emesh            (o) linearization wrt mesh motion
+      \param eforce           (o) element rhs to calculate
+      \param material         (i) fluid material
+      \param time             (i) current simulation time
+      \param dt               (i) timestep
+      \param timefac          (i) time discretization factor
+      \param newton           (i) boolean flag for linearisation
+      \param loma             (i) boolean flag for potential low-Mach-number solver
+      \param higher_order_ele (i) keep or drop second derivatives
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
+      \param pspg             (i) boolean flag for stabilisation
+      \param supg             (i) boolean flag for stabilisation
+      \param vstab            (i) boolean flag for stabilisation
+      \param cstab            (i) boolean flag for stabilisation
+      \param cross            (i) boolean flag for stabilisation
+      \param reynolds         (i) boolean flag for stabilisation
+      \param whichtau         (i) selecting available tau definition
+      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
+                                  dynamic Smagorinsky, Smagorinsky with van Driest
+                                  damping for channel flows)
+      \param Cs               (i) Smagorinsky model parameter
+      \param visceff          (i) nu+nu_turbulent
+
+      */
+    void Sysmat(Fluid2*                                  ele,
+                const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,2>&            fsevelnp,
+                const blitz::Array<double,1>&            eprenp,
+                const blitz::Array<double,1>&            edensnp,
+                const blitz::Array<double,2>&            emhist,
+                const blitz::Array<double,1>&            echist,
+                const blitz::Array<double,2>&            edispnp,
+                const blitz::Array<double,2>&            egridv,
+                blitz::Array<double,2>&                  estif,
+                blitz::Array<double,2>&                  emesh,
+                blitz::Array<double,1>&                  eforce,
+                struct _MATERIAL*                        material,
+                double                                   time,
+                double                                   dt,
+                double                                   timefac,
+                bool                                     newton,
+                bool                                     loma,
+                const bool                               higher_order_ele,
+                const enum Fluid2::StabilisationAction   fssgv,
+                const enum Fluid2::StabilisationAction   pspg,
+                const enum Fluid2::StabilisationAction   supg,
+                const enum Fluid2::StabilisationAction   vstab,
+                const enum Fluid2::StabilisationAction   cstab,
+                const enum Fluid2::StabilisationAction   cross,
+                const enum Fluid2::StabilisationAction   reynolds,
+                const enum Fluid2::TauType               whichtau,
+                const enum Fluid2::TurbModelAction       turb_mod_action,
+                double&                                  Cs,
+                double&                                  visceff);
+
+
+    /// Internal implementation class for specific fluid element
+    static Fluid2Impl* Impl(DRT::ELEMENTS::Fluid2* f2);
+
+  private:
+
+    /*!
+      \brief calculate stabilization parameter
+
+      o Standard:
+           tauMp: Barrenechea, Valentin
+           tauMu: Franca, Valentin
+           tauC : Wall
+
+      o Bazilevs: bazilevs
+           tauM : Bazilevs, Whiting
+           tauC : Bazilevs
+
+      o Codina: codina
+           tauMp: Barrenechea, Valentin
+           tauMu: Franca, Valentin
+           tauC : Codina
+
+      \param evelnp           (i) nodal velocities at n+1
+      \param fsevelnp         (i) fine-scale nodal velocities at n+1
+      \param distype          (i) hex8, tet4 etc.
+      \param whichtau         (i) selecting available tau definition
+      \param visc             (i) material viscosity
+      \param timefac          (i) time discretization factor
+      \param dt               (i) timestep
+      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
+                                  dynamic Smagorinsky, Smagorinsky with van Driest
+                                  damping for channel flows)
+      \param Cs               (i) Smagorinsky model parameter
+      \param visceff          (i) nu+nu_turbulent
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
+
+    */
+    void Caltau(Fluid2*                                 ele,
+                const blitz::Array<double,2>&           evelnp,
+                const blitz::Array<double,2>&           fsevelnp,
+                const blitz::Array<double,1>&           edensnp,
+                const DRT::Element::DiscretizationType  distype,
+                const enum Fluid2::TauType              whichtau,
+                struct _MATERIAL*                       material,
+                double&                                 visc,
+                const double                            timefac,
+                const double                            dt,
+                const enum Fluid2::TurbModelAction      turb_mod_action,
+                double&                                 Cs,
+                double&                                 visceff,
+                const enum Fluid2::StabilisationAction  fssgv);
+
+
+    /*!
+       \brief calculates viscosity at a given point (element center or Gaussian point)
+
+       \param material  (i) material
+       \param visc      (o) kinematic material viscosity
+     */
+    void CalVisc(const struct _MATERIAL*   material,
+                 double&                   visc);
+
+    /*!
+     * \brief calculate the body force from the nodes condition
+     */
+    void BodyForce(Fluid2*      ele,
+                   const double time);
+
+  private:
+    //! number of nodes
+    int iel_;
+    //! artificial viscosity
+    double vart_;
+    //! node coordinates
+    blitz::Array<double,2> xyze_;
+    //! dead load in nodes
+    blitz::Array<double,2> edeadng_;
+    //! array for shape functions
+    blitz::Array<double,1> funct_;
+    //! array for density-weighted shape functions
+    blitz::Array<double,1> densfunct_;
+    //! array for shape functions divided by density
+    blitz::Array<double,1> functdens_;
+    //! array for shape function derivatives w.r.t r,s,t
+    blitz::Array<double,2> deriv_;
+    //! array for second derivatives of shape function w.r.t r,s,t
+    blitz::Array<double,2> deriv2_;
+    //! transposed jacobian "dx/ds"
+    blitz::Array<double,2> xjm_;
+    //! inverse of transposed jacobian "ds/dx"
+    blitz::Array<double,2> xji_;
+    //! global velocity derivatives in gausspoint w.r.t x,y,z
+    blitz::Array<double,2> vderxy_;
+    //! global momentum derivatives in gausspoint w.r.t x,y,z
+    blitz::Array<double,2> mderxy_;
+    //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
+    blitz::Array<double,2> fsvderxy_;
+    //! global second velocity derivatives in gausspoint w.r.t x,y,z
+    blitz::Array<double,2> vderxy2_;
+    //! global derivatives of shape functions w.r.t x,y,z
+    blitz::Array<double,2> derxy_;
+    //! density-weighted global derivatives of shape functions w.r.t x,y,z
+    blitz::Array<double,2> densderxy_;
+    //! global second derivatives of shape functions w.r.t x,y,z
+    blitz::Array<double,2> derxy2_;
+    //! bodyforce in gausspoint
+    blitz::Array<double,1> bodyforce_;
+    //! vector containing all values from previous timelevel n for momentum equation
+    blitz::Array<double,1> histmom_;
+    //! value from previous timelevel n for continuity equation
+    double histcon_;
+    //! direction of flow (normed velocity vector, currently not used)
+    //blitz::Array<double,1> velino_;
+    //! velocity vector in gausspoint
+    blitz::Array<double,1> velint_;
+    //! fine-scale velocity vector in gausspoint
+    blitz::Array<double,1> fsvelint_;
+    //! ale convective velocity in gausspoint, c=u-u_G
+    blitz::Array<double,1> convvelint_;
+    //! pressure gradient in gausspoint
+    blitz::Array<double,1> gradp_;
+    //! the stabilisation parameters
+    blitz::Array<double,1> tau_;
+    //! viscous term including 2nd derivatives
+    blitz::Array<double,3> viscs2_;
+    //! linearisation of convect, convective part
+    blitz::Array<double,1> conv_c_;
+    //! momentum divergence
+    double mdiv_;
+    //! velocity divergence
+    double vdiv_;
+    //! total right hand side terms at int.-point for momentum equation
+    blitz::Array<double,1> rhsmom_;
+    //! total right hand side term at int.-point for continuity equation
+    double rhscon_;
+    //! (u_old*nabla)u_old
+    blitz::Array<double,1> conv_old_;
+    //! div epsilon(u_old)
+    blitz::Array<double,1> visc_old_;
+    //! the old residual
+    blitz::Array<double,1> res_old_;
+    //! convection by subgrid-scale velocity
+    blitz::Array<double,1> conv_resM_;
+    //! 2nd derivatives of coord.-functions w.r.t r,s,t
+    blitz::Array<double,2> xder2_;
+
+    blitz::Array<double,2> vderiv_;
+  };
+
+}
+}
+
+#endif
+
+#endif
+#endif

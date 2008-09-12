@@ -105,17 +105,17 @@ TIMESTEP                        0.05
 UPOUT                           10
 UPPSS                           10
 UPRES                           10
-----------------------------------------FLUID DYNAMIC/STABILIZATION
-CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
-DEFINITION_TAU                  Barrenechea_Franca_Valentin_Wall
-PSPG                            yes_pspg
-REYNOLDS-STRESS                 no_reynolds
-STABTYPE                        residual_based
-SUPG                            yes_supg
-TDS                             quasistatic
-TRANSIENT                       no_transient
-VSTAB                           no_vstab
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based  // no_stabilization residual_based inconsistent
+TDS                   quasistatic     // quasistatic time_dependent
+DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall // Barrenechea_Franca_Valentin_Wall Bazilevs Codina
+TRANSIENT             no_transient    // no_transient yes_transient
+SUPG                  yes_supg        // no_supg yes_supg
+PSPG                  yes_pspg        // no_pspg yes_pspg
+VSTAB                 no_vstab        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
+CSTAB                 cstab_qs        // no_cstab cstab_qs cstab_td
+CROSS-STRESS          no_cross        // no_cross cross_complete cross_rhs
+REYNOLDS-STRESS       no_reynolds     // no_reynolds reynolds_rhs
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 CANONICAL_FLOW                  no
 CHANNEL_HOMPLANE                xz

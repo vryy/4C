@@ -51,6 +51,24 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 
                  hist_ = 4/3 veln_ - 1/3 velnm_
 
+  for low-Mach-number flow: distinguish momentum and continuity part
+
+  Stationary:
+
+                 mom: hist_ = 0.0
+                 con: hist_ = 0.0
+
+  One-step-Theta:
+
+                 mom: hist_ = densn_*veln_ + dt*(1-Theta)*modedtn_
+                 con: hist_ = densn_       + dt*(1-Theta)*densdtn_
+
+
+  BDF2: for constant time step:
+
+                 mom: hist_ = 4/3 densn_*veln_ - 1/3 densnm_*velnm_
+                 con: hist_ = 4/3 densn_       - 1/3 densnm_
+
   */
   switch (timealgo)
   {
@@ -112,7 +130,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
 )
 {
 
-  // in the first step, we have no old acceleration values
+  // update acceleration
   if (step == 1)
   {
     // do just a linear interpolation within the first timestep
@@ -137,42 +155,55 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
                + ----------------------- vel(n-1)
                  dt(n-1)*[dt(n)+dt(n-1)]
 
-    */
+    for low-Mach-number flow: distinguish momentum and density part
+    (density as velocity above)
+
+    One-step-Theta:
+
+    modedt(n+1) = (dens(n+1)*vel(n+1)-dens(n)*vel(n)) / (Theta * dt(n))
+                - (1/Theta -1) * acc(n)
+
+
+    BDF2:
+
+                   2*dt(n)+dt(n-1)                          dt(n)+dt(n-1)
+      modedt(n+1) = --------------------- dens(n+1)*vel(n+1) - --------------- dens(n)*vel(n)
+                 dt(n)*[dt(n)+dt(n-1)]                      dt(n)*dt(n-1)
+
+                         dt(n)
+               + ----------------------- dens(n-1)*vel(n-1)
+                 dt(n-1)*[dt(n)+dt(n-1)]
+
+      */
 
     switch (timealgo)
     {
-    case timeint_one_step_theta: /* One step Theta time integration */
-    {
-      const double fact1 = 1.0/(theta*dta);
-      const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
-      
-      accnp->Update( fact1,*velnp,0.0);
-      accnp->Update(-fact1,*veln ,1.0);
-      accnp->Update( fact2,*accn ,1.0);
-      
-      break;
-    }
-    case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
-    {
-      if (dta*dtp < EPS15)
-        dserror("Zero time step size!!!!!");
-      const double sum = dta + dtp;
-      
-      accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp,
-          - sum /(dta*dtp),*veln ,0.0);
-      accnp->Update(dta/(dtp*sum),*velnm,1.0);
-      break;
-    }
-    default:
-      dserror("Time integration scheme unknown for mass rhs!");
+      case timeint_one_step_theta: /* One step Theta time integration */
+      {
+        const double fact1 = 1.0/(theta*dta);
+        const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
+
+        accnp->Update( fact1,*velnp,0.0);
+        accnp->Update(-fact1,*veln ,1.0);
+        accnp->Update( fact2,*accn ,1.0);
+        break;
+      }
+      case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      {
+        if (dta*dtp < EPS15) dserror("Zero time step size!!!!!");
+        const double sum = dta + dtp;
+
+        accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp, -sum/(dta*dtp),*veln ,0.0);
+        accnp->Update(dta/(dtp*sum),*velnm,1.0);
+        break;
+      }
+      default:
+        dserror("Time integration scheme unknown for mass rhs!");
     }
   }
-  
+
   // no accelerations for stationary problems
-  if (timealgo == timeint_stationary)
-  {
-    accnp->PutScalar(0.0);
-  }
+  if (timealgo == timeint_stationary) accnp->PutScalar(0.0);
 
   return;
 }

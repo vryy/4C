@@ -1,46 +1,46 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file condif3_impl.H
+\file condif2_impl.H
 
-\brief Internal implementation of Condif3 element
+\brief Internal implementation of Condif2 element
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
+#ifdef D_FLUID2
 #ifdef CCADISCRET
 
-#ifndef CONDIF3_IMPL_H
-#define CONDIF3_IMPL_H
+#ifndef CONDIF2_IMPL_H
+#define CONDIF2_IMPL_H
 
 
-#include "condif3.H"
+#include "condif2.H"
 
 namespace DRT
 {
 namespace ELEMENTS
 {
 
-  /// Internal Condif3 implementation
+  /// Internal Condif2 implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Condif3 element. Additionally the method Sysmat()
+    calculate the Condif2 element. Additionally the method Sysmat()
     provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Condif3)
+    The idea is to separate the element maintenance (class Condif2)
     from the mathematical contents (this class). Of course there are
     different implementations of the Condif3 element, this is just one
     such implementation.
 
-    The Condif3 will allocate exactly one object of this class for all
+    The Condif2 will allocate exactly one object of this class for all
     condif elements with the same number of nodes in the mesh. This
     allows us to use exactly matching working arrays (and keep them
     around.)
@@ -58,21 +58,21 @@ namespace ELEMENTS
     Right now we do not read any stabilization parameters from the
     input file but have a fixed version.
 
-    \author gjb
+    \author vg
     \date 08/08
   */
-  class Condif3Impl
+  class Condif2Impl
   {
   public:
     /// Constructor with number of nodes and number of degree of freedom
-    explicit Condif3Impl(int iel, int numdofpernode);
+    explicit Condif2Impl(int iel, int numdofpernode);
 
     /// Internal implementation class for specific scalar transport element
-    static Condif3Impl* Impl(DRT::ELEMENTS::Condif3* c3);
+    static Condif2Impl* Impl(DRT::ELEMENTS::Condif2* c2);
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     void Sysmat(
-        const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
+        const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
         const vector<double>&           ehist, ///< rhs from beginning of time step
         const vector<double>&           edens, ///< density
         Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
@@ -88,34 +88,18 @@ namespace ELEMENTS
         const bool                      is_stationary ///< flag indicating stationary formulation
     );
 
-    //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
-    void InitializeOST(
-        const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
-        const vector<double>&           ephi0,
-        const vector<double>&           edens,
-        Epetra_SerialDenseMatrix&       massmat,
-        Epetra_SerialDenseVector&       rhs,
-        Epetra_SerialDenseVector&       sugrvisc,
-        const struct _MATERIAL*         material,
-        const double                    time,
-        const double                    timefac,
-        const Epetra_SerialDenseVector& evel,
-        bool                            temperature,
-        string                          fssgd
-    );
-
 
   private:
 
     //! get the body force
     void BodyForce(
-        const DRT::ELEMENTS::Condif3* ele, ///< the element we are dealing with
+        const DRT::ELEMENTS::Condif2* ele, ///< the element we are dealing with
         const double time                  ///< current simulation time
     );
 
     //! calculate stabilization parameter
     void CalTau(
-        const DRT::ELEMENTS::Condif3*&          ele,
+        const DRT::ELEMENTS::Condif2*&          ele,
         Epetra_SerialDenseVector&               sugrvisc,
         const Epetra_SerialDenseVector&         evel,
         const DRT::Element::DiscretizationType& distype,
@@ -126,18 +110,17 @@ namespace ELEMENTS
 
     //! evaluate shape functions and their derivatives at current integration point
     void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntegrationPoints3D& intpoints, ///< integration points
+        const DRT::UTILS::IntegrationPoints2D& intpoints, ///< integration points
         const int& iquad,                                 ///< id of current Gauss point
         const DRT::Element::DiscretizationType& distype,  ///< distinguish between DiscretizationType
         const bool& higher_order_ele,                     ///< are second derivatives needed?
-        const DRT::ELEMENTS::Condif3*   ele               ///< the element
+        const DRT::ELEMENTS::Condif2*   ele               ///< the element
     );
 
     //! calculate 2nd derivatives of shape functions (local and global)
     void CalSecondDeriv(
         const double&                            e1,      ///< first coordinate of GP
         const double&                            e2,      ///< second coordinate of GP
-        const double&                            e3,      ///< third coordinate of GP
         const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
     );
 

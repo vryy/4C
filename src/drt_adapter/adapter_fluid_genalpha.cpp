@@ -470,4 +470,20 @@ void ADAPTER::FluidGenAlpha::SetInitialFlowField(int whichinitialfield,int start
    return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,RCP<const Epetra_Vector> noddensnm)
+{
+   dserror("not implemented!");
+   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+{
+   dserror("not implemented!");
+   return;
+}
+
 #endif  // #ifdef CCADISCRET

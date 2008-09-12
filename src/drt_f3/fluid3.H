@@ -55,10 +55,10 @@ namespace ELEMENTS
 // forward declarations
 class Fluid3Surface;
 class Fluid3Line;
-template<int iel>  class Fluid3Impl;
-template<int iel>  class Fluid3lin_Impl;
-class Fluid3GenalphaResVMM;
+template<int iel> class Fluid3Impl;
 template<int iel> class Fluid3StationaryImpl;
+template<int iel> class Fluid3lin_Impl;
+class Fluid3GenalphaResVMM;
 class Fluid3Register;
 
 /*!
@@ -85,7 +85,20 @@ public:
   friend class Fluid3Impl<15>;
   friend class Fluid3Impl<20>;
   friend class Fluid3Impl<27>;
+  friend class Fluid3StationaryImplInterface;
+  // All the template specializations that are used, new ones must be
+  // added here.
+  friend class Fluid3StationaryImpl<4>;
+  friend class Fluid3StationaryImpl<5>;
+  friend class Fluid3StationaryImpl<6>;
+  friend class Fluid3StationaryImpl<8>;
+  friend class Fluid3StationaryImpl<10>;
+  friend class Fluid3StationaryImpl<15>;
+  friend class Fluid3StationaryImpl<20>;
+  friend class Fluid3StationaryImpl<27>;
   friend class Fluid3lin_ImplInterface;
+  // All the template specializations that are used, new ones must be
+  // added here.
   friend class Fluid3lin_Impl<4>;
   friend class Fluid3lin_Impl<5>;
   friend class Fluid3lin_Impl<6>;
@@ -95,15 +108,6 @@ public:
   friend class Fluid3lin_Impl<20>;
   friend class Fluid3lin_Impl<27>;
   friend class Fluid3GenalphaResVMM;
-  friend class Fluid3StationaryImplInterface;
-  friend class Fluid3StationaryImpl<4>;
-  friend class Fluid3StationaryImpl<5>;
-  friend class Fluid3StationaryImpl<6>;
-  friend class Fluid3StationaryImpl<8>;
-  friend class Fluid3StationaryImpl<10>;
-  friend class Fluid3StationaryImpl<15>;
-  friend class Fluid3StationaryImpl<20>;
-  friend class Fluid3StationaryImpl<27>;
   friend class Fluid3SystemEvaluator;
 
   //@}
@@ -363,16 +367,17 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
+    calc_fluid_stationary_systemmat_and_residual,
     calc_linear_fluid,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
-    calc_fluid_stationary_systemmat_and_residual,
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
-    calc_convective_stresses
+    calc_convective_stresses,
+    get_density
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)

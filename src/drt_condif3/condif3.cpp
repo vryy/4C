@@ -27,7 +27,6 @@ using namespace DRT::UTILS;
 DRT::ELEMENTS::Condif3::Condif3(int id, int owner) :
 DRT::Element(id,element_condif3,owner),
 gaussrule_(intrule3D_undefined),
-is_ale_(false),
 data_(),
 numdofpernode_(-1)
 {
@@ -40,7 +39,6 @@ numdofpernode_(-1)
 DRT::ELEMENTS::Condif3::Condif3(const DRT::ELEMENTS::Condif3& old) :
 DRT::Element(old),
 gaussrule_(old.gaussrule_),
-is_ale_(old.is_ale_),
 data_(old.data_)
 {
     return;
