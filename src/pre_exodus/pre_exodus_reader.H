@@ -407,6 +407,7 @@ void PrintMap(ostream& os,const map<int,set<int> > mymap);
 void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,pair<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,int> mymap);
+void PrintMap(ostream& os,const map<int,double> mymap);
 void PrintMap(ostream& os,const map<double,int> mymap);
 void PrintVec(ostream& os, const vector<int> actvec);
 void PrintVec(ostream& os, const vector<double> actvec);

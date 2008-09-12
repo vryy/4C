@@ -18,10 +18,14 @@ namespace EXODUS
 
 map<int,map<int,vector<vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double>coordcorr);
 
+map<int,double> NdCenterlineThickness(string cline,const set<int>& nodes, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr);
+
 class Centerline
 {
 private:
-	RCP<map<int,vector<double> > > points_;
+	RCP<map<int,vector<double> > > points_; /// centerline points
+	RCP<map<int,double> > diam_; /// diameter of the best fit circle in centerline point
+
 public:
 	//ctor
 	Centerline(string,vector<double> coordcorr);
@@ -30,11 +34,13 @@ public:
 	~Centerline();
 	//returns points_
 	RCP<map<int,vector<double> > > GetPoints() const {return points_;};
+	//returns diam_
+	RCP<map<int,double> > GetDiams() const {return diam_;};
 	//displays points_ on console
 	void PrintPoints();
 	//creates gmsh-file to visualize points
 	void PlotCL_Gmsh();
-	
+
 };
 
 //! calculates distance between two 3-dim vectors

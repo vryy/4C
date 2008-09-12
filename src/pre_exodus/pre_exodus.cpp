@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus.cpp
 
-\brief preprocessor for exodusII format 
+\brief preprocessor for exodusII format
 
 <pre>
 Maintainer: Moritz & Georg
@@ -56,7 +56,7 @@ int main(
   string headfile;
   string datfile;
   string cline;
-  
+
   // related to solid shell extrusion
   double soshthickness = 0.0;
   int soshnumlayer = 1;
@@ -64,7 +64,7 @@ int main(
   int soshgmsh = -1;
   int concat2loose = 0;
   int diveblocks = 0;
-  
+
   // related to centerline
   vector<double> cline_coordcorr(3);
   double clinedx = 0.0;
@@ -85,13 +85,14 @@ int main(
   My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
   My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
   My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
-  
+
+  // centerline related
   My_CLP.setOption("cline",&cline,"generate local element coordinate systems based on centerline file, or mesh line (set to 'mesh'");
   My_CLP.setOption("clinedx",&clinedx,"move centerline coords to align with mesh: delta x");
   My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
   My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
   map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
-  
+
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = My_CLP.parse(argc,argv);
 
@@ -103,6 +104,8 @@ int main(
   {
     dserror("CommandLineProcessor reported an error");
   }
+
+  // centerline related: transfer separate doubles into vector
   cline_coordcorr[0] = clinedx; cline_coordcorr[1] = clinedy; cline_coordcorr[2] = clinedz;
 
   /**************************************************************************
@@ -137,12 +140,13 @@ int main(
   if (soshthickness!=0.0){
     if (exofile=="") dserror("no exofile specified for extrusion");
     if (soshnumlayer <= diveblocks) dserror("number of layers and inner-layer elements mismatch, check if numlayer>diveblocks!");
-    EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose, diveblocks);
+    EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid,
+            soshgmsh, concat2loose, diveblocks, cline, cline_coordcorr);
     mysosh.WriteMesh("extr_" + exofile);
-    
+
     exit(0);
   }
-  
+
   // generate local element coordinate systems based on centerline
   if (cline!=""){
     elecenterlineinfo = EleCenterlineInfo(cline,mymesh,cline_coordcorr);
@@ -165,10 +169,10 @@ int main(
   {
     // read provided bc-file
     EXODUS::ReadBCFile(bcfile,eledefs,condefs);
-    
+
     int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
     int test = eledefs.size() + condefs.size();
-    if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl; 
+    if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl;
   }
 
   /**************************************************************************
@@ -247,7 +251,7 @@ int main(
     RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
   #endif
 
-    // check for positive Element-Center-Jacobians and otherwise rewind them 
+    // check for positive Element-Center-Jacobians and otherwise rewind them
     Epetra_Time time(*comm);
     RCP<Time> timerewind;
     timerewind= TimeMonitor::getNewTimer("Rewinding");
@@ -274,7 +278,7 @@ int main(
 #ifdef PARALLEL
   MPI_Finalize();
 #endif
-  
+
   return 0;
 
 } //main.cpp
@@ -294,7 +298,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   // write mesh verbosely
   defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
   mymesh.Print(defaultbc, false);
-  
+
   // give examples for element and boundary condition syntax
   defaultbc<<"---------- Syntax examples ----------"<<endl<<endl<<
   "Element Block, named: "<<endl<<
@@ -365,7 +369,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
 
   // close default bc specification file
-  if (defaultbc.is_open()) 
+  if (defaultbc.is_open())
     defaultbc.close();
 
   return 0;
