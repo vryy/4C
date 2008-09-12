@@ -442,10 +442,13 @@ void DoDirichletCondition(DRT::Condition&             cond,
  |  evaluate a condition (public)                               tk 07/07|
  |  calls more general method                                           |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                            RefCountPtr<Epetra_Vector> systemvector,
-                                            const string& condstring,
-					    const int condid)
+void DRT::Discretization::EvaluateCondition
+(
+  ParameterList& params,
+  RefCountPtr<Epetra_Vector> systemvector,
+  const string& condstring,
+  const int condid
+)
 {
   EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,Teuchos::null,Teuchos::null,condstring,condid);
   return;
@@ -455,9 +458,12 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  |  evaluate a condition (public)                               tk 07/07|
  |  calls more general method                                           |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(ParameterList& params,
-					    const string& condstring,
-					    const int condid)
+void DRT::Discretization::EvaluateCondition
+(
+  ParameterList& params,
+  const string& condstring,
+  const int condid
+)
 {
   EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring,condid);
   return;
@@ -467,14 +473,17 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                            RefCountPtr<LINALG::SparseOperator> systemmatrix1,
-                                            RefCountPtr<LINALG::SparseOperator> systemmatrix2,
-                                            RefCountPtr<Epetra_Vector> systemvector1,
-                                            Teuchos::RCP<Epetra_Vector> systemvector2,
-                                            Teuchos::RCP<Epetra_Vector> systemvector3,
-                                            const string& condstring,
-					    const int condid)
+void DRT::Discretization::EvaluateCondition
+(
+  ParameterList& params,
+  RCP<LINALG::SparseOperator> systemmatrix1,
+  RCP<LINALG::SparseOperator> systemmatrix2,
+  RCP<Epetra_Vector> systemvector1,
+  RCP<Epetra_Vector> systemvector2,
+  RCP<Epetra_Vector> systemvector3,
+  const string& condstring,
+  const int condid
+)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -581,11 +590,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateConditionUsingParentData(
   ParameterList&                       params       ,
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-  Teuchos::RCP<Epetra_Vector>          systemvector1,
-  Teuchos::RCP<Epetra_Vector>          systemvector2,
-  Teuchos::RCP<Epetra_Vector>          systemvector3,
+  RCP<LINALG::SparseOperator> systemmatrix1,
+  RCP<LINALG::SparseOperator> systemmatrix2,
+  RCP<Epetra_Vector>          systemvector1,
+  RCP<Epetra_Vector>          systemvector2,
+  RCP<Epetra_Vector>          systemvector3,
   const string&                        condstring   ,
   const int                            condid       )
 {

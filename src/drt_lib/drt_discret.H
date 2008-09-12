@@ -930,15 +930,15 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
-
-  \param params (in):        List of parameters for use at element level
-  \param systemvector (out): Vector to assemble BCs to.
-                             The vector is NOT initialized to zero by this method.
+  
   */
-  virtual void EvaluateCondition(ParameterList& params,
-		                 RefCountPtr<Epetra_Vector> systemvector1,
-				 const string& condstring,
-				 const int condid=-1);
+  virtual void EvaluateCondition
+  (
+    ParameterList& params,  ///< List of parameters for use at element level
+    RefCountPtr<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
+    const string& condstring, ///< Name of condition to be evaluated
+    const int condid=-1  ///< condition ID
+  );
 
   /*!
   \brief Evaluate a specified condition
@@ -947,13 +947,14 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
-
-  \param params (in):        List of parameters for use at element level
-  \param condstring (in):	   Name of condition to be evaluated
+  
   */
-  virtual void EvaluateCondition(ParameterList& params,
-				 const string& condstring,
-				 const int condid=-1);
+  virtual void EvaluateCondition
+  (
+    ParameterList& params, ///< List of parameters for use at element level
+    const string& condstring,  ///< Name of condition to be evaluated
+    const int condid=-1  ///< condidition ID
+  );
 
   /*!
   \brief Evaluate a specific condition
@@ -963,7 +964,7 @@ public:
   matching the user-provided string condstring.
   It takes a current time from the parameter list params named "total time"
   and evaluates the appropiate time curves at that time for each
-  Neumann condition separately. If "total time" is not included
+  condition separately. If "total time" is not included
   in the parameters, no time curves are used.
 
     \param params (in):        List of parameters for use at element level
@@ -982,15 +983,19 @@ public:
     \param systemvector3 (out):Vector to assemble BCs to.
                                The vector is NOT initialized to zero by this method.
     \param condstring (in):	   Name of condition to be evaluated
+    \param condid (in):        Condition ID
     */
-  void EvaluateCondition(ParameterList& params,
-                         RefCountPtr<LINALG::SparseOperator> systemmatrix1,
-                         RefCountPtr<LINALG::SparseOperator> systemmatrix2,
-                         RefCountPtr<Epetra_Vector> systemvector1,
-                         RCP<Epetra_Vector>    systemvector2,
-                         RCP<Epetra_Vector>    systemvector3,
-                         const string& condstring,
-			 const int condid=-1);
+  void EvaluateCondition
+  (
+    ParameterList& params,
+    RCP<LINALG::SparseOperator> systemmatrix1,
+    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<Epetra_Vector> systemvector1,
+    RCP<Epetra_Vector>    systemvector2,
+    RCP<Epetra_Vector>    systemvector3,
+    const string& condstring,
+    const int condid=-1
+  );
 
   /*!
   \brief Evaluate a specific surface conditon which requires data 
@@ -1019,15 +1024,19 @@ public:
   \param systemvector3 (out): Vector to assemble BCs to.
                               The vector is NOT initialized to zero by this method.
   \param condstring    (in) : Name of condition to be evaluated
+  \param condid (in):        Condition ID
   */
-  void EvaluateConditionUsingParentData(ParameterList&              params,
-					RCP<LINALG::SparseOperator> systemmatrix1,
-					RCP<LINALG::SparseOperator> systemmatrix2,
-					RCP<Epetra_Vector>          systemvector1,
-					RCP<Epetra_Vector>          systemvector2,
-					RCP<Epetra_Vector>          systemvector3,
-					const string&               condstring,
-					const int                   condid=-1);
+  void EvaluateConditionUsingParentData
+  (
+    ParameterList&              params,
+    RCP<LINALG::SparseOperator> systemmatrix1,
+    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<Epetra_Vector>          systemvector1,
+    RCP<Epetra_Vector>          systemvector2,
+    RCP<Epetra_Vector>          systemvector3,
+    const string&               condstring,
+    const int                   condid=-1
+  );
   
   /*!
   \brief Compute the nullspace of the discretization
@@ -1320,7 +1329,7 @@ protected:
 } // namespace DRT
 
 
-// << operator
+/// << operator
 ostream& operator << (ostream& os, const DRT::Discretization& dis);
 
 
