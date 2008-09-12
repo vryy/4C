@@ -1021,9 +1021,9 @@ static void Sysmat3(
                 assembler.template Vector<Tauzy>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,1));
                 assembler.template Vector<Tauzz>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,2));
                 
-                //             /                  \
-                //            | virt tau , eps(Du) |
-                //             \                  /
+                             /*                 \
+                            | virt tau , eps(Du) |
+                             \                 */
                 
                 const double rect_factor = 1.0;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
@@ -1193,44 +1193,6 @@ static void Sysmat3(
                 assembler.template Vector<Pres>(shp_dx, -timetauMp*res_old(0));
                 assembler.template Vector<Pres>(shp_dy, -timetauMp*res_old(1));
                 assembler.template Vector<Pres>(shp_dz, -timetauMp*res_old(2));
-                
-//                if (tauele_unknowns_present)
-//                {
-//                  /* pressure stabilisation: pressure( L_pres_p) */
-//                  /*
-//                            /                      \
-//                           |                        |
-//                           |  nabla q^e , nabla Dp  |
-//                           |                        |
-//                            \                      /
-//                  */
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp, shp_dx);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp, shp_dy);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp, shp_dz);
-//                  
-//                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*gradp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*gradp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*gradp(2));
-//                  
-//                  /* pressure stabilisation: pressure( L_pres_p) */
-//                  /*
-//                            /                        \
-//                           |                          |
-//                         - |  nabla q^e , nabla Dp^e  |
-//                           |                          |
-//                            \                        /
-//                  */
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp, shp_discpres_dx);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp, shp_discpres_dy);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp, shp_discpres_dz);
-//                  
-//                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*graddiscp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*graddiscp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*graddiscp(2));
-//                }
-                
                 
             }
             
@@ -1826,9 +1788,9 @@ static void Sysmat3(
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));
             
-            //            /            \
-            //            |  v , Dp n  |
-            //            \            /
+                         /*         \
+                        |  v , Dp n  |
+                         \         */
             
             const double vpn_fac = 1.0;
             assembler.template Matrix<Velx,DiscPres>(shp, vpn_fac*timefacfac*normalvec_fluid(0), shp_discpres);

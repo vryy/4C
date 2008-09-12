@@ -1213,9 +1213,9 @@ static void SysmatDomainTP1(
                 assembler.template Vector<Tauzy>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,1));
                 assembler.template Vector<Tauzz>(shp_tau,     factor/(2.0*visc)*timefacfac*tau(2,2));
                 
-                //             /                  \
-                //            | virt tau , eps(Du) |
-                //             \                  /
+                             /*                 \
+                            | virt tau , eps(Du) |
+                             \                 */
                 
                 const double rect_factor = 1.0;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
@@ -2037,9 +2037,9 @@ static void SysmatBoundaryTP1(
             assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));
             
-            //            /            \
-            //            |  v , Dp n  |
-            //            \            /
+                         /*         \
+                        |  v , Dp n  |
+                         \         */
             
             const double vpn_fac = 1.0;
             assembler.template Matrix<Velx,DiscPres>(shp, vpn_fac*timefacfac*normalvec_fluid(0), shp_discpres);

@@ -1121,9 +1121,9 @@ static void SysmatDomain4(
                 assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
                 assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
                 
-                //             /                  \
-                //            | virt tau , eps(Du) |
-                //             \                  /
+                             /*                 \
+                            | virt tau , eps(Du) |
+                             \                 */
                 
                 assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp_dx);
                 assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp_dy);
