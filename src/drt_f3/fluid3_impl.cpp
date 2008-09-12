@@ -1343,17 +1343,17 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         const int fvi = 4*vi;
         /* convection */
         double v = -timefacfac*funct_(vi);
-        eforce(vi*4    ) += v*(convvelint_(0)*vderxy_(0, 0)
+        eforce(fvi    ) += v*(convvelint_(0)*vderxy_(0, 0)
                                +
                                convvelint_(1)*vderxy_(0, 1)
                                +
                                convvelint_(2)*vderxy_(0, 2)) ;
-        eforce(vi*4 + 1) += v*(convvelint_(0)*vderxy_(1, 0)
+        eforce(fvi + 1) += v*(convvelint_(0)*vderxy_(1, 0)
                                +
                                convvelint_(1)*vderxy_(1, 1)
                                +
                                convvelint_(2)*vderxy_(1, 2)) ;
-        eforce(vi*4 + 2) += v*(convvelint_(0)*vderxy_(2, 0)
+        eforce(fvi + 2) += v*(convvelint_(0)*vderxy_(2, 0)
                                +
                                convvelint_(1)*vderxy_(2, 1)
                                +
@@ -1366,9 +1366,9 @@ void DRT::ELEMENTS::Fluid3Impl<iel>::Sysmat(
         const int fvi = 4*vi;
         /* pressure */
         const double v = press*timefacfac;
-        eforce(vi*4    ) += v*derxy_(0, vi) ;
-        eforce(vi*4 + 1) += v*derxy_(1, vi) ;
-        eforce(vi*4 + 2) += v*derxy_(2, vi) ;
+        eforce(fvi    ) += v*derxy_(0, vi) ;
+        eforce(fvi + 1) += v*derxy_(1, vi) ;
+        eforce(fvi + 2) += v*derxy_(2, vi) ;
       }
 
       for (int vi=0; vi<numnode; ++vi)
