@@ -433,9 +433,9 @@ void XFEM::computeVectorCellNodeValues(
   
   // cell corner nodes
   //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
-  blitz::Array<double,1> enr_funct(numparam);
-  //blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static blitz::Array<double,1> funct(27);
+  BlitzVec enr_funct(numparam);
+  //BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+  static BlitzVec funct(27);
   cellvalues = 0.0;
   for (int inen = 0; inen < nen_cell; ++inen)
   {
@@ -498,9 +498,9 @@ void XFEM::computeVectorCellNodeValues(
   
   // cell corner nodes
   //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
-  blitz::Array<double,1> enr_funct(numparam);
-  //blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static blitz::Array<double,1> funct(27);
+  BlitzVec enr_funct(numparam);
+  //BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+  static BlitzVec funct(27);
   cellvalues = 0.0;
   for (int inen = 0; inen < nen_cell; ++inen)
   {
