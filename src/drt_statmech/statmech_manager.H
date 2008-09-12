@@ -64,6 +64,9 @@ protected:
   //! \brief maximal radius within which crosslinkers are established
   double rlink_;
   
+  //! \brief vector storing the currently unused global element Ids (due to former deletion of crosslinker elements)
+  vector<int> unusedids_;
+  
   //! \brief reference to current discretization
   DRT::Discretization& discret_; 
   
