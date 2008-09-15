@@ -69,10 +69,10 @@ XFEM::ElementDofManager::ElementDofManager(
   // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
   int dofcounter = 0;
-  const DRT::Node*const* nodes = ele.Nodes();
+  const int* nodeids = ele.NodeIds();
   for (int inode=0; inode<ele.NumNode(); ++inode)
   {
-    const int gid = nodes[inode]->Id();
+    const int gid = nodeids[inode];
     map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
     if (entry == nodalDofSet_.end())
       dserror("impossible ;-)");
