@@ -78,7 +78,7 @@ void GEO::SearchTree::initializeTree(
 
   // inserts all elements in a map with key -1
   for (int i=0; i<dis.NumMyColElements(); ++i) 
-    treeRoot_->insertElement(-1, dis.lRowElement(i)->Id());
+    treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
 }
 
 
