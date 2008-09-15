@@ -13,7 +13,6 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 #include "searchtree_geometry_service.H"
 #include "intersection_service.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_contact/drt_celement.H"
 
 
@@ -32,6 +31,9 @@ BlitzMat3x2 GEO::getXAABBofDis(
     XAABB(2,0)=0;XAABB(2,1)=0;
     return XAABB;
     }
+  if (dis.NumMyColElements() == 0){
+    dserror("boundary should be ghosted and xfem discretization balanced, such that there are at least some xfem elements!");
+    }
 
   // initialize XAABB as rectangle around the first point of dis
   const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
@@ -46,7 +48,7 @@ BlitzMat3x2 GEO::getXAABBofDis(
   for (int j=0; j< dis.NumMyColElements(); ++j) 
   {
     const DRT::Element* element = dis.lColElement(j);
-    const BlitzMat xyze_element(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
+    const BlitzMat xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
     BlitzMat3x2 xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
@@ -109,7 +111,7 @@ std::vector< BlitzMat3x2 > GEO::computeXAABBForLabeledStructures(
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
     {   
       const DRT::Element* element = dis.gElement(*eleIter);
-      const BlitzMat xyze_element(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
+      const BlitzMat xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
       GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
       GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
       BlitzMat3x2 xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
@@ -245,7 +247,7 @@ std::vector<int> GEO::getIntersectionElements(
   vector<int> intersectionids;
   
   // create XAABB for query element
-  const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));  
+  const BlitzMat xyze(GEO::getCurrentNodalPositions(element,currentpositions));  
   BlitzMat3x2 slaveXAABB = GEO::computeContactXAABB(element,xyze);
   
   // loop over all entries of elementList (= intersection candidates)
@@ -253,7 +255,7 @@ std::vector<int> GEO::getIntersectionElements(
       elementIter != (elementList.begin()->second).end(); elementIter++)
   {
     DRT::Element* masterelement = dis.gElement(*elementIter);
-    const BlitzMat masterxyze(DRT::UTILS::getCurrentNodalPositions(masterelement,currentpositions));
+    const BlitzMat masterxyze(GEO::getCurrentNodalPositions(masterelement,currentpositions));
     BlitzMat3x2 masterXAABB = GEO::computeContactXAABB(masterelement,masterxyze);
     
     // compare slaveXAABB and masterXAABB (2D only)
@@ -502,7 +504,7 @@ bool GEO::getDistanceToSurface(
   BlitzVec3 distance_vector = 0.0;
   BlitzVec2 elecoord = 0.0; // starting value at element center
 
-  const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
+  const BlitzMat xyze_surfaceElement(GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
   GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
   if(GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
@@ -571,7 +573,7 @@ bool GEO::getDistanceToLine(
   BlitzVec3 distance_vector = 0.0;
   BlitzVec1 elecoord = 0.0; // starting value at element center  
 
-  const BlitzMat xyze_lineElement(DRT::UTILS::getCurrentNodalPositions(lineElement, currentpositions));
+  const BlitzMat xyze_lineElement(GEO::getCurrentNodalPositions(lineElement, currentpositions));
   
   GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
   
@@ -699,7 +701,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
   { 
     BlitzVec2 elecoord = 0.0;
     const DRT::Element* surfaceElement = dis.gElement(nearestObject.getSurfaceId());
-    const BlitzMat xyze_surfaceElement = DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions);
+    const BlitzMat xyze_surfaceElement = GEO::getCurrentNodalPositions(surfaceElement, currentpositions);
     GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
     GEO::computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, elecoord, normal);
     break;
@@ -715,7 +717,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
     for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
     {
       const DRT::Element* surfaceElement = dis.gElement(*eleIter);
-      const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
+      const BlitzMat xyze_surfaceElement(GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec2 eleCoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
       
@@ -733,7 +735,7 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
     for(int j=0; j<node->NumElement();j++)
     {      
       const DRT::Element* surfaceElement = node->Elements()[j];
-      const BlitzMat xyze_surfaceElement(DRT::UTILS::getCurrentNodalPositions(surfaceElement, currentpositions));
+      const BlitzMat xyze_surfaceElement(GEO::getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec2 elecoord = 0.0;
       BlitzVec3 surface_normal = 0.0;
       GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, nearestObject.getPhysCoord(), elecoord);
@@ -803,11 +805,11 @@ void GEO::checkRoughGeoType(
     const BlitzMat                xyze_element,
     GEO::EleGeoType&              eleGeoType)
 {
-  const DRT::Element::DiscretizationType distype = element->Shape();
+  const int order = DRT::UTILS::getOrder(element->Shape());
 
-  if(DRT::UTILS::getOrder(distype) ==1)
+  if(order ==1)
     eleGeoType = GEO::LINEAR;  //TODO check for bilinear elements in the tree they count as higerorder fix it
-  else if(DRT::UTILS::getOrder(distype)==2)
+  else if(order==2)
     eleGeoType = GEO::HIGHERORDER;
   else
     dserror("order of element is not correct");
