@@ -128,10 +128,12 @@ void XFEM::DofManager::toGmsh(
 #if 1
   if (gmshdebugout)
   {
+    const int myrank = ih->cutterdis()->Comm().MyPID();
+    
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
@@ -312,8 +314,8 @@ void XFEM::DofManager::toGmsh(
       // debug info: print ele dofmanager information
       std::stringstream filename;
       std::stringstream filenamedel;
-      filename << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step << ".pos";
-      filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+      filename    << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+      filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
       std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
       {
