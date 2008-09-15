@@ -65,10 +65,10 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for So_weg6");
 
   // what should the element do
-  switch(act) 
+  switch(act)
   {
     // linear stiffness
-    case calc_struct_linstiff: 
+    case calc_struct_linstiff:
     {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
@@ -80,7 +80,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff: 
+    case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -95,7 +95,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // internal force vector only
-    case calc_struct_internalforce: 
+    case calc_struct_internalforce:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -117,7 +117,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: 
+    case calc_struct_nlnstiffmass:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
     }
     break;
-    
+
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
@@ -266,19 +266,19 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: 
+    case calc_struct_update_istep:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_update_imrlike: 
+    case calc_struct_update_imrlike:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_reset_istep: 
+    case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
     }
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       // build def gradient for every gauss point
       LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6,9);
       DefGradient(mydisp,gpdefgrd,*prestress_);
-      
+
       // update deformation gradient and put back to storage
       LINALG::SerialDenseMatrix deltaF(3,3);
       LINALG::SerialDenseMatrix Fhist(3,3);
@@ -440,12 +440,12 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m) 
-      for (int n=0; n<NUMGPT_WEG6; ++n) 
+    for (int m=0; m<NUMDIM_WEG6; ++m)
+      for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -468,13 +468,13 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       // get derivatives wrt to last spatial configuration
       LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
       N_xyz.Multiply('N','N',1.0,invJdef,deriv_gp,0.0);
-      
+
       // build multiplicative incremental defgrd
       defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
-      
+
       // get stored old incremental F
       LINALG::SerialDenseMatrix Fhist(3,3);
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, gp, params);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -685,7 +685,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
    /* =========================================================================*/
 
   return;
-} 
+}
 
 
 
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::So_weg6::sow6_lumpmass(Epetra_SerialDenseMatrix* emass)
     // we assume #elemat2 is a square matrix
     for (int c=0; c<(*emass).N(); ++c)  // parse columns
     {
-      double d = 0.0;  
+      double d = 0.0;
       for (int r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries
@@ -783,7 +783,7 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp, 
+void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
@@ -801,12 +801,12 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
     xdisp(i,2) = disp[i*NODDOF_WEG6+2];
   }
 
-  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m) 
-      for (int n=0; n<NUMGPT_WEG6; ++n) 
+    for (int m=0; m<NUMDIM_WEG6; ++m)
+      for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
 
     // get Jacobian mapping wrt to the stored deformed configuration
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
     defgrd(2,2) += 1.0;
 
     prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
-  }  
+  }
   return;
 }
 
@@ -855,12 +855,12 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
   LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
   LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
   LINALG::SerialDenseMatrix invJnew(NUMDIM_WEG6,NUMDIM_WEG6);
-  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m) 
-      for (int n=0; n<NUMGPT_WEG6; ++n) 
+    for (int m=0; m<NUMDIM_WEG6; ++m)
+      for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
 
     // get the invJ old state
@@ -878,7 +878,7 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
     invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
-  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)  
+  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
   return;
 }

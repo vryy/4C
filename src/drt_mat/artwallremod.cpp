@@ -36,6 +36,8 @@ MAT::ArtWallRemod::ArtWallRemod()
   isinit_=false;
   gamma_ = rcp(new vector<double>);
   lambda_ = rcp(new vector<vector<double> >);
+  a1_ = rcp(new vector<vector<double> >);
+  a2_ = rcp(new vector<vector<double> >);
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   remtime_ = rcp(new vector<double>);
@@ -368,16 +370,16 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
     stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
     stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
 
-    // store Cauchy stresses and use those for remodeling driver
-    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-                  defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-                  defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-                  defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-                  defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-                  defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-    LINALG::SerialDenseMatrix temp(3,3);
-    temp.Multiply('N','N',1.0/detF,defgrd,stresses_->at(gp),0.);
-    stresses_->at(gp).Multiply('N','T',1.0,temp,defgrd,0.);
+//    // store Cauchy stresses and use those for remodeling driver
+//    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
+//                  defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
+//                  defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
+//                  defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
+//                  defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
+//                  defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+//    LINALG::SerialDenseMatrix pk1(3,3);
+//    pk1.Multiply('N','N',1.0,defgrd,stresses_->at(gp),0.);
+//    stresses_->at(gp).Multiply('N','T',1.0/detF,pk1,defgrd,0.);
 
   }
 

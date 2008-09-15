@@ -607,7 +607,10 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, gp, params);
+    // Caution!! the defgrd can not be modified with ANS to remedy locking
+    // therefore it is empty and passed only for compatibility reasons
+    Epetra_SerialDenseMatrix defgrd; // Caution!! empty!!
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -640,14 +643,14 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
           G_ij(1) = deriv_gp(1, inod) * deriv_gp(1, jnod); // ss-dir
           G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod)
                   + deriv_gp(1, inod) * deriv_gp(0, jnod); // rs-dir
-          
+
 //          // testing without ANS:
 //          G_ij(2) = deriv_gp(2, inod) * deriv_gp(2, jnod); // tt-dir
 //          G_ij(4) = deriv_gp(1, inod) * deriv_gp(2, jnod)
 //                  + deriv_gp(2, inod) * deriv_gp(1, jnod); // st-dir
 //          G_ij(5) = deriv_gp(0, inod) * deriv_gp(2, jnod)
 //                  + deriv_gp(2, inod) * deriv_gp(0, jnod); // rt-dir
-          
+
           // ANS modification in tt-dir
           G_ij(2) = (1-r-s) * (*deriv_sp)(zdir+spC*NUMDIM_WEG6, inod)
                             * (*deriv_sp)(zdir+spC*NUMDIM_WEG6, jnod)
@@ -679,7 +682,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
           (*stiffmatrix)(NUMDIM_WEG6*inod+2, NUMDIM_WEG6*jnod+2) += Gij(0);
         }
       } // end of intergrate `geometric' stiffness ******************************
-      
+
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ != soshw6_easnone) {
         double integrationfactor = detJ * (*weights)(gp);
@@ -740,7 +743,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   }
 
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -962,7 +965,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
   LINALG::SerialDenseMatrix df0(NUMDIM_WEG6,NUMNOD_WEG6);
   DRT::UTILS::shape_function_3D_deriv1(df0,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],DRT::Element::wedge6);
-  
+
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   LINALG::SerialDenseMatrix jac0(NUMDIM_WEG6,NUMDIM_WEG6);
   jac0.Multiply('N','N',1.0,df0,xrefe,0.0);
@@ -977,7 +980,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
 
   // get T-matrix at element origin
   soshw6_evaluateT(jac0,T0invT);
-  
+
   // build EAS interpolation matrix M, evaluated at the GPs of soshw6
   static Epetra_SerialDenseMatrix M(NUMSTR_WEG6*NUMGPT_WEG6,neas_);
   static bool M_eval;
@@ -1012,7 +1015,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
     dserror("eastype not implemented");
     }
   }
-} 
+}
 
 
 #endif  // #ifdef CCADISCRET

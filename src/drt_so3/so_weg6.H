@@ -363,18 +363,18 @@ protected:
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                    prestress_;
-  
+
   // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp, 
+  void UpdateJacobianMapping(const vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
 
   // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp, 
+  void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
 
-  
+
 
 
   // internal calculation methods
@@ -402,6 +402,7 @@ protected:
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
+                    Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
                     ParameterList&            params);         // algorithmic parameters e.g. time
 

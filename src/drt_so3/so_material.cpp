@@ -130,7 +130,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
-      
+
       break;
     }
     case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       remo->Evaluate(glstrain,*defgrd,gp,params,cmat,stress);
       *density = remo->Density();
-      
+
       break;
     }
     case m_struct_multiscale: /*------------------- multiscale approach */
@@ -233,6 +233,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
+      Epetra_SerialDenseMatrix* defgrd,
       const int gp,
       ParameterList&            params)         // algorithmic parameters e.g. time
 {
@@ -270,10 +271,9 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      Epetra_SerialDenseMatrix emptydefgrd; // temporary!
-      remo->Evaluate(glstrain,emptydefgrd,gp,params,cmat,stress);
+      remo->Evaluate(glstrain,*defgrd,gp,params,cmat,stress);
       *density = remo->Density();
-      
+
       break;
     }
     case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
