@@ -32,16 +32,40 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
   {
     DRT::Condition* xfemCondition = *conditer;
     const int label = xfemCondition->Getint("label");
-    const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
-    std::set< DRT::Element* > cutterElements;
-    // find all elements of this condition
-    map<int, RCP<DRT::Element > >::const_iterator iterGeo;
-    for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
+    const vector<int> geometryMap = *xfemCondition->Nodes();
+    vector<int>::const_iterator iterNode;
+    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
     {
-      DRT::Element*  cutterElement = iterGeo->second.get();
-      elementsByLabel[label].insert(cutterElement->Id());
+      const int nodegid = *iterNode;
+      const DRT::Node* node = cutterdis.gNode(nodegid);
+      const DRT::Element*const* cutterElements = node->Elements();
+      for (int iele=0;iele < node->NumElement(); ++iele)
+      {
+        const DRT::Element* cutterElement = cutterElements[iele];
+        elementsByLabel[label].insert(cutterElement->Id());
+      }
     }
   }
+  
+  // sanity check
+//  cout << "Numcutterelement proc:" << cutterdis->Comm().MyPID() << ":  " << cutterdis->NumMyColElements() << " = " << cutterdis->NumGlobalElements();
+  set<int> gids;
+  for (int i = 0; i<cutterdis.NumMyColElements();++i)
+  {
+    gids.insert(cutterdis.lColElement(i)->Id());
+  }
+//  cout << "unique gids: " << gids.size() << endl;
+  
+  std::map<int, int>  labelByElementId;
+  XFEM::InvertElementsByLabel(elementsByLabel, labelByElementId);
+  
+  
+  // this test make sure, elementsByLabel has correct information
+  // can be wrong, since the Geometry() of the condition does not provide ghost elements with only ghosted nodes :-(
+  if (gids.size() != labelByElementId.size())
+    dserror("condition Geometry does not match anymore.");
+  
+  
 }
 
 void XFEM::InvertElementsByLabel(
