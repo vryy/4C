@@ -530,10 +530,11 @@ void XFEM::InterfaceHandle::GenerateSpaceTimeLayer(
   for (int i=0; i<cutterdis->NumMyColElements(); ++i)
   {
     const DRT::Element* cutterele = cutterdis->lColElement(i);
+    const int* nodeids = cutterele->NodeIds();
     BlitzMat posnp(3,4);
     for (int inode = 0; inode != 4; ++inode) // fill n+1 position
     {
-      const int nodeid = cutterele->Nodes()[inode]->Id();
+      const int nodeid = nodeids[inode];
       const BlitzVec3 nodexyz = cutterposnp.find(nodeid)->second;
       for (int isd = 0; isd != 3; ++isd)
       {
@@ -543,15 +544,15 @@ void XFEM::InterfaceHandle::GenerateSpaceTimeLayer(
     BlitzMat posn(3,4);
     for (int inode = 0; inode != 4; ++inode) // fill n   position
     {
-      const int nodeid = cutterele->Nodes()[inode]->Id();
+      const int nodeid = nodeids[inode];
       const BlitzVec3 nodexyz = cutterposn.find(nodeid)->second;
       for (int isd = 0; isd != 3; ++isd)
       {
         posn(isd,inode) = nodexyz(isd);
       }
     }
-    XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
-    stlayer_.insert(make_pair(cutterele->Id(),slab));
+    //XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
+    stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),posnp,posn)));
     //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
   }
   
