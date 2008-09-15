@@ -695,7 +695,70 @@ namespace GEO
             BlitzVec1&                              eleCoord
             );
     
+    /*!
+     * a common task is to get an array of the positions of all nodes of this element
+     *
+     * \note array is defined as (3,numnode)
+     *
+     * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+     *
+     * \author a.ger
+     * \date 02/08
+     */
+    BlitzMat InitialPositionArrayBlitz(
+            const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
+            );
 
+    /*!
+     * a common task is to get an array of the positions of all nodes of this element
+     *
+     * template version
+     *
+     * \note array is defined as (3,numnode)
+     *
+     * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+     *
+     * \author a.ger
+     * \date 02/08
+     */
+    template <DRT::Element::DiscretizationType distype, class M>
+    void fillInitialPositionArray(
+            const DRT::Element*      ele,
+            M&                       xyze
+            )
+    {
+        dsassert(distype == ele->Shape(), "mismatch in distype");
+        const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+        const DRT::Node*const* nodes = ele->Nodes();
+        dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
+
+        for (int inode=0; inode<numnode; inode++)
+        {
+            const double* x = nodes[inode]->X();
+            xyze(0,inode) = x[0];
+            xyze(1,inode) = x[1];
+            xyze(2,inode) = x[2];
+        }
+        return;
+    }
+
+    /*!
+     * a common task is to get an array of the current positions of all nodes of this element
+     *
+     * \note array is defined as (3,numnode)
+     *
+     * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+     *
+     * \author a.ger
+     * \date 02/08
+     */
+    BlitzMat getCurrentNodalPositions(
+        const DRT::Element*          ele,                   ///< element with nodal pointers
+        const map<int,BlitzVec3 >&   currentcutterpositions ///< current positions of all cutter nodes
+        );
+    
+    
 }
 
 
