@@ -75,9 +75,6 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   frdouble("MOMINPOL",&Irr_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed"); 
    
-  // reading thermal energy kT responsible for statistical thermodynamical forces
-  frdouble("THERMEN",&thermalenergy_,&ierr);
-  if (ierr!=1) dserror("Reading of Beam3 element failed");
    
   return true;
 } // Beam3::ReadElement()

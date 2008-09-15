@@ -340,7 +340,10 @@ private:
   double Irr_;
 
   //! thermal energy responsible for statistical forces
-  double thermalenergy_;
+  double kT_;
+  
+  //! viscosity of surrounding fluid
+  double eta_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;

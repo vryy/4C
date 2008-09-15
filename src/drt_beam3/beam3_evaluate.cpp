@@ -245,7 +245,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
 
   //stochastic forces due to fluctuation-dissipation theorem
-  if (thermalenergy_ > 0)
+  if (kT_ > 0)
   {
     extern struct _MATERIAL *mat;
     // get the material law and density
@@ -269,8 +269,8 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
     double gammarot   = params.get<double>("damping factor M",0.0) * Iyy_      * density * lrefe_ / 2;
       
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double standdevtrans = pow(2 * thermalenergy_ * gammatrans   / params.get<double>("delta time",0.01),0.5);
-    double standdevrot   = pow(2 * thermalenergy_ * gammarot     / params.get<double>("delta time",0.01),0.5);
+    double standdevtrans = pow(2 * kT_ * gammatrans   / params.get<double>("delta time",0.01),0.5);
+    double standdevrot   = pow(2 * kT_ * gammarot     / params.get<double>("delta time",0.01),0.5);
     
     //creating random generator objects which create random numbers with mean = 0 and standard deviation
     //standdevtrans and standdevrot; using Blitz namespace "ranlib" for random number generation
@@ -633,6 +633,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     //std::cout<<"\ndeltabetaminusalpha\n"<<deltabetaminusalpha<<"\n";
   }
 
+  
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
   
@@ -842,6 +843,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
       (*massmatrix)(i+6,i+6) = 0.5*density*lrefe_*crosssec_;
       (*massmatrix)(i+9,i+9) = 0.5*density*lrefe_*Iyy_;
     }
+    
+    (*massmatrix)(3,3) = 0.5*density*lrefe_*Iyy_*10000;
+    (*massmatrix)(9,9) = 0.5*density*lrefe_*Iyy_*10000;
   }
   
   return;

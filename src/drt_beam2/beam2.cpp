@@ -19,6 +19,8 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 //enabling initialization of random generator
 #include <random/normal.h>
 #include <time.h>
@@ -35,7 +37,8 @@ crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
 lumpedflag_(0),
-thermalenergy_(0),
+kT_(0),
+eta_(0),
 halfrotations_(0),
 beta0_(0),
 
@@ -57,7 +60,8 @@ crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
 lumpedflag_(old.lumpedflag_),
-thermalenergy_(old.thermalenergy_),
+kT_(old.kT_),
+eta_(old.eta_),
 halfrotations_(old.halfrotations_),
 beta0_(old.beta0_),
 gaussrule_(old.gaussrule_)
@@ -143,7 +147,9 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   //flag determining if consistent or lumped mass matrix
   AddtoPack(data,lumpedflag_);
   //thermal energy responsible for statistical forces
-  AddtoPack(data,thermalenergy_);
+  AddtoPack(data,kT_);
+  //viscosity in background fluid
+  AddtoPack(data,eta_);
   //number of half rotations in comparision with reference configuration
   AddtoPack(data,halfrotations_);
   //angle relative to x-axis in reference configuration
@@ -186,7 +192,9 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   //flag determining if consistent or lumped mass matrix
   ExtractfromPack(position,data,lumpedflag_);
   //thermal energy responsible for statistical forces
-  ExtractfromPack(position,data,thermalenergy_);
+  ExtractfromPack(position,data,kT_);
+  //viscosity in background fluid
+  ExtractfromPack(position,data,eta_);
   //number of half rotations in comparision with reference configuration
   ExtractfromPack(position,data,halfrotations_);
   //angle relative to x-axis in reference configuration
@@ -311,6 +319,9 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {	
   LINALG::SerialDenseMatrix xrefe;
   xrefe.Shape(2,2);
+  
+  //storing locally input parameters with respect to statistical mechanics for later easy access
+  Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
 	
   //random generator for seeding only (necessary for thermal noise)
   ranlib::Normal<double> seedgenerator(0,1);
@@ -356,7 +367,19 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
       if (currele->beta0_ > PI/2)
     	  currele->halfrotations_ = 1;
       if (currele->beta0_ < -PI/2)
-	  currele->halfrotations_ = -1;   
+	  currele->halfrotations_ = -1;  
+      
+    //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
+    if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
+    {
+      currele->kT_ =  statisticalparams.get<double>("KT",0.0);
+      currele->eta_ = statisticalparams.get<double>("ETA",0.0);
+    }
+    else
+    {
+      currele->kT_ = 0.0;
+      currele->eta_ = 0.0;
+    }
       
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
    

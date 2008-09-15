@@ -18,6 +18,8 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
@@ -32,7 +34,8 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-thermalenergy_(0),
+kT_(0),
+eta_(0),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -65,7 +68,8 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- thermalenergy_(old.thermalenergy_),
+ kT_(old.kT_),
+ eta_(old.eta_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -160,7 +164,9 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
   //thermal energy responsible for statistical forces
-  AddtoPack(data,thermalenergy_);
+  AddtoPack(data,kT_);
+  //viscosity of surrounding fluid
+  AddtoPack(data,eta_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -212,7 +218,9 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
   //thermal energy responsible for statistical forces
-  ExtractfromPack(position,data,thermalenergy_);
+  ExtractfromPack(position,data,kT_);
+  //viscosity of surrounding fluid
+  ExtractfromPack(position,data,eta_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -332,6 +340,8 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
+  //storing locally input parameters with respect to statistical mechanics for later easy access
+  Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
   
   //random generator for seeding only (necessary for thermal noise)
   ranlib::Normal<double> seedgenerator(0,1);
@@ -447,6 +457,18 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
         currele->betaminusalphaconv_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
+      }
+      
+      //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
+      if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
+      {
+        currele->kT_ =  statisticalparams.get<double>("KT",0.0);
+        currele->eta_ = statisticalparams.get<double>("ETA",0.0);
+      }
+      else
+      {
+        currele->kT_ = 0.0;
+        currele->eta_ = 0.0;
       }
             
     } //for (int num=0; num<dis_.NumMyColElements(); ++num)

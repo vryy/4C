@@ -236,7 +236,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 /*by the following code part stochastic external forces can be applied elementwise; for decoupling 
  * load frequency and time step size stochastical forces should better be applied outside the element*/
   
-  if (thermalenergy_ > 0)
+  if (kT_ > 0)
   {	  
 	  extern struct _MATERIAL  *mat;
 	  // get the material law and density
@@ -260,8 +260,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_/2;
 	  
 	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-	  double stand_dev_trans = pow(2 * thermalenergy_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
-	  double stand_dev_rot   = pow(2 * thermalenergy_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
+	  double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+	  double stand_dev_rot   = pow(2 * kT_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
 
 	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
 	  //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -285,8 +285,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
      double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_;
      
      //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-     double stand_dev_trans = pow(2 * thermalenergy_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
-     double stand_dev_rot   = pow(2 * thermalenergy_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
+     double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+     double stand_dev_rot   = pow(2 * kT_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
 
      //creating a random generator object which creates random numbers with mean = 0 and standard deviation
      //stand_dev; using Blitz namespace "ranlib" for random number generation

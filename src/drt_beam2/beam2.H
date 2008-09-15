@@ -304,7 +304,10 @@ private:
   int lumpedflag_;
 
   //! thermal energy responsible for statistical forces
-  double thermalenergy_;
+  double kT_;
+  
+  //! viscosity of surrounding fluid
+  double eta_;
 
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int halfrotations_;

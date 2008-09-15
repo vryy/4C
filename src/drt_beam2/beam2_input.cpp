@@ -70,12 +70,7 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   // element can use consistent or lumped mass matrix 
   lumpedflag_ = 0;
   frint("LUMPED",&lumpedflag_,&ierr);
-  if (ierr!=1) dserror("Reading of Beam2 element failed");
-   
-  // reading thermal energy kT responsible for statistical thermodynamical forces
-    thermalenergy_ = 0;
-    frdouble("THERMEN",&thermalenergy_,&ierr);
-    if (ierr!=1) dserror("Reading of Beam2 element failed"); 
+  if (ierr!=1) dserror("Reading of Beam2 element failed");  
    
   return true;
 } // Beam2::ReadElement()
