@@ -33,8 +33,8 @@ myrank_(discret_.Comm().MyPID()),
 fsisurface_(NULL)
 {
 #ifdef PRESTRESS
-#ifdef POTSTRESS
-  dserror("Cannot use PRESTRESS && POTSTRESS");
+#ifdef POSTSTRESS
+  dserror("Cannot use PRESTRESS && POSTSTRESS");
 #endif
 #ifdef STRUGENALPHA_BE
   dserror("Cannot use STRUGENALPHA_BE with prestressing");
@@ -2801,6 +2801,23 @@ void StruGenAlpha::Update()
 #endif
 
 
+#ifdef INVERSEDESIGNCREATE
+  //----------- save the current material configuration at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_inversedesign_update");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+#endif
+
+
   //------ update anything that needs to be updated at the element level
 #ifdef STRUGENALPHA_FINTLIKETR
   {
@@ -2880,6 +2897,7 @@ void StruGenAlpha::Output()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
@@ -2894,6 +2912,14 @@ void StruGenAlpha::Output()
       output_.WriteVector("prestress_surfaceneumann",rcp(&xhisrow,false));
     }
 #endif
+
+#ifdef INVERSEDESIGNCREATE // indicate that this restart is from INVERSEDESIGCREATE phase
+    output_.WriteInt("InverseDesignRestartFlag",0);
+#endif
+#ifdef INVERSEDESIGNUSE // indicate that this restart is from INVERSEDESIGNUSE phase
+    output_.WriteInt("InverseDesignRestartFlag",1);
+#endif
+
     isdatawritten = true;
 
     if (surf_stress_man_!=null)
@@ -3316,6 +3342,21 @@ void StruGenAlpha::ReadRestart(int step)
   reader.ReadVector(acc_, "acceleration");
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
+
+#ifdef INVERSEDESIGNUSE
+  int idrestart = -1;
+  idrestart = reader.ReadInt("InverseDesignRestartFlag");
+  if (idrestart==-1) dserror("expected inverse design restart flag not on file");
+  // if idrestart==0 then the file is from a INVERSEDESIGCREATE phase
+  // and we have to zero out the inverse design displacements.
+  // The stored reference configuration is on record at the element level
+  if (!idrestart)
+  {
+    dis_->PutScalar(0.0);
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+#endif
 
   // override current time and step with values from file
   params_.set<double>("total time",time);
