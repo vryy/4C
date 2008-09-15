@@ -78,7 +78,7 @@ public:
   \param ScalarAB (in) : Scalar to multiply with A x B
   \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A x B
+  \param ScalarThis (in): Scalar to multiply with C before adding A x B
   */
   void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
@@ -100,7 +100,7 @@ public:
   \param ScalarAB (in) : Scalar to multiply with A x B
   \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A x B
+  \param ScalarThis (in): Scalar to multiply with C before adding A x B
   */
   void ElastSymTensorMultiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
                               const double ScalarAB,
@@ -117,11 +117,11 @@ public:
    a 4th order tensor (in Voigt matrix notation!) using the
    symmetry-conditions inherent to elasticity tensors
 
-  \param C (in/out)    : Material tangent matrix to be modified
-  \param ScalarAB (in) : Scalar to multiply with (A x B + B x A)
-  \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding (A x B + B x A)
+  \param C (in/out)     : Material tangent matrix to be modified
+  \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
+  \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
@@ -137,7 +137,7 @@ public:
   \param ScalarAB (in) : Scalar to multiply with A o B
   \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A o B
+  \param ScalarThis (in): Scalar to multiply with C before adding A o B
   */
   void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
@@ -154,7 +154,7 @@ public:
   \param ScalarAB (in) : Scalar to multiply with A o B
   \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A o B
+  \param ScalarThis (in): Scalar to multiply with C before adding A o B
   */
   void ElastSymTensor_o_Multiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
                                  const double ScalarAB,
