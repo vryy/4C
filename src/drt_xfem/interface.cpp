@@ -37,7 +37,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
       octTreenp_(rcp( new GEO::SearchTree(5))),
       octTreen_(rcp( new GEO::SearchTree(5)))
 {
-  std::cout << "Constructing InterfaceHandle" << std::endl;
+  if (xfemdis->Comm().MyPID() == 0)
+    std::cout << "Constructing InterfaceHandle" << std::endl;
       
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );

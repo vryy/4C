@@ -27,6 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 
 
@@ -313,6 +314,10 @@ protected:
   
   //! the processor ID from the communicator
   const int                     myrank_;
+  
+  //!< a singular stream to stdout in parallel environment
+  IO::Ostream0 cout0_;   
+  
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                    alefluid_;
   //@}

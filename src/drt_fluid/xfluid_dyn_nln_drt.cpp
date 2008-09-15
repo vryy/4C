@@ -210,8 +210,24 @@ void xdyn_fluid_drt()
     vector<string> conditions_to_copy;
     conditions_to_copy.push_back("XFEMCoupling");
     Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
-    if (boundarydis->NumGlobalNodes() == 0)
+    if (boundarydis->NumGlobalNodes() == 0 and fluiddis->Comm().MyPID() == 0)
       std::cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
+    
+    // create node and element distribution with elements and nodes ghosted on all processors
+    const Epetra_Map noderowmap = *boundarydis->NodeRowMap();
+    const Epetra_Map elemrowmap = *boundarydis->ElementRowMap();
+    
+    // put all boundary nodes and elements onto all processors
+    const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+    const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+    
+    // redistribute nodes and elements to column (ghost) map
+    boundarydis->ExportColumnNodes(nodecolmap);
+    boundarydis->ExportColumnElements(elemcolmap);
+
+    // Now we are done. :)
+    const int err = boundarydis->FillComplete();
+    if (err) dserror("FillComplete() returned err=%d",err);
 
 
     // -----------------------------------------------------------------

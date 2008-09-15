@@ -57,6 +57,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   params_ (params),
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
+  cout0_(discret_->Comm(), std::cout),
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
@@ -136,30 +137,27 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
-  if (myrank_==0)
+  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+  cout0_ << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
+  cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
+  cout0_ << "\n";
+
+  if(stabparams->get<string>("TDS") == "quasistatic")
   {
-    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-    std::cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    std::cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    std::cout << "\n";
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
+    if(stabparams->get<string>("TRANSIENT")=="yes_transient")
     {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
+      dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
     }
-    std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    std::cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    std::cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    std::cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    std::cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    std::cout << "\n";
   }
+  cout0_ <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+  cout0_ <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+  cout0_ <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+  cout0_ <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+  cout0_ <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+  cout0_ <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+  cout0_ <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+  cout0_ << "\n";
 
   if (timealgo_==timeint_stationary)
     // stationary case
@@ -460,7 +458,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
-  std::cout << "switching " << endl;
+  cout0_ << "switching " << endl;
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
@@ -474,120 +472,13 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // switch state vectors to new dof distribution
   // --------------------------------------------
 
-  // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
-  const Epetra_Vector& ivelcoln = *cutterdiscret->GetState("ivelcoln");
-  const Epetra_Vector& iacccoln = *cutterdiscret->GetState("iacccoln");
-
-  BlitzVec3 rigidveln;
-  BlitzVec3 rigidaccn;
-
-  if (ivelcoln.GlobalLength() > 3)
-  {
-    rigidveln(0) = (ivelcoln)[0];
-    rigidveln(1) = (ivelcoln)[1];
-    rigidveln(2) = (ivelcoln)[2];
-
-    // falsch!!!
-    rigidaccn(0) = (iacccoln)[0];
-    rigidaccn(1) = (iacccoln)[1];
-    rigidaccn(2) = (iacccoln)[2];
-
-  }
-  else
-  {
-    std::cout << "Could not compute rigid body velocity/acceleration. Set them to zero..." << std::endl;
-    rigidveln = 0.0;
-    rigidaccn = 0.0;
-  }
-  cout << "rigidveln " << rigidveln << endl;
-  cout << "rigidaccn " << rigidaccn << endl;
-
-
   // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.accn_, rigidaccn);
+  dofswitch.mapVectorToNewDofDistribution(state_.accn_);
 
   // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.velnp_, rigidveln); // use old velocity as start value
-  dofswitch.mapVectorToNewDofDistribution(state_.veln_, rigidveln);
+  dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
+  dofswitch.mapVectorToNewDofDistribution(state_.veln_);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
-
-//  for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
-//  {
-//    const DRT::Node* node = ih->xfemdis()->lColNode(i);
-//    const BlitzVec3 nodalpos(toBlitzArray(node->X()));
-//
-//    bool is_in_fluid;
-//    if (ih->PositionWithinConditionNP(nodalpos) == 0)
-//    {
-//      is_in_fluid = true;
-//    }
-//    else
-//    {
-//      is_in_fluid = false;
-//    }
-//
-//    bool was_in_fluid = false;
-//    if (ih->PositionWithinConditionN(nodalpos) == 0)
-//    {
-//      was_in_fluid = true;
-//    }
-//    else
-//    {
-//      was_in_fluid = false;
-//    }
-//
-//    if (not is_in_fluid)
-//    {
-//      std::set<XFEM::FieldEnr> nodalDofSet = dofmanager->getNodeDofSet(node->Id());
-//      if (not nodalDofSet.empty())
-//      {
-//        if (nodalDofSet.size() == 4)
-//        {
-//          for (std::set<XFEM::FieldEnr>::const_iterator iter=nodalDofSet.begin();iter!=nodalDofSet.end();iter++)
-//          {
-//            XFEM::Enrichment enr = iter->getEnrichment();
-//            XFEM::PHYSICS::Field field = iter->getField();
-//            XFEM::DofKey<XFEM::onNode> newdofkey(node->Id(),*iter);
-//
-//            std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos>::const_iterator newdof = state_.nodalDofDistributionMap_.find(newdofkey);
-//            if (newdof == state_.nodalDofDistributionMap_.end())
-//            {
-//              dserror("should definitely be there!");
-//            }
-//            const int newdofpos = newdof->second;
-//
-//            if (field == XFEM::PHYSICS::Velx)
-//            {
-//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(0);
-//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(0);
-//            }
-//            else if (field == XFEM::PHYSICS::Vely)
-//            {
-//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(1);
-//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(1);
-//            }
-//            else if (field == XFEM::PHYSICS::Velz)
-//            {
-//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = rigidveln(2);
-//              (*state_.accn_)[newdofrowmap.LID(newdofpos)] = rigidaccn(2);
-//            }
-//            else
-//            {
-//              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
-//            }
-//
-//          }
-//        }
-//        else
-//        {
-//          dserror("works only for 4 dofs per node");
-//        }
-//      }
-//
-//    }
-//
-//
-//  };
 
 //  if (alefluid_)
 //  {
@@ -693,9 +584,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
-    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
-    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
-    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
     if (step_ <= 1)
       f.open("outifacevelnp.txt",std::fstream::trunc);
@@ -709,9 +600,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
   {
-    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
-    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
-    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
+//    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
+//    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
+//    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
     std::ofstream f;
     if (step_ <= 1)
       f.open("outifaceveln.txt",std::fstream::trunc);
@@ -1273,8 +1164,10 @@ void FLD::XFluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", state_.velnm_);
   }
 
-
-  OutputToGmsh();
+  if (discret_->Comm().NumProc() == 1)
+  {
+    OutputToGmsh();
+  }
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -1284,7 +1177,7 @@ void FLD::XFluidImplicitTimeInt::Output()
 /*----------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 {
-  dserror("check wich data was written. one might need 2 discretization writers: \n \
+  dserror("check which data was written. one might need 2 discretization writers: \n \
            one for the output and one for the restart with changing vectors.\n \
            Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
 

@@ -53,13 +53,19 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
-  std::cout << "noderowmap->UniqueGIDs(): " << noderowmap.UniqueGIDs() << endl;
-  //std::cout << noderowmap << endl;
+  const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
+  
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+  
+  // redistribute nodes and elements to column (ghost) map
+  boundarydis_->ExportColumnNodes(nodecolmap);
+  boundarydis_->ExportColumnElements(elemcolmap);
 
-  Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(noderowmap);
-  //std::cout << *newnodecolmap << endl;
-
-  DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
+  // Now we are done. :)
+  const int err = boundarydis_->FillComplete();
+  if (err) dserror("FillComplete() returned err=%d",err);
 
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
@@ -75,7 +81,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
-  std::cout << "XFluidImpl constructor done" << endl;
+//  std::cout << "XFluidImpl constructor done" << endl;
 }
 
 
