@@ -527,6 +527,8 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_ptet_evaluate.o \
                 src/drt_so3/so_ptet_nodalstrain.o \
                 src/drt_so3/so_ptet_input.o \
+                src/drt_so3/inversedesign.o \
+                src/drt_so3/inversedesign_evaluate.o \
                 src/drt_so3/prestress.o \
                 src/drt_so3/so_tet10.o \
                 src/drt_so3/so_tet10_evaluate.o \
