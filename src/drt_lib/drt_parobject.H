@@ -130,11 +130,13 @@ using namespace std;
 #define ParObject_Truss3                (int)116
 #define ParObject_Truss3Register        (int)117
 #define ParObject_BioCell               (int)118
-#define ParObject_Combust3              (int)119
-#define ParObject_Combust3Register      (int)120
-#define ParObject_Combust3Surface       (int)121
-#define ParObject_Combust3Line          (int)122
-#define ParObject_Ion                   (int)123
+#define ParObject_InvDesign             (int)119
+#define ParObject_Combust3              (int)120
+#define ParObject_Combust3Register      (int)121
+#define ParObject_Combust3Surface       (int)122
+#define ParObject_Combust3Line          (int)123
+#define ParObject_Ion                   (int)124
+
 
 namespace DRT
 {

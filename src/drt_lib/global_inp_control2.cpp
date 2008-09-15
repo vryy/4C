@@ -96,6 +96,8 @@ void ntainp_ccadiscret()
   // and add it to the (derived) nurbs discretization
   problem->ReadKnots(reader);
 
+  // the one and only Fillcomplete should be here (reader.Complete()) gee 09/08
+  
   /*---------------------------------------- input of result descriptions */
   inp_resultdescr();
 

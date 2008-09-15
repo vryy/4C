@@ -249,7 +249,8 @@ private:
    */
   bool HasNode(int nodeid) { return nodes_.find(nodeid)!=nodes_.end(); }
 
-  /// finialize reading. FillComplete.
+  /// finialize reading. FillComplete(false,false,false), that is, do not
+  /// initialize elements. This is done later after reading boundary conditions.
   void Complete();
 
   /// discretization name

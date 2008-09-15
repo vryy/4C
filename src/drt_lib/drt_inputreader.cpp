@@ -1110,7 +1110,7 @@ void ElementReader::Complete()
     cout << "Complete discretization                  in...." << flush;
   }
 
-  int err = dis_->FillComplete();
+  int err = dis_->FillComplete(false,false,false);
   if (err)
     dserror("dis_->FillComplete() returned %d",err);
 
