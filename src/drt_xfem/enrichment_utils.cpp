@@ -16,7 +16,6 @@ Maintainer: Axel Gerstenberger
 #include <sstream>
 
 #include "enrichment_utils.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
@@ -543,7 +542,7 @@ double DomainCoverageRatioT(
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
-    DRT::UTILS::fillInitialPositionArray<DISTYPE>(&ele, xyze);
+    GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
     
     //double 
     double area_ele  = 0.0;

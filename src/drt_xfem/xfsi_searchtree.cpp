@@ -14,7 +14,6 @@ Maintainer: Ursula Mayer
 #include "xfsi_searchtree.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -327,7 +326,7 @@ void XFEM::XSearchTree::TreeNode::doOverlapCheck(const std::map<int,BlitzVec3>& 
   AABBs.clear(); 
   AABBs.push_back(AABB_);
   for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-    const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(*myIt,currentpositions));
+    const BlitzMat xyze(GEO::getCurrentNodalPositions(*myIt,currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     checkRoughGeoType(*myIt, xyze, eleGeoType);
     AABBs.push_back(GEO::computeFastXAABB(*myIt, xyze, eleGeoType));
@@ -498,7 +497,7 @@ list<int> XFEM::XSearchTree::TreeNode::classifyElement(
     ) const
 {
   
-  const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(elem,currentpositions));
+  const BlitzMat xyze(GEO::getCurrentNodalPositions(elem,currentpositions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   checkRoughGeoType(elem, xyze, eleGeoType);
   const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(elem, xyze, eleGeoType));  

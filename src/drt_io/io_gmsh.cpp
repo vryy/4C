@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "io_gmsh.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_geometry/intersection_service.H"
 
 
 std::string IO::GMSH::ScalarToString(const double scalar,
@@ -76,7 +76,7 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
   const DRT::Element::DiscretizationType distype = ele->Shape();
   std::stringstream gmshfilecontent;
   
-  BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(ele,currentelepositions));
+  BlitzMat xyze(GEO::getCurrentNodalPositions(ele,currentelepositions));
   gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << endl;
  
   return gmshfilecontent.str();
@@ -111,7 +111,7 @@ std::string IO::GMSH::disToString(
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
-    BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(actele,
+    BlitzMat xyze(GEO::getCurrentNodalPositions(actele,
         currentpositions));
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         scalar, xyze) << endl;

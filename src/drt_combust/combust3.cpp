@@ -14,6 +14,7 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust3.H"
+#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 

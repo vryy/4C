@@ -18,7 +18,11 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_LOCAL_ASSEMBLER_H
 #define XFLUID3_LOCAL_ASSEMBLER_H
 
-
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_xfem/physics.H"
+#include "../drt_xfem/dof_management_element.H"
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 
 enum DerivDir
 {
@@ -227,11 +231,20 @@ class LocalAssembler<DISTYPE, XFEM::standard_assembly>
 public:
     
     explicit LocalAssembler(
-            const XFEM::ElementDofManager&    dofman,
+            const XFEM::ElementDofManager&    ,
             Epetra_SerialDenseMatrix&                         estif,
             Epetra_SerialDenseVector&                         eforce
             ) :
-        dofman_(dofman),
+        estif_(estif),
+        eforce_(eforce)
+    {
+        return;
+    }
+            
+    explicit LocalAssembler(
+            Epetra_SerialDenseMatrix&                         estif,
+            Epetra_SerialDenseVector&                         eforce
+            ) :
         estif_(estif),
         eforce_(eforce)
     {
@@ -288,7 +301,6 @@ private:
     LocalAssembler operator = (const LocalAssembler& old);
     LocalAssembler(const LocalAssembler& old);
     
-    const XFEM::ElementDofManager& dofman_;
     Epetra_SerialDenseMatrix& estif_;
     Epetra_SerialDenseVector& eforce_;
 };

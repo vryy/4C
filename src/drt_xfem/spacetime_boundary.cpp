@@ -17,8 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 #include <blitz/array.h>
-#include "../drt_lib/drt_utils.H"
-//#include "../drt_lib/drt_node.H"
+#include "../drt_geometry/intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -54,7 +53,7 @@ static void ComputePhysicalCoordinates(
         BlitzMat&            physicalCoordinates
         )
 {
-    const BlitzMat eleCoord(DRT::UTILS::InitialPositionArrayBlitz(&ele));
+    const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
     //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
     const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
     

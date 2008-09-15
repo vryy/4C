@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
@@ -451,7 +452,7 @@ int XFEM::PositionWithinConditionBruteForce(
     for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
     {
       const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
-      const BlitzMat xyze_cutter(DRT::UTILS::getCurrentNodalPositions(cutterele, *ih.cutterposnp()));
+      const BlitzMat xyze_cutter(GEO::getCurrentNodalPositions(cutterele, *ih.cutterposnp()));
       double distance = 0.0;
       BlitzVec2 eleCoord;
       BlitzVec3 normal;

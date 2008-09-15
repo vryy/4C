@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "xfluid3.H"
+#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 

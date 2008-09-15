@@ -27,6 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
+#include "../drt_lib/drt_utils.H"
 
 class DRT::Discretization;
 
@@ -149,7 +150,7 @@ static void Sysmat3(
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
-    DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
+    GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -1456,7 +1457,7 @@ static void Sysmat3(
         
         // get current node coordinates
         const std::map<int,blitz::TinyVector<double,3> >* positions = ih->cutterposnp();
-        const BlitzMat xyze_boundary(DRT::UTILS::getCurrentNodalPositions(boundaryele, *positions));
+        const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);

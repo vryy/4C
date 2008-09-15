@@ -14,7 +14,6 @@ Maintainer: Ursula Mayer
 #include "searchtree.H"
 #include "intersection_service.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -704,7 +703,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
     const std::map<int,BlitzVec3>& 	currentpositions
     ) const
 {
-  const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(element,currentpositions));
+  const BlitzMat xyze(GEO::getCurrentNodalPositions(element,currentpositions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze, eleGeoType);
   const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(element, xyze, eleGeoType));  

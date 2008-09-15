@@ -18,8 +18,6 @@
 #ifdef CCADISCRET
 
 #include "drt_utils_dgfem_basisfunctions.H"
-//#include "../drt_lib/drt_element.H"
-//#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 

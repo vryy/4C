@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "integrationcell.H"
-#include "../drt_lib/drt_utils.H"
+#include "intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -47,7 +47,7 @@ static void ComputePhysicalCoordinates(
         BlitzMat&            physicalCoordinates
         )
 {
-    const BlitzMat eleCoord(DRT::UTILS::InitialPositionArrayBlitz(&ele));
+    const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
     //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
     const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
     
@@ -68,9 +68,9 @@ static void ComputePhysicalCoordinates(
                 (*nodalPosXiDomain)(2, inen),
                 ele.Shape());
 
-        for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < nen_ele; ++j)
         {
-            for (int j = 0; j < nen_ele; ++j)
+            for (int i = 0; i < 3; ++i)
             {
               physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
             }
@@ -219,18 +219,20 @@ BlitzMat GEO::DomainIntCell::GetDefaultCoordinates(
 BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
-    //const int nsd = 3;
+    const int nsd = 3;
     
     // physical positions of cell nodes
-    BlitzMat physcoord(3,27);
+    static BlitzMat physcoord(nsd,27);
     this->NodalPosXYZ(ele, physcoord);
+    
+    const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
     
     // center in local coordinates
     BlitzVec3 localcenterpos;
     localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
-    BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
+    BlitzVec funct(numnodecell);
     DRT::UTILS::shape_function_3D(funct,
             localcenterpos(0),
             localcenterpos(1),
@@ -239,10 +241,10 @@ BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
     
     //interpolate position to x-space
     BlitzVec3 x_interpol;
-    for (int isd = 0; isd < 3; ++isd)
+    x_interpol = 0.0;
+    for (int inode = 0; inode < numnodecell; ++inode)
     {
-        x_interpol(isd) = 0.0;
-        for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(this->Shape()); ++inode)
+        for (int isd = 0; isd < nsd; ++isd)
         {
             x_interpol(isd) += funct(inode)*physcoord(isd,inode);
         }

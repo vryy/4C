@@ -19,7 +19,6 @@ Maintainer: Ursula Mayer
 #include "intersection_interfacepoint.H"
 #include "intersection_math.H"
 #include "integrationcell.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_tetgen/tetgen.h"
 
 
