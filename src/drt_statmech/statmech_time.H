@@ -40,6 +40,10 @@ public:
 
   //! \brief Do time integration
   void Integrate();
+  
+
+  //! \brief do full Newton iteration and suppress large rotations about filament axis
+  virtual void FullNewtonFilament();
     
 
 protected:

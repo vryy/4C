@@ -187,7 +187,7 @@ void StatMechManager::StatMechUpdate()
       if ((*crosslinkerpartner_)[i] != -1.0 && delcrosslinker[i] <  -1.0 + 2*punlink)
       {
         //noting that the Id of the now deleted crosslinker will be unused from now on
-        unusedids_.push_back((*crosslinkerelements_)[i]);
+        unusedids_.push_back((int)(*crosslinkerelements_)[i] );
         //noting that node responsible for the crosslinker to be deleted has from now on no crosslinker
         (*crosslinkerpartner_)[i] = -1;
         //deleting the crosslinker element number
