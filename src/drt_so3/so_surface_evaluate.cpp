@@ -100,16 +100,15 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   case config_spatial:
   {
     xc.LightShape(numnode,numdf);
+#ifndef INVERSEDESIGNCREATE
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==null) dserror("Cannot get state vector 'displacement'");
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     SpatialConfiguration(xc,mydisp);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-#if PRESTRESS_ORTHOPRESSURE
-    if (ltype == neum_orthopressure)
-      SpatialConfiguration(xc,xrefehist_,mydisp);
-#endif
+#else
+// in inverse design analysis, the current configuration is the reference
+    MaterialConfiguration(xc);
 #endif
   }
   break;
@@ -268,13 +267,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_init_vol")                act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
-#ifdef PRESTRESS
-  else if (action=="calc_struct_prestress_update") act = StructuralSurface::prestress_update;
-#endif
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  else if (action=="prestress_writerestart")       act = StructuralSurface::prestress_writerestart;
-  else if (action=="prestress_readrestart")        act = StructuralSurface::prestress_readrestart;
-#endif
   else dserror("Unknown type of action for StructuralSurface");
 
   //create communicator
@@ -658,53 +650,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
       }
       break;
-#ifdef PRESTRESS
-      case prestress_update:
-      {
-#if PRESTRESS_ORTHOPRESSURE
-        // get condition
-        RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition");
-        // check whether the type of condition is neum_orthopressure. If not, do nothing
-        const string* type = cond->Get<string>("type");
-        // we care for orthopressure only
-        if (*type != "neum_orthopressure") return 0;
-        // update the history configuration
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        SpatialConfiguration(xrefehist_,xrefehist_,mydisp);
-#endif
-        return 0;
-      }
-      break;
-#endif
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-      case prestress_writerestart:
-      {
-#if PRESTRESS_ORTHOPRESSURE
-        Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
-        if (!xhis) dserror("No prestress restart vector set");
-        if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
-        const int lid = xhis->Map().LID(Id());
-        for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
-          (*(*xhis)(i))[lid] = xrefehist_.A()[i];
-#endif
-      }
-      break;
-      case prestress_readrestart:
-      {
-#if PRESTRESS_ORTHOPRESSURE
-        Epetra_MultiVector* xhis = params.get<Epetra_MultiVector*>("prestress_restartvector",NULL);
-        if (!xhis) dserror("No prestress restart vector set");
-        if (xhis->NumVectors()<xrefehist_.M()*xrefehist_.N()) dserror("Prestress restart vector too small");
-        const int lid = xhis->Map().LID(Id());
-        for (int i=0; i<xrefehist_.M()*xrefehist_.N(); ++i)
-          xrefehist_.A()[i] = (*(*xhis)(i))[lid];
-#endif
-      }
-      break;
-#endif
       case calc_struct_constrarea:
       {
         dserror("Element routines for area constraint in 3D not implemented yet!");
