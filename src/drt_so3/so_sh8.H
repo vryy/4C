@@ -70,6 +70,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   So_sh8(int id, int owner);
 
@@ -156,6 +157,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -206,10 +209,10 @@ private:
 
   //! in case of changed "thin" direction this is true
   bool nodes_rearranged_;
-  
+
   //! vector in thickness direction for compatibility with sosh8
   vector<double>                                   thickvec_;
-  
+
   //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
@@ -229,7 +232,7 @@ private:
   const vector<Epetra_SerialDenseMatrix> sosh8_derivs();
   //! Evaluate Hex8 Weights to keep them static
   const vector<double> sosh8_weights();
-  
+
   //! Evaluate all ANS related data at the ANS sampling points
   void sosh8_anssetup(const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
@@ -352,8 +355,8 @@ public:
 
   The method performs all steps needed to init the solid-shell8 elements.
   This includes defining the thickness direction of the solid-shell by looking
-  at its geometric shape in reference configuration. Thus, the loop looks a bit 
-  complicated because a "not-thin" So_sh8 is morphed to a So_hex8 where the 
+  at its geometric shape in reference configuration. Thus, the loop looks a bit
+  complicated because a "not-thin" So_sh8 is morphed to a So_hex8 where the
   discretization is not filled-complete anymore.
   */
   int Initialize(DRT::Discretization& dis);
@@ -361,7 +364,7 @@ public:
   //@}
 
 
-
+  //! debug plot for defining thickness direction
   void sosh8_gmshplotdis(const DRT::Discretization& dis);
 
 }; // class Sosh8Register

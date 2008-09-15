@@ -68,6 +68,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   SoDisp(int id, int owner);
 
@@ -219,6 +220,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -317,9 +320,9 @@ protected:
   //! Gaussrule
   DRT::UTILS::GaussRule3D                         gaussrule_;
 
-  int numnod_disp_;      // number of nodes
-  int numdof_disp_;     // total dofs per element
-  int numgpt_disp_;      // total gauss points per element
+  int numnod_disp_;      ///< number of nodes
+  int numdof_disp_;     ///< total dofs per element
+  int numgpt_disp_;      ///< total gauss points per element
 
 
   // internal calculation methods
@@ -327,6 +330,7 @@ protected:
   // don't want = operator
   SoDisp& operator = (const SoDisp& old);
 
+  //! Calculate nonlinear stiffness and mass matrix
   virtual void sodisp_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -335,6 +339,7 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  ParameterList&            params);         // algorithmic parameters e.g. time
 
+  //! material selection for so_disp
   void sodisp_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,

@@ -74,6 +74,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   So_weg6(int id, int owner);
 
@@ -271,6 +272,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -382,10 +385,10 @@ protected:
   // don't want = operator
   So_weg6& operator = (const So_weg6& old);
 
-  // init the inverse of the jacobian and its determinant
-  // in the material configuration
+  //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
 
+  //! Calculate nonlinear stiffness and mass matrix
   virtual void sow6_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -398,6 +401,7 @@ protected:
                                  const bool                cauchy = false,
                                  const bool                euler_almansi = false);
 
+  //! material selection for sow6
   void sow6_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
@@ -406,6 +410,7 @@ protected:
                     const int gp,
                     ParameterList&            params);         // algorithmic parameters e.g. time
 
+  //! calculate static shape functions and derivatives for sow6
   void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
@@ -413,6 +418,7 @@ protected:
   //! lump mass matrix (bborn 07/08)
   void sow6_lumpmass(Epetra_SerialDenseMatrix* emass);
 
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void soweg6_expol(Epetra_SerialDenseMatrix& stresses,
                     Epetra_SerialDenseMatrix& nodalstresses);
 

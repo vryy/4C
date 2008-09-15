@@ -76,6 +76,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   So_tet10(int id, int owner);
 
@@ -226,6 +227,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -423,13 +426,13 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   		Tet_integrator_14point(void);
   };
 
-  // became obsolete
+  /// became obsolete
   void so_tet10_shapederiv(
   	  Epetra_SerialDenseVector** shapefct_ptr,
       Epetra_SerialDenseMatrix** deriv_gp_ptr,
       Epetra_SerialDenseVector** weights);
 
-  // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
+  /// material selection
   void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,

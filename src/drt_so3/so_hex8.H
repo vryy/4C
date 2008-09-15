@@ -286,6 +286,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -446,8 +448,7 @@ protected:
   So_hex8& operator = (const So_hex8& old);
 
 
-  // init the inverse of the jacobian and its determinant
-  // in the material configuration
+  //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
@@ -505,6 +506,8 @@ protected:
    * \param *glstrain (in): Voigt-Vector of GL-strains at current gp
    * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
    * \param gp (in): current gp
+   * \param params (in): parameterlist to access time, etc. in materials
+   * \param action (in): action, multiscale-related
    * \param ele_ID (in): current element Id
    * \param time (in): current algorithmic time
    * \param dt (in): current algorithmic timestepsize
@@ -545,6 +548,7 @@ protected:
   void soh8_read_restart_multi(ParameterList& params);
 
 
+  /// temporary method for compatibility with solidshell, needs clarification
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
 
 

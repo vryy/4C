@@ -81,7 +81,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual inline int UniqueParObjectId() const 
+  virtual inline int UniqueParObjectId() const
   { return ParObject_StructuralLine;}
 
   /*!
@@ -152,7 +152,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual inline RCP<DRT::ElementRegister> ElementRegister() const 
+  virtual inline RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
 
   //@}
@@ -193,9 +193,10 @@ private:
   //! gaussian integration to be used
   DRT::UTILS::GaussRule1D gaussrule_;
 
-  void LineIntegration(double&                          dL,                   
-                       const LINALG::SerialDenseMatrix& x, 
-                       const LINALG::SerialDenseMatrix& deriv);                    
+  //! line integration
+  void LineIntegration(double&                          dL,
+                       const LINALG::SerialDenseMatrix& x,
+                       const LINALG::SerialDenseMatrix& deriv);
 
   /*!
   \brief Create matrix with material configuration

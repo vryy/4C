@@ -77,6 +77,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   So_tet4(int id, int owner);
 
@@ -227,6 +228,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -307,6 +310,7 @@ protected:
     so_tet4_totlag,
     so_tet4_updlag
   };
+  //! stress evaluation types of so_tet10
   enum StressType
   {
     so_tet4_stress_none,
@@ -327,6 +331,7 @@ protected:
   //! number of the material law
   int                                                      material_;
 
+  //! container containing all kind of solid3 thisandthat
   DRT::Container                                           data_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                      mat_;
@@ -338,13 +343,13 @@ protected:
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                    prestress_;
-  
+
   // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp, 
+  void UpdateJacobianMapping(const vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
 
   // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp, 
+  void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
@@ -353,11 +358,11 @@ protected:
 
   // don't want = operator
   So_tet4& operator = (const So_tet4& old);
-  
-  // init the inverse of the jacobian and its determinant
-  // in the material configuration
+
+  //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
 
+  //! Calculate nonlinear stiffness and mass matrix
   virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -374,11 +379,12 @@ protected:
   void so_tet4_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
 
 
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
                      Epetra_SerialDenseMatrix& nodalstresses);
 
 
-  /// #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden (??? auf keinen Fall, Gee)
+  /// material selection for so_tet4
   void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,

@@ -29,15 +29,15 @@ class Soshw6Register;
 /*!
 \brief A C++ 6-node wedge Solid-Shell element inherited from so_weg6
 
-This element adopts the ANS approach to improve shear and curvature-thickness 
+This element adopts the ANS approach to improve shear and curvature-thickness
 (trapezoidal) locking. However, being triangular inplane, the ANS evaluation
 points of the shear strains are choosen just on two of three surfaces (See
 also DRT::ELEMENTS::So_shw6::soshw6_anssetup).
 Thus, the element becomes mesh dependent (where in material space lies my
-parameter space), but this is in favour of less pronounced shear locking 
+parameter space), but this is in favour of less pronounced shear locking
 compared to a invariant formulation (locking free just for certain mesh configurations).
 
-See Diss. Frank Koschnick for details. 
+See Diss. Frank Koschnick for details.
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
@@ -56,6 +56,7 @@ public:
   \brief Standard Constructor
 
   \param id : A unique global id
+  \param owner : elements owning processor
   */
   So_shw6(int id, int owner);
 
@@ -141,7 +142,7 @@ public:
 
 
 private:
-  
+
   /*! \brief EAS technology enhanecement types of so_shw6
    * Solid-Shell Wedge6 has EAS enhancement of GL-strains to avoid locking
    * \param soshw6_poissonthick: 1 parameter for correct kinematic of solid-shell,
@@ -153,10 +154,10 @@ private:
     soshw6_easpoisthick,
     soshw6_easnone
   };
-  
+
   //! type of EAS technology
   EASType                                             eastype_;
-  
+
   //! number of EAS parameters (alphas), defined by 'EASType"
   int                                                 neas_;
 
@@ -170,6 +171,8 @@ private:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param lm (in)        : location matrix for de-assembly
   \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
                           the controling method does not expect the element to fill
                           this matrix.
@@ -218,7 +221,7 @@ private:
             Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
             Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
             Epetra_SerialDenseMatrix& B_ans_loc); // modified B
-  
+
   //! Transformation matrix parameter->material space
   void soshw6_evaluateT(const Epetra_SerialDenseMatrix& jac,
                         Epetra_SerialDenseMatrix& TinvT);

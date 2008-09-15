@@ -173,6 +173,7 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
 
+  //! Evaluate method for StructuralSurface-Elements
   virtual int Evaluate(ParameterList& params,
                        DRT::Discretization&      discretization,
                        vector<int>&              lm,
@@ -185,6 +186,7 @@ public:
 
 protected:
 
+  //! action for surface evaluation
   enum ActionType
   {
     none,

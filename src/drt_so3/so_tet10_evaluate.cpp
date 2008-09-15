@@ -45,7 +45,7 @@ using namespace LINALG; // our linear algebra
  | vector of material laws                                              |
  | defined in global_control.c											|
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+extern struct _MATERIAL  *mat;  ///< C-style material struct
 
 
 /*----------------------------------------------------------------------*
@@ -136,8 +136,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: 
-    case calc_struct_nlnstifflmass: 
+    case calc_struct_nlnstiffmass:
+    case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -831,7 +831,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(Epetra_SerialDenseMatrix* emass)
     // we assume #elemat2 is a square matrix
     for (int c=0; c<(*emass).N(); ++c)  // parse columns
     {
-      double d = 0.0;  
+      double d = 0.0;
       for (int r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries
