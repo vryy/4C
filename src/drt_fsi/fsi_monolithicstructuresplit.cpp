@@ -199,7 +199,6 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  //const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks =
@@ -278,9 +277,23 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
     mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
 
-    mat.Matrix(1,2).Zero();
-    mat.Matrix(1,2).Add(fmgi,false,1.,1.0);
-    mat.Matrix(1,2).Add(fmii,false,1.,1.0);
+    const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+
+    fmgitransform_(*mmm,
+                   fmgi,
+                   1.,
+                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   mat.Matrix(1,2),
+                   false,
+                   false);
+
+    fmiitransform_(*mmm,
+                   fmii,
+                   1.,
+                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   mat.Matrix(1,2),
+                   false,
+                   true);
   }
 
   // done. make sure all blocks are filled.

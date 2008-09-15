@@ -99,8 +99,8 @@ namespace FSI
     UTILS::MatrixColTransform sigtransform_;
     UTILS::MatrixColTransform aigtransform_;
 
-    //UTILS::MatrixColTransform fmiitransform_;
-    //UTILS::MatrixRowColTransform fmgitransform_;
+    UTILS::MatrixColTransform fmiitransform_;
+    UTILS::MatrixColTransform fmgitransform_;
 
     ///@}
 

@@ -60,18 +60,16 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
     // put row into matrix
     for (int j=0; j<NumEntries; ++j)
     {
-      if (Values[j]!=0.0)
+      // add all values, including zeros, as we need a proper matrix graph
+      int err = edst->SumIntoGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
+      if (err>0)
       {
-        int err = edst->SumIntoGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-        if (err>0)
-        {
-          err = edst->InsertGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-          if (err<0)
-            dserror("InsertGlobalValues error: %d", err);
-        }
-        else if (err<0)
-          dserror("SumIntoGlobalValues error: %d", err);
+        err = edst->InsertGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
+        if (err<0)
+          dserror("InsertGlobalValues error: %d", err);
       }
+      else if (err<0)
+        dserror("SumIntoGlobalValues error: %d", err);
     }
   }
   else
