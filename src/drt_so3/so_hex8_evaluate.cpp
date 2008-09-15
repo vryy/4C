@@ -23,6 +23,11 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
 
+// inverse design object
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+#include "inversedesign.H"
+#endif
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -64,6 +69,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 #ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
 #endif
+#ifdef INVERSEDESIGNCREATE
+  else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
+#endif
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
@@ -94,7 +102,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix* matptr = NULL;
       if (elemat1.N()) matptr = &elemat1;
+#ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
+#else
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
+#endif
     }
     break;
 
@@ -132,7 +144,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+#ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+#else
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+#endif
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
@@ -156,7 +172,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
+#ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+#else
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+#endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -418,6 +438,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 #endif
 
+#ifdef INVERSEDESIGNCREATE
+    case inversedesign_update:
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      invdesign_->soh8_StoreMaterialConfiguration(this,mydisp);
+      invdesign_->IsInit() = true; // this is to make the restart work
+    }
+    break;
+#endif
+
+
     default:
       dserror("Unknown type of action for So_hex8");
   }
@@ -526,9 +560,19 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     if (!(prestress_->IsInit()))
       prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
 #endif
+#ifdef INVERSEDESIGNUSE
+    if (!(invdesign_->IsInit()))
+    {
+      invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
+      invdesign_->DetJHistory()[gp] = detJ_[gp];
+    }
+#endif
   }
 #ifdef PRESTRESS
   prestress_->IsInit() = true;
+#endif
+#ifdef INVERSEDESIGNUSE
+  invdesign_->IsInit() = true;
 #endif
   return;
 }
@@ -656,7 +700,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply('N','N',1.0,invJ_[gp],int_hex8.deriv_gp[gp],0.0);
-    const double detJ = detJ_[gp];
+    double detJ = detJ_[gp];
 
     // build deformation gradient wrt to material configuration
     // in case of prestressing, build defgrd wrt to last stored configuration
@@ -688,6 +732,25 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 #else
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
+#endif
+
+#ifdef INVERSEDESIGNUSE
+    {
+      // make the multiplicative update so that defgrd refers to 
+      // the reference configuration that resulted from the inverse
+      // design analysis
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
+      LINALG::SerialDenseMatrix tmp3x3(3,3);
+      tmp3x3.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      defgrd = tmp3x3;
+      
+      // make detJ and invJ refer to the ref. configuration that resulted from
+      // the inverse design analysis
+      detJ = invdesign_->DetJHistory()[gp];
+      invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
+      N_XYZ.Multiply('N','N',1.0,tmp3x3,int_hex8.deriv_gp[gp],0.0);
+    }
 #endif
 
     // Right Cauchy-Green tensor = F^T * F
@@ -811,6 +874,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

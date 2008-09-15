@@ -57,6 +57,9 @@ namespace ELEMENTS
 {
 // forward declarations
 class Soh8Register;
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+class InvDesign;
+#endif
 
 /*!
 \brief A C++ version of the 8-node hex solid element
@@ -365,6 +368,7 @@ protected:
     eas_set_multi,
     postprocess_stress,
     prestress_update,
+    inversedesign_update,
     multi_readrestart
   };
 
@@ -436,7 +440,10 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
 
-
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  friend class DRT::ELEMENTS::InvDesign;
+  RCP<DRT::ELEMENTS::InvDesign>                    invdesign_;
+#endif
 
   //! vector for fiber direction, needs better place in future
   //vector<double>                                   fiberdirection_;
