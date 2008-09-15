@@ -177,14 +177,17 @@ private:
   //! container containing all kind of this and that
   DRT::Container                                  data_;
   
+  //! vector with line elements
+  vector<RCP<DRT::Element> >                      lines_;
+  
   //! flag for fixed or moving boundary
-  bool                                            is_moving_;
+  const bool                                      is_moving_;
 
   //! don't want = operator
   Bele3& operator = (const Bele3& old);
   
   //! set number of gauss points to element shape default
-  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
 
 }; // class Bele3
 

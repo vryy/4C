@@ -25,6 +25,7 @@ DRT::Element(id,element_bele3,owner),
 data_(),
 is_moving_(true)
 {
+  lines_.clear();
   return;
 }
 
@@ -37,6 +38,7 @@ DRT::Element(old),
 data_(old.data_),
 is_moving_(old.is_moving_)
 {
+  lines_.clear();
   return;
 }
 
@@ -47,6 +49,7 @@ is_moving_(old.is_moving_)
 DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
 {
   DRT::ELEMENTS::Bele3* newelement = new DRT::ELEMENTS::Bele3(*this);
+  newelement->lines_.clear();
   return newelement;
 }
 
@@ -117,6 +120,9 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  
+  lines_.clear();
+  
   return;
 }
 
@@ -155,14 +161,12 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
+  if (lines_.empty())
+  {
+    // so we have to allocate new line elements:
+    lines_ = DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
+  }
+  return lines_;
 }
 
 
@@ -177,7 +181,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Element::DiscretizationType& distype)
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Element::DiscretizationType& distype) const
 {
   DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
     switch (distype)
