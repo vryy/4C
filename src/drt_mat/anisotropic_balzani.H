@@ -72,20 +72,24 @@ namespace MAT
 
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_anisotropic_balzani; }
-    
+
+    /// evaluate stress and elasticity matrix
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress) {return;}
 
+    /// evaluate stress and elasticity matrix
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const Epetra_SerialDenseMatrix* defgrd,
                   const int gp,  const int ele_ID, const double time,
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress,
                   double avec[3]);
-                  
+
+    /// return density
     double Density();
-    
+
+    /// return fiber directions
     vector<double> ReturnGlobalFiberDirection() {
       vector<double> aglob(3);
       aglob[0] = matdata_->m.anisotropic_balzani->a1[0];
@@ -93,6 +97,8 @@ namespace MAT
       aglob[2] = matdata_->m.anisotropic_balzani->a1[2];
       return aglob;
     }
+
+    /// check whether fiber directions are globally defined
     bool GlobalFiberDirection() const {
       if (matdata_->m.anisotropic_balzani->aloc == 1) return false;
       else return true;
@@ -102,7 +108,7 @@ namespace MAT
 
     /// my material parameters
     MATERIAL* matdata_;
-  
+
   };
 }
 

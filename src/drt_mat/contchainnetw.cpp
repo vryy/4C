@@ -22,7 +22,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
 
-extern struct _MATERIAL *mat;
+extern struct _MATERIAL *mat;   ///< C-style material struct
 
 
 
@@ -70,12 +70,12 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
   {
     histsize=0;
   }
-  else 
+  else
   {
     histsize = li_->size();
   }
   AddtoPack(data,histsize);  // lenght of history vector(s)
-  for (int var = 0; var < histsize; ++var) 
+  for (int var = 0; var < histsize; ++var)
   {
     AddtoPack(data,li_->at(var));
     AddtoPack(data,li0_->at(var));
@@ -83,7 +83,7 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
     AddtoPack(data,stresses_->at(var));
     AddtoPack(data,mytime_->at(var));
   }
-  
+
   return;
 }
 
@@ -108,7 +108,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   isinit_ = true;
   int histsize;
   ExtractfromPack(position,data,histsize);
-  
+
   if (histsize == 0) isinit_=false;
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
@@ -134,7 +134,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  
+
   return;
 }
 
@@ -142,7 +142,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ContChainNetw::Initialize(const int numgp, const int eleid) 
+void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
 {
   const double r0 = matdata_->m.contchainnetw->r0;
   const double isotropy  = 1/sqrt(3.0) * r0;
@@ -158,7 +158,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
   Epetra_SerialDenseMatrix id(3,3);
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
   Epetra_SerialDenseMatrix initstress(3,3);
-  
+
   vector<double> randominit(3);
   double rescale = 0.0;
   for (int i = 0; i < 3; ++i) {
@@ -166,7 +166,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
     rescale += randominit[i]*randominit[i];
   }
   rescale = r0 / sqrt(rescale);
-  
+
   // initialize cell dimensions
   for(int gp=0; gp<numgp; ++gp){
     li0_->at(gp).resize(3);
@@ -197,9 +197,9 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
 
   //mytime_ = 1.0;  // carefull!
   isinit_ = true;
-  
+
   return ;
-  
+
 }
 
 
@@ -228,7 +228,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double r0 = matdata_->m.contchainnetw->r0;      // initial chain length
   const double boltzmann = 1.3806503E-23;
   const int dim = 3;
-  
+
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   Epetra_SerialDenseVector Id(6);
@@ -236,7 +236,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseVector C(*glstrain);
   C.Scale(2.0);
   C += Id;
-  
+
   // we need the 3 by 3 matrix as well later on -> needs improvement
   Epetra_SerialDenseMatrix CG(3,3);
   CG(0,0) = C(0); CG(1,1) = C(1); CG(2,2) = C(2);
@@ -252,7 +252,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(IC3);
   const double lJ = log(J);
-  
+
   // invert C
   Epetra_SerialDenseVector Cinv(6);
 
@@ -267,26 +267,26 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // isotropic part: NeoHooke  ************************************************
   // W = 1/2 lambda ln^2(J) + 1/2 mue (I1-3) - mue ln(J)
   // S = (lambda ln(J) - mue) Cinv + mue Id
-  // Elasticity = lambda (Cinv x Cinv) + 2(mue - lambda ln(J))(Cinv o Cinv) 
+  // Elasticity = lambda (Cinv x Cinv) + 2(mue - lambda ln(J))(Cinv o Cinv)
   Epetra_SerialDenseVector Siso1(Cinv);
   Siso1.Scale(lambda*lJ-mue);
   *stress += Siso1;
   Siso1 = Id;
   Siso1.Scale(mue);
   *stress += Siso1;
-  
+
   AddtoCmatHolzapfelProduct((*cmat),Cinv,2*(mue-lambda*lJ));
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
       (*cmat)(i,j) += lambda * Cinv(i) * Cinv(j); // add lambda Cinv x Cinv
     }
   }
-  
+
   // anisotropic part *********************************************************
-  
+
   // the chain stiffness factor
   const double chn_stiffact = boltzmann * abstemp * nchain / (4.0*A);
-  
+
   // initial cell dimensions
   vector<double> li0sq(dim);
   for (int i=0; i<dim; ++i) li0sq[i] = li0_->at(gp)[i]*li0_->at(gp)[i];
@@ -300,13 +300,13 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   vector<double> I = EvaluateInvariants(CG,Ni);
   // current cell dimensions
   vector<double> lisq(dim);
-  for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
+  for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i];
   double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
   double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
-  
+
   // evaluate current stress (including isotropic and anisotropic part)
   Epetra_SerialDenseMatrix S = EvaluateStress(MAT::StressVoigt2Mat(stress),Ni,lisq,I,s_chn,stressfree);
-  
+
   // do remodeling only if we are at a new time step and based on last stress
   const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
   const double time = params.get("total time",-1.0);
@@ -316,7 +316,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     double rem_time = time - matdata_->m.contchainnetw->rembegt;
     mytime_->at(gp) = time;
     const double decay = min(1.0,exp(-kappa*rem_time));
-    
+
     // evaluate eigenproblem
     Epetra_SerialDenseVector lambda(dim);
     Epetra_SerialDenseMatrix Phi = stresses_->at(gp);
@@ -324,10 +324,10 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     LINALG::SymmetricEigenProblem(Phi,lambda);
     //Epetra_SerialDenseMatrix strain = MAT::StrainVoigt2Mat(glstrain);
     //LINALG::SymmetricEigenProblem(strain,lambda);
-    
+
     // initialise rem_toggle which means per default diminuish cell lengths
     vector<double> rem_toggle(3,0.0);
-    
+
     // decide on remodeling strategy and update cell dimensions and history
     if (matdata_->m.contchainnetw->updrate == 0){
       for (int i=0; i<3; ++i){
@@ -350,32 +350,32 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
       }
       UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
     } else dserror("Unknown Update Flag");
-    
+
 #if DEBUG1
     // update initial chain length
     for (int i = 0; i < 3; ++i) li0_->at(gp)[i] = li_->at(gp)[i];
     for (int i=0; i<dim; ++i) li0sq[i] = li_->at(gp)[i]*li_->at(gp)[i];
     double r0new = sqrt(li0sq[0] + li0sq[1] + li0sq[2]);
-    
+
     if (abs(r0-r0new) > 1.0E-12) dserror("r0 scaling problem");
 #endif
 
-    
+
     // reevaluate stress with 'remodeled' parameters
     Ni = EvaluateStructTensors(gp);
     I = EvaluateInvariants(CG,Ni);
-    for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
+    for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i];
     double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
-    
+
     stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
-    
+
     double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
     S = EvaluateStress(MAT::StressVoigt2Mat(stress),Ni,lisq,I,s_chn,stressfree);
  }
-   
+
   // remember current stress
   stresses_->at(gp) = S;
-  
+
   // return stress
   (*stress) = StressMat2Voigt(S);
 
@@ -384,18 +384,18 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
 #if DEBUG1
   //cout << "glstrain" << endl << (*glstrain);
   //cout << "stress" << endl << (*stress);
-  cout << "li0: " << PrintVec(li0_->at(gp)) << "; li: " << PrintVec(li_->at(gp)) << endl; 
-  //cout << PrintAnisoVects(gp) << endl << PrintStructTens(Ni) << endl; 
+  cout << "li0: " << PrintVec(li0_->at(gp)) << "; li: " << PrintVec(li_->at(gp)) << endl;
+  //cout << PrintAnisoVects(gp) << endl << PrintStructTens(Ni) << endl;
   cout << PrintAnisoCmat((*cmat),Ni,lisq,I,c_chn,stressfree) << endl;
 #endif
   EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
-  
+
 #if DEBUG1
   //cout << *cmat;
 #endif
-  
-  
-  
+
+
+
   return;
 }
 
@@ -436,14 +436,14 @@ void MAT::ContChainNetw::EvaluateCmat(Epetra_SerialDenseMatrix& cmat,
   for (int i_fib=0; i_fib<3; ++i_fib)
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 3; ++j) sumN0i(i,j) += cell_li[i_fib] * Ni[i_fib](i,j);
-  
+
   ElastSymTensorMultiply(cmat,c_chn_scalar,sumN0i,sumN0i,1.0);  // fac sumN0i x sumN0i
-  
+
   for (int i_fib=0; i_fib<3; ++i_fib){
     double f = -8.0*stressfree*cell_li[i_fib] / (cell_Inv[i_fib] * cell_Inv[i_fib]);
     ElastSymTensorMultiply(cmat,f,Ni[i_fib],Ni[i_fib],1.0);
   }
-  return; 
+  return;
 }
 
 vector<Epetra_SerialDenseMatrix> MAT::ContChainNetw::EvaluateStructTensors(const int gp)
@@ -570,6 +570,7 @@ std::string MAT::ContChainNetw::PrintVec(const vector<double> actvec)
 }
 
 
+/// transform Voigt stress vector to matrix
 Epetra_SerialDenseMatrix MAT::StressVoigt2Mat(Epetra_SerialDenseVector* stress)
 {
 #if DEBUG
@@ -584,6 +585,7 @@ Epetra_SerialDenseMatrix MAT::StressVoigt2Mat(Epetra_SerialDenseVector* stress)
   return mat;
 }
 
+/// transform Voigt strain vector to matrix respecting factor 2 for shear
 Epetra_SerialDenseMatrix MAT::StrainVoigt2Mat(const Epetra_SerialDenseVector* strain)
 {
 #if DEBUG
@@ -598,6 +600,7 @@ Epetra_SerialDenseMatrix MAT::StrainVoigt2Mat(const Epetra_SerialDenseVector* st
   return mat;
 }
 
+/// transform stress matrix to Voigt vector
 Epetra_SerialDenseVector MAT::StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat)
 {
 #if DEBUG
@@ -610,6 +613,7 @@ Epetra_SerialDenseVector MAT::StressMat2Voigt(Epetra_SerialDenseMatrix& stressma
   return s;
 }
 
+/// Debug output to txt-file
 void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const double time,
     const int iter)
@@ -632,7 +636,7 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
         vector<double> li = chain->Getli()->at(gp);
         vector<double> lamb = chain->Getlambdas()->at(gp);
         Epetra_SerialDenseMatrix ni0 = chain->Getni()->at(gp);
-        
+
         // time
         outfile << time << ",";
         // iter
@@ -658,7 +662,7 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
 }
 
 
-
+/// Debug output to gmsh-file
 void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
                                       const double time,
                                       const int iter)
@@ -672,7 +676,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
   {
     const DRT::Element* actele = dis->lColElement(iele);
-    
+
     // build current configuration
     vector<int> lm;
     vector<int> lmowner;
@@ -691,7 +695,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     }
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         1.0, xyze) << endl;
-    
+
     vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
@@ -700,29 +704,29 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     RCP<vector<vector<double> > > gplis = chain->Getli();
     RCP<vector<vector<double> > > gpli0s = chain->Getli0();
     RCP<vector<Epetra_SerialDenseMatrix> > gpnis = chain->Getni();
-    
+
     vector<double> centerli (3,0.0);
     vector<double> centerli_0 (3,0.0);
     Epetra_DataAccess CV = Copy;
-    
+
 //    // material plot at element center
 //    const int dim=3;
 //    for (int k=0; k<dim; ++k){
 //      gmshfilecontent << "VP(" << scientific << elecenter[0] << ",";
 //      gmshfilecontent << scientific << elecenter[1] << ",";
 //      gmshfilecontent << scientific << elecenter[2] << ")";
-//      gmshfilecontent << "{" << scientific << 
+//      gmshfilecontent << "{" << scientific <<
 //      ni0(0,k) * lamb0[k]
 //      << "," << ni0(1,k) * lamb0[k] << "," << ni0(2,k) * lamb0[k] << "};" << endl;
 //    }
-    
+
     // material plot at gauss points
     int ngp = chain->Getni()->size();
     for (int gp = 0; gp < ngp; ++gp){
       vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
       double scalar = 1;
       vector<double> length(3);
-      vector<double> gpli =  chain->Getli()->at(gp); 
+      vector<double> gpli =  chain->Getli()->at(gp);
       vector<double> gpli0 = chain->Getli0()->at(gp);
 //      length[0] = scalar * gpli[0]/gpli0[0];
 //      length[1] = scalar * gpli[1]/gpli0[1];
@@ -733,11 +737,11 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //      for (int i=0; i<3; ++i){
 //        cout << gpli[i] << ":" << gpli0[i] << endl;
 //      }
-      
+
       Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
       Epetra_SerialDenseVector glo(3);
       glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
-      
+
       for (int k=0; k<3; ++k){
 //        // draw eigenvectors
 //        gmshfilecontent << "VP(" << scientific << point[0] << ",";
@@ -747,7 +751,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //        << ((chain->Getni())->at(gp))(0,k)
 //        << "," << ((chain->Getni())->at(gp))(1,k)
 //        << "," << ((chain->Getni())->at(gp))(2,k) << "};" << endl;
-        
+
         // draw fiber cell vectors
         Epetra_SerialDenseVector e(3);
         e(k) = gpli[k];
@@ -756,8 +760,8 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
         gmshfilecontent << scientific << point[1] << ",";
         gmshfilecontent << scientific << point[2] << ")";
         gmshfilecontent << "{" << scientific
-        <<        glo(0) 
-        << "," << glo(1) 
+        <<        glo(0)
+        << "," << glo(1)
         << "," << glo(2)
         << "};" << endl;
       }
@@ -767,10 +771,11 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 
   f_system << gmshfilecontent.str();
   f_system.close();
-  
+
   return;
 }
 
+/// gmsh-debug: calculate gausspoint coordinates
 const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp)
 {
   // update element geometry

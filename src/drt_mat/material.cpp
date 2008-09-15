@@ -34,7 +34,7 @@ Maintainer: Lena Wiechert
 #include "biocell.H"
 #include "ion.H"
 
-extern struct _MATERIAL *mat;
+extern struct _MATERIAL *mat;  ///< C-style material struct
 
 
 

@@ -22,7 +22,7 @@ Maintainer: Moritz Frenzel
 #include "contchainnetw.H" // for debug plotting
 
 
-extern struct _MATERIAL *mat;
+extern struct _MATERIAL *mat; ///< C-style material struct
 
 //#define PI        (asin(1.0)*2.0)
 
@@ -73,7 +73,7 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
   }
   else
   {
-    histsize = gamma_->size();
+    histsize = gamma_->size();   // size is number of gausspoints
   }
   AddtoPack(data,histsize);  // lenght of history vector(s)
   for (int var = 0; var < histsize; ++var)
@@ -82,6 +82,9 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
     AddtoPack(data,phi_->at(var));
     AddtoPack(data,stresses_->at(var));
     AddtoPack(data,remtime_->at(var));
+    AddtoPack(data,a1_->at(var));
+    AddtoPack(data,a2_->at(var));
+    AddtoPack(data,lambda_->at(var));
   }
 
   return;
@@ -199,6 +202,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
   for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
 
+  isinit_ = true;
   return;
 }
 
@@ -443,6 +447,7 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
   return out.str();
 }
 
+/// Debug Output to txt-file
 void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const double time,
     const int iter)
@@ -493,6 +498,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     return;
 }
 
+/// Debug output to gmsh-file
 void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
                                       const double time,
                                       const int iter)

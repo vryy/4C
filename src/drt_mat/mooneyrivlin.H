@@ -72,7 +72,7 @@ namespace MAT
 
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_mooneyrivlin; }
-    
+
     /*!
     \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
 
@@ -85,10 +85,10 @@ namespace MAT
 
     W = mu_1/a_1 (I1 - 3)  +  mu_2/a_2 (I2 - 3)  -  mu_1 ln(J)  -  mu_2 ln(J)
       + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-      
+
     For references see Holzapfel p. 245, Simo&Miehe 1992, Klinkel et al 2007.
 
-    Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor 
+    Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor
     to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
 
     Mind that it is not stress-free in reference configuration!
@@ -97,13 +97,14 @@ namespace MAT
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
 
+    /// return density
     double Density();
-    
+
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
-  
+
   };
 }
 

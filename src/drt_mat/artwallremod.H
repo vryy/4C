@@ -95,24 +95,53 @@ namespace MAT
     bool Initialized() const
       { return isinit_&&(gamma_!=Teuchos::null);}
 
+    /// return lambdas
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
 
+    /// return phis
     RCP<vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
 
+    /// return gammas
     RCP<vector<double> > Getgammas() const {return gamma_;}
 
+    /// return remtimes
     RCP<vector<double> > Getremtimes() const {return remtime_;}
 
+    /// return a1s
     RCP<vector<vector<double> > > Geta1() const {return a1_;}
 
+    /// return a2s
     RCP<vector<vector<double> > > Geta2() const {return a2_;}
+
+    /*!
+      \brief setup material at element input with potentially local fiber cosy
+
+      This anisotropic material consists of fiber angles which can be defined
+      at element level via local coordinate systems. This method controls setup
+      of corresponding variables and reads e.g. fiber directions into its history
+      variables.
+
+      \param numgp (in) : number of gausspoints for this element
+      \param eleid (in) : current eleid, used to init random variables
+    */
 
     void Setup(const int numgp, const int eleid);
 
+    /*!
+      \brief Remodeling driver
+
+      Here the remodeling (reorientation) of fiber directions takes place, such
+      as calculating stress eigenvectors and alignment angles
+
+      \param gp (in) : current gp
+      \param time (int) : current time
+    */
     void Remodel(const int gp, const double time);
 
+    /// evaluate fiber directions from locsys and alignment angle
     void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);
 
+    /// Print vector to string
     std::string PrintVec(const vector<double> actvec);
 
   private:
@@ -136,6 +165,7 @@ namespace MAT
     /// remember time
     Teuchos::RCP<vector<double> > remtime_;
 
+    /// init flag of internal variables
     bool isinit_;
 
   };

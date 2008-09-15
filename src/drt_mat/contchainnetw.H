@@ -79,26 +79,38 @@ namespace MAT
 
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_contchainnetw; }
-    
+
+    /// initialize material and remodeling
     void Initialize(const int numgp, const int eleid) ;
-    
+
+    /// evaluate stress and elasticity matrix
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress, 
+                  Epetra_SerialDenseVector* stress,
                   int Id);
 
+    /// return density
     double Density() {return matdata_->m.contchainnetw->density;}
-    
+
+    /// check whether material history is initialized
     bool Initialized() const
       { return isinit_&&(li_!=Teuchos::null);}
-    
+
+    /// return current chain-cell lengths
     RCP<vector<vector<double> > > Getli() const {return li_;}
+
+    /// return initial chain-cell lengths
     RCP<vector<vector<double> > > Getli0() const {return li0_;}
+
+    /// return eigenvalues
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
+
+    /// return chain-cell basis
     RCP<vector<Epetra_SerialDenseMatrix> >Getni() const {return ni_;}
-    
+
+    /// evaluate fiber-part of PK2-stress
     Epetra_SerialDenseMatrix EvaluateStress(
         const Epetra_SerialDenseMatrix& isostress,
         const vector<Epetra_SerialDenseMatrix>& Ni,
@@ -107,6 +119,7 @@ namespace MAT
         const double s_chn_scalar,
         const double stressfree);
 
+    /// evaluate fiber-part of Cmat
     void EvaluateCmat(Epetra_SerialDenseMatrix& cmat,
         const vector<Epetra_SerialDenseMatrix>& Ni,
         const vector<double>& cell_li,
@@ -114,38 +127,45 @@ namespace MAT
         const double c_chn_scalar,
         const double stressfree);
 
+    /// evaluate structural tensors from chain-cell basis
     vector<Epetra_SerialDenseMatrix> EvaluateStructTensors(const int gp);
-    
+
+    /// evaluate fiber invariants
     vector<double> EvaluateInvariants(
         const Epetra_SerialDenseMatrix& CG,
         const vector<Epetra_SerialDenseMatrix>& Ni);
 
+    /// update fiber basis (remodeling evolution)
     void Update(const Epetra_SerialDenseMatrix& Phi,
         const Epetra_SerialDenseVector& lambda,
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay);
 
+    /// update fiber basis (remodeling evolution in rate from)
     void UpdateRate(const Epetra_SerialDenseMatrix& Phi,
         const Epetra_SerialDenseVector& lambda,
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay, const double kappa, const double dt);
 
+    /// print structural tensors to string
     std::string PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni);
+    /// print chain-cell basis to string
     std::string PrintAnisoVects(const int gp);
-    
+    /// print anisotropic part of Cmat to string
     std::string PrintAnisoCmat(const Epetra_SerialDenseMatrix& cmat,
         const vector<Epetra_SerialDenseMatrix>& Ni,
         const vector<double>& cell_li,
         const vector<double>& cell_Inv,
         const double c_chn_scalar,
         const double stressfree);
+    /// print vector to string
     std::string PrintVec(const vector<double> actvec);
-    
+
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
-    
+
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;
     /// unit cell basis in undeformed config. per gp
@@ -156,12 +176,13 @@ namespace MAT
     Teuchos::RCP<vector<vector<double> > > lambda_;
     /// current stress
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
-    
-    // remember time
+
+    /// remember time for remodeling evolution
     Teuchos::RCP<vector<double> > mytime_;
-    
+
+    /// flag for history init
     bool isinit_;
-    
+
   };
 
   Epetra_SerialDenseMatrix StressVoigt2Mat(Epetra_SerialDenseVector* stress);
