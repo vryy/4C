@@ -281,9 +281,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         }
         //compute area between line and x-Axis
         double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
-        const int ID = params.get("ConditionID",-1);
-        const int minID = params.get("MinID",-1);
-        elevector3[ID-minID] = areaele;
+        elevector3[0] = areaele;
       }
       
     }
@@ -315,21 +313,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       //call submethods
       ComputeAreaConstrStiff(xscurr,elematrix1);
       ComputeAreaConstrDeriv(xscurr,elevector1);
-      //apply the right lagrange multiplier and right signs to matrix and vectors
-      const int ID =params.get("ConditionID",-1);
-      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-      if (ID<0)
-      {
-        dserror("Condition ID for area constraint missing!");
-      }
-      const int minID =params.get("MinID",0);
-      //update corresponding column in "constraint" matrix
       elevector2=elevector1;
-      elevector1.Scale(1*(*lambdav)[ID-minID]);
-      elematrix1.Scale(1*(*lambdav)[ID-minID]);
       //compute area between line and x-Axis
       double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
-      elevector3[ID-minID] = areaele;
+      elevector3[0] = areaele;
     }
     break;
     default:

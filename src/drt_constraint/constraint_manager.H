@@ -52,7 +52,7 @@ namespace UTILS
     (
       RCP<DRT::Discretization> disc,  ///< standard discretization
       RCP<Epetra_Vector> disp,  ///< current displacement
-      ParameterList param  ///<  parameterlist from timeintegration algorithm
+      ParameterList param  ///<  parameterlist from time integration algorithm
     );
     /*!
         \brief Destructor
@@ -84,8 +84,7 @@ namespace UTILS
     double GetErrorNorm()
     {
       double foo;
-      constrainterr_->NormInf(&foo);
-      //constrainterr_->Norm2(&foo);
+      constrainterr_->Norm2(&foo);
       return foo;
     };
   
@@ -117,7 +116,7 @@ namespace UTILS
       double factor
     );
     
-    /// Add a vector to the vector of lagrnage multipliers 
+    /// Add a vector to the vector of lagrange multipliers 
     void UpdateLagrMult
     (
       RCP<Epetra_Vector> vect  ///< vector to add
@@ -150,7 +149,7 @@ namespace UTILS
     }
   
     /*!
-     \brief Return EpetraMap that determined distributation of constraints and lagrange
+     \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
     */
     RCP<Epetra_Map> GetConstraintMap()
@@ -158,7 +157,7 @@ namespace UTILS
       return constrmap_;
     };
   
-    //! Return the additional rectangular matrix, construted for lagrange multiplier evaluation
+    //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
     RCP<LINALG::SparseMatrix> GetConstrMatrix()
     {
       return constrMatrix_;
@@ -220,7 +219,7 @@ namespace UTILS
     */
     void ComputeMonitorValues
     (
-      RCP<Epetra_Vector> disp ///< current diplacement
+      RCP<Epetra_Vector> disp ///< current displacement
     );
     
     /// Reset reference base values for restart computations
@@ -253,21 +252,18 @@ namespace UTILS
     void ImportResults
     (
       RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
-      RCP<Epetra_Vector>& vect_redu,  ///< fully redundant and assembled vector containing element reults
+      RCP<Epetra_Vector>& vect_redu,  ///< fully redundant and assembled vector containing element results
       bool zero=true ///< is the distributed vector to be set to zero before adding the redundant vector?
     );
-  
-    /*!
-      \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
-      over all processors
+    
+    /*! \brief Store values of a completely redundant vector into a distributed vector of the same size, 
+     *          by taking the minimal value 
     */
-    void SynchronizeMinConstraint
+    void ImportMinResults
     (
-      ParameterList& params,   ///< parameter list, values are stored in
-      RCP<Epetra_Vector>& vect, ///< vector to store results in
-      const char* resultstr  ///< name of value to take minimum of
+      RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
+      RCP<Epetra_Vector>& vect_redu  ///< fully redundant and assembled vector containing element results
     );
-  
   
   private:
   

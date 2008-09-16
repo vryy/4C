@@ -292,9 +292,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           SpatialConfiguration(xscurr,mydisp);
           //call submethod for volume evaluation and store rseult in third systemvector
           double volumeele = ComputeConstrVols(xscurr);
-          const int ID =params.get("ConditionID",-1);
-          const int minID =params.get("MinID",0);
-          elevector3[ID-minID]=volumeele;
+          elevector3[0]=volumeele;
         }
 
       }
@@ -314,21 +312,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         //call submethods
         ComputeVolConstrStiff(xscurr,elematrix1);
         ComputeVolConstrDeriv(xscurr,elevector1);
-        //apply the right lagrange multiplier and right signs to matrix and vectors
-        const int ID =params.get("ConditionID",-1);
-        RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-        if (ID<0)
-        {
-          dserror("Condition ID for volume constraint missing!");
-        }
-        const int minID =params.get("MinID",0);
         //update corresponding column in "constraint" matrix
         elevector2=elevector1;
-        elevector1.Scale(1*(*lambdav)[ID-minID]);
-        elematrix1.Scale(1*(*lambdav)[ID-minID]);
         //call submethod for volume evaluation and store rseult in third systemvector
         double volumeele = ComputeConstrVols(xscurr);
-        elevector3[ID-minID]=volumeele;
+        elevector3[0]=volumeele;
       }
 
       break;
@@ -642,10 +630,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
           }
 
-          const int ID =params.get("ConditionID",-1);
-          const int minID =params.get("MinID",0);
           //store result in third systemvector
-          elevector3[ID-minID]=areaele;
+          elevector3[0]=areaele;
         }
 
       }

@@ -199,7 +199,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
       genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-      genalphaparams.set<string>("uzawa algorithm",sdyn.get<string>("UZAWAALGO"));
+      genalphaparams.set<string>("UZAWAALGO",sdyn.get<string>("UZAWAALGO"));
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 

@@ -24,30 +24,35 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-UTILS::ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
-        RCP<Epetra_Vector> disp,
-        ParameterList params):
+UTILS::ConstrManager::ConstrManager
+(
+  RCP<DRT::Discretization> discr,
+  RCP<Epetra_Vector> disp,
+  ParameterList params):
 actdisc_(discr)
 {
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Constraint Conditions!
-
+  
+  
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
   // Keep ParameterList p alive during initialization, so global information
   // over IDs as well as element results stored here can be used after all
   // constraints are evaluated
-  
+  const Epetra_Map* dofrowmap1 = actdisc_->DofRowMap();
+  int offset;
+  offset=dofrowmap1->MaxAllGID()+1;
   minConstrID_=10000;
   int maxConstrID=0;
   volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID));
   areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID));
   areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID));
-  
   mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
   mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
 
   numConstrID_=max(maxConstrID-minConstrID_+1,0);
+  minConstrID_-=offset;
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -59,12 +64,12 @@ actdisc_(discr)
     uzawaparam_ = params.get<double>("uzawa parameter",1);
     double time = params.get<double>("total time"      ,0.0);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-    //ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constrMatrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors 
-    constrmap_=rcp(new Epetra_Map(numConstrID_,0,actdisc_->Comm()));
-    //build an all reduced version of the constraintmap, since sometimes all processers
+    constrmap_=rcp(new Epetra_Map(numConstrID_,offset,actdisc_->Comm()));
+//    constrmap_=rcp(new Epetra_Map(numConstrID_,0,actdisc_->Comm()));
+    //build an all reduced version of the constraintmap, since sometimes all processors
     //have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);
     // sum up initial values
@@ -86,7 +91,7 @@ actdisc_(discr)
     mpconplane3d_->Initialize(p,refbaseredundant);
     ImportResults(refbasevalues_,refbaseredundant);
     
-    //Initialize Lagrange Multiplicators, reference values and errors
+    //Initialize Lagrange Multipliers, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
     actvalues_=rcp(new Epetra_Vector(*constrmap_));
@@ -159,7 +164,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   vector<DRT::Condition*> constrcond(0);
   actvalues_->Scale(0.0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+  constrMatrix_->Scale(0.0);//rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     
   // other parameters that might be needed by the elements
   p.set("total time",time);
@@ -169,15 +174,18 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   p.set("new disp",disp);
   p.set("scaleStiffEntries",scStiff);
   p.set("scaleConstrMat",scConMat);
-  // Convert Epetra_Vector constaining lagrange multipliers to an completely
+  p.set("vector curve factors",fact_);
+  // Convert Epetra_Vector containing lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*redconstrmap_));
   LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
   p.set("LagrMultVector",lagrMultVecDense);
+  // Construct a redundant time curve factor and put it into parameter list
+  RCP<Epetra_Vector> factredundant = rcp(new Epetra_Vector(*redconstrmap_));
+  p.set("vector curve factors",factredundant);
   
   RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
   RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
-
   
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
@@ -191,11 +199,11 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   ImportResults(actvalues_,actredundant);
   ImportResults(refbasevalues_,refbaseredundant,false);
+  ImportMinResults(fact_,factredundant);
   // ----------------------------------------------------
   // -----------include possible further constraints here
   // ----------------------------------------------------
-  SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
-  // Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
+  // Compute current reference volumes as elemetwise product of timecurvefactor and initialvalues
   referencevalues_->Multiply(1.0,*fact_,*refbasevalues_,0.0);  
   constrainterr_->Update(scConMat,*referencevalues_,-1.0*scConMat,*actvalues_,0.0);
   actdisc_->ClearState();
@@ -327,7 +335,7 @@ void UTILS::ConstrManager::ImportResults
   vector<int> gids;
   for (int i = 0; i < (vect_redu->MyLength()); ++i)
   {
-    gids.push_back(i);
+    gids.push_back(redconstrmap_->GID(i));
   }
   vector<double> currval(vect_redu->MyLength(),0);
   actdisc_->Comm().SumAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
@@ -335,26 +343,26 @@ void UTILS::ConstrManager::ImportResults
   return;
 }
 
-
 /*----------------------------------------------------------------------*
- |(private)                                                 tk 11/07    |
+ |(private)                                                 tk 07/08    |
  |small subroutine to synchronize processors after evaluating the       |
- |constraint by finding minimum value                                   |
+ |constraints by summing them up                                        |
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::SynchronizeMinConstraint(ParameterList& params,
-                                RCP<Epetra_Vector>& vect,
-                                const char* resultstring)
+void UTILS::ConstrManager::ImportMinResults
+(
+  RCP<Epetra_Vector>& vect_dist,
+  RCP<Epetra_Vector>& vect_redu
+)
 {
-
-  for (int i = 0; i < numConstrID_; ++i)
+  vect_dist->Scale(0.0);
+  vector<int> gids;
+  for (int i = 0; i < (vect_redu->MyLength()); ++i)
   {
-    char valname[30];
-    sprintf(valname,"%s %d",resultstring,i+minConstrID_);
-    double currval=1;
-    actdisc_->Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);
-    vect->ReplaceGlobalValues(1,&currval,&i);
+    gids.push_back(redconstrmap_->GID(i));
   }
-
+  vector<double> currval(vect_redu->MyLength(),0);
+  actdisc_->Comm().MinAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
+  vect_dist->ReplaceGlobalValues(vect_redu->MyLength(),&(currval[0]),&(gids[0]));
   return;
 }
 

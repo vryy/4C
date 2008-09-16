@@ -28,12 +28,17 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint3::MPConstraint3(RCP<DRT::Discretization> discr,
-        const string& conditionname,
-        int& minID,
-        int& maxID):
-MPConstraint(discr,
-    conditionname
+UTILS::MPConstraint3::MPConstraint3
+(
+  RCP<DRT::Discretization> discr,
+  const string& conditionname,
+  int& minID,
+  int& maxID
+):
+MPConstraint
+(
+  discr,
+  conditionname
 )
 { 
   if (constrcond_.size())
@@ -324,6 +329,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
   return newdiscmap;
 }
 
+
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
  |Evaluate method, calling element evaluates of a condition and          |
@@ -371,8 +377,8 @@ void UTILS::MPConstraint3::EvaluateConstraint(
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-    
-    if(inittimes_.find(condID)->second<=time)
+     
+    if(inittimes_.find(condID)->second<time)
     {
       if(activecons_.find(condID)->second==false)
       {
@@ -385,6 +391,15 @@ void UTILS::MPConstraint3::EvaluateConstraint(
         params.set("action",action);
       }   
   
+      //define global and local index of this bc in redundant vectors      
+      const int minID=params.get("MinID",0);
+      int gindex = eid-minID;
+      const int lindex = (systemvector3->Map()).LID(gindex);
+      
+      // Get the current lagrange multiplier value for this condition  
+      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const double lagraval = (*lagramul)[lindex];
+      
       // get element location vector, dirichlet flags and ownerships
       vector<int> lm;
       vector<int> lmowner;
@@ -408,7 +423,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (assemblemat1) 
       { 
         // scale with time integrator dependent value
-        elematrix1.Scale(scStiff);
+        elematrix1.Scale(scStiff*lagraval);
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
       }
       if (assemblemat2)
@@ -419,18 +434,21 @@ void UTILS::MPConstraint3::EvaluateConstraint(
         elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
-      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-      if (assemblevec3) 
+      if (assemblevec1) 
+      {
+        elevector1.Scale(lagraval);
+        LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+      }
+      if (assemblevec3)
       {
         vector<int> constrlm;
         vector<int> constrowner;
-        for (int i=0; i<elevector3.Length();i++)
-        {
-          constrlm.push_back(i);
-          constrowner.push_back(actele->Owner());
-        }
+        constrlm.push_back(gindex);
+        constrowner.push_back(actele->Owner());
         LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
       }
+      
+      //loadcurve business      
       const vector<int>*    curve  = cond->Get<vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
@@ -439,15 +457,13 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-  
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",eid);
-      params.set(factorname,curvefac);
+      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
   }
   return;
 } // end of EvaluateCondition
+#endif
 
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
@@ -523,4 +539,4 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
   return;
 } // end of EvaluateCondition
 
-#endif
+

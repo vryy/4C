@@ -95,11 +95,8 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       }
       double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
       
-      const int minID =params.get("MinID",0);
-      const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
-      elevec3[condID-minID]=normaldistance;      
+      elevec3[0]=normaldistance;      
     }
     break;
     case calc_MPC3D_stiff:
@@ -125,16 +122,16 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
       ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
       
-      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
+//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
-      const int minID =params.get("MinID",0);
-      const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happened here? What condition are we talking about?");
+//      const int minID =params.get("MinID",0);
+//      const int condID=params.get("ConditionID",-1);
+//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-      elevec1.Scale((*lambdav)[condID-minID]);
-      elemat1.Scale((*lambdav)[condID-minID]);
-      elevec3[condID-minID]=normaldistance;
+//      elevec1.Scale((*lambdav)[condID-minID]);
+//      elemat1.Scale((*lambdav)[condID-minID]);
+      elevec3[0]=normaldistance;
     }
     break;
     case calc_MPC2D_dist_stiff:
@@ -152,17 +149,17 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       double normaldistance =ComputeNormalDist2D(xscurr,elementnormal);
       ComputeFirstDerivDist2D(xscurr,elevec1,elementnormal);
       ComputeSecondDerivDist2D(xscurr,elemat1,elementnormal);
-      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
+//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
 
-      const int minID =params.get("MinID",0);
-      const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happened here? What condition are we talking about?");
+//      const int minID =params.get("MinID",0);
+//      const int condID=params.get("ConditionID",-1);
+//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-      elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
-      elemat1.Scale(-1.0*(*lambdav)[condID-minID]);
-      elevec2.Scale(-1.0);
-      elevec3[condID-minID]=normaldistance;
+//      elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
+//      elemat1.Scale(-1.0*(*lambdav)[condID-minID]);
+//      elevec2.Scale(-1.0);
+      elevec3[0]=normaldistance;
     }    
     break;
     case calc_MPC2D_angle_stiff:
@@ -181,17 +178,17 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeFirstDerivAngle2D(xscurr,elevec1);
       ComputeSecondDerivAngle2D(xscurr,elemat1);
       
-      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-
-      const int minID =params.get("MinID",0);
-      const int condID=params.get("ConditionID",-1);
-      if (condID<0) dserror("What happened here? What condition are we talking about?");
+//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
+//
+//      const int minID =params.get("MinID",0);
+//      const int condID=params.get("ConditionID",-1);
+//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-      elevec1.Scale(-1*(*lambdav)[condID-minID]);
-      elemat1.Scale(-1*(*lambdav)[condID-minID]);
-      elevec2.Scale(-1.0);
-      elevec3[condID-minID]=angle;
+//      elevec1.Scale(-1*(*lambdav)[condID-minID]);
+//      elemat1.Scale(-1*(*lambdav)[condID-minID]);
+//      elevec2.Scale(-1.0);
+      elevec3[0]=angle;
       
     }  
     break;

@@ -242,19 +242,11 @@ void UTILS::Constraint::EvaluateConstraint(
     double scStiff = params.get("scaleStiffEntries",1.0);
     double scConMat = params.get("scaleConstrMat",1.0);
 
-    // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    if (curvenum>=0 )
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
     params.set("ConditionID",condID);
+    
     // is conditions supposed to be active?
     if(inittimes_.find(condID)->second<=time)
     {
@@ -269,77 +261,94 @@ void UTILS::Constraint::EvaluateConstraint(
         actdisc_->SetState("displacement",disp);
         params.set("action",action);
       }
+      
+      // Evaluate loadcurve if defined. Put current load factor in parameterlist
+      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0];
+      double curvefac = 1.0;
+      if (curvenum>=0 )
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+      
+      // global and local ID of this bc in the redundatn vectors
+      const int minID=params.get("MinID",0);
+      int gindex = condID-minID;
+      const int lindex = (systemvector3->Map()).LID(gindex);
+      
+      // store loadcurve values
+      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
+      
+      // Get the current lagrange multiplier value for this condition  
+      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const double lagraval = (*lagramul)[lindex];
+      
+      // elements might need condition 
+      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+
+      // define element matrices and vectors
+      Epetra_SerialDenseMatrix elematrix1;
+      Epetra_SerialDenseMatrix elematrix2;
+      Epetra_SerialDenseVector elevector1;
+      Epetra_SerialDenseVector elevector2;
+      Epetra_SerialDenseVector elevector3;
+
+      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+      // no check for empty geometry here since in parallel computations
+      // can exist processors which do not own a portion of the elements belonging
+      // to the condition geometry
+      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
-        char factorname[30];
-        sprintf(factorname,"LoadCurveFactor %d",condID);
-        params.set(factorname,curvefac);
+        // get element location vector and ownerships
+        vector<int> lm;
+        vector<int> lmowner;
+        curr->second->LocationVector(*actdisc_,lm,lmowner);
 
-        params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+        // get dimension of element matrices and vectors
+        // Reshape element matrices and vectors and init to zero
+        const int eledim = (int)lm.size();
+        if (assemblemat1) elematrix1.Shape(eledim,eledim);
+        if (assemblemat2) elematrix2.Shape(eledim,eledim);
+        if (assemblevec1) elevector1.Size(eledim);
+        if (assemblevec2) elevector2.Size(eledim);
+        if (assemblevec3) elevector3.Size(1);
 
-        // define element matrices and vectors
-        Epetra_SerialDenseMatrix elematrix1;
-        Epetra_SerialDenseMatrix elematrix2;
-        Epetra_SerialDenseVector elevector1;
-        Epetra_SerialDenseVector elevector2;
-        Epetra_SerialDenseVector elevector3;
+        // call the element specific evaluate method
+        int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
+            elevector1,elevector2,elevector3);
+        if (err) dserror("error while evaluating elements");
 
-        map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-        // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-        // no check for empty geometry here since in parallel computations
-        // can exist processors which do not own a portion of the elements belonging
-        // to the condition geometry
-        map<int,RefCountPtr<DRT::Element> >::iterator curr;
-        for (curr=geom.begin(); curr!=geom.end(); ++curr)
+        // assembly
+        int eid = curr->second->Id();
+        if (assemblemat1) 
+        { 
+          // scale with time integrator dependent value
+          elematrix1.Scale(scStiff*lagraval);
+          systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+        }
+        if (assemblemat2)
         {
-          // get element location vector and ownerships
-          vector<int> lm;
-          vector<int> lmowner;
-          curr->second->LocationVector(*actdisc_,lm,lmowner);
-
-          // get dimension of element matrices and vectors
-          // Reshape element matrices and vectors and init to zero
-          const int eledim = (int)lm.size();
-          if (assemblemat1) elematrix1.Shape(eledim,eledim);
-          if (assemblemat2) elematrix2.Shape(eledim,eledim);
-          if (assemblevec1) elevector1.Size(eledim);
-          if (assemblevec2) elevector2.Size(eledim);
-          if (assemblevec3) elevector3.Size(systemvector3->MyLength());
-
-          // call the element specific evaluate method
-          int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
-              elevector1,elevector2,elevector3);
-          if (err) dserror("error while evaluating elements");
-
-          // assembly
-          int eid = curr->second->Id();
-          if (assemblemat1) 
-          { 
-            // scale with time integrator dependent value
-            elematrix1.Scale(scStiff);
-            systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-          }
-          if (assemblemat2)
-          {
-            // assemble to rectangular matrix. The colum corresponds to the constraint ID.
-            // scale with time integrator dependent value
-            int minID=params.get("MinID",0);
-            vector<int> colvec(1);
-            colvec[0]=condID-minID;
-            elevector2.Scale(scConMat);
-            systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
-          }
-          if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-          if (assemblevec3)
-          {
-            vector<int> constrlm;
-            vector<int> constrowner;
-            for (int i=0; i<elevector3.Length();i++)
-            {
-              constrlm.push_back(i);
-              constrowner.push_back(curr->second->Owner());
-            }
-            LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
-          }
+          // assemble to rectangular matrix. The column corresponds to the constraint ID.
+          // scale with time integrator dependent value
+          vector<int> colvec(1);
+          colvec[0]=condID-minID;
+          elevector2.Scale(scConMat);
+          systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
+        }
+        if (assemblevec1) 
+        {
+          elevector1.Scale(lagraval);
+          LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+        }
+        if (assemblevec3)
+        {
+          vector<int> constrlm;
+          vector<int> constrowner;
+          constrlm.push_back(condID-minID);
+          constrowner.push_back(curr->second->Owner());
+          LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
         }
       }
     }
@@ -369,6 +378,7 @@ void UTILS::Constraint::InitializeConstraint(
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
     params.set("ConditionID",condID);
+    
     // if current time is larger than initialization time of the condition, start computing
     if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
     {
@@ -395,7 +405,7 @@ void UTILS::Constraint::InitializeConstraint(
   
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
-        elevector3.Size(systemvector->MyLength());
+        elevector3.Size(1);
   
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
@@ -406,12 +416,14 @@ void UTILS::Constraint::InitializeConstraint(
           
         vector<int> constrlm;
         vector<int> constrowner;
-        for (int i=0; i<elevector3.Length();i++)
+        //for (int j=0; j<elevector3.Length();j++)
         {
-          constrlm.push_back(i);
+          int minID=params.get("MinID",0);
+          constrlm.push_back(condID-minID);
           constrowner.push_back(curr->second->Owner());
         }
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
+        //cout<<"dense: "<<elevector3[0]<<", sparse: "<<*systemvector<<endl;
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;
