@@ -329,7 +329,6 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
   return newdiscmap;
 }
 
-
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
  |Evaluate method, calling element evaluates of a condition and          |
@@ -463,7 +462,6 @@ void UTILS::MPConstraint3::EvaluateConstraint(
   }
   return;
 } // end of EvaluateCondition
-#endif
 
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
