@@ -52,7 +52,7 @@ protected:
   TimIntOneStepTheta (const TimIntOneStepTheta& old);
 
   /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep(){CalcInitialPhidt(); return;}
+  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

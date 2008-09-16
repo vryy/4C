@@ -1437,6 +1437,8 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
       cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
 #endif
     }
+    // set specific heat capacity at constant pressure to 1.0
+    shcacp_ = 1.0;
   }
   else if (material->mattyp == m_condif)
   {
@@ -1460,9 +1462,9 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
     dserror("Material type is not supported");
 
   /*----------------------------------------------------------------------*/
-  // calculation of stabilization parameter(s) tau
+  // calculation of instationary(!) stabilization parameter(s)
   /*----------------------------------------------------------------------*/
-  CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,true);
+  CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,false);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -1500,15 +1502,6 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
     /*------------ get values of variables at integration point */
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      /*
-      // get initial data at integration point
-      phi0[k] = 0.0;
-      for (int j=0;j<iel_;j++)
-      {
-        phi0[k] += funct_[j]*ephi0[j*numdofpernode_+k];
-      }
-      */
-
       // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
       rhs_[k] = 0;
       for (int inode=0;inode<iel_;inode++)
@@ -1526,7 +1519,7 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
 
       vector<double>            conv(iel_);        /* convective part       */
       vector<double>            diff(iel_);        /* diffusive part        */
-      static double             rhsint;           /* rhs at int. point     */
+      static double             rhsint;            /* rhs at int. point     */
 
       // stabilization parameter
       const double taufac = tau_[dofindex]*fac_;

@@ -30,14 +30,10 @@ SCATRA::TimIntBDF2::TimIntBDF2(
     // vectors and matrices
     //                 local <-> global dof numbering
     // -------------------------------------------------------------------
-    //const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    // Vectors passed to the element
-    // -----------------------------
-
-    // state vector for solution at time n-1
-    //phinm_      = LINALG::CreateVector(*dofrowmap,true);
-    // we still have phinm_ in the base class, this has to be changed
+    // state vector for solution at time t_{n-1}
+    phinm_      = LINALG::CreateVector(*dofrowmap,true);
 
     return;
 }
@@ -71,21 +67,42 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   For a temperature equation, rhon_*phin_ and rhonm_*phinm_ are
   used instead of phin_ and phinm_, respectively.
   */
-
-  double omega = dta_/dtp_;
-  double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
-  double fact2 = -(omega*omega)/(1+ (2.0*omega));
-
-  if (scaltype_ == "Temperature")
+  if (step_>1)
   {
-    // Temperature equation:
-    hist_->Multiply(fact1, *phin_, *densn_, 0.0);
-    hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
+    double omega = dta_/dtp_;
+    double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
+    double fact2 = -(omega*omega)/(1+ (2.0*omega));
+
+    if (scaltype_ == "Temperature")
+    {
+      // Temperature equation:
+      hist_->Multiply(fact1, *phin_, *densn_, 0.0);
+      hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
+    }
+    else
+    {
+      // Non-temperature equation: 
+      hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+    }
+
+    // for BDF2 theta is set by the timestepsizes, 2/3 for const. dt
+    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
-  else
+  else   // for start-up of BDF2 we do one step with backward Euler
   {
-    // Non-temperature equation:
-    hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+    if (scaltype_ == "Temperature")
+    {
+      // Temperature equation:
+      hist_->Multiply(1.0, *phin_, *densn_, 0.0);
+    }
+    else
+    {
+      // Non-temperature equation: 
+      hist_->Update(1.0, *phin_, 0.0);
+    }
+
+    // backward Euler => use theta=1.0
+    theta_=1.0;
   }
 
   return;
@@ -135,5 +152,16 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | initialization procedure before the first time step         gjb 07/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
+{
+  ApplyDirichletBC(time_, phin_,Teuchos::null);
+  return;
+};
+
 
 #endif /* CCADISCRET */

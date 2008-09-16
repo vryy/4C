@@ -82,7 +82,7 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 void SCATRA::TimIntOneStepTheta::Update()
 {
   // update time derivative of phi
-  if (step_ == 1)
+ /*  if (step_ == 1)
   {
     // do just a linear interpolation within the first timestep
     if (scaltype_ == "Temperature")
@@ -100,7 +100,7 @@ void SCATRA::TimIntOneStepTheta::Update()
       phidtn_->Update(-1.0/dta_,*phin_ ,1.0);
     }
   }
-  else
+   else */
   {
     double fact1 = 1.0/(theta_*dta_);
     double fact2 = (-1.0/theta_) +1.0;
@@ -119,6 +119,10 @@ void SCATRA::TimIntOneStepTheta::Update()
       // Non-temperature equation:
       // phidt(n) = (phi(n)-phi(n-1)) / (Theta*dt(n)) - (1/Theta -1)*phidt(n-1)
       phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+      
+      // we know the first time derivative on Dirichlet boundaries
+      // so we do not need an approximation of these values!
+      ApplyDirichletBC(time_,Teuchos::null,phidtn_);
     }
   }
 
@@ -159,6 +163,15 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Initialization procedure before the first time step        gjb 08/08 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
+{
+  ApplyDirichletBC(time_, phin_,phidtn_);
+  CalcInitialPhidt();
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | calculate initial time derivative of phi at t=t_0           gjb 08/08|
@@ -168,7 +181,9 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
   if (myrank_ == 0)
-  cout<<"...calculating initial time derivative of phi"<<endl;
+  cout<<"...calculating initial time derivative of phi\n"<<endl;
+
+  ApplyDirichletBC(time_, phin_,phidtn_);
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");
@@ -185,6 +200,9 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     eleparams.set("action","initialize_one_step_theta");
     // other parameters that are needed by the elements
     eleparams.set("total time",time_);
+    eleparams.set("thsl",theta_*dta_);
+    eleparams.set("type of scalar",scaltype_);
+    eleparams.set("fs subgrid diffusivity",fssgd_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -196,6 +214,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phi0",phin_);
+    discret_->SetState("dens0",densnp_);
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
     discret_->ClearState();
@@ -208,10 +227,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,dirichtoggle_);
 
   // solve for phidtn
-  solver_->Solve(sysmat_->EpetraMatrix(),phidtn_,residual_,true,true);
-
-  if (myrank_ == 0)
-  cout<<"...done"<<endl;
+  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
 
   return;
 }

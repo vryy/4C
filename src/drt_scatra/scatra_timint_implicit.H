@@ -109,22 +109,6 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
-  //! Apply Dirichlet boundary conditions on provided state vector
-  void ApplyDirichletBC
-  (
-    const double& time,  //!< evaluation time
-    Teuchos::RCP<Epetra_Vector>& phinp //!< transported scalar(s)
-                                       //!< (may be Teuchos::null) 
-  );
-
-  //! Apply Neumann boundary conditions
-  void ApplyNeumannBC
-  (
-    const double& time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector>& phinp,   //!< transported scalar(s) state
-    Teuchos::RCP<Epetra_Vector>& neumann_loads //!< Neumann loads
-  );
-
   void Solve(bool is_stat=false);
 
   /*!
@@ -185,10 +169,26 @@ protected:
   }
 
   //! initialization procedure before the first time step is done
-  virtual void PrepareFirstTimeStep(){return;};
+  virtual void PrepareFirstTimeStep() = 0;
 
   //! Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
+
+  //! Apply Dirichlet boundary conditions on provided state vector
+  void ApplyDirichletBC
+  (  
+    const double& time,  //!< evaluation time
+    Teuchos::RCP<Epetra_Vector> phinp, //!< transported scalar(s) (may be = null)
+    Teuchos::RCP<Epetra_Vector> phidt  //!< first time derivative (may be = null)
+  );
+
+  //! Apply Neumann boundary conditions
+  void ApplyNeumannBC
+  (
+    const double& time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector>& phinp,   //!< transported scalar(s) state
+    Teuchos::RCP<Epetra_Vector>& neumann_loads //!< Neumann loads
+  );
 
   //! write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
@@ -250,8 +250,6 @@ protected:
   /// phi at time n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
-
-  RCP<Epetra_Vector>    phinm_; // this has to go away!!
 
   /// density at time n+1, n and n-1
   RCP<Epetra_Vector>    densnp_;

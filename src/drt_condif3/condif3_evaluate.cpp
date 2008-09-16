@@ -214,20 +214,19 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
   case initialize_one_step_theta:
   {
     const double time = params.get<double>("total time");
-    //const double timefac = params.get<double>("time factor",1.0);
-    const double timefac = 0.0;
+    const double timefac = params.get<double>("thsl");
 
     // need initial field
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    if (phi0==null || densnp==null)
+    RefCountPtr<const Epetra_Vector> dens0 = discretization.GetState("dens0");
+    if (phi0==null || dens0==null)
       dserror("Cannot get state vector 'phi0' and/or 'densnp'");
 
     // extract local values from the global vector
     vector<double> myphi0(lm.size());
-    vector<double> mydensnp(lm.size());
+    vector<double> mydens0(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+    DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
 
     // get initial velocity values at the nodes
     // compare also with DRT::UTILS::ExtractMyValues()
@@ -249,7 +248,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     DRT::ELEMENTS::Condif3Impl::Impl(this)->InitializeOST(
          this,
          myphi0,
-         mydensnp,
+         mydens0,
          elemat1,
          elevec1,
          elevec2,

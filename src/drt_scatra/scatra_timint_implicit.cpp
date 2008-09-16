@@ -110,10 +110,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phinp_        = LINALG::CreateVector(*dofrowmap,true);
   phin_         = LINALG::CreateVector(*dofrowmap,true);
 
-  // state vector for solution at time n-1
-  if (timealgo_==INPUTPARAMS::timeint_bdf2)
-  {phinm_      = LINALG::CreateVector(*dofrowmap,true);}
-
   // density at time n+1
   densnp_        = LINALG::CreateVector(*dofrowmap,true);
 
@@ -296,24 +292,14 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + prepare time step");
 
   // -------------------------------------------------------------------
-  //              initialization
+  //                       initialization
   // -------------------------------------------------------------------
-  if (step_==0)
-  {
-    //ApplyDirichletBC(time_, phin_);
-    //PrepareFirstTimeStep();
-  }
+  if (step_==0) PrepareFirstTimeStep();
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
-
-  // for bdf2 theta is set by the timestepsizes, 2/3 for const. dt
-  if (timealgo_==INPUTPARAMS::timeint_bdf2)
-  {
-    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-  }
 
   // -------------------------------------------------------------------
   //                         out to screen
@@ -328,7 +314,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   return;
@@ -342,7 +328,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 (
   const double& time,
-  Teuchos::RCP<Epetra_Vector>& phinp
+  Teuchos::RCP<Epetra_Vector> phinp,
+  Teuchos::RCP<Epetra_Vector> phidt
 )
 {
   // time measurement: apply Dirichlet conditions
@@ -354,10 +341,10 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
   p.set("total time",time);  // actual time t_{n+1}
 
   // predicted Dirichlet values
-  // \c  phinp then also holds prescribed new dirichlet values
+  // \c  phinp then also holds prescribed new Dirichlet values
   //     dirichtoggle_ is 1 for dirichlet dofs, 0 elsewhere
   discret_->ClearState();
-  discret_->EvaluateDirichlet(p,phinp,Teuchos::null,Teuchos::null,dirichtoggle_);
+  discret_->EvaluateDirichlet(p,phinp,phidt,Teuchos::null,dirichtoggle_);
   discret_->ClearState();
 
   // compute an inverse of the dirichtoggle vector
@@ -581,7 +568,7 @@ void SCATRA::ScaTraTimIntImpl::Solve(
     else
     // end second encapsulation of AVMS solution approach
 #endif
-      solver_->Solve(sysmat_->EpetraMatrix(),phinp_,residual_,true,true);
+      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
     // end time measurement for solver
     dtsolve_=ds_cputime()-tcpu;
@@ -638,7 +625,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->NewStep    (step_,time_);
   output_->WriteVector("phinp", phinp_);
   output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
-  //output_->WriteVector("residual", residual_);
+
   return;
 }
 
@@ -660,7 +647,7 @@ void SCATRA::ScaTraTimIntImpl::SolveStationaryProblem()
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------
@@ -813,14 +800,7 @@ void SCATRA::ScaTraTimIntImpl::SetIterLomaFields(
 void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
-  { // just to be sure!
-    phinp_->PutScalar(0);
-    phin_-> PutScalar(0);
-    if (timealgo_==INPUTPARAMS::timeint_bdf2)
-    {
-    phinm_->PutScalar(0);
-    }
-  }
+    phin_-> PutScalar(0); // just to be sure!
   else if (init == 1)  // field_by_function
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -840,13 +820,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
         double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
-
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
         phin_->ReplaceMyValues(1,&initialval,&doflid);
-        if (timealgo_==INPUTPARAMS::timeint_bdf2)
-        {
-        phinm_->ReplaceMyValues(1,&initialval,&doflid);
-        }
       }
     }
   }
@@ -885,12 +859,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
             // set initial value
             const int dofgid = nodedofset[k];
             int doflid = dofrowmap->LID(dofgid);
-            phinp_->ReplaceMyValues(1,&phi0,&doflid);
             phin_->ReplaceMyValues(1,&phi0,&doflid);
-            if (timealgo_==INPUTPARAMS::timeint_bdf2)
-            {
-            phinm_->ReplaceMyValues(1,&phi0,&doflid);
-            }
           }
         }
       }

@@ -43,11 +43,14 @@ public:
 
 protected:
 
-  // don't want = operator and cctor
+  /// don't want = operator and cctor
   TimIntBDF2 operator = (const TimIntBDF2& old);
 
-  //! copy constructor
+  /// copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
+
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
@@ -58,7 +61,7 @@ protected:
 private:
 
   /// solution vector phi at time t_{n-1}
-  /// RCP<Epetra_Vector>    phinm_; /// inherited from TimIntImplicit
+  RCP<Epetra_Vector>    phinm_;
 
 }; // class TimIntBDF2
 
