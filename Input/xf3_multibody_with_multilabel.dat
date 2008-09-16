@@ -320,6 +320,8 @@ ML_DAMPFINE       1.0       // damping fine grid
 ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
+------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT    No
 ----------------------------------------------------THERMAL SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
@@ -30335,5 +30337,9 @@ FLUID DIS 1 NODE 1103 POSITION velx     NAME velx     VALUE 9.332325534e-01 TOLE
 FLUID DIS 1 NODE 1103 POSITION vely     NAME vely     VALUE 2.864719351e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1103 POSITION velz     NAME velz     VALUE 2.213675704e-11 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 2.551746566e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 803 POSITION velx     NAME velx     VALUE 9.332325534e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 803 POSITION vely     NAME vely     VALUE 2.864719351e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 803 POSITION velz     NAME velz     VALUE 2.213675704e-11 TOLERANCE 1e-6
+FLUID DIS 1 NODE 803 POSITION pressure NAME pressure VALUE 2.551746566e+01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
