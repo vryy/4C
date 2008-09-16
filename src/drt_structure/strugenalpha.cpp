@@ -3109,7 +3109,6 @@ void StruGenAlpha::Integrate()
   //in case a constraint is defined, use defined algorithm
   if (constrMan_->HaveConstraint())
   {
-      string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
       for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();
@@ -3125,11 +3124,11 @@ void StruGenAlpha::Integrate()
         //                        keeping Lagrange multiplier fixed
         //                        Until convergence Lagrange multiplier
         //                        increased by Uzawa_param*(Vol_err)
-        if (algo=="newtonlinuzawa")
+        if (equil=="newtonlinuzawa")
         {
           FullNewtonLinearUzawa();
         }
-        else if (algo=="augmentedlagrange")
+        else if (equil=="augmentedlagrange")
         {
            NonLinearUzawaFullNewton(predictor);
         }

@@ -594,7 +594,7 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
     uziter += 1;
   }
 
-  // SENSIBLE??? FOR OUTPUT???
+  // for output
   iter_ = uziter + 1;
 }
 
@@ -624,8 +624,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   normdisi_ = 1.0e6;
   normcon_ = conman_->GetErrorNorm();
   timer_.ResetStartTime();
-  //bool print_unconv = true;
-
+  
   // equilibrium iteration loop
   while ( (not Converged()) and (iter_ <= itermax_) )
   {
@@ -643,6 +642,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
                       disi_, lagrincr,
                       fres_, conrhs);
 
+    
     // update Lagrange multiplier
     conman_->UpdateLagrMult(lagrincr);
     // update end-point displacements etc
@@ -665,7 +665,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
     // build residual displacement norm
     normdisi_ = TimIntVector::CalculateNorm(iternorm_, disi_);
-    // build residual Lagrange multipilcator norm
+    // build residual Lagrange multiplier norm
     normcon_ = conman_->GetErrorNorm();
 
     // print stuff

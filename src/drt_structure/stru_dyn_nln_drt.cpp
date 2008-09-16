@@ -274,6 +274,12 @@ void dyn_nlnstructural_drt()
         case STRUCT_DYNAMIC::ptc:
           genalphaparams.set<string>("equilibrium iteration","ptc");
         break;
+        case STRUCT_DYNAMIC::newtonlinuzawa:
+          genalphaparams.set<string>("equilibrium iteration","newtonlinuzawa");
+        break;
+        case STRUCT_DYNAMIC::augmentedlagrange:
+          genalphaparams.set<string>("equilibrium iteration","augmentedlagrange");              
+        break;
         default:
           genalphaparams.set<string>("equilibrium iteration","full newton");
         break;

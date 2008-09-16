@@ -82,6 +82,7 @@ UZAWAPARAM   0.75
 UZAWAMAXITER 15
 TOLCONSTR    1.0e-06
 UZAWAALGO    newtonlinuzawa
+NLNSOL       newtonlinuzawa
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
