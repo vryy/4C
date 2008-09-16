@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 
 #include "so_sh8.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/anisotropic_balzani.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -54,11 +55,14 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of SO_SH8 element material failed");
   SetMaterial(material);
-  
+
   // special element-dependent input of material parameters
   if (Material()->MaterialType() == m_artwallremod){
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
     remo->Setup(NUMGPT_SOH8, this->Id());
+  } else if (Material()->MaterialType() == m_anisotropic_balzani){
+    MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
+    balz->Setup();
   }
 
   // read possible gaussian points, obsolete for computation

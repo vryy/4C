@@ -117,6 +117,9 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   remtime_ = rcp(new vector<double>);
+  a1_ = rcp(new vector<vector<double> >);
+  a2_ = rcp(new vector<vector<double> >);
+  lambda_ = rcp(new vector<vector<double> >);
   for (int var = 0; var < histsize; ++var) {
     double gamma;
     Epetra_SerialDenseMatrix tmp(3,3);
@@ -129,6 +132,13 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     double mytime;
     ExtractfromPack(position,data,mytime);
     remtime_->push_back(mytime);
+    vector<double> a;
+    ExtractfromPack(position,data,a);
+    a1_->push_back(a);
+    ExtractfromPack(position,data,a);
+    a2_->push_back(a);
+    ExtractfromPack(position,data,a);
+    lambda_->push_back(a);
   }
 
   if (position != (int)data.size())
@@ -166,7 +176,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
     frdouble_n("RAD",&rad[0],3,&ierr);
     frdouble_n("AXI",&axi[0],3,&ierr);
     frdouble_n("CIR",&cir[0],3,&ierr);
-    if (ierr!=1) dserror("Reading of SO_HEX8 element local cosy failed");
+    if (ierr!=1) dserror("Reading of element local cosy failed");
     Epetra_SerialDenseMatrix locsys(3,3);
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     for (int i=0; i<3; ++i){
@@ -350,7 +360,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   }
   (*stress) += Sfiso;
 
-  // Elasticity fiber part in splitted fromulation, see Holzapfel p. 255 and 272
+  // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
   const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
   const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
 

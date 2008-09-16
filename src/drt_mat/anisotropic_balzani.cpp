@@ -51,6 +51,8 @@ void MAT::AnisotropicBalzani::Pack(vector<char>& data) const
   // matdata
   int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
   AddtoPack(data,matdata);
+  AddtoPack(data,a1_);  // fiber vector 1
+  AddtoPack(data,a2_);  // fiber vector 2
 }
 
 
@@ -70,9 +72,52 @@ void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,matdata);
   matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
 
+  ExtractfromPack(position,data,a1_);  // fiber vector 1
+  ExtractfromPack(position,data,a2_);  // fiber vector 2
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
+
+void MAT::AnisotropicBalzani::Setup()
+{
+  // check whether fiber are based on local cosy
+  if (matdata_->m.anisotropic_balzani->aloc == 1){
+    // fibers aligned in local element cosy with gamma_i around circumferential direction
+    vector<double> rad(3);
+    vector<double> axi(3);
+    vector<double> cir(3);
+    int ierr=0;
+    // read local (cylindrical) cosy-directions at current element
+    frdouble_n("RAD",&rad[0],3,&ierr);
+    frdouble_n("AXI",&axi[0],3,&ierr);
+    frdouble_n("CIR",&cir[0],3,&ierr);
+    if (ierr!=1) dserror("Reading of element local cosy failed");
+    Epetra_SerialDenseMatrix locsys(3,3);
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    for (int i=0; i<3; ++i){
+      locsys(i,0) = rad[i];
+      locsys(i,1) = axi[i];
+      locsys(i,2) = cir[i];
+    }
+
+    // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
+    double gamma1 = matdata_->m.anisotropic_balzani->a1[0];
+    gamma1 = (gamma1 * PI)/180.0;  // convert to radians
+    double gamma2 = matdata_->m.anisotropic_balzani->a2[0];
+    gamma2 = (gamma2 * PI)/180.0;  // convert to radians
+
+    a1_.resize(3);
+    a2_.resize(3);
+    vector<double> a(3);
+    for (int i = 0; i < 3; ++i) {
+      // a = cos gamma e1 +- sin gamma e2
+      a1_.at(i) = cos(gamma1)*locsys(i,2) + sin(gamma1)*locsys(i,1);
+      a2_.at(i) = cos(gamma2)*locsys(i,2) - sin(gamma2)*locsys(i,1);
+    }
+  }
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -100,8 +145,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                     const Epetra_SerialDenseMatrix* defgrd,
                                     const int gp, const int ele_ID, const double time,
                                       Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress,
-                                      double avec[3])
+                                      Epetra_SerialDenseVector* stress)
 {
   // get material parameters
   double c1 = matdata_->m.anisotropic_balzani->c1;          //parameter for ground substance
@@ -173,8 +217,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     a(0) = matdata_->m.anisotropic_balzani->a1[0];  // first fiber vector from input
     a(1) = matdata_->m.anisotropic_balzani->a1[1];
     a(2) = matdata_->m.anisotropic_balzani->a1[2];
+  } else {
+    a(0) = a1_.at(0); a(1) = a1_.at(1); a(2) = a1_.at(2);
   }
-  else {a(0) = avec[0]; a(1) = avec[1]; a(2) = avec[2];}
   // normalize a
   double norma = a.Norm2();
   a.Scale(1.0/norma);
@@ -206,6 +251,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     a_2(0) = matdata_->m.anisotropic_balzani->a2[0];  // 2nd fiber vector from input
     a_2(1) = matdata_->m.anisotropic_balzani->a2[1];
     a_2(2) = matdata_->m.anisotropic_balzani->a2[2];
+  } else {
+    a_2(0) = a2_.at(0); a_2(1) = a2_.at(1); a_2(2) = a2_.at(2);
   }
   // normalize a_2
   double norma_2 = a_2.Norm2();

@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include <Teuchos_RefCountPtr.hpp>
 
 
 namespace MAT
@@ -83,11 +84,20 @@ namespace MAT
                   const Epetra_SerialDenseMatrix* defgrd,
                   const int gp,  const int ele_ID, const double time,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress,
-                  double avec[3]);
+                  Epetra_SerialDenseVector* stress);
 
     /// return density
     double Density();
+
+    /*!
+      \brief setup material at element input with potentially local fiber cosy
+
+      This anisotropic material consists of fiber angles which can be defined
+      at element level via local coordinate systems. This method controls setup
+      of corresponding variables and reads e.g. fiber directions into its history
+      variables.
+    */
+    void Setup();
 
     /// return fiber directions
     vector<double> ReturnGlobalFiberDirection() {
@@ -104,11 +114,21 @@ namespace MAT
       else return true;
     };
 
+    /// return a1
+    vector<double> Geta1() const {return a1_;}
+
+    /// return a2
+    vector<double> Geta2() const {return a2_;}
+
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
 
+    /// first fiber vector
+    vector<double> a1_;
+    /// second fiber vector
+    vector<double> a2_;
   };
 }
 

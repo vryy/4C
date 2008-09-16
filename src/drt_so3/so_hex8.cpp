@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/anisotropic_balzani.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -358,9 +359,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -373,9 +374,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -425,6 +426,12 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
+  if (Material()->MaterialType() == m_anisotropic_balzani){
+    string fiber = "Fiber1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "Fiber2";
+    names[fiber] = 3; // 3-dim vector
+  }
 
   return;
 }
@@ -446,7 +453,7 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       RCP<vector<vector<double> > > gplis = chain->Getli();
       RCP<vector<vector<double> > > gpli0s = chain->Getli0();
       RCP<vector<Epetra_SerialDenseMatrix> > gpnis = chain->Getni();
-      
+
       vector<double> centerli (3,0.0);
       vector<double> centerli_0 (3,0.0);
       Epetra_DataAccess CV = Copy;
@@ -473,14 +480,14 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       centerli_0[0] /= gplis->size();
       centerli_0[1] /= gplis->size();
       centerli_0[2] /= gplis->size();
-      
+
       // just the unit cell of the first gp
       int gp = 0;
 //      Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
 //      Epetra_SerialDenseVector glo(3);
 //      glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
       Epetra_SerialDenseMatrix T(gpnis->at(gp));
-      vector<double> gpli =  chain->Getli()->at(gp); 
+      vector<double> gpli =  chain->Getli()->at(gp);
 
       if (name == "Fiber1"){
         if ((int)data.size()!=3) dserror("size mismatch");
@@ -547,8 +554,25 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       cout << name << endl;
       dserror("Unknown VisData!");
     }
- }
-    
+  }
+  if (Material()->MaterialType() == m_anisotropic_balzani){
+    MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = balz->Geta1().at(0); data[1] = balz->Geta1().at(1); data[2] = balz->Geta1().at(2);
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = balz->Geta2().at(0); data[1] = balz->Geta2().at(1); data[2] = balz->Geta2().at(2);
+    } else if (name == "Owner"){
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Owner();
+    } else {
+      cout << name << endl;
+      dserror("Unknown VisData!");
+    }
+  }
+
+
 
   return;
 }

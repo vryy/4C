@@ -123,49 +123,10 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
 
 
-  // set fiber direction for anisotropic material law
-  sosh8_setcylinderfiberdirection(xrefe);
-  //cout << thickdir;
   return thickdir;
 }
 
 
-void DRT::ELEMENTS::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe)
-{
-//  // calculate hex8 midpoint
-//  Epetra_SerialDenseVector midpoint(3);
-//  Epetra_SerialDenseVector diagonal(3);
-//  for (int i = 0; i < 3; ++i){
-//    diagonal(i) = xrefe(0,i) - xrefe(4,i);
-//    midpoint(i) = xrefe(0,i);
-//  }
-//  diagonal.Scale(0.5);
-//  midpoint += diagonal;
-//  // cylinder coordinates
-//  //double radius = sqrt(midpoint(0)*midpoint(0) + midpoint(1)*midpoint(1));
-  Epetra_SerialDenseVector midpoint(3);
-  midpoint(0) = soh8_ElementCenterRefeCoords()[0];
-  midpoint(1) = soh8_ElementCenterRefeCoords()[1];
-  midpoint(2) = soh8_ElementCenterRefeCoords()[2];
-  midpoint.Scale(midpoint.Norm2());
-  //double theta = atan(midpoint(1)/midpoint(0));
-  // tangent circumferential direction = - r_unit
-  Epetra_SerialDenseVector circ(3);
-  //circ(0) = - cos(theta); circ(1) = - sin(theta);
-  circ(0) = - midpoint(1); circ(1) = midpoint(0);
-  // rotate by 45°
-//  fiberdirection_.resize(3);
-//  fiberdirection_[0] = circ(0);
-//  fiberdirection_[1] = circ(1);
-//  fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
-
-//  fiberdirection_[0] = circ(0);
-//  fiberdirection_[1] = circ(1);
-//  fiberdirection_[2] = circ(2);
-
-  return;
-
-}
 
 void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {

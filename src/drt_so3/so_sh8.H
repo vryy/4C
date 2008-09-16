@@ -259,14 +259,12 @@ private:
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
+
+  //! return thickness direction
   const vector<double> GetThickvec(){return thickvec_;};
 
   //! Debug gmsh-plot to check thickness direction
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
-
-  //! Temporarly method to define fiber direction in cylinder
-  void sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe);
-
 
 }; // class So_sh8
 
