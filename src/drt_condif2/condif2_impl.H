@@ -88,6 +88,21 @@ namespace ELEMENTS
         const bool                      is_stationary ///< flag indicating stationary formulation
     );
 
+    //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
+    void InitializeOST(
+        const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
+        const vector<double>&           ephi0,
+        const vector<double>&           edens,
+        Epetra_SerialDenseMatrix&       massmat,
+        Epetra_SerialDenseVector&       rhs,
+        Epetra_SerialDenseVector&       sugrvisc,
+        const struct _MATERIAL*         material,
+        const double                    time,
+        const double                    timefac,
+        const Epetra_SerialDenseVector& evel,
+        bool                            temperature,
+        string                          fssgd
+    );
 
   private:
 

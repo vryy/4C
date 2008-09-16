@@ -191,7 +191,7 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
   CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,is_stationary);
 
   /*----------------------------------------------------------------------*/
-  // integration loop for one condif3 element
+  // integration loop for one condif2 element
   /*----------------------------------------------------------------------*/
 
   // flag for higher order elements
@@ -831,7 +831,7 @@ void DRT::ELEMENTS::Condif2Impl::CalSecondDeriv(
 
 /*
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilized condif3 element are calculated for the instationary
+matrix of a stabilized condif2 element are calculated for the instationary
 case. The procedure is based on the Rothe method of first discretizing in
 time. Hence the resulting terms include coefficients containing time
 integration variables such as theta or delta t which are represented by
@@ -1001,7 +1001,7 @@ if (fssgd != "No")
 }
 
 return;
-} //Condif2Impl::Condif3CalMat
+} //Condif2Impl::Condif2CalMat
 
 
 /*----------------------------------------------------------------------*
@@ -1010,7 +1010,7 @@ return;
 
 /*
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilized condif3 element are calculated for the stationary
+matrix of a stabilized condif2 element are calculated for the stationary
 case.
 
 The stabilization is based on the residuum:
@@ -1154,6 +1154,260 @@ if (fssgd != "No")
 
 return;
 } //Condif2Impl::CalMatStationary
+
+
+/*----------------------------------------------------------------------*
+ | calculate mass matrix and rhs for initializing OST          gjb 08/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif2Impl::InitializeOST(
+    const DRT::ELEMENTS::Condif2*   ele,
+    const vector<double>&           ephi0,
+    const vector<double>&           edens,
+    Epetra_SerialDenseMatrix&       massmat,
+    Epetra_SerialDenseVector&       rhs,
+    Epetra_SerialDenseVector&       sugrvisc,
+    const struct _MATERIAL*         material,
+    const double                    time,
+    const double                    timefac,
+    const Epetra_SerialDenseVector& evel,
+    bool                            temperature,
+    string                          fssgd
+    )
+{
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+
+  // get node coordinates
+  for (int i=0;i<iel_;i++)
+  {
+    xyze_(0,i)=ele->Nodes()[i]->X()[0];
+    xyze_(1,i)=ele->Nodes()[i]->X()[1];
+  }
+
+  // dead load in element nodes
+  BodyForce(ele,time);
+
+  // get diffusivity / diffusivities
+  if (material->mattyp == m_matlist)
+  {
+    for (int k = 0;k<numdofpernode_;++k)
+    {
+      const int matid = material->m.matlist->matids[k];
+      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+#if 0
+      if (singlemat.mattyp == m_ion)
+        cout<<"MatId: "<<material->m.matlist->matids[k]
+        <<" valence["<<k<<"] = "<<singlemat.m.ion->valence 
+        <<" diffusivity["<<k<<"] = "<<singlemat.m.ion->diffusivity<<endl;
+#endif
+      if (singlemat.mattyp != m_condif) dserror("no condif material found");
+      diffus_[k]= singlemat.m.condif->diffusivity;
+#if 0
+      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
+#endif
+    }
+    // set specific heat capacity at constant pressure to 1.0
+    shcacp_ = 1.0;
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
+
+    // in case of a temperature equation, we get thermal conductivity instead of
+    // diffusivity and have to divide by the specific heat capacity at constant
+    // pressure; otherwise, it is the "usual" diffusivity
+    if (temperature)
+    {
+      shcacp_ = material->m.condif->shc;
+      diffus_[0] = material->m.condif->diffusivity/shcacp_;
+    }
+    else 
+    {
+      shcacp_ = 1.0;
+      diffus_[0] = material->m.condif->diffusivity;
+    }
+  }
+  else
+    dserror("Material type is not supported");
+
+  /*----------------------------------------------------------------------*/
+  // calculation of instationary(!) stabilization parameter(s)
+  /*----------------------------------------------------------------------*/
+  CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,false);
+
+  /*----------------------------------------------------------------------*/
+  // integration loop for one condif2 element
+  /*----------------------------------------------------------------------*/
+
+  // flag for higher order elements
+  const bool higher_order_ele = SCATRA::is2DHigherOrderElement(distype);
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints2D intpoints(SCATRA::get2DOptimalGaussrule(distype));
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,distype,higher_order_ele,ele);
+
+    // density*specific heat capacity-weighted shape functions
+    for (int j=0; j<iel_; j++)
+    {
+      densfunct_[j] = funct_[j]*edens[j];
+    }
+
+    // get (density*specific heat capacity-weighted) velocity at element center
+    for (int i=0;i<2;i++)
+    {
+      velint_[i]=0.0;
+      for (int j=0;j<iel_;j++)
+      {
+        velint_[i] += funct_[j]*evel[i+(2*j)];
+      }
+    }
+
+    vector<double> phi0(numdofpernode_);
+
+    /*------------ get values of variables at integration point */
+    for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
+    {
+      // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
+      rhs_[k] = 0;
+      for (int inode=0;inode<iel_;inode++)
+      {
+        rhs_[k]+= (1.0/shcacp_)*bodyforce_[inode*numdofpernode_+k]*funct_[inode];
+        // note: bodyforce calculation isn't filled with functionality yet.
+        // -> this line has no effect since bodyforce is always zero.
+      }
+    }
+
+    /*-------------- perform integration for entire matrix and rhs ---*/
+    for (int dofindex=0;dofindex<numdofpernode_;++dofindex) // deal with a system of transported scalars
+    {
+      /*========================= further variables =========================*/
+
+      vector<double>            conv(iel_);        /* convective part       */
+      vector<double>            diff(iel_);        /* diffusive part        */
+      static double             rhsint;            /* rhs at int. point     */
+
+      // stabilization parameter
+      const double taufac = tau_[dofindex]*fac_;
+
+      /*-------------------------------- evaluate rhs at integration point ---*/
+      rhsint = rhs_[dofindex];
+
+      for (int i=0; i<iel_; i++) /* loop over nodes of element */
+      {
+         /* convective part */
+         /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
+            with  N .. form function matrix */
+         conv[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
+      } // end of loop over nodes of element
+
+      if (higher_order_ele)
+      {
+        for (int i=0; i<iel_; i++) /* loop over nodes of element */
+        {
+           /* diffusive part */
+           /* diffus * ( N,xx  +  N,yy) */
+           diff[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
+        } // end of loop over nodes of element
+      }
+
+      /*--------------------------------- now build single stiffness terms ---*/
+      const int numdof = numdofpernode_;
+      // -------------------------------------------System matrix
+      for (int vi=0; vi<iel_; ++vi)
+      {
+          for (int ui=0; ui<iel_; ++ui)
+          {
+          /* Standard Galerkin terms: */
+          /* transient term */
+          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*densfunct_[ui] ;
+
+          /* convective term */
+          rhs[vi*numdof+dofindex] += -(fac_*funct_[vi]*conv[ui]*ephi0[ui*numdof+dofindex]) ;
+
+          /* diffusive term */
+          rhs[vi*numdof+dofindex] += -(fac_*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi))*ephi0[ui*numdof+dofindex]);
+
+          /* Stabilization terms: */
+          /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
+          /* transient term */
+          //massmat(vi, ui) += -taufac*densfunct_[vi]*densfunct_[ui] ;
+
+          /* convective term */
+          //massmat(vi, ui) += -timetaufac*densfunct_[vi]*conv[ui] ;
+
+          /* diffusive term */
+          //massmat(vi, ui) += timetaufac*densfunct_[vi]*diff[ui] ;
+
+          /* 2) convective stabilization */
+          /* transient term */
+          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv[vi]*densfunct_[ui]*ephi0[ui*numdof+dofindex];
+
+          /* convective term */
+          rhs[vi*numdof+dofindex] += -(taufac*conv[vi]*conv[ui]*ephi0[ui*numdof+dofindex] );
+
+          if (higher_order_ele)
+          {
+            /* diffusive term */
+            rhs[vi*numdof+dofindex] += -(-taufac*conv[vi]*diff[ui]*ephi0[ui*numdof+dofindex] );
+
+            /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+            /* transient term */
+            massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff[vi]*densfunct_[ui];
+
+            /* convective term */
+            rhs[vi*numdof+dofindex] += -(taufac*diff[vi]*conv[ui]*ephi0[ui*numdof+dofindex]); 
+
+            /* diffusive term */
+            rhs[vi*numdof+dofindex] += -(-taufac*diff[vi]*diff[ui]*ephi0[ui*numdof+dofindex]);
+          }
+        }
+      }
+
+      // ----------------------------------------------RHS
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        /* RHS source term */
+        rhs[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+
+        /* transient stabilization of RHS source term */
+        //eforce[vi] += -taufac*densfunct[vi]*rhsint ;
+
+        /* convective stabilization of RHS source term */
+        rhs[vi*numdof+dofindex] += taufac*conv[vi]*rhsint ;
+
+        /* diffusive stabilization of RHS source term */
+        rhs[vi*numdof+dofindex] += taufac*diff[vi]*rhsint ;
+      }
+
+      // ------------------------------artifical-diffusivity matrix
+      if (fssgd != "No")
+      {
+        // parameter for artificial diffusivity (scaled to one currently)
+        const double kartfac = fac_;
+        //const double kartfac = kart_[dofindex]*fac_;
+
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          for (int ui=0; ui<iel_; ++ui)
+          {
+            /* artificial diffusivity term */
+            rhs[vi*numdof+dofindex] += -(kartfac*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui))) ;
+
+            /*subtract SUPG term */
+            //rhs[vi*numdof+dofindex] -= -(taufac*conv[vi]*conv[ui]) ;
+          }
+        }
+      }
+
+    } // loop over each scalar
+
+  } // integration loop
+
+  return;
+} // Condif2Impl::InitializeOST
 
 
 #endif

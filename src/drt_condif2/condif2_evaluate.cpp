@@ -45,6 +45,8 @@ DRT::ELEMENTS::Condif2::ActionType DRT::ELEMENTS::Condif2::convertStringToAction
   DRT::ELEMENTS::Condif2::ActionType act = Condif2::none;
   if (action == "calc_condif_systemmat_and_residual")
     act = Condif2::calc_condif_systemmat_and_residual;
+  else if (action == "initialize_one_step_theta")
+    act = Condif2::initialize_one_step_theta;
   else if (action == "calc_condif_flux")
     act = Condif2::calc_condif_flux;
   else
@@ -143,6 +145,56 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
           temperature,
           fssgd,
           is_stationary);
+    }
+    break;
+    // calculate time derivative for time value t_0
+    case initialize_one_step_theta:
+    {
+      const double time = params.get<double>("total time");
+      const double timefac = params.get<double>("thsl");
+
+      // need initial field
+      RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+      RefCountPtr<const Epetra_Vector> dens0 = discretization.GetState("dens0");
+      if (phi0==null || dens0==null)
+        dserror("Cannot get state vector 'phi0' and/or 'densnp'");
+
+      // extract local values from the global vector
+      vector<double> myphi0(lm.size());
+      vector<double> mydens0(lm.size());
+      DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+      DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
+
+      // get initial velocity values at the nodes
+      // compare also with DRT::UTILS::ExtractMyValues()
+      const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+      const int iel = NumNode();
+      const int nsd=2;
+      Epetra_SerialDenseVector evel(nsd*iel);
+      DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
+
+      // get flag for fine-scale subgrid diffusivity
+      string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+      // set flag for type of scalar whether it is temperature or not
+      string scaltypestr=params.get<string>("type of scalar");
+      bool temperature = false;
+      if(scaltypestr =="Temperature") temperature = true;
+
+      // calculate mass matrix and rhs
+      DRT::ELEMENTS::Condif2Impl::Impl(this)->InitializeOST(
+           this,
+           myphi0,
+           mydens0,
+           elemat1,
+           elevec1,
+           elevec2,
+           actmat,
+           time,
+           timefac,
+           evel,
+           temperature,
+           fssgd);
     }
     break;
     case calc_condif_flux:

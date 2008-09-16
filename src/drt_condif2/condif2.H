@@ -299,7 +299,8 @@ private:
   {
     none,
     calc_condif_systemmat_and_residual,
-    calc_condif_flux
+    calc_condif_flux,
+    initialize_one_step_theta
   };
 
   //! Gaussrule
