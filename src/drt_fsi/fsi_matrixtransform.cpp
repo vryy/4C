@@ -57,7 +57,12 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
   if (not edst->Filled())
   {
     row = dstmap.GID(row);
+
     // put row into matrix
+    //
+    // We might want to preserve a Dirichlet row in our destination matrix
+    // here as well. Skip for now.
+
     for (int j=0; j<NumEntries; ++j)
     {
       // add all values, including zeros, as we need a proper matrix graph
@@ -80,10 +85,72 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
       Indices[j] = dstcolmap.LID(Indices[j]);
     }
 
+    // We have to care for Dirichlet conditions in the filled destination
+    // matrix. If there is just the diagonal entry we assume the row to be
+    // Dirichlet and force the source matrix to have a Dirichlet row as
+    // well. If this is not desired another flag would be needed.
+
     int lid = dstrowmap.LID(dstmap.GID(row));
-    int err = edst->SumIntoMyValues(lid, NumEntries, const_cast<double*>(Values), Indices);
+
+    int myNumEntries;
+    double *myValues;
+    int *myIndices;
+    int err = edst->ExtractMyRowView(lid, myNumEntries, myValues, myIndices);
     if (err)
-      dserror("SumIntoMyValues error: %d.\nMaybe unfill of matrix block is needed.", err);
+      dserror("ExtractMyRowView error: %d on row lid=%d.\nI'm totally lost here.",err,lid);
+
+    if (myNumEntries>=NumEntries)
+    {
+      // The normal case. This has to match.
+
+      err = edst->SumIntoMyValues(lid, NumEntries, const_cast<double*>(Values), Indices);
+      if (err)
+      {
+        const Epetra_Comm& comm = dstrowmap.Comm();
+        for (int i=0; i<comm.NumProc(); ++i)
+        {
+          if (i==comm.MyPID())
+          {
+            std::cout << "PROC " << i << ":\n";
+            std::cout << "actual line: ";
+            std::copy(myIndices, myIndices+myNumEntries, std::ostream_iterator<int>(std::cout, " "));
+            std::cout << "\ngiven  line: ";
+            std::copy(Indices, Indices+NumEntries, std::ostream_iterator<int>(std::cout, " "));
+            std::cout << "\n";
+          }
+          comm.Barrier();
+        }
+
+        dserror("SumIntoMyValues error: %d on row lid=%d.\nMaybe unfill of matrix block is needed.", err, lid);
+      }
+    }
+    else if (myNumEntries==1)
+    {
+      // we have a dirichlet line in our destination matrix
+      if (myIndices[0]!=lid)
+        dserror("Single entry row without diagonal value. Confused.");
+      for (int j=0; j<NumEntries; ++j)
+      {
+        if (Indices[j]==lid)
+        {
+          err = edst->SumIntoMyValues(lid, 1, const_cast<double*>(&Values[j]), &Indices[j]);
+          if (err)
+            dserror("SumIntoMyValues error: %d on row lid=%d.\nThis is not supposed to happen.", err, lid);
+        }
+        else
+        {
+          if (Values[j]!=0.0)
+          {
+            dserror("Attempt to add a non-Dirichlet row to a filled Dirichlet row.\n"
+                    "Did you specify all required boundary conditions?");
+          }
+        }
+      }
+    }
+    else
+    {
+      dserror("Filled destination matrix row shorter than src row: %d, %d. Panic.", myNumEntries, NumEntries);
+    }
   }
 }
 

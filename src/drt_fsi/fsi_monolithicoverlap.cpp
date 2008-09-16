@@ -191,7 +191,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // uncomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
-  s->UnComplete();
+  //s->UnComplete();
 
   fggtransform_(fgg,
                 scale*timescale,

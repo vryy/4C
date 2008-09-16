@@ -234,6 +234,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
+  // Uncomplete fluid matrix to be able to deal with slightly defective
+  // interface meshes.
   f->UnComplete();
 
   mat.Assign(0,0,View,sii);
