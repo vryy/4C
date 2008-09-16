@@ -179,18 +179,21 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
   vector<char> tmpprestress(0);
   ExtractfromPack(position,data,tmpprestress);
   prestress_->Unpack(tmpprestress);
 #endif
+
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
   vector<char> tmpinvdesign(0);
   ExtractfromPack(position,data,tmpinvdesign);
   invdesign_->Unpack(tmpinvdesign);
 #endif
+
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
