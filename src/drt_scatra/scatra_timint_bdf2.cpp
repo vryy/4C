@@ -161,7 +161,7 @@ void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
 {
   ApplyDirichletBC(time_, phin_,Teuchos::null);
   return;
-};
+}
 
 
 #endif /* CCADISCRET */
