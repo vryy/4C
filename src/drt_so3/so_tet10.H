@@ -13,8 +13,8 @@ written by: Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOLID3
 #ifdef CCADISCRET
-#ifndef SO_TET10_H_
-#define SO_TET10_H_
+#ifndef SO_TET10_H
+#define SO_TET10_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
