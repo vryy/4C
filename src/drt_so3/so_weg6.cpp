@@ -22,6 +22,10 @@ Maintainer: Moritz Frenzel
 
 using namespace DRT::UTILS;
 
+// inverse design object
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+#include "inversedesign.H"
+#endif
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -39,6 +43,10 @@ data_()
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
+#endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
 #endif
 
   return;
@@ -63,6 +71,10 @@ detJ_(old.detJ_)
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+#endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 #endif
 
   return;
@@ -116,6 +128,13 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   AddtoPack(data,tmpprestress);
 #endif
 
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  // invdesign_
+  vector<char> tmpinvdesign(0);
+  invdesign_->Pack(tmpinvdesign);
+  AddtoPack(data,tmpinvdesign);
+#endif
+
   // detJ_
   AddtoPack(data,detJ_);
   
@@ -150,12 +169,21 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
   vector<char> tmpprestress(0);
   ExtractfromPack(position,data,tmpprestress);
   prestress_->Unpack(tmpprestress);
 #endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  // invdesign_
+  vector<char> tmpinvdesign(0);
+  ExtractfromPack(position,data,tmpinvdesign);
+  invdesign_->Unpack(tmpinvdesign);
+#endif
+
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_

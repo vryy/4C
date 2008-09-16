@@ -26,6 +26,11 @@ Maintainer: Moritz Frenzel
 
 #include "Epetra_SerialDenseSolver.h"
 
+// inverse design object
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+#include "inversedesign.H"
+#endif
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -62,6 +67,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 #ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update") act = So_weg6::prestress_update;
 #endif
+#ifdef INVERSEDESIGNCREATE
+  else if (action=="calc_struct_inversedesign_update")            act = So_weg6::inversedesign_update;
+#endif
   else dserror("Unknown type of action for So_weg6");
 
   // what should the element do
@@ -90,7 +98,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+#ifndef INVERSEDESIGNCREATE
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+#else
+      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+#endif
     }
     break;
 
@@ -127,7 +139,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+#ifndef INVERSEDESIGNCREATE
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+#else
+      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+#endif
     }
     break;
 
@@ -149,8 +165,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain == "euler_almansi") sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
-      else sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
+      bool ea = (iostrain == "euler_almansi");
+#ifndef INVERSEDESIGNCREATE
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+#else
+      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+#endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -316,6 +336,19 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 #endif
 
+#ifdef INVERSEDESIGNCREATE
+    case inversedesign_update:
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      invdesign_->sow6_StoreMaterialConfiguration(this,mydisp);
+      invdesign_->IsInit() = true; // this is to make the restart work
+    }
+    break;
+#endif
+
     default:
       dserror("Unknown type of action for Solid3");
   }
@@ -365,21 +398,31 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
   {
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m) {
-      for (int n=0; n<NUMGPT_WEG6; ++n) {
+    for (int m=0; m<NUMDIM_WEG6; ++m) 
+      for (int n=0; n<NUMGPT_WEG6; ++n) 
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
-      }
-    }
+
     invJ_[gp].Shape(NUMDIM_WEG6,NUMDIM_WEG6);
     invJ_[gp].Multiply('N','N',1.0,deriv_gp,xrefe,0.0);
     detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
+
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
       prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
 #endif
+#ifdef INVERSEDESIGNUSE
+    if (!(invdesign_->IsInit()))
+    {
+      invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
+      invdesign_->DetJHistory()[gp] = detJ_[gp];
+    }
+#endif
   }
 #ifdef PRESTRESS
   prestress_->IsInit() = true;
+#endif
+#ifdef INVERSEDESIGNUSE
+  invdesign_->IsInit() = true;
 #endif
   return;
 }
@@ -421,7 +464,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
 #endif
-  for (int i=0; i<NUMNOD_WEG6; ++i){
+  for (int i=0; i<NUMNOD_WEG6; ++i)
+  {
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
@@ -505,16 +549,17 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL){
-      if (!euler_almansi) {
-        for (int i = 0; i < 3; ++i) {
+    if (elestrain != NULL)
+    {
+      if (!euler_almansi) 
+      {
+        for (int i = 0; i < 3; ++i)
           (*elestrain)(gp,i) = glstrain(i);
-        }
-        for (int i = 3; i < 6; ++i) {
+        for (int i = 3; i < 6; ++i)
           (*elestrain)(gp,i) = 0.5 * glstrain(i);
-        }
       }
-      else{
+      else
+      {
         // rewriting Green-Lagrange strains in matrix format
         LINALG::SerialDenseMatrix gl(NUMDIM_WEG6,NUMDIM_WEG6);
         gl(0,0) = glstrain(0);
@@ -566,7 +611,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     LINALG::SerialDenseMatrix bop(NUMSTR_WEG6,NUMDOF_WEG6);
-    for (int i=0; i<NUMNOD_WEG6; ++i) {
+    for (int i=0; i<NUMNOD_WEG6; ++i) 
+    {
       bop(0,NODDOF_WEG6*i+0) = defgrd(0,0)*N_XYZ(0,i);
       bop(0,NODDOF_WEG6*i+1) = defgrd(1,0)*N_XYZ(0,i);
       bop(0,NODDOF_WEG6*i+2) = defgrd(2,0)*N_XYZ(0,i);
@@ -596,17 +642,17 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
-    if (elestress != NULL){
-      if (!cauchy) {
-        for (int i = 0; i < NUMSTR_WEG6; ++i) {
+    if (elestress != NULL)
+    {
+      if (!cauchy) 
+        for (int i = 0; i < NUMSTR_WEG6; ++i) 
           (*elestress)(gp,i) = stress(i);
-        }
-      }
-      else {                               // return Cauchy stresses
+      else 
+      {                               // return Cauchy stresses
         double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                       defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
                       defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
@@ -639,7 +685,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       }
     }
 
-    if (force != NULL && stiffmatrix != NULL) {
+    if (force != NULL && stiffmatrix != NULL) 
+    {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
 
@@ -654,13 +701,16 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       vector<double> SmB_L(NUMDIM_WEG6);     // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<NUMNOD_WEG6; ++inod){
+      for (int inod=0; inod<NUMNOD_WEG6; ++inod)
+      {
         SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
         SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
         SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
-        for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod){
+        for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod)
+        {
           double bopstrbop = 0.0;            // intermediate value
-          for (int idim=0; idim<NUMDIM_WEG6; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
+          for (int idim=0; idim<NUMDIM_WEG6; ++idim) 
+            bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
           (*stiffmatrix)(NUMDIM_WEG6*inod+0,NUMDIM_WEG6*jnod+0) += bopstrbop;
           (*stiffmatrix)(NUMDIM_WEG6*inod+1,NUMDIM_WEG6*jnod+1) += bopstrbop;
           (*stiffmatrix)(NUMDIM_WEG6*inod+2,NUMDIM_WEG6*jnod+2) += bopstrbop;
@@ -668,10 +718,13 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       } // end of integrate `geometric' stiffness ******************************
     }
 
-    if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != NULL)
+    { // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
-      for (int inod=0; inod<NUMNOD_WEG6; ++inod) {
-        for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod) {
+      for (int inod=0; inod<NUMNOD_WEG6; ++inod) 
+      {
+        for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod) 
+        {
           double massfactor = (*shapefct)(inod,gp) * density * (*shapefct)(jnod,gp)
                             * detJ * (*weights)(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_WEG6*inod+0,NUMDIM_WEG6*jnod+0) += massfactor;

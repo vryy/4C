@@ -29,6 +29,7 @@ namespace ELEMENTS
   using namespace Teuchos;
   using namespace std;
   class So_hex8;
+  class So_weg6;
 
 /*!
 \brief A class for handling the prestressing in finite deformations
@@ -129,6 +130,24 @@ public:
                                        const vector<double>& disp);
   
   
+void sow6_nlnstiffmass(
+      DRT::ELEMENTS::So_weg6*   ele,            ///< this element
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residuum
+      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
+      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
+      Epetra_SerialDenseVector* force,          ///< element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      ///< element stresses
+      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      const bool                cauchy=false,         ///< stress output option
+      const bool                euler_almansi=false); ///< strain output option
+
+  /// store material config for wedge6 element
+  void sow6_StoreMaterialConfiguration(DRT::ELEMENTS::So_weg6* ele,
+                                       const vector<double>& disp);
+
 private:
 
   int                                     numnod_;
