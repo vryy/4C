@@ -2,7 +2,7 @@
 // Maintainer: Michael Gee
 //             gee@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
-//             089 - 289-25239
+//             089 - 289-15239
 //
 // necessary defines: CCADISCRET D_SOLID3 BINIO INVERSEDESIGNCREATE
 //
@@ -10,7 +10,7 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Default_title
+inverse design problem with hex8 element
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          64
 NODES            153
