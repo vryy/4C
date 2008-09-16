@@ -15,7 +15,10 @@ Maintainer: Michael Gee
 #include "inversedesign.H"
 #include "so_hex8.H"
 #include "so_weg6.H"
+#include "../drt_mat/material.H"
+#include "so_tet4.H"
 #include "../drt_lib/drt_dserror.H"
+#include "Epetra_SerialDenseSolver.h"
 
 
 /*----------------------------------------------------------------------*
@@ -1055,29 +1058,29 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     LINALG::SerialDenseMatrix B(NUMSTR_WEG6,NUMDOF_WEG6);
     for (int i=0; i<NUMNOD_WEG6; ++i) 
     {
-      B(0,NODDOF_SOH8*i+0) = n_xyz(0,i);
-      B(0,NODDOF_SOH8*i+1) = 0.0;
-      B(0,NODDOF_SOH8*i+2) = 0.0;
+      B(0,NODDOF_WEG6*i+0) = n_xyz(0,i);
+      B(0,NODDOF_WEG6*i+1) = 0.0;
+      B(0,NODDOF_WEG6*i+2) = 0.0;
 
-      B(1,NODDOF_SOH8*i+0) = 0.0;
-      B(1,NODDOF_SOH8*i+1) = n_xyz(1,i);
-      B(1,NODDOF_SOH8*i+2) = 0.0;
+      B(1,NODDOF_WEG6*i+0) = 0.0;
+      B(1,NODDOF_WEG6*i+1) = n_xyz(1,i);
+      B(1,NODDOF_WEG6*i+2) = 0.0;
 
-      B(2,NODDOF_SOH8*i+0) = 0.0;
-      B(2,NODDOF_SOH8*i+1) = 0.0;
-      B(2,NODDOF_SOH8*i+2) = n_xyz(2,i);
+      B(2,NODDOF_WEG6*i+0) = 0.0;
+      B(2,NODDOF_WEG6*i+1) = 0.0;
+      B(2,NODDOF_WEG6*i+2) = n_xyz(2,i);
 
-      B(3,NODDOF_SOH8*i+0) = n_xyz(1,i);
-      B(3,NODDOF_SOH8*i+1) = n_xyz(0,i);
-      B(3,NODDOF_SOH8*i+2) = 0.0;
+      B(3,NODDOF_WEG6*i+0) = n_xyz(1,i);
+      B(3,NODDOF_WEG6*i+1) = n_xyz(0,i);
+      B(3,NODDOF_WEG6*i+2) = 0.0;
 
-      B(4,NODDOF_SOH8*i+0) = 0.0;
-      B(4,NODDOF_SOH8*i+1) = n_xyz(2,i);
-      B(4,NODDOF_SOH8*i+2) = n_xyz(1,i);
+      B(4,NODDOF_WEG6*i+0) = 0.0;
+      B(4,NODDOF_WEG6*i+1) = n_xyz(2,i);
+      B(4,NODDOF_WEG6*i+2) = n_xyz(1,i);
 
-      B(5,NODDOF_SOH8*i+0) = n_xyz(2,i);
-      B(5,NODDOF_SOH8*i+1) = 0.0;
-      B(5,NODDOF_SOH8*i+2) = n_xyz(0,i);
+      B(5,NODDOF_WEG6*i+0) = n_xyz(2,i);
+      B(5,NODDOF_WEG6*i+1) = 0.0;
+      B(5,NODDOF_WEG6*i+2) = n_xyz(0,i);
     }
     
     //--------------------------- build N_x operator (wrt spatial config)
@@ -1293,11 +1296,371 @@ void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
     MatrixtoStorage(gp,invJ,JHistory());
     MatrixtoStorage(gp,F,FHistory());
   }  
-
-
   return;
 }
 
+
+
+
+/*----------------------------------------------------------------------*
+ |  tet4 integration method                                    (public) |
+ |                                                             gee 09/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
+      DRT::ELEMENTS::So_tet4*   ele,            ///< this element
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residuum
+      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
+      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
+      Epetra_SerialDenseVector* force,          ///< element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      ///< stresses at GP
+      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      struct _MATERIAL*         material,       ///< element material data
+      const bool                cauchy,         ///< stress output options
+      const bool                ea)
+{
+/* =============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
+** =============================================================================*/
+  const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
+  double density;
+
+  //---------------------------------------------------------------------
+  // element geometry (note that this is inverse!)
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
+  }
+
+  //---------------------------------------------------------------------
+  //---------------------------------------------------------------------
+  // loop gaussian points
+  const double detj  = ele->V_;
+  for (int gp=0; gp<NUMGPT_SOTET4; gp++)
+  {
+    //----------------------------------- get inverse of Jacobian mapping
+    //------------------------------ compute derivs wrt to spatial coords
+    Epetra_SerialDenseMatrix& n_xyz = ele->nxyz_[gp];
+
+    //--------------------------- build defgrd of inverse mapping dX / dx
+    LINALG::SerialDenseMatrix f(NUMDIM_SOTET4,NUMDIM_SOTET4);
+    f.Multiply('T','N',1.0,xdisp,n_xyz,0.0);
+    f(0,0)+=1;
+    f(1,1)+=1;
+    f(2,2)+=1;
+    
+    //--------------------------- build defgrd of forward mapping dx / dX
+    LINALG::SerialDenseMatrix F(f);
+    const double j = LINALG::NonsymInverse3x3(F);
+
+    //------------------------------------ build F^T as vector 9x1
+    LINALG::SerialDenseVector FTvec(9);
+    FTvec(0) = F(0,0);
+    FTvec(1) = F(0,1);
+    FTvec(2) = F(0,2);
+    FTvec(3) = F(1,0);
+    FTvec(4) = F(1,1);
+    FTvec(5) = F(1,2);
+    FTvec(6) = F(2,0);
+    FTvec(7) = F(2,1);
+    FTvec(8) = F(2,2);
+    
+    //--------------------------------------------- build operator Lambda
+    LINALG::SerialDenseMatrix Lambda(9,9);
+    BuildLambda(Lambda,F);
+    
+    //------------------------------------------------- build operator IF
+    // this has been analytically tested: IF*S == F S F^T and ok
+    LINALG::SerialDenseMatrix IF(6,6);
+    BuildIF(IF,F);
+    
+    //---------------------------------------------- build operator Theta
+    LINALG::SerialDenseMatrix Theta(6,9);
+    BuildTheta(Theta,F);
+    
+    //--------------- build right Cauchy-Green and Green-Lagrange strains
+    LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOTET4,NUMDIM_SOTET4);
+    cauchygreen.Multiply('T','N',1.0,F,F,0.0);
+
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::SerialDenseVector glstrain(NUMSTR_SOTET4);
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+    
+    //---- build B-operator (wrt to spatial, that is known configuration)
+    LINALG::SerialDenseMatrix B(NUMSTR_SOTET4,NUMDOF_SOTET4);
+    for (int i=0; i<NUMNOD_SOTET4; ++i) 
+    {
+      B(0,NODDOF_SOTET4*i+0) = n_xyz(i,0);
+      B(0,NODDOF_SOTET4*i+1) = 0.0;
+      B(0,NODDOF_SOTET4*i+2) = 0.0;
+
+      B(1,NODDOF_SOTET4*i+0) = 0.0;
+      B(1,NODDOF_SOTET4*i+1) = n_xyz(i,1);
+      B(1,NODDOF_SOTET4*i+2) = 0.0;
+
+      B(2,NODDOF_SOTET4*i+0) = 0.0;
+      B(2,NODDOF_SOTET4*i+1) = 0.0;
+      B(2,NODDOF_SOTET4*i+2) = n_xyz(i,2);
+
+      B(3,NODDOF_SOTET4*i+0) = n_xyz(i,1);
+      B(3,NODDOF_SOTET4*i+1) = n_xyz(i,0);
+      B(3,NODDOF_SOTET4*i+2) = 0.0;
+
+      B(4,NODDOF_SOTET4*i+0) = 0.0;
+      B(4,NODDOF_SOTET4*i+1) = n_xyz(i,2);
+      B(4,NODDOF_SOTET4*i+2) = n_xyz(i,1);
+
+      B(5,NODDOF_SOTET4*i+0) = n_xyz(i,2);
+      B(5,NODDOF_SOTET4*i+1) = 0.0;
+      B(5,NODDOF_SOTET4*i+2) = n_xyz(i,0);
+    }
+    
+    //--------------------------- build N_x operator (wrt spatial config)
+    Epetra_SerialDenseMatrix N_x(9,NUMDOF_SOTET4);
+    for (int i=0; i<NUMNOD_SOTET4; ++i) 
+    {
+      N_x(0,3*i+0) = n_xyz(i,0);
+      N_x(1,3*i+1) = n_xyz(i,0);
+      N_x(2,3*i+2) = n_xyz(i,0);
+      
+      N_x(3,3*i+0) = n_xyz(i,1);
+      N_x(4,3*i+1) = n_xyz(i,1);
+      N_x(5,3*i+2) = n_xyz(i,1);
+      
+      N_x(6,3*i+0) = n_xyz(i,2);
+      N_x(7,3*i+1) = n_xyz(i,2);
+      N_x(8,3*i+2) = n_xyz(i,2);
+    }
+
+    //------------------------------------------------- call material law
+    Epetra_SerialDenseMatrix cmat(NUMSTR_SOTET4,NUMSTR_SOTET4);
+    Epetra_SerialDenseVector stress(NUMSTR_SOTET4);
+    ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F, gp);
+
+    //------------------------------------------- compute cauchy stresses
+    Epetra_SerialDenseVector cstress(NUMSTR_SOTET4);
+    cstress.Multiply('N','N',j,IF,stress,0.0);
+
+    //--------------------------------------- output strains and stresses
+    if (elestrain)
+    {
+      if (!ea) // output Green-Lagrange strains
+      {
+        for (int i = 0; i < 3; ++i)
+          (*elestrain)(gp,i) = glstrain(i);
+        for (int i = 3; i < 6; ++i)
+          (*elestrain)(gp,i) = 0.5 * glstrain(i);
+      }
+      else
+      {
+        // rewriting Green-Lagrange strains in matrix format
+        LINALG::SerialDenseMatrix gl(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        gl(0,0) = glstrain(0);
+        gl(0,1) = 0.5*glstrain(3);
+        gl(0,2) = 0.5*glstrain(5);
+        gl(1,0) = gl(0,1);
+        gl(1,1) = glstrain(1);
+        gl(1,2) = 0.5*glstrain(4);
+        gl(2,0) = gl(0,2);
+        gl(2,1) = gl(1,2);
+        gl(2,2) = glstrain(2);
+
+        LINALG::SerialDenseMatrix temp(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        LINALG::SerialDenseMatrix euler_almansi(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        temp.Multiply('N','N',1.0,gl,f,0.0);
+        euler_almansi.Multiply('T','N',1.0,f,temp,0.0);
+
+        (*elestrain)(gp,0) = euler_almansi(0,0);
+        (*elestrain)(gp,1) = euler_almansi(1,1);
+        (*elestrain)(gp,2) = euler_almansi(2,2);
+        (*elestrain)(gp,3) = euler_almansi(0,1);
+        (*elestrain)(gp,4) = euler_almansi(1,2);
+        (*elestrain)(gp,5) = euler_almansi(0,2);
+      }
+    }
+
+    if (elestress)
+    { // return 2nd Piola-Kirchhoff stresses
+      if (!cauchy)
+        for (int i = 0; i < NUMSTR_SOTET4; ++i)
+          (*elestress)(gp,i) = stress(i);
+      else
+        for (int i = 0; i < NUMSTR_SOTET4; ++i)
+          (*elestress)(gp,i) = cstress(i);
+    }
+
+    //-------------------------------------------- build operator Ypsilon
+    LINALG::SerialDenseMatrix S(3,3);
+    S(0,0) = stress(0);
+    S(0,1) = stress(3);
+    S(0,2) = stress(5);
+    S(1,0) = stress(3);
+    S(1,1) = stress(1);
+    S(1,2) = stress(4);
+    S(2,0) = stress(5);
+    S(2,1) = stress(4);
+    S(2,2) = stress(2);
+    LINALG::SerialDenseMatrix Ypsilon(6,9);
+    BuildYpsilon(Ypsilon,F,S);
+
+    //----------------- integration factor dV (spatial) * Gaussian weight
+    const double intfac = detj * (tet4_dis.weights)(gp);
+
+    //------------------------------------------- assemble internal forces
+    if (force)
+    {
+      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      (*force).Multiply('T','N',intfac,B,cstress,1.0);
+    }
+
+    //*******************************************************************
+    if (stiffmatrix)
+    {
+      LINALG::SerialDenseMatrix sum(6,9);
+      LINALG::SerialDenseMatrix tmp2(1,9);
+
+      //================================== 1.) B^T * cstress * F^T * N_x
+      sum.Multiply('N','T',1.0,cstress,FTvec,0.0);
+      
+      //=================================== -j * B^T * Ypsilon * Lambda * N_x
+      sum.Multiply('N','N',-j,Ypsilon,Lambda,1.0);
+      
+      //======================= 3.) -j * B^T * IF * cmat * Theta * Lambda * N_x
+      LINALG::SerialDenseMatrix sixnine(6,9);
+      LINALG::SerialDenseMatrix sixsix(6,6);
+      sixnine.Multiply('N','N',1.0,Theta,Lambda,0.0);
+      sixsix.Multiply('N','N',1.0,IF,cmat,0.0);
+      sum.Multiply('N','N',-j,sixsix,sixnine,1.0);
+
+      //================ put everything together: K = intfac * B*T * sum * N_x
+      LINALG::SerialDenseMatrix tmp3(6,NUMDOF_SOTET4);
+      tmp3.Multiply('N','N',1.0,sum,N_x,0.0);
+      (*stiffmatrix).Multiply('T','N',intfac,B,tmp3,1.0);
+    } // if (stiffmatrix)
+    //*******************************************************************
+
+  } // for (int gp=0; gp<NUMGPT_SOTET4; gp++)
+  //---------------------------------------------------------------------
+  //---------------------------------------------------------------------
+
+  // static integrator created in any case to safe "if-case"
+  const static DRT::ELEMENTS::Integrator_tet4_4point tet4_mass;
+  // evaluate mass matrix
+  if (massmatrix != NULL)
+  {
+    //consistent mass matrix evaluated using a 4-point rule
+    for (int gp=0; gp<tet4_mass.num_gp; gp++)
+    {
+      for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
+      {
+        for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
+        {
+          double massfactor = (tet4_mass.shapefct_gp[gp])(inod) * density *
+                              (tet4_mass.shapefct_gp[gp])(jnod) * detj *
+                              (tet4_mass.weights)(gp);
+          (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
+        }
+      }
+    }
+  }// end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+
+  return;
+} // DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass
+
+
+/*----------------------------------------------------------------------*
+ |  compute and store material configuration                  (private) |
+ |                                                             gee 09/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
+                                       DRT::ELEMENTS::So_tet4* ele,
+                                       const vector<double>& disp)
+{
+  const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
+  LINALG::SerialDenseMatrix xrefe(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    xcurr(i,0) = ele->Nodes()[i]->X()[0];
+    xcurr(i,1) = ele->Nodes()[i]->X()[1];
+    xcurr(i,2) = ele->Nodes()[i]->X()[2];
+
+    xrefe(i,0) = xcurr(i,0) + disp[i*NODDOF_SOTET4+0];
+    xrefe(i,1) = xcurr(i,1) + disp[i*NODDOF_SOTET4+1];
+    xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_SOTET4+2];
+  }
+
+  /* get the matrix of the coordinates of nodes needed to compute the volume,
+  ** which is used here as detJ in the quadrature rule.
+  ** ("Jacobian matrix") for the quadrarture rule:
+  **             [  1    1    1    1  ]
+  **         J = [ X_1  X_2  X_3  X_4 ]
+  **             [ Y_1  Y_2  Y_3  Y_4 ]
+  **		 [ Z_1  Z_2  Z_3  Z_4 ]
+  */
+  LINALG::SerialDenseMatrix J(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
+  for (int i=0; i<4; i++)  J(0,i)=1;
+  for (int row=0;row<3;row++)
+    for (int col=0;col<4;col++)
+      J(row+1,col)= xrefe(col,row);
+  // volume of the element
+  detJ_[0] = LINALG::DeterminantLU(J)/6.0;
+
+  for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
+  {
+    LINALG::SerialDenseMatrix jac(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
+    LINALG::SerialDenseMatrix N_XYZ(NUMNOD_SOTET4,NUMDIM_SOTET4);
+    LINALG::SerialDenseMatrix F(3,3);
+  
+    {
+      LINALG::SerialDenseMatrix tmp(NUMCOORD_SOTET4-1,NUMCOORD_SOTET4);
+      tmp.Multiply('T','N',1.0,xrefe,tet4_dis.deriv_gp[gp],0.0);
+      for (int i=0; i<4; i++) jac(0,i)=1;
+      for (int row=0;row<3;row++)
+        for (int col=0;col<4;col++)
+          jac(row+1,col)=tmp(row,col);
+    }
+    // size is 4x3
+    Epetra_SerialDenseMatrix  I_aug(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    // size is 4x3
+    Epetra_SerialDenseMatrix partials(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    I_aug(1,0)=1;
+    I_aug(2,1)=1;
+    I_aug(3,2)=1;
+
+    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
+    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
+    solve_for_inverseJac.SetVectors(partials,I_aug);// set X=partials, B=I_aug
+    solve_for_inverseJac.FactorWithEquilibration(true);
+    int err2 = solve_for_inverseJac.Factor();
+    int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
+    if ((err != 0) && (err2!=0))
+    	dserror("Inversion of Jacobian failed");
+
+    N_XYZ.Multiply('N','N',1.0,tet4_dis.deriv_gp[gp],partials,0.0);
+    F.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
+
+    // put stuff into storage
+    MatrixtoStorage(gp,N_XYZ,JHistory());
+    MatrixtoStorage(gp,F,FHistory());
+
+  } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
+
+  return;
+}
 
 
 #endif  // #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)

@@ -20,6 +20,10 @@ writen by : Alexander Volf
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
+// inverse design object
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+#include "inversedesign.H"
+#endif
 
 
 
@@ -34,9 +38,15 @@ data_(),
 V_(-1.0)
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;  //whatis ngp_ ???????
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
 #endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+#endif
+
   return;
 }
 
@@ -51,9 +61,15 @@ data_(old.data_),
 V_(old.V_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 #endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+#endif
+
   return;
 }
 
@@ -114,6 +130,13 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   AddtoPack(data,tmpprestress);
 #endif
 
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  // invdesign_
+  vector<char> tmpinvdesign(0);
+  invdesign_->Pack(tmpinvdesign);
+  AddtoPack(data,tmpinvdesign);
+#endif
+
   return;
 }
 
@@ -153,6 +176,13 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   vector<char> tmpprestress(0);
   ExtractfromPack(position,data,tmpprestress);
   prestress_->Unpack(tmpprestress);
+#endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  // invdesign_
+  vector<char> tmpinvdesign(0);
+  ExtractfromPack(position,data,tmpinvdesign);
+  invdesign_->Unpack(tmpinvdesign);
 #endif
 
   if (position != (int)data.size())

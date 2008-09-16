@@ -26,6 +26,10 @@ written by : Alexander Volf
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
+// inverse design object
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+#include "inversedesign.H"
+#endif
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -56,21 +60,24 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = So_tet4::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = So_tet4::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = So_tet4::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = So_tet4::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = So_tet4::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = So_tet4::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress")        act = So_tet4::calc_struct_stress;
-  else if (action=="postprocess_stress")        act = So_tet4::postprocess_stress;
-  else if (action=="calc_struct_eleload")       act = So_tet4::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = So_tet4::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = So_tet4::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = So_tet4::calc_struct_update_imrlike;
-  else if (action=="calc_struct_reset_istep")  act = So_tet4::calc_struct_reset_istep;
+  else if (action=="calc_struct_linstiff")             act = So_tet4::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")             act = So_tet4::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce")        act = So_tet4::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")         act = So_tet4::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")         act = So_tet4::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass")        act = So_tet4::calc_struct_nlnstifflmass;
+  else if (action=="calc_struct_stress")               act = So_tet4::calc_struct_stress;
+  else if (action=="postprocess_stress")               act = So_tet4::postprocess_stress;
+  else if (action=="calc_struct_eleload")              act = So_tet4::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")              act = So_tet4::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
+  else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
 #ifdef PRESTRESS
-  else if (action=="calc_struct_prestress_update") act = So_tet4::prestress_update;
+  else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
+#endif
+#ifdef INVERSEDESIGNCREATE
+  else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
 #endif
   else dserror("Unknown type of action for So_tet4");
 
@@ -104,8 +111,28 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
+#ifndef INVERSEDESIGNCREATE
       so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+#else
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+#endif
+    }
+    break;
+
+    // internal force vector only
+    case calc_struct_internalforce:
+    {
+      // need current displacement and residual forces
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // create a dummy element matrix to apply linearised EAS-stuff onto
+      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
 
@@ -121,9 +148,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
+#ifndef INVERSEDESIGNCREATE
       so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
-
+#else
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+#endif
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
     break;
@@ -147,7 +176,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
+#ifndef INVERSEDESIGNCREATE
       so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
+#else
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
+#endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -283,6 +316,19 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     break;
 #endif
 
+#ifdef INVERSEDESIGNCREATE
+    case inversedesign_update:
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      invdesign_->sot4_StoreMaterialConfiguration(this,mydisp);
+      invdesign_->IsInit() = true; // this is to make the restart work
+    }
+    break;
+#endif
+
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
@@ -306,24 +352,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
-    }
-    break;
-
-    // internal force vector only
-    case calc_struct_internalforce:
-    {
-      // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      // create a dummy element matrix to apply linearised EAS-stuff onto
-      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
 
@@ -378,7 +406,8 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*/
 
 /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOTET4; gp++) {
+  for (int gp=0; gp<NUMGPT_SOTET4; gp++) 
+  {
     // get submatrix of deriv at actual gp
 
     /* get the matrix of the coordinates of edges needed to compute the volume,
@@ -393,8 +422,8 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
     for (int i=0; i<4; i++) jac_coord(0,i)=1;
     for (int row=0;row<3;row++)
     {
-    	for (int col=0;col<4;col++){
-    	jac_coord(row+1,col)= Nodes()[col]->X()[row];}
+    	for (int col=0;col<4;col++)
+          jac_coord(row+1,col)= Nodes()[col]->X()[row];
     }
 
     // compute determinant of Jacobian with own algorithm
@@ -406,11 +435,9 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
 
     double fac = tet4_int.weights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
-    for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) {
-      for(int dim=0; dim<NUMDIM_SOTET4; dim++) {
+    for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) 
+      for(int dim=0; dim<NUMDIM_SOTET4; dim++) 
         elevec1[nodid*NUMDIM_SOTET4+dim] += tet4_int.shapefct_gp[gp](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
-      }
-    }
   }/* ==================================================== end of Loop over GP */
 
   return 0;
@@ -494,10 +521,20 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     if (!(prestress_->IsInit()))
       prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
 #endif
+#ifdef INVERSEDESIGNUSE
+    if (!(invdesign_->IsInit()))
+    {
+      invdesign_->MatrixtoStorage(gp,nxyz_[gp],invdesign_->JHistory());
+      invdesign_->DetJHistory()[gp] = V_;
+    }
+#endif
 
   } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 #ifdef PRESTRESS
   prestress_->IsInit() = true;
+#endif
+#ifdef INVERSEDESIGNUSE
+  invdesign_->IsInit() = true;
 #endif
   return;
 }
@@ -556,7 +593,11 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
+#ifndef INVERSEDESIGNUSE
     const Epetra_SerialDenseMatrix& nxyz = nxyz_[gp];
+#else // we need the copy to overwrite it further down
+    Epetra_SerialDenseMatrix nxyz(nxyz_[gp]);
+#endif
 
     //                                      d xcurr
     // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
@@ -604,6 +645,24 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     defgrd(0,0)+=1;
     defgrd(1,1)+=1;
     defgrd(2,2)+=1;
+#endif
+
+#ifdef INVERSEDESIGNUSE
+    {
+      // make the multiplicative update so that defgrd refers to 
+      // the reference configuration that resulted from the inverse
+      // design analysis
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
+      LINALG::SerialDenseMatrix tmp3x3(3,3);
+      tmp3x3.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      defgrd = tmp3x3;
+      
+      // make detJ and nxyzmat refer to the ref. configuration that resulted from
+      // the inverse design analysis
+      detJ = invdesign_->DetJHistory()[gp];
+      invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
+    }
 #endif
 
     // Right Cauchy-Green tensor = F^T * F

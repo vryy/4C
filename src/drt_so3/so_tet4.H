@@ -57,6 +57,9 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sotet4Register;
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+class InvDesign;
+#endif
 
 /*!
 \brief A C++ version of the 4-node tet solid element
@@ -300,7 +303,8 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables
                              //!< during iteration to last converged state
-    prestress_update
+    prestress_update,
+    inversedesign_update
   };
 
   //! kinematic types of so_tet10
@@ -352,6 +356,11 @@ protected:
   void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
+#endif
+
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  friend class DRT::ELEMENTS::InvDesign;
+  RCP<DRT::ELEMENTS::InvDesign>                    invdesign_;
 #endif
 
   // internal calculation methods

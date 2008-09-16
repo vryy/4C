@@ -22,14 +22,19 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
+// forward declarations
+struct _MATERIAL;
+
 namespace DRT
 {
 namespace ELEMENTS
 {
   using namespace Teuchos;
   using namespace std;
+  // forward declarations
   class So_hex8;
   class So_weg6;
+  class So_tet4;
 
 /*!
 \brief A class for handling the prestressing in finite deformations
@@ -130,6 +135,7 @@ public:
                                        const vector<double>& disp);
   
   
+  /// id problem for wedge6 element
 void sow6_nlnstiffmass(
       DRT::ELEMENTS::So_weg6*   ele,            ///< this element
       vector<int>&              lm,             ///< location matrix
@@ -146,6 +152,26 @@ void sow6_nlnstiffmass(
 
   /// store material config for wedge6 element
   void sow6_StoreMaterialConfiguration(DRT::ELEMENTS::So_weg6* ele,
+                                       const vector<double>& disp);
+
+
+  /// id problem for tet4 element
+void so_tet4_nlnstiffmass(
+      DRT::ELEMENTS::So_tet4*   ele,            ///< this element
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residuum
+      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
+      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
+      Epetra_SerialDenseVector* force,          ///< element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      ///< stresses at GP
+      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      struct _MATERIAL*         material,       ///< element material data
+      const bool                cauchy=false,   ///< stress output options
+      const bool                ea=false);
+
+  /// store material config for wedge6 element
+  void sot4_StoreMaterialConfiguration(DRT::ELEMENTS::So_tet4* ele,
                                        const vector<double>& disp);
 
 private:

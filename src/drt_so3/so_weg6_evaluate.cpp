@@ -501,7 +501,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply('N','N',1.0,invJ_[gp],deriv_gp,0.0);
-    const double detJ = detJ_[gp];
+    double detJ = detJ_[gp];
 
     LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -533,6 +533,24 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
 #endif
 
+#ifdef INVERSEDESIGNUSE
+    {
+      // make the multiplicative update so that defgrd refers to 
+      // the reference configuration that resulted from the inverse
+      // design analysis
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
+      LINALG::SerialDenseMatrix tmp3x3(3,3);
+      tmp3x3.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      defgrd = tmp3x3;
+      
+      // make detJ and invJ refer to the ref. configuration that resulted from
+      // the inverse design analysis
+      detJ = invdesign_->DetJHistory()[gp];
+      invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
+      N_XYZ.Multiply('N','N',1.0,tmp3x3,deriv_gp,0.0);
+    }
+#endif
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_WEG6,NUMDIM_WEG6);
