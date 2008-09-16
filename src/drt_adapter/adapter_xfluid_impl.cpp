@@ -276,26 +276,29 @@ void ADAPTER::XFluidImpl::Output()
 //  boundaryoutput_->WriteVector("interface acceleration (n)", iaccn_);
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
-  // create interface DOF vectors using the fluid parallel distribution
-  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
-  Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  // map to fluid parallel distribution
-  LINALG::Export(*idispnp_ ,*idispnpcol);
-  LINALG::Export(*ivelnp_  ,*ivelnpcol);
-  LINALG::Export(*iveln_   ,*ivelncol);
-  LINALG::Export(*iaccn_   ,*iaccncol);
-
-  LINALG::Export(*itrueresnp_,*itruerescol);
-
-  PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
-  PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
-  PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-  PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  if (boundarydis_->Comm().MyPID() == 0)
+  {
+    // create interface DOF vectors using the fluid parallel distribution
+    const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
+    Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
+    // map to fluid parallel distribution
+    LINALG::Export(*idispnp_ ,*idispnpcol);
+    LINALG::Export(*ivelnp_  ,*ivelnpcol);
+    LINALG::Export(*iveln_   ,*ivelncol);
+    LINALG::Export(*iaccn_   ,*iaccncol);
+  
+    LINALG::Export(*itrueresnp_,*itruerescol);
+  
+    PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
+    PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
+    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  }
 
 }
 
