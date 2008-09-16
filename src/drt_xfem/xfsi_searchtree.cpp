@@ -120,7 +120,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     treeRoot_ = new TreeNode(0,aabb, this, NULL); 
   }  
   for (int i=0; i<dis.NumMyColElements(); ++i) {
-    insertElement(dis.lRowElement(i),currentpositions);
+    insertElement(dis.lColElement(i),currentpositions);
   }
 
     
@@ -137,10 +137,10 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   fc << "View \" " << "XAABB of Elements \" {" << endl;
   flush(cout);
   for (int i=0; i<dis.NumMyColElements(); ++i) {
-    const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(dis.lRowElement(i), currentpositions));
+    const BlitzMat xyze(DRT::UTILS::getCurrentNodalPositions(dis.lColElement(i), currentpositions));
     const XFEM::EleGeoType eleGeoType(HIGHERORDER);
     checkRoughGeoType(*myIt, xyze, eleGeoType);
-    const BlitzMat3x2 elemXAABB = XFEM::computeFastXAABB(dis.lRowElement(i), xyze, eleGeoType);
+    const BlitzMat3x2 elemXAABB = XFEM::computeFastXAABB(dis.lColElement(i), xyze, eleGeoType);
     BlitzMat XAABB(3,8);
     XAABB(0,0) = elemXAABB(0,0); XAABB(1,0) = elemXAABB(1,0);XAABB(2,0) = elemXAABB(2,0);
     XAABB(0,1) = elemXAABB(0,0); XAABB(1,1) = elemXAABB(1,1);XAABB(2,1) = elemXAABB(2,0);
@@ -150,7 +150,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     XAABB(0,5) = elemXAABB(0,1); XAABB(1,5) = elemXAABB(1,1);XAABB(2,5) = elemXAABB(2,0);
     XAABB(0,6) = elemXAABB(0,1); XAABB(1,6) = elemXAABB(1,1);XAABB(2,6) = elemXAABB(2,1);
     XAABB(0,7) = elemXAABB(0,1); XAABB(1,7) = elemXAABB(1,0);XAABB(2,7) = elemXAABB(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, dis.lRowElement(i)->Id(), XAABB)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, dis.lColElement(i)->Id(), XAABB)<< endl;
   }
     fc << "};" << endl;
     std::ofstream f_system(filename.str().c_str());
