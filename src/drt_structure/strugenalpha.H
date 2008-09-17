@@ -24,7 +24,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/uzawasolver.H"
+#include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 
@@ -464,7 +464,7 @@ protected:
 
   /// whatever constraints
   RCP<UTILS::ConstrManager>   constrMan_;
-  RCP<UTILS::UzawaSolver> uzawaSolv_;
+  RCP<UTILS::ConstraintSolver> constrSolv_;
 
   /// surface stresses
   RCP<DRT::SurfStressManager>   surf_stress_man_;

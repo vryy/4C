@@ -637,8 +637,8 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
                                    zeros_, dirichtoggle_);
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
-    // Call Uzawa algorithm to solve system with zeros on diagonal
-    uzawasolv_->Solve(stiff_, conmatrix,
+    // Call constraint solver to solve system with zeros on diagonal
+    consolv_->Solve(stiff_, conmatrix,
                       disi_, lagrincr,
                       fres_, conrhs);
 

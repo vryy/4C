@@ -119,10 +119,9 @@ void UTILS::Monitor::EvaluateMonitor
     DRT::Condition& cond = *(moncond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
-    params.set("ConditionID",condID);
+    const int condID=(*CondIDVec)[0];
+    const int minID=params.get("MinID",0);
     params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
     // define element matrices and vectors
@@ -146,7 +145,7 @@ void UTILS::Monitor::EvaluateMonitor
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(systemvector->MyLength());
+      elevector3.Size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
@@ -154,17 +153,12 @@ void UTILS::Monitor::EvaluateMonitor
       if (err) dserror("error while evaluating elements");
 
       // assembly
-        
       vector<int> constrlm;
       vector<int> constrowner;
-      for (int i=0; i<elevector3.Length();i++)
-      {
-        constrlm.push_back(i);
-        constrowner.push_back(curr->second->Owner());
-      }
+      constrlm.push_back(condID-minID);
+      constrowner.push_back(curr->second->Owner());
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
     }
-    
   }
   return;
 } 

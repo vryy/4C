@@ -43,7 +43,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/uzawasolver.H"
+#include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_contact/drt_contact_manager.H"
@@ -533,7 +533,7 @@ namespace STR
 
     //! whatever constraints
     Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
-    Teuchos::RCP<UTILS::UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
+    Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
     //! surface stresses
     Teuchos::RCP<DRT::SurfStressManager> surfstressman_;

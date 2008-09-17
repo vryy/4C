@@ -34,7 +34,6 @@ actdisc_(discr)
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Constraint Conditions!
   
-  
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
   // Keep ParameterList p alive during initialization, so global information
@@ -118,7 +117,7 @@ actdisc_(discr)
   {
 
     ParameterList p1;
-    //monitor values are only stored on processor zero since they are needed for output
+    //monitor values are only stored on processor zero since they are only needed for output
     int nummyele=0;
     if (!actdisc_->Comm().MyPID())
     {
@@ -128,7 +127,6 @@ actdisc_(discr)
     redmonmap_ = LINALG::AllreduceEMap(*monitormap_);
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
-    initialmonvalues_->Scale(0.0);
     
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
     LINALG::Export(*initialmonvalues_,*initialmonredundant);
@@ -137,8 +135,8 @@ actdisc_(discr)
     areamonitor3d_->Evaluate(p1,initialmonredundant);
     areamonitor2d_->Evaluate(p1,initialmonredundant);
 
-    ImportResults(initialmonvalues_,initialmonredundant);
-    
+    Epetra_Import monimpo(*monitormap_,*redmonmap_);
+    initialmonvalues_->Import(*initialmonredundant,monimpo,Add);
   }
   return;
 }
@@ -296,8 +294,9 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   volmonitor3d_->Evaluate(p,actmonredundant);
   areamonitor3d_->Evaluate(p,actmonredundant);
   areamonitor2d_->Evaluate(p,actmonredundant);
-  
-  ImportResults(monitorvalues_,actmonredundant);
+ 
+  Epetra_Import monimpo(*monitormap_,*redmonmap_);
+  monitorvalues_->Import(*actmonredundant,monimpo,Add);
   
   return;
 }

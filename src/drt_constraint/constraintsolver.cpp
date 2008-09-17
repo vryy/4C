@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file uzawasolver.cpp
+\file constraintsolver.cpp
 
 \brief Class containing uzawa algorithm to solve linear system.
 
@@ -13,23 +13,26 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "uzawasolver.H"
+#include "constraintsolver.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_lib/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-UTILS::UzawaSolver::UzawaSolver(
-    RCP<DRT::Discretization> discr,
-    LINALG::Solver& solver,
-    RCP<Epetra_Vector>    dirichtoggle,
-    RCP<Epetra_Vector>    invtoggle,
-    ParameterList params):
+UTILS::ConstraintSolver::ConstraintSolver
+(
+  RCP<DRT::Discretization> discr,
+  LINALG::Solver& solver,
+  RCP<Epetra_Vector>    dirichtoggle,
+  RCP<Epetra_Vector>    invtoggle,
+  ParameterList params
+):
 actdisc_(discr),
 maxIter_(params.get<int>   ("UZAWAMAXITER", 50)),
 dirichtoggle_(&(*dirichtoggle),false),
@@ -44,43 +47,85 @@ invtoggle_(&(*invtoggle),false)
   // The approach in StruTimIntImpl (and thus StruTimIntGenAlpha)
   // is not to change the parameter list after input nor to copy
   // them to new lists. This copy mechanism does not improve the
-  // data. 
+  // data.
   // Thus we need this exception handler to getting along.
+  
+  int algochoice;
   try
   {
     // for StruGenAlpha
-    isadapttol_   = params.get<bool>("ADAPTCONV",true);
+    isadapttol_ = params.get<bool>("ADAPTCONV",true);
+    algochoice = params.get<int>("UZAWAALGO");
   }
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {
     // for StruTimIntImpl
-    isadapttol_   = true;
-    isadapttol_   = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
+    isadapttol_ = true;
+    isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
+    algochoice = getIntegralValue<int>(params,"UZAWAALGO");
   }
-  adaptolbetter_  = params.get<double>("ADAPTCONV_BETTER", 0.01);
-//  maxIter_        = params.get<int>   ("UZAWAMAXITER", 50);
-  uzawaparam_     = params.get<double>("UZAWAPARAM", 1);
-  minparam_       = uzawaparam_*1E-3;
-  uzawatol_       = params.get<double>("UZAWATOL", 1E-8);
-  counter_        = 0;
+  adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
+  uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
+  minparam_ = uzawaparam_*1E-3;
+  uzawatol_ = params.get<double>("UZAWATOL", 1E-8);
+  
+  switch (algochoice)
+  {
+  case (INPUTPARAMS::consolve_iterative):
+    algo_ = UTILS::ConstraintSolver::iterative;
+  break;
+  case (INPUTPARAMS::consolve_direct):
+    algo_ = UTILS::ConstraintSolver::direct;
+  break;
+  default:
+    dserror("Unknown type of constraint solver algorithm. Can be 'iterative' or 'direct'!");
+  }
+  counter_ = 0;
   return;
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 11/07|
-|Compute difference between current and prescribed values.              |
-|Change stiffness matrix and internal force vector                       |
+|(public)                                                               |
+|Solve linear constrained system                                        |
 *-----------------------------------------------------------------------*/
-void UTILS::UzawaSolver::Solve(
-        RCP<LINALG::SparseMatrix> stiff,
-        RCP<LINALG::SparseMatrix> constr,
-        RCP<Epetra_Vector> dispinc,
-        RCP<Epetra_Vector> lagrinc,
-        RCP<Epetra_Vector> rhsstand,
-        RCP<Epetra_Vector> rhsconstr
-        )
+void UTILS::ConstraintSolver::Solve
+(
+  RCP<LINALG::SparseMatrix> stiff,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<Epetra_Vector> dispinc,
+  RCP<Epetra_Vector> lagrinc,
+  const RCP<Epetra_Vector> rhsstand,
+  const RCP<Epetra_Vector> rhsconstr
+)
 {
+  switch (algo_)
+  {
+    case iterative:
+      SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      break;
+    case direct:
+      SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      break;
+    default :
+      dserror("Unknown constraint solution technique!");
+  }
+  return;
+}
   
+/*----------------------------------------------------------------------*
+|(public)                                                               |
+|Solve linear constrained system by iterative Uzawa algorithm           |
+*-----------------------------------------------------------------------*/
+void UTILS::ConstraintSolver::SolveIterative
+(
+  RCP<LINALG::SparseMatrix> stiff,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<Epetra_Vector> dispinc,
+  RCP<Epetra_Vector> lagrinc,
+  const RCP<Epetra_Vector> rhsstand,
+  const RCP<Epetra_Vector> rhsconstr
+)
+{ 
   const int myrank=(actdisc_->Comm().MyPID());
   // For every iteration step an uzawa algorithm is used to solve the linear system.
   //Preparation of uzawa method to solve the linear system.
@@ -90,16 +135,20 @@ void UTILS::UzawaSolver::Solve(
   double norm_constr_uzawa;
   int numiter_uzawa = 0;
   //counter used for adaptivity
+  const int adaptstep = 2;
+  const int minstep = 2;
   int count_paramadapt = 1;
 
   const double computol = 1E-8;
   
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
-
+  
+  RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
+  
   // Compute residual of the uzawa algorithm
   RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*rhsstand));
-   Epetra_Vector uzawa_res(*fresmcopy);
+  Epetra_Vector uzawa_res(*fresmcopy);
   (*stiff).Multiply(false,*dispinc,uzawa_res);
   uzawa_res.Update(1.0,*fresmcopy,-1.0);
   
@@ -113,11 +162,10 @@ void UTILS::UzawaSolver::Solve(
   constr_res.Update(1.0,*(rhsconstr),0.0);
   constr_res.Norm2(&norm_constr_uzawa);
   quotient =1;
-  RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
   //Solve one iteration step with augmented lagrange
   //Since we calculate displacement norm as well, at least one step has to be taken
-  while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_)
-          and numiter_uzawa < maxIter_) or numiter_uzawa < 1)
+  while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_) and numiter_uzawa < maxIter_) 
+      or numiter_uzawa < minstep)
   {
     LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,dirichtoggle_);
     // solve for disi
@@ -138,9 +186,8 @@ void UTILS::UzawaSolver::Solve(
     
     //Compute residual of the uzawa algorithm
     constr->Multiply(false,*lagrinc,*constrTLagrInc);
-    constrTLagrInc->Scale(-1.0);
     
-    fresmcopy->Update(1.0,*constrTLagrInc,1.0,*rhsstand,0.0);
+    fresmcopy->Update(-1.0,*constrTLagrInc,1.0,*rhsstand,0.0);
     Epetra_Vector uzawa_res(*fresmcopy);
     (*stiff).Multiply(false,*dispinc,uzawa_res);
     uzawa_res.Update(1.0,*fresmcopy,-1.0);
@@ -158,7 +205,7 @@ void UTILS::UzawaSolver::Solve(
     // stays nearly constant during the computation. So this quotient seems to be a good
     // measure for the parameter choice
     // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
-    if (count_paramadapt>=2)
+    if (count_paramadapt>=adaptstep)
     {
       double quotient_new=norm_uzawa/norm_uzawa_old;
       // In case of divergence the parameter must be too high
@@ -200,16 +247,70 @@ void UTILS::UzawaSolver::Solve(
     numiter_uzawa++;
   } //Uzawa loop
   
-  
   if (!myrank)
   {
      cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< uzawaparam_;
-     cout<<endl;
-     //cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<endl;
+     //cout<<endl;
+     cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<endl;
   }
   counter_++;
   return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)                                                               |
+|Solve linear constrained system by iterative Uzawa algorithm           |
+*-----------------------------------------------------------------------*/
+void UTILS::ConstraintSolver::SolveDirect
+(
+  RCP<LINALG::SparseMatrix> stiff,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<Epetra_Vector> dispinc,
+  RCP<Epetra_Vector> lagrinc,
+  const RCP<Epetra_Vector> rhsstand,
+  const RCP<Epetra_Vector> rhsconstr
+)
+{
+  // define maps of standard dofs and additional lagrange multipliers
+  const Epetra_Map standrowmap = stiff->RowMap();
+  const Epetra_Map conrowmap = constr->DomainMap();
+  // merge maps to one large map
+  RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,conrowmap,false);
+
+  // initialize large Sparse Matrix and Epetra_Vectors
+  RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,mergedmap->NumMyElements()));
+  RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
+  RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedmap));
+  RCP<Epetra_Vector> mergeddtog = rcp(new Epetra_Vector(*mergedmap));
+  RCP<Epetra_Vector> mergedzeros = rcp(new Epetra_Vector(*mergedmap));
+  
+  // fill merged matrix using Add
+  mergedmatrix -> Add(*stiff,false,1.0,1.0);
+  mergedmatrix -> Add(*constr,false,1.0,1.0);
+  mergedmatrix -> Add(*constr,true,1.0,1.0);
+  mergedmatrix -> Complete(*mergedmap,*mergedmap);
+  
+  // fill merged vectors using Export
+  LINALG::Export(*rhsconstr,*mergedrhs);
+  mergedrhs -> Scale(-1.0);
+  LINALG::Export(*rhsstand,*mergedrhs);
+  LINALG::Export(*dirichtoggle_,*mergeddtog);
+  
+  // apply dirichlet boundary conditions
+  LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,mergeddtog);
+  
+  // solve
+  solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
+  solver_->ResetTolerance();
+
+  // store results in smaller vectors
+  dispinc->PutScalar(0.0);
+  lagrinc->PutScalar(0.0);
+  LINALG::Export(*mergedsol,*dispinc);
+  LINALG::Export(*mergedsol,*lagrinc);
+  
+  counter_++;
+  return;
+}
 
 #endif

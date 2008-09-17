@@ -106,6 +106,15 @@ namespace INPUTPARAMS
     timeint_bdf2,
     timeint_gen_alpha
   };
+  
+  //--------------------------------------STRUCTURAL DYNAMIC
+  
+  /// possible constraint solvers
+  enum ConSolveAlgo
+  {
+    consolve_direct,
+    consolve_iterative
+  };
 }
 
 namespace DRT {

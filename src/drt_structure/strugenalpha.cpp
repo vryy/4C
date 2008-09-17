@@ -211,9 +211,9 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   // do surface stress and constraints manager and stresses due to potentials
   // -------------------------------------------------------------------
-    //initialize Constraint Manager and UzawaSolver
+    //initialize Constraint Manager and ConstraintSolver
     constrMan_=rcp(new UTILS::ConstrManager(Discretization(), dis_, params_));
-    uzawaSolv_=rcp(new UTILS::UzawaSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
+    constrSolv_=rcp(new UTILS::ConstraintSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
     dofrowmap = discret_.DofRowMap();
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);
@@ -1557,7 +1557,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     lagrIncr->PutScalar(0.0);
 
     // Call Uzawa algorithm to solve system with zeros on diagonal
-    uzawaSolv_->Solve(stiff_,constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
+    constrSolv_->Solve(stiff_,constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
 
     //update lagrange multiplier
     constrMan_->UpdateLagrMult(lagrIncr);
@@ -2944,7 +2944,7 @@ void StruGenAlpha::Output()
 
     if (constrMan_->HaveConstraint())
     {
-      output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
+      output_.WriteDouble("uzawaparameter",constrSolv_->GetUzawaParameter());
       output_.WriteVector("lagrmultiplier",constrMan_->GetLagrMultVector());
       output_.WriteVector("refconval",constrMan_->GetRefBaseValues());
     }
@@ -3381,7 +3381,7 @@ void StruGenAlpha::ReadRestart(int step)
   if (constrMan_->HaveConstraint())
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
-    uzawaSolv_->SetUzawaParameter(uzawatemp);
+    constrSolv_->SetUzawaParameter(uzawatemp);
     RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
     RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);
     reader.ReadVector(tempvec, "lagrmultiplier");

@@ -498,13 +498,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   DoubleParameter("UZAWATOL",1.0E-8,"Tolerance for iterative solve with Uzawa algorithm",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
-  setStringToIntegralParameter("UZAWAALGO","newtonlinuzawa","",
+  setStringToIntegralParameter("UZAWAALGO","iterative","",
                                  tuple<std::string>(
-                                   "newtonlinuzawa",
-                                   "augmentedlagrange"),
+                                   "iterative",
+                                   "direct"),
                                  tuple<int>(
-                                   STRUCT_DYNAMIC::linuzawa,
-                                   STRUCT_DYNAMIC::nonlinuzawa),
+                                   INPUTPARAMS::consolve_iterative,
+                                   INPUTPARAMS::consolve_direct),
                                  &sdyn);
 
   // convergence criteria adaptivity

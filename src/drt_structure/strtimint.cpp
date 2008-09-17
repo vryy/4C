@@ -185,7 +185,7 @@ STR::TimInt::TimInt
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
-  uzawasolv_(Teuchos::null),
+  consolv_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
   time_(Teuchos::null),
@@ -291,7 +291,7 @@ STR::TimInt::TimInt
                                                   (*dis_)(0),
                                                   sdynparams));
   // initialize Uzawa solver
-  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(discret_,
+  consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
                                                    *solver_,
                                                    dirichtoggle_,
                                                    invtoggle_,
@@ -499,7 +499,7 @@ void STR::TimInt::ReadRestartConstraint()
   {
     IO::DiscretizationReader reader(discret_, step_);
     double uzawatemp = reader.ReadDouble("uzawaparameter");
-    uzawasolv_->SetUzawaParameter(uzawatemp);
+    consolv_->SetUzawaParameter(uzawatemp);
     Teuchos::RCP<Epetra_Map> constrmap=conman_->GetConstraintMap();
     Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap, true);
     reader.ReadVector(tempvec, "lagrmultiplier");
@@ -651,7 +651,7 @@ void STR::TimInt::OutputRestart
   if (conman_->HaveConstraint())
   {
     output_->WriteDouble("uzawaparameter",
-                          uzawasolv_->GetUzawaParameter());
+                          consolv_->GetUzawaParameter());
     output_->WriteVector("lagrmultiplier",
                           conman_->GetLagrMultVector());
     output_->WriteVector("refconval",
