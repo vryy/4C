@@ -57,6 +57,10 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
           mydispnp.resize(lm.size());
           DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
         }
+        else
+        {
+          cout << "could not get displacement vector to compute current positions!" << endl;
+        }
       }
 
       IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
