@@ -346,17 +346,12 @@ protected:
                     const Epetra_SerialDenseVector* glstrain,
                     ParameterList&            params);         // algorithmic parameters e.g. time
 
-  /*!
-  \brief Create a integrator for the SoDisp element
+  //! evaluate shape functions and derivatives - non-static due to flexible shape
+  void sodisp_shapederiv(
+        vector<Epetra_SerialDenseVector>** shapefct,  ///< pointer to pointer of shapefct
+        vector<Epetra_SerialDenseMatrix>** deriv,     ///< pointer to pointer of derivs
+        vector<double>** weights);   ///< pointer to pointer of weights
 
-  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural
-  DRT::UTILS::IntegrationPoints3D struct.
-  */
-  class Integrator_SoDisp : public DRT::ELEMENTS::So_integrator
-  {
-  	public:
-  		Integrator_SoDisp(DRT::ELEMENTS::SoDisp& this_element);
-  };
 
 }; // class SoDisp
 

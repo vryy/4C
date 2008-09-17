@@ -191,12 +191,19 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       ParameterList&            params)         // algorithmic parameters e.g. time
 {
 
-/* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
-** ============================================================================*/
-  //here no const static due to flexible shape of so_disp element 
-  DRT::ELEMENTS::SoDisp::Integrator_SoDisp int_dis(*this); 
-/* ============================================================================*/
+  /* ============================================================================*
+  ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
+  ** ============================================================================*/
+  /* pointer to (static) shape function array
+   * for each node, evaluated at each gp*/
+    vector<Epetra_SerialDenseVector>* shapefcts; //[NUMNOD_WEG6][NUMGPT_WEG6]
+  /* pointer to (static) shape function derivatives array
+   * for each node wrt to each direction, evaluated at each gp*/
+    vector<Epetra_SerialDenseMatrix>* derivs;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
+  /* pointer to (static) weight factors at each gp */
+    vector<double>* weights;  //[NUMGPT_WEG6]
+    sodisp_shapederiv(&shapefcts,&derivs,&weights);   // call to evaluate
+  /* ============================================================================*/
 
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(numnod_disp_,NUMDIM_DISP);  // material coord. of element
@@ -222,7 +229,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     **         [ x_,t  y_,t  z_,t ]
     */
     Epetra_SerialDenseMatrix jac(NUMDIM_DISP,NUMDIM_DISP);
-    jac.Multiply('N','N',1.0,int_dis.deriv_gp[gp],xrefe,1.0);
+    jac.Multiply('N','N',1.0,derivs->at(gp),xrefe,1.0);
 
     // compute determinant of Jacobian by Sarrus' rule
     double detJ= jac(0,0) * jac(1,1) * jac(2,2)
@@ -241,9 +248,9 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     Epetra_SerialDenseMatrix N_XYZ(NUMDIM_DISP,numnod_disp_);
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(N_XYZ,int_dis.deriv_gp[gp]);// set X=N_XYZ, B=deriv_gp
+    solve_for_inverseJac.SetVectors(N_XYZ,derivs->at(gp));// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();        
+    int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
@@ -321,17 +328,17 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    (*force).Multiply('T','N',detJ * int_dis.weights(gp),bop,stress,1.0);
+    (*force).Multiply('T','N',detJ * weights->at(gp),bop,stress,1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_DISP,numdof_disp_);
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
-    (*stiffmatrix).Multiply('T','N',detJ * int_dis.weights(gp),bop,cb,1.0);
+    (*stiffmatrix).Multiply('T','N',detJ * weights->at(gp),bop,cb,1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
     Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * int_dis.weights(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.Scale(detJ * weights->at(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     vector<double> SmB_L(NUMDIM_DISP);     // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod=0; inod<numnod_disp_; ++inod){
@@ -352,8 +359,8 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       // integrate concistent mass matrix
       for (int inod=0; inod<numnod_disp_; ++inod) {
         for (int jnod=0; jnod<numnod_disp_; ++jnod) {
-          double massfactor = (int_dis.shapefct_gp[gp])(inod) * density * (int_dis.shapefct_gp[gp])(jnod)
-                            * detJ * int_dis.weights(gp);     // intermediate factor
+          double massfactor = (shapefcts->at(gp))(inod) * density * (shapefcts->at(gp))(jnod)
+                            * detJ * weights->at(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_DISP*inod+0,NUMDIM_DISP*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_DISP*inod+1,NUMDIM_DISP*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_DISP*inod+2,NUMDIM_DISP*jnod+2) += massfactor;
@@ -367,6 +374,39 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  shape functions and derivatives for SoDisp                 maf 04/07|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::SoDisp::sodisp_shapederiv(
+      vector<Epetra_SerialDenseVector>** shapefcts,  // pointer to pointer of shapefct
+      vector<Epetra_SerialDenseMatrix>** derivs,     // pointer to pointer of derivs
+      vector<double>** weights)   // pointer to pointer of weights
+{
+  (*shapefcts)->resize(numgpt_disp_);
+  (*derivs)->resize(numgpt_disp_);
+  (*weights)->resize(numgpt_disp_);
+
+  const DRT::Element::DiscretizationType distype = Shape();
+
+  // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+  // fill up nodal f at each gp
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    (*(*shapefcts))[igp].Size(numnod_disp_);
+    (*(*derivs))[igp].Shape(NUMDIM_DISP, numnod_disp_);
+    DRT::UTILS::shape_function_3D((*(*shapefcts))[igp], r, s, t, distype);
+    DRT::UTILS::shape_function_3D_deriv1((*(*derivs))[igp], r, s, t, distype);
+    (*(*weights))[igp] = intpoints.qwgt[igp];
+  }
+
+  return;
+}
+
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef 
+#endif  // #ifdef
