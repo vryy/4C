@@ -36,11 +36,11 @@ lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
-lumpedflag_(0),
 kT_(0),
 eta_(0),
 halfrotations_(0),
 beta0_(0),
+stochasticorder_(0),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -59,11 +59,11 @@ lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
-lumpedflag_(old.lumpedflag_),
 kT_(old.kT_),
 eta_(old.eta_),
 halfrotations_(old.halfrotations_),
 beta0_(old.beta0_),
+stochasticorder_(old.stochasticorder_),
 gaussrule_(old.gaussrule_)
 
 {
@@ -144,8 +144,6 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,crosssecshear_);
   //moment of inertia of area
   AddtoPack(data,mominer_);
-  //flag determining if consistent or lumped mass matrix
-  AddtoPack(data,lumpedflag_);
   //thermal energy responsible for statistical forces
   AddtoPack(data,kT_);
   //viscosity in background fluid
@@ -154,6 +152,8 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,halfrotations_);
   //angle relative to x-axis in reference configuration
   AddtoPack(data,beta0_);
+  //polynomial order for interpolation of stochastic fields
+  AddtoPack(data,stochasticorder_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -189,8 +189,6 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,crosssecshear_);
   //moment of inertia of area
   ExtractfromPack(position,data,mominer_);
-  //flag determining if consistent or lumped mass matrix
-  ExtractfromPack(position,data,lumpedflag_);
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,kT_);
   //viscosity in background fluid
@@ -199,6 +197,8 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,halfrotations_);
   //angle relative to x-axis in reference configuration
   ExtractfromPack(position,data,beta0_);
+  //polynomial order for interpolation of stochastic fields
+  ExtractfromPack(position,data,stochasticorder_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -357,9 +357,9 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
       	currele->beta0_ = asin(sin_beta0);
       else
       {	if (sin_beta0 >= 0)
-	  currele->beta0_ =  acos(cos_beta0);
+          currele->beta0_ =  acos(cos_beta0);
         else
-	  currele->beta0_ = -acos(cos_beta0);
+          currele->beta0_ = -acos(cos_beta0);
        }
       
       //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
@@ -367,19 +367,21 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
       if (currele->beta0_ > PI/2)
     	  currele->halfrotations_ = 1;
       if (currele->beta0_ < -PI/2)
-	  currele->halfrotations_ = -1;  
+        currele->halfrotations_ = -1;  
       
-    //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
-    if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
-    {
-      currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-      currele->eta_ = statisticalparams.get<double>("ETA",0.0);
-    }
-    else
-    {
-      currele->kT_ = 0.0;
-      currele->eta_ = 0.0;
-    }
+      //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
+       if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
+       {
+         currele->kT_ =  statisticalparams.get<double>("KT",0.0);
+         currele->eta_ = statisticalparams.get<double>("ETA",0.0);
+         currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0);
+       }
+       else
+       {
+         currele->kT_ = 0.0;
+         currele->eta_ = 0.0;
+         currele->stochasticorder_ = 0;
+       }
       
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
    

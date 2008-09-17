@@ -300,9 +300,6 @@ private:
   //! moment of inertia of area
   double mominer_;
 
-  //! flag determining if consistent or lumped mass matrix
-  int lumpedflag_;
-
   //! thermal energy responsible for statistical forces
   double kT_;
   
@@ -314,6 +311,9 @@ private:
 
   //! angle relative to x-axis in reference configuration
   double beta0_;
+  
+  //! polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+  int stochasticorder_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -330,11 +330,20 @@ private:
                     const double& lrefe_);
   
   //! calculation of nonlinear stiffness and mass matrix
-  void b2_nlnstiffmass(vector<double>&           disp,  //!< element displacement vector
+  void b2_nlnstiffmass(ParameterList& params,
+                       vector<double>&           vel,  //!< element velocity vector
+                       vector<double>&           disp,  //!< element displacement vector
                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
-                       Epetra_SerialDenseVector* force);  //!< element internal force vector
-
+                       Epetra_SerialDenseVector* force,  //!< element internal force vector
+                       int lumpedmass); //!< if set to one lumped mass matrix is calculated
+  
+  //calculation of nonlinear stiffness approximated by finite differences; this function should
+  //be activated for bug fixing only
+  /*
+  Epetra_SerialDenseMatrix b2_nlnstiff_approx(BlitzMat3x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel, vector<double>& disp,ParameterList& params);
+  */
+  
   // don't want = operator
   Beam2& operator = (const Beam2& old);
 

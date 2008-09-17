@@ -79,8 +79,8 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
     case Beam2::calc_struct_nlnstiff:
     case Beam2::calc_struct_internalforce:
     {
-      int lumpedmass = lumpedflag_;  // 0=consistent, 1=lumped
-      if (act==Beam2::calc_struct_nlnstifflmass) lumpedflag_ = 1;
+      int lumpedmass = 0;  // 0=consistent, 1=lumped
+      if (act==Beam2::calc_struct_nlnstifflmass) lumpedmass = 1;
 
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -103,16 +103,15 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
 
       // determine element matrices and forces
       if (act == Beam2::calc_struct_nlnstiffmass)
-        b2_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+        b2_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1,lumpedmass);
       else if (act == Beam2::calc_struct_nlnstifflmass)
       {
-        b2_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
-        lumpedflag_ = lumpedmass;
+        b2_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1,lumpedmass);
       }
       else if (act == Beam2::calc_struct_nlnstiff)
-        b2_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
+        b2_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1,lumpedmass);
       else if  (act ==  calc_struct_internalforce)
-        b2_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
+        b2_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1,lumpedmass);
       
     }
     break;
@@ -237,76 +236,54 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
  * load frequency and time step size stochastical forces should better be applied outside the element*/
   
   if (kT_ > 0)
-  {	  
-	  extern struct _MATERIAL  *mat;
-	  // get the material law and density
-	  MATERIAL* currmat = &(mat[material_-1]);
-	  double density;
-    
-	  //assignment of material parameters; only St.Venant material is accepted for this beam 
-	  switch(currmat->mattyp)
-	    	{
-		    case m_stvenant:// only linear elastic material supported
-		      {
-		    	  density = currmat->m.stvenant->density;
-		      }
-		      break;
-		      default:
-		      dserror("unknown or improper type of material law");
-		 }	
-	  
-	  //calculating diagonal entry of damping matrix  
-	  double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/2;
-	  double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_/2;
-	  
-	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-	  double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
-	  double stand_dev_rot   = pow(2 * kT_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
-
-	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-	  //stand_dev; using Blitz namespace "ranlib" for random number generation
-	  ranlib::Normal<double> normalGen_trans(0,stand_dev_trans);
-	  ranlib::Normal<double> normalGen_rot(0,stand_dev_rot);
-	  
-	  //adding statistical forces 
-	  elevec1[0] += normalGen_trans.random();  
-	  elevec1[1] += normalGen_trans.random();
-	  elevec1[2] += normalGen_rot.random();
-  	elevec1[3] += normalGen_trans.random();
-  	elevec1[4] += normalGen_trans.random(); 
-  	elevec1[5] += normalGen_rot.random();    	  
-  	
-  	
-  	
-  	/*
-	  
-    //calculating diagonal entry of damping matrix  
-     double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_;
-     double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_;
-     
-     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-     double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
-     double stand_dev_rot   = pow(2 * kT_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
-
-     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-     //stand_dev; using Blitz namespace "ranlib" for random number generation
-     ranlib::Normal<double> normalGen_trans(0,stand_dev_trans);
-     ranlib::Normal<double> normalGen_rot(0,stand_dev_rot);
-     
-     double f1 = normalGen_trans.random(); 
-     double f2 = normalGen_trans.random(); 
-     double f3 = normalGen_rot.random();
-     
-     //adding statistical forces 
-     elevec1[0] += f1/2;  
-     elevec1[1] += f2/2;
-     elevec1[2] += f3/2;
-     elevec1[3] += f1/2;
-     elevec1[4] += f2/2; 
-     elevec1[5] += f3/2; 
-     
-     */
+  {	    
+    //in case of a lumped damping matrix stochastic forces are applied analogously
+    if (stochasticorder_ == 0)
+    {
+  	  //calculating diagonal entry of damping matrix  
+  	  double gamma_trans = 4*PI*eta_*lrefe_/2;
+  	  
+  	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+  	  double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+  
+  	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+  	  //stand_dev; using Blitz namespace "ranlib" for random number generation
+  	  ranlib::Normal<double> normalGen(0,stand_dev_trans);
+  	  
+  	  //adding statistical forces 
+  	  elevec1[0] += normalGen.random();  
+  	  elevec1[1] += normalGen.random();
+    	elevec1[3] += normalGen.random();
+    	elevec1[4] += normalGen.random();   
+    }
+    //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+    else if (stochasticorder_ == 1)
+    {
+      //calculating diagonal entry of damping matrix  
+      double gamma_trans = 4*PI*eta_*lrefe_/3;
       
+      //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+      double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+  
+      //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+      //stand_dev; using Blitz namespace "ranlib" for random number generation
+      ranlib::Normal<double> normalGen(0,stand_dev_trans);
+      
+      //adding uncorrelated components of statistical forces 
+      elevec1[0] += normalGen.random();  
+      elevec1[1] += normalGen.random();
+      elevec1[3] += normalGen.random();
+      elevec1[4] += normalGen.random();  
+      
+      //adding correlated components of statistical forces 
+      double force1 = normalGen.random()/pow(2,0.5);
+      double force2 = normalGen.random()/pow(2,0.5);
+      elevec1[0] += force1;  
+      elevec1[1] += force2;
+      elevec1[3] += force1;
+      elevec1[4] += force2;     
+    }
+  	    
   }   
   return 0;
 }
@@ -396,10 +373,13 @@ inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
+void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
+                                            vector<double>&           vel,
+                                            vector<double>&           disp,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* force)
+                                            Epetra_SerialDenseVector* force,
+                                            int lumpedmass)
 {
   const int numdf = 3;
   const int iel = NumNode();
@@ -505,53 +485,254 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
     for(int id_lin=0; id_lin<6; id_lin++)
         for(int id_col=0; id_col<6; id_col++)
             (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
+    
+    if (stochasticorder_ == 0)
+    {
+      //adding entries for lumped viscous damping "stiffness" (by background fluid of thermal bath)
+      double viscousstiffness = 4*PI*eta_*lrefe_*params.get<double>("gamma",0.581) / (2*params.get<double>("delta time",0.01)*params.get<double>("beta",0.292)); 
+      (*stiffmatrix)(0,0) += viscousstiffness;
+      (*stiffmatrix)(1,1) += viscousstiffness;
+      (*stiffmatrix)(3,3) += viscousstiffness;
+      (*stiffmatrix)(4,4) += viscousstiffness;
+    }
+    else if (stochasticorder_ == 1)
+    {
+      //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
+      double viscousstiffness = 4*PI*eta_*lrefe_*params.get<double>("gamma",0.581) / (3*params.get<double>("delta time",0.01)*params.get<double>("beta",0.292)); 
+      (*stiffmatrix)(0,0) += viscousstiffness;
+      (*stiffmatrix)(1,1) += viscousstiffness;
+      (*stiffmatrix)(3,3) += viscousstiffness;
+      (*stiffmatrix)(4,4) += viscousstiffness;
+      
+      (*stiffmatrix)(0,3) += viscousstiffness / 2.0;    
+      (*stiffmatrix)(3,0) += viscousstiffness / 2.0;   
+      (*stiffmatrix)(1,4) += viscousstiffness / 2.0;
+      (*stiffmatrix)(4,1) += viscousstiffness / 2.0;
+    }   
   }
   
+
   //calculation of global internal forces from force = B_transposed*force_loc 
   if (force != NULL)
   {
     BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
+    
+    if (stochasticorder_ == 0)
+    {
+      //adding internal forces due to viscous damping (by background fluid of thermal bath)
+      (*force)[0] += 4*PI*eta_*lrefe_*vel[0]/2;
+      (*force)[1] += 4*PI*eta_*lrefe_*vel[1]/2;
+      (*force)[3] += 4*PI*eta_*lrefe_*vel[3]/2;
+      (*force)[4] += 4*PI*eta_*lrefe_*vel[4]/2;
+    }
+    else if (stochasticorder_ == 1)
+    {
+      //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
+      (*force)[0] += 4*PI*eta_*lrefe_*(vel[0]/3 + vel[3]/6);
+      (*force)[1] += 4*PI*eta_*lrefe_*(vel[1]/3 + vel[4]/6);
+      (*force)[3] += 4*PI*eta_*lrefe_*(vel[3]/3 + vel[0]/6);
+      (*force)[4] += 4*PI*eta_*lrefe_*(vel[4]/3 + vel[1]/6);
+    }
+    
+    
   }
-  
-   
+ 
   //calculating mass matrix (local version = global version) 
   if (massmatrix != NULL)
   {
       (*massmatrix).Shape(6,6);
       
       //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
-      if (lumpedflag_ == 0)
+      if (lumpedmass == 0)
       {
-              //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-              double aux_E[3]={density*lrefe_*crosssec_/6, density*lrefe_*crosssec_/6, density*lrefe_*mominer_/6};
-              for(int id=0; id<3; id++)
-              {
-              	    (*massmatrix)(id,id) = 2*aux_E[id];
-                    (*massmatrix)(id+3,id+3) = 2*aux_E[id];
-                    (*massmatrix)(id,id+3) = aux_E[id];
-                    (*massmatrix)(id+3,id) = aux_E[id];
-              }
+        //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
+        double aux_E[3]={density*lrefe_*crosssec_/6, density*lrefe_*crosssec_/6, density*lrefe_*mominer_/6};
+        for(int id=0; id<3; id++)
+        {
+        	    (*massmatrix)(id,id) = 2*aux_E[id];
+              (*massmatrix)(id+3,id+3) = 2*aux_E[id];
+              (*massmatrix)(id,id+3) = aux_E[id];
+              (*massmatrix)(id+3,id) = aux_E[id];
+        }
       }
       /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
        * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
       
-      else if (lumpedflag_ == 1)
+      else if (lumpedmass == 1)
       {
-             (*massmatrix).Shape(6,6);
-             //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
-             //to a diagonal mass matrix with constant diagonal entries
-             (*massmatrix)(0,0) = density*lrefe_*crosssec_/2;
-             (*massmatrix)(1,1) = density*lrefe_*crosssec_/2;	 
-             (*massmatrix)(2,2) = density*lrefe_*mominer_/2; 
-             (*massmatrix)(3,3) = density*lrefe_*crosssec_/2;
-             (*massmatrix)(4,4) = density*lrefe_*crosssec_/2; 
-             (*massmatrix)(5,5) = density*lrefe_*mominer_/2;
+        (*massmatrix).Shape(6,6);
+        //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
+        //to a diagonal mass matrix with constant diagonal entries
+        (*massmatrix)(0,0) = density*lrefe_*crosssec_/2;
+        (*massmatrix)(1,1) = density*lrefe_*crosssec_/2;	 
+        (*massmatrix)(2,2) = density*lrefe_*mominer_/2; 
+        (*massmatrix)(3,3) = density*lrefe_*crosssec_/2;
+        (*massmatrix)(4,4) = density*lrefe_*crosssec_/2; 
+        (*massmatrix)(5,5) = density*lrefe_*mominer_/2;
        }
       else
-              dserror("improper value of variable lumpedflag_");    
+        dserror("improper value of variable lumpedmass");    
   }
+  
+  //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+  //correctly or not: the function b2_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
+  //finite differences and finally the relative error is printed; in case that there is no significant error in any
+  //element no printout is thrown
+  //activating this part of code also the function b2_nlnstiff_approx(mydisp) has to be activated both in Beam2.H
+  //and Beam2_evaluate.cpp
+  /*
+  if(Id() == 3) //limiting the following tests to certain element numbers
+  {
+   Epetra_SerialDenseMatrix stiff_approx;
+   Epetra_SerialDenseMatrix stiff_relerr;
+   stiff_approx.Shape(6,6);
+   stiff_relerr.Shape(6,6);      
+   double h_rel = 1e-8;
+   int outputflag = 0;
+   stiff_approx = b2_nlnstiff_approx(xcurr,h_rel,*force,vel,disp,params);
+   
+   for(int line=0; line<6; line++)
+   {
+     for(int col=0; col<6; col++)
+     {
+       if( fabs( (*stiffmatrix)(line,col) ) > h_rel)
+         stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
+       else
+       {
+         if( fabs( stiff_approx(line,col) ) < h_rel*1000)
+           stiff_relerr(line,col) = 0;
+         else
+           stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
+       }
+       //suppressing small entries whose effect is only confusing
+       if (stiff_relerr(line,col)<h_rel*100)
+         stiff_relerr(line,col)=0;
+       //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
+       if ( isnan( stiff_relerr(line,col) ) )
+         stiff_relerr(line,col)=0;
+       if (stiff_relerr(line,col)>0)
+         outputflag = 1;  
+     }
+   
+       if(outputflag ==1)
+       {
+         std::cout<<"\n\n acutally calculated stiffness matrix"<< *stiffmatrix;
+         std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+         std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+       }    
+     }
+   } 
+   */
+  
+  
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
+
+/*
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(BlitzMat3x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel, vector<double>& disp, ParameterList& params)
+{
+  Epetra_SerialDenseMatrix stiff_approx;
+  stiff_approx.Shape(6,6); 
+  double dt = params.get<double>("delta time",0.01);
+     
+  //calculating strains in new configuration
+  for(int i=0; i<3; i++)
+  {
+    for(int k=0; k<2; k++)
+    {
+      Epetra_SerialDenseVector force_aux;
+      force_aux.Size(6);
+
+      BlitzMat3x2 xcurr;
+      BlitzVec6   vcurr;
+      double lcurr = 0;
+      double beta;
+      BlitzVec6 zcurr;
+      BlitzVec6 rcurr;
+      BlitzMat3x6 Bcurr;
+      BlitzMat3x6 aux_CB;
+      BlitzVec3 force_loc;
+      double ym; //Young's modulus
+      double sm; //shear modulus
+      double density; //density
+
+
+      //calculating refenrence configuration xrefe and current configuration xcurr
+      for (int id=0; id<2; ++id)
+      {
+        xcurr(0,id) = Nodes()[id]->X()[0] + disp[id*3+0];
+        xcurr(1,id) = Nodes()[id]->X()[1] + disp[id*3+1];
+        //note: this is actually not the current director angle, but current director angle minus reference director angle
+        xcurr(2,id) = disp[id*3+2];
+      }     
+      xcurr(i,k) += h_rel;
+      
+      for (int id = 0; id < 6; id++)
+      {
+        vcurr(id) = vel[id];
+      }
+      vcurr(i + 3*k) += h_rel/dt;
+      
+      // calculation of local geometrically important matrices and vectors; notation according to Crisfield
+      //current length
+      lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
+      
+      //calculation of local geometrically important matrices and vectors
+      b2_local_aux(Bcurr, rcurr, zcurr, beta, xcurr, lcurr, lrefe_);
+      
+
+      // get the material law
+      MATERIAL* currmat = &(mat[material_-1]);
+      switch(currmat->mattyp)
+      {
+        case m_stvenant:// only linear elastic material supported
+        {
+          ym = currmat->m.stvenant->youngs;
+          sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
+          density = currmat->m.stvenant->density;
+        }
+        break;
+        default:
+          dserror("unknown or improper type of material law");
+      } 
+      
+      //calculating local internal forces
+      force_loc(0) = ym*crosssec_*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));     
+      force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/lrefe_;
+      force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_);  
+     
+
+      BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,force_aux);
+      
+      if (stochasticorder_ == 0)
+      {
+        //adding internal forces due to viscous damping (by background fluid of thermal bath)
+        force_aux[0] += 4*PI*eta_*lrefe_*vcurr[0]/2;
+        force_aux[1] += 4*PI*eta_*lrefe_*vcurr[1]/2;
+        force_aux[3] += 4*PI*eta_*lrefe_*vcurr[3]/2;
+        force_aux[4] += 4*PI*eta_*lrefe_*vcurr[4]/2;
+      }
+      else if (stochasticorder_ == 1)
+      {
+        //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
+        force_aux[0] += 4*PI*eta_*lrefe_*(vcurr[0]/3 + vcurr[3]/6);
+        force_aux[1] += 4*PI*eta_*lrefe_*(vcurr[1]/3 + vcurr[4]/6);
+        force_aux[3] += 4*PI*eta_*lrefe_*(vcurr[3]/3 + vcurr[0]/6);
+        force_aux[4] += 4*PI*eta_*lrefe_*(vcurr[4]/3 + vcurr[1]/6);
+      }
+
+      
+      for(int u = 0;u<6;u++)
+      {
+        stiff_approx(u,i+k*3) = ( force_aux(u) - force(u) )/h_rel;
+      }
+   
+    }
+  }
+   
+  return stiff_approx;
+} // DRT::ELEMENTS::Beam3::b3_nlnstiff_approx
+*/
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM2

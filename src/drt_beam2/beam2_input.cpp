@@ -67,10 +67,6 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   frdouble("INERMOM",&mominer_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
   
-  // element can use consistent or lumped mass matrix 
-  lumpedflag_ = 0;
-  frint("LUMPED",&lumpedflag_,&ierr);
-  if (ierr!=1) dserror("Reading of Beam2 element failed");  
    
   return true;
 } // Beam2::ReadElement()
