@@ -626,10 +626,34 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
     {
       switch (curr->second->GType())
       {
-      case Condition::Point:   curr->second->Add("Node Ids",dnode_fenode[curr->first]); break;
-      case Condition::Line:    curr->second->Add("Node Ids",dline_fenode[curr->first]); break;
-      case Condition::Surface: curr->second->Add("Node Ids",dsurf_fenode[curr->first]); break;
-      case Condition::Volume:  curr->second->Add("Node Ids",dvol_fenode [curr->first]); break;
+      case Condition::Point:
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dnode_fenode.size())
+          dserror("DPoint %d not in range [0:%d[\n"
+                  "DPoint condition on non existent DPoint?",
+                  curr->first,dnode_fenode.size());
+        curr->second->Add("Node Ids",dnode_fenode[curr->first]);
+        break;
+      case Condition::Line:
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
+          dserror("DLine %d not in range [0:%d[\n"
+                  "DLine condition on non existent DLine?",
+                  curr->first,dline_fenode.size());
+        curr->second->Add("Node Ids",dline_fenode[curr->first]);
+        break;
+      case Condition::Surface:
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
+          dserror("DSurface %d not in range [0:%d[\n"
+                  "DSurface condition on non existent DSurface?",
+                  curr->first,dsurf_fenode.size());
+        curr->second->Add("Node Ids",dsurf_fenode[curr->first]);
+        break;
+      case Condition::Volume:
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
+          dserror("DVolume %d not in range [0:%d[\n"
+                  "DVolume condition on non existent DVolume?",
+                  curr->first,dvol_fenode.size());
+        curr->second->Add("Node Ids",dvol_fenode [curr->first]);
+        break;
       default:
         dserror("geometry type unspecified");
       }
