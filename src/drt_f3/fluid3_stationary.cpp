@@ -59,73 +59,73 @@ extern void writeComment(const std::string v);
 
 DRT::ELEMENTS::Fluid3StationaryImplInterface* DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(Fluid3* f3)
 {
-  switch (f3->NumNode())
+  switch (f3->Shape())
   {
-  case 8:
+  case DRT::Element::hex8:
   {
-    static Fluid3StationaryImpl<8>* f8;
-    if (f8==NULL)
-      f8 = new Fluid3StationaryImpl<8>;
-    return f8;
+    static Fluid3StationaryImpl<DRT::Element::hex8>* fh8;
+    if (fh8==NULL)
+      fh8 = new Fluid3StationaryImpl<DRT::Element::hex8>();
+    return fh8;
   }
-  case 20:
+  case DRT::Element::hex20:
   {
-    static Fluid3StationaryImpl<20>* f20;
-    if (f20==NULL)
-      f20 = new Fluid3StationaryImpl<20>;
-    return f20;
+    static Fluid3StationaryImpl<DRT::Element::hex20>* fh20;
+    if (fh20==NULL)
+      fh20 = new Fluid3StationaryImpl<DRT::Element::hex20>();
+    return fh20;
   }
-  case 27:
+  case DRT::Element::hex27:
   {
-    static Fluid3StationaryImpl<27>* f27;
-    if (f27==NULL)
-      f27 = new Fluid3StationaryImpl<27>;
-    return f27;
+    static Fluid3StationaryImpl<DRT::Element::hex27>* fh27;
+    if (fh27==NULL)
+      fh27 = new Fluid3StationaryImpl<DRT::Element::hex27>();
+    return fh27;
   }
-  case 4:
+  case DRT::Element::tet4:
   {
-    static Fluid3StationaryImpl<4>* f4;
-    if (f4==NULL)
-      f4 = new Fluid3StationaryImpl<4>;
-    return f4;
+    static Fluid3StationaryImpl<DRT::Element::tet4>* ft4;
+    if (ft4==NULL)
+      ft4 = new Fluid3StationaryImpl<DRT::Element::tet4>();
+    return ft4;
   }
-  case 10:
+  case DRT::Element::tet10:
   {
-    static Fluid3StationaryImpl<10>* f10;
-    if (f10==NULL)
-      f10 = new Fluid3StationaryImpl<10>;
-    return f10;
+    static Fluid3StationaryImpl<DRT::Element::tet10>* ft10;
+    if (ft10==NULL)
+      ft10 = new Fluid3StationaryImpl<DRT::Element::tet10>();
+    return ft10;
   }
-  case 6:
+  case DRT::Element::wedge6:
   {
-    static Fluid3StationaryImpl<6>* f6;
-    if (f6==NULL)
-      f6 = new Fluid3StationaryImpl<6>;
-    return f6;
+    static Fluid3StationaryImpl<DRT::Element::wedge6>* fw6;
+    if (fw6==NULL)
+      fw6 = new Fluid3StationaryImpl<DRT::Element::wedge6>();
+    return fw6;
   }
-  case 15:
+  case DRT::Element::wedge15:
   {
-    static Fluid3StationaryImpl<15>* f15;
-    if (f15==NULL)
-      f15 = new Fluid3StationaryImpl<15>;
-    return f15;
+    static Fluid3StationaryImpl<DRT::Element::wedge15>* fw15;
+    if (fw15==NULL)
+      fw15 = new Fluid3StationaryImpl<DRT::Element::wedge15>();
+    return fw15;
   }
-  case 5:
+  case DRT::Element::pyramid5:
   {
-    static Fluid3StationaryImpl<5>* f5;
-    if (f5==NULL)
-      f5 = new Fluid3StationaryImpl<5>;
-    return f5;
+    static Fluid3StationaryImpl<DRT::Element::pyramid5>* fp5;
+    if (fp5==NULL)
+      fp5 = new Fluid3StationaryImpl<DRT::Element::pyramid5>();
+    return fp5;
   }
 
   default:
-    dserror("node number %d not supported", f3->NumNode());
+    dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
   return NULL;
 }
 
-template <int iel>
-DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Fluid3StationaryImpl()
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Fluid3StationaryImpl()
   : Fluid3StationaryImplInterface(),
     vart_(),
     xyze_(),
@@ -167,8 +167,8 @@ DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Fluid3StationaryImpl()
 {
 }
 
-template <int iel>
-int DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Evaluate(
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   Fluid3*                    ele,
   ParameterList&             params,
   DRT::Discretization&       discretization,
@@ -370,8 +370,8 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Evaluate(
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
-template <int iel>
-void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Sysmat(
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   Fluid3*                                          ele,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelnp,
@@ -397,9 +397,6 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Sysmat(
   )
 {
 
-  // set element data
-  const DRT::Element::DiscretizationType distype = ele->Shape();
-
   // get node coordinates and number of elements per node
   DRT::Node** const nodes = ele->Nodes();
   for (int inode=0; inode<iel; inode++)
@@ -421,7 +418,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,evelnp,fsevelnp,edensnp,distype,visc,fssgv,Cs);
+  CalTauStationary(ele,evelnp,fsevelnp,edensnp,visc,fssgv,Cs);
 
   // in case of viscous stabilisation decide whether to use GLS or usfemM
   double vstabfac= 0.0;
@@ -1673,13 +1670,12 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::Sysmat(
 //
 // calculate stabilization parameter
 //
-template <int iel>
-void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::CalTauStationary(
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   Fluid3*                                          ele,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
   const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
-  const DRT::Element::DiscretizationType           distype,
   const double                                     visc,
   const enum Fluid3::StabilisationAction           fssgv,
   const double                                     Cs
@@ -1918,9 +1914,9 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::CalTauStationary(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-template <int iel>
-void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::BodyForce(Fluid3*      ele,
-                                                         const double time)
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::BodyForce(Fluid3*      ele,
+                                                             const double time)
 {
   vector<DRT::Condition*> myneumcond;
 
@@ -2109,8 +2105,8 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::BodyForce(Fluid3*      ele,
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-template <int iel>
-void DRT::ELEMENTS::Fluid3StationaryImpl<iel>::gder2(Fluid3* ele)
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::gder2(Fluid3* ele)
 {
   // initialize and zero out everything
   static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;

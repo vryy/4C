@@ -20,7 +20,8 @@ Maintainer: Christiane Foerster
 #define FLUID3_LIN_IMPL_H
 
 #include "fluid3.H"
-#include <blitz/array.h>
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+//#include <blitz/array.h>
 
 
 namespace DRT
@@ -31,7 +32,7 @@ namespace ELEMENTS
   /// Interface base class for Fluid3lin_Impl
   /*!
     This class exists to provide a common interface for all template
-    versions of Fluid3StationaryImpl. The only function
+    versions of Fluid3lin_Impl. The only function
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of Fluid3lin_Impl.
    */
@@ -111,18 +112,21 @@ namespace ELEMENTS
     \author chfoe
     \date 02/08
   */
-  template <int iel>
+  template <DRT::Element::DiscretizationType distype>
   class Fluid3lin_Impl : public Fluid3lin_ImplInterface
   {
   public:
     /// Constructor
     explicit Fluid3lin_Impl();
 
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
     /// Evaluate
     /*!
       The evaluate function for the linear fluid case.
       Why doesn't someone who actually knows what this function does
-      write a usefull comment?
+      write a useful comment?
      */
     virtual int Evaluate(Fluid3*                   ele,
                          ParameterList&            params,
@@ -175,7 +179,6 @@ namespace ELEMENTS
     void Caltau(
       Fluid3* ele,
       const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
-      const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const double                            timefac);
 

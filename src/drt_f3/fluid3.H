@@ -55,9 +55,9 @@ namespace ELEMENTS
 // forward declarations
 class Fluid3Surface;
 class Fluid3Line;
-template<int iel> class Fluid3Impl;
-template<int iel> class Fluid3StationaryImpl;
-template<int iel> class Fluid3lin_Impl;
+template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
+template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
+template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 class Fluid3GenalphaResVMM;
 class Fluid3Register;
 
@@ -77,36 +77,36 @@ public:
   friend class Fluid3ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3Impl<4>;
-  friend class Fluid3Impl<5>;
-  friend class Fluid3Impl<6>;
-  friend class Fluid3Impl<8>;
-  friend class Fluid3Impl<10>;
-  friend class Fluid3Impl<15>;
-  friend class Fluid3Impl<20>;
-  friend class Fluid3Impl<27>;
+  friend class Fluid3Impl<DRT::Element::tet4>;
+  friend class Fluid3Impl<DRT::Element::pyramid5>;
+  friend class Fluid3Impl<DRT::Element::wedge6>;
+  friend class Fluid3Impl<DRT::Element::hex8>;
+  friend class Fluid3Impl<DRT::Element::tet10>;
+  friend class Fluid3Impl<DRT::Element::wedge15>;
+  friend class Fluid3Impl<DRT::Element::hex20>;
+  friend class Fluid3Impl<DRT::Element::hex27>;
   friend class Fluid3StationaryImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3StationaryImpl<4>;
-  friend class Fluid3StationaryImpl<5>;
-  friend class Fluid3StationaryImpl<6>;
-  friend class Fluid3StationaryImpl<8>;
-  friend class Fluid3StationaryImpl<10>;
-  friend class Fluid3StationaryImpl<15>;
-  friend class Fluid3StationaryImpl<20>;
-  friend class Fluid3StationaryImpl<27>;
+  friend class Fluid3StationaryImpl<DRT::Element::tet4>;
+  friend class Fluid3StationaryImpl<DRT::Element::pyramid5>;
+  friend class Fluid3StationaryImpl<DRT::Element::wedge6>;
+  friend class Fluid3StationaryImpl<DRT::Element::hex8>;
+  friend class Fluid3StationaryImpl<DRT::Element::tet10>;
+  friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
+  friend class Fluid3StationaryImpl<DRT::Element::hex20>;
+  friend class Fluid3StationaryImpl<DRT::Element::hex27>;
   friend class Fluid3lin_ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3lin_Impl<4>;
-  friend class Fluid3lin_Impl<5>;
-  friend class Fluid3lin_Impl<6>;
-  friend class Fluid3lin_Impl<8>;
-  friend class Fluid3lin_Impl<10>;
-  friend class Fluid3lin_Impl<15>;
-  friend class Fluid3lin_Impl<20>;
-  friend class Fluid3lin_Impl<27>;
+  friend class Fluid3lin_Impl<DRT::Element::tet4>;
+  friend class Fluid3lin_Impl<DRT::Element::pyramid5>;
+  friend class Fluid3lin_Impl<DRT::Element::wedge6>;
+  friend class Fluid3lin_Impl<DRT::Element::hex8>;
+  friend class Fluid3lin_Impl<DRT::Element::tet10>;
+  friend class Fluid3lin_Impl<DRT::Element::wedge15>;
+  friend class Fluid3lin_Impl<DRT::Element::hex20>;
+  friend class Fluid3lin_Impl<DRT::Element::hex27>;
   friend class Fluid3GenalphaResVMM;
   friend class Fluid3SystemEvaluator;
 

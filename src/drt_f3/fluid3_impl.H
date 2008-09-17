@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #define FLUID3_IMPL_H
 
 #include "fluid3.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
 namespace DRT
@@ -30,7 +31,7 @@ namespace ELEMENTS
   /// Interface base class for Fluid3Impl
   /*!
     This class exists to provide a common interface for all template
-    versions of Fluid3StationaryImpl. The only function
+    versions of Fluid3Impl. The only function
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of Fluid3Impl.
    */
@@ -98,18 +99,21 @@ namespace ELEMENTS
     \author u.kue
     \date 07/07
   */
-  template<int iel>
+  template<DRT::Element::DiscretizationType distype>
   class Fluid3Impl: public Fluid3ImplInterface
   {
   public:
     /// Constructor
     Fluid3Impl();
 
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
     /// Evaluate
     /*!
       The evaluate function for the general fluid case.
       Why doesn't someone who actually knows what this function does
-      write a usefull comment?
+      write a useful comment?
      */
     virtual int Evaluate(Fluid3*                    ele,
                          ParameterList&             params,
@@ -246,7 +250,6 @@ namespace ELEMENTS
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           fsevelnp,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
-                const DRT::Element::DiscretizationType  distype,
                 const enum Fluid3::TauType              whichtau,
                 struct _MATERIAL*                       material,
                 double&                                 visc,

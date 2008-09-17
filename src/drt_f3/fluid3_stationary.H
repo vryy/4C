@@ -20,7 +20,8 @@ Maintainer: Georg Bauer
 #define FLUID3_STATIONARY_H
 
 #include "fluid3.H"
-#include <blitz/array.h>
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+//#include <blitz/array.h>
 
 
 namespace DRT
@@ -95,18 +96,21 @@ namespace ELEMENTS
     \author gjb
     \date 11/07
   */
-  template <int iel>
+  template <DRT::Element::DiscretizationType distype>
   class Fluid3StationaryImpl : public Fluid3StationaryImplInterface
   {
   public:
     /// Constructor
     explicit Fluid3StationaryImpl();
 
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
     /// Evaluate
     /*!
       The evaluate function for the stationary fluid case.
       Why doesn't someone who actually knows what this function does
-      write a usefull comment?
+      write a useful comment?
      */
     virtual int Evaluate(Fluid3*                   ele,
                          ParameterList&            params,
@@ -181,7 +185,6 @@ namespace ELEMENTS
       const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
       const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
       const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
-      const DRT::Element::DiscretizationType           distype,
       const double                                     visc,
       const enum Fluid3::StabilisationAction           fssgv,
       const double                                     Cs);

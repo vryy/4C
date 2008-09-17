@@ -31,67 +31,67 @@ Maintainer: Christiane Foerster
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(DRT::ELEMENTS::Fluid3* f3)
 {
-  switch (f3->NumNode())
+  switch (f3->Shape())
   {
-  case 8:
+  case DRT::Element::hex8:
   {
-    static Fluid3lin_Impl<8>* f8;
-    if (f8==NULL)
-      f8 = new Fluid3lin_Impl<8>;
-    return f8;
+    static Fluid3lin_Impl<DRT::Element::hex8>* fh8;
+    if (fh8==NULL)
+      fh8 = new Fluid3lin_Impl<DRT::Element::hex8>();
+    return fh8;
   }
-  case 20:
+  case DRT::Element::hex20:
   {
-    static Fluid3lin_Impl<20>* f20;
-    if (f20==NULL)
-      f20 = new Fluid3lin_Impl<20>;
-    return f20;
+    static Fluid3lin_Impl<DRT::Element::hex20>* fh20;
+    if (fh20==NULL)
+      fh20 = new Fluid3lin_Impl<DRT::Element::hex20>();
+    return fh20;
   }
-  case 27:
+  case DRT::Element::hex27:
   {
-    static Fluid3lin_Impl<27>* f27;
-    if (f27==NULL)
-      f27 = new Fluid3lin_Impl<27>;
-    return f27;
+    static Fluid3lin_Impl<DRT::Element::hex27>* fh27;
+    if (fh27==NULL)
+      fh27 = new Fluid3lin_Impl<DRT::Element::hex27>();
+    return fh27;
   }
-  case 4:
+  case DRT::Element::tet4:
   {
-    static Fluid3lin_Impl<4>* f4;
-    if (f4==NULL)
-      f4 = new Fluid3lin_Impl<4>;
-    return f4;
+    static Fluid3lin_Impl<DRT::Element::tet4>* ft4;
+    if (ft4==NULL)
+      ft4 = new Fluid3lin_Impl<DRT::Element::tet4>();
+    return ft4;
   }
-  case 10:
+  case DRT::Element::tet10:
   {
-    static Fluid3lin_Impl<10>* f10;
-    if (f10==NULL)
-      f10 = new Fluid3lin_Impl<10>;
-    return f10;
+    static Fluid3lin_Impl<DRT::Element::tet10>* ft10;
+    if (ft10==NULL)
+      ft10 = new Fluid3lin_Impl<DRT::Element::tet10>();
+    return ft10;
   }
-  case 6:
+  case DRT::Element::wedge6:
   {
-    static Fluid3lin_Impl<6>* f6;
-    if (f6==NULL)
-      f6 = new Fluid3lin_Impl<6>;
-    return f6;
+    static Fluid3lin_Impl<DRT::Element::wedge6>* fw6;
+    if (fw6==NULL)
+      fw6 = new Fluid3lin_Impl<DRT::Element::wedge6>();
+    return fw6;
   }
-  case 15:
+  case DRT::Element::wedge15:
   {
-    static Fluid3lin_Impl<15>* f15;
-    if (f15==NULL)
-      f15 = new Fluid3lin_Impl<15>;
-    return f15;
+    static Fluid3lin_Impl<DRT::Element::wedge15>* fw15;
+    if (fw15==NULL)
+      fw15 = new Fluid3lin_Impl<DRT::Element::wedge15>();
+    return fw15;
   }
-  case 5:
+  case DRT::Element::pyramid5:
   {
-    static Fluid3lin_Impl<5>* f5;
-    if (f5==NULL)
-      f5 = new Fluid3lin_Impl<5>;
-    return f5;
+    static Fluid3lin_Impl<DRT::Element::pyramid5>* fp5;
+    if (fp5==NULL)
+      fp5 = new Fluid3lin_Impl<DRT::Element::pyramid5>();
+    return fp5;
   }
 
   default:
-    dserror("node number %d not supported", f3->NumNode());
+    dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
   return NULL;
 }
@@ -99,8 +99,8 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <int iel>
-DRT::ELEMENTS::Fluid3lin_Impl<iel>::Fluid3lin_Impl()
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::Fluid3lin_Impl<distype>::Fluid3lin_Impl()
   : Fluid3lin_ImplInterface(),
     xyze_(),
     edeadng_(),
@@ -128,18 +128,19 @@ DRT::ELEMENTS::Fluid3lin_Impl<iel>::Fluid3lin_Impl()
 {
 }
 
-template <int iel>
-int DRT::ELEMENTS::Fluid3lin_Impl<iel>::Evaluate(Fluid3*                   ele,
-                                                 ParameterList&            params,
-                                                 DRT::Discretization&      discretization,
-                                                 vector<int>&              lm,
-                                                 Epetra_SerialDenseMatrix& elemat1_epetra,
-                                                 Epetra_SerialDenseMatrix& elemat2_epetra,
-                                                 Epetra_SerialDenseVector& elevec1_epetra,
-                                                 Epetra_SerialDenseVector& elevec2_epetra,
-                                                 Epetra_SerialDenseVector& elevec3_epetra,
-                                                 RefCountPtr<MAT::Material> mat,
-                                                 MATERIAL* actmat)
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
+  Fluid3*                    ele,
+  ParameterList&             params,
+  DRT::Discretization&       discretization,
+  vector<int>&               lm,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseMatrix&  elemat2_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseVector&  elevec2_epetra,
+  Epetra_SerialDenseVector&  elevec3_epetra,
+  RefCountPtr<MAT::Material> mat,
+  MATERIAL*                  actmat)
 {
   const int numnode = iel;
 
@@ -215,22 +216,20 @@ int DRT::ELEMENTS::Fluid3lin_Impl<iel>::Evaluate(Fluid3*                   ele,
 
        THE PRESENT FLUID ELEMENT IS ENTIRELY LINEAR!!!!!!!!!!!!!!!
 */
-template <int iel>
-void DRT::ELEMENTS::Fluid3lin_Impl<iel>::Sysmat(Fluid3* ele,
-                                           const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evelnp,
-                                           const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     eprenp,
-                                           const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evhist,
-                                           LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&           estif,
-                                           LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&           eforce,
-                                           struct _MATERIAL*       material,
-                                           double                  time,
-                                           double                  timefac
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
+  Fluid3*                                              ele,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evelnp,
+  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     eprenp,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evhist,
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&     estif,
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&         eforce,
+  struct _MATERIAL*                                    material,
+  double                                               time,
+  double                                               timefac
   )
 {
   const double numnode = iel;
-
-  // set element data
-  const DRT::Element::DiscretizationType distype = ele->Shape();
 
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
@@ -256,7 +255,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<iel>::Sysmat(Fluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,distype,visc,timefac);
+  Caltau(ele,evelnp,visc,timefac);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -627,13 +626,12 @@ void DRT::ELEMENTS::Fluid3lin_Impl<iel>::Sysmat(Fluid3* ele,
 //
 // calculate stabilization parameter
 //
-template <int iel>
-void DRT::ELEMENTS::Fluid3lin_Impl<iel>::Caltau(
-  Fluid3* ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
-  const DRT::Element::DiscretizationType  distype,
-  const double                            visc,
-  const double                            timefac
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Caltau(
+  Fluid3*                                           ele,
+  const LINALG::FixedSizeSerialDenseMatrix<3,iel>&  evelnp,
+  const double                                      visc,
+  const double                                      timefac
   )
 {
   // use one point gauss rule to calculate tau at element center
@@ -811,10 +809,10 @@ void DRT::ELEMENTS::Fluid3lin_Impl<iel>::Caltau(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-template <int iel>
-void DRT::ELEMENTS::Fluid3lin_Impl<iel>::BodyForce( Fluid3* ele,
-					       const double time,
-					       struct _MATERIAL* material)
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3lin_Impl<distype>::BodyForce( Fluid3* ele,
+                                                        const double time,
+                                                        struct _MATERIAL* material)
 {
   vector<DRT::Condition*> myneumcond;
 
@@ -1005,8 +1003,8 @@ void DRT::ELEMENTS::Fluid3lin_Impl<iel>::BodyForce( Fluid3* ele,
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-template <int iel>
-void DRT::ELEMENTS::Fluid3lin_Impl<iel>::gder2(Fluid3* ele)
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3lin_Impl<distype>::gder2(Fluid3* ele)
 {
   // initialize and zero out everything
   static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
