@@ -672,8 +672,14 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
                     condlist[c]->Description().c_str(),
                     curr->second->Id());
 
-          const int firstnode = (*nodes)[0];
-          int foundit = actdis->HaveGlobalNode(firstnode);
+          int foundit = 0;
+          for (unsigned i=0; i<nodes->size(); ++i)
+          {
+            const int node = (*nodes)[i];
+            foundit = actdis->HaveGlobalNode(node);
+            if (foundit)
+              break;
+          }
           int found=0;
           actdis->Comm().SumAll(&foundit,&found,1);
           if (found)
