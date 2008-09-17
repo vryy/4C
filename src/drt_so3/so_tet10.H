@@ -32,6 +32,8 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
+#include "../drt_lib/linalg_fixedsizematrix.H"
+
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10      10      ///< number of nodes
 #define NODDOF_SOTET10       3      ///< number of dofs per node
@@ -338,21 +340,21 @@ protected:
   // don't want = operator
   So_tet10& operator = (const So_tet10& old);
   virtual void so_tet10_nlnstiffmass(vector<int>&          lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
-                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                 Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* stresses,
-                                 Epetra_SerialDenseMatrix* elestrain,
-                                 struct _MATERIAL*         material,
-                                 bool cauchy = false);
+                                     vector<double>&           disp,
+                                     vector<double>&           residual,
+                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,
+                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,
+                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>* force,
+                                     LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
+                                     LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
+                                     struct _MATERIAL*         material,
+                                     bool cauchy = false);
 
   //! lump mass matrix (bborn 07/08)
-  void so_tet10_lumpmass(Epetra_SerialDenseMatrix* emass);
+  void so_tet10_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
 
-  void so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
-                      Epetra_SerialDenseMatrix& nodalstresses);
+  void so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+                      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses);
 
 //   void so_tet10_stress(struct _MATERIAL* material,
 //                    vector<double>& mydisp,
@@ -400,9 +402,9 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
       	~Discrete_integrator();
   };
  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_4point											vlf 09/07   |
-  |																					|
-  | a special class for quadratic 10-node tetrahedra using a 4 point quadrature   	|
+  | class Tet_integrator_4point 	                        	vlf 09/07   |
+  |																	|
+  | a special class for quadratic 10-node tetrahedra using a 4 point quadrature 	|
   |	it is exaxt for linear and quadratic polynomials								|
   |																					|
   *---------------------------------------------------------------------------------*/

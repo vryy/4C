@@ -31,13 +31,41 @@ written by : Alexander Volf
 #include "inversedesign.H"
 #endif
 
+//#define PRINT_DEBUG
+
+#ifdef PRINT_DEBUG
+#include <string>
+#include <sstream>
+#include <cstring>
+template <class T>
+void writeArray(const T& mat, std::string name = "unnamed")
+{
+  std::stringstream header;
+  header << 'M' << name << ':' << mat.M() << 'x' << mat.N() << ':';
+  unsigned int s = header.str().size() + mat.M()*mat.N()*sizeof(double);
+  std::cerr.write(reinterpret_cast<const char*>(&s),sizeof(unsigned int));
+  std::cerr << header.str();
+  for (int i = 0; i < mat.M()*mat.N(); ++i) {
+    std::cerr.write(reinterpret_cast<const char*>(&(mat.A()[i])),sizeof(double));
+  }
+}
+
+void writeComment(const std::string v)
+{
+  unsigned int s = v.size()+1;
+  std::cerr.write(reinterpret_cast<const char*>(&s),sizeof(unsigned int));
+  std::cerr << 'C' << v;
+}
+#endif // PB
+
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |                                                         maf 04/07    |
  | vector of material laws                                              |
- | defined in global_control.c											|
+ | defined in global_control.c						|
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat; ///< C-style material struct
 
@@ -48,12 +76,17 @@ extern struct _MATERIAL  *mat; ///< C-style material struct
 int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix& elemat2,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector& elevec2,
-                                    Epetra_SerialDenseVector& elevec3)
+                                    Epetra_SerialDenseMatrix& elemat1_epetra,
+                                    Epetra_SerialDenseMatrix& elemat2_epetra,
+                                    Epetra_SerialDenseVector& elevec1_epetra,
+                                    Epetra_SerialDenseVector& elevec2_epetra,
+                                    Epetra_SerialDenseVector& elevec3_epetra)
 {
+  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4> elemat1(elemat1_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4> elemat2(elemat2_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>             elevec1(elevec1_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>             elevec2(elevec2_epetra.A(),true);
+
   // start with "none"
   DRT::ELEMENTS::So_tet4::ActionType act = So_tet4::none;
 
@@ -92,12 +125,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
-      for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
+      for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
-      for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
-
-    }
+      for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
+      so_tet4_nlnstiffmass(lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,actmat);
+   }
     break;
 
     // nonlinear stiffness and internal force vector
@@ -114,7 +146,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
 #ifndef INVERSEDESIGNCREATE
       so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1_epetra,NULL,&elevec1_epetra,NULL,NULL,actmat);
 #endif
     }
     break;
@@ -131,7 +163,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4> myemat(true); // to zero
       so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
@@ -151,7 +183,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
 #ifndef INVERSEDESIGNCREATE
       so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1_epetra,&elemat2_epetra,&elevec1_epetra,NULL,NULL,actmat);
 #endif
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
@@ -165,20 +197,22 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
       RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata==null) dserror("Cannot get stress 'data'");
-      if (straindata==null) dserror("Cannot get strain 'data'");
+      if (stressdata==null) dserror("Cannot get 'stress' data");
+      if (straindata==null) dserror("Cannot get 'strain' data");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      Epetra_SerialDenseMatrix stress(NUMGPT_SOTET4,NUMSTR_SOTET4);
-      Epetra_SerialDenseMatrix strain(NUMGPT_SOTET4,NUMSTR_SOTET4);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
 #ifndef INVERSEDESIGNCREATE
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4> stress;
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4> strain;
       so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
 #else
+      LINALG::SerialDenseMatrix stress(NUMGPT_SOTET4,NUMSTR_SOTET4);
+      LINALG::SerialDenseMatrix strain(NUMGPT_SOTET4,NUMSTR_SOTET4);
       invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
 #endif
       AddtoPack(*stressdata, stress);
@@ -200,19 +234,20 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4> gpstress(((*gpstressmap)[gid])->A(),true);
 
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOTET4,NUMSTR_SOTET4);
-        so_tet4_expol(*gpstress,nodalstresses);
+        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMSTR_SOTET4> nodalstresses;
+        so_tet4_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
         vector<int> numadjele(NUMNOD_SOTET4);
 
+        DRT::Node** nodes = Nodes();
         for (int i=0;i<NUMNOD_SOTET4;++i){
-          DRT::Node* node=Nodes()[i];
+          DRT::Node* node=nodes[i];
           numadjele[i]=node->NumElement();
         }
 
@@ -235,24 +270,27 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
         int lid = elemap.LID(Id());
         if (lid!=-1) {
           for (int i = 0; i < NUMSTR_SOTET4; ++i) {
-            (*((*elestress)(i)))[lid] = 0.;
+            double& s = (*((*elestress)(i)))[lid];
+            s = 0.;
             for (int j = 0; j < NUMGPT_SOTET4; ++j) {
-              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOTET4 * (*gpstress)(j,i);
+              s += gpstress(j,i);
             }
+            s *= 1.0/NUMGPT_SOTET4;
           }
         }
       }
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOTET4,NUMSTR_SOTET4);
-        so_tet4_expol(*gpstress,nodalstresses);
+        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMSTR_SOTET4> nodalstresses;
+        so_tet4_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
         vector<int> numadjele(NUMNOD_SOTET4);
 
+        DRT::Node** nodes = Nodes();
         for (int i=0;i<NUMNOD_SOTET4;++i){
-          DRT::Node* node=Nodes()[i];
+          DRT::Node* node=nodes[i];
           numadjele[i]=node->NumElement();
         }
 
@@ -273,10 +311,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
         int lid = elemap.LID(Id());
         if (lid!=-1) {
           for (int i = 0; i < NUMSTR_SOTET4; ++i) {
-            (*((*elestress)(i)))[lid] = 0.;
+            double& s = (*((*elestress)(i)))[lid];
+            s = 0.;
             for (int j = 0; j < NUMGPT_SOTET4; ++j) {
-              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOTET4 * (*gpstress)(j,i);
+              s += gpstress(j,i);
             }
+            s *= 1.0/NUMGPT_SOTET4;
           }
         }
       }
@@ -406,40 +446,47 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*/
 
 /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOTET4; gp++) 
+  for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
     // get submatrix of deriv at actual gp
 
     /* get the matrix of the coordinates of edges needed to compute the volume,
     ** which is used here as detJ in the quadrature rule.
     ** ("Jacobian matrix") for the quadrarture rule:
-    **             [  1    1    1  	 1  ]
+    **             [  1    1    1    1  ]
     ** jac_coord = [ x_1  x_2  x_3  x_4 ]
     **             [ y_1  y_2  y_3  y_4 ]
-    **		       [ z_1  z_2  z_3  z_4 ]
+    **		   [ z_1  z_2  z_3  z_4 ]
     */
-    Epetra_SerialDenseMatrix jac_coord(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac_coord;
     for (int i=0; i<4; i++) jac_coord(0,i)=1;
-    for (int row=0;row<3;row++)
+    DRT::Node** nodes = Nodes();
+    for (int col=0;col<4;col++)
     {
-    	for (int col=0;col<4;col++)
-          jac_coord(row+1,col)= Nodes()[col]->X()[row];
+      const double* x = nodes[col]->X();
+      for (int row=0;row<3;row++)
+        jac_coord(row+1,col) = x[row];
     }
 
     // compute determinant of Jacobian with own algorithm
     // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
     // but rather the volume of the tetrahedara
-    double detJ=det_volf(jac_coord);
+    double detJ=jac_coord.Determinant();
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     double fac = tet4_int.weights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
-    for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) 
-      for(int dim=0; dim<NUMDIM_SOTET4; dim++) 
-        elevec1[nodid*NUMDIM_SOTET4+dim] += tet4_int.shapefct_gp[gp](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
+    for(int dim=0; dim<NUMDIM_SOTET4; dim++) {
+      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
+      for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) {
+        elevec1(nodid*NUMDIM_SOTET4+dim) += tet4_int.shapefct_gp[gp](nodid) * dim_fac;
+      }
+    }
   }/* ==================================================== end of Loop over GP */
-
+#ifdef PRINT_DEBUG
+  writeArray(elevec1,"elevec1");
+#endif
   return 0;
 } // DRT::ELEMENTS::So_tet4::EvaluateNeumann
 
@@ -449,12 +496,14 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 {
-  LINALG::SerialDenseMatrix xrefe(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
+  DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
   }
   /* get the matrix of the coordinates of nodes needed to compute the volume,
   ** which is used here as detJ in the quadrature rule.
@@ -464,48 +513,53 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
   **             [ Y_1  Y_2  Y_3  Y_4 ]
   **		 [ Z_1  Z_2  Z_3  Z_4 ]
   */
-  LINALG::SerialDenseMatrix J(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
-  for (int i=0; i<4; i++)  J(0,i)=1;
+  LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
+  for (int i=0; i<4; i++)  jac(0,i)=1;
   for (int row=0;row<3;row++)
     for (int col=0;col<4;col++)
-      J(row+1,col)= xrefe(col,row);
+      jac(row+1,col)= xrefe(col,row);
   // volume of the element
-  V_ = LINALG::DeterminantLU(J)/6.0;
+  V_ = jac.Determinant()/6.0;
+
+#ifdef PRINT_DEBUG
+  writeArray(xrefe,"xrefe");
+  LINALG::FixedSizeSerialDenseMatrix<1,1> jac_mat;
+  jac_mat(0) = V_;
+  writeArray(jac_mat,"V_");
+#endif
 
   nxyz_.resize(NUMGPT_SOTET4);
   const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
+  LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4-1,NUMCOORD_SOTET4> tmp;
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
   {
-    LINALG::SerialDenseMatrix jac(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
-    {
-      LINALG::SerialDenseMatrix tmp(NUMCOORD_SOTET4-1,NUMCOORD_SOTET4);
-      tmp.Multiply('T','N',1.0,xrefe,tet4_dis.deriv_gp[gp],0.0);
-      for (int i=0; i<4; i++) jac(0,i)=1;
-      for (int row=0;row<3;row++)
-        for (int col=0;col<4;col++)
-          jac(row+1,col)=tmp(row,col);
-    }
+    // not perfect, tet4_dis.deriv_gp[gp] should better be a LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMCOORD_SOTET4>
+    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMCOORD_SOTET4> deriv_gp(tet4_dis.deriv_gp[gp].A(),true);
+    tmp.MultiplyTN(xrefe,deriv_gp);
+    for (int i=0; i<4; i++) jac(0,i)=1;
+    for (int row=0;row<3;row++)
+      for (int col=0;col<4;col++)
+        jac(row+1,col)=tmp(row,col);
     // size is 4x3
-    Epetra_SerialDenseMatrix  I_aug(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> I_aug(true);
     // size is 4x3
-    Epetra_SerialDenseMatrix partials(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> partials(true);
     I_aug(1,0)=1;
     I_aug(2,1)=1;
     I_aug(3,2)=1;
 
-    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(partials,I_aug);// set X=partials, B=I_aug
+    // solve A.X=B
+    LINALG::FixedSizeSerialDenseSolver<NUMCOORD_SOTET4,NUMCOORD_SOTET4,NUMDIM_SOTET4> solve_for_inverseJac;
+    solve_for_inverseJac.SetMatrix(jac);  // set A=jac
+    solve_for_inverseJac.SetVectors(partials, I_aug);// set X=partials, B=I_aug
     solve_for_inverseJac.FactorWithEquilibration(true);
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
-    if ((err != 0) && (err2!=0))
+    if ((err != 0) || (err2!=0))
     	dserror("Inversion of Jacobian failed");
 
     //nxyz_[gp] = N_xsi_k*partials
-    // size is 4x3
-    nxyz_[gp].Shape(NUMNOD_SOTET4,NUMDIM_SOTET4);
-    nxyz_[gp].Multiply('N','N',1.0,tet4_dis.deriv_gp[gp],partials,0.0);
+    nxyz_[gp].Multiply(deriv_gp,partials);
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
     **             [  ------   ------   ------  ]
@@ -516,6 +570,14 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [  -------  -------  ------- ]
     **             [    dX       dY       dZ    ]
     */
+
+#ifdef PRINT_DEBUG
+  writeArray(tmp,"tmp");
+  writeArray(I_aug,"I_aug");
+  writeArray(partials,"partials");
+  writeArray(tet4_dis.deriv_gp[gp],"tet4_dis.deriv_gp[gp]");
+  writeArray(nxyz_[gp],"nxyz_[gp]");
+#endif
 
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
@@ -546,11 +608,11 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
-      Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
-      Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
-      Epetra_SerialDenseVector* force,          // element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      // stresses at GP
-      Epetra_SerialDenseMatrix* elestrain,      // strains at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    // element stiffness matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     // element mass matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>* force,          // element internal force vector
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      // stresses at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      // strains at GP
       struct _MATERIAL*         material,       // element material data
       const bool                cauchy,         // stress output options
       const bool                ea)             // strain output options
@@ -575,7 +637,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     **             [  x_4   y_4   z_4  ]
     */
   // current  displacements of element
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
 
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
@@ -594,9 +656,13 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
 #ifndef INVERSEDESIGNUSE
-    const Epetra_SerialDenseMatrix& nxyz = nxyz_[gp];
+    const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& nxyz = nxyz_[gp];
 #else // we need the copy to overwrite it further down
-    Epetra_SerialDenseMatrix nxyz(nxyz_[gp]);
+    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_[gp]);
+    // constuct a view for StoragetoMatrix. Fortunately this
+    // function does not invoke any tricky epetra-stuff, so we can
+    // view in that direction.
+    Epetra_SerialDenseMatrix nxyz_epetra(View, nxyz, NUMNOD_SOTET4, NUMNOD_SOTET4, NUMDIM_SOTET4);
 #endif
 
     //                                      d xcurr
@@ -618,7 +684,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
 
     // size is 3x3
-    LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
+    LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_SOTET4,NUMDIM_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(defgrd_epetra.A(),true);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get derivatives wrt to last spatial configuration
@@ -626,6 +693,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
 
       // build multiplicative incremental defgrd
+      //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
       defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
@@ -641,7 +709,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       defgrd = Fnew;
     }
 #else
-    defgrd.Multiply('T','N',1.0,xdisp,nxyz,0.0);
+    defgrd.MultiplyTN(xdisp,nxyz);
     defgrd(0,0)+=1;
     defgrd(1,1)+=1;
     defgrd(2,2)+=1;
@@ -649,7 +717,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
 #ifdef INVERSEDESIGNUSE
     {
-      // make the multiplicative update so that defgrd refers to 
+      // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
       // design analysis
       LINALG::SerialDenseMatrix Fhist(3,3);
@@ -657,22 +725,24 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       LINALG::SerialDenseMatrix tmp3x3(3,3);
       tmp3x3.Multiply('N','N',1.0,defgrd,Fhist,0.0);
       defgrd = tmp3x3;
-      
+
       // make detJ and nxyzmat refer to the ref. configuration that resulted from
       // the inverse design analysis
       detJ = invdesign_->DetJHistory()[gp];
-      invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
+      invdesign_->StoragetoMatrix(gp,nxyz_epetra,invdesign_->JHistory());
     }
 #endif
 
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
-    LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOTET4,NUMDIM_SOTET4);
-    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+    //multiply<NUMDIM_SOTET4,NUMDIM_SOTET4,NUMDIM_SOTET4,'T','N'>(cauchygreen,defgrd,defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain(NUMSTR_SOTET4);
+    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -693,7 +763,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       else
       {
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::SerialDenseMatrix gl(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
         gl(0,2) = 0.5*glstrain(5);
@@ -705,13 +775,15 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
         gl(2,2) = glstrain(2);
 
         // inverse of deformation gradient
-        Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
-        LINALG::NonsymInverse3x3(invdefgrd);
+        //Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
+        //LINALG::NonsymInverse3x3(invdefgrd);
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> invdefgrd;
+        invdefgrd.Invert(defgrd);
 
-        LINALG::SerialDenseMatrix temp(NUMDIM_SOTET4,NUMDIM_SOTET4);
-        LINALG::SerialDenseMatrix euler_almansi(NUMDIM_SOTET4,NUMDIM_SOTET4);
-        temp.Multiply('N','N',1.0,gl,invdefgrd,0.0);
-        euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.0);
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
+        temp.Multiply(gl,invdefgrd);
+        euler_almansi.MultiplyTN(invdefgrd,temp);
 
         (*elestrain)(gp,0) = euler_almansi(0,0);
         (*elestrain)(gp,1) = euler_almansi(1,1);
@@ -747,7 +819,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     // size is 6x12
-    LINALG::SerialDenseMatrix bop(NUMSTR_SOTET4,NUMDOF_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
     for (int i=0; i<NUMNOD_SOTET4; i++)
     {
       bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
@@ -777,11 +849,22 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     ** every necessary data must be passed.
     */
     // size is 6x6
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOTET4,NUMSTR_SOTET4);
+    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOTET4,NUMSTR_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(cmat_epetra.A(),true);
     // size is 6
-    Epetra_SerialDenseVector stress(NUMSTR_SOTET4);
-    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
-
+    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> stress(stress_epetra.A(),true);
+#ifdef PRINT_DEBUG
+  writeArray(defgrd,"defgrd");
+  writeArray(glstrain,"glstrain");
+#endif
+  so_tet4_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra, &defgrd_epetra, gp);
+#ifdef PRINT_DEBUG
+  writeArray(stress,"stress");
+  writeArray(cmat,"cmat");
+  writeArray(glstrain,"glstrain");
+  writeArray(defgrd,"defgrd");
+#endif
     // return gp stresses
     if (elestress != NULL)
     { // return 2nd Piola-Kirchhoff stresses
@@ -793,14 +876,9 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       else
       {
         // return Cauchy stresses
-        double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-                      defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-                      defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-                      defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-                      defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-                      defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+        double detF = defgrd.Determinant();
 
-        LINALG::SerialDenseMatrix pkstress(NUMDIM_SOTET4,NUMDIM_SOTET4);
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> pkstress;
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -811,10 +889,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        LINALG::SerialDenseMatrix temp(NUMDIM_SOTET4,NUMDIM_SOTET4);
-        LINALG::SerialDenseMatrix cauchystress(NUMDIM_SOTET4,NUMDIM_SOTET4);
-        temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
-        cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchystress;
+        temp.Multiply(1.0/detF,defgrd,pkstress,0.);
+        cauchystress.MultiplyNT(temp,defgrd);
 
         (*elestress)(gp,0) = cauchystress(0,0);
         (*elestress)(gp,1) = cauchystress(1,1);
@@ -827,22 +905,23 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
     if (force != NULL && stiffmatrix != NULL)
     {
+      double detJ_w = detJ * (tet4_dis.weights)(gp);
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      (*force).Multiply('T','N',detJ * (tet4_dis.weights)(gp),bop,stress,1.0);
+      force->MultiplyTN(detJ_w,bop,stress,1.0);
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       // size is 6x12
-      LINALG::SerialDenseMatrix cb(NUMSTR_SOTET4,NUMDOF_SOTET4);
-      cb.Multiply('N','N',1.0,cmat,bop,0.0);          // temporary C . B
+      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMDOF_SOTET4> cb;
+      cb.Multiply(cmat,bop);          // temporary C . B
       // size is 12x12
-      stiffmatrix->Multiply('T','N',detJ * (tet4_dis.weights)(gp),bop,cb,1.0);
+      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       // auxiliary integrated stress
-      Epetra_SerialDenseVector sfac(stress);
+      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> sfac(stress);
       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      sfac.Scale(detJ * (tet4_dis.weights)(gp));
+      sfac.Scale(detJ_w);
       // intermediate Sm.B_L
       vector<double> SmB_L(NUMDIM_SOTET4);
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
@@ -876,13 +955,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     //consistent mass matrix evaluated using a 4-point rule
     for (int gp=0; gp<tet4_mass.num_gp; gp++)
     {
+      double factor = density * detJ * (tet4_mass.weights)(gp);
+      double ifactor, massfactor;
       for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
       {
+        ifactor = (tet4_mass.shapefct_gp[gp])(inod) * factor;
         for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
         {
-          double massfactor = (tet4_mass.shapefct_gp[gp])(inod) * density *
-                              (tet4_mass.shapefct_gp[gp])(jnod) * detJ *
-                              (tet4_mass.weights)(gp);
+          massfactor = (tet4_mass.shapefct_gp[gp])(jnod) * ifactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
@@ -897,16 +977,16 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass)
 {
   // lump mass matrix
   if (emass != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    for (unsigned c=0; c<(*emass).N(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      for (unsigned r=0; r<(*emass).M(); ++r)  // parse rows
       {
         d += (*emass)(r,c);  // accumulate row entries
         (*emass)(r,c) = 0.0;

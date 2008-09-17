@@ -35,6 +35,8 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
+#include "../drt_lib/linalg_fixedsizematrix.H"
+
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node
 #define NUMDOF_SOTET4      12      ///< total dofs per element
@@ -342,7 +344,7 @@ protected:
   //! volume of the element
   double                                                   V_;
   //! vector of partial derivatives in material frame
-  vector<Epetra_SerialDenseMatrix>                         nxyz_;
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> >                         nxyz_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
@@ -375,31 +377,31 @@ protected:
   virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
-                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                 Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* stresses,
-                                 Epetra_SerialDenseMatrix* elestrain,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>* force,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
                                  struct _MATERIAL*         material,
                                  bool                      cauchy = false,
                                  bool                      ea = false);
 
   //! lump mass matrix (bborn 07/08)
-  void so_tet4_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
+  void so_tet4_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
-                     Epetra_SerialDenseMatrix& nodalstresses);
+  void so_tet4_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
+                     LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMSTR_SOTET4>& nodalstresses);
 
 
   /// material selection for so_tet4
   void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
-                    Epetra_SerialDenseMatrix* cmat,
-                    double* density,
-                    const Epetra_SerialDenseVector* glstrain,
-                    const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);
+                       Epetra_SerialDenseMatrix* cmat,
+                       double* density,
+                       const Epetra_SerialDenseVector* glstrain,
+                       const Epetra_SerialDenseMatrix* defgrd,
+                       int gp);
 
 }; // class So_tet4
 

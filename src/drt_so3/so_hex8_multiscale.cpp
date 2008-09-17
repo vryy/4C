@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 
 using namespace std; // cout etc.
 
+
 /*----------------------------------------------------------------------*
  |  homogenize material density (public)                        lw 07/07|
  *----------------------------------------------------------------------*/
@@ -34,35 +35,37 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
 {
   double homogdens = 0.;
 
-  /* ============================================================================*
+/* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
+  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8*NUMDIM_SOH8,NUMNOD_SOH8>* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
 /* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
+  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>* weights;  //[NUMGPT_SOH8]
   soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
-  // element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+  // update element geometry
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i){
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
   }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
+  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMGPT_SOH8> deriv_gp;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
     // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
     for (int m=0; m<NUMDIM_SOH8; ++m) {
       for (int n=0; n<NUMGPT_SOH8; ++n) {
         deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
@@ -74,41 +77,40 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
+    //jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    jac.Multiply(deriv_gp, xrefe);
 
-    // compute determinant of Jacobian by Sarrus' rule
-    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
-               + jac(0,1) * jac(1,2) * jac(2,0)
-               + jac(0,2) * jac(1,0) * jac(2,1)
-               - jac(0,0) * jac(1,2) * jac(2,1)
-               - jac(0,1) * jac(1,0) * jac(2,2)
-               - jac(0,2) * jac(1,1) * jac(2,0);
+    // compute determinant of Jacobian
+    double detJ = jac.Determinant();
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     // (material) deformation gradient F (=I in reference configuration)
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    for (int i=0;i<3;++i) defgrd(i,i) = 1.;
+    Epetra_SerialDenseMatrix defgrd_epetra(NUMDIM_SOH8,NUMDIM_SOH8);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(defgrd_epetra.A(),true);
+    for (unsigned int i = 0;i<3; ++i) defgrd(i,i) = 1.;
 
     // Green-Lagrange strains matrix (=0 in reference configuration)
-    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOH8);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress(NUMSTR_SOH8);
+    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOH8,NUMSTR_SOH8);
+    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    soh8_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&defgrd_epetra,gp,params);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double integrationfactor = detJ * (*weights)(gp);
 
     homogdens += integrationfactor*density;
-
 
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */

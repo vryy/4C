@@ -35,6 +35,8 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
+#include "../drt_lib/linalg_fixedsizematrix.H"
+
 // Several parameters which are fixed for Solid Wedge6
 #define NUMNOD_WEG6  6      ///< number of nodes
 #define NODDOF_WEG6  3      ///< number of dofs per node
@@ -363,7 +365,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                   data_;
   //! vector of inverses of the jacobian in material frame
-  vector<Epetra_SerialDenseMatrix>                 invJ_;
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> >                 invJ_;
   //! determinant of Jacobian in material frame
   vector<double>                                   detJ_;
 
@@ -400,11 +402,11 @@ protected:
   virtual void sow6_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
-                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                 Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* elestress,
-                                 Epetra_SerialDenseMatrix* elestrain,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
+                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,
                                  ParameterList&            params,         // algorithmic parameters e.g. time
                                  const bool                cauchy = false,
                                  const bool                euler_almansi = false);
@@ -419,16 +421,16 @@ protected:
                     ParameterList&            params);         // algorithmic parameters e.g. time
 
   //! calculate static shape functions and derivatives for sow6
-  void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
-                       Epetra_SerialDenseMatrix** deriv,
-                       Epetra_SerialDenseVector** weights);
+  void sow6_shapederiv(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>** shapefct,
+                       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMNOD_WEG6>** deriv,
+                       LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>** weights);
 
   //! lump mass matrix (bborn 07/08)
-  void sow6_lumpmass(Epetra_SerialDenseMatrix* emass);
+  void sow6_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* emass);
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void soweg6_expol(Epetra_SerialDenseMatrix& stresses,
-                    Epetra_SerialDenseMatrix& nodalstresses);
+  void soweg6_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
+                    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6>& nodalstresses);
 
 
 }; // class So_weg6

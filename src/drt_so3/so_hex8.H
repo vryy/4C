@@ -36,6 +36,8 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
+#include "../drt_lib/linalg_fixedsizematrix.H"
+
 // Several parameters which are fixed for Solid Hex8
 #define NUMNOD_SOH8  8      ///< number of nodes
 #define NODDOF_SOH8  3      ///< number of dofs per node
@@ -408,10 +410,10 @@ protected:
    */
   enum EASType
   {
-    soh8_easfull,
-    soh8_easmild,
-    soh8_eassosh8,
-    soh8_easnone
+    soh8_easnone = 0,
+    soh8_eassosh8 = 7,
+    soh8_easmild = 9,
+    soh8_easfull = 21
   };
   //! kinematic type
   KinematicType                                    kintype_;
@@ -422,7 +424,8 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                   data_;
   //! vector of inverses of the jacobian in material frame
-  vector<Epetra_SerialDenseMatrix>                 invJ_;
+  //vector<Epetra_SerialDenseMatrix>                 invJ_;
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJ_;
   //! determinant of Jacobian in material frame
   vector<double>                                   detJ_;
 
@@ -463,21 +466,21 @@ protected:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
-      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
-      Epetra_SerialDenseVector* force,          ///< element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      ///< stresses at GP
-      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
 
   //! Lump mass matrix (bborn 07/08)
-  void soh8_lumpmass(Epetra_SerialDenseMatrix* emass);
+  void soh8_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void soh8_expol(Epetra_SerialDenseMatrix& stresses,
-                  Epetra_SerialDenseMatrix& nodalstresses);
+  void soh8_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
+                  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses);
 
   /*!
   \brief Create a integrator for the SoHex8 element
@@ -492,9 +495,9 @@ protected:
   };
 
   /***************OBSOLETE**********************************/
-  void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
-                       Epetra_SerialDenseMatrix** deriv,
-                       Epetra_SerialDenseVector** weights);
+  void soh8_shapederiv(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,
+                       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,
+                       LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>** weights);
   /***************OBSOLETE**********************************/
 
   /*!
@@ -539,8 +542,8 @@ protected:
   void soh8_eassetup(
           vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
-          const Epetra_SerialDenseMatrix& xrefe);     // material element coords
+          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
+          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
 
 
   // multi-scale section

@@ -46,6 +46,13 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
+  dserror("This element does not work right now...");
+  /* All changes to make this element compile with the new version of
+   * wedge6 are marked with a
+   *  /// Does not work with new wedge6 element
+   * comment.
+   ***/
+
   // start with "none"
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
 
@@ -129,7 +136,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
-      if (act==calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
+      /// Does not work with new wedge6 element
+      //if (act==calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
     break;
 
@@ -176,7 +184,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
-        soweg6_expol(*gpstress,nodalstresses);
+        /// Does not work with new wedge6 element
+        //soweg6_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
@@ -217,7 +226,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
-        soweg6_expol(*gpstress,nodalstresses);
+        /// Does not work with new wedge6 element
+        //soweg6_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
@@ -315,7 +325,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
 /* pointer to (static) weight factors at each gp */
   Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
-  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+  /// Does not work with new wedge6 element
+  //sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
   // update element geometry

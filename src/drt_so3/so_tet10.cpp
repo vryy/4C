@@ -137,15 +137,16 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
-                                             Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+                                             LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses)
 {
-  static Epetra_SerialDenseMatrix expol(NUMNOD_SOTET10,NUMGPT_SOTET10);
+  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
   static bool isfilled;
 
   if (isfilled==true)
   {
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
+    //multiply<NUMNOD_SOTET10,NUMGPT_SOTET10,NUMSTR_SOTET10>(nodalstresses,expol,stresses);
   }
   else
   {
@@ -200,7 +201,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
     expol(9,2)= (0.25+0.05*sq5)*sq5;
     expol(9,3)= (0.25+0.05*sq5)*sq5;
 
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
+    //multiply<NUMNOD_SOTET10,NUMGPT_SOTET10,NUMSTR_SOTET10>(nodalstresses,expol,stresses);
 
     isfilled = true;
   }
@@ -280,9 +282,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -295,9 +297,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

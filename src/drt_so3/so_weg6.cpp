@@ -38,8 +38,6 @@ data_()
   kintype_ = sow6_totlag;
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
-  for (int i=0; i<NUMGPT_WEG6; ++i)
-    invJ_[i].Shape(3,3);
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
@@ -63,9 +61,8 @@ data_(old.data_),
 detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
-  for (int i=0; i<(int)invJ_.size(); ++i)
+  for (unsigned int i=0; i<invJ_.size(); ++i)
   {
-    invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
     invJ_[i] = old.invJ_[i];
   }
 
@@ -137,11 +134,11 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
 
   // detJ_
   AddtoPack(data,detJ_);
-  
+
   // invJ_
-  const int size = (int)invJ_.size();
+  const unsigned int size = invJ_.size();
   AddtoPack(data,size);
-  for (int i=0; i<size; ++i)
+  for (unsigned int i=0; i<size; ++i)
     AddtoPack(data,invJ_[i]);
 
   return;
@@ -223,15 +220,15 @@ void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes     maf 02/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::soweg6_expol(Epetra_SerialDenseMatrix& stresses,
-                                          Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::So_weg6::soweg6_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
+                                          LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6>& nodalstresses)
 {
-  static Epetra_SerialDenseMatrix expol(NUMNOD_WEG6,NUMGPT_WEG6);
+  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6> expol;
   static bool isfilled;
 
   if (isfilled==true)
   {
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
   }
   else
   {
@@ -264,7 +261,7 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol(Epetra_SerialDenseMatrix& stresses,
       }
     }
 
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
   }
 }
 
@@ -310,7 +307,7 @@ void DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       dserror("Unknown VisData!");
     }
  }
-    
+
 
   return;
 }
@@ -341,9 +338,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -356,9 +353,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

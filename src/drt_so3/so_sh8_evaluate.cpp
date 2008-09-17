@@ -48,6 +48,14 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
+  dserror("This element does not work right now...");
+  /* All changes to make this element compile with the new version of
+   * hex8 are marked with a
+   *  /// Does not work with new hex8 element
+   * comment.
+   ***/
+
+
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
@@ -86,7 +94,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       if (Type() == DRT::Element::element_sosh8){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        /// Does not work with new hex8 element
+        //soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
       }
     }
     break;
@@ -105,7 +114,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       if (Type() == DRT::Element::element_sosh8){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        /// Does not work with new hex8 element
+        //soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
       }
     }
     break;
@@ -126,7 +136,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       if (Type() == DRT::Element::element_sosh8) {
         sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
       } else if (Type() == DRT::Element::element_so_hex8) {
-        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+        /// Does not work with new hex8 element
+        //soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
       }
     }
     break;
@@ -151,10 +162,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       if (Type() == DRT::Element::element_sosh8){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+        /// Does not work with new hex8 element
+        //soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
       }
       // lump mass
-      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
+      /// Does not work with new hex8 element
+      //if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
 
@@ -180,8 +193,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
         else    dserror("requested option not yet implemented for solidsh8");
       } else if (Type() == DRT::Element::element_so_hex8){
-        if (iostrain == "euler_almansi") soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
-        else soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
+        /// Does not work with new hex8 element
+        //if (iostrain == "euler_almansi") soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
+        //else soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
       }
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -206,7 +220,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
-        soh8_expol(*gpstress,nodalstresses);
+        /// Does not work with new hex8 element
+        //soh8_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
@@ -247,7 +262,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
-        soh8_expol(*gpstress,nodalstresses);
+        /// Does not work with new hex8 element
+        //soh8_expol(*gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
@@ -505,7 +521,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
     ** -> T0^{-T}
     */
-    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+    /// Does not work with new hex8 element
+    //soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } else if (eastype_ == soh8_easnone){
   //cout << "Warning: Solid-Shell8 without EAS" << endl;
   } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS

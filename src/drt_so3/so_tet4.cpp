@@ -26,7 +26,6 @@ writen by : Alexander Volf
 #endif
 
 
-
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -119,7 +118,7 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
-  
+
   // V_
   AddtoPack(data,V_);
 
@@ -194,15 +193,16 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
-                                           Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::So_tet4::so_tet4_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
+                                           LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMSTR_SOTET4>& nodalstresses)
 {
-  static Epetra_SerialDenseMatrix expol(NUMNOD_SOTET4, NUMGPT_SOTET4);
+  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4, NUMGPT_SOTET4> expol;
   static bool isfilled;
 
   if (isfilled==true)
   {
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
+    //multiply<NUMNOD_SOTET4,NUMGPT_SOTET4,NUMSTR_SOTET4,'N','N'>(nodalstresses,expol,stresses);
   }
   else
   {
@@ -211,7 +211,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
     expol(2,0)=1.0;
     expol(3,0)=1.0;
 
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+    nodalstresses.Multiply(expol,stresses);
+    //multiply<NUMNOD_SOTET4,NUMGPT_SOTET4,NUMSTR_SOTET4,'N','N'>(nodalstresses,expol,stresses);
 
     isfilled=true;
   }
@@ -293,9 +294,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -308,9 +309,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
