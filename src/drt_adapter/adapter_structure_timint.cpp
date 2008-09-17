@@ -62,7 +62,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: structure_(STR::TimIntImplCreate(*ioparams, *sdynparams, *xparams, 
+: structure_(STR::TimIntImplCreate(*ioparams, *sdynparams, *xparams,
                                    discret, solver, output)),
   discret_(discret),
   ioparams_(ioparams),
@@ -102,7 +102,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
 /* get current displacements D_{n+1} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 {
-#ifdef PRESTRESS
+#ifdef INVERSEDESIGNCREATE
   dserror("check this");
   return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
@@ -115,7 +115,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 /* get last converged displacements D_{n} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 {
-#ifdef PRESTRESS
+#ifdef INVERSEDESIGNCREATE
   dserror("check this");
   return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
@@ -130,7 +130,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnm()
 {
 /*
-#ifdef PRESTRESS
+#ifdef INVERSEDESIGNCREATE
   return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
 #else
   return structure_->Dispm();
@@ -150,7 +150,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
 
 
 /*----------------------------------------------------------------------*/
-/* stiffness, i.e. force residual R_{n+1} differentiated 
+/* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
 {
@@ -233,11 +233,11 @@ void ADAPTER::StructureTimInt::PrepareTimeStep()
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
 
-  // predict 
+  // predict
   structure_->Predict();
 
   // initialise incremental displacements
-  if (disinc_ != Teuchos::null) 
+  if (disinc_ != Teuchos::null)
     disinc_->PutScalar(0.0);
 
 }
@@ -343,11 +343,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
 /* extract interface displacements D_{n} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 {
-#ifdef PRESTRESS
+#ifdef INVERSEDESIGNCREATE
   dserror("Check this");
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
 #else
-  Teuchos::RCP<Epetra_Vector> idis 
+  Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractCondVector(structure_->Dis());
   return idis;
 #endif
@@ -357,11 +357,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 /* extract interface displacements D_{n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 {
-#ifdef PRESTRESS
+#ifdef INVERSEDESIGNCREATE
   dserror("Check this");
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
 #else
-  Teuchos::RCP<Epetra_Vector> idis 
+  Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractCondVector(structure_->DisNew());
   return idis;
 #endif
@@ -371,7 +371,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 /* extract external forces at interface F_{ext,n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceForces()
 {
-  Teuchos::RCP<Epetra_Vector> iforce 
+  Teuchos::RCP<Epetra_Vector> iforce
     = interface_.ExtractCondVector(structure_->FextNew());
   return iforce;
 }
@@ -404,7 +404,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
     double dt = sdynparams_->get<double>("TIMESTEP");
 
     idis = interface_.ExtractCondVector(structure_->Dis());
-    Teuchos::RCP<Epetra_Vector> ivel 
+    Teuchos::RCP<Epetra_Vector> ivel
       = interface_.ExtractCondVector(structure_->Vel());
 
     idis->Update(dt,* ivel, 1.0);
