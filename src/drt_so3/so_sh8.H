@@ -204,6 +204,9 @@ private:
   // don't want = operator
   So_sh8& operator = (const So_sh8& old);
 
+  static const int num_sp = 8;              // number of ANS sampling points, here 8
+  static const int num_ans = 3;             // number of modified ANS strains (E_rt,E_st,E_tt), here 3
+
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
 
@@ -218,44 +221,35 @@ private:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
-      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
-      Epetra_SerialDenseVector* force,          ///< element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      ///< element stresses
-      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool      cauchy=false);            ///< stress output option
 
-  //! Evaluate Hex8 Shapefcts to keep them static
-  const vector<Epetra_SerialDenseVector> sosh8_shapefcts();
-  //! Evaluate Hex8 Derivs to keep them static
-  const vector<Epetra_SerialDenseMatrix> sosh8_derivs();
-  //! Evaluate Hex8 Weights to keep them static
-  const vector<double> sosh8_weights();
-
   //! Evaluate all ANS related data at the ANS sampling points
-  void sosh8_anssetup(const int numsp,              // number of sampling points
-          const int numans,             // number of ans strains
-          const Epetra_SerialDenseMatrix& xrefe, // material element coords
-          const Epetra_SerialDenseMatrix& xcurr, // current element coords
-          Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
-          Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
-          Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
-          Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
+  void sosh8_anssetup(
+            const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe, ///< material element coords
+            const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr, ///< current element coords
+            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
+            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
+            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
+            LINALG::FixedSizeSerialDenseMatrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc); ///< modified B
 
   //! Evaluate transformation matrix T (parameter->material) at gp
-  void sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,  // actual jacobian
-                       Epetra_SerialDenseMatrix& TinvT);    // T^{-T}
+  void sosh8_evaluateT(const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,///< actual jacobian
+                       LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8>& TinvT);///< T^{-T}
 
   //! Return true Cauchy-stress at gausspoint
-  void sosh8_Cauchy(
-       Epetra_SerialDenseMatrix* elestress,
-       const int gp,
-       const Epetra_SerialDenseMatrix& deriv,
-       const Epetra_SerialDenseMatrix& xrefe,
-       const Epetra_SerialDenseMatrix& xcurr,
-       const Epetra_SerialDenseVector& glstrain,
-       const Epetra_SerialDenseVector& stress);
+  void sosh8_Cauchy(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
+                    const int gp,
+                    const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8>& deriv,
+                    const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
+                    const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+                    const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1>& glstrain,
+                    const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1>& stress);
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
