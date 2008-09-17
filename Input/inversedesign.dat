@@ -73,7 +73,7 @@ ADAPTCONV_BETTER 0.1
 MAXITER      150
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO    newtonlinuzawa
+UZAWAALGO    iterative
 ------------------------------------------------STRUCTURAL CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 ---------------------------------------FLUID DYNAMIC/STABILIZATION

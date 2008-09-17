@@ -321,7 +321,7 @@ TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLRES                          1e-08
-UZAWAALGO                       newtonlinuzawa
+UZAWAALGO                       iterative
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY

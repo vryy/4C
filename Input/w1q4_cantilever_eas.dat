@@ -86,7 +86,7 @@ TOLCONSTR       1.0E-06
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO   newtonlinuzawa
+UZAWAALGO   iterative
 -----------------------------------------------------FLUID DYNAMIC
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL

@@ -63,7 +63,7 @@ MAXITER      25
 UZAWAPARAM   2.0
 UZAWAMAXITER 15
 TOLCONSTR    1.0e-10
-UZAWAALGO    newtonlinuzawa
+UZAWAALGO    iterative
 NLNSOL       newtonlinuzawa
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------FLUID DYNAMIC/STABILIZATION

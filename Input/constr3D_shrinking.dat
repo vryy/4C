@@ -82,7 +82,7 @@ MAXITER      			20
 UZAWAPARAM   			0.5
 UZAWAMAXITER 			15
 TOLCONSTR      			1.0e-06
-UZAWAALGO    			newtonlinuzawa
+UZAWAALGO    			direct
 NLNSOL                          newtonlinuzawa
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG       ImrLike

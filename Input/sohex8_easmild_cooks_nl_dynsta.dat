@@ -97,7 +97,7 @@ TIMESTEP                        1.0  // effectively: load step
 TOLCONSTR                       1e-08
 TOLDISP                         1.0e-7
 TOLRES                          1.0e-6
-UZAWAALGO                       newtonlinuzawa
+UZAWAALGO                       iterative
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY

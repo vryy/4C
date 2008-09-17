@@ -74,7 +74,7 @@ ADAPTCONV_BETTER 0.1
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO    newtonlinuzawa
+UZAWAALGO    direct
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              frictional
 BASISTRAFO           No
