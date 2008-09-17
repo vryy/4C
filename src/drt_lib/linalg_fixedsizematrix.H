@@ -41,7 +41,7 @@ namespace LINALG
 
       This is the (general) definition that is used for expr==true. It
       defines all known errors als empty static inline functions, so
-      that the compiler can optimize them out.
+      that the compiler can optimize them away.
      */
     template <bool expr>
     struct Checker
@@ -91,17 +91,11 @@ namespace LINALG
      *
      */
 
-    /// Multiplication: \e out = \e left[^T]*\e right[^T]
+    /// Multiplication: \e out = \e left*\e right
     /*!
       Multiply \e left and \e right and store the result in \e out. This
-      function takes up to five template parameters: unsigned ints \c i, \c j
-      and \c k and optionally two chars \e trans1 and \e trans2. \c i, \c j and \c k
-      denote the sizes of the matrices, \e trans1 and \e trans2 say whether
-      \e left and \e right should be transposed. 'T' means the respective matrix
-      is to be used transposed, 'N' means it is not (the default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      function takes three template parameters \c i, \c j and \c k denoting
+      the sizes of the matrices.
 
       \param out
         pointer to the memory the result should be stored in, size (\c i)x(\c k)
@@ -110,53 +104,176 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(double* out, const double* left, const double* right);
-
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(double* out, const double* left, const double* right);
 
-    /// Multiplication: \e out = \e infac * \e left[^T]*\e right[^T]
+    /// Multiplication: \e out = \e left*\e right
+    /*!
+      Multiply \e left and \e right and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c k denoting
+      the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(double* out, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e left*\e right^T
+    /*!
+      Multiply \e left and \e right^T and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c k denoting
+      the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(double* out, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e left^T*\e right
+    /*!
+      Multiply \e left^T and \e right and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c k denoting
+      the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(double* out, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e left^T*\e right^T
+    /*!
+      Multiply \e left^T and \e right^T and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c k denoting
+      the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(double* out, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
       Multiply \e left and \e right, scale the result by \e infac and store
-      it in \e out. This function takes up to five template parameters:
-      unsigned ints \c i, \c j and \c k and optionally two chars \e trans1 and
-      \e trans2. \c i, \c j and \c k denote the sizes of the matrices, \e trans1 and
-      \e trans2 say whether \e left and \e right should be transposed. 'T'
-      means the respective matrix is to be used transposed, 'N' means
-      it is not (the default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      it in \e out. This function takes three template parameters \c
+      i, \c j and \c k denoting the sizes of the matrices.
 
       \param out
         pointer to the memory the result should be stored in, size (\c i)x(\c k)
       \param infac
         scalar to muliply with \e left*right
-
       \param left
         pointer to the first factor, size (\c i)x(\c j)
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(double* out, const double infac, const double* left, const double* right);
-
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(double* out, const double infac, const double* left, const double* right);
 
+    /// Multiplication: \e out = \e infac * \e left*\e right
+    /*!
+      Multiply \e left and \e right, scale the result by \e infac and store
+      it in \e out. This function takes three template parameters \c
+      i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e infac * \e left*\e right^T
+    /*!
+      Multiply \e left and \e right^T, scale the result by \e infac and store
+      it in \e out. This function takes three template parameters \c
+      i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right^T
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e infac * \e left^T*\e right
+    /*!
+      Multiply \e left^T and \e right, scale the result by \e infac and store
+      it in \e out. This function takes three template parameters \c
+      i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left^T*right
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e infac * \e left^T*\e right^T
+    /*!
+      Multiply \e left^T and \e right^T, scale the result by \e infac and store
+      it in \e out. This function takes three template parameters \c
+      i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left^T*right^T
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(double* out, const double infac, const double* left, const double* right);
+
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
-      Scale \e out by \e outfac and add \e left*\e right scaled by \e infac. This
-      function takes up to five template parameters: unsigned ints \c i, \c j
-      and \c k and optionally two chars \e trans1 and \e trans2. \c i, \c j and \c k
-      denote the sizes of the matrices, \e trans1 and \e trans2 say whether
-      \e left and \e right should be transposed. 'T' means the respective
-      matrix is to be used transposed, 'N' means it is not (the
-      default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      Scale \e out by \e outfac and add \e left*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
 
       \param outfac
         scalar to multiply with \e out
@@ -169,11 +286,92 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(const double outfac, double* out, const double infac, const double* left, const double* right);
-
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(const double outfac, double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
+    /*!
+      Scale \e out by \e outfac and add \e left*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const double outfac, double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
+    /*!
+      Scale \e out by \e outfac and add \e left*\e right^T scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right^T
+      \param left
+        pointer to the first factor, size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const double outfac, double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
+    /*!
+      Scale \e out by \e outfac and add \e left^T*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left^T*right
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const double outfac, double* out, const double infac, const double* left, const double* right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
+    /*!
+      Scale \e out by \e outfac and add \e left^T*\e right^T scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        pointer to the memory the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left^T*right^T
+      \param left
+        pointer to the first factor, size (\c j)x(\c i) so that \e
+        left^T has size (\c i)x(\c j)
+      \param right
+        pointer to the second factor, size (\c k)x(\c j) so that \e
+        right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const double outfac, double* out, const double infac, const double* left, const double* right);
 
     /// Invert matrix: \e out = inv(\e in)
     /*!
@@ -638,17 +836,11 @@ namespace LINALG
      */
 
 
-    /// Multiplication: \e out = \e left[^T]*\e right[^T]
+    /// Multiplication: \e out = \e left*\e right
     /*!
       Multiply \e left and \e right and store the result in \e out. This
-      function takes up to five template parameters: unsigned ints \c i, \c j
-      and \c k and optionally two chars \e trans1 and \e trans2. \c i, \c j and \c k
-      denote the sizes of the matrices, \e trans1 and \e trans2 say whether
-      \e left and \e right should be transposed. 'T' means the respective matrix
-      is to be used transposed, 'N' means it is not (the default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      function takes three template parameters \c i, \c j and \c
+      k denoting the sizes of the matrices.
 
       \param out
         matrix the result should be stored in, size (\c i)x(\c k)
@@ -657,24 +849,82 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
-
     template<unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
-    /// Multiplication: \e out = \e infac * \e left[^T]*\e right[^T]
+    /// Multiplication: \e out = \e left*\e right
+    /*!
+      Multiply \e left and \e right and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c
+      k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e left*\e right^T
+    /*!
+      Multiply \e left and \e right^T and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c
+      k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size(\c
+        j)x(\e k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e left^T*\e right
+    /*!
+      Multiply \e left^T and \e right and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c
+      k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size(\c
+        i)x(\e j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e left^T*\e right^T
+    /*!
+      Multiply \e left^T and \e right^T and store the result in \e out. This
+      function takes three template parameters \c i, \c j and \c
+      k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size(\c
+        i)x(\e j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size(\c
+        j)x(\e k)
+     */
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
       Multiply \e left and \e right, scale the result by \e infac and store
-      it in \e out. This function takes up to five template parameters:
-      unsigned ints \c i, \c j and \c k and optionally two chars \e trans1 and
-      \e trans2. \c i, \c j and \c k denote the sizes of the matrices, \e trans1 and
-      \e trans2 say whether \e left and \e right should be transposed. 'T'
-      means the respective matrix is to be used transposed, 'N' means
-      it is not (the default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      it in \e out. This function takes three template
+      parameters \c i, \c j and \c k denoting the sizes of the matrices.
 
       \param out
         matrix the result should be stored in, size (\c i)x(\c k)
@@ -685,26 +935,93 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
-                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
-
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
+    /// Multiplication: \e out = \e infac * \e left*\e right
+    /*!
+      Multiply \e left and \e right, scale the result by \e infac and store
+      it in \e out. This function takes three template
+      parameters \c i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e infac * \e left*\e right^T
+    /*!
+      Multiply \e left and \e right^T, scale the result by \e infac and store
+      it in \e out. This function takes three template
+      parameters \c i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e infac * \e left^T*\e right
+    /*!
+      Multiply \e left^T and \e right, scale the result by \e infac and store
+      it in \e out. This function takes three template
+      parameters \c i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size(\c
+        i)x(\e j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e infac * \e left^T*\e right^T
+    /*!
+      Multiply \e left^T and \e right^T, scale the result by \e infac and store
+      it in \e out. This function takes three template
+      parameters \c i, \c j and \c k denoting the sizes of the matrices.
+
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size(\c
+        i)x(\e j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
-      Scale \e out by \e outfac and add \e left*\e right scaled by \e infac. This
-      function takes up to five template parameters: unsigned ints \c i, \c j
-      and \c k and optionally two chars \e trans1 and \e trans2. \c i, \c j and \c k
-      denote the sizes of the matrices, \e trans1 and \e trans2 say whether
-      \e left and \e right should be transposed. 'T' means the respective
-      matrix is to be used transposed, 'N' means it is not (the
-      default).
-
-      \note You must specify either none or both of the char template
-      arguments.
+      Scale \e out by \e outfac and add \e left*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
 
       \param outfac
         scalar to multiply with \e out
@@ -717,12 +1034,96 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
+    template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
+    /*!
+      Scale \e out by \e outfac and add \e left*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
     template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    inline void multiplyNN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
+    /*!
+      Scale \e out by \e outfac and add \e left*\e right^T scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c i)x(\c j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size
+        (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
+    /*!
+      Scale \e out by \e outfac and add \e left^T*\e right scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size
+        (\c i)x(\c j)
+      \param right
+        second factor, size (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+
+    /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
+    /*!
+      Scale \e out by \e outfac and add \e left^T*\e right^T scaled by \e
+      infac. This function takes three template parameters \c i, \c j
+      and \c k denoting the sizes of the matrices.
+
+      \param outfac
+        scalar to multiply with \e out
+      \param out
+        matrix the result should be stored in, size (\c i)x(\c k)
+      \param infac
+        scalar to muliply with \e left*right
+      \param left
+        first factor, size (\c j)x(\c i) so that \e left^T has size
+        (\c i)x(\c j)
+      \param right
+        second factor, size (\c k)x(\c j) so that \e right^T has size
+        (\c j)x(\c k)
+     */
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Invert matrix: \e out = inv(\e in)
@@ -1208,197 +1609,236 @@ namespace LINALG
      */
 
     template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, const double* left, const double* right)
+    inline void multiply(double* out, const double* const left, const double* const right)
     {
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          *out = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            left += i;
-            ++right;
-            *out += (*left)*(*right);
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
           }
+          *out = tmp;
           ++out;
-          left -= i*(j-1) - 1;
-          right -= j-1;
-        }
-        left -= i;
-        right += j;
-      }
-    }
-
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline
-    void multiply(double* out, const double* left, const double* right)
-    {
-      DENSEERROR::Checker<(trans1 == 'N' or trans1 == 'T') and (trans2 == 'N' or trans2 == 'T')>::Transpose_argument_must_be_N_or_T();
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          *out = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            switch(trans1) {
-            case 'N': left += i; break;
-            case 'T':    ++left; break;
-            }
-            switch(trans2) {
-            case 'N':    ++right; break;
-            case 'T': right += k; break;
-            }
-            *out += (*left)*(*right);
-          }
-          ++out;
-          switch(trans1) {
-          case 'N': left -= i*(j-1) - 1; break;
-          case 'T':              ++left; break;
-          }
-          switch(trans2) {
-          case 'N':     right -= j-1; break;
-          case 'T': right -= (j-1)*k; break;
-          }
-        }
-        switch(trans1) {
-        case 'N':   left -= i; break;
-        case 'T': left -= i*j; break;
-        }
-        switch(trans2) {
-        case 'N': right += j; break;
-        case 'T':    ++right; break;
         }
       }
     }
 
     template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, double infac, const double* left, const double* right)
+    inline void multiplyNN(double* out, const double* const left, const double* const right)
     {
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          *out = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            left += i;
-            ++right;
-            *out += (*left)*(*right);
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
           }
-          *out *= infac;
+          *out = tmp;
           ++out;
-          left -= i*(j-1) - 1;
-          right -= j-1;
-        }
-        left -= i;
-        right += j;
-      }
-    }
-
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline
-    void multiply(double* out, const double infac, const double* left, const double* right)
-    {
-      DENSEERROR::Checker<(trans1 == 'N' or trans1 == 'T') and (trans2 == 'N' or trans2 == 'T')>::Transpose_argument_must_be_N_or_T();
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          *out = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            switch(trans1) {
-            case 'N': left += i; break;
-            case 'T':    ++left; break;
-            }
-            switch(trans2) {
-            case 'N':    ++right; break;
-            case 'T': right += k; break;
-            }
-            *out += (*left)*(*right);
-          }
-          *out *= infac;
-          ++out;
-          switch(trans1) {
-          case 'N': left -= i*(j-1) - 1; break;
-          case 'T':              ++left; break;
-          }
-          switch(trans2) {
-          case 'N':     right -= j-1; break;
-          case 'T': right -= (j-1)*k; break;
-          }
-        }
-        switch(trans1) {
-        case 'N':   left -= i; break;
-        case 'T': left -= i*j; break;
-        }
-        switch(trans2) {
-        case 'N': right += j; break;
-        case 'T':    ++right; break;
         }
       }
     }
 
     template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, double* out, double infac, const double* left, const double* right)
+    inline void multiplyNT(double* out, const double* const left, const double* const right)
     {
-      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
-        multiply<i,j,k>(out,infac,left,right);
-        return;
-      }
-      double tmp;
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          tmp = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            left += i;
-            ++right;
-            tmp += (*left)*(*right);
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3*k];
           }
-          *out *= outfac;
-          *out += tmp * infac;
+          *out = tmp;
           ++out;
-          left -= i*(j-1) - 1;
-          right -= j-1;
         }
-        left -= i;
-        right += j;
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline
-    void multiply(const double outfac, double* out, const double infac, const double* left, const double* right)
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(double* out, const double* const left, const double* const right)
     {
-      DENSEERROR::Checker<(trans1 == 'N' or trans1 == 'T') and (trans2 == 'N' or trans2 == 'T')>::Transpose_argument_must_be_N_or_T();
-      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
-        multiply<i,j,k,trans1,trans2>(out,infac,left,right);
-        return;
-      }
-      double tmp;
-      for (unsigned int d1 = 0; d1 < k; ++d1) {
-        for (unsigned int d2 = 0; d2 < i; ++d2 ) {
-          tmp = (*left)*(*right);
-          for (unsigned int d3 = 1; d3 < j; ++d3 ) {
-            switch(trans1) {
-            case 'N': left += i; break;
-            case 'T':    ++left; break;
-            }
-            switch(trans2) {
-            case 'N':    ++right; break;
-            case 'T': right += k; break;
-            }
-            tmp += (*left)*(*right);
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3];
           }
-          *out *= outfac;
-          *out += tmp * infac;
+          *out = tmp;
           ++out;
-          switch(trans1) {
-          case 'N': left -= i*(j-1) - 1; break;
-          case 'T':              ++left; break;
-          }
-          switch(trans2) {
-          case 'N':     right -= j-1; break;
-          case 'T': right -= (j-1)*k; break;
-          }
         }
-        switch(trans1) {
-        case 'N':   left -= i; break;
-        case 'T': left -= i*j; break;
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(double* out, const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3*k];
+          }
+          *out = tmp;
+          ++out;
         }
-        switch(trans2) {
-        case 'N': right += j; break;
-        case 'T':    ++right; break;
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(double* out, const double infac,
+                         const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
+          }
+          *out = infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
+          }
+          *out = infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3*k];
+          }
+          *out = infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3];
+          }
+          *out = infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3*k];
+          }
+          *out = infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(const double outfac, double* out, const double infac,
+                         const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
+          }
+          *out = (*out)*outfac + infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const double outfac, double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3];
+          }
+          *out = (*out)*outfac + infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const double outfac, double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i; ++c2) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3*i]*right[c1+c3*k];
+          }
+          *out = (*out)*outfac + infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const double outfac, double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < j*k; c1 += j) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3];
+          }
+          *out = (*out)*outfac + infac*tmp;
+          ++out;
+        }
+      }
+    }
+
+    template <unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const double outfac, double* out, const double infac,
+                           const double* const left, const double* const right)
+    {
+      for (unsigned int c1=0; c1 < k; ++c1) {
+        for (unsigned int c2=0; c2 < i*j; c2 += j) {
+          double tmp = left[c2]*right[c1];
+          for (unsigned int c3=1; c3 < j; ++c3) {
+            tmp += left[c2+c3]*right[c1+c3*k];
+          }
+          *out = (*out)*outfac + infac*tmp;
+          ++out;
         }
       }
     }
@@ -1885,7 +2325,8 @@ namespace LINALG
      */
 
     template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
+                         const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -1895,44 +2336,55 @@ namespace LINALG
       multiply<i,j,k>(out.A(), left.A(), right.A());
     }
 
-
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
+                           const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
-      switch (trans1) {
-      case 'N':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      case 'T':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      }
+      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k,trans1,trans2>(out.A(), left.A(), right.A());
+      multiplyNN<i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
+                           const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyNT<i,j,k>(out.A(), left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
+                           const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTN<i,j,k>(out.A(), left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
+                           const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTT<i,j,k>(out.A(), left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
@@ -1944,45 +2396,56 @@ namespace LINALG
       multiply<i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
-                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
-      switch (trans1) {
-      case 'N':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      case 'T':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      }
+      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k,trans1,trans2>(out.A(), infac, left.A(), right.A());
+      multiplyNN<i,j,k>(out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyNT<i,j,k>(out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTN<i,j,k>(out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTT<i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
 
-    template <unsigned int i, unsigned int j, unsigned int k>
+    template<unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
@@ -1994,41 +2457,52 @@ namespace LINALG
       multiply<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k, char trans1, char trans2>
-    inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
-                         const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
-      switch (trans1) {
-      case 'N':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      case 'T':
-        switch (trans2) {
-        case 'N':
-          if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        case 'T':
-          if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-            dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
-                    out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
-          break;
-        } break;
-      }
+      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k,trans1,trans2>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyNN<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyNT<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTN<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+    }
+
+    template<unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+                           const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    {
+#ifdef DEBUG
+      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+                out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
+#endif
+      multiplyTT<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
     template <unsigned int i, unsigned int j>
@@ -2299,7 +2773,7 @@ namespace LINALG
   }
 
 
-/// Serial dense matrix with templated dimensions for maximum speed
+/// Serial dense matrix with templated dimensions
 /*!
   A serial dense matrix with templated dimensions that is supposed to
   be fast and lightweight.
@@ -2373,7 +2847,7 @@ public:
   /*!
     Constructs a new FixedSizeSerialDenseMatrix from source. Unlike
     the Epetra_SerialDenseMatrix copy constructor this one *always*
-    copies the data, even when source is a view.
+    copies the data, even when \e source is a view.
 
     \param source
       matrix to copy
@@ -2815,7 +3289,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -2827,7 +3301,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right^T
   /*!
@@ -2839,7 +3313,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right
   /*!
@@ -2851,7 +3325,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right^T
   /*!
@@ -2863,7 +3337,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,left.A(),right.A()); }
 
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -2878,7 +3352,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
   /*!
@@ -2894,7 +3368,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right^T
   /*!
@@ -2908,7 +3382,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right
   /*!
@@ -2922,7 +3396,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
   /*!
@@ -2936,7 +3410,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -2954,7 +3428,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -2970,7 +3444,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
   /*!
@@ -2986,7 +3460,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'N','T'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
   /*!
@@ -3002,7 +3476,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','N'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
   /*!
@@ -3018,7 +3492,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
                        const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols,'T','T'>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Write \e this to \e out
   /*!
