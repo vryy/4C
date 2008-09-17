@@ -54,36 +54,24 @@ namespace TIMEINT_THETA_BDF2
   \brief Set the part of the righthandside belonging to the last
          timestep for incompressible or low-Mach-number flow
 
-  Stationary:
+     for low-Mach-number flow: distinguish momentum and continuity part
+     (continuity part only meaningful for low-Mach-number flow)
 
-                 hist_ = 0.0
+     Stationary:
 
-  One-step-Theta:
+                   mom: hist_ = 0.0
+                  (con: hist_ = 0.0)
 
-                 hist_ = veln_ + dt*(1-Theta)*accn_
+     One-step-Theta:
 
+                   mom: hist_ = veln_  + dt*(1-Theta)*accn_
+                  (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
 
-  BDF2: for constant time step:
+     BDF2: for constant time step:
 
-                 hist_ = 4/3 veln_ - 1/3 velnm_
+                   mom: hist_ = 4/3 veln_  - 1/3 velnm_
+                  (con: hist_ = 4/3 densn_ - 1/3 densnm_)
 
-  for low-Mach-number flow: distinguish momentum and continuity part
-
-  Stationary:
-
-                 mom: hist_ = 0.0
-                 con: hist_ = 0.0
-
-  One-step-Theta:
-
-                 mom: hist_ = densn_*veln_ + dt*(1-Theta)*modedtn_
-                 con: hist_ = densn_       + dt*(1-Theta)*densdtn_
-
-
-  BDF2: for constant time step:
-
-                 mom: hist_ = 4/3 densn_*veln_ - 1/3 densnm_*velnm_
-                 con: hist_ = 4/3 densn_       - 1/3 densnm_
 
   */
   void SetOldPartOfRighthandside(

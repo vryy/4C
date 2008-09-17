@@ -524,7 +524,7 @@ void DRT::ELEMENTS::Fluid2Impl::Sysmat(
     velint_ = blitz::sum(densfunct_(j)*evelnp(i,j),j);
 
     // get history data (n,i) at integration point
-    histmom_ = blitz::sum(funct_(j)*emhist(i,j),j);
+    histmom_ = blitz::sum(densfunct_(j)*emhist(i,j),j);
     histcon_ = blitz::sum(funct_*echist);
 
     // get velocity (np,i) derivatives at integration point
@@ -891,7 +891,7 @@ void DRT::ELEMENTS::Fluid2Impl::Sysmat(
       {
         for (int ui=0; ui<numnode; ++ui)
         {
-          double v = timetauMp*funct_(ui)
+          double v = timetauMp*densfunct_(ui)
 #if 1
                      + ttimetauMp*conv_c_(ui)
 #endif

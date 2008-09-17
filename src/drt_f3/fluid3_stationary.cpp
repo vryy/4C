@@ -189,17 +189,17 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   //LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra.A(),true);
   LINALG::FixedSizeSerialDenseMatrix<4*iel,     1> elevec1(elevec1_epetra.A(),true);
 
-  // need current velocity/pressure and momentum/density vector
+  // need current velocity/pressure and velocity/density vector
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RefCountPtr<const Epetra_Vector> modenp = discretization.GetState("modenp");
-  if (velnp==null || modenp==null)
-    dserror("Cannot get state vectors 'velnp' and/or 'modenp'");
+  RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+  if (velnp==null || vedenp==null)
+    dserror("Cannot get state vectors 'velnp' and/or 'vedenp'");
 
   // extract local values from the global vector
   vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  vector<double> mymodenp(lm.size());
-  DRT::UTILS::ExtractMyValues(*modenp,mymodenp,lm);
+  vector<double> myvedenp(lm.size());
+  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
   if (ele->is_ale_) dserror("No ALE support within stationary fluid solver.");
 
@@ -218,7 +218,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
     eprenp(i) = myvelnp[3+(i*4)];
 
     // insert density vector into element array
-    edensnp(i) = mymodenp[3+(i*4)];
+    edensnp(i) = myvedenp[3+(i*4)];
   }
 
   // get control parameter

@@ -63,9 +63,6 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   BDF2: for constant time step:
 
                  hist_ = 4/3 phin_ - 1/3 phinm_
-
-  For a temperature equation, rhon_*phin_ and rhonm_*phinm_ are
-  used instead of phin_ and phinm_, respectively.
   */
   if (step_>1)
   {
@@ -73,33 +70,14 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
     double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
     double fact2 = -(omega*omega)/(1+ (2.0*omega));
 
-    if (scaltype_ == "Temperature")
-    {
-      // Temperature equation:
-      hist_->Multiply(fact1, *phin_, *densn_, 0.0);
-      hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
-    }
-    else
-    {
-      // Non-temperature equation: 
-      hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
-    }
+    hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
 
     // for BDF2 theta is set by the timestepsizes, 2/3 for const. dt
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
   else   // for start-up of BDF2 we do one step with backward Euler
   {
-    if (scaltype_ == "Temperature")
-    {
-      // Temperature equation:
-      hist_->Multiply(1.0, *phin_, *densn_, 0.0);
-    }
-    else
-    {
-      // Non-temperature equation: 
-      hist_->Update(1.0, *phin_, 0.0);
-    }
+    hist_->Update(1.0, *phin_, 0.0);
 
     // backward Euler => use theta=1.0
     theta_=1.0;

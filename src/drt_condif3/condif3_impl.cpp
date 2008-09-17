@@ -247,11 +247,11 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     /*------------ get values of variables at integration point */
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      // get history data at integration point
+      // get history data at integration point (weighted by density)
       hist_[k] = 0;
       for (int j=0;j<iel_;j++)
       {
-        hist_[k] += funct_[j]*ehist[j*numdofpernode_+k];
+        hist_[k] += densfunct_[j]*ehist[j*numdofpernode_+k];
       }
 
       // get bodyforce in gausspoint (divided by shcacp for temperature eq.)

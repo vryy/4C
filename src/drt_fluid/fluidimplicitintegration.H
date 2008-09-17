@@ -391,10 +391,10 @@ protected:
   RCP<Epetra_Vector>    velnm_;
   //@}
 
-  //! @name momentum/density at time n+1, n and n-1
-  RCP<Epetra_Vector>    modenp_;
-  RCP<Epetra_Vector>    moden_;
-  RCP<Epetra_Vector>    modenm_;
+  //! @name velocities and densities at time n+1, n and n-1
+  RCP<Epetra_Vector>    vedenp_;
+  RCP<Epetra_Vector>    veden_;
+  RCP<Epetra_Vector>    vedenm_;
   //@}
 
   //! @name displacemets at time n+1, n and n-1

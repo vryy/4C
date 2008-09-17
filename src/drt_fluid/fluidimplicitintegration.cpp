@@ -170,18 +170,14 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   accn_         = LINALG::CreateVector(*dofrowmap,true);
   accnm_        = LINALG::CreateVector(*dofrowmap,true);
 
-  // momentum/density at time n+1
-  modenp_       = LINALG::CreateVector(*dofrowmap,true);
+  // velocity/density at time n+1
+  vedenp_       = LINALG::CreateVector(*dofrowmap,true);
 
   if (loma_ != "No")
   {
-    // momentum/density at time n and n-1
-    moden_        = LINALG::CreateVector(*dofrowmap,true);
-    modenm_       = LINALG::CreateVector(*dofrowmap,true);
-
-    // momentum/density time derivatives at time n and n-1
-    modedtn_      = LINALG::CreateVector(*dofrowmap,true);
-    modedtnm_     = LINALG::CreateVector(*dofrowmap,true);
+    // velocity/density at time n and n-1
+    veden_        = LINALG::CreateVector(*dofrowmap,true);
+    vedenm_       = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // history vector
@@ -409,7 +405,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 1.0);
     if (density_ <= 0.0) dserror("received illegal density value");
-    modenp_->PutScalar(density_);
+    vedenp_->PutScalar(density_);
   }
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
@@ -563,20 +559,20 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     //
     // One-step-Theta: (step>1)
     //
-    // One-step-Theta:
+    //  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_
+    //  "(n+1)"
     //
-    // acc(n+1) = (dens(n+1)*vel(n+1)-dens(n)*vel(n)) / (Theta * dt(n))
-    //          - (1/Theta -1) * acc(n)
+    //  velnm_ =veln_
+    //  veln_  =velnp_
     //
+    // BDF2:           (step>1)
     //
-    // BDF2:
-    //
-    //               2*dt(n)+dt(n-1)                          dt(n)+dt(n-1)
-    //  acc(n+1) = --------------------- dens(n+1)*vel(n+1) - --------------- dens(n)*vel(n)
-    //             dt(n)*[dt(n)+dt(n-1)]                      dt(n)*dt(n-1)
+    //               2*dt(n)+dt(n-1)		  dt(n)+dt(n-1)
+    //  accn_   = --------------------- velnp_ - --------------- veln_
+    //             dt(n)*[dt(n)+dt(n-1)]	  dt(n)*dt(n-1)
     //
     //                     dt(n)
-    //           + ----------------------- dens(n-1)*vel(n-1)
+    //           + ----------------------- velnm_
     //             dt(n-1)*[dt(n)+dt(n-1)]
     //
     //
@@ -588,8 +584,10 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     // The given formulas are only valid from the second timestep. In the
     // first step, the acceleration is calculated simply by
     //
-    //  accn_  = (densnp_*velnp_-densn_*veln_) / (dt)
+    //  accn_  = (velnp_-veln_) / (dt)
     //
+    // For low-Mach-number flow, the same is done for density values,
+    // which are located at the "pressure dofs" of "vede"-vectors.
     // -------------------------------------------------------------------
 
     TimeUpdate();
@@ -669,44 +667,30 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
-  //
-  //
-  // Stationary:
-  //
-  //               hist_ = 0.0
-  //
-  // One-step-Theta:
-  //
-  //               hist_ = veln_ + dt*(1-Theta)*accn_
-  //
-  //
-  // BDF2: for constant time step:
-  //
-  //               hist_ = 4/3 veln_ - 1/3 velnm_
-  //
   // for low-Mach-number flow: distinguish momentum and continuity part
+  // (continuity part only meaningful for low-Mach-number flow)
   //
   // Stationary:
   //
   //               mom: hist_ = 0.0
-  //               con: hist_ = 0.0
+  //              (con: hist_ = 0.0)
   //
   // One-step-Theta:
   //
-  //               mom: hist_ = densn_*veln_ + dt*(1-Theta)*modedtn_
-  //               con: hist_ = densn_       + dt*(1-Theta)*densdtn_
+  //               mom: hist_ = veln_  + dt*(1-Theta)*accn_
+  //              (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
   //
   //
   // BDF2: for constant time step:
   //
-  //               mom: hist_ = 4/3 densn_*veln_ - 1/3 densnm_*velnm_
-  //               con: hist_ = 4/3 densn_       - 1/3 densnm_
+  //               mom: hist_ = 4/3 veln_  - 1/3 velnm_
+  //              (con: hist_ = 4/3 densn_ - 1/3 densnm_)
   //
   // -------------------------------------------------------------------
   if (loma_ != "No")
   {
     TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-      moden_, modenm_, modedtn_,
+      veden_, vedenm_, accn_,
       timealgo_, dta_, theta_,
       hist_);
   }
@@ -899,7 +883,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         // set vector values needed by elements
         discret_->ClearState();
         discret_->SetState("velnp",velnp_);
-        discret_->SetState("modenp",modenp_);
+        discret_->SetState("vedenp",vedenp_);
 
         // element evaluation for getting convective stresses at nodes
         discret_->Evaluate(eleparams,null,convnp_);
@@ -929,7 +913,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
-      discret_->SetState("modenp",modenp_);
+      discret_->SetState("vedenp",vedenp_);
 
       discret_->SetState("hist"  ,hist_ );
       if (alefluid_)
@@ -1566,7 +1550,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
-  discret_->SetState("modenp",modenp_);
+  discret_->SetState("vedenp",vedenp_);
 
   discret_->SetState("hist",hist_ );
   if (alefluid_)
@@ -1617,14 +1601,11 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   if (loma_ != "No")
   {
-    // prev. mom./dens. time der. becomes (n-1)-value of next time step
-    modedtnm_->Update(1.0,*modedtn_,0.0);
-
     // compute momentum/density time derivative
     TIMEINT_THETA_BDF2::CalculateAcceleration(
-        modenp_, moden_, modenm_, modedtnm_,
+        vedenp_, veden_, vedenm_, accnm_,
         timealgo_, step_, theta_, dta_, dtp_,
-        modedtn_);
+        accn_);
   }
   else
   {
@@ -2082,34 +2063,27 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   else
     dserror("velocity/pressure and density vectors do not match in size");
 
+  // get velocity dofs for vede-vectors as copies from vel-vectors
+  veden_->Update(1.0,*veln_,0.0);
+  vedenm_->Update(1.0,*velnm_,0.0);
+
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
-  // set node-based convective velocity vector weighted by density*shc
-  if ((numdim == 2) or (numdim == 3))
+
+  // insert density values in vede-vectors
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      double densn   = (*noddensn)[lnodeid];
-      double densnm  = (*noddensnm)[lnodeid];
-      for(int index=0;index<numdim;++index)
-      {
-        Indices[index] = lnodeid*numdof + index;
+    double densn   = (*noddensn)[lnodeid];
+    double densnm  = (*noddensnm)[lnodeid];
 
-        Values[index] = densn* (*veln_)[Indices[index]];
-        moden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+    Indices[numdim] = lnodeid*numdof + numdim;
 
-        Values[index] = densnm* (*velnm_)[Indices[index]];
-        modenm_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-      Indices[numdim] = lnodeid*numdof + numdim;
+    Values[numdim] = densn;
+    veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
 
-      Values[numdim] = densn;
-      moden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-
-      Values[numdim] = densnm;
-      modenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-    }
+    Values[numdim] = densnm;
+    vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
   }
 
   return;
@@ -2138,25 +2112,22 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(RCP<const Epetra_Vector> nodde
   else
     dserror("velocity/pressure and density vectors do not match in size");
 
+  // get velocity dofs for vedenp-vector as copies from velnp-vector
+  vedenp_->Update(1.0,*velnp_,0.0);
+
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
-  // set node-based convective velocity vector weighted by density*shc
-  if ((numdim == 2) or (numdim == 3))
+
+  // insert density values in vedenp-vector
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      double densnp  = (*noddensnp)[lnodeid];
-      for(int index=0;index<numdim;++index)
-      {
-        Indices[index] = lnodeid*numdof + index;
-        Values[index] = densnp* (*velnp_)[Indices[index]];
-        modenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
-      }
-      Indices[numdim] = lnodeid*numdof + numdim;
-      Values[numdim] = densnp;
-      modenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-    }
+    double densnp  = (*noddensnp)[lnodeid];
+
+    Indices[numdim] = lnodeid*numdof + numdim;
+
+    Values[numdim] = densnp;
+    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
   }
 
   return;
@@ -3126,7 +3097,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
-    discret_->SetState("modenp",modenp_);
+    discret_->SetState("vedenp",vedenp_);
     discret_->SetState("hist",zeros_ );
     discret_->SetState("dispnp", griddisp);
     discret_->SetState("gridv", zeros_);

@@ -210,18 +210,18 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // get all state vectors
   //--------------------------------------------------
   //
-  // need current velocity/pressure, momentum/density and history vector
+  // need current velocity/pressure, velocity/density and history vector
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  RefCountPtr<const Epetra_Vector> modenp = discretization.GetState("modenp");
+  RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
   RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
-  if (velnp==null || modenp==null || hist==null)
-    dserror("Cannot get state vectors 'velnp', 'modenp' and/or 'hist'");
+  if (velnp==null || vedenp==null || hist==null)
+    dserror("Cannot get state vectors 'velnp', 'vedenp' and/or 'hist'");
 
   // extract local values from the global vectors
   vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-  vector<double> mymodenp(lm.size());
-  DRT::UTILS::ExtractMyValues(*modenp,mymodenp,lm);
+  vector<double> myvedenp(lm.size());
+  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
   vector<double> myhist(lm.size());
   DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
     eprenp(i,0) = myvelnp[3+(i*4)];
 
     // insert density vector into element array
-    edensnp(i,0) = mymodenp[3+(i*4)];
+    edensnp(i,0) = myvedenp[3+(i*4)];
 
     // the history vectors contain information of time step t_n (mass rhs!)
     // momentum equation part
@@ -904,7 +904,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // get history data (n,i) at integration point
     //histmom_ = blitz::sum(funct_(j)*emhist(i,j),j);
     //histcon_ = blitz::sum(funct_*echist);
-    histmom_.Multiply(emhist,funct_);
+    histmom_.Multiply(emhist,densfunct_);
     histcon_ = funct_.Dot(echist);
 
     // get velocity (np,i) derivatives at integration point
@@ -1481,7 +1481,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           const int fui   = 4*ui;
           const int fuip  = fui+1;
           const int fuipp = fui+2;
-          double v = timetauMp*funct_(ui)
+          double v = timetauMp*densfunct_(ui)
 #if 1
                      + ttimetauMp*conv_c_(ui)
 #endif

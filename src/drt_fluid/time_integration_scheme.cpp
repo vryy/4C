@@ -37,37 +37,23 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 )
 {
   /*
+     for low-Mach-number flow: distinguish momentum and continuity part
+     (continuity part only meaningful for low-Mach-number flow)
 
-  Stationary:
+     Stationary:
 
-                 hist_ = 0.0
+                   mom: hist_ = 0.0
+                  (con: hist_ = 0.0)
 
-  One-step-Theta:
+     One-step-Theta:
 
-                 hist_ = veln_ + dt*(1-Theta)*accn_
+                   mom: hist_ = veln_  + dt*(1-Theta)*accn_
+                  (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
 
+     BDF2: for constant time step:
 
-  BDF2: for constant time step:
-
-                 hist_ = 4/3 veln_ - 1/3 velnm_
-
-  for low-Mach-number flow: distinguish momentum and continuity part
-
-  Stationary:
-
-                 mom: hist_ = 0.0
-                 con: hist_ = 0.0
-
-  One-step-Theta:
-
-                 mom: hist_ = densn_*veln_ + dt*(1-Theta)*modedtn_
-                 con: hist_ = densn_       + dt*(1-Theta)*densdtn_
-
-
-  BDF2: for constant time step:
-
-                 mom: hist_ = 4/3 densn_*veln_ - 1/3 densnm_*velnm_
-                 con: hist_ = 4/3 densn_       - 1/3 densnm_
+                   mom: hist_ = 4/3 veln_  - 1/3 velnm_
+                  (con: hist_ = 4/3 densn_ - 1/3 densnm_)
 
   */
   switch (timealgo)
@@ -155,26 +141,10 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
                + ----------------------- vel(n-1)
                  dt(n-1)*[dt(n)+dt(n-1)]
 
-    for low-Mach-number flow: distinguish momentum and density part
-    (density as velocity above)
+    For low-Mach-number flow, the same is done for density values,
+    which are located at the "pressure dofs" of "vede"-vectors.
 
-    One-step-Theta:
-
-    modedt(n+1) = (dens(n+1)*vel(n+1)-dens(n)*vel(n)) / (Theta * dt(n))
-                - (1/Theta -1) * acc(n)
-
-
-    BDF2:
-
-                   2*dt(n)+dt(n-1)                          dt(n)+dt(n-1)
-      modedt(n+1) = --------------------- dens(n+1)*vel(n+1) - --------------- dens(n)*vel(n)
-                 dt(n)*[dt(n)+dt(n-1)]                      dt(n)*dt(n-1)
-
-                         dt(n)
-               + ----------------------- dens(n-1)*vel(n-1)
-                 dt(n-1)*[dt(n)+dt(n-1)]
-
-      */
+    */
 
     switch (timealgo)
     {

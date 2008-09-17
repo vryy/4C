@@ -187,18 +187,18 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       // get all state vectors
       //--------------------------------------------------
       //
-      // need current velocity/pressure, momentum/density and history vector
+      // need current velocity/pressure, velocity/density and history vector
       RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-      RefCountPtr<const Epetra_Vector> modenp = discretization.GetState("modenp");
+      RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
       RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-      if (velnp==null || modenp==null || hist==null)
-        dserror("Cannot get state vectors 'velnp', 'modenp' and/or 'hist'");
+      if (velnp==null || vedenp==null || hist==null)
+        dserror("Cannot get state vectors 'velnp', 'vedenp' and/or 'hist'");
 
       // extract local values from the global vectors
       vector<double> myvelnp(lm.size());
       DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-      vector<double> mymodenp(lm.size());
-      DRT::UTILS::ExtractMyValues(*modenp,mymodenp,lm);
+      vector<double> myvedenp(lm.size());
+      DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
       vector<double> myhist(lm.size());
       DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         eprenp(i) = myvelnp[2+(i*3)];
 
         // insert density vector into element array
-        edensnp(i) = mymodenp[2+(i*3)];
+        edensnp(i) = myvedenp[2+(i*3)];
 
         // the history vectors contain information of time step t_n (mass rhs!)
         // momentum equation part
@@ -487,17 +487,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     break;
     case calc_fluid_stationary_systemmat_and_residual:
     {
-      // need current velocity/pressure and momentum/density vector
+      // need current velocity/pressure and velocity/density vector
       RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-      RefCountPtr<const Epetra_Vector> modenp = discretization.GetState("modenp");
-      if (velnp==null || modenp==null)
-        dserror("Cannot get state vectors 'velnp' and/or 'modenp'");
+      RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+      if (velnp==null || vedenp==null)
+        dserror("Cannot get state vectors 'velnp' and/or 'vedenp'");
 
       // extract local values from the global vectors
       vector<double> myvelnp(lm.size());
       DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-      vector<double> mymodenp(lm.size());
-      DRT::UTILS::ExtractMyValues(*modenp,mymodenp,lm);
+      vector<double> myvedenp(lm.size());
+      DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
       if (is_ale_) dserror("No ALE support within stationary fluid solver.");
 
@@ -516,7 +516,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         eprenp(i) = myvelnp[2+(i*3)];
 
         // insert density vector into element array
-        edensnp(i) = mymodenp[2+(i*3)];
+        edensnp(i) = myvedenp[2+(i*3)];
       }
 
       // get control parameter

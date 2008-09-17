@@ -145,6 +145,8 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
             numex=-9; /* time integral of numex -5 */
           else if (string(buffer)=="f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5")
             numex=-11; /* ramp function with horizontal slopes */
+          else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
+            numex=-12; /* linearly increasing function with non-zero initial value */
           else
             dserror("cannot read function of CURVE%d",i);
 
@@ -389,6 +391,12 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
       fac = 0.0;
     else if ((c1_ <= T) && (T <= (c1_ + c2_)))
       fac = -0.5 * cos(M_PI * ( T - c1_ ) / c2_) + 0.5;
+    else
+      fac = 1.0;
+    break;
+  case -12: /* f(t)=(1-c2/c1)*T+c2 (c2: ratio of initial and final value) */
+    if (T <= c1_)
+      fac = ( ( 1.0 - c2_ ) / c1_ ) * T + c2_;
     else
       fac = 1.0;
     break;
