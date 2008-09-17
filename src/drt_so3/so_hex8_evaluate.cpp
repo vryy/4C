@@ -249,7 +249,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         {
           for (int i = 0; i < NUMSTR_SOH8; ++i)
           {
-            double& s = (*((*elestress)(i)))[lid];
+            double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
             for (int j = 0; j < NUMGPT_SOH8; ++j)
             {
@@ -325,6 +325,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        // alphao := alpha
         switch(eastype_) {
         case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<soh8_easfull, 1>(*alphao,*alpha); break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild, 1>(*alphao,*alpha); break;
@@ -354,16 +355,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         switch(eastype_) {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
+          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
           LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(*alpha,*alphao);
+          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
+          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
           LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(*alpha,*alphao);
+          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
           LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao);
+          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         }
@@ -529,7 +533,9 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -546,19 +552,19 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
 
     // compute the Jacobian matrix
     LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
-    LINALG::DENSEFUNCTIONS::multiply<NUMDIM_SOH8,NUMNOD_SOH8,NUMDIM_SOH8>(jac.A(),int_hex8.deriv_gp[gp].A(),xrefe.A());
+    jac.Multiply(derivs[gp],xrefe);
 
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    double fac = int_hex8.weights(gp) * curvefac * detJ;          // integration factor
+    double fac = gpweights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
       for(int dim=0; dim<NUMDIM_SOH8; dim++) {
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
       for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
-        elevec1[nodid*NUMDIM_SOH8+dim] += int_hex8.shapefct_gp[gp](nodid) * dim_fac;
+        elevec1[nodid*NUMDIM_SOH8+dim] += shapefcts[gp](nodid) * dim_fac;
       }
     }
 
@@ -573,7 +579,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
 {
-  const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -586,7 +592,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
-    LINALG::DENSEFUNCTIONS::multiply<NUMDIM_SOH8,NUMNOD_SOH8,NUMDIM_SOH8>(invJ_[gp].A(),int_hex8.deriv_gp[gp].A(),xrefe.A());
+    invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
@@ -628,7 +634,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -667,10 +675,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> T0invT;  // trafo matrix
   Epetra_SerialDenseMatrix* oldfeas = NULL;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv = NULL; // EAS history
   Epetra_SerialDenseMatrix* oldKda = NULL;    // EAS history
+
+  // transformation matrix T0, maps M-matrix evaluated at origin
+  // between local element coords and global coords
+  // here we already get the inverse transposed T0
+  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> T0invT;  // trafo matrix
+
   if (eastype_ != soh8_easnone) {
     /*
     ** EAS Update of alphas:
@@ -747,8 +760,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    LINALG::DENSEFUNCTIONS::multiply<NUMDIM_SOH8,NUMDIM_SOH8,NUMNOD_SOH8>
-      (N_XYZ.A(), invJ_[gp].A(), int_hex8.deriv_gp[gp].A());
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     const double detJ = detJ_[gp];
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -979,16 +991,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       }
     }
 
-    double detJ_w = detJ*int_hex8.weights(gp);
+    double detJ_w = detJ*gpweights[gp];
     if (force != NULL && stiffmatrix != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8, NUMDOF_SOH8> cb;
-      cb.Multiply(cmat,bop);
-
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
+      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8, NUMDOF_SOH8> cb;
+      cb.Multiply(cmat,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
@@ -1016,28 +1027,29 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ != soh8_easnone)
       {
-        double integrationfactor = detJ * int_hex8.weights(gp);
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+        // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
+        // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
         LINALG::SerialDenseMatrix cM(NUMSTR_SOH8, neas_); // temporary c . M
         switch(eastype_)
         {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
           LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easfull>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,soh8_easfull>(1.0, Kaa, integrationfactor, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), integrationfactor, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,1>(1.0, feas.A(), integrationfactor, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,soh8_easfull>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
           LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easmild>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,soh8_easmild>(1.0, Kaa, integrationfactor, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), integrationfactor, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,1>(1.0, feas.A(), integrationfactor, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,soh8_easmild>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
           LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa, integrationfactor, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), integrationfactor, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), integrationfactor, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         }
@@ -1051,10 +1063,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       double ifactor, massfactor;
       for (int inod=0; inod<NUMNOD_SOH8; ++inod)
       {
-        ifactor = (int_hex8.shapefct_gp[gp])(inod) * factor;
+        ifactor = shapefcts[gp](inod) * factor;
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
         {
-          massfactor = (int_hex8.shapefct_gp[gp])(jnod) * ifactor;     // intermediate factor
+          massfactor = shapefcts[gp](jnod) * ifactor;     // intermediate factor
           (*massmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += massfactor;
@@ -1076,6 +1088,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseSolver solve_for_inverseKaa;
       solve_for_inverseKaa.SetMatrix(Kaa);
       solve_for_inverseKaa.Invert();
+      // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
+      // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
 
       LINALG::SerialDenseMatrix KdaKaa(NUMDOF_SOH8, neas_); // temporary Kda.Kaa^{-1}
       switch(eastype_)
@@ -1139,6 +1153,90 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NU
       (*emass)(c,c) = d;  // apply sum of row entries on diagonal
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
+ *----------------------------------------------------------------------*/
+const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts()
+{
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > shapefcts(NUMGPT_SOH8);
+  // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+  const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+  // fill up nodal f at each gp
+  for (int i=0; i<NUMGPT_SOH8; ++i) {
+    (shapefcts[i])(0) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
+    (shapefcts[i])(1) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
+    (shapefcts[i])(2) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
+    (shapefcts[i])(3) = (1.0-r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
+    (shapefcts[i])(4) = (1.0-r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
+    (shapefcts[i])(5) = (1.0+r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
+    (shapefcts[i])(6) = (1.0+r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+    (shapefcts[i])(7) = (1.0-r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+  }
+  return shapefcts;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
+ *----------------------------------------------------------------------*/
+const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs()
+{
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
+  // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+  const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  for (int i=0; i<NUMGPT_SOH8; ++i) {
+    // df wrt to r for each node(0..7) at each gp [i]
+    (derivs[i])(0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+    // df wrt to s for each node(0..7) at each gp [i]
+    (derivs[i])(1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+    // df wrt to t for each node(0..7) at each gp [i]
+    (derivs[i])(2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+  }
+  return derivs;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
+ *----------------------------------------------------------------------*/
+const vector<double> DRT::ELEMENTS::So_hex8::soh8_weights()
+{
+  vector<double> weights(NUMGPT_SOH8);
+  for (int i = 0; i < NUMGPT_SOH8; ++i) {
+    weights[i] = 1.0;
+  }
+  return weights;
 }
 
 /*----------------------------------------------------------------------*
@@ -1224,6 +1322,7 @@ void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
   }
   return;
 }  // of soh8_shapederiv
+
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|

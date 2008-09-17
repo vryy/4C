@@ -22,7 +22,6 @@ Maintainer: Moritz Frenzel
 using namespace std;
 using namespace Teuchos;
 
-#include "so_integrator.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
@@ -39,12 +38,12 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Hex8
-#define NUMNOD_SOH8  8      ///< number of nodes
-#define NODDOF_SOH8  3      ///< number of dofs per node
-#define NUMDOF_SOH8  24     ///< total dofs per element
-#define NUMSTR_SOH8  6      ///< number of strains/stresses
-#define NUMGPT_SOH8  8      ///< total gauss points per element
-#define NUMDIM_SOH8  3      ///< number of dimensions
+const int NUMNOD_SOH8 = 8;      ///< number of nodes
+const int NODDOF_SOH8 = 3;      ///< number of dofs per node
+const int NUMDOF_SOH8 = 24;     ///< total dofs per element
+const int NUMSTR_SOH8 = 6;      ///< number of strains/stresses
+const int NUMGPT_SOH8 = 8;      ///< total gauss points per element
+const int NUMDIM_SOH8 = 3;      ///< number of dimensions
 
 // forward declarations
 struct _MATERIAL;
@@ -408,7 +407,7 @@ protected:
    * inplane (membrane) locking and main modes for Poisson-locking
    * \param soh8_easnone: no EAS i.e. displacement based with tremendous locking
    */
-  enum EASType
+  enum EASType  // with meaningfull value for matrix size info
   {
     soh8_easnone = 0,
     soh8_eassosh8 = 7,
@@ -482,23 +481,18 @@ protected:
   void soh8_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
                   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses);
 
-  /*!
-  \brief Create a integrator for the SoHex8 element
+  //! Evaluate Hex8 Shapefcts to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > soh8_shapefcts();
+  //! Evaluate Hex8 Derivs to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
+  //! Evaluate Hex8 Weights to keep them static
+  const vector<double> soh8_weights();
 
-  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural
-  DRT::UTILS::IntegrationPoints3D struct.
-  */
-  class Integrator_So_hex8 : public DRT::ELEMENTS::So_integrator
-  {
-    public:
-      Integrator_So_hex8();
-  };
-
-  /***************OBSOLETE**********************************/
-  void soh8_shapederiv(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,
-                       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,
-                       LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>** weights);
-  /***************OBSOLETE**********************************/
+  // to be removed!!!
+  void soh8_shapederiv(
+        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,   // pointer to pointer of shapefct
+        LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,     // pointer to pointer of derivs
+        LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>** weights);   // pointer to pointer of weights
 
   /*!
    * \brief Interface to material laws working with soh8.
