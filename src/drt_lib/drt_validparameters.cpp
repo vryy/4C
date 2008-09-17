@@ -654,6 +654,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("KT",0.0,"thermal energy",&statmech);
   //Reading double parameter for crosslinker off-rate
   DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
+  //order of interpolation for stochastical fields
+  IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
