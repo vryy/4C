@@ -222,6 +222,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   case STRUCT_DYNAMIC::ptc:
     genalphaparams->set<string>("equilibrium iteration","ptc");
     break;
+  case STRUCT_DYNAMIC::newtonlinuzawa:
+    genalphaparams->set<string>("equilibrium iteration","newtonlinuzawa");
+  break;
+  case STRUCT_DYNAMIC::augmentedlagrange:
+    genalphaparams->set<string>("equilibrium iteration","augmentedlagrange"); 
+    break;
   default:
     genalphaparams->set<string>("equilibrium iteration","full newton");
     break;
@@ -260,6 +266,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     dserror("Cannot cope with choice of predictor");
     break;
   }
+  
+  genalphaparams->set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
+  genalphaparams->set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
+  genalphaparams->set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
+  genalphaparams->set<int>   ("UZAWAALGO",getIntegralValue<int>(sdyn,"UZAWAALGO"));
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi)
