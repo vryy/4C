@@ -182,6 +182,13 @@ void COMBUST::Algorithm::PrepareTimeStep()
   }
   
   FluidField().PrepareTimeStep();
+
+  // transfer the initial(!!) convective velocity
+  //(fluid initial field was set inside the constructor of fluid base class)
+  if (Step()==1) ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+
+  // prepare time step (+ initialize one-step-theta scheme correctly with 
+  // velocity given above)
   ScaTraField().PrepareTimeStep();
   
   // synchronicity check between combust algorithm and base algorithms

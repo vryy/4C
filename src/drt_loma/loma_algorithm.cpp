@@ -61,7 +61,7 @@ void LOMA::Algorithm::TimeLoop()
     // ScaTraField().SetVelocityField(1,1);
     // ScaTraField().Integrate();
 
-  // initial thermodynamic pressure (in N/m² = kg/(m*s²) = J/m³)
+  // initial thermodynamic pressure (in N/mï¿½ = kg/(m*sï¿½) = J/mï¿½)
   // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
   thermpressnp_ = 98100.0;
 
@@ -109,10 +109,14 @@ return;
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::PrepareTimeStep()
 {
+  // transfer the initial(!!) convective velocity
+  if (Step()==1) ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+
   // set field vectors: density*shc-weighted convective velocity + density*shc
   ScaTraField().SetTimeLomaFields(noddensn_,noddensnm_);
 
-  // prepare temperature time step
+  // prepare temperature time step 
+  // (+ initialize one-step-theta scheme correctly)
   ScaTraField().PrepareTimeStep();
 
   // set field vectors: density*shc-weighted convective velocity + density*shc

@@ -74,6 +74,16 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
   }
 
   FluidField().PrepareTimeStep();
+
+  // transfer the initial(!!) convective velocity
+  //(fluid initial field was set inside the constructor of fluid base class)
+  if (Step()==1)
+    ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+
+  // prepare time step (+ initialize one-step-theta scheme correctly with 
+  // velocity given above)
+  ScaTraField().PrepareTimeStep();
+
   return;
 }
 
@@ -92,7 +102,6 @@ void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
 /*----------------------------------------------------------------------*/
 void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
 {
-  
   if (Comm().MyPID()==0)
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
@@ -101,8 +110,6 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   // get new velocity from Navier-Stokes solver
   GetCurrentFluidVelocity();
 
-  // prepare time step
-  ScaTraField().PrepareTimeStep();
   // transfer convective velocity to scalar transport field solver
   ScaTraField().SetVelocityField(2,ConvectiveVelocity());
 
@@ -110,6 +117,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   ScaTraField().Solve();
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

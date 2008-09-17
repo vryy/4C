@@ -55,9 +55,9 @@ STARTFUNCNO      2
 TIMEINTEGR       One_Step_Theta
 STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
-ITEMAX           6
+ITEMAX           8
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-5
+CONVTOL          1.0E-6
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-5
@@ -129,7 +129,7 @@ AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
 AZGFILL        0                  // graph fill for ILU
-AZTOL          1.0E-5             // tolerance in (un)scaled residual
+AZTOL          1.0E-7             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         1000               // max iterations
 AZSUB          25                 // size of krylov space for gmres
@@ -167,7 +167,7 @@ AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
 AZGFILL        0                  // graph fill for ILU
-AZTOL          1.0E-5             // tolerance in (un)scaled residual
+AZTOL          1.0E-7             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         1000               // max iterations
 AZSUB          25                 // size of krylov space for gmres
@@ -225,10 +225,10 @@ FUNCT3 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE -1.894671755e-02 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE -1.894483990e-02 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 691 POSITION fluxz   NAME fluxz    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi     NAME phi      VALUE  3.506891224e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi     NAME phi      VALUE  8.906073881e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi     NAME phi      VALUE  3.506582791e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi     NAME phi      VALUE  8.905798979e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.068970136e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -2.245524594e-06 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velz     NAME velz     VALUE  0.000000000e+00 TOLERANCE 1e-9

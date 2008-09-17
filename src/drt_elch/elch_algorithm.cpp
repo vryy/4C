@@ -16,7 +16,6 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "elch_algorithm.H"
-//#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -82,6 +81,16 @@ void ELCH::Algorithm::PrepareTimeStep()
   }
 
   FluidField().PrepareTimeStep();
+
+  // transfer the initial(!!) convective velocity
+  //(fluid initial field was set inside the constructor of fluid base class)
+  if (Step()==1)
+    ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+
+  // prepare time step (+ initialize one-step-theta scheme correctly with 
+  // velocity given above)
+  ScaTraField().PrepareTimeStep();
+
   return;
 }
 
@@ -109,8 +118,6 @@ void ELCH::Algorithm::DoTransportStep()
   // get new velocity from Navier-Stokes solver
   GetCurrentFluidVelocity();
 
-  // prepare time step
-  ScaTraField().PrepareTimeStep();
   // transfer convective velocity
   ScaTraField().SetVelocityField(2,ConvectiveVelocity());
   //ConDifField().SetVelocityField(1,1);
