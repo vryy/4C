@@ -30,6 +30,23 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 
+//template <int shpVecSize>
+//struct Shp
+//{
+//  blitz::TinyVector<double,shpVecSize>  d0;
+//  blitz::TinyVector<double,shpVecSize>  dx;
+//  blitz::TinyVector<double,shpVecSize>  dy;
+//  blitz::TinyVector<double,shpVecSize>  dz;
+//  blitz::TinyVector<double,shpVecSize>  dxdx;
+//  blitz::TinyVector<double,shpVecSize>  dxdy;
+//  blitz::TinyVector<double,shpVecSize>  dxdz;
+//  blitz::TinyVector<double,shpVecSize>  dydx;
+//  blitz::TinyVector<double,shpVecSize>  dydy;
+//  blitz::TinyVector<double,shpVecSize>  dydz;
+//  blitz::TinyVector<double,shpVecSize>  dzdx;
+//  blitz::TinyVector<double,shpVecSize>  dzdy;
+//  blitz::TinyVector<double,shpVecSize>  dzdz;
+//};
 
   using namespace XFEM::PHYSICS;
 
@@ -64,6 +81,121 @@ Maintainer: Axel Gerstenberger
     return v;
   }
   
+  template<class M>
+  static bool modifyOldTimeStepsValues(
+      const DRT::Element*                        ele,           ///< the element those matrix is calculated
+      const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+      const M&                                   xyze,
+      const BlitzVec3&                           posXiDomain,
+      const int                                  labelnp,
+      const Epetra_Vector&                       ivelcoln,
+      const Epetra_Vector&                       iacccoln,
+      BlitzVec3&                                 gpveln,
+      BlitzVec3&                                 gpaccn
+      )
+  {
+    GEO::PosX posx_gp;
+    GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
+    
+    const bool is_in_fluid = (labelnp == 0);
+    
+    if (not is_in_fluid)
+    {
+      //std::cout << "should I arrive here?" << std::endl;
+      return false;
+    }
+
+    const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+    
+    const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
+    
+    if (in_space_time_slab_area)
+    {
+      XFEM::SpaceTimeBoundaryCell slab;
+      BlitzVec3 rst;
+      
+      const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+      
+      if (found_cell)
+      {
+        
+        const double delta_slab = -(rst(2)-1.0)*0.5;
+  
+        if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
+        {
+          cout << rst(2) <<  "  " << delta_slab << endl;
+          cout << slab.toString() << endl << endl;
+          dserror("wrong value of delta_slab");
+        }
+//              theta_dt = theta_dt_pure;// * delta_slab;
+      
+        DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+        const int numnode_boundary = boundaryele->NumNode();
+        
+        BlitzVec3 iveln;
+        BlitzVec3 iaccn;
+        
+        if (ivelcoln.GlobalLength() > 3)
+        {
+          // get interface velocities at the boundary element nodes
+          BlitzMat veln_boundary(3,numnode_boundary*2);
+          BlitzMat accn_boundary(3,numnode_boundary*2);
+          if (numnode_boundary != 4)
+            dserror("needs more generalizashun!");
+          const DRT::Node*const* nodes = boundaryele->Nodes();
+          
+          for (int inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            const std::vector<int> lm = ih->cutterdis()->Dof(node);
+            std::vector<double> myvel(3);
+            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+            veln_boundary(0,inode) = myvel[0];
+            veln_boundary(1,inode) = myvel[1];
+            veln_boundary(2,inode) = myvel[2];
+            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+            veln_boundary(0,inode+4) = myvel[0];
+            veln_boundary(1,inode+4) = myvel[1];
+            veln_boundary(2,inode+4) = myvel[2];
+            
+            std::vector<double> myacc(3);
+            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+            accn_boundary(0,inode) = myacc[0];
+            accn_boundary(1,inode) = myacc[1];
+            accn_boundary(2,inode) = myacc[2];
+            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+            accn_boundary(0,inode+4) = myacc[0];
+            accn_boundary(1,inode+4) = myacc[1];
+            accn_boundary(2,inode+4) = myacc[2];
+          }
+  //                cout << "veln_boundary: " << veln_boundary << endl;
+  //                cout << "accn_boundary: " << accn_boundary << endl;
+          
+          BlitzVec funct_ST(numnode_boundary*2);
+          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
+          iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+  //                cout << "iveln " << iveln << endl;
+  //                cout << "iaccn " << iaccn << endl;
+        }
+        else
+        {
+          iveln = 0.0;
+          iaccn = 0.0;
+        }
+      
+        //cout << "using space time boundary values " << ele->Id() << endl; 
+        gpveln(0) = iveln(0);
+        gpveln(1) = iveln(1);
+        gpveln(2) = iveln(2);
+        
+        gpaccn(0) = iaccn(0);
+        gpaccn(1) = iaccn(1);
+        gpaccn(2) = iaccn(2);
+      }
+    }
+    return true;
+  }
   
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
@@ -383,6 +515,9 @@ static void SysmatDomain4(
 
             const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            
+//            static Shp<shpVecSize> shp;
+            
             typedef blitz::TinyVector<double,shpVecSize> ShpVec;
             static ShpVec shp;
             static ShpVec shp_dx;
@@ -504,122 +639,9 @@ static void SysmatDomain4(
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
-            GEO::PosX posx_gp;
-            GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
-            
-            bool is_in_fluid = false;
-            if (labelnp == 0)
-            {
-              is_in_fluid = true;
-            }
-            else
-            {
-              is_in_fluid = false;
-            }
-            
-            if (not is_in_fluid)
-            {
-              std::cout << "should I arrive here?" << std::endl;
-              continue;
-            }
-
-            bool was_in_fluid = false;
-            if (ih->PositionWithinConditionN(posx_gp) == 0)
-            {
-              was_in_fluid = true;
-            }
-            else
-            {
-              was_in_fluid = false;
-            }
-            
-            const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
-            
-            if (in_space_time_slab_area)
-            {
-              XFEM::SpaceTimeBoundaryCell slab;
-              BlitzVec3 rst;
-              
-              const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
-              
-              if (found_cell)
-              {
-              
-              const double delta_slab = -(rst(2)-1.0)*0.5;
-
-              if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
-              {
-                cout << rst(2) <<  "  " << delta_slab << endl;
-                cout << slab.toString() << endl << endl;
-                dserror("wrong value of delta_slab");
-              }
-//              theta_dt = theta_dt_pure;// * delta_slab;
-              
-              DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
-              const int numnode_boundary = boundaryele->NumNode();
-              
-              BlitzVec3 iveln;
-              BlitzVec3 iaccn;
-              
-              if (ivelcoln.GlobalLength() > 3)
-              {
-                // get interface velocities at the boundary element nodes
-                BlitzMat veln_boundary(3,numnode_boundary*2);
-                BlitzMat accn_boundary(3,numnode_boundary*2);
-                if (numnode_boundary != 4)
-                  dserror("needs more generalizashun!");
-                const DRT::Node*const* nodes = boundaryele->Nodes();
-                
-                for (int inode = 0; inode < numnode_boundary; ++inode)
-                {
-                  const DRT::Node* node = nodes[inode];
-                  const std::vector<int> lm = ih->cutterdis()->Dof(node);
-                  std::vector<double> myvel(3);
-                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-                  veln_boundary(0,inode) = myvel[0];
-                  veln_boundary(1,inode) = myvel[1];
-                  veln_boundary(2,inode) = myvel[2];
-                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-                  veln_boundary(0,inode+4) = myvel[0];
-                  veln_boundary(1,inode+4) = myvel[1];
-                  veln_boundary(2,inode+4) = myvel[2];
-                  
-                  std::vector<double> myacc(3);
-                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-                  accn_boundary(0,inode) = myacc[0];
-                  accn_boundary(1,inode) = myacc[1];
-                  accn_boundary(2,inode) = myacc[2];
-                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-                  accn_boundary(0,inode+4) = myacc[0];
-                  accn_boundary(1,inode+4) = myacc[1];
-                  accn_boundary(2,inode+4) = myacc[2];
-                }
-//                cout << "veln_boundary: " << veln_boundary << endl;
-//                cout << "accn_boundary: " << accn_boundary << endl;
-                
-                BlitzVec funct_ST(numnode_boundary*2);
-                DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-                iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-                iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
-//                cout << "iveln " << iveln << endl;
-//                cout << "iaccn " << iaccn << endl;
-              }
-              else
-              {
-                iveln = 0.0;
-                iaccn = 0.0;
-              }
-              
-              //cout << "using space time boundary values " << ele->Id() << endl; 
-              gpveln(0) = iveln(0);
-              gpveln(1) = iveln(1);
-              gpveln(2) = iveln(2);
-              
-              gpaccn(0) = iaccn(0);
-              gpaccn(1) = iaccn(1);
-              gpaccn(2) = iaccn(2);
-              }
-            }
+              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, gpveln, gpaccn);
+              if (not valid_spacetime_cell_found)
+                continue;
             }
 //            cout << gpvelnp << endl;
 //            cout << evelnp << endl;
