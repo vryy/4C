@@ -67,14 +67,14 @@ actdisc_(discr)
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors 
     constrmap_=rcp(new Epetra_Map(numConstrID_,offset,actdisc_->Comm()));
-//    constrmap_=rcp(new Epetra_Map(numConstrID_,0,actdisc_->Comm()));
     //build an all reduced version of the constraintmap, since sometimes all processors
     //have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);
+    // importer
+    conimpo_ = rcp (new Epetra_Export(*redconstrmap_,*constrmap_));
     // sum up initial values
     refbasevalues_=rcp(new Epetra_Vector(*constrmap_));
     RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
-    LINALG::Export(*refbasevalues_,*refbaseredundant);
     //Compute initial values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
@@ -88,7 +88,9 @@ actdisc_(discr)
     mpconline2d_->Initialize(p,refbasevalues_);
     mpconplane3d_->SetConstrState("displacement",disp);
     mpconplane3d_->Initialize(p,refbaseredundant);
-    ImportResults(refbasevalues_,refbaseredundant);
+    
+    // Export redundant vector into distributed one
+    refbasevalues_ -> Export(*refbaseredundant,*conimpo_,Add);
     
     //Initialize Lagrange Multipliers, reference values and errors
     actdisc_->ClearState();
@@ -123,8 +125,10 @@ actdisc_(discr)
     {
       nummyele=numMonitorID_;
     }
+    // initialize maps and importer
     monitormap_=rcp(new Epetra_Map(numMonitorID_,nummyele,0,actdisc_->Comm()));
     redmonmap_ = LINALG::AllreduceEMap(*monitormap_);
+    monimpo_ = rcp (new Epetra_Export(*redmonmap_,*monitormap_));
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
     
@@ -135,8 +139,8 @@ actdisc_(discr)
     areamonitor3d_->Evaluate(p1,initialmonredundant);
     areamonitor2d_->Evaluate(p1,initialmonredundant);
 
-    Epetra_Import monimpo(*monitormap_,*redmonmap_);
-    initialmonvalues_->Import(*initialmonredundant,monimpo,Add);
+    // Export redundant vector into distributed one
+    initialmonvalues_->Export(*initialmonredundant,*monimpo_,Add);
   }
   return;
 }
@@ -160,7 +164,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   // create the parameters for the discretization
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
-  actvalues_->Scale(0.0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
   constrMatrix_->Scale(0.0);//rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     
@@ -195,9 +198,15 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
-  ImportResults(actvalues_,actredundant);
-  ImportResults(refbasevalues_,refbaseredundant,false);
-  ImportMinResults(fact_,factredundant);
+  
+  // Export redundant vectors into distributed ones
+  actvalues_->Scale(0.0);
+  actvalues_->Export(*actredundant,*conimpo_,Add);
+  RCP<Epetra_Vector> addrefbase = rcp(new Epetra_Vector(*constrmap_));
+  addrefbase->Export(*refbaseredundant,*conimpo_,Add);
+  refbasevalues_->Update(1.0,*addrefbase,1.0);
+  fact_->Scale(0.0);
+  fact_->Export(*factredundant,*conimpo_,Insert);
   // ----------------------------------------------------
   // -----------include possible further constraints here
   // ----------------------------------------------------
@@ -217,7 +226,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
 void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
 {
     vector<DRT::Condition*> constrcond(0);
-    actvalues_->Scale(0.0);
     ParameterList p;
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
@@ -234,7 +242,9 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
     
-    ImportResults(actvalues_,actredundant);
+    // Export redundant vectors into distributed ones
+    actvalues_->Scale(0.0);
+    actvalues_->Export(*actredundant,*conimpo_,Add);
 
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
@@ -290,13 +300,12 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
   p.set("MinID",minMonitorID_);
   
-  
   volmonitor3d_->Evaluate(p,actmonredundant);
   areamonitor3d_->Evaluate(p,actmonredundant);
   areamonitor2d_->Evaluate(p,actmonredundant);
  
   Epetra_Import monimpo(*monitormap_,*redmonmap_);
-  monitorvalues_->Import(*actmonredundant,monimpo,Add);
+  monitorvalues_->Export(*actmonredundant,*monimpo_,Add);
   
   return;
 }
@@ -312,56 +321,6 @@ void UTILS::ConstrManager::PrintMonitorValues()
     printf("Monitor value %2d: %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,(*monitorvalues_)[i],((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
   }
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |(private)                                                 tk 07/08    |
- |small subroutine to synchronize processors after evaluating the       |
- |constraints by summing them up                                        |
- *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ImportResults
-(
-  RCP<Epetra_Vector>& vect_dist,
-  RCP<Epetra_Vector>& vect_redu,
-  bool zero
-)
-{
-  if (zero)
-  {
-    vect_dist->Scale(0.0);
-  }
-  vector<int> gids;
-  for (int i = 0; i < (vect_redu->MyLength()); ++i)
-  {
-    gids.push_back(redconstrmap_->GID(i));
-  }
-  vector<double> currval(vect_redu->MyLength(),0);
-  actdisc_->Comm().SumAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
-  vect_dist->SumIntoGlobalValues(vect_redu->MyLength(),&(currval[0]),&(gids[0]));
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |(private)                                                 tk 07/08    |
- |small subroutine to synchronize processors after evaluating the       |
- |constraints by summing them up                                        |
- *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ImportMinResults
-(
-  RCP<Epetra_Vector>& vect_dist,
-  RCP<Epetra_Vector>& vect_redu
-)
-{
-  vect_dist->Scale(0.0);
-  vector<int> gids;
-  for (int i = 0; i < (vect_redu->MyLength()); ++i)
-  {
-    gids.push_back(redconstrmap_->GID(i));
-  }
-  vector<double> currval(vect_redu->MyLength(),0);
-  actdisc_->Comm().MinAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
-  vect_dist->ReplaceGlobalValues(vect_redu->MyLength(),&(currval[0]),&(gids[0]));
   return;
 }
 

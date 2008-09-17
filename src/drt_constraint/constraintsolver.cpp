@@ -76,6 +76,9 @@ invtoggle_(&(*invtoggle),false)
   break;
   case (INPUTPARAMS::consolve_direct):
     algo_ = UTILS::ConstraintSolver::direct;
+//    #ifdef PARALLEL
+//      dserror("Direct constraint solver is not working in parallel!");
+//    #endif
   break;
   default:
     dserror("Unknown type of constraint solver algorithm. Can be 'iterative' or 'direct'!");
@@ -272,11 +275,14 @@ void UTILS::ConstraintSolver::SolveDirect
 )
 {
   // define maps of standard dofs and additional lagrange multipliers
-  const Epetra_Map standrowmap = stiff->RowMap();
-  const Epetra_Map conrowmap = constr->DomainMap();
+  RCP<Epetra_Map> standrowmap = rcp(new Epetra_Map(stiff->RowMap()));
+  RCP<Epetra_Map> conrowmap = rcp(new Epetra_Map(constr->DomainMap()));
   // merge maps to one large map
   RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,conrowmap,false);
-
+  
+  // define MapExtractor
+  LINALG::MapExtractor mapext(*mergedmap,standrowmap,conrowmap);
+  
   // initialize large Sparse Matrix and Epetra_Vectors
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,mergedmap->NumMyElements()));
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
@@ -289,13 +295,13 @@ void UTILS::ConstraintSolver::SolveDirect
   mergedmatrix -> Add(*constr,false,1.0,1.0);
   mergedmatrix -> Add(*constr,true,1.0,1.0);
   mergedmatrix -> Complete(*mergedmap,*mergedmap);
-  
+
   // fill merged vectors using Export
   LINALG::Export(*rhsconstr,*mergedrhs);
   mergedrhs -> Scale(-1.0);
   LINALG::Export(*rhsstand,*mergedrhs);
   LINALG::Export(*dirichtoggle_,*mergeddtog);
-  
+
   // apply dirichlet boundary conditions
   LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,mergeddtog);
   
@@ -304,10 +310,8 @@ void UTILS::ConstraintSolver::SolveDirect
   solver_->ResetTolerance();
 
   // store results in smaller vectors
-  dispinc->PutScalar(0.0);
-  lagrinc->PutScalar(0.0);
-  LINALG::Export(*mergedsol,*dispinc);
-  LINALG::Export(*mergedsol,*lagrinc);
+  mapext.ExtractCondVector(mergedsol,dispinc);
+  mapext.ExtractOtherVector(mergedsol,lagrinc);
   
   counter_++;
   return;

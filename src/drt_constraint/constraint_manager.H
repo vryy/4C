@@ -246,26 +246,6 @@ namespace UTILS
     }
     
   private:
-    
-    /*! \brief Sum values of a completely redundant vector into a distributed vector of the same size
-    */
-    void ImportResults
-    (
-      RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
-      RCP<Epetra_Vector>& vect_redu,  ///< fully redundant and assembled vector containing element results
-      bool zero=true ///< is the distributed vector to be set to zero before adding the redundant vector?
-    );
-    
-    /*! \brief Store values of a completely redundant vector into a distributed vector of the same size, 
-     *          by taking the minimal value 
-    */
-    void ImportMinResults
-    (
-      RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
-      RCP<Epetra_Vector>& vect_redu  ///< fully redundant and assembled vector containing element results
-    );
-  
-  private:
   
       // don't want = operator, cctor and destructor
   
@@ -276,8 +256,10 @@ namespace UTILS
     RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
     RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
     RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
+    RCP<Epetra_Export> conimpo_;  ///< importer for fully redundant constraint vector into distributed one
     RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
     RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
+    RCP<Epetra_Export> monimpo_;  ///< importer for fully redundant monitor vector into distributed one
     RCP<Epetra_Vector> referencevalues_;  ///< reference at current time step to constrain values to
     RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures 
     RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
@@ -304,6 +286,8 @@ namespace UTILS
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
     RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
+    
+    
     
     
   
