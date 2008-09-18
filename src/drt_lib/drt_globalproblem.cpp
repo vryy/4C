@@ -125,7 +125,7 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::ProblemType() const
 {
-  static char* problemnames[] = PROBLEMNAMES;
+  static const char* problemnames[] = PROBLEMNAMES;
   return problemnames[genprob.probtyp];
 }
 
