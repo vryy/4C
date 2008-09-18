@@ -139,7 +139,7 @@ void UTILS::ConstraintSolver::SolveIterative
   int numiter_uzawa = 0;
   //counter used for adaptivity
   const int adaptstep = 2;
-  const int minstep = 2;
+  const int minstep = 1;
   int count_paramadapt = 1;
 
   const double computol = 1E-8;

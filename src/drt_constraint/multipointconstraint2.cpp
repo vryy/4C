@@ -74,10 +74,13 @@ void UTILS::MPConstraint2::Initialize
     int condID=(*CondIDVec)[0];
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if(inittimes_.find(condID)->second<=time)
+    if((inittimes_.find(condID)->second <= time) && (!activecons_.find(condID)->second))
     {     
-      activecons_.erase(condID);
-      activecons_[condID]=true;
+      activecons_.find(condID)->second=true;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+      }
     }
   }
 }
@@ -109,7 +112,7 @@ void UTILS::MPConstraint2::Initialize(
       const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
       const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
       amplit[i]=(*MPCampl)[0];
-      const int mid=params.get("MinID",0);
+      const int mid=params.get("OffsetID",0);
       IDs[i]=(*MPCcondID)[0]-mid;
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.erase(condID);
@@ -324,7 +327,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
     DRT::Element* actele = disc->lColElement(i);
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    const int condID=(*CondIDVec)[0];
     
     if(inittimes_.find(condID)->second<=time)
     {
@@ -334,6 +337,15 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
         Initialize(params,systemvector2);
         params.set("action",action);
       }   
+      
+      //define global and local index of this bc in redundant vectors      
+      const int offsetID = params.get<int>("OffsetID");
+      int gindex = condID-offsetID;
+      const int lindex = (systemvector3->Map()).LID(gindex);
+      
+      // Get the current lagrange multiplier value for this condition  
+      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const double lagraval = (*lagramul)[lindex];
   
       // get element location vector, dirichlet flags and ownerships
       vector<int> lm;
@@ -346,7 +358,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblemat2) elematrix2.Shape(eledim,eledim);
       if (assemblevec1) elevector1.Size(eledim);
       if (assemblevec2) elevector2.Size(eledim);        
-      if (assemblevec3) elevector3.Size(systemvector3->MyLength());
+      if (assemblevec3) elevector3.Size(1); // elevector3 always contains a scalar
       DRT::Condition& cond = *(constrcond_[actele->Id()]);
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
@@ -358,33 +370,36 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
   
       int eid = actele->Id();
+      
+      // Assembly
       if (assemblemat1) 
       { 
         // scale with time integrator dependent value
-        elematrix1.Scale(scStiff);
+        elematrix1.Scale(scStiff*lagraval);
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
       }
       if (assemblemat2)
       {
-        int minID=params.get("MinID",0);
         vector<int> colvec(1);
-        colvec[0]=condID-minID;
+        colvec[0]=gindex;
         elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
-      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-      //if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-      if (assemblevec3) 
+      if (assemblevec1)       
+      {
+        elevector1.Scale(lagraval);
+        LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+      }
+      if (assemblevec3)
       {
         vector<int> constrlm;
         vector<int> constrowner;
-        for (int i=0; i<elevector3.Length();i++)
-        {
-          constrlm.push_back(i);
-          constrowner.push_back(actele->Owner());
-        }
+        constrlm.push_back(gindex);
+        constrowner.push_back(actele->Owner());
         LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
       }
+      
+      // Load curve business
       const vector<int>*    curve  = cond.Get<vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
@@ -393,11 +408,8 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-  
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",condID);
-      params.set(factorname,curvefac);
+      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
   }
   return;

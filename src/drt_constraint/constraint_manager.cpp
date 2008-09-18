@@ -42,16 +42,16 @@ actdisc_(discr)
   const Epetra_Map* dofrowmap1 = actdisc_->DofRowMap();
   int offset;
   offset=dofrowmap1->MaxAllGID()+1;
-  minConstrID_=10000;
+  offsetID_=10000;
   int maxConstrID=0;
-  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID));
-  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID));
-  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID));
-  mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",minConstrID_,maxConstrID));
-  mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",minConstrID_,maxConstrID));
+  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",offsetID_,maxConstrID));
+  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",offsetID_,maxConstrID));
+  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",offsetID_,maxConstrID));
+  mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
+  mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
 
-  numConstrID_=max(maxConstrID-minConstrID_+1,0);
-  minConstrID_-=offset;
+  numConstrID_=max(maxConstrID-offsetID_+1,0);
+  offsetID_-=offset;
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -77,7 +77,7 @@ actdisc_(discr)
     RCP<Epetra_Vector> refbaseredundant = rcp(new Epetra_Vector(*redconstrmap_));
     //Compute initial values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
-    p.set("MinID",minConstrID_);
+    p.set("OffsetID",offsetID_);
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
     volconstr3d_->Initialize(p,refbaseredundant);
@@ -85,7 +85,7 @@ actdisc_(discr)
     areaconstr2d_->Initialize(p,refbaseredundant);
     
     mpconline2d_->SetConstrState("displacement",disp);
-    mpconline2d_->Initialize(p,refbasevalues_);
+    mpconline2d_->Initialize(p,refbaseredundant);
     mpconplane3d_->SetConstrState("displacement",disp);
     mpconplane3d_->Initialize(p,refbaseredundant);
     
@@ -117,7 +117,6 @@ actdisc_(discr)
   havemonitor_= (areamonitor3d_->HaveMonitor())||(volmonitor3d_->HaveMonitor())||(areamonitor2d_->HaveMonitor());
   if (havemonitor_)
   {
-
     ParameterList p1;
     //monitor values are only stored on processor zero since they are only needed for output
     int nummyele=0;
@@ -134,7 +133,7 @@ actdisc_(discr)
     
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
     LINALG::Export(*initialmonvalues_,*initialmonredundant);
-    p1.set("MinID",minMonitorID_);
+    p1.set("OffsetID",minMonitorID_);
     volmonitor3d_->Evaluate(p1,initialmonredundant);
     areamonitor3d_->Evaluate(p1,initialmonredundant);
     areamonitor2d_->Evaluate(p1,initialmonredundant);
@@ -165,11 +164,11 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_->Scale(0.0);//rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+  constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     
   // other parameters that might be needed by the elements
   p.set("total time",time);
-  p.set("MinID",minConstrID_);
+  p.set("OffsetID",offsetID_);
   p.set("NumberofID",numConstrID_);
   p.set("old disp",displast);
   p.set("new disp",disp);
@@ -190,6 +189,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
+//  constrMatrix_->Complete(*constrmap_,*dofrowmap);
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
@@ -198,7 +198,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
-  
   // Export redundant vectors into distributed ones
   actvalues_->Scale(0.0);
   actvalues_->Export(*actredundant,*conimpo_,Add);
@@ -234,7 +233,7 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     LINALG::Export(*actvalues_,*actredundant);
     //Compute current values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
-    p.set("MinID",minConstrID_);
+    p.set("OffsetID",offsetID_);
     volconstr3d_->Evaluate(p,null,null,null,null,actredundant);
     areaconstr3d_->Evaluate(p,null,null,null,null,actredundant);
     areaconstr2d_->Evaluate(p,null,null,null,null,actredundant);
@@ -298,7 +297,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   actdisc_->SetState("displacement",disp);
   
   RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
-  p.set("MinID",minMonitorID_);
+  p.set("OffsetID",minMonitorID_);
   
   volmonitor3d_->Evaluate(p,actmonredundant);
   areamonitor3d_->Evaluate(p,actmonredundant);

@@ -266,7 +266,7 @@ namespace UTILS
     RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
     RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
     RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
-    int minConstrID_;  ///< smallest constraint boundary condition ID
+    int offsetID_;  ///< smallest constraint boundary condition ID
     int numConstrID_;  ///< number of constraint boundary conditions
     int numMonitorID_;  ///< smallest monitor boundary condition ID
     int minMonitorID_;  ///< number monitor boundary condition ID

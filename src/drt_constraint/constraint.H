@@ -29,9 +29,9 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\brief UTILS: namespace constaining general utils for BACI, as constraints, ...
-
+\brief UTILS: namespace containing general utils for BACI, as constraints, potentials, surface stress, ...
 */
+
 namespace UTILS
 {
   /*!

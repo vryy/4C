@@ -122,15 +122,8 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
       ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
       
-//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-
-//      const int minID =params.get("MinID",0);
-//      const int condID=params.get("ConditionID",-1);
-//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-//      elevec1.Scale((*lambdav)[condID-minID]);
-//      elemat1.Scale((*lambdav)[condID-minID]);
       elevec3[0]=normaldistance;
     }
     break;
@@ -149,16 +142,8 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       double normaldistance =ComputeNormalDist2D(xscurr,elementnormal);
       ComputeFirstDerivDist2D(xscurr,elevec1,elementnormal);
       ComputeSecondDerivDist2D(xscurr,elemat1,elementnormal);
-//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-
-//      const int minID =params.get("MinID",0);
-//      const int condID=params.get("ConditionID",-1);
-//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-//      elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
-//      elemat1.Scale(-1.0*(*lambdav)[condID-minID]);
-//      elevec2.Scale(-1.0);
       elevec3[0]=normaldistance;
     }    
     break;
@@ -178,16 +163,8 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       ComputeFirstDerivAngle2D(xscurr,elevec1);
       ComputeSecondDerivAngle2D(xscurr,elemat1);
       
-//      RCP<Epetra_Vector> lambdav=params.get<RCP<Epetra_Vector> >("LagrMultVector");
-//
-//      const int minID =params.get("MinID",0);
-//      const int condID=params.get("ConditionID",-1);
-//      if (condID<0) dserror("What happened here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-//      elevec1.Scale(-1*(*lambdav)[condID-minID]);
-//      elemat1.Scale(-1*(*lambdav)[condID-minID]);
-//      elevec2.Scale(-1.0);
       elevec3[0]=angle;
       
     }  
@@ -387,6 +364,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D
   elevector[4]=normal[0]/normal.Norm2();
 
   elevector[5]=normal[1]/normal.Norm2();
+  elevector.Scale(-1.0);
   return;
 }
 
@@ -419,7 +397,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   ;
   elevector[1]
   =
-  -((-(vec2[0]/sqrt(vec1normsquare*vec2normsquare)) +
+  ((-(vec2[0]/sqrt(vec1normsquare*vec2normsquare)) +
   (vec2normsquare*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
   pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
@@ -427,7 +405,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   ;
   elevector[2]
   =
-  -(((xc(0,1) - xc(2,1))/sqrt(vec1normsquare*vec2normsquare) -
+  (((xc(0,1) - xc(2,1))/sqrt(vec1normsquare*vec2normsquare) -
   ((-2*vec2normsquare*vec1[1] - 2*vec1normsquare*vec2[0])*(vec2[1]*xc(0,0) -
   vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1)))/(2.*pow(vec1normsquare*vec2normsquare,1.5)))/sqrt(1 -
@@ -436,7 +414,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   ;
   elevector[3]
   =
-  -(((-xc(0,0) + xc(2,0))/sqrt(vec1normsquare*vec2normsquare) -
+  (((-xc(0,0) + xc(2,0))/sqrt(vec1normsquare*vec2normsquare) -
   ((2*vec2normsquare*vec1[0] - 2*vec1normsquare*vec2[1])*(vec2[1]*xc(0,0) -
   vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1)))/(2.*pow(vec1normsquare*vec2normsquare,1.5)))/sqrt(1 -
@@ -445,7 +423,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   ;
   elevector[4]
   =
-  -(((-xc(0,1) + xc(1,1))/sqrt(vec1normsquare*vec2normsquare) -
+  (((-xc(0,1) + xc(1,1))/sqrt(vec1normsquare*vec2normsquare) -
   (vec1normsquare*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
   pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
@@ -453,7 +431,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   ;
   elevector[5]
   =
-  -((vec1[1]/sqrt(vec1normsquare*vec2normsquare) -
+  ((vec1[1]/sqrt(vec1normsquare*vec2normsquare) -
   (vec1normsquare*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
   pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
@@ -2165,6 +2143,8 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::Se
   elematrix(5,5)=0;
   return;
   
+  elematrix.Scale(-1.0);
+  
 }
 
 /*----------------------------------------------------------------------*
@@ -3023,6 +3003,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivAngle2D(const LINALG::S
   xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
   ;
 
+  elematrix.Scale(-1.0);
 }
 
 //=======================================================================

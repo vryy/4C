@@ -121,7 +121,7 @@ void UTILS::Monitor::EvaluateMonitor
     // Get ConditionID of current condition if defined and write value in parameterlist
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     const int condID=(*CondIDVec)[0];
-    const int minID=params.get("MinID",0);
+    const int offsetID=params.get("OffsetID",0);
     params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
     // define element matrices and vectors
@@ -155,7 +155,7 @@ void UTILS::Monitor::EvaluateMonitor
       // assembly
       vector<int> constrlm;
       vector<int> constrowner;
-      constrlm.push_back(condID-minID);
+      constrlm.push_back(condID-offsetID);
       constrowner.push_back(curr->second->Owner());
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
     }

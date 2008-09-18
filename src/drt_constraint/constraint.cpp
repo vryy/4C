@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
  *----------------------------------------------------------------------*/
 UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
         const string& conditionname,
-        int& minID,
+        int& offsetID,
         int& maxID):
 actdisc_(discr)
 {
@@ -40,9 +40,9 @@ actdisc_(discr)
       {
         maxID=condID;
       }
-      if (condID<minID)
+      if (condID<offsetID)
       {
-        minID=condID;
+        offsetID=condID;
       }
       
       vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
@@ -270,9 +270,9 @@ void UTILS::Constraint::EvaluateConstraint(
       if (curvenum>=0 )
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       
-      // global and local ID of this bc in the redundatn vectors
-      const int minID=params.get("MinID",0);
-      int gindex = condID-minID;
+      // global and local ID of this bc in the redundant vectors
+      const int offsetID = params.get<int>("OffsetID");
+      int gindex = condID-offsetID;
       const int lindex = (systemvector3->Map()).LID(gindex);
       
       // store loadcurve values
@@ -333,7 +333,7 @@ void UTILS::Constraint::EvaluateConstraint(
           // assemble to rectangular matrix. The column corresponds to the constraint ID.
           // scale with time integrator dependent value
           vector<int> colvec(1);
-          colvec[0]=condID-minID;
+          colvec[0]=gindex;
           elevector2.Scale(scConMat);
           systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
         }
@@ -346,7 +346,7 @@ void UTILS::Constraint::EvaluateConstraint(
         {
           vector<int> constrlm;
           vector<int> constrowner;
-          constrlm.push_back(condID-minID);
+          constrlm.push_back(gindex);
           constrowner.push_back(curr->second->Owner());
           LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
         }
@@ -416,14 +416,10 @@ void UTILS::Constraint::InitializeConstraint(
           
         vector<int> constrlm;
         vector<int> constrowner;
-        //for (int j=0; j<elevector3.Length();j++)
-        {
-          int minID=params.get("MinID",0);
-          constrlm.push_back(condID-minID);
-          constrowner.push_back(curr->second->Owner());
-        }
+        int offsetID = params.get<int> ("OffsetID");
+        constrlm.push_back(condID-offsetID);
+        constrowner.push_back(curr->second->Owner());
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
-        //cout<<"dense: "<<elevector3[0]<<", sparse: "<<*systemvector<<endl;
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;

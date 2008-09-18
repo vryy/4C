@@ -98,11 +98,11 @@ namespace UTILS
 
 private:
 
-  
+    /// possible solver strategies
     enum algorithm
     {
-      direct,
-      iterative
+      direct, ///< solve directly
+      iterative  ///< solve iteratively with Uzawa algorithm
     };
   
     // do not want = operator, cctor

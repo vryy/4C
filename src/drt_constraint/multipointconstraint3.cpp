@@ -32,7 +32,7 @@ UTILS::MPConstraint3::MPConstraint3
 (
   RCP<DRT::Discretization> discr,
   const string& conditionname,
-  int& minID,
+  int& offsetID,
   int& maxID
 ):
 MPConstraint
@@ -49,7 +49,7 @@ MPConstraint
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*(*conditer)->Get<vector<int> >("ConditionID"))[0];
-      if (minID>maxID) minID=maxID;
+      if (offsetID>maxID) offsetID=maxID;
       const string* type = (*conditer)-> Get<string>("control");
       if (*type == "abs")  
         absconstraint_[condID]=true;
@@ -57,7 +57,6 @@ MPConstraint
         absconstraint_[condID]=false;
     }
     
-
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE",maxID);
     map<int, RCP<DRT::Discretization> > ::iterator discriter;
    
@@ -117,7 +116,6 @@ void UTILS::MPConstraint3::Initialize(
   // in case init is set to true we want to set systemvector1 to the amplitudes defined 
   // in the input file
   // allocate vectors for amplitudes and IDs
- 
   
   vector<double> amplit(constrcond_.size());
   vector<int> IDs(constrcond_.size());
@@ -136,9 +134,8 @@ void UTILS::MPConstraint3::Initialize(
         const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
         const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
         amplit[i]=(*MPCampl)[0];
-        const int mid=params.get("MinID",0);
+        const int mid=params.get("OffsetID",0);
         IDs[i]=(*MPCcondID)[0]-mid;
-        // remember next time, that this condition is already initialized, i.e. active
       } 
       else
       {
@@ -391,8 +388,8 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       }   
   
       //define global and local index of this bc in redundant vectors      
-      const int minID=params.get("MinID",0);
-      int gindex = eid-minID;
+      const int offsetID = params.get<int>("OffsetID");
+      int gindex = eid-offsetID;
       const int lindex = (systemvector3->Map()).LID(gindex);
       
       // Get the current lagrange multiplier value for this condition  
@@ -410,7 +407,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (assemblemat2) elematrix2.Shape(eledim,eledim);
       if (assemblevec1) elevector1.Size(eledim);
       if (assemblevec2) elevector2.Size(eledim);        
-      if (assemblevec3) elevector3.Size(systemvector3->MyLength());
+      if (assemblevec3) elevector3.Size(1);
       params.set("ConditionID",eid);
       
       params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
@@ -427,9 +424,9 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       }
       if (assemblemat2)
       {
-        int minID=params.get("MinID",0);
+        int offsetID=params.get<int>("OffsetID");
         vector<int> colvec(1);
-        colvec[0]=eid-minID;
+        colvec[0]=gindex;
         elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
       }
@@ -504,21 +501,21 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     elematrix2.Shape(eledim,eledim);
     elevector1.Size(eledim);
     elevector2.Size(eledim);        
-    elevector3.Size(systemvector->MyLength());
-    params.set("ConditionID",eid);
+    elevector3.Size(1);
     // call the element evaluate method
     int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
-
+    
+    //assembly
     vector<int> constrlm;
     vector<int> constrowner;
-    for (int i=0; i<elevector3.Length();i++)
-    {
-      constrlm.push_back(i);
-      constrowner.push_back(actele->Owner());
-    }
+    int offsetID = params.get<int>("OffsetID");
+    constrlm.push_back(eid-offsetID);
+    constrowner.push_back(actele->Owner());
     LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
+    
+    // loadcurve business
     const vector<int>*    curve  = cond->Get<vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
@@ -535,6 +532,6 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
   
   }
   return;
-} // end of EvaluateCondition
+} // end of InitializeConstraint
 
 #endif
