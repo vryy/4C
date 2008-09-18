@@ -800,7 +800,10 @@ void SCATRA::ScaTraTimIntImpl::SetIterLomaFields(
 void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
+  {
     phin_-> PutScalar(0); // just to be sure!
+    phinp_-> PutScalar(0); // just to be sure!
+  }
   else if (init == 1)  // field_by_function
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -821,6 +824,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         // evaluate component k of spatial function
         double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
         phin_->ReplaceMyValues(1,&initialval,&doflid);
+        phinp_->ReplaceMyValues(1,&initialval,&doflid); // do not remove!
       }
     }
   }
@@ -860,6 +864,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
             const int dofgid = nodedofset[k];
             int doflid = dofrowmap->LID(dofgid);
             phin_->ReplaceMyValues(1,&phi0,&doflid);
+            phinp_->ReplaceMyValues(1,&phi0,&doflid); // do not remove!
           }
         }
       }

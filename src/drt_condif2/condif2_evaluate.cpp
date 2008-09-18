@@ -172,7 +172,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       const int iel = NumNode();
       const int nsd=2;
       Epetra_SerialDenseVector evel(nsd*iel);
-      DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
+      ExtractMyNodeBasedValues2D(evel,velocity);
 
       // get flag for fine-scale subgrid diffusivity
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
