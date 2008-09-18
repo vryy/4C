@@ -115,14 +115,19 @@ void UTILS::MPConstraint2::Initialize(
       const int mid=params.get("OffsetID",0);
       IDs[i]=(*MPCcondID)[0]-mid;
       // remember next time, that this condition is already initialized, i.e. active
-      activecons_.erase(condID);
-      activecons_[condID]=true;
-      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      activecons_.find(condID)->second=true;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      }
     }
   }
   // replace systemvector by the given amplitude values
   // systemvector is supposed to be the vector with initial values of the constraints
-  systemvector->ReplaceGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
+  if (actdisc_->Comm().MyPID()==0)
+  {
+    systemvector->ReplaceGlobalValues(amplit.size(),&(amplit[0]),&(IDs[0]));
+  }
   
   return;
 }
