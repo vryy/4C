@@ -303,8 +303,8 @@ private:
   //! thermal energy responsible for statistical forces
   double kT_;
   
-  //! viscosity of surrounding fluid
-  double eta_;
+  //! frictional coefficient per length (approximated by the one for an infinitely long staff)
+  double zeta_;
 
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int halfrotations_;

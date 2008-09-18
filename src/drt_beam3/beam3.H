@@ -342,8 +342,11 @@ private:
   //! thermal energy responsible for statistical forces
   double kT_;
   
-  //! viscosity of surrounding fluid
-  double eta_;
+  //! frictional coefficient per length (approximated by the one for an infinitely long staff)
+  double zeta_;
+  
+  //! polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+  int stochasticorder_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -371,18 +374,19 @@ private:
   void computestiffbasis(const BlitzMat3x3& Tnew, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
-  void b3_nlnstiffmass(vector<double>&           disp, 
-                       Epetra_SerialDenseMatrix* stiffmatrix,
-                       Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force);
+  void b3_nlnstiffmass( ParameterList& params,
+                        vector<double>&           vel,
+                        vector<double>&           disp,
+                        Epetra_SerialDenseMatrix* stiffmatrix,
+                        Epetra_SerialDenseMatrix* massmatrix,
+                        Epetra_SerialDenseVector* force);
   
   //calculation of nonlinear stiffness approximated by finite differences; this function should
   //be activated only for bug fixing 
-  /*
-  Epetra_SerialDenseMatrix b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force);
-  */
   
+  Epetra_SerialDenseMatrix b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel,ParameterList& params);
   
+    
   //! lump mass matrix (bborn 07/08)
   void b3_lumpmass(Epetra_SerialDenseMatrix* emass);
   

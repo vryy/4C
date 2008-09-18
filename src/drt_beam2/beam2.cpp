@@ -37,7 +37,7 @@ crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
 kT_(0),
-eta_(0),
+zeta_(0),
 halfrotations_(0),
 beta0_(0),
 stochasticorder_(0),
@@ -60,7 +60,7 @@ crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
 kT_(old.kT_),
-eta_(old.eta_),
+zeta_(old.zeta_),
 halfrotations_(old.halfrotations_),
 beta0_(old.beta0_),
 stochasticorder_(old.stochasticorder_),
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   //thermal energy responsible for statistical forces
   AddtoPack(data,kT_);
   //viscosity in background fluid
-  AddtoPack(data,eta_);
+  AddtoPack(data,zeta_);
   //number of half rotations in comparision with reference configuration
   AddtoPack(data,halfrotations_);
   //angle relative to x-axis in reference configuration
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,kT_);
   //viscosity in background fluid
-  ExtractfromPack(position,data,eta_);
+  ExtractfromPack(position,data,zeta_);
   //number of half rotations in comparision with reference configuration
   ExtractfromPack(position,data,halfrotations_);
   //angle relative to x-axis in reference configuration
@@ -373,13 +373,14 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
        if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
        {
          currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-         currele->eta_ = statisticalparams.get<double>("ETA",0.0);
+         //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
+         currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
          currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0);
        }
        else
        {
          currele->kT_ = 0.0;
-         currele->eta_ = 0.0;
+         currele->zeta_ = 0.0;
          currele->stochasticorder_ = 0;
        }
       

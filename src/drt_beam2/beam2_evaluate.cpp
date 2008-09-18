@@ -239,12 +239,9 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   {	    
     //in case of a lumped damping matrix stochastic forces are applied analogously
     if (stochasticorder_ == 0)
-    {
-  	  //calculating diagonal entry of damping matrix  
-  	  double gamma_trans = 4*PI*eta_*lrefe_/2;
-  	  
+    { 	  
   	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-  	  double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+  	  double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
   
   	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
   	  //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -258,12 +255,9 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
     }
     //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
     else if (stochasticorder_ == 1)
-    {
-      //calculating diagonal entry of damping matrix  
-      double gamma_trans = 4*PI*eta_*lrefe_/3;
-      
+    {     
       //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-      double stand_dev_trans = pow(2 * kT_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+      double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
   
       //creating a random generator object which creates random numbers with mean = 0 and standard deviation
       //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -402,6 +396,9 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   double ym; //Young's modulus
   double sm; //shear modulus
   double density; //density
+  
+  //lamda is the derivative of current velocity with respect to current displacement
+  double lamda = params.get<double>("gamma",0.581) / (params.get<double>("delta time",0.01)*params.get<double>("beta",0.292));
 
 
 
@@ -457,7 +454,34 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/lrefe_;
   
   //local internal shear force   
-  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_);  
+  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_); 
+  
+  //calculation of global internal forces from force = B_transposed*force_loc 
+  if (force != NULL)
+  {
+    BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
+    
+    //for problems of statistical mechanics viscous damping is incalculated
+    if(kT_ > 0)
+    {
+      if (stochasticorder_ == 0)
+      {
+        //adding internal forces due to viscous damping (by background fluid of thermal bath)
+        (*force)[0] += zeta_*vel[0]/2;
+        (*force)[1] += zeta_*vel[1]/2;
+        (*force)[3] += zeta_*vel[3]/2;
+        (*force)[4] += zeta_*vel[4]/2;
+      }
+      else if (stochasticorder_ == 1)
+      {
+        //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
+        (*force)[0] += zeta_*(vel[0]/3 + vel[3]/6);
+        (*force)[1] += zeta_*(vel[1]/3 + vel[4]/6);
+        (*force)[3] += zeta_*(vel[3]/3 + vel[0]/6);
+        (*force)[4] += zeta_*(vel[4]/3 + vel[1]/6);
+      }
+    }   
+  }
 
   //calculating tangential stiffness matrix in global coordinates
   if (stiffmatrix != NULL)
@@ -486,57 +510,33 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
         for(int id_col=0; id_col<6; id_col++)
             (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
     
-    if (stochasticorder_ == 0)
+    //for problems of statistical mechanics viscous damping is incalculated
+    if(kT_ > 0)
     {
-      //adding entries for lumped viscous damping "stiffness" (by background fluid of thermal bath)
-      double viscousstiffness = 4*PI*eta_*lrefe_*params.get<double>("gamma",0.581) / (2*params.get<double>("delta time",0.01)*params.get<double>("beta",0.292)); 
-      (*stiffmatrix)(0,0) += viscousstiffness;
-      (*stiffmatrix)(1,1) += viscousstiffness;
-      (*stiffmatrix)(3,3) += viscousstiffness;
-      (*stiffmatrix)(4,4) += viscousstiffness;
+      if (stochasticorder_ == 0)
+      {
+        //adding entries for lumped viscous damping "stiffness" (by background fluid of thermal bath) 
+        (*stiffmatrix)(0,0) += (zeta_/2)*lamda;
+        (*stiffmatrix)(1,1) += (zeta_/2)*lamda;
+        (*stiffmatrix)(3,3) += (zeta_/2)*lamda;
+        (*stiffmatrix)(4,4) += (zeta_/2)*lamda;
+      }
+      else if (stochasticorder_ == 1)
+      {
+        //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath) 
+        (*stiffmatrix)(0,0) += (zeta_/3)*lamda;
+        (*stiffmatrix)(1,1) += (zeta_/3)*lamda;
+        (*stiffmatrix)(3,3) += (zeta_/3)*lamda;
+        (*stiffmatrix)(4,4) += (zeta_/3)*lamda;
+        
+        (*stiffmatrix)(0,3) += (zeta_/6)*lamda;    
+        (*stiffmatrix)(3,0) += (zeta_/6)*lamda;   
+        (*stiffmatrix)(1,4) += (zeta_/6)*lamda;
+        (*stiffmatrix)(4,1) += (zeta_/6)*lamda;
+      }   
     }
-    else if (stochasticorder_ == 1)
-    {
-      //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-      double viscousstiffness = 4*PI*eta_*lrefe_*params.get<double>("gamma",0.581) / (3*params.get<double>("delta time",0.01)*params.get<double>("beta",0.292)); 
-      (*stiffmatrix)(0,0) += viscousstiffness;
-      (*stiffmatrix)(1,1) += viscousstiffness;
-      (*stiffmatrix)(3,3) += viscousstiffness;
-      (*stiffmatrix)(4,4) += viscousstiffness;
-      
-      (*stiffmatrix)(0,3) += viscousstiffness / 2.0;    
-      (*stiffmatrix)(3,0) += viscousstiffness / 2.0;   
-      (*stiffmatrix)(1,4) += viscousstiffness / 2.0;
-      (*stiffmatrix)(4,1) += viscousstiffness / 2.0;
-    }   
   }
   
-
-  //calculation of global internal forces from force = B_transposed*force_loc 
-  if (force != NULL)
-  {
-    BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
-    
-    if (stochasticorder_ == 0)
-    {
-      //adding internal forces due to viscous damping (by background fluid of thermal bath)
-      (*force)[0] += 4*PI*eta_*lrefe_*vel[0]/2;
-      (*force)[1] += 4*PI*eta_*lrefe_*vel[1]/2;
-      (*force)[3] += 4*PI*eta_*lrefe_*vel[3]/2;
-      (*force)[4] += 4*PI*eta_*lrefe_*vel[4]/2;
-    }
-    else if (stochasticorder_ == 1)
-    {
-      //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-      (*force)[0] += 4*PI*eta_*lrefe_*(vel[0]/3 + vel[3]/6);
-      (*force)[1] += 4*PI*eta_*lrefe_*(vel[1]/3 + vel[4]/6);
-      (*force)[3] += 4*PI*eta_*lrefe_*(vel[3]/3 + vel[0]/6);
-      (*force)[4] += 4*PI*eta_*lrefe_*(vel[4]/3 + vel[1]/6);
-    }
-    
-    
-  }
- 
   //calculating mass matrix (local version = global version) 
   if (massmatrix != NULL)
   {
@@ -707,18 +707,18 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(BlitzMat3x2 xc
       if (stochasticorder_ == 0)
       {
         //adding internal forces due to viscous damping (by background fluid of thermal bath)
-        force_aux[0] += 4*PI*eta_*lrefe_*vcurr[0]/2;
-        force_aux[1] += 4*PI*eta_*lrefe_*vcurr[1]/2;
-        force_aux[3] += 4*PI*eta_*lrefe_*vcurr[3]/2;
-        force_aux[4] += 4*PI*eta_*lrefe_*vcurr[4]/2;
+        force_aux[0] += zeta_*vcurr[0]/2;
+        force_aux[1] += zeta_*vcurr[1]/2;
+        force_aux[3] += zeta_*vcurr[3]/2;
+        force_aux[4] += zeta_*vcurr[4]/2;
       }
       else if (stochasticorder_ == 1)
       {
         //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-        force_aux[0] += 4*PI*eta_*lrefe_*(vcurr[0]/3 + vcurr[3]/6);
-        force_aux[1] += 4*PI*eta_*lrefe_*(vcurr[1]/3 + vcurr[4]/6);
-        force_aux[3] += 4*PI*eta_*lrefe_*(vcurr[3]/3 + vcurr[0]/6);
-        force_aux[4] += 4*PI*eta_*lrefe_*(vcurr[4]/3 + vcurr[1]/6);
+        force_aux[0] += zeta_*(vcurr[0]/3 + vcurr[3]/6);
+        force_aux[1] += zeta_*(vcurr[1]/3 + vcurr[4]/6);
+        force_aux[3] += zeta_*(vcurr[3]/3 + vcurr[0]/6);
+        force_aux[4] += zeta_*(vcurr[4]/3 + vcurr[1]/6);
       }
 
       

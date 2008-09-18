@@ -35,8 +35,8 @@ Iyy_(0),
 Izz_(0),
 Irr_(0),
 kT_(0),
-eta_(0),
-
+zeta_(0),
+stochasticorder_(0),
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
@@ -69,7 +69,8 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  kT_(old.kT_),
- eta_(old.eta_),
+ zeta_(old.zeta_),
+ stochasticorder_(old.stochasticorder_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -166,7 +167,9 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   //thermal energy responsible for statistical forces
   AddtoPack(data,kT_);
   //viscosity of surrounding fluid
-  AddtoPack(data,eta_);
+  AddtoPack(data,zeta_);
+  //polynomial order for interpolation of stochastic fields
+  AddtoPack(data,stochasticorder_); 
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -220,7 +223,9 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,kT_);
   //viscosity of surrounding fluid
-  ExtractfromPack(position,data,eta_);
+  ExtractfromPack(position,data,zeta_);
+  //polynomial order for interpolation of stochastic fields
+  ExtractfromPack(position,data,stochasticorder_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -463,12 +468,15 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
       if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
       {
         currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-        currele->eta_ = statisticalparams.get<double>("ETA",0.0);
+        //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
+        currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
+        currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0);
       }
       else
       {
         currele->kT_ = 0.0;
-        currele->eta_ = 0.0;
+        currele->zeta_ = 0.0;
+        currele->stochasticorder_ = 0;
       }
             
     } //for (int num=0; num<dis_.NumMyColElements(); ++num)
