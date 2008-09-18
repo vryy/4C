@@ -68,9 +68,6 @@ TOLCONSTR    1.0E-06
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 MAXITER      50
-UZAWAPARAM   1.0
-UZAWAMAXITER 20
-UZAWAALGO    newtonlinuzawa
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
