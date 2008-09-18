@@ -17,6 +17,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
+extern struct _GENPROB     genprob;
+
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
@@ -24,6 +26,9 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Fluid3::ReadElement()
 {
+  if (genprob.ndim!=3)
+    dserror("Not a 3d problem. Panic.");
+
     typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;
     gid2distype["HEX8"]     = hex8;
