@@ -61,7 +61,7 @@ extern struct _FILES  allfiles;
 extern struct _MATERIAL    *mat;
 
 
-std::map<int, RefCountPtr<MicroStatic> > MAT::MicroMaterialGP::microstaticmap_;
+std::map<int, RefCountPtr<STRUMULTI::MicroStatic> > MAT::MicroMaterialGP::microstaticmap_;
 std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
 
 
@@ -276,7 +276,7 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   // create a static "time integrator"
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  MicroStatic::SetDefaults(*params);
+  STRUMULTI::MicroStatic::SetDefaults(*params);
 
   params->set<double>("beta",sdyn.get<double>("BETA"));
   params->set<double>("gamma",sdyn.get<double>("GAMMA"));
@@ -334,7 +334,7 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
 
-  microstaticmap_[microdisnum_] = rcp(new MicroStatic(params,actdis,solver));
+  microstaticmap_[microdisnum_] = rcp(new STRUMULTI::MicroStatic(params,actdis,solver));
 }
 
 void MAT::MicroMaterialGP::EasInit()
@@ -366,7 +366,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   const bool eleowner)
 {
   // select corresponding "time integration class" for this microstructure
-  RefCountPtr<MicroStatic> microstatic = microstaticmap_[microdisnum_];
+  RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // this is a comparison of two doubles, but since timen_ is always a
   // copy of time as long as we are within a time step, any variation

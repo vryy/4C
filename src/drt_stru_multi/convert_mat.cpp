@@ -13,10 +13,10 @@ Maintainer: Lena Wiechert
 
 #include "microstatic.H"
 
-void MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
-                             const Epetra_SerialDenseMatrix& F_inv,
-                             const Epetra_SerialDenseVector& S,
-                             Epetra_SerialDenseMatrix& cmat)
+void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
+                                        const Epetra_SerialDenseMatrix& F_inv,
+                                        const Epetra_SerialDenseVector& S,
+                                        Epetra_SerialDenseMatrix& cmat)
 {
   // For details concerning the conversion of the constitutive tensor
   // relating first Piola Kirchhoff stresses and deformation gradient

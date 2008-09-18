@@ -42,8 +42,21 @@ using namespace std;
 using namespace IO;
 
 /*!
-\brief Static control for microstructural problems
-in case of microscale analyses
+\brief Namespace for structural multi-scale related algorithms
+
+\author wiechert (wiechert@lnm.mw.tum.de)
+*/
+namespace STRUMULTI
+{
+
+/*!
+\brief Quasi-static control for microstructural analysis
+in case of multi-scale problems
+
+Note that implementation currently only holds for imr-like generalized
+alpha time integration. Corresponding functions (e.g. UpdateNewTimeStep,
+but also calls to SurfaceStressManager!) need to be adapted accordingly
+if usage of other time integration schemes should be enabled.
 
 \author wiechert (wiechert@lnm.mw.tum.de)
 */
@@ -53,7 +66,7 @@ class MicroStatic
 public:
 
   /*!
-  \brief Standard Constructor -> currently no output for microscale possible
+  \brief Standard Constructor
 
   */
   MicroStatic(RCP<ParameterList> params,
@@ -73,7 +86,7 @@ public:
   static void SetDefaults(ParameterList& params);
 
   /*!
-  \brief read restart
+  \brief Read restart
 
   */
   void ReadRestart(int step,
@@ -83,8 +96,7 @@ public:
                    string name);
 
   /*!
-  \brief return time from parameter list (needed for writing of mesh
-  in case of restart)
+  \brief Return time from parameter list
 
   */
   double GetTime()
@@ -93,19 +105,20 @@ public:
   }
 
   /*!
-  \brief do constant predictor step
+  \brief Predictor step
 
   */
   void Predictor(const Epetra_SerialDenseMatrix* defgrd);
 
   /*!
-  \brief do full Newton iteration
+  \brief Full Newton iteration
 
   */
   void FullNewton();
 
   /*!
-  \brief update for a new time step
+  \brief Update for a new time step in case of imr-like generalized
+  alpha time integration
 
   */
   void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
@@ -116,7 +129,7 @@ public:
                          RefCountPtr<UTILS::SurfStressManager> surf_stress_man);
 
   /*!
-  \brief write update
+  \brief Write output and (possibly) restart
 
   */
   void Output(RefCountPtr<DiscretizationWriter> output,
@@ -124,13 +137,23 @@ public:
               const int istep,
               const double dt);
 
+  /*!
+  \brief Determine toggle vector identifying prescribed boundary dofs
 
-  /// new stuff for multiscale analyses
-
+  */
   void DetermineToggle();
 
+  /*!
+  \brief Evaluate microscale boundary displacement according to
+  associated macroscale deformation gradient
+
+  */
   void EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd);
 
+  /*!
+  \brief Set old state given from micromaterialgp
+
+  */
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
                    RefCountPtr<Epetra_Vector> dism,
                    RefCountPtr<Epetra_Vector> disn,
@@ -141,16 +164,37 @@ public:
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda);
 
+  /*!
+  \brief Set time and step
+
+  */
   void SetTime(double timen, int istep);
 
+  /*!
+  \brief Set boolean newstep indicating whether a new time step was
+  entered or not
+
+  */
   void SetNewStep(bool newstep) { params_->set("newstep", newstep); }
 
-//  RefCountPtr<Epetra_Vector> ReturnNewDism();
+  /*!
+  \brief Clear all displacement states
 
+  */
   void ClearState();
 
+  /*!
+  \brief Set up everything for homogenization
+  (e.g. calculation of matrix D containing reference boundary coordinates)
+
+  */
   void SetUpHomogenization();
 
+  /*!
+  \brief Perform homogenization, i.e. calculate second Piola-Kirchhoff
+  stresses and constitutive tensor by averaging over RVE
+
+  */
   void StaticHomogenization(Epetra_SerialDenseVector* stress,
                             Epetra_SerialDenseMatrix* cmat,
                             double *density,
@@ -158,27 +202,55 @@ public:
                             const bool mod_newton,
                             bool& build_stiff);
 
+  /*!
+  \brief Convert constitutive tensor relating first Piola-Kirchhoff
+  stresses and deformation gradient to tensor relating second
+  Piola-Kirchhoff stresses and Green-Lagrange strains
+
+  For details cf.
+
+  Marsden and Hughes, Mathematical Foundations of Elasticity,
+  Dover, pg. 215
+  */
   void ConvertMat(const Epetra_MultiVector& cmatpf,
                   const Epetra_SerialDenseMatrix& inv_defgrd,
                   const Epetra_SerialDenseVector& S,
                   Epetra_SerialDenseMatrix& cmat);
 
-  void calc_cmat(const Epetra_MultiVector& K_M,
-                 const Epetra_SerialDenseMatrix& inv_defgrd,
-                 const Epetra_SerialDenseVector& S,
-                 Epetra_SerialDenseMatrix* cmat,
-                 const Epetra_SerialDenseMatrix* F);
+//   void calc_cmat(const Epetra_MultiVector& K_M,
+//                  const Epetra_SerialDenseMatrix& inv_defgrd,
+//                  const Epetra_SerialDenseVector& S,
+//                  Epetra_SerialDenseMatrix* cmat,
+//                  const Epetra_SerialDenseMatrix* F);
+
+  /*!
+  \brief Check for Newton convergence
+  */
 
   bool Converged(const string type, const double disinorm,
                  const double resnorm, const double toldisp,
                  const double tolres);
 
+  /*!
+  \brief Calculate reference norms for relative convergence checks
+
+  */
   void CalcRefNorms();
 
+  /*!
+  \brief Output of Newton details
+
+  Note that this is currently disabled for the sake of clearness
+  */
   void PrintNewton(bool printscreen, bool print_unconv,
                    Epetra_Time timer, int numiter, int maxiter,
                    double fresmnorm, double disinorm, string convcheck);
 
+  /*!
+  \brief Output of predictor details
+
+  Note that this is currently disabled for the sake of clearness
+  */
   void PrintPredictor(string convcheck, double fresmnorm);
 
 
@@ -239,6 +311,6 @@ protected:
   RefCountPtr<Epetra_Import> importp_;
   RefCountPtr<Epetra_Import> importf_;
 };
-
+}
 #endif
 #endif

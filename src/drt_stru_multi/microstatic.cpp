@@ -39,9 +39,9 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |  ctor (public)|
  *----------------------------------------------------------------------*/
-MicroStatic::MicroStatic(RCP<ParameterList> params,
-                         RCP<DRT::Discretization> dis,
-                         RCP<LINALG::Solver> solver):
+STRUMULTI::MicroStatic::MicroStatic(RCP<ParameterList> params,
+                                         RCP<DRT::Discretization> dis,
+                                         RCP<LINALG::Solver> solver):
 params_(params),
 discret_(dis),
 solver_(solver)
@@ -159,8 +159,8 @@ solver_(solver)
   // microscale simulations are due to the MicroBoundary condition
   // (and not Dirichlet BC)
 
-  MicroStatic::DetermineToggle();
-  MicroStatic::SetUpHomogenization();
+  STRUMULTI::MicroStatic::DetermineToggle();
+  STRUMULTI::MicroStatic::SetUpHomogenization();
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -206,7 +206,7 @@ solver_(solver)
   }
 
   return;
-} // MicroStatic::MicroStatic
+} // STRUMULTI::MicroStatic::MicroStatic
 
 
 //FSI::Debug dbg;
@@ -215,7 +215,7 @@ solver_(solver)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
+void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -334,13 +334,13 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 //   }
 
   return;
-} // MicroStatic::Predictor()
+} // STRUMULTI::MicroStatic::Predictor()
 
 
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::FullNewton()
+void STRUMULTI::MicroStatic::FullNewton()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -477,13 +477,13 @@ void MicroStatic::FullNewton()
   params_->set<int>("num iterations",numiter);
 
   return;
-} // MicroStatic::FullNewton()
+} // STRUMULTI::MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
+void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
                          const double time,
                          const int istep,
                          const double dt)
@@ -603,13 +603,13 @@ void MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
   }
 
   return;
-} // MicroStatic::Output()
+} // STRUMULTI::MicroStatic::Output()
 
 
 /*----------------------------------------------------------------------*
  |  set default parameter list (static/public)               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::SetDefaults(ParameterList& params)
+void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
 {
   params.set<bool>  ("print to screen"        ,false);
   params.set<bool>  ("print to err"           ,false);
@@ -645,7 +645,7 @@ void MicroStatic::SetDefaults(ParameterList& params)
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void MicroStatic::ReadRestart(int step,
+void STRUMULTI::MicroStatic::ReadRestart(int step,
                               RCP<Epetra_Vector> dis,
                               RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
                               RefCountPtr<UTILS::SurfStressManager> surf_stress_man,
@@ -693,13 +693,13 @@ void MicroStatic::ReadRestart(int step,
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
-MicroStatic::~MicroStatic()
+STRUMULTI::MicroStatic::~MicroStatic()
 {
   return;
 }
 
 
-void MicroStatic::DetermineToggle()
+void STRUMULTI::MicroStatic::DetermineToggle()
 {
   int np = 0;   // number of prescribed (=boundary) dofs needed for the
                 // creation of vectors and matrices for homogenization
@@ -742,7 +742,7 @@ void MicroStatic::DetermineToggle()
   np_ = np;
 }
 
-void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
+void STRUMULTI::MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 {
   vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
@@ -799,7 +799,7 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
   }
 }
 
-void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
+void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
                               RefCountPtr<Epetra_Vector> dism,
                               RefCountPtr<Epetra_Vector> disn,
                               RefCountPtr<UTILS::SurfStressManager> surfman,
@@ -825,7 +825,7 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
   oldKda_    = oldKda;
 }
 
-void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
+void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                                     RefCountPtr<Epetra_Vector> dism,
                                     RefCountPtr<Epetra_Vector> disn,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
@@ -862,21 +862,21 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   }
 }
 
-void MicroStatic::SetTime(double timen, int istep)
+void STRUMULTI::MicroStatic::SetTime(double timen, int istep)
 {
   params_->set<double>("total time", timen);
   params_->set<int>   ("step", istep);
 }
 
-//RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
+//RefCountPtr<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
 
-void MicroStatic::ClearState()
+void STRUMULTI::MicroStatic::ClearState()
 {
   dis_ = null;
   dism_ = null;
 }
 
-void MicroStatic::SetUpHomogenization()
+void STRUMULTI::MicroStatic::SetUpHomogenization()
 {
   int indp = 0;
   int indf = 0;
@@ -1001,7 +1001,7 @@ void MicroStatic::SetUpHomogenization()
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool MicroStatic::Converged(const string type, const double disinorm,
+bool STRUMULTI::MicroStatic::Converged(const string type, const double disinorm,
                             const double resnorm, const double toldisp,
                             const double tolres)
 {
@@ -1046,7 +1046,7 @@ bool MicroStatic::Converged(const string type, const double disinorm,
 /*----------------------------------------------------------------------*
  |  calculate reference norms for relative convergence checks   lw 12/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::CalcRefNorms()
+void STRUMULTI::MicroStatic::CalcRefNorms()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -1067,7 +1067,7 @@ void MicroStatic::CalcRefNorms()
 /*----------------------------------------------------------------------*
  |  print to screen and/or error file                           lw 12/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
+void STRUMULTI::MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
                               Epetra_Time timer, int numiter,
                               int maxiter, double fresmnorm, double disinorm,
                               string convcheck)
@@ -1134,7 +1134,7 @@ void MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
 /*----------------------------------------------------------------------*
  |  print to screen                                             lw 12/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
+void STRUMULTI::MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 {
   if (convcheck != "AbsRes_And_AbsDis" && convcheck != "AbsRes_Or_AbsDis")
   {
@@ -1151,12 +1151,12 @@ void MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 
 
 
-void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
-                                       Epetra_SerialDenseMatrix* cmat,
-                                       double *density,
-                                       const Epetra_SerialDenseMatrix* defgrd,
-                                       const bool mod_newton,
-                                       bool& build_stiff)
+void STRUMULTI::MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
+                                                  Epetra_SerialDenseMatrix* cmat,
+                                                  double *density,
+                                                  const Epetra_SerialDenseMatrix* defgrd,
+                                                  const bool mod_newton,
+                                                  bool& build_stiff)
 {
   // determine macroscopic parameters via averaging (homogenization) of
   // microscopic features accoring to Kouznetsova, Miehe etc.

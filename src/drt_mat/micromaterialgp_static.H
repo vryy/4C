@@ -70,7 +70,7 @@ private:
   const int microdisnum_;
 
   /// microstructure "time integration" classes (one for each micro-discretization)
-  static std::map<int, RefCountPtr<MicroStatic> > microstaticmap_;
+  static std::map<int, RefCountPtr<STRUMULTI::MicroStatic> > microstaticmap_;
 
   static std::map<int, int> microstaticcounter_;
 

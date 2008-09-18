@@ -32,6 +32,8 @@ namespace UTILS
 /*!
 \brief Class controlling surface stresses due to interfacial phenomena
 and containing all necessary history data
+
+\author wiechert (wiechert@lnm.mw.tum.de)
 */
 class SurfStressManager
 {
@@ -66,14 +68,15 @@ public:
                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
   /*!
-    \brief update history variables
+    \brief Update history variables
   */
   void Update();
 
   /*!
-    \brief get history variables needed for writing restart. The column map based
-    vectors used for calculations are exported to row map based ones
-    needed for writing.
+    \brief Get history variables needed for writing restart
+
+    The column map based vectors used for calculations are exported
+    to row map based ones needed for writing.
   */
   void GetHistory(RCP<Epetra_Vector> A_last_row,
                   RCP<Epetra_Vector> con_last_row,
@@ -85,14 +88,15 @@ public:
   }
 
   /*!
-    \brief get row map of surface elements
+    \brief Get row map of surface elements
   */
   RCP<Epetra_Map> GetSurfRowmap() { return surfrowmap_; }
 
   /*!
-    \brief set history variables after reading restart. The row map
-    based vectors written in case of restart are exported to column
-    based ones needed for calculations again.
+    \brief Set history variables after reading restart
+
+    The row map based vectors written in case of restart are
+    exported to column based ones needed for calculations again.
   */
   void SetHistory(RCP<Epetra_Vector> A_last,
                   RCP<Epetra_Vector> con_last,
@@ -104,15 +108,15 @@ public:
   }
 
   /*!
-    \brief Routine to calculate additional internal forces and
+    \brief Calculate additional internal forces and
     stiffnesses due to interfacial phenomena
 
     \param curvenum (in): number of time curve
     \param A (in): current interfacial area at (n+1-alphaf)
     \param Adiff (in): first partial derivatives of surface area at (n+1-alphaf)
     \param Adiff2 (in): second partial derivatives of surface area at (n+1-alphaf)
-    \param A (in): current interfacial area at (n+1)
-    \param Adiff (in): first partial derivatives of surface area at (n+1)
+    \param Anew (in): current interfacial area at (n+1)
+    \param Adiffnew (in): first partial derivatives of surface area at (n+1)
     \param fint (out): element internal force vector
     \param stiff (out): element stiffness matrix
     \param ID (in): ID of surface condition

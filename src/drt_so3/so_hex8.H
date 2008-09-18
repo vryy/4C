@@ -364,13 +364,13 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_homog_dens,
-    eas_init_multi,
-    eas_set_multi,
-    postprocess_stress,
+    calc_homog_dens,          //!< multi-scale: calculate homogenized density
+    eas_init_multi,           //!< multi-scale: initialize EAS parameters on microscale
+    eas_set_multi,            //!< multi-scale: set EAS parameters on microscale
+    postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
-    multi_readrestart
+    multi_readrestart         //!< multi-scale: read restart on microscale
   };
 
   //! kinematic types of so_hex8, but yet only total-lagrangian is implemented
@@ -540,17 +540,39 @@ protected:
           const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
 
 
-  // multi-scale section
+  //! @name Multi-scale related stuff
+
+  /*!
+   * \brief Calculate initial volume of microscale RVE
+   * */
   void soh8_initvol(ParameterList& params);
 
+  /*!
+   * \brief Determine a homogenized material density for multi-scale
+   * analyses by averaging over the initial volume
+   * */
   void soh8_homog(ParameterList& params);
 
+  /*!
+   * \brief Set EAS internal variables on the microscale
+   *
+   * Microscale internal EAS data has to be saved separately for every
+   * macroscopic Gauss point and set before the determination of
+   * microscale stiffness etc.
+   * */
   void soh8_set_eas_multi(ParameterList&  params);
 
+  /*!
+   * \brief Initialize EAS internal variables on the microscale
+   * */
   void soh8_eas_init_multi(ParameterList&  params);
 
+  /*!
+   * \brief Read restart on the microscale
+   * */
   void soh8_read_restart_multi(ParameterList& params);
 
+  //@}
 
   /// temporary method for compatibility with solidshell, needs clarification
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
