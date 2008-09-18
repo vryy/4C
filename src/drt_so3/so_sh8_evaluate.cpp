@@ -318,16 +318,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 
     case calc_struct_update_istep: {
       // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone) {
+      if (eastype_ == soh8_eassosh8) {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
-        switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<soh8_easfull, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-        }
+        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alphao,*alpha);
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -343,28 +338,13 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
-      if (eastype_ != soh8_easnone) {
+      if (eastype_ == soh8_eassosh8) {
         double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-        }
+        // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
+        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -378,16 +358,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 
     case calc_struct_reset_istep: {
       // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone) {
+      if (eastype_ == soh8_eassosh8) {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
-        switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<soh8_easfull,1> (*alpha, *alphao); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild,1> (*alpha, *alphao); break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-        }
+        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao);
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -517,7 +492,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    //(*alpha).Shape(neas_,1);
     alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
@@ -572,7 +546,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> > jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
   vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> >* deriv_sp = NULL;   //derivs eval. at all sampling points
-  //Epetra_SerialDenseMatrix* deriv_sp; //[NUMDIM_SOH8*numsp][NUMNOD_SOH8]
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
@@ -842,7 +815,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   if (force != NULL && stiffmatrix != NULL) {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
-    if (eastype_ != soh8_easnone) {
+    if (eastype_ == soh8_eassosh8) {
       // we need the inverse of Kaa
       Epetra_SerialDenseSolver solve_for_inverseKaa;
       solve_for_inverseKaa.SetMatrix(Kaa);

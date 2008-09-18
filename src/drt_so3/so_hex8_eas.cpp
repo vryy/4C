@@ -121,7 +121,6 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0;
   jac0.Multiply(df0,xrefe);
   // compute determinant of Jacobian at origin
-  //double detJ0loc;
   detJ0 = jac0.Determinant();
 
   // first, build T0^T transformation matrix which maps the M-matrix

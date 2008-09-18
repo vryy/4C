@@ -204,8 +204,8 @@ private:
   // don't want = operator
   So_sh8& operator = (const So_sh8& old);
 
-  static const int num_sp = 8;              // number of ANS sampling points, here 8
-  static const int num_ans = 3;             // number of modified ANS strains (E_rt,E_st,E_tt), here 3
+  static const int num_sp = 8;              ///< number of ANS sampling points, here 8
+  static const int num_ans = 3;             ///< number of modified ANS strains (E_rt,E_st,E_tt), here 3
 
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
