@@ -202,7 +202,7 @@ solver_(solver)
   discret_->GetCondition("SurfaceStress",surfstresscond);
   if (surfstresscond.size())
   {
-    surf_stress_man_=rcp(new DRT::SurfStressManager(*discret_));
+    surf_stress_man_=rcp(new UTILS::SurfStressManager(*discret_));
   }
 
   return;
@@ -648,7 +648,7 @@ void MicroStatic::SetDefaults(ParameterList& params)
 void MicroStatic::ReadRestart(int step,
                               RCP<Epetra_Vector> dis,
                               RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                              RefCountPtr<DRT::SurfStressManager> surf_stress_man,
+                              RefCountPtr<UTILS::SurfStressManager> surf_stress_man,
                               string name)
 {
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, true));
@@ -802,7 +802,7 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
                               RefCountPtr<Epetra_Vector> dism,
                               RefCountPtr<Epetra_Vector> disn,
-                              RefCountPtr<DRT::SurfStressManager> surfman,
+                              RefCountPtr<UTILS::SurfStressManager> surfman,
                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
@@ -830,7 +830,7 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                                     RefCountPtr<Epetra_Vector> disn,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                                    RefCountPtr<DRT::SurfStressManager> surf_stress_man)
+                                    RefCountPtr<UTILS::SurfStressManager> surf_stress_man)
 {
   // these updates hold for an imr-like generalized alpha time integration
   // -> if another time integration scheme should be used, this needs

@@ -219,12 +219,12 @@ fsisurface_(NULL)
     vector<DRT::Condition*> surfstresscond(0);
     discret_.GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
-      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
+      surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_));
     // Check for potential conditions
     vector<DRT::Condition*> potentialcond(0);
     discret_.GetCondition("Potential",potentialcond);
     if (potentialcond.size())
-      pot_man_=rcp(new DRT::PotentialManager(Discretization(),discret_));
+      pot_man_=rcp(new UTILS::PotentialManager(Discretization(),discret_));
 
 
   // build damping matrix if desired
@@ -391,6 +391,10 @@ void StruGenAlpha::ConstantPredictor()
     {
       p.set("surfstr_man", surf_stress_man_);
       p.set("newstep", true);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
@@ -679,6 +683,10 @@ void StruGenAlpha::ConsistentPredictor()
     {
       p.set("surfstr_man", surf_stress_man_);
       p.set("newstep", true);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
@@ -861,6 +869,11 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      p.set("newstep", true);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
@@ -1070,6 +1083,16 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       discret_.Evaluate(p,stiff_,fint_);
 #endif
       discret_.ClearState();
+
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1316,7 +1339,11 @@ void StruGenAlpha::FullNewton()
       if (surf_stress_man_!=null)
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
 
       if (pot_man_!=null)
@@ -1641,6 +1668,16 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
 
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      }
+
      // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1798,6 +1835,7 @@ void StruGenAlpha::ModifiedNewton()
     disn_->Update(1.0,*disi_,1.0);
     dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
 #else
+    disn_->Update(1.0,*disi_,1.0);
     dism_->Update(1.-alphaf,*disi_,1.0);
 #endif
     // velocities
@@ -1873,6 +1911,16 @@ void StruGenAlpha::ModifiedNewton()
       discret_.Evaluate(p,null,null,fint_,null,null);
 #endif
       discret_.ClearState();
+
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+
+#ifdef STRUGENALPHA_FINTLIKETR
+      p.set("fintliketr", true);
+#endif
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      }
     }
 
     //------------------------------------------ compute residual forces
@@ -2140,6 +2188,8 @@ void StruGenAlpha::NonlinearCG()
 #else
   dserror("Please verify that incremental update is not needed here!");
 #endif
+
+  if (surf_stress_man_!=null) dserror("No surface stresses in case of Nonlinear CG");
 
     return;
   }
@@ -2409,6 +2459,8 @@ void StruGenAlpha::PTC()
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
+    if (surf_stress_man_!=null) dserror("No surface stresses in case of PTC");
+
     //------------------------------------------ compute residual forces
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
@@ -2589,6 +2641,8 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       discret_.ClearState();
     }
 
+    if (surf_stress_man_!=null) dserror("No surface stresses in computeF");
+
     //------------------------------------------ compute residual forces
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
@@ -2680,6 +2734,8 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
       discret_.ClearState();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
+
+    if (surf_stress_man_!=null) dserror("No surface stresses in computeJacobian");
 
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
@@ -3860,6 +3916,9 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,fint_);
     discret_.ClearState();
+
+    if (surf_stress_man_!=null) dserror("No surface stresses in LinearRelaxationSolve");
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 

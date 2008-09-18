@@ -87,7 +87,7 @@ private:
   RefCountPtr<Epetra_Vector> disn_;
 
   /// my manager of surface stresses
-  RefCountPtr<DRT::SurfStressManager> surf_stress_man_;
+  RefCountPtr<UTILS::SurfStressManager> surf_stress_man_;
 
   // my EAS history data -> note that microstructure is not parallel
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;

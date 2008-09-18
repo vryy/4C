@@ -467,10 +467,10 @@ protected:
   RCP<UTILS::ConstraintSolver> constrSolv_;
 
   /// surface stresses
-  RCP<DRT::SurfStressManager>   surf_stress_man_;
+  RCP<UTILS::SurfStressManager>   surf_stress_man_;
 
   /// stresses due to molecular interaction potentials between structural surfaces
-  RCP<DRT::PotentialManager>    pot_man_;
+  RCP<UTILS::PotentialManager>    pot_man_;
 
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step

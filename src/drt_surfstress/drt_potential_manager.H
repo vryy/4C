@@ -31,7 +31,7 @@ using namespace std;
 using namespace Teuchos;
 
 
-namespace DRT
+namespace UTILS
 {
 /*!
 \brief Class controlling surface stresses due to potential forces
@@ -46,7 +46,7 @@ public:
 
     \param discret (in): Discretization
    */
-  PotentialManager( 
+  PotentialManager(
       Teuchos::RCP<DRT::Discretization>     discretRCP,
       DRT::Discretization&            discret
       );
@@ -142,9 +142,9 @@ private:
 
   //don't want = operator and cctor
   PotentialManager operator = (const PotentialManager& old);
-  PotentialManager(const DRT::PotentialManager& old);
+  PotentialManager(const UTILS::PotentialManager& old);
 
-  
+
   /*!
   \brief Update displacements
    */
@@ -152,19 +152,19 @@ private:
     Teuchos::RCP<Epetra_Vector> idisp_solid
     );
 
-  
+
   /*!
   \brief  set history variables after reading restart. The row map
           based vectors written in case of restart are exported to column
           based ones needed for calculations again.
    */
-  void searchElementsInCutOffRadius(    
+  void searchElementsInCutOffRadius(
     const BlitzVec3&        point,
     std::set<int>&          potentialElementIds,
     const double            radius
     );
-  
-  
+
+
   /*!
   \brief  set history variables after reading restart. The row map
           based vectors written in case of restart are exported to column
@@ -175,16 +175,16 @@ private:
       std::set<int>&          potentialElementIds,
       const double            radius
       );
-  
-  
+
+
   /*!
   \brief  creates element map with key label
    */
   void CollectElementsByPotentialCouplingLabel(
       std::map<int,std::set<int> >&        elementsByLabel
       );
-  
-  
+
+
   /*!
   \brief  evaluate potential condition
    */
@@ -200,7 +200,7 @@ private:
       const int                               condid
       );
   */
-  
+
   //! name@ Private Attributes
 
   // current discretization
@@ -223,7 +223,7 @@ private:
 
   //! current position of boundary elements
   std::map<int,BlitzVec3 > currentboundarypositions_;
-  
+
   //! for each potential condition label there is a set of boundary elements
  std::map<int,std::set<int> >            elementsByLabel_;
 
@@ -235,7 +235,7 @@ private:
   //@}
 
   //! @name state vectors using the solid boundary parallel distribution (row vectors)
-  Teuchos::RCP<Epetra_Vector> idisp_total_; 
+  Teuchos::RCP<Epetra_Vector> idisp_total_;
   Teuchos::RCP<Epetra_Vector> idisp_onproc_;
 
 

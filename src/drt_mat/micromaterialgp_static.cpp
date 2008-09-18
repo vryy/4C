@@ -107,7 +107,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   microdis->GetCondition("SurfaceStress",surfstresscond);
   if (surfstresscond.size())
   {
-    surf_stress_man_=rcp(new DRT::SurfStressManager(*microdis));
+    surf_stress_man_=rcp(new UTILS::SurfStressManager(*microdis));
   }
 
   // set up micro output

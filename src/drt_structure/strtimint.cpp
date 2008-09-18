@@ -306,7 +306,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
     {
-      surfstressman_ = rcp(new DRT::SurfStressManager(*discret_));
+      surfstressman_ = rcp(new UTILS::SurfStressManager(*discret_));
     }
   }
 
@@ -316,7 +316,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("Potential",potentialcond);
     if (potentialcond.size())
     {
-      potman_ = rcp(new DRT::PotentialManager(Discretization(), *discret_));
+      potman_ = rcp(new UTILS::PotentialManager(Discretization(), *discret_));
     }
   }
 

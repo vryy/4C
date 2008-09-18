@@ -24,7 +24,7 @@ Maintainer: Lena Wiechert
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
-DRT::SurfStressManager::SurfStressManager(DRT::Discretization& discret):
+UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret):
 discret_(discret)
 {
   surfrowmap_ = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", false);
@@ -50,11 +50,11 @@ discret_(discret)
 | interfacial phenomena                                              |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
-                                                RefCountPtr<Epetra_Vector> dism,
-                                                RefCountPtr<Epetra_Vector> disn,
-                                                RefCountPtr<Epetra_Vector> fint,
-                                                RefCountPtr<LINALG::SparseMatrix> stiff)
+void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
+                                                  const RefCountPtr<Epetra_Vector> dism,
+                                                  const RefCountPtr<Epetra_Vector> disn,
+                                                  RefCountPtr<Epetra_Vector> fint,
+                                                  RefCountPtr<LINALG::SparseMatrix> stiff)
 {
   // action for elements
   p.set("action","calc_surfstress_stiff");
@@ -73,7 +73,7 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 | update surface area and concentration                              |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::Update()
+void UTILS::SurfStressManager::Update()
 {
   A_last_->Update(1.0, *A_current_, 0.0);
   con_last_->Update(1.0, *con_current_, 0.0);
@@ -92,7 +92,7 @@ void DRT::SurfStressManager::Update()
 | on element level                                                   |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
+void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                            const double& A,
                                                            const RCP<Epetra_SerialDenseVector> Adiff,
                                                            const RCP<Epetra_SerialDenseMatrix> Adiff2,
@@ -180,7 +180,7 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 | Calculate current interfacial concentration of surfactant          |
 | molecules and corresponding surface stresses                       |
 *--------------------------------------------------------------------*/
-void DRT::SurfStressManager::SurfactantModel(
+void UTILS::SurfStressManager::SurfactantModel(
                 const int ID,                // (i) ID of surface condition
                 double& dgamma,              // (o) derivative of surface stress
                 const double dt,             // (i) timestep size

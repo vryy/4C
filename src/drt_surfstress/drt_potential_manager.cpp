@@ -27,7 +27,7 @@ Maintainer: Ursula Mayer
 /*-------------------------------------------------------------------*
  |  ctor (public)                                          umay 06/08|
  *-------------------------------------------------------------------*/
-DRT::PotentialManager::PotentialManager(
+UTILS::PotentialManager::PotentialManager(
     Teuchos::RCP<DRT::Discretization> discretRCP,
     DRT::Discretization& discret):
 discretRCP_(discretRCP),
@@ -41,31 +41,31 @@ discret_(discret)
   /*discret.GetCondition("LJ_Potential", potentialConds);
   if(potentialConds.size()==0)
     dserror("number of potential conditions = 0");
-  
+
   for(unsigned int i=0; i<potentialConds.size(); i++)
   {
     surfaceEleMap_.push_back( potentialConds[i]->Geometry() );
   }
   */
-  
+
   // create discretization from potential boundary elements and distribute them
   // on every processor
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("Potential");
-  
+
   //.Discretization()
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
 
-  // split dof vector of soliddiscretization into a dof vector of potential boundary condition and 
+  // split dof vector of soliddiscretization into a dof vector of potential boundary condition and
   // remaining dofs
   DRT::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
-  
+
   // create potential surface dof row map using the solid parallel distribution
-  // for all potential surface elements belonging to the solid discretization on a single 
+  // for all potential surface elements belonging to the solid discretization on a single
   // processor
   const Teuchos::RCP< const Epetra_Map > potsurface_dofrowmap_onOneProc = potboundary_.CondMap();
-    
+
   cout << "numglobal  " << boundarydis_->NumGlobalElements() << endl;
   cout << "nummyrow   " << boundarydis_->NumMyRowElements() << endl;
   cout << "nummycol   " << boundarydis_->NumMyColElements() << endl;
@@ -92,8 +92,8 @@ discret_(discret)
   // that is distributed redundantly on all processors
   const Epetra_Map* potsurface_dofrowmap_total = boundarydis_->DofRowMap();
 
-  
-  // create disp vector for boundary discretization corresponding to the 
+
+  // create disp vector for boundary discretization corresponding to the
   // potential condition elements stored on one proc
   idisp_onproc_    = LINALG::CreateVector(*potsurface_dofrowmap_onOneProc,true);
   // create disp vector for boundary discretization redundant on all procs
@@ -106,14 +106,14 @@ discret_(discret)
   // in the beginning.
   A_old_temp_   = rcp(new Epetra_Vector(*surfcolmap,true));
   A_old_        = rcp(new Epetra_Vector(*surfcolmap,true));
-  
+
   // determine depth + aabb
   const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*boundarydis_);
   std::map<int,std::set<int> > elementsByLabel;
   CollectElementsByPotentialCouplingLabel(elementsByLabel);
   octTree_      = rcp(new GEO::SearchTree(8));
   octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  
+
   std::cout << "Potential manager constructor done" << endl;
 }
 
@@ -126,11 +126,11 @@ discret_(discret)
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 
-void DRT::PotentialManager::EvaluatePotential(  ParameterList& p,
+void UTILS::PotentialManager::EvaluatePotential(  ParameterList& p,
                                                 RefCountPtr<Epetra_Vector> disp,
                                                 RefCountPtr<Epetra_Vector> fint,
                                                 RefCountPtr<LINALG::SparseMatrix> stiff)
-{   
+{
   // has to be called before Evaluate condition !!
   UpdateDisplacementsOfBoundaryDiscretization(disp);
   // action for elements
@@ -140,7 +140,7 @@ void DRT::PotentialManager::EvaluatePotential(  ParameterList& p,
   discret_.SetState("displacement",disp);
   // write conditionon your own copy from discret condition
   //discret_.EvaluateCondition(p,stiff,null,fint,null,null,"Potential");
-  
+
   // set condid -1 so there is no effect
   //EvaluatePotentialCondition(p,stiff,null,fint,null,null,"Potential", -1);
 
@@ -155,7 +155,7 @@ void DRT::PotentialManager::EvaluatePotential(  ParameterList& p,
 | update surface area                                                |
 *--------------------------------------------------------------------*/
 
-void DRT::PotentialManager::Update()
+void UTILS::PotentialManager::Update()
 {
   A_old_->Update(1.0, *A_old_temp_, 0.0);
 }
@@ -168,7 +168,7 @@ void DRT::PotentialManager::Update()
 | write restart                                                      |
 *--------------------------------------------------------------------*/
 
-void DRT::PotentialManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row)
+void UTILS::PotentialManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row)
 {
   // Note that the temporal vectors need to be written since in the
   // final ones we still have the data of the former step. The column
@@ -187,7 +187,7 @@ void DRT::PotentialManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row)
 | on element level for Lennard-Jones potential interaction forces    |
 *--------------------------------------------------------------------*/
 
-void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* element,
+void UTILS::PotentialManager::StiffnessAndInternalForces( const DRT::Element* element,
                                                         const int curvenum,
                                                         const double& A,
                                                         Epetra_SerialDenseVector& fint,
@@ -203,8 +203,8 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* elem
   double traction;
   int LID = A_old_->Map().LID(ID);
   double t_end = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
-  
-  
+
+
   // find nodal ids influencing a given element
   std::set<int> potentialElementIds;
   // use corner nodes
@@ -215,27 +215,27 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* elem
     const BlitzVec3 x_node = currentboundarypositions_.find(node->Id())->second;
     octTreeSearchElementsInCutOffRadius(x_node, potentialElementIds, radius);
   }
-  
-  //const TinyVector<double,3> eleCenter = getLocalCenterPosition(element->Shape());     
-  
-  
+
+  //const TinyVector<double,3> eleCenter = getLocalCenterPosition(element->Shape());
+
+
   //searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
   printf("not yet fully implemented");
   /*------------------------------------------------- initialization */
   (*A_old_temp_)[LID] = A;
 
   // find influencing element surfaces
-  // later with the help of a tree 
+  // later with the help of a tree
   // so far elemnts are collected if the center lies in a sphere around
   // the center of the current element with a radius = "cutOff"
   // get displacement
-  // 
+  //
   /*
      potentialElementIDs = collectPotentialElements(surfrowmap_, currentdisp, cutOff);
-     
+
   */
   // compute stresses acting on the current element due to potential forces
-  
+
   /*-----------calculation of current surface stress and its partial
    *-----------------derivative with respect to the interfacial area */
 
@@ -259,7 +259,7 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* elem
   for (int i=0;i<ndof;++i)
     for (int j=0;j<ndof;++j)
       K_surf(i,j) = curvefac;
-  
+
   /*------calculation of current internal force due to surface energy*/
   for (int i=0;i<ndof;++i)
     fint[i] = curvefac;
@@ -276,7 +276,7 @@ void DRT::PotentialManager::StiffnessAndInternalForces( const DRT::Element* elem
 | update displacements in redundant boundary discretization          |
 | from solid discretization                                          |
 *--------------------------------------------------------------------*/
-void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
+void UTILS::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
     Teuchos::RCP<Epetra_Vector>     idisp_solid
     )
 {
@@ -319,7 +319,7 @@ void DRT::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
 | checks, if a node lies within a given cut off radius               |
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
-void DRT::PotentialManager::searchElementsInCutOffRadius(
+void UTILS::PotentialManager::searchElementsInCutOffRadius(
     const BlitzVec3&        point,
     std::set<int>&          potentialElementIds,
     const double            radius)
@@ -336,10 +336,10 @@ const double tol =  1e-7;
     {
       const double comp_diff = currpos(k) - point(k);
       const double diff_square = comp_diff*comp_diff;
-      distance += diff_square; 
+      distance += diff_square;
     }
     distance = sqrt(distance);
-    
+
     // if node lies within cutoff radius -> collect element id in set
     if(fabs(distance) - fabs(radius) < tol)
     {
@@ -362,7 +362,7 @@ const double tol =  1e-7;
 | checks, if a node lies within a given cut off radius               |
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
-void DRT::PotentialManager::octTreeSearchElementsInCutOffRadius(
+void UTILS::PotentialManager::octTreeSearchElementsInCutOffRadius(
     const BlitzVec3&        point,
     std::set<int>&          potentialElementIds,
     const double            radius)
@@ -379,10 +379,10 @@ const double tol =  1e-7;
     {
       const double comp_diff = currpos(k) - point(k);
       const double diff_square = comp_diff*comp_diff;
-      distance += diff_square; 
+      distance += diff_square;
     }
     distance = sqrt(distance);
-    
+
     // if node lies within cutoff radius -> collect element id in set
     if(fabs(distance) - fabs(radius) < tol)
     {
@@ -391,7 +391,7 @@ const double tol =  1e-7;
       for(int k = 0; k <  node->NumElement(); k++)
         potentialElementIds.insert(elements[k]->Id());
     }
-  } 
+  }
 }
 
 
@@ -401,16 +401,16 @@ const double tol =  1e-7;
 |                                                                    |
 | collects all emement ids that belong to certain label              |
 *--------------------------------------------------------------------*/
-void DRT::PotentialManager::CollectElementsByPotentialCouplingLabel(
+void UTILS::PotentialManager::CollectElementsByPotentialCouplingLabel(
     std::map<int,std::set<int> >&        elementsByLabel)
 {
   // Reset
   elementsByLabel.clear();
-  
+
   // get condition
   vector< DRT::Condition * >  potConditions;
   boundarydis_->GetCondition ("Potential", potConditions);
-  
+
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = potConditions.begin(); conditer!=potConditions.end(); ++conditer)
   {
@@ -430,7 +430,7 @@ void DRT::PotentialManager::CollectElementsByPotentialCouplingLabel(
 
 
 /*
-void DRT::PotentialManager::EvaluatePotentialCondition(
+void UTILS::PotentialManager::EvaluatePotentialCondition(
     ParameterList&                          params,
     RefCountPtr<LINALG::SparseOperator>     systemmatrix1,
     RefCountPtr<LINALG::SparseOperator>     systemmatrix2,

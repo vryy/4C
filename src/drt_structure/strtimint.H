@@ -60,7 +60,7 @@ namespace STR
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for structural dynamics by structure time integration. 
+   * \brief Front-end for structural dynamics by structure time integration.
    * \author bborn
    * \date 06/08
    */
@@ -153,7 +153,7 @@ namespace STR
 
     //! Destructor
     virtual ~TimInt()
-    { 
+    {
       DetachEnergyFile();
     }
 
@@ -194,22 +194,22 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Equilibrate the initial state by identifying the consistent 
+    //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
     void DetermineMassDampConsistAccel();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC
-    (  
+    (
       const double time,  //!< at time
       Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
-                                        //!< (may be Teuchos::null) 
-      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities 
-                                        //!< (may be Teuchos::null) 
-      Teuchos::RCP<Epetra_Vector> acc  //!< accelerations 
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> acc  //!< accelerations
                                        //!< (may be Teuchos::null)
-    );  
+    );
 
     //! Do time integration of multiple steps
     void Integrate();
@@ -219,7 +219,7 @@ namespace STR
 
     //! Update configuration after time step
     //!
-    //! Thus the 'last' converged is lost and a reset of the time step 
+    //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next
     //! time step.
     virtual void UpdateStep() = 0;
@@ -273,7 +273,7 @@ namespace STR
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
     );
-    
+
     //! Energy output
     void OutputEnergy();
 
@@ -289,7 +289,7 @@ namespace STR
     {
       if (not energyfile_)
       {
-        std::string energyname 
+        std::string energyname
           = DRT::Problem::Instance()->OutputControlFile()->FileName()
           + ".energy";
         energyfile_ = new std::ofstream(energyname.c_str());
@@ -336,10 +336,10 @@ namespace STR
     //! We need incremental displacements, because the internal variables,
     //! chiefly EAS parameters with an algebraic constraint, are treated
     //! as well. They are not treated perfectly, ie they are not iteratively
-    //! equilibriated according to their (non-linear) constraint and 
-    //! the pre-determined displacements -- we talk explicit time integration 
-    //! here, but they are applied in linearised manner. The linearised 
-    //! manner means the static condensation is applied once with 
+    //! equilibriated according to their (non-linear) constraint and
+    //! the pre-determined displacements -- we talk explicit time integration
+    //! here, but they are applied in linearised manner. The linearised
+    //! manner means the static condensation is applied once with
     //! residual displacements replaced by the full-step displacement
     //! increment \f$D_{n+1}-D_{n}\f$.
     void ApplyForceInternal
@@ -395,7 +395,7 @@ namespace STR
 
     //! Access dicretisation
     Teuchos::RCP<DRT::Discretization> Discretization()
-    { 
+    {
       // Here a 'false' must be used. This is due to
       // the fact that TimInt possesses a references
       // on the discretisation #discret_ and not
@@ -424,28 +424,28 @@ namespace STR
     {
       return output_;
     }
-    
-    //! Read restart values 
+
+    //! Read restart values
     void ReadRestart
     (
       const int step //!< restart step
     );
-    
+
     //! Read and set restart state
     void ReadRestartState();
-    
+
     //! Read and set restart forces
     virtual void ReadRestartForce() = 0;
-    
+
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
-    
+
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
-    
+
     //! Read and set restart values for potentials
     void ReadRestartPotential();
-    
+
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 
@@ -473,17 +473,17 @@ namespace STR
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
     Teuchos::RCP<LINALG::SparseMatrix> Stiff() { return stiff_; }
-    
+
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
-    
+
     //! Return current step number map
     int GetStep() { return step_; }
-        
+
     //! Return current step number map
     double GetTime() { return (*time_)[0]; }
-        
-    
+
+
     //@}
 
   protected:
@@ -492,7 +492,7 @@ namespace STR
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int myrank_;  //!< ID of actual processor in parallel
-    const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
+    const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
                                    //!< to construct matching
                                    //!< vectors and matrices
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
@@ -536,10 +536,10 @@ namespace STR
     Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
     //! surface stresses
-    Teuchos::RCP<DRT::SurfStressManager> surfstressman_;
+    Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
 
     //! potential conditions
-    Teuchos::RCP<DRT::PotentialManager> potman_;
+    Teuchos::RCP<UTILS::PotentialManager> potman_;
 
     //@}
 
@@ -556,14 +556,14 @@ namespace STR
 
     //! @name Global vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this 
-                                                //!< vector holds a 0; 
+    Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this
+                                                //!< vector holds a 0;
                                                 //!< at a supported DOF
                                                 //!< it is a 1.
-    Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of 
+    Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of
                                              //!< #dirichtoggle_ vector:
-                                             //!< i.e.\ for each component 
-                                             //!< a 0 indicates a supported 
+                                             //!< i.e.\ for each component
+                                             //!< a 0 indicates a supported
                                              //!< corresponding DOF;
                                              //!< a 1 indicates
                                              //!< a free/unsupported DOF.
@@ -581,13 +581,13 @@ namespace STR
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TimIntMStep<Epetra_Vector> > acc_;
     Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
-                                        //!< \f${D}_{n+1}\f$  
+                                        //!< \f${D}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                        //!< \f${V}_{n+1}\f$  
+                                        //!< \f${V}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
-                                        //!< \f${A}_{n+1}\f$  
+                                        //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
 
     //@}

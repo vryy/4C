@@ -24,6 +24,9 @@ Maintainer: Michael Gee
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 
+using UTILS::SurfStressManager;
+using UTILS::PotentialManager;
+
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
@@ -332,6 +335,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         // this is intended to be used in the serial case (microstructure)
 
+        // NOTE: there must not be any holes penetrating the boundary!
+
         double V = params.get<double>("V0", 0.0);
         double dV = 0.0;
         const int numnode = NumNode();
@@ -413,15 +418,29 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         double dt = params.get<double>("delta time",0.0);
         double alphaf = params.get<double>("alpha f",0.0);
         bool newstep = params.get<bool>("newstep", false);
+        bool fintliketr = params.get<bool>("fintliketr", false);
 
         // element geometry update
-        RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
-        if (dism==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydism(lm.size());
-        DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
+
         const int numnode = NumNode();
         LINALG::SerialDenseMatrix x(numnode,3);
-        SpatialConfiguration(x,mydism);
+
+        if (fintliketr)
+        {
+          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
+          if (disn==null) dserror("Cannot get state vector 'new displacement'");
+          vector<double> mydisn(lm.size());
+          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+          SpatialConfiguration(x,mydisn);
+        }
+        else
+        {
+          RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
+          if (dism==null) dserror("Cannot get state vector 'displacement'");
+          vector<double> mydism(lm.size());
+          DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
+          SpatialConfiguration(x,mydism);
+        }
 
         const DRT::UTILS::IntegrationPoints2D  intpoints =
           getIntegrationPoints2D(gaussrule_);
@@ -452,25 +471,35 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 
-          // element geometry update (n+1)
-          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
-          if (disn==null) dserror("Cannot get state vector 'new displacement'");
-          vector<double> mydisn(lm.size());
-          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
-          SpatialConfiguration(x,mydisn);
+          if (fintliketr)
+          {
+            surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, A, Adiff, elevector1, elematrix1, this->Id(),
+                                                      time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                      gamma_min, gamma_min_eq, con_quot_max,
+                                                      con_quot_eq, alphaf, newstep);
+          }
+          else
+          {
+            // element geometry update (n+1)
+            RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
+            if (disn==null) dserror("Cannot get state vector 'new displacement'");
+            vector<double> mydisn(lm.size());
+            DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+            SpatialConfiguration(x,mydisn);
 
-          // set up matrices and parameters needed for the evaluation of
-          // interfacial area and its first derivative w.r.t. the displacements at (n+1)
-          double Anew = 0.;                                            // interfacial area
-          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+            // set up matrices and parameters needed for the evaluation of
+            // interfacial area and its first derivative w.r.t. the displacements at (n+1)
+            double Anew = 0.;                                            // interfacial area
+            RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
 
-          ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
+            ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
 
 
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
-                                                    time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-                                                    gamma_min, gamma_min_eq, con_quot_max,
-                                                    con_quot_eq, alphaf, newstep);
+            surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
+                                                      time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                      gamma_min, gamma_min_eq, con_quot_max,
+                                                      con_quot_eq, alphaf, newstep);
+          }
         }
         else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
         {

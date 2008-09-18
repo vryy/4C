@@ -79,7 +79,7 @@ public:
   void ReadRestart(int step,
                    RCP<Epetra_Vector> dis,
                    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                   RCP<DRT::SurfStressManager> surf_stress_man,
+                   RCP<UTILS::SurfStressManager> surf_stress_man,
                    string name);
 
   /*!
@@ -113,7 +113,7 @@ public:
                          RefCountPtr<Epetra_Vector> disn,
                          RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
                          RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
-                         RefCountPtr<DRT::SurfStressManager> surf_stress_man);
+                         RefCountPtr<UTILS::SurfStressManager> surf_stress_man);
 
   /*!
   \brief write update
@@ -134,7 +134,7 @@ public:
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
                    RefCountPtr<Epetra_Vector> dism,
                    RefCountPtr<Epetra_Vector> disn,
-                   RefCountPtr<DRT::SurfStressManager> surfman,
+                   RefCountPtr<UTILS::SurfStressManager> surfman,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
@@ -189,7 +189,7 @@ protected:
   MicroStatic operator = (const MicroStatic& old);
   MicroStatic(const MicroStatic& old);
 
-  RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
+  RefCountPtr<UTILS::SurfStressManager>   surf_stress_man_;
 
   RCP<ParameterList>            params_;
   RCP<DRT::Discretization>      discret_;

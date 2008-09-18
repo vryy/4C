@@ -27,7 +27,7 @@ using namespace std;
 using namespace Teuchos;
 
 
-namespace DRT
+namespace UTILS
 {
 /*!
 \brief Class controlling surface stresses due to interfacial phenomena
@@ -60,8 +60,8 @@ public:
     \param stiff (out): stiffness matrix
   */
   void EvaluateSurfStress(ParameterList& p,
-                          RefCountPtr<Epetra_Vector> dism,
-                          RefCountPtr<Epetra_Vector> disn,
+                          const RefCountPtr<Epetra_Vector> dism,
+                          const RefCountPtr<Epetra_Vector> disn,
                           RefCountPtr<Epetra_Vector> fint,
                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
@@ -192,7 +192,7 @@ private:
 
   //don't want = operator and cctor
   SurfStressManager operator = (const SurfStressManager& old);
-  SurfStressManager(const DRT::SurfStressManager& old);
+  SurfStressManager(const UTILS::SurfStressManager& old);
 
 
   //! name@ Private Attributes
