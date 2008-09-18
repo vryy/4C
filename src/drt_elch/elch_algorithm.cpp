@@ -75,10 +75,6 @@ return;
 void ELCH::Algorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
-  }
 
   FluidField().PrepareTimeStep();
 
@@ -99,6 +95,11 @@ void ELCH::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::DoFluidStep()
 {
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+  }
+
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
   return;
