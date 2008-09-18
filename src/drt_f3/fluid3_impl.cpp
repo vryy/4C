@@ -733,7 +733,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   }
 
   // add displacement, when fluid nodes move in the ALE case
-  if (ele->is_ale_) xyze_.Update(1.0,edispnp,1.0);
+  if (ele->is_ale_) xyze_ += edispnp;
 
   // dead load in element nodes
   BodyForce(ele,time);
@@ -816,8 +816,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     const double e3 = intpoints.qxg[iquad][2];
 
     // shape functions and their derivatives
-    // shape_function_3D expects an 1D array, and maybe it would be a
-    // good idea to have funct_ be one...
     DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 #ifdef PRINTDEBUG
