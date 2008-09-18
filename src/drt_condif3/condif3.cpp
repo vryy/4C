@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 using namespace DRT::UTILS;
 
@@ -80,6 +81,11 @@ void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
   else
     dserror("condif material expected but got type %d", mat->MaterialType());
 
+  // for problem type ELCH we have one additional degree of freedom per node
+  // for the electric potential
+  if (DRT::Problem::Instance()->ProblemType()=="elch")
+  { cout<<"ELCH-Element..."<<endl;
+    numdofpernode_ += 1;}
   return;
 }
 

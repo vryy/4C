@@ -159,8 +159,8 @@ int main(
         fluidwriter.WriteFiles();
 
         PostField* scatrafield = problem.get_discretization(1);
-        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        ElchEnsightWriter elchwriter(scatrafield, basename);
+        elchwriter.WriteFiles();
         break;
     }
     case prb_combust:

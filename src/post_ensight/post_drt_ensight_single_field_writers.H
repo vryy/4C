@@ -162,6 +162,30 @@ protected:
 };
 
 
+/*!
+ \brief Writer for electrochemistry problems
+
+ \author gjb
+ \date 09/08
+*/
+class ElchEnsightWriter : public EnsightWriter
+{
+public:
+    /// constructor
+    ElchEnsightWriter(
+            PostField* field,
+            string filename) :
+        EnsightWriter(field, filename)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
+
+
 /// Writer for undefined problem types
 /*
   Just write all the vectors we have.

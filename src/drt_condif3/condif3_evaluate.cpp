@@ -87,7 +87,6 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-  // the standard one-step-theta implementation
   case calc_condif_systemmat_and_residual:
   {
     // need current history vector and density vector
@@ -127,9 +126,9 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
     // set flag for type of scalar whether it is temperature or not
-    string scaltypestr=params.get<string>("type of scalar");
+    string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
-    if(scaltypestr =="Temperature") temperature = true;
+    if(scaltypestr =="loma") temperature = true;
 
     // calculate element coefficient matrix and rhs
     DRT::ELEMENTS::Condif3Impl::Impl(this)->Sysmat(
@@ -194,8 +193,12 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     else
       fluxtype=Condif3::noflux;  //default value
 
+    string scaltypestr=params.get<string>("problem type");
+    int numscal = numdofpernode_;
+    if (scaltypestr =="elch") numscal -= 1; // ELCH case: last dof is for el. potential
+
     // do a loop for systems of transported scalars
-    for (int i = 0; i<numdofpernode_; ++i)
+    for (int i = 0; i<numscal; ++i)
     {
       Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel,fluxtype,i);
 
@@ -240,9 +243,9 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
     // set flag for type of scalar whether it is temperature or not
-    string scaltypestr=params.get<string>("type of scalar");
+    string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
-    if(scaltypestr =="Temperature") temperature = true;
+    if(scaltypestr =="loma") temperature = true;
 
     // calculate mass matrix and rhs
     DRT::ELEMENTS::Condif3Impl::Impl(this)->InitializeOST(
@@ -319,8 +322,13 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   {
     const int matid = material->m.matlist->matids[dofindex];
     const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
-    if (singlemat.mattyp != m_condif) dserror("no condif material found");
-    diffus = singlemat.m.condif->diffusivity;
+
+    if (singlemat.mattyp == m_condif) 
+      diffus = singlemat.m.condif->diffusivity;
+    else if (singlemat.mattyp == m_ion) 
+      diffus = singlemat.m.ion->diffusivity;
+    else
+      dserror("type of material found in material list is not supported.");
   }
   else if (material->mattyp == m_condif)
   {

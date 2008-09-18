@@ -99,8 +99,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
 
-  // -----------------------------------------------------type of scalar
-  scatratimeparams->set<string>("type of scalar",scatradyn.get<string>("SCALARTYPE"));
+  // ----problem type (type of scalar transport problem we want to solve)
+  scatratimeparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
   // --------------------type of time-integration (or stationary) scheme
   INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme =

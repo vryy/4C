@@ -125,9 +125,9 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
       // set flag for type of scalar whether it is temperature or not
-      string scaltypestr=params.get<string>("type of scalar");
+      string scaltypestr=params.get<string>("problem type");
       bool temperature = false;
-      if(scaltypestr =="Temperature") temperature = true;
+      if(scaltypestr =="loma") temperature = true;
 
       // calculate element coefficient matrix and rhs
       DRT::ELEMENTS::Condif2Impl::Impl(this)->Sysmat(
@@ -177,9 +177,9 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
       // set flag for type of scalar whether it is temperature or not
-      string scaltypestr=params.get<string>("type of scalar");
+      string scaltypestr=params.get<string>("problem type");
       bool temperature = false;
-      if(scaltypestr =="Temperature") temperature = true;
+      if(scaltypestr =="loma") temperature = true;
 
       // calculate mass matrix and rhs
       DRT::ELEMENTS::Condif2Impl::Impl(this)->InitializeOST(

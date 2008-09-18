@@ -1101,17 +1101,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for scalar transport problems\n");
 
-  setStringToIntegralParameter("SCALARTYPE","Standard",
-                               "type of scalar to be transported",
-                               tuple<std::string>(
-                                 "Standard",
-                                 "Temperature",
-                                 "Concentration",
-                                 "G_equation"
-                                 ),
-                               tuple<int>(0,1,2,3),
-                               &scatradyn);
-
   setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(

@@ -210,8 +210,8 @@ protected:
 
   double time_;
   int step_;
-  /// flag defining type of scalar to be transported
-  string scaltype_;
+  /// flag defining type of scalar transport problem
+  string prbtype_;
   int stepmax_;
   double maxtime_;
 

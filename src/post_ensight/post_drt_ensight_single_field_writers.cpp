@@ -132,6 +132,62 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 }
 
 
+/*----------------------------------------------------------------------*
+|                                                             gjb 09/08 |
+\*----------------------------------------------------------------------*/
+void ElchEnsightWriter::WriteAllResults(PostField* field)
+{
+  //get number of dofs
+  int numdof = field->discretization()->DofRowMap()->NumGlobalElements();
+  //get number of nodes
+  int numnodes = field->discretization()->NumGlobalNodes();
+
+  // compute number of dofs per node
+  int numdofpernode = 0;
+  if (numdof%numnodes == 0) // the standard case
+    numdofpernode = numdof/numnodes;
+  else
+  { 
+    // do we have any periodic boundary conditions?
+    int numperiodicbc = 0;
+    std::vector<DRT::Condition*> periodicbc;
+    field->discretization()->GetCondition("SurfacePeriodic",periodicbc);
+    numperiodicbc += periodicbc.size();
+    field->discretization()->GetCondition("LinePeriodic",periodicbc);
+    numperiodicbc += periodicbc.size();
+    if (numperiodicbc>0) // yes, we have periodic boundary conditions
+      numdofpernode =  (numdof/numnodes)+1; 
+    else // there are no periodic b.c. -> it is time for a dserror
+      dserror("could not determine dofs per node");
+  }
+
+  // write results for each transported scalar
+  if (numdofpernode <= 1)
+    dserror("Problemtype ELCH has at least 3 DOF per node, but got: %d",numdofpernode);
+  else
+  {
+    // do the ion concentrations first
+    for(int k = 0; k < numdofpernode-1; k++)
+    {
+      ostringstream temp;
+      temp << k;
+      string name = "c_"+temp.str();
+      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k);
+      // write flux vectors (always 3D)
+      EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
+    }
+    // finally, handle the electric potential
+    EnsightWriter::WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
+  }
+
+  // write velocity field (always 3D)
+  EnsightWriter::WriteResult("convec_velocity", "velocity", nodebased, 3);
+
+  // write element results (e.g. element owner)
+  WriteElementResults(field);
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AnyEnsightWriter::WriteAllResults(PostField* field)

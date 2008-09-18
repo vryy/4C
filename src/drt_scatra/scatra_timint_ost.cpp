@@ -145,7 +145,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
   if (myrank_ == 0)
-  cout<<"...calculating initial time derivative of phi\n"<<endl;
+  cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
 
   ApplyDirichletBC(time_, phin_,phidtn_);
 
@@ -165,7 +165,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     // other parameters that are needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
-    eleparams.set("type of scalar",scaltype_);
+    eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)

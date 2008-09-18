@@ -195,7 +195,8 @@ ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0
-MAT       2 MAT_condif DIFFUSIVITY 0.001
+MAT       2 MAT_ion DIFFUSIVITY 0.001 VALENCE 1
+MAT       3 MAT_matlist NUMMAT 1 MATIDS 2
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

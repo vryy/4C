@@ -51,7 +51,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   output_ (output),
   time_(0.0),
   step_(0),
-  scaltype_ (params_->get<string>("type of scalar")),
+  prbtype_  (params_->get<string>("problem type")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
   timealgo_ (params_->get<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo")),
@@ -113,7 +113,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // density at time n+1
   densnp_        = LINALG::CreateVector(*dofrowmap,true);
 
-  if (scaltype_ == "Temperature")
+  if (prbtype_ == "loma")
   {
     // density at times n and n-1
     densn_        = LINALG::CreateVector(*dofrowmap,true);
@@ -419,7 +419,7 @@ void SCATRA::ScaTraTimIntImpl::Solve(
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
-    eleparams.set("type of scalar",scaltype_);
+    eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
 
@@ -878,14 +878,16 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 void SCATRA::ScaTraTimIntImpl::OutputFlux()
 {
   RCP<Epetra_MultiVector> flux = CalcFlux();
-  int numdofpernode = flux->GlobalLength()/discret_->NumGlobalNodes();
+  int numscal = flux->GlobalLength()/discret_->NumGlobalNodes();
+  if (prbtype_=="elch") numscal -= 1; // ELCH case
+
   // post_drt_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filter
 
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for(int k=0;k<numdofpernode;++k)
+  for(int k=0;k<numscal;++k)
   {
     ostringstream temp;
     temp << k;
@@ -898,7 +900,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
       fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
     }
-    if (numdofpernode==1)
+    if (numscal==1)
       output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
     else
       output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
@@ -933,6 +935,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");
+  eleparams.set("problem type",prbtype_);
 
   //provide velocity field (export to column map necessary for parallel evaluation)
   const Epetra_Map* nodecolmap = discret_->NodeColMap();

@@ -65,7 +65,7 @@ namespace ELEMENTS
   {
   public:
     /// Constructor with number of nodes and number of degree of freedom
-    explicit Condif3Impl(int iel, int numdofpernode);
+    explicit Condif3Impl(int iel, int numdofpernode, int numscal);
 
     /// Internal implementation class for specific scalar transport element
     static Condif3Impl* Impl(DRT::ELEMENTS::Condif3* c3);
@@ -162,16 +162,26 @@ namespace ELEMENTS
         const int&                dofindex
     );
 
+    //! apply electro-neutrality condition to system
+    void ApplyElectroNeutralityCond(
+        Epetra_SerialDenseMatrix& emat,    ///< element matrix
+        const vector<double>&     valence  ///< charge number of each ion species
+    );
+
     //! number of nodes
-    int iel_;
+    const int iel_;
     //! number of dof per node
-    int numdofpernode_;
+    const int numdofpernode_;
+    //! number of transported scalars (numscal_ <= numdofpernode_)
+    const int numscal_;
     //! node coordinates
     Epetra_SerialDenseMatrix xyze_;
     //! bodyforce in element nodes
     Epetra_SerialDenseVector bodyforce_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
+    //! charge numbers of all ion species (ELCH specific)
+    vector<double> valence_;
     //! specific heat capacity at constant pressure (in case of temperature eq.)
     double shcacp_;
     //! array for shape functions
@@ -204,6 +214,10 @@ namespace ELEMENTS
     Epetra_SerialDenseMatrix xder2_;
     //! integration factor for current GP: fac = GaussWeight * det(J)
     double fac_;
+    //! convective part used in stabilization terms
+    vector<double> conv_;
+    //! diffusive part used in stabilization terms
+    vector<double> diff_;
 
   };
 
