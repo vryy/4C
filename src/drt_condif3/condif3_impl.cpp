@@ -33,7 +33,7 @@ DRT::ELEMENTS::Condif3Impl* DRT::ELEMENTS::Condif3Impl::Impl(DRT::ELEMENTS::Cond
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  int numdofpernode = c3->NumDofPerNode(*(c3->Nodes()[0]));
+  const int numdofpernode = c3->NumDofPerNode(*(c3->Nodes()[0]));
   int numscal = numdofpernode;
   if (DRT::Problem::Instance()->ProblemType() == "elch")
     numscal -= 1;
@@ -258,11 +258,11 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     /*------------ get values of variables at integration point */
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      // get history data at integration point
+      // get history data at integration point (weighted by density)
       hist_[k] = 0;
       for (int j=0;j<iel_;j++)
       {
-        hist_[k] += funct_[j]*ehist[j*numdofpernode_+k];
+        hist_[k] += densfunct_[j]*ehist[j*numdofpernode_+k];
       }
 
       // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
     {
       velint_[i] += funct_[j]*evel[i+(3*j)];
     }
-  } //end loop over i
+  }
 
   // get Euclidean norm of (weighted) velocity at element center
   const double vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]) + DSQR(velint_[2]));
@@ -1537,8 +1537,6 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
     /*-------------- perform integration for entire matrix and rhs ---*/
     for (int dofindex=0;dofindex<numscal_;++dofindex) // deal with a system of transported scalars
     {
-      /*========================= further variables =========================*/
-
       static double             rhsint;            /* rhs at int. point     */
 
       // stabilization parameter

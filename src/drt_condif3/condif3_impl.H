@@ -218,7 +218,6 @@ namespace ELEMENTS
     vector<double> conv_;
     //! diffusive part used in stabilization terms
     vector<double> diff_;
-
   };
 
 }
