@@ -72,6 +72,9 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   vecSpaces.push_back(FluidField()    .Interface().OtherMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
+  if (vecSpaces[1]->NumGlobalElements()==0)
+    dserror("No inner fluid equations. Splitting not possible. Panic.");
+
   SetDofRowMaps(vecSpaces);
 
   /*----------------------------------------------------------------------*/

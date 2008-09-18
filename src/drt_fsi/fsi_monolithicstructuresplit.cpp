@@ -79,6 +79,9 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   vecSpaces.push_back(FluidField()    .DofRowMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
   SetDofRowMaps(vecSpaces);
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
