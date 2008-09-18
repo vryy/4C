@@ -458,15 +458,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
 ** ============================================================================*/
-/* pointer to (static) shape function array
- * for each node, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
-/* pointer to (static) shape function derivatives array
- * for each node wrt to each direction, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
-/* pointer to (static) weight factors at each gp */
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>* weights;
-  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static vector<double> gpweights = sow6_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -475,11 +469,13 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
 #endif
+  DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
 
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_WEG6+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_WEG6+1];
@@ -497,11 +493,6 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
-    // get submatrix of deriv at actual gp
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
-    for (int m=0; m<NUMDIM_WEG6; ++m)
-      for (int n=0; n<NUMGPT_WEG6; ++n)
-        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -511,7 +502,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp],deriv_gp);
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     const double detJ = detJ_[gp];
 
     LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_WEG6,NUMDIM_WEG6);
@@ -523,7 +514,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
       LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
-      N_xyz.Multiply('N','N',1.0,invJdef,deriv_gp,0.0);
+      N_xyz.Multiply('N','N',1.0,invJdef,derivs[gp],0.0);
 
       // build multiplicative incremental defgrd
       defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
@@ -560,7 +551,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       // the inverse design analysis
       detJ = invdesign_->DetJHistory()[gp];
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
-      N_XYZ.Multiply('N','N',1.0,tmp3x3,deriv_gp,0.0);
+      N_XYZ.Multiply('N','N',1.0,tmp3x3,derivs[gp],0.0);
     }
 #endif
 
@@ -713,7 +704,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       }
     }
 
-    const double detJ_w = detJ * (*weights)(gp);
+    const double detJ_w = detJ * gpweights[gp];
     if (force != NULL && stiffmatrix != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -749,15 +740,15 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
     if (massmatrix != NULL)
     { // evaluate mass matrix +++++++++++++++++++++++++
-      // integrate concistent mass matrix
+      // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
       for (int inod=0; inod<NUMNOD_WEG6; ++inod)
       {
-        ifactor = (*shapefct)(inod,gp) * factor;
+        ifactor = shapefcts[gp](inod) * factor;
         for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod)
         {
-          massfactor = ifactor * (*shapefct)(jnod,gp);     // intermediate factor
+          massfactor = ifactor * shapefcts[gp](jnod);     // intermediate factor
           (*massmatrix)(NUMDIM_WEG6*inod+0,NUMDIM_WEG6*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_WEG6*inod+1,NUMDIM_WEG6*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_WEG6*inod+2,NUMDIM_WEG6*jnod+2) += massfactor;
@@ -771,6 +762,59 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
+ *----------------------------------------------------------------------*/
+const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+{
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts(NUMGPT_WEG6);
+  // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+  // fill up nodal f at each gp
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, wedge6);
+  }
+  return shapefcts;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
+ *----------------------------------------------------------------------*/
+const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::sow6_derivs()
+{
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs(NUMGPT_WEG6);
+  // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, wedge6);
+  }
+  return derivs;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
+ *----------------------------------------------------------------------*/
+const vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
+{
+  vector<double> weights(NUMGPT_WEG6);
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  for (int i = 0; i < NUMGPT_WEG6; ++i) {
+    weights[i] = intpoints.qwgt[i];
+  }
+  return weights;
+}
 
 
 /*----------------------------------------------------------------------*

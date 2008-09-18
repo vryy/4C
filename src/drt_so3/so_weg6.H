@@ -38,12 +38,12 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Wedge6
-#define NUMNOD_WEG6  6      ///< number of nodes
-#define NODDOF_WEG6  3      ///< number of dofs per node
-#define NUMDOF_WEG6  18     ///< total dofs per element
-#define NUMSTR_WEG6  6      ///< number of strains/stresses
-#define NUMGPT_WEG6  6      ///< total gauss points per element
-#define NUMDIM_WEG6  3      ///< number of dimensions
+const int NUMNOD_WEG6 = 6;      ///< number of nodes
+const int NODDOF_WEG6 = 3;      ///< number of dofs per node
+const int NUMDOF_WEG6 = 18;     ///< total dofs per element
+const int NUMSTR_WEG6 = 6;      ///< number of strains/stresses
+const int NUMGPT_WEG6 = 6;      ///< total gauss points per element
+const int NUMDIM_WEG6 = 3;      ///< number of dimensions
 
 // forward declarations
 struct _MATERIAL;
@@ -350,7 +350,7 @@ protected:
                               //!< during iteration to last converged state
     postprocess_stress,
     prestress_update,
-    inversedesign_update 
+    inversedesign_update
   };
 
   //! kinematic types of so_weg6
@@ -419,6 +419,14 @@ protected:
                     Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
                     ParameterList&            params);         // algorithmic parameters e.g. time
+
+  //! Evaluate Wedge6 Shapefcts to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > sow6_shapefcts();
+  //! Evaluate Wedge6 Derivs to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > sow6_derivs();
+  //! Evaluate Wedge6 Weights to keep them static
+  const vector<double> sow6_weights();
+
 
   //! calculate static shape functions and derivatives for sow6
   void sow6_shapederiv(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>** shapefct,

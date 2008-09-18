@@ -151,8 +151,8 @@ private:
    */
   enum EASType
   {
-    soshw6_easpoisthick,
-    soshw6_easnone
+    soshw6_easpoisthick = 1,
+    soshw6_easnone = 0
   };
 
   //! type of EAS technology
@@ -200,41 +200,43 @@ private:
                Epetra_SerialDenseVector& elevec3);
 
   //! Compute stiffness and mass matrix
-  virtual void soshw6_nlnstiffmass(vector<int>&              lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
-                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                 Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* elestress,
-                                 Epetra_SerialDenseMatrix* elestrain,
-                                 ParameterList&            params,         // algorithmic parameters e.g. time
-                                 const bool                cauchy = false);
+  virtual void soshw6_nlnstiffmass(
+          vector<int>&              lm,             // location matrix
+          vector<double>&           disp,           // current displacements
+          vector<double>&           residual,       // current residuum
+          LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
+          LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
+          LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
+          LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
+          LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
+          ParameterList&            params,         // algorithmic parameters e.g. time
+          const bool                cauchy=false);         // stress output option
+
+  static const int num_sp = 5;       ///< number of ANS sampling points
+  static const int num_ans = 3;      ///< number of modified ANS strains (E_rt,E_st,E_tt)
 
   //! Setup ANS interpolation (shear and trapezoidal)
   void soshw6_anssetup(
-            const int numsp,              // number of sampling points
-            const int numans,             // number of ans strains
-            const Epetra_SerialDenseMatrix& xrefe, // material element coords
-            const Epetra_SerialDenseMatrix& xcurr, // current element coords
-            Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
-            Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
-            Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
-            Epetra_SerialDenseMatrix& B_ans_loc); // modified B
+          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe, ///< material element coords
+          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xcurr, ///< current element coords
+          vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   ///< derivs eval. at all sampling points
+          vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     ///< jac at all sampling points
+          vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, ///< current jac at all sampling points
+          LINALG::FixedSizeSerialDenseMatrix<num_ans*num_sp,NUMDOF_WEG6>& B_ans_loc); ///< modified B
 
   //! Transformation matrix parameter->material space
-  void soshw6_evaluateT(const Epetra_SerialDenseMatrix& jac,
-                        Epetra_SerialDenseMatrix& TinvT);
+  void soshw6_evaluateT(const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6>& jac,
+                        LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6>& TinvT);
 
   //! EAS technology, init
   void soshw6_easinit();
 
   //! EAS technology, setup necessary data
   void soshw6_eassetup(
-          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
-          double& detJ0,                      // det of Jacobian at origin
-          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
-          const Epetra_SerialDenseMatrix& xrefe);     // material element coords
+            vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+            double& detJ0,                      // det of Jacobian at origin
+            LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
+            const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe);    // material element coords
 
 
 }; // class So_shw6
@@ -265,13 +267,13 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Soh8Register
+  Makes a deep copy of an WEG6Register
 
   */
   Soshw6Register(const DRT::ELEMENTS::Soshw6Register& old);
 
   /*!
-  \brief Deep copy this instance of Soh8Register and return pointer to the copy
+  \brief Deep copy this instance of WEG6Register and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
