@@ -183,88 +183,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
   {
     case calc_fluid_systemmat_and_residual:
     {
-      //--------------------------------------------------
-      // get all state vectors
-      //--------------------------------------------------
-      //
-      // need current velocity/pressure, velocity/density and history vector
-      RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-      RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-      if (velnp==null || vedenp==null || hist==null)
-        dserror("Cannot get state vectors 'velnp', 'vedenp' and/or 'hist'");
-
-      // extract local values from the global vectors
-      vector<double> myvelnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-      vector<double> myvedenp(lm.size());
-      DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
-      vector<double> myhist(lm.size());
-      DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-
-      RCP<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
-      RCP<const Epetra_Vector> gridv;
-      vector<double> mygridv;
-
-      if (is_ale_)
-      {
-        dispnp = discretization.GetState("dispnp");
-        if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-
-        gridv = discretization.GetState("gridv");
-        if (gridv==null) dserror("Cannot get state vectors 'gridv'");
-        mygridv.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*gridv,mygridv,lm);
-      }
-
-      // the number of nodes
-      const int numnode = NumNode();
-
-      // create blitz objects for element arrays
-      blitz::Array<double, 1> eprenp(numnode);
-      blitz::Array<double, 2> evelnp(2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 1> edensnp(numnode);
-      blitz::Array<double, 2> emhist(2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 1> echist(numnode);
-      blitz::Array<double, 2> edispnp(2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> egridv(2,numnode,blitz::ColumnMajorArray<2>());
-
-      for (int i=0;i<numnode;++i)
-      {
-        // split velocity and pressure, insert into element arrays
-        evelnp(0,i) = myvelnp[0+(i*3)];
-        evelnp(1,i) = myvelnp[1+(i*3)];
-
-        eprenp(i) = myvelnp[2+(i*3)];
-
-        // insert density vector into element array
-        edensnp(i) = myvedenp[2+(i*3)];
-
-        // the history vectors contain information of time step t_n (mass rhs!)
-        // momentum equation part
-        emhist(0,i) = myhist[0+(i*3)];
-        emhist(1,i) = myhist[1+(i*3)];
-
-        // continuity equation part (only non-trivial for low-Mach-number flow)
-        echist(i) = myhist[2+(i*3)];
-      }
-
-      if (is_ale_)
-      {
-        // assign grid velocity and grid displacement to element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          edispnp(0,i) = mydispnp[0+(i*3)];
-          edispnp(1,i) = mydispnp[1+(i*3)];
-
-          egridv(0,i) = mygridv[0+(i*3)];
-          egridv(1,i) = mygridv[1+(i*3)];
-        }
-      }
-
       // if not available, define map from string to action
       if(stabstrtoact_.empty())
       {
@@ -290,254 +208,21 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["Smagorinsky_all"  ]=fssgv_Smagorinsky_all;
         stabstrtoact_["Smagorinsky_small"]=fssgv_Smagorinsky_small;
       }
-
-      // get fine-scale velocity
-      RCP<const Epetra_Vector> fsvelnp;
-      blitz::Array<double, 2> fsevelnp (2,numnode,blitz::ColumnMajorArray<2>());
-
-      // get flag for fine-scale subgrid viscosity
-      StabilisationAction fssgv =
-        ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
-      if (fssgv != fssgv_no)
-      {
-        fsvelnp = discretization.GetState("fsvelnp");
-        if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-        vector<double> myfsvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
-
-        // get fine-scale velocity and insert into element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          fsevelnp(0,i) = myfsvelnp[0+(i*3)];
-          fsevelnp(1,i) = myfsvelnp[1+(i*3)];
-        }
-      }
-      else
-      {
-        for (int i=0;i<numnode;++i)
-        {
-          fsevelnp(0,i) = 0.0;
-          fsevelnp(1,i) = 0.0;
-        }
-      }
-
-      //--------------------------------------------------
-      // get all control parameters for time integration
-      // and stabilization
-      //--------------------------------------------------
-      //
-      // get control parameter
-      const double time = params.get<double>("total time",-1.0);
-
-      // --------------------------------------------------
-      // set parameters for linearization and potential low-Mach-number solver
-      string newtonstr=params.get<string>("Linearisation");
-      string lomastr  =params.get<string>("low-Mach-number solver");
-
-      bool newton = false;
-      bool loma   = false;
-      if(newtonstr=="Newton") newton=true;
-      if(lomastr  =="Yes"   ) loma  =true;
-
-      // set parameters for stabilization
-      ParameterList& stablist = params.sublist("STABILIZATION");
-
-      StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
-      StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
-      StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-      StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-      StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-      StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
-
-      // select tau definition
-      TauType whichtau = tau_not_defined;
-      {
-        const string taudef = stablist.get<string>("DEFINITION_TAU");
-
-        if(taudef == "Barrenechea_Franca_Valentin_Wall")
-        {
-          whichtau = franca_barrenechea_valentin_wall;
-        }
-        else if(taudef == "Bazilevs")
-        {
-          whichtau = bazilevs;
-        }
-        else if(taudef == "Codina")
-        {
-          whichtau = codina;
-        }
-      }
-
-      // flag for higher order elements
-      bool higher_order_ele = isHigherOrderElement(Shape());
-
-      // overrule higher_order_ele if input-parameter is set
-      // this might be interesting for fast (but slightly
-      // less accurate) computations
-      if(stablist.get<string>("STABTYPE") == "inconsistent") higher_order_ele = false;
-
-      // get time step size
-      const double dt = params.get<double>("dt");
-
-      // One-step-Theta: timefac = theta*dt
-      // BDF2:           timefac = 2/3 * dt
-      const double timefac = params.get<double>("thsl",-1.0);
-      if (timefac < 0.0) dserror("No thsl supplied");
-
-      // --------------------------------------------------
-      // set parameters for classical turbulence models
-      // --------------------------------------------------
-      ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
-
-      // initialise the Smagorinsky constant Cs to zero
-      double Cs            = 0.0;
-      double visceff       = 0.0;
-
-      // get Smagorinsky model parameter for fine-scale subgrid viscosity
-      // (Since either all-scale Smagorinsky model (i.e., classical LES model
-      // as will be inititalized below) or fine-scale Smagorinsky model is
-      // used (and never both), the same input parameter can be exploited.)
-      if (fssgv != fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-        dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-      if (fssgv != fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-      // the default action is no model
-      TurbModelAction turb_mod_action = no_model;
-
-      if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-      {
-        string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-        // --------------------------------------------------
-        // standard constant coefficient Smagorinsky model
-        if (physical_turbulence_model == "Smagorinsky")
-        {
-          // the classic Smagorinsky model only requires one constant parameter
-          turb_mod_action = smagorinsky;
-          Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-        }
-        else
-          dserror("For 2-D, up to now, only constant-coefficient Smagorinsky model is available");
-      }
-
-      //--------------------------------------------------
-      // wrap epetra serial dense objects in blitz objects
-      //--------------------------------------------------
-      blitz::Array<double, 2> estif(elemat1.A(),
-                                    blitz::shape(elemat1.M(),elemat1.N()),
-                                    blitz::neverDeleteData,
-                                    blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> emesh(elemat2.A(),
-                                    blitz::shape(elemat2.M(),elemat2.N()),
-                                    blitz::neverDeleteData,
-                                    blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 1> eforce(elevec1.Values(),
-                                     blitz::shape(elevec1.Length()),
-                                     blitz::neverDeleteData);
-
-      //--------------------------------------------------
-      // calculate element coefficient matrix and rhs
-      //--------------------------------------------------
-      DRT::ELEMENTS::Fluid2Impl::Impl(this)->Sysmat(this,
-                                                    evelnp,
-                                                    fsevelnp,
-                                                    eprenp,
-                                                    edensnp,
-                                                    emhist,
-                                                    echist,
-                                                    edispnp,
-                                                    egridv,
-                                                    estif,
-                                                    emesh,
-                                                    eforce,
-                                                    actmat,
-                                                    time,
-                                                    dt,
-                                                    timefac,
-                                                    newton,
-                                                    loma,
-                                                    higher_order_ele,
-                                                    fssgv,
-                                                    pspg,
-                                                    supg,
-                                                    vstab,
-                                                    cstab,
-                                                    cross,
-                                                    reynolds,
-                                                    whichtau,
-                                                    turb_mod_action,
-                                                    Cs,
-                                                    visceff);
-
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      /*double dens = 0.0;
-      if(mat->MaterialType()== m_fluid)
-        dens = actmat->m.fluid->density;
-      else if(mat->MaterialType()== m_carreauyasuda)
-        dens = actmat->m.carreauyasuda->density;
-      else if(mat->MaterialType()== m_modpowerlaw)
-        dens = actmat->m.modpowerlaw->density;
-      else
-        dserror("no fluid material found");
-
-      params.set("density", dens);*/
-
+      return DRT::ELEMENTS::Fluid2ImplInterface::Impl(this)->Evaluate(this,
+                                                                      params,
+                                                                      discretization,
+                                                                      lm,
+                                                                      elemat1,
+                                                                      elemat2,
+                                                                      elevec1,
+                                                                      elevec2,
+                                                                      elevec3,
+                                                                      mat,
+                                                                      actmat);
     }
     break;
     case calc_fluid_stationary_systemmat_and_residual:
     {
-      // need current velocity/pressure and velocity/density vector
-      RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-      RefCountPtr<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
-      if (velnp==null || vedenp==null)
-        dserror("Cannot get state vectors 'velnp' and/or 'vedenp'");
-
-      // extract local values from the global vectors
-      vector<double> myvelnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-      vector<double> myvedenp(lm.size());
-      DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
-
-      if (is_ale_) dserror("No ALE support within stationary fluid solver.");
-
-      // create blitz objects for element arrays
-      const int numnode = NumNode();
-      blitz::Array<double, 1> eprenp(numnode);
-      blitz::Array<double, 2> evelnp(2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 1> edensnp(numnode);
-
-      for (int i=0;i<numnode;++i)
-      {
-        // split velocity and pressure, insert into element arrays
-        evelnp(0,i) = myvelnp[0+(i*3)];
-        evelnp(1,i) = myvelnp[1+(i*3)];
-
-        eprenp(i) = myvelnp[2+(i*3)];
-
-        // insert density vector into element array
-        edensnp(i) = myvedenp[2+(i*3)];
-      }
-
-      // get control parameter
-      const double pseudotime = params.get<double>("total time",-1.0);
-      if (pseudotime < 0.0)
-        dserror("no value for total (pseudo-)time in the parameter list");
-
-      // --------------------------------------------------
-      // set parameters for linearization and potential low-Mach-number solver
-      string newtonstr=params.get<string>("Linearisation");
-      string lomastr  =params.get<string>("low-Mach-number solver");
-
-      bool newton = false;
-      bool loma   = false;
-      if(newtonstr=="Newton") newton=true;
-      if(lomastr  =="Yes"   ) loma  =true;
-
-      // --------------------------------------------------
-      // set parameters for stabilisation
-      ParameterList& stablist = params.sublist("STABILIZATION");
-
       // if not available, define map from string to action
       if(stabstrtoact_.empty())
       {
@@ -563,100 +248,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["Smagorinsky_all"  ]=fssgv_Smagorinsky_all;
         stabstrtoact_["Smagorinsky_small"]=fssgv_Smagorinsky_small;
       }
-
-      StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
-      StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
-      StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-      StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-      StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-      StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
-
-      // flag for higher order elements
-      bool higher_order_ele = isHigherOrderElement(Shape());
-
-      // overrule higher_order_ele if input-parameter is set
-      // this might be interesting for fast (but slightly
-      // less accurate) computations
-      if(stablist.get<string>("STABTYPE") == "inconsistent") higher_order_ele = false;
-
-      // get fine-scale velocity
-      RCP<const Epetra_Vector> fsvelnp;
-      blitz::Array<double, 2> fsevelnp (2,numnode,blitz::ColumnMajorArray<2>());
-
-      // get flag for fine-scale subgrid viscosity
-      StabilisationAction fssgv =
-        ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
-      if (fssgv != fssgv_no)
-      {
-        fsvelnp = discretization.GetState("fsvelnp");
-        if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-        vector<double> myfsvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
-
-        // get fine-scale velocity and insert into element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          fsevelnp(0,i) = myfsvelnp[0+(i*3)];
-          fsevelnp(1,i) = myfsvelnp[1+(i*3)];
-        }
-      }
-      else
-      {
-        for (int i=0;i<numnode;++i)
-        {
-          fsevelnp(0,i) = 0.0;
-          fsevelnp(1,i) = 0.0;
-        }
-      }
-
-     // get Smagorinsky model parameter for fine-scale subgrid viscosity
-      ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
-      const double Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-      // wrap epetra serial dense objects in blitz objects
-      blitz::Array<double, 2> estif(elemat1.A(),
-                                    blitz::shape(elemat1.M(),elemat1.N()),
-                                    blitz::neverDeleteData,
-                                    blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 1> eforce(elevec1.Values(),
-                                     blitz::shape(elevec1.Length()),
-                                     blitz::neverDeleteData);
-
-      // calculate element coefficient matrix and rhs
-      DRT::ELEMENTS::Fluid2Stationary::StationaryImpl(this)->Sysmat(this,
-                               evelnp,
-                               fsevelnp,
-                               eprenp,
-                               edensnp,
-                               estif,
-                               eforce,
-                               actmat,
-                               pseudotime,
-                               newton,
-                               loma,
-                               higher_order_ele,
-                               fssgv,
-                               pspg,
-                               supg,
-                               vstab,
-                               cstab,
-                               cross,
-                               reynolds,
-                               Cs);
-
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      /*double dens = 0.0;
-      if(mat->MaterialType()== m_fluid)
-        dens = actmat->m.fluid->density;
-      else if(mat->MaterialType()== m_carreauyasuda)
-        dens = actmat->m.carreauyasuda->density;
-      else if(mat->MaterialType()== m_modpowerlaw)
-        dens = actmat->m.modpowerlaw->density;
-      else
-        dserror("no fluid material found");
-
-      params.set("density", dens);*/
+      return DRT::ELEMENTS::Fluid2StationaryInterface::Impl(this)->Evaluate(this,
+                                                                            params,
+                                                                            discretization,
+                                                                            lm,
+                                                                            elemat1,
+                                                                            elemat2,
+                                                                            elevec1,
+                                                                            elevec2,
+                                                                            elevec3,
+                                                                            mat,
+                                                                            actmat);
     }
     break;
     case calc_fluid_genalpha_sysmat_and_residual:

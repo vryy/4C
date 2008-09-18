@@ -20,12 +20,51 @@ Maintainer: Volker Gravemeier
 #define FLUID2_IMPL_H
 
 #include "fluid2.H"
-#include <blitz/array.h>
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
+//#include <blitz/array.h>
 
 namespace DRT
 {
 namespace ELEMENTS
 {
+
+  /// Interface base class for Fluid2Impl
+  /*!
+    This class exists to provide a common interface for all template
+    versions of Fluid2Impl. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of Fluid2Impl.
+   */
+  class Fluid2ImplInterface
+  {
+  public:
+    /// Empty constructor
+    Fluid2ImplInterface() {}
+    /// Empty destructor
+    virtual ~Fluid2ImplInterface() {}
+    /// Evaluate the element
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
+    virtual int Evaluate(Fluid2*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat) = 0;
+
+    /// Internal implementation class for fluid element
+    static Fluid2ImplInterface* Impl(DRT::ELEMENTS::Fluid2* f2);
+
+  };
+
 
   /// Internal Fluid2 implementation
   /*!
@@ -55,12 +94,33 @@ namespace ELEMENTS
     \author vg
     \date 08/08
   */
-  class Fluid2Impl
+  template <DRT::Element::DiscretizationType distype>
+  class Fluid2Impl: public Fluid2ImplInterface
   {
   public:
-    /// Constructor with number of nodes
-    explicit Fluid2Impl(int iel);
+    /// Constructor
+    explicit Fluid2Impl();
 
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    /// Evaluate
+    /*!
+      The evaluate function for the general fluid case.
+      Why doesn't someone who actually knows what this function does
+      write a useful comment?
+     */
+    virtual int Evaluate(Fluid2*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat);
     /// calculating element matrix and rhs
     /*!
       Calculate matrix and rhs. Here the whole thing is hidden.
@@ -102,17 +162,17 @@ namespace ELEMENTS
 
       */
     void Sysmat(Fluid2*                                  ele,
-                const blitz::Array<double,2>&            evelnp,
-                const blitz::Array<double,2>&            fsevelnp,
-                const blitz::Array<double,1>&            eprenp,
-                const blitz::Array<double,1>&            edensnp,
-                const blitz::Array<double,2>&            emhist,
-                const blitz::Array<double,1>&            echist,
-                const blitz::Array<double,2>&            edispnp,
-                const blitz::Array<double,2>&            egridv,
-                blitz::Array<double,2>&                  estif,
-                blitz::Array<double,2>&                  emesh,
-                blitz::Array<double,1>&                  eforce,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            evelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            fsevelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            emhist,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            echist,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            edispnp,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            egridv,
+                LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&            estif,
+                LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&            emesh,
+                LINALG::FixedSizeSerialDenseMatrix<3*iel,    1>&            eforce,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   dt,
@@ -132,9 +192,6 @@ namespace ELEMENTS
                 double&                                  Cs,
                 double&                                  visceff);
 
-
-    /// Internal implementation class for specific fluid element
-    static Fluid2Impl* Impl(DRT::ELEMENTS::Fluid2* f2);
 
   private:
 
@@ -171,10 +228,9 @@ namespace ELEMENTS
 
     */
     void Caltau(Fluid2*                                 ele,
-                const blitz::Array<double,2>&           evelnp,
-                const blitz::Array<double,2>&           fsevelnp,
-                const blitz::Array<double,1>&           edensnp,
-                const DRT::Element::DiscretizationType  distype,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           evelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           fsevelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
                 const enum Fluid2::TauType              whichtau,
                 struct _MATERIAL*                       material,
                 double&                                 visc,
@@ -202,84 +258,82 @@ namespace ELEMENTS
                    const double time);
 
   private:
-    //! number of nodes
-    int iel_;
     //! artificial viscosity
     double vart_;
     //! node coordinates
-    blitz::Array<double,2> xyze_;
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> xyze_;
     //! dead load in nodes
-    blitz::Array<double,2> edeadng_;
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> edeadng_;
     //! array for shape functions
-    blitz::Array<double,1> funct_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
     //! array for density-weighted shape functions
-    blitz::Array<double,1> densfunct_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_;
     //! array for shape functions divided by density
-    blitz::Array<double,1> functdens_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_;
     //! array for shape function derivatives w.r.t r,s,t
-    blitz::Array<double,2> deriv_;
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    blitz::Array<double,2> deriv2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv2_;
     //! transposed jacobian "dx/ds"
-    blitz::Array<double,2> xjm_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> xjm_;
     //! inverse of transposed jacobian "ds/dx"
-    blitz::Array<double,2> xji_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> xji_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
-    blitz::Array<double,2> vderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> vderxy_;
     //! global momentum derivatives in gausspoint w.r.t x,y,z
-    blitz::Array<double,2> mderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> mderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
-    blitz::Array<double,2> fsvderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> fsvderxy_;
     //! global second velocity derivatives in gausspoint w.r.t x,y,z
-    blitz::Array<double,2> vderxy2_;
+    LINALG::FixedSizeSerialDenseMatrix<2,3> vderxy2_;
     //! global derivatives of shape functions w.r.t x,y,z
-    blitz::Array<double,2> derxy_;
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> derxy_;
     //! density-weighted global derivatives of shape functions w.r.t x,y,z
-    blitz::Array<double,2> densderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> densderxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    blitz::Array<double,2> derxy2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy2_;
     //! bodyforce in gausspoint
-    blitz::Array<double,1> bodyforce_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> bodyforce_;
     //! vector containing all values from previous timelevel n for momentum equation
-    blitz::Array<double,1> histmom_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> histmom_;
     //! value from previous timelevel n for continuity equation
     double histcon_;
     //! direction of flow (normed velocity vector, currently not used)
     //blitz::Array<double,1> velino_;
     //! velocity vector in gausspoint
-    blitz::Array<double,1> velint_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> velint_;
     //! fine-scale velocity vector in gausspoint
-    blitz::Array<double,1> fsvelint_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> fsvelint_;
     //! ale convective velocity in gausspoint, c=u-u_G
-    blitz::Array<double,1> convvelint_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> convvelint_;
     //! pressure gradient in gausspoint
-    blitz::Array<double,1> gradp_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> gradp_;
     //! the stabilisation parameters
-    blitz::Array<double,1> tau_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
     //! viscous term including 2nd derivatives
-    blitz::Array<double,3> viscs2_;
+    LINALG::FixedSizeSerialDenseMatrix<4,iel> viscs2_;
     //! linearisation of convect, convective part
-    blitz::Array<double,1> conv_c_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_;
     //! momentum divergence
     double mdiv_;
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation
-    blitz::Array<double,1> rhsmom_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> rhsmom_;
     //! total right hand side term at int.-point for continuity equation
     double rhscon_;
     //! (u_old*nabla)u_old
-    blitz::Array<double,1> conv_old_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> conv_old_;
     //! div epsilon(u_old)
-    blitz::Array<double,1> visc_old_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> visc_old_;
     //! the old residual
-    blitz::Array<double,1> res_old_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1> res_old_;
     //! convection by subgrid-scale velocity
-    blitz::Array<double,1> conv_resM_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
-    blitz::Array<double,2> xder2_;
+    LINALG::FixedSizeSerialDenseMatrix<3,2> xder2_;
 
-    blitz::Array<double,2> vderiv_;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> vderiv_;
   };
 
 }

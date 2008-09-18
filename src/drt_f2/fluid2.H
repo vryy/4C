@@ -40,8 +40,10 @@ namespace ELEMENTS
 {
 // forward declarations
 class Fluid2Line;
-class Fluid2Impl;
-class Fluid2Stationary;
+class Fluid2ImplInterface;
+template <DRT::Element::DiscretizationType distype> class Fluid2Impl;
+class Fluid2StationaryInterface;
+template <DRT::Element::DiscretizationType distype> class Fluid2Stationary;
 class Fluid2GenalphaResVMM;
 class Fluid2Register;
 
@@ -57,8 +59,18 @@ public:
   //! @name Friends
   friend class Fluid2Register;
   friend class Fluid2Line;
-  friend class Fluid2Impl;
-  friend class Fluid2Stationary;
+  friend class Fluid2ImplInterface;
+  friend class Fluid2Impl<DRT::Element::tri3>;
+  friend class Fluid2Impl<DRT::Element::tri6>;
+  friend class Fluid2Impl<DRT::Element::quad4>;
+  friend class Fluid2Impl<DRT::Element::quad8>;
+  friend class Fluid2Impl<DRT::Element::quad9>;
+  friend class Fluid2StationaryInterface;
+  friend class Fluid2Stationary<DRT::Element::tri3>;
+  friend class Fluid2Stationary<DRT::Element::tri6>;
+  friend class Fluid2Stationary<DRT::Element::quad4>;
+  friend class Fluid2Stationary<DRT::Element::quad8>;
+  friend class Fluid2Stationary<DRT::Element::quad9>;
   friend class Fluid2GenalphaResVMM;
 
   //@}
@@ -740,7 +752,7 @@ private:
     \brief Evaluate weakly imposed Dirichlet conditions
 
     This method calculates the contributions to rhs and matrix of
-    weak Dirichlet boundary conditions for a generalized alpha 
+    weak Dirichlet boundary conditions for a generalized alpha
     system.
 
     Literature:
@@ -755,10 +767,10 @@ private:
     \param pevelaf   (in)  : current intermediate velocities on the
                              parent elements node array
     \param val       (in)  : values for weak DBC
-    \param functions (in)  : spatial functions to multiply weak 
+    \param functions (in)  : spatial functions to multiply weak
                              Dirichlet condition value with
     \param curvefac  (in)  : factor from timecurve
-    \param Cb        (in)  : shape funtion dependent parameter 
+    \param Cb        (in)  : shape funtion dependent parameter
                              for penalty term
     \param wd_gamma  (in)  : switch between adjoint-(in)consistent
     \param afgdt     (in)  : time integration dependent factor

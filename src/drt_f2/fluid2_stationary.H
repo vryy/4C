@@ -20,13 +20,51 @@ Maintainer: Volker Gravemeier
 #define FLUID2_STATIONARY_H
 
 #include "fluid2.H"
-#include <blitz/array.h>
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
+//#include <blitz/array.h>
 
 
 namespace DRT
 {
 namespace ELEMENTS
 {
+
+  /// Interface base class for Fluid2Stationary
+  /*!
+    This class exists to provide a common interface for all template
+    versions of Fluid2Stationary. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of Fluid2Stationary.
+   */
+  class Fluid2StationaryInterface
+  {
+  public:
+    /// Empty constructor
+    Fluid2StationaryInterface() {}
+    /// Empty destructor
+    virtual ~Fluid2StationaryInterface() {}
+    /// Evaluate the element
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
+    virtual int Evaluate(Fluid2*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat) = 0;
+
+    /// Internal implementation class for fluid element
+    static Fluid2StationaryInterface* Impl(DRT::ELEMENTS::Fluid2* f2);
+
+  };
 
   /// Internal Fluid2 implementation -- stationary formulation
   /*!
@@ -57,12 +95,33 @@ namespace ELEMENTS
     \author vg
     \date 08/08
   */
-  class Fluid2Stationary
+  template <DRT::Element::DiscretizationType distype>
+  class Fluid2Stationary: public Fluid2StationaryInterface
   {
   public:
-    /// Constructor with number of nodes
-    explicit Fluid2Stationary(int iel);
+    /// Constructor
+    explicit Fluid2Stationary();
 
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    /// Evaluate
+    /*!
+      The evaluate function for the general fluid case.
+      Why doesn't someone who actually knows what this function does
+      write a useful comment?
+     */
+    virtual int Evaluate(Fluid2*                   ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat,
+                         _MATERIAL* actmat);
     /// calculating element matrix and rhs
     /*!
       Calculate matrix and rhs for stationary problem formulation
@@ -90,12 +149,12 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
      */
     void Sysmat(Fluid2*                                  ele,
-                const blitz::Array<double,2>&            evelnp,
-                const blitz::Array<double,2>&            fsevelnp,
-                const blitz::Array<double,1>&            eprenp,
-                const blitz::Array<double,1>&            edensnp,
-                blitz::Array<double,2>&                  estif,
-                blitz::Array<double,1>&                  eforce,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            evelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            fsevelnp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp,
+                LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&            estif,
+                LINALG::FixedSizeSerialDenseMatrix<3*iel,    1>&            eforce,
                 struct _MATERIAL*                        material,
                 double                                   pseudotime,
                 bool                                     newton,
@@ -119,10 +178,9 @@ namespace ELEMENTS
       \brief calculate stabilization parameter for stationary formulation
     */
     void CalTauStationary(Fluid2*                                 ele,
-                          const blitz::Array<double,2>&           evelnp,
-                          const blitz::Array<double,2>&           fsevelnp,
-                          const blitz::Array<double,1>&           edensnp,
-                          const DRT::Element::DiscretizationType  distype,
+                          const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           evelnp,
+                          const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           fsevelnp,
+                          const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
                           const double                            visc,
                           const enum Fluid2::StabilisationAction  fssgv,
                           const double                            Cs);
@@ -134,40 +192,39 @@ namespace ELEMENTS
                    const double pseudotime);
 
   private:
-    int iel_;                          /// number of nodes
-    double vart_;                      /// fine-scale subgrid viscosity
-    blitz::Array<double,2> xyze_;      /// nodal position array
-    blitz::Array<double,2> edeadng_;   /// nodal dead load
-    blitz::Array<double,1> funct_;     /// nodal shape functions
-    blitz::Array<double,1> densfunct_; /// density-weighted nodal shape functions
-    blitz::Array<double,1> functdens_; /// nodal shape functions divided by density
-    blitz::Array<double,2> deriv_;     /// shape derivatives with respect to \xi
-    blitz::Array<double,2> deriv2_;    /// second shape derivatives with respect to \xi
-    blitz::Array<double,2> xjm_;       /// transposed of the jacobian matrix d x / d \xi
-    blitz::Array<double,2> xji_;       /// inverse of the jacobian matrix
-    blitz::Array<double,2> vderxy_;    /// velocity vector derivative
-    blitz::Array<double,2> mderxy_;    /// momentum derivative
-    blitz::Array<double,2> fsvderxy_;  /// fine-scale velocity vector derivative
-    blitz::Array<double,2> vderxy2_;   /// second derivatives of the velocity vector
-    blitz::Array<double,2> derxy_;     /// shape derivative with respect to x
-    blitz::Array<double,2> densderxy_; /// density-weighted shape derivative w.r.t. x
-    blitz::Array<double,2> derxy2_;    /// second shape derivative with respect to x
-    blitz::Array<double,1> bodyforce_; /// volumetric load at gausspoint
-    //blitz::Array<double,1> velino_;
-    blitz::Array<double,1> velint_;    /// velocity
-    blitz::Array<double,1> fsvelint_;  /// fine-scale velocity
-    blitz::Array<double,1> gradp_;     /// pressure gradient
-    blitz::Array<double,1> tau_;       /// tau_Mu, tau_Mp, tau_C
-    blitz::Array<double,3> viscs2_;    /// viscous term including 2nd derivatives
-    blitz::Array<double,1> conv_c_;    /// linearisation of convect, convective part
+    double vart_;                                         /// fine-scale subgrid viscosity
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> xyze_;      /// nodal position array
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> edeadng_;   /// nodal dead load
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;     /// nodal shape functions
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_; /// density-weighted nodal shape functions
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_; /// nodal shape functions divided by density
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> deriv_;     /// shape derivatives with respect to \xi
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv2_;    /// second shape derivatives with respect to \xi
+    LINALG::FixedSizeSerialDenseMatrix<2,2>   xjm_;       /// transposed of the jacobian matrix d x / d \xi
+    LINALG::FixedSizeSerialDenseMatrix<2,2>   xji_;       /// inverse of the jacobian matrix
+    LINALG::FixedSizeSerialDenseMatrix<2,2>   vderxy_;    /// velocity vector derivative
+    LINALG::FixedSizeSerialDenseMatrix<2,2>   mderxy_;    /// momentum derivative
+    LINALG::FixedSizeSerialDenseMatrix<2,2>   fsvderxy_;  /// fine-scale velocity vector derivative
+    LINALG::FixedSizeSerialDenseMatrix<2,3>   vderxy2_;   /// second derivatives of the velocity vector
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> derxy_;     /// shape derivative with respect to x
+    LINALG::FixedSizeSerialDenseMatrix<2,iel> densderxy_; /// density-weighted shape derivative w.r.t. x
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy2_;    /// second shape derivative with respect to x
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   bodyforce_; /// volumetric load at gausspoint
+    //LINALG::FixedSizeSerialDenseMatrix<,1> velino_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   velint_;    /// velocity
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   fsvelint_;  /// fine-scale velocity
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   gradp_;     /// pressure gradient
+    LINALG::FixedSizeSerialDenseMatrix<3,1>   tau_;       /// tau_Mu, tau_Mp, tau_C
+    LINALG::FixedSizeSerialDenseMatrix<4,iel> viscs2_;    /// viscous term including 2nd derivatives
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_;    /// linearisation of convect, convective part
     double mdiv_;                      /// momentum divergence
     double vdiv_;                      /// velocity divergence
-    blitz::Array<double,1> rhsmom_;    /// momentum equation right hand side
-    blitz::Array<double,1> conv_old_;
-    blitz::Array<double,1> visc_old_;
-    blitz::Array<double,1> res_old_;
-    blitz::Array<double,1> conv_resM_;
-    blitz::Array<double,2> xder2_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   rhsmom_;    /// momentum equation right hand side
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   conv_old_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   visc_old_;
+    LINALG::FixedSizeSerialDenseMatrix<2,1>   res_old_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
+    LINALG::FixedSizeSerialDenseMatrix<3,2>   xder2_;
   };
 
 }
