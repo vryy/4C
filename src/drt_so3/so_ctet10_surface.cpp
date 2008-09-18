@@ -8,10 +8,12 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 writen by : Alexander Volf
-			alexander.volf@mytum.de  
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -118,3 +120,6 @@ void DRT::ELEMENTS::Soctet10Surface::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOLID3
+
+#endif
+

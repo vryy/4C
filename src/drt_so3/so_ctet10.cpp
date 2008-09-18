@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------**##
 \file so_ctet10.cpp
-\brief 
+\brief
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -12,6 +12,8 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -55,7 +57,7 @@ data_(old.data_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_ctet10::Clone() const
 {
-  DRT::ELEMENTS::So_ctet10* newelement = new DRT::ELEMENTS::So_ctet10(*this);  
+  DRT::ELEMENTS::So_ctet10* newelement = new DRT::ELEMENTS::So_ctet10(*this);
   return newelement;
 }
 
@@ -180,7 +182,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_ctet10::ElementRegister() co
   /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
    * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
    *  10-node hexahedron: node 0,1,...,9
-   *          
+   *
    * -----------------------
    *- this is the numbering used in GiD & EXODUS!!
    *      3-
@@ -198,7 +200,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_ctet10::ElementRegister() co
    *      |  /                   \ \
    *      |/                       \\
    *      0------------4-------------1
-   */ 
+   */
   /*====================================================================*/
 
 /*----------------------------------------------------------------------***
@@ -218,9 +220,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_ctet10::Volumes()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_ctet10::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -233,9 +235,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_ctet10::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_ctet10::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -340,3 +342,5 @@ void DRT::ELEMENTS::Soctet10Register::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
+
+#endif

@@ -10,6 +10,8 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -128,7 +130,7 @@ int DRT::ELEMENTS::Soctet10Line::EvaluateNeumann(ParameterList&         params,
                                              Epetra_SerialDenseVector& elevec1)
 {
   dserror("Neumann condition on line not implemented");
-   
+
   return 0;
 }
 
@@ -136,3 +138,5 @@ int DRT::ELEMENTS::Soctet10Line::EvaluateNeumann(ParameterList&         params,
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOLID3
+
+#endif

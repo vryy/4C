@@ -28,12 +28,12 @@ isinit_(false)
 {
   // allocate history memory
   detJ_.resize(ngp);
-  
+
   Fhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9));
-  Epetra_SerialDenseMatrix F(3,3);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> F(true); // set to zero
   F(0,0) = F(1,1) = F(2,2) = 1.0;
   for (int i=0; i<ngp; ++i) MatrixtoStorage(i,F,FHistory());
-  
+
   if (!istet4)
     invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9));
   else
@@ -55,7 +55,7 @@ detJ_(old.detJ_)
   return;
 }
 
- 
+
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 08/08|
@@ -70,22 +70,22 @@ void DRT::ELEMENTS::InvDesign::Pack(vector<char>& data) const
 
   // numnod_
   AddtoPack(data,numnod_);
-  
+
   // ngp_
   AddtoPack(data,ngp_);
-  
+
   // isinit_
   AddtoPack(data,isinit_);
-  
+
   // Fhist_
   AddtoPack(data,*Fhist_);
-  
+
   // invJhist_
   AddtoPack(data,*invJhist_);
-  
+
   // detJ_
   AddtoPack(data,detJ_);
-  
+
   return;
 }
 
@@ -104,7 +104,7 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
 
   // numnod_
   ExtractfromPack(position,data,numnod_);
-  
+
   // ngp_
   ExtractfromPack(position,data,ngp_);
 
@@ -113,10 +113,10 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
 
   // Fhist_
   ExtractfromPack(position,data,*Fhist_);
-  
+
   // invJhist_
   ExtractfromPack(position,data,*invJhist_);
-  
+
   // detJ_
   ExtractfromPack(position,data,detJ_);
 

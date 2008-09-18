@@ -8,10 +8,12 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 writen by : Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -54,7 +56,7 @@ bool DRT::ELEMENTS::So_ctet10::ReadElement()
 
   // we expect kintype to be total lagrangian
   kintype_ = so_ctet10_totlag;
-   
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -79,3 +81,5 @@ bool DRT::ELEMENTS::So_ctet10::ReadElement()
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
+
+#endif

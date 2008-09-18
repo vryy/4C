@@ -48,6 +48,11 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
   LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>* weights;  //[NUMGPT_SOH8]
   soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
+#ifdef PRINTDEBUG
+  writeArray(*shapefct,"ms;shapefct");
+  writeArray(*deriv,"ms;deriv");
+  writeArray(*weights,"ms;weights");
+#endif
 
   // update element geometry
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
@@ -107,6 +112,13 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+#ifdef PRINTDEBUG
+    writeComment("mark=ms;return from soh8_mat_sel");
+    writeArray(stress,"ms;stress");
+    writeArray(cmat,"ms;cmat");
+    writeArray(glstrain,"ms;glstrain");
+    writeArray(defgrd,"ms;defgrd");
+#endif
 
     double integrationfactor = detJ * (*weights)(gp);
 

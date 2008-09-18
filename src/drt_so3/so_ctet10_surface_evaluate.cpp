@@ -8,10 +8,12 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by : Alexander Volf
-			alexander.volf@mytum.de  
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -88,14 +90,14 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
   }
 
   SUB_STRUCTURE_SURF sub(xsrefe);
-  
+
   for (int num_ele = 0; num_ele < 4; num_ele++)
-  {  
+  {
     /*
     ** Here, we integrate a 6-node surface with 1 Gauss Points on each of 4 sub-surfaces
     */
     double fac = (*weights)(0) * (sub.my_surface[num_ele]).my_area() * curvefac;   // integration factor
- 
+
     // gauss parameters
     for (int gpid = 0; gpid < 1; gpid++) {    // loop over intergration points
       // get shape functions and derivatives of element surface
@@ -106,9 +108,9 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
         	  (*shapefct)(nodid,gpid) * (*onoff)[dim] * (*val)[dim] * fac;
          }
       }
-  
-    } 
-  }  
+
+    }
+  }
   return 0;
 } //Soctet10Surface::EvaluateNeumann(..)
 
@@ -122,10 +124,10 @@ void DRT::ELEMENTS::Soctet10Surface::SUB_NODE::init(
 	const int in_local_id,
 	const int in_global_id,
 	const Epetra_SerialDenseMatrix& xrefe)
-{	
+{
 	local_id =in_local_id;
   	global_id=in_global_id;
-  	
+
   	my_x[0]=xrefe(global_id,0);
 	my_x[1]=xrefe(global_id,1);
 	my_x[2]=xrefe(global_id,2);
@@ -160,30 +162,30 @@ double DRT::ELEMENTS::Soctet10Surface::TRI3_SUB::my_area()
       xsrefe(i,1) = my_nodes[i].my_x[1];
       xsrefe(i,2) = my_nodes[i].my_x[2];
     }
-   
+
     Epetra_SerialDenseVector A(NUMDIM_SOCTET10);
     Epetra_SerialDenseVector B(NUMDIM_SOCTET10);
     Epetra_SerialDenseVector C(NUMDIM_SOCTET10);
-  
+
     /*
-     * to compute the Jacobian i compute the area of the triangle 
-     * for that i get the boundary vectors A,B of the triangle 
-     * the area is then |A x B| 
+     * to compute the Jacobian i compute the area of the triangle
+     * for that i get the boundary vectors A,B of the triangle
+     * the area is then |A x B|
      */
-  
+
     A(0)=xsrefe(1,0)-xsrefe(0,0);
     A(1)=xsrefe(1,1)-xsrefe(0,1);
     A(2)=xsrefe(1,2)-xsrefe(0,2);
-  
+
     B(0)=xsrefe(2,0)-xsrefe(0,0);
     B(1)=xsrefe(2,1)-xsrefe(0,1);
     B(2)=xsrefe(2,2)-xsrefe(0,2);
-  
+
     /* C = A x B  */
     C(0)=A(0)*B(1) - A(1)*B(0);
     C(1)=A(1)*B(2) - A(2)*B(1);
     C(2)=A(2)*B(0) - A(0)*B(2);
-  
+
     /* return = |A x B|*/
     return C.Norm2()/2;
 }
@@ -199,7 +201,7 @@ DRT::ELEMENTS::Soctet10Surface::SUB_STRUCTURE_SURF::SUB_STRUCTURE_SURF(const Epe
 	my_surface[ 1].init( 3, 1, 4, xrefe);
 	my_surface[ 2].init( 5, 4, 2, xrefe);
 	my_surface[ 3].init( 3, 4, 5, xrefe);
-	
+
 }
 
 DRT::ELEMENTS::Soctet10Surface::SUB_STRUCTURE_SURF::~SUB_STRUCTURE_SURF()
@@ -218,21 +220,21 @@ void DRT::ELEMENTS::Soctet10Surface::sotet4_surface_shapefunc(
   static Epetra_SerialDenseMatrix  f(3,1);  // shape functions
   static Epetra_SerialDenseVector weightfactors(1);   // weights for each gp
 
- //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17 
+ //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17
   const double gploc_alpha    = (double)1/3;    // gp sampling point value for liner. fct
   const double w			  = (double)1;
 
   const double ksi1[1] = {gploc_alpha };
   const double ksi2[1] = {gploc_alpha };
   const double ksi3[1] = {gploc_alpha };
-  
+
   for (int i=0; i<1; i++) {
       f(0,i) = ksi1[i];
       f(1,i) = ksi2[i];
       f(2,i) = ksi3[i];
       weightfactors[i] = w; // just for clarity how to get weight factors
-   } 
-   
+   }
+
    *weights  = &weightfactors;
    *shapefct = &f;
 
@@ -242,3 +244,5 @@ void DRT::ELEMENTS::Soctet10Surface::sotet4_surface_shapefunc(
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOLID3
+
+#endif

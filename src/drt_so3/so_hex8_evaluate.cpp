@@ -86,6 +86,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // linear stiffness
     case calc_struct_linstiff:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 1");
+#endif
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
@@ -98,6 +101,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 2");
+#endif
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -106,15 +112,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
-#ifndef INVERSEDESIGNCREATE
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
+
+#ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
 #else
-      Epetra_SerialDenseMatrix* matptr = NULL;
-      if (elemat1_epetra.N()) matptr = &elemat1_epetra;
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1_epetra,NULL,NULL,params);
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
 #endif
     }
     break;
@@ -122,6 +126,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // internal force vector only
     case calc_struct_internalforce:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 3");
+#endif
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -145,6 +152,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 4");
+#endif
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -156,7 +166,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 #ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
 #else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1_epetra,&elemat2_epetra,&elevec1_epetra,NULL,NULL,params);
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
 #endif
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
@@ -165,6 +175,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 5");
+#endif
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
@@ -176,16 +189,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
 #ifndef INVERSEDESIGNCREATE
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
 #else
-      LINALG::SerialDenseMatrix stress(NUMGPT_SOH8,NUMSTR_SOH8);
-      LINALG::SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
 #endif
       AddtoPack(*stressdata, stress);
@@ -200,6 +211,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 6");
+#endif
       const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
       if (gpstressmap==null)
@@ -320,6 +334,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     case calc_struct_update_istep:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 7");
+#endif
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
@@ -345,6 +362,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     case calc_struct_update_imrlike:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 8");
+#endif
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
@@ -384,6 +404,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     case calc_struct_reset_istep:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 9");
+#endif
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
@@ -408,6 +431,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     case calc_homog_dens:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 10");
+#endif
       soh8_homog(params);
     }
     break;
@@ -418,6 +444,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // done in the elements that know the number of EAS parameters
     case eas_init_multi:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 11");
+#endif
       if (eastype_ != soh8_easnone)
       {
         soh8_eas_init_multi(params);
@@ -431,6 +460,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // set accordingly
     case eas_set_multi:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 12");
+#endif
       if (eastype_ != soh8_easnone)
       {
         soh8_set_eas_multi(params);
@@ -441,6 +473,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // read restart of microscale
     case multi_readrestart:
     {
+#ifdef PRINTDEBUG
+      writeComment("mark=case 13");
+#endif
       RefCountPtr<MAT::Material> mat = Material();
 
       if (mat->MaterialType()==m_struct_multiscale)
@@ -495,6 +530,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     default:
       dserror("Unknown type of action for So_hex8");
   }
+#ifdef PRINTDEBUG
+  writeArray(elemat1_epetra,"elemat1");
+  writeArray(elemat2_epetra,"elemat2");
+  writeArray(elevec1_epetra,"elevec1");
+  writeArray(elevec2_epetra,"elevec2");
+  writeArray(elevec3_epetra,"elevec3");
+#endif
   return 0;
 }
 
@@ -567,6 +609,10 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
         elevec1[nodid*NUMDIM_SOH8+dim] += shapefcts[gp](nodid) * dim_fac;
       }
     }
+#ifdef PRINTDEBUG
+    writeArray(jac,"jac");
+    writeArray(elevec1,"elevec1");
+#endif
 
   }/* ==================================================== end of Loop over GP */
 
@@ -639,6 +685,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   const static vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
+#ifdef PRINTDEBUG
+   Epetra_SerialDenseVector disp_wrap(View,&(disp[0]),disp.size());
+   Epetra_SerialDenseVector res_wrap(View,&(residual[0]),residual.size());
+   writeArray(disp_wrap,"disp");
+   writeArray(res_wrap,"residual");
+#endif
   // update element geometry
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
@@ -739,6 +791,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     ** -> T0^{-T}
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+#ifdef PRINTDEBUG
+   writeArray(T0invT,"T0invT");
+#endif
   } // -------------------------------------------------------------------- EAS
 
 
@@ -761,7 +816,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-    const double detJ = detJ_[gp];
+    double detJ = detJ_[gp];
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
@@ -797,19 +852,17 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
       // design analysis
-      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
       invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
-      LINALG::SerialDenseMatrix tmp3x3(3,3);
-      tmp3x3.Multiply('N','N',1.0,defgrd_epetra,Fhist,0.0);
-      // this copies into the existing memory, so that the fixed size
-      // view still works.
-      defgrd_epetra = tmp3x3;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> tmp3x3;
+      tmp3x3.Multiply(defgrd,Fhist);
+      defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
 
       // make detJ and invJ refer to the ref. configuration that resulted from
       // the inverse design analysis
       detJ = invdesign_->DetJHistory()[gp];
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
-      N_XYZ.Multiply('N','N',1.0,tmp3x3,int_hex8.deriv_gp[gp],0.0);
+      N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
 #endif
 
@@ -827,6 +880,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
+#ifdef PRINTDEBUG
+    writeArray(invJ_[gp],"invJ_[gp]");
+    writeArray(int_hex8.deriv_gp[gp],"int_h8.der_gp[gp]");
+    writeArray(xcurr,"xcurr");
+    writeArray(N_XYZ,"N_XYZ");
+    writeArray(defgrd,"defgrd");
+    writeArray(cauchygreen,"cauchygreen");
+    writeArray(glstrain,"glstrain");
+#endif
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
@@ -893,6 +955,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         (*elestrain)(gp,3) = euler_almansi(0,1);
         (*elestrain)(gp,4) = euler_almansi(1,2);
         (*elestrain)(gp,5) = euler_almansi(0,2);
+#ifdef PRINTDEBUG
+        writeArray(gl,"gl");
+        writeArray(defgrd,"defgrd");
+        writeArray(invdefgrd,"invdefgrd");
+        writeArray(euler_almansi,"e_almansi");
+        writeArray(*elestrain,"elestrain");
+#endif
       }
     }
 
@@ -1023,6 +1092,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
           (*stiffmatrix)(NUMDIM_SOH8*inod+2, NUMDIM_SOH8*jnod+2) += bopstrbop;
         }
       } // end of integrate `geometric' stiffness******************************
+#ifdef PRINTDEBUG
+      writeArray(bop,"bop");
+      writeArray(stress,"stress");
+      writeArray(*force,"force");
+      writeArray(cb,"cb");
+      writeArray(sfac,"sfac");
+      writeArray(*stiffmatrix,"stiffness");
+#endif
 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ != soh8_easnone)
@@ -1112,6 +1189,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
       }
 
+#ifdef PRINTDEBUG
+      writeArray(Kaa,"Kaa");
+      writeArray(KdaKaa,"KdaKaa");
+      writeArray(*stiffmatrix,"stiffmatrix");
+      writeArray(*force,"force");
+      writeArray(feas,"feas");
+#endif
       // store current EAS data in history
       for (int i=0; i<neas_; ++i)
       {
@@ -1320,6 +1404,11 @@ void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
     *weights  = &weightfactors; // return adress of static object to target of pointer
     fdf_eval = true;               // now all arrays are filled statically
   }
+#ifdef PRINTDEBUG
+  writeArray(**shapefct,"shapefct");
+  writeArray(**deriv,"deriv");
+  writeArray(**weights,"weights");
+#endif
   return;
 }  // of soh8_shapederiv
 
@@ -1375,6 +1464,10 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
 
+#ifdef PRINTDEBUG
+    writeArray(N_xyz,"N_xyz");
+    writeArray(defgrd,"defgrd");
+#endif
     prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
   }
   return;

@@ -105,7 +105,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 #ifndef INVERSEDESIGNCREATE
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
 #else
-      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1_epetra,NULL,&elevec1_epetra,NULL,NULL,params);
+      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
 #endif
     }
     break;
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 #ifndef INVERSEDESIGNCREATE
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
 #else
-      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1_epetra,&elemat2_epetra,&elevec1_epetra,NULL,NULL,params);
+      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
 #endif
     }
     break;
@@ -165,16 +165,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
+      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
 #ifndef INVERSEDESIGNCREATE
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
 #else
-      LINALG::SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
-      LINALG::SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
 #endif
       AddtoPack(*stressdata, stress);
@@ -503,7 +501,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-    const double detJ = detJ_[gp];
+    double detJ = detJ_[gp];
 
     LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_WEG6,NUMDIM_WEG6);
     LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(defgrd_epetra.A(),true);
@@ -541,17 +539,17 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
       // design analysis
-      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
       invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
-      LINALG::SerialDenseMatrix tmp3x3(3,3);
-      tmp3x3.Multiply('N','N',1.0,defgrd,Fhist,0.0);
-      defgrd = tmp3x3;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> tmp3x3;
+      tmp3x3.Multiply(defgrd,Fhist);
+      defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
 
       // make detJ and invJ refer to the ref. configuration that resulted from
       // the inverse design analysis
       detJ = invdesign_->DetJHistory()[gp];
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
-      N_XYZ.Multiply('N','N',1.0,tmp3x3,derivs[gp],0.0);
+      N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
 #endif
 

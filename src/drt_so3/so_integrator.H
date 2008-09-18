@@ -9,7 +9,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by: Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -42,9 +42,9 @@ using namespace Teuchos;
 #define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
 #define NUMGPT_SOTET10       4      // total gauss points per element	/****/
 #define NUMDIM_SOTET10       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6)
+#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6)
 
 // forward declarations
 struct _MATERIAL;
@@ -55,19 +55,19 @@ namespace DRT
 
 namespace ELEMENTS
 {
-// forward declarations	
+// forward declarations
 	class SoDisp;
 /*!
 \brief A general class agregating all necessery data for discrete integration
 
 <h3>Purpose</h3>
 The class offers a standard interface for discrete integration, mainly the agregated
-shape functions and shape function derivatives, it is a purely general class and 
-does NOT own a constructor. Constructors exist only for derived classes. It has however  
+shape functions and shape function derivatives, it is a purely general class and
+does NOT own a constructor. Constructors exist only for derived classes. It has however
 a virtual destructor, that should be the same for all derived classes. Derived classes are not
 supposed to add extra attributes, they may however add extra methods.
 
-pointer to a vector<> of shape functions stored in Epetra_Vectors			
+pointer to a vector<> of shape functions stored in Epetra_Vectors
 evaluated at each gp, for each node. It may look like this:
 
 
@@ -80,14 +80,14 @@ evaluated at each gp, for each node. It may look like this:
 \f]
 
 pointer to a vector<> of shape function derivatives stored in
-Epetra_Matrices evaluated at each gp, for \f$\xi_1-\xi_{4}\f$ it may look like this:	
-													
-													
+Epetra_Matrices evaluated at each gp, for \f$\xi_1-\xi_{4}\f$ it may look like this:
+
+
 \f[
-	\text{deriv\_gp} = 
-	\begin{bmatrix}								    
+	\text{deriv\_gp} =
+	\begin{bmatrix}
 		N_{1,xsi1} &  N_{1,xsi2} &  N_{1,xsi3} &  N_{1,xsi4} \\
-		N_{2,xsi1} &  N_{2,xsi2} &  N_{2,xsi3} &  N_{2,xsi4} \\ 
+		N_{2,xsi1} &  N_{2,xsi2} &  N_{2,xsi3} &  N_{2,xsi4} \\
 		\vdots & \vdots & \vdots & \vdots \\
 		N_{X,xsi1} &  N_{X,xsi2} & N_{X,xsi3} & N_{X,xsi4}
 	\end{bmatrix}
@@ -117,11 +117,11 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   |                 [ NX_,xsi1    NX_,xsi2    NX_,xsi3   NX_,xsi4 ]   				|
   |  where X stands for the number of NODES (and shape functions) in a element		|
   |                                                                                 |
-  *---------------------------------------------------------------------------------*/ 
+  *---------------------------------------------------------------------------------*/
   class So_integrator
   {
-	public: 
-		vector<Epetra_SerialDenseVector> shapefct_gp;  
+	public:
+		vector<Epetra_SerialDenseVector> shapefct_gp;
       	vector<Epetra_SerialDenseMatrix> deriv_gp;
       	Epetra_SerialDenseVector weights;
       	int num_gp;
@@ -141,7 +141,7 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   	public:
   		Integrator_tet10_4point(void);
   };
- 
+
  /*---------------------------------------------------------------------------------*
   | class Tet_integrator_14point                                        vlf 09/07   |
   |                                                                                 |
@@ -149,21 +149,22 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   |	it is exaxt for 0-4th order polynomials                                         |
   |                                                                                 |
   *---------------------------------------------------------------------------------*/
-  
+
   class Integrator_tet10_14point : public So_integrator
   {
   	public:
   		Integrator_tet10_14point(void);
   };
- 
+
   class Integrator_tet10_10node : public So_integrator
   {
   	public:
-  		vector<Epetra_SerialDenseVector> shapefct_gp_lin; 
+  		vector<Epetra_SerialDenseVector> shapefct_gp_lin;
   		Integrator_tet10_10node(void);
   };
-  
- /*---------------------------------------------------------------------------------*
+
+#if 0
+  /*---------------------------------------------------------------------------------*
   | class Integrator_tet4_1point                                        vlf 09/07   |
   |                                                                                 |
   | a special class for quadratic 4-node tetrahedra using a 4 point quadrature      |
@@ -187,13 +188,14 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   	public:
   		Integrator_tet4_4point(void);
   };
-  
+#endif
+
   class Integrator_tri3_1point : public So_integrator
   {
   	public:
   		Integrator_tri3_1point(void);
   };
-  
+
 
 } // namespace ELEMENTS
 } // namespace DRT

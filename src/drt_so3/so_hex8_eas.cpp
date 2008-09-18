@@ -32,7 +32,6 @@ Maintainer: Moritz Frenzel
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
-
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/
@@ -281,6 +280,10 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     } else {
     dserror("eastype not implemented");
     }
+#ifdef PRINTDEBUG
+  for (unsigned i = 0; i < (*M_GP)->size(); ++i)
+    writeArray((**M_GP)[i],"M_GP");
+#endif
 //  }
 } // end of soh8_eassetup
 

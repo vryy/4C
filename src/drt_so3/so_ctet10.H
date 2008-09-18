@@ -6,10 +6,15 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by: Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
+
+// I added empty definitions and commented out the code in the
+// cpp-files, because this element is to be deleted.
+
+
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_CTET10_H_
@@ -35,9 +40,9 @@ using namespace Teuchos;
 #define NUMSTR_SOCTET10       6     // number of strains/stresses 	/****/
 #define NUMGPT_SOCTET10       5     // total gauss points per element	/****/
 #define NUMDIM_SOCTET10       3     // number of dimensions 			/****/
-#define NUMCOORD_SOCTET10     4     // number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOCTET10_FACE  6	    // number of nodes on a CTET10 face (which is a TRI6) 
-#define NUMGPT_SOCTET10_FACE  3	    // number of GP    on a CTET10 face (which is a TRI6) 
+#define NUMCOORD_SOCTET10     4     // number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOCTET10_FACE  6	    // number of nodes on a CTET10 face (which is a TRI6)
+#define NUMGPT_SOCTET10_FACE  3	    // number of GP    on a CTET10 face (which is a TRI6)
 
 #define NUMSUBELEMS_SOCTET10 12		// number of sub elements in a CTET10
 
@@ -85,16 +90,16 @@ public:
 
   \param id : A unique global id
   */
-  So_ctet10(int id, int owner);
-  
+  So_ctet10(int id, int owner) : Element(*this) {}
+
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
 
   */
-  So_ctet10(const So_ctet10& old);
-  
+  So_ctet10(const So_ctet10& old) : Element(*this) {}
+
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
 
@@ -102,12 +107,12 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Element* Clone() const;
+  DRT::Element* Clone() const {return new So_ctet10(*this);}
 
   /*!
   \brief Get shape type of element
   */
-  virtual DiscretizationType Shape() const;
+  virtual DiscretizationType Shape() const {return DRT::Element::tet4;}
 
   /*!
   \brief Return number of volumes of this element
@@ -128,19 +133,19 @@ public:
   \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<RCP<DRT::Element> > Lines() { return vector<RCP<DRT::Element> >(); }
 
   /*!
   \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces() { return vector<RCP<DRT::Element> >(); }
 
   /*!
   \brief Get vector of RefCountPtrs to the volumes of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<RCP<DRT::Element> > Volumes() { return vector<RCP<DRT::Element> >(); }
 
   /*!
   \brief Return unique ParObject id
@@ -156,7 +161,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(vector<char>& data) const {};
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -164,13 +169,13 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const vector<char>& data) {};
 
   /*!
   \brief Destructor
 
   */
-  virtual ~So_ctet10();
+  virtual ~So_ctet10() {};
   //@}
 
   //! @name Acess methods
@@ -203,7 +208,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(ostream& os) const {};
 
   /*!
   \brief Allocate and return a DesignElementRegister class
@@ -212,7 +217,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return RefCountPtr<DRT::ElementRegister>(NULL); };
 
   //@}
 
@@ -221,7 +226,7 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement();
+  bool ReadElement() {return false;}
 
   //@}
 
@@ -258,7 +263,8 @@ public:
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+               Epetra_SerialDenseVector& elevec3)
+    {return 0;}
 
 
   /*!
@@ -279,7 +285,8 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
+                              Epetra_SerialDenseVector& elevec1)
+    { return 0; }
 
 
   //@}
@@ -342,7 +349,7 @@ protected:
   // internal calculation methods
 
   // don't want = operator
-  So_ctet10& operator = (const So_ctet10& old);
+  So_ctet10& operator = (const So_ctet10& old) {return *this;}
   virtual void so_ctet10_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -352,9 +359,10 @@ protected:
                                  Epetra_SerialDenseMatrix* stresses,
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
-                                 bool                      cauchy = false);
-                   
-                
+                                 bool                      cauchy = false)
+    {}
+
+
   virtual void so_ctet10_nlnstiffstress (vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -364,94 +372,19 @@ protected:
                                  Epetra_SerialDenseMatrix* elestress,
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
-                                 bool                      cauchy = false);
+                                 bool                      cauchy = false)
+    {}
 
   //! lump mass matrix
-  void so_ctet10_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
+  void so_ctet10_lumpmass(Epetra_SerialDenseMatrix* emass) {}  //!< element mass matrix
 
   void so_ctet10_expol(Epetra_SerialDenseMatrix& stresses,
-                  Epetra_SerialDenseMatrix& nodalstresses);
+                       Epetra_SerialDenseMatrix& nodalstresses) {}
   //obsolete
   void so_ctet10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
-                   Epetra_SerialDenseMatrix* stresses);
-                   
-  // SUB_NODE class provides information needed by a node of a sub-element 
-  class SUB_NODE
-  {	
-  	public:
-      int local_id;
-  	  int global_id;
-  	  double my_x[3];
-  	  
-  	  SUB_NODE();
-  	  void init(const int local_id,const int global_id,const Epetra_SerialDenseMatrix& xrefe);
-  	  ~SUB_NODE();   				
-  };
+                        Epetra_SerialDenseMatrix* stresses) {}
 
-  // TET4_SUB class provides the information needed to integrate over a sub-element
-  class TET4_SUB
-  {
-    public: 
-  	  // RefCountPtr<DRT::ELEMENTS::So_ctet10::SUB_NODE> my_nodes;
-  	  SUB_NODE my_nodes[4];
-  	  double global_baricentre_xi[4];
-  	  
-  	  TET4_SUB();
-  	  void init(const int&, const int&, const int&, const int&,const Epetra_SerialDenseMatrix& xrefe,
-  	    const double& xi_babicentre1, const double& xi_babicentre2,
-  	    const double& xi_babicentre3, const double& xi_babicentre4);
-  	  			
-	  //const Epetra_SerialDenseMatrix& integrate(Epetra_SerialDenseVector& xi_c);
-	  void integrate(Epetra_SerialDenseVector& xi_c,  Epetra_SerialDenseMatrix& in_Naj);
-	  double my_volume();
-  	  ~TET4_SUB(); 				
-  };
-
-  /* SUB_STRUCTURE holds the sub elements of a CTET10 element 
-   * and provides a constructor, to build these from the element reference coordinates
-   * NOTE: these already should have the extra 11th node
-   */
-  class SUB_STRUCTURE
-  {
-  	public:
-  	TET4_SUB my_elements[12];
-
-  	SUB_STRUCTURE(const Epetra_SerialDenseMatrix& xrefe);
-  	~SUB_STRUCTURE();
-  };
-  
-
-/*!
-\brief A spezialisation of the DRT::ELEMENTS::Discrete_integrator class for the composite 
-10-node tetrahedron, using a 5-node rule. 
-\author a.vlf
-*/
-
-  class Tet10c_integrator_5point : public DRT::ELEMENTS::So_integrator
-  {
-  	public:
-  		Tet10c_integrator_5point(SUB_STRUCTURE& );
-  		//~Tet10c_integrator_5point();
-  };
-  
-
-  class L_AJ_integrator : public DRT::ELEMENTS::So_integrator
-  {
-  	public:
-  		L_AJ_integrator(SUB_STRUCTURE&);
-  		Epetra_SerialDenseMatrix Mbc_inv;
-  		//~L_AJ_integrator();
-  };
-  
-  class L_AJ_stress_integrator : public DRT::ELEMENTS::So_integrator
-  {
-  	public:
-  		L_AJ_stress_integrator(SUB_STRUCTURE&);
-  		//~L_AJ_integrator();
-  };
-  
-  double ctet10_midpoint(int coord);
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
   void so_ctet10_mat_sel(Epetra_SerialDenseVector* stress,
@@ -459,8 +392,7 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);       
-
+                         int gp);
 }; // class So_ctet10
 
 /*!
@@ -479,7 +411,7 @@ public:
   \brief Standard Constructor
 
   */
-  Soctet10Register(DRT::Element::ElementType etype);
+  Soctet10Register(DRT::Element::ElementType etype) : DRT::ElementRegister(*this) {};
 
   /*!
   \brief Copy Constructor
@@ -487,7 +419,7 @@ public:
   Makes a deep copy of an Soctet10Register
 
   */
-  Soctet10Register(const DRT::ELEMENTS::Soctet10Register& old);
+  Soctet10Register(const DRT::ELEMENTS::Soctet10Register& old) : DRT::ElementRegister(*this) {};
 
   /*!
   \brief Deep copy this instance of Soctet10Register and return pointer to the copy
@@ -496,7 +428,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::ELEMENTS::Soctet10Register* Clone() const;
+  DRT::ELEMENTS::Soctet10Register* Clone() const {return NULL;}
 
   /*!
   \brief Return unique ParObject id
@@ -512,7 +444,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(vector<char>& data) const {}
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -520,13 +452,13 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const vector<char>& data) {};
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Soctet10Register();
+  virtual ~Soctet10Register() {};
 
   //@}
 
@@ -535,7 +467,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(ostream& os) const {};
 
   //@}
 
@@ -547,7 +479,7 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  int Initialize(DRT::Discretization& dis) {return 0;}
 
   //@}
 
@@ -602,7 +534,7 @@ public:
 
   */
   Soctet10Surface(const Soctet10Surface& old);
-  
+
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
 
@@ -728,28 +660,28 @@ private:
   int                    lsurface_;
 
   class SUB_NODE
-  {	
+  {
   	public:
       int local_id;
   	  int global_id;
   	  double my_x[3];
-  	  
+
   	  SUB_NODE();
   	  void init(const int local_id,const int global_id,const Epetra_SerialDenseMatrix& xrefe);
-  	  ~SUB_NODE();   				
+  	  ~SUB_NODE();
   };
 
   class TRI3_SUB
   {
-    public: 
+    public:
   	  // RefCountPtr<DRT::ELEMENTS::So_ctet10::SUB_NODE> my_nodes;
   	  SUB_NODE my_nodes[3];
-  	  
+
   	  TRI3_SUB();
   	  void init(const int&, const int&, const int&,const Epetra_SerialDenseMatrix& xrefe);
-  	  			
+
 	  double my_area();
-  	  ~TRI3_SUB(); 				
+  	  ~TRI3_SUB();
   };
 
   class SUB_STRUCTURE_SURF
@@ -764,7 +696,7 @@ private:
   void sotet4_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights);
-  
+
 
 }; // class Soctet10Surface
 
@@ -939,3 +871,4 @@ private:
 #endif  // #ifndef SO_CTET10_H_
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
+

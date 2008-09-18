@@ -42,7 +42,7 @@ DRT::ELEMENTS::So_integrator::~So_integrator()
 }
 
 
-
+#if 0
 DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
 	 // forward initialization of necessary attributes
@@ -164,6 +164,7 @@ DRT::ELEMENTS::Integrator_tet4_4point::Integrator_tet4_4point(void)
     (deriv_gp[gp])(3,3) = 1;
   }
 }
+#endif
 
 /*----------------------------------------------------------------------*
  | constructor for a integrator class              			  volf 09/07|
@@ -572,6 +573,7 @@ DRT::ELEMENTS::Integrator_tri3_1point::Integrator_tri3_1point(void)
  | recursive computation of determinant of a  matrix using Sarrus rule  |
  |                              					|
  *----------------------------------------------------------------------*/
+#if 0
 long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 {
 	//Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1,in_matrix.N()-1);
@@ -612,8 +614,9 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 	}
 	else return 0;
 }
-
 #endif
+
+#endif // CCADISCRET
 
 #if 0
 /*----------------------------------------------------------------------*
@@ -707,4 +710,4 @@ long double LINALG::SerialDenseMatrix::Det_long()
 
 #endif
 
-#endif // of CCA_DISCERT
+#endif // D_SOLID3
