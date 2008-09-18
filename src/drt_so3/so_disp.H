@@ -348,9 +348,9 @@ protected:
 
   //! evaluate shape functions and derivatives - non-static due to flexible shape
   void sodisp_shapederiv(
-        vector<Epetra_SerialDenseVector>** shapefct,  ///< pointer to pointer of shapefct
-        vector<Epetra_SerialDenseMatrix>** deriv,     ///< pointer to pointer of derivs
-        vector<double>** weights);   ///< pointer to pointer of weights
+          vector<Epetra_SerialDenseVector>& shapefcts,
+          vector<Epetra_SerialDenseMatrix>& derivs,
+          vector<double>& weights);
 
 
 }; // class SoDisp
