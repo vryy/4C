@@ -127,7 +127,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
       integrationrule_1point = DRT::UTILS::intrule_pyramid_1point;
       break;
   default:
-      dserror("invalid discretization type");
+      // cout<<"No Validation for this kind of Element implemented! Good luck!"<<endl;
+      return;
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
@@ -202,7 +203,8 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
       distype = DRT::Element::pyramid5;
       break;
   default:
-      dserror("invalid discretization type");
+      // cout<<"No Validation for this kind of Element implemented! Good luck!"<<endl;
+      return 0;
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule);
   // shape functions derivatives
