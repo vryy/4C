@@ -68,6 +68,10 @@ return;
 void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+  }
 
   FluidField().PrepareTimeStep();
 
@@ -88,11 +92,6 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
 {
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
-  }
-
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
   return;
