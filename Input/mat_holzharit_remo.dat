@@ -121,8 +121,8 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1 150000 FACTOR 1 1
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 8.160427099958976471e-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 4.000000000000000083e-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 8.160427099958976471e-02 TOLERANCE 1e-2
+STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 4.000000000000000083e-02 TOLERANCE 1e-2
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
