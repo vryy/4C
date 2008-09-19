@@ -1,6 +1,6 @@
 /*!
  * \file io_gmsh.H
- * \brief simple element print library for Gmsh (mostly for debugging, only sequential)
+ * \brief simple element print library for Gmsh (mostly for debugging, only output per processor (no communication)
  * 
  * <pre>
  * Maintainer: Axel Gerstenberger
@@ -24,112 +24,19 @@ namespace IO
   namespace GMSH
   {
     //! for each DRT::Element::DiscretizationType find the appropriate Gmsh file type
-    inline std::string distypeToGmshElementHeader(
-        const DRT::Element::DiscretizationType distype)
-    {
-      switch (distype)
-      {
-        case DRT::Element::point1:
-          return "P";
-          break;
-        case DRT::Element::quad4:
-          return "Q";
-          break;
-        case DRT::Element::quad8:
-          return "Q";
-          break;
-        case DRT::Element::quad9:
-          return "Q";
-          break;
-        case DRT::Element::tri3:
-          return "T";
-          break;
-        case DRT::Element::tri6:
-          return "T";
-          break;
-        case DRT::Element::hex8:
-          return "H";
-          break;
-        case DRT::Element::hex20:
-          return "H";
-          break;
-        case DRT::Element::hex27:
-          return "H";
-          break;
-        case DRT::Element::tet4:
-          return "S";
-          break;
-        case DRT::Element::tet10:
-          return "S";
-          break;
-        case DRT::Element::line2:
-          return "L";
-          break;
-        case DRT::Element::line3:
-          return "L2";
-          break;
-        default:
-          dserror("distypeToGmshElementHeader: distype not supported for printout!");
-      }
-      return "xxx";
-    }
+    std::string distypeToGmshElementHeader(
+        const DRT::Element::DiscretizationType distype   ///< element shape
+        );
 
     //! for each DRT::Element::DiscretizationType find the apropriate number of element nodes for Gmsh output
-    inline int distypeToGmshNumNode(
+    int distypeToGmshNumNode(
         const DRT::Element::DiscretizationType distype   ///< element shape
-    )
-    {
-      switch (distype)
-      {
-        case DRT::Element::point1:
-          return 1;
-          break;
-        case DRT::Element::quad4:
-          return 4;
-          break;
-        case DRT::Element::quad8:
-          return 4;
-          break;
-        case DRT::Element::quad9:
-          return 4;
-          break;
-        case DRT::Element::tri3:
-          return 3;
-          break;
-        case DRT::Element::tri6:
-          return 3;
-          break;
-        case DRT::Element::hex8:
-          return 8;
-          break;
-        case DRT::Element::hex20:
-          return 8;
-          break;
-        case DRT::Element::hex27:
-          return 8;
-          break;
-        case DRT::Element::tet4:
-          return 4;
-          break;
-        case DRT::Element::tet10:
-          return 4;
-          break;
-        case DRT::Element::line2:
-          return 2;
-          break;
-        case DRT::Element::line3:
-          return 3;
-          break;
-        default:
-          dserror("distypeToGmshNumNode: distype not supported for printout!");
-      }
-      return -1;
-    }
+      );
 
     //! take an array (3,numnode) and translate it to the coordinate section of en Gmsh element entry
     template<class M> std::string CoordinatesToString(
         const M& coord,
-        const DRT::Element::DiscretizationType distype      ///< element shape
+        const DRT::Element::DiscretizationType distype   ///< element shape
     )
     {
       std::stringstream pos_array_string;
@@ -328,24 +235,11 @@ namespace IO
     }
     
     /// print a piece of text at a given position
-    inline std::string text3dToString(
+    std::string text3dToString(
         const BlitzVec3&                      xyz,      ///< 3d Position of text
         const std::string                     text,     ///< text to be printed 
         const int                             fontsize  ///< font size
-        )
-    {
-      std::stringstream gmsh_ele_line;
-
-      gmsh_ele_line << "T3";
-      // coordinates
-      gmsh_ele_line << "("<< scientific << xyz(0)<<",";
-      gmsh_ele_line << scientific << xyz(1)<<",";
-      gmsh_ele_line << scientific << xyz(2) <<",";             
-      gmsh_ele_line << fontsize << ")";
-      gmsh_ele_line <<"{\"" << text <<"\"};";
-
-      return gmsh_ele_line.str();
-    }    
+        );
 
     //! print discretization in initial configuration (t = 0)
     std::string disToString(

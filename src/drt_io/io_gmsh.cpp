@@ -17,7 +17,109 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/intersection_service.H"
 
 
-std::string IO::GMSH::ScalarToString(const double scalar,
+std::string IO::GMSH::distypeToGmshElementHeader(
+    const DRT::Element::DiscretizationType distype)
+{
+  switch (distype)
+  {
+    case DRT::Element::hex8:
+      return "H";
+      break;
+    case DRT::Element::hex20:
+      return "H";
+      break;
+    case DRT::Element::hex27:
+      return "H";
+      break;
+    case DRT::Element::tet4:
+      return "S";
+      break;
+    case DRT::Element::tet10:
+      return "S";
+      break;
+    case DRT::Element::point1:
+      return "P";
+      break;
+    case DRT::Element::quad4:
+      return "Q";
+      break;
+    case DRT::Element::quad8:
+      return "Q";
+      break;
+    case DRT::Element::quad9:
+      return "Q";
+      break;
+    case DRT::Element::tri3:
+      return "T";
+      break;
+    case DRT::Element::tri6:
+      return "T";
+      break;
+    case DRT::Element::line2:
+      return "L";
+      break;
+    case DRT::Element::line3:
+      return "L2";
+      break;
+    default:
+      dserror("distypeToGmshElementHeader: distype not supported for printout!");
+  }
+  return "xxx";
+}
+
+int IO::GMSH::distypeToGmshNumNode(
+    const DRT::Element::DiscretizationType distype   ///< element shape
+)
+{
+  switch (distype)
+  {
+    case DRT::Element::hex8:
+      return 8;
+      break;
+    case DRT::Element::hex20:
+      return 8;
+      break;
+    case DRT::Element::hex27:
+      return 8;
+      break;
+    case DRT::Element::tet4:
+      return 4;
+      break;
+    case DRT::Element::tet10:
+      return 4;
+      break;
+    case DRT::Element::point1:
+      return 1;
+      break;
+    case DRT::Element::quad4:
+      return 4;
+      break;
+    case DRT::Element::quad8:
+      return 4;
+      break;
+    case DRT::Element::quad9:
+      return 4;
+      break;
+    case DRT::Element::tri3:
+      return 3;
+      break;
+    case DRT::Element::tri6:
+      return 3;
+      break;
+    case DRT::Element::line2:
+      return 2;
+      break;
+    case DRT::Element::line3:
+      return 3;
+      break;
+    default:
+      dserror("distypeToGmshNumNode: distype not supported for printout!");
+  }
+  return -1;
+}
+
+std::string IO::GMSH::ScalarToString(
+    const double scalar,
     const DRT::Element::DiscretizationType distype)
 {
   std::stringstream pos_array_string;
@@ -82,7 +184,24 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
   return gmshfilecontent.str();
 }
 
+std::string text3dToString(
+    const BlitzVec3&                      xyz,      ///< 3d Position of text
+    const std::string                     text,     ///< text to be printed 
+    const int                             fontsize  ///< font size
+    )
+{
+  std::stringstream gmsh_ele_line;
 
+  gmsh_ele_line << "T3";
+  // coordinates
+  gmsh_ele_line << "("<< scientific << xyz(0)<<",";
+  gmsh_ele_line << scientific << xyz(1)<<",";
+  gmsh_ele_line << scientific << xyz(2) <<",";             
+  gmsh_ele_line << fontsize << ")";
+  gmsh_ele_line <<"{\"" << text <<"\"};";
+
+  return gmsh_ele_line.str();
+}
 
 std::string IO::GMSH::disToString(
     const std::string& s,
@@ -91,9 +210,9 @@ std::string IO::GMSH::disToString(
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
-  for (int i=0; i<dis->NumMyColElements(); ++i)
+  for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
-    const DRT::Element* actele = dis->lColElement(i);
+    const DRT::Element* actele = dis->lRowElement(i);
     gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
   };
   gmshfilecontent << "};" << endl;
@@ -108,9 +227,9 @@ std::string IO::GMSH::disToString(
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
-  for (int i=0; i<dis->NumMyColElements(); ++i)
+  for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
-    const DRT::Element* actele = dis->lColElement(i);
+    const DRT::Element* actele = dis->lRowElement(i);
     BlitzMat xyze(GEO::getCurrentNodalPositions(actele,
         currentpositions));
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
