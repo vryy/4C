@@ -801,8 +801,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
   {
-    phin_-> PutScalar(0); // just to be sure!
-    phinp_-> PutScalar(0); // just to be sure!
+    phin_-> PutScalar(0);
+    phinp_-> PutScalar(0);
   }
   else if (init == 1)  // field_by_function
   {
@@ -824,7 +824,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         // evaluate component k of spatial function
         double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
         phin_->ReplaceMyValues(1,&initialval,&doflid);
-        phinp_->ReplaceMyValues(1,&initialval,&doflid); // do not remove!
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
   }
@@ -864,7 +866,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
             const int dofgid = nodedofset[k];
             int doflid = dofrowmap->LID(dofgid);
             phin_->ReplaceMyValues(1,&phi0,&doflid);
-            phinp_->ReplaceMyValues(1,&phi0,&doflid); // do not remove!
+            // initialize also the solution vector. These values are a pretty good guess for the
+            // solution after the first time step (much better than starting with a zero vector)
+            phinp_->ReplaceMyValues(1,&phi0,&doflid);
           }
         }
       }

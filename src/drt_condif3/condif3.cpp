@@ -84,8 +84,8 @@ void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
   // for problem type ELCH we have one additional degree of freedom per node
   // for the electric potential
   if (DRT::Problem::Instance()->ProblemType()=="elch")
-  { cout<<"ELCH-Element..."<<endl;
-    numdofpernode_ += 1;}
+    numdofpernode_ += 1;
+
   return;
 }
 
