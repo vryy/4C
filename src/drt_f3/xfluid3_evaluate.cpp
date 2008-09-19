@@ -80,7 +80,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector&)
 {
   // get the action required
-  const string action = params.get<string>("action","none");
+  const string action(params.get<string>("action","none"));
   const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
@@ -137,7 +137,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
         const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
-
+        const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+        
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 eleDofManager_, NumNode(), NodeIds());
         
@@ -146,7 +147,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         XFLUID::callSysmat4(assembly_type,
                 this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true);
+                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -216,6 +217,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const bool supg   = true;
           const bool cstab  = true;
 
+          const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+          
           const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                   eleDofManager_, NumNode(), NodeIds());
           
@@ -286,7 +289,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat4(assembly_type,
                   this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false);
+                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
           }
           break;
       }

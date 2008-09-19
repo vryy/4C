@@ -1540,7 +1540,8 @@ static void SysmatBoundary4(
     const bool                        supg,          ///< flag for stabilization
     const bool                        cstab,         ///< flag for stabilization
     const bool                        instationary,  ///< switch between stationary and instationary formulation
-    const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
+    const LocalAssembler<DISTYPE, ASSTYPE>& assembler,
+    const bool                        ifaceForceContribution
 )
 {
     TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - boundary");
@@ -1885,8 +1886,9 @@ static void SysmatBoundary4(
         } // end loop over gauss points
         
         // here we need to assemble into the global force vector of the boundary discretization
-        // note that we assemble into a overlapping vector, hence we later have to figure out,
-        // how the values get into the right places of the force vector in unique distribution 
+        // note that we assemble into a overlapping vector, hence we add only, if we are a xfem row element
+        // this way, we can later add all contributions together when exporting to interface row elements
+        if (ifaceForceContribution)
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
           for (int inode = 0; inode < numnode_boundary; ++inode)
@@ -1928,7 +1930,8 @@ static void Sysmat4(
         const bool                        pstab,         ///< flag for stabilisation
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
-        const bool                        instationary   ///< switch between stationary and instationary formulation
+        const bool                        instationary,  ///< switch between stationary and instationary formulation
+        const bool                        ifaceForceContribution
         )
 {
     // initialize arrays
@@ -1964,7 +1967,7 @@ static void Sysmat4(
     {
       SysmatBoundary4<DISTYPE,ASSTYPE>(
           ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ivelcol, iforcecol,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, ifaceForceContribution);
     }
 }
 
@@ -1989,7 +1992,8 @@ void XFLUID::callSysmat4(
         const bool                        pstab  ,
         const bool                        supg   ,
         const bool                        cstab  ,
-        const bool                        instationary
+        const bool                        instationary,
+        const bool                        ifaceForceContribution
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -1999,12 +2003,12 @@ void XFLUID::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
@@ -2014,7 +2018,7 @@ void XFLUID::callSysmat4(
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
 //            case DRT::Element::tet10:
 //                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
@@ -2032,12 +2036,12 @@ void XFLUID::callSysmat4(
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
             case DRT::Element::hex20:
                 Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(

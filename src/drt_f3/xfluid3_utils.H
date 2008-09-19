@@ -509,7 +509,7 @@ void gder2(
         template version
  \return enum with optimal gausrule for this element
  */
-inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
+static DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
 {
     DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (distype)
