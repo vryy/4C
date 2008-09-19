@@ -296,9 +296,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       case store_xfem_info:
       {
           // get access to global dofman
-          const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager",null);
-          if (globaldofman == null)
-            dserror("nope, I need a DofManager!");
+          const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
           
           // create local copy of information about dofs
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
