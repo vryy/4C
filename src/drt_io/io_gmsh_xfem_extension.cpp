@@ -27,9 +27,9 @@ std::string IO::GMSH::XdisToString(
   gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {"
       << endl;
   
-  for (int i=0; i<dis->NumMyColElements(); ++i)
+  for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
-    const DRT::Element* actele = dis->lColElement(i);
+    const DRT::Element* actele = dis->lRowElement(i);
     const int id = actele->Id();
     // print integration cells, if available
     if (elementDomainIntCellsMap.count(id) > 0)
