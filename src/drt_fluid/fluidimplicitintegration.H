@@ -201,7 +201,7 @@ public:
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
-  double ResidualScaling() const { return 1.0/dta_/theta_; }
+  double ResidualScaling() const { return density_/dta_/theta_; }
   double Dt() const { return dta_; }
 
   double Time() const { return time_; }

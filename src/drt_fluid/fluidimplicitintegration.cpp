@@ -397,7 +397,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // construct impedance bc wrapper
   impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
-  // get constant density for incompressible flow
+  // get constant density variable for incompressible flow
+  // set vedenp-vector values to 1.0 for incompressible flow
+  // set density variable to 1.0 for low-Mach-number flow
   if (loma_ == "No")
   {
     ParameterList eleparams;
@@ -405,8 +407,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 1.0);
     if (density_ <= 0.0) dserror("received illegal density value");
-    vedenp_->PutScalar(density_);
+    vedenp_->PutScalar(1.0);
   }
+  else density_ = 1.0;
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1034,7 +1037,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 #endif
 
-        trueresidual_->Update(1.0/dta_/theta_,*residual_,0.0);
+        trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1574,7 +1577,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
   }
 
-  trueresidual_->Update(1.0/dta_/theta_,*residual_,0.0);
+  trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
   // Apply dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
@@ -1664,6 +1667,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // output (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
+    pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
@@ -3154,7 +3158,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     trueresidual_->Update(dta_,*residual_,1.0);
   }
 
-  trueresidual_->Scale(-1.0/dta_/theta_);
+  trueresidual_->Scale(-density_/dta_/theta_);
 
   if (not inrelaxation_)
     inrelaxation_ = true;
