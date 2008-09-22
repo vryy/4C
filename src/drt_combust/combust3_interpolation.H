@@ -35,10 +35,11 @@ namespace COMBUST
   template<DRT::Element::DiscretizationType veldistype>
   struct StressInterpolation3D {};
   /// @cond
-  template<> struct StressInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
+  template<> struct StressInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::tet4;};
+  template<> struct StressInterpolation3D<DRT::Element::tet10> {static const DRT::Element::DiscretizationType distype = DRT::Element::tet10;};
   template<> struct StressInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
-  template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
-  template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
+  template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
+  template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
   
   
@@ -51,10 +52,11 @@ namespace COMBUST
   template<DRT::Element::DiscretizationType veldistype>
   struct DiscPressureInterpolation3D {};
   /// @cond
-  template<> struct DiscPressureInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
+  template<> struct DiscPressureInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::tet4;};
+  template<> struct DiscPressureInterpolation3D<DRT::Element::tet10> {static const DRT::Element::DiscretizationType distype = DRT::Element::tet10;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
-  template<> struct DiscPressureInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
-  template<> struct DiscPressureInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
+  template<> struct DiscPressureInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex20;};
+  template<> struct DiscPressureInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex27;};
   /// @endcond
   
   /*!
@@ -70,6 +72,9 @@ namespace COMBUST
     {
       case DRT::Element::tet4:
         distype = StressInterpolation3D<DRT::Element::tet4>::distype;
+        break;
+      case DRT::Element::tet10:
+        distype = StressInterpolation3D<DRT::Element::tet10>::distype;
         break;
       case DRT::Element::hex8:
         distype = StressInterpolation3D<DRT::Element::hex8>::distype;
@@ -99,6 +104,9 @@ namespace COMBUST
     {
       case DRT::Element::tet4:
         distype = DiscPressureInterpolation3D<DRT::Element::tet4>::distype;
+        break;
+      case DRT::Element::tet10:
+        distype = DiscPressureInterpolation3D<DRT::Element::tet10>::distype;
         break;
       case DRT::Element::hex8:
         distype = DiscPressureInterpolation3D<DRT::Element::hex8>::distype;

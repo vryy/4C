@@ -321,12 +321,12 @@ namespace DRT
     {
       public:
         
-        friend class Combust3Line;
+        //friend class Combust3Line;
         
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
-        Combust3Surface(
+        explicit Combust3Surface(
             int id,                         ///< A unique global id
             int owner,                      ///< Processor owning this surface
             const int nnode,                ///< Number of nodes attached to this element

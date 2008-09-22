@@ -3,8 +3,8 @@
 
 \brief base combustion algorithm
 
-	detailed description in header file combust_algorithm.H
-	
+    detailed description in header file combust_algorithm.H
+
 <pre>
 Maintainer: Florian Henke
             henke@lnm.mw.tum.de
@@ -22,33 +22,37 @@ Maintainer: Florian Henke
  * constructor                                              henke 06/08 * 
  *----------------------------------------------------------------------*/
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn)
-:  ScaTraFluidCouplingAlgorithm(comm, combustdyn)
+: ScaTraFluidCouplingAlgorithm(comm, combustdyn),
+// initialize member variables
+  fgiter_(0),
+  fgitermax_(combustdyn.get<int>("ITEMAX")),
+  reinitializationaction_(compute_signeddistancefunction) // combustdyn.get<ReinitializeAction>("REINITIALIZEGFUNC")
 {
-  /* Der constructor sollte den gesamten Algorithmus initialisieren. Zusammenfassend kann an sagen, 
-   * dass hier alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden müssen.
+  /* Der constructor sollte den gesamten Algorithmus initialisieren.
+   * Hier müssen alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden.
    * 
    * das heisst:
    * o G-Funktionsvektor (t und ig+1) auf initial value setzen
    * o Geschwindigkeitsvektor (t und iu+1) auf initial value setzen
    * o alle Zähler auf 0 setzen (step_(0), f_giter_(0), g_iter_(0), f_iter_(0))
    * o alle Normen und Grenzwerte auf 0 setzen
+   * 
+   * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife 
+   * passieren soll, hier passieren muss, weil die combust dyn gleich die Zeitschleife ruft.
   */ 
 
-  // taking time loop control parameters out of fluid dynamics section
-  // maximum simulation time
-  //timemax_=combustdyn.get<double>("MAXTIME");
-  //printf("\n--timemax_: %f--\n",timemax_);
-
-  // counter FGI iterations
-  fgiter_ = 0;
-  // maximum number of Fluid - G-function iterations
-  fgitermax_ = combustdyn.get<int>("ITEMAX");
- 
-  // set options for reinitialization; they should be read from the parameter list
-  signeddistfunc = 1;
-  reinitialize_action = 1; // reinitialize_action = signeddistfunc;
-
-  // velocitynp_ ist nicht initialisiert!
+  /*----------------------------------------------------------------------------------------------*
+   * initialize all data structures needed for the combustion algorithm
+   * 
+   * - initialize G-function by scalar function field
+   * - capture the flame front and create interface geometry (triangulation)
+   * - determine initial enrichment (DofManager wird bereits mit dem Element d.h. Diskretisierung angelegt)
+   * - ...
+   *----------------------------------------------------------------------------------------------*/
+  ReinitializeGfunc(initialize);
+  // CaptureFlameFront();
+  // DetermineEnrichment();
+  
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -82,7 +86,7 @@ void COMBUST::Algorithm::TimeLoop()
     CreateIntegrationCells();
 
     // reinitialize G-function 
-    ReinitializeGfunc();
+    ReinitializeGfunc(reinitializationaction_);
     
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
@@ -123,16 +127,18 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 /*------------------------------------------------------------------------------------------------*
  |  protected: reinitialize G-function                                                henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::ReinitializeGfunc()
+void COMBUST::Algorithm::ReinitializeGfunc(ReinitializationAction action)
 {
-  /* Here, the G-function is reinitialized, because we suspect that the
-   * signed distance property has been lost due to inaccuracies. There
-   * are various options to reinitialize the G-function.
-   * For the time being we use an exact, but expensive, procedure to ensure
-   * this property (SignedDistFunc()).                    henke 06/08 */
-  switch (reinitialize_action)
+  /* Here, the G-function is reinitialized, because we suspect that the signed distance property has
+   * been lost due to inaccuracies. There are various options to reinitialize the G-function.
+   * For the time being we use an exact, but expensive, procedure to ensure this property which 
+   * computes the distance for every point. (SignedDistFunc)                          henke 06/08 */
+  switch (action)
   {
-    case 1:
+    case initialize:
+      InitializeGFunc();
+      break;
+    case compute_signeddistancefunction:
       SignedDistFunc();
       break;
     default:
@@ -142,7 +148,16 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  protected: build signed distance function                                         henke 06/08 *
+ |  protected: initialize G-function by scalar function field                         henke 09/08 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::InitializeGFunc()
+{
+  // This function reads a CURVE from the input file and initializes the G-function with its values
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ |  protected: build signed distance function                                         henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::SignedDistFunc()
 {
@@ -176,8 +191,8 @@ void COMBUST::Algorithm::PrepareTimeStep()
     
   if (Comm().MyPID()==0)
   {
-	//cout<<"---------------------------------------  time step  ------------------------------------------\n";
-	printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
+    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
+    printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
     printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
   }
   
@@ -205,12 +220,12 @@ void COMBUST::Algorithm::PrepareTimeStep()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareFGIteration()
 {
-	fgiter_ += 1;
-	if (Comm().MyPID()==0)
-	{
-	  //cout<<"\n---------------------------------------  FGI loop  -------------------------------------------\n";
-	  printf("\n---------------------------------------  FGI loop: iteration number: %2d ----------------------\n",fgiter_);
-	}	
+  fgiter_ += 1;
+  if (Comm().MyPID()==0)
+  {
+    //cout<<"\n---------------------------------------  FGI loop  -------------------------------------------\n";
+    printf("\n---------------------------------------  FGI loop: iteration number: %2d ----------------------\n",fgiter_);
+  }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -226,6 +241,9 @@ void COMBUST::Algorithm::DoFluidField()
     cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------\n";
   }
   
+  // CaptureFlameFront();
+  // DetermineEnrichment();
+
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
   return;

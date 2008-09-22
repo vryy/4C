@@ -20,17 +20,14 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_xfem/interface.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
-#include "../drt_xfem/field_enriched.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_combust/combust3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
-//#include <ctime>
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -54,6 +51,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   params_ (params),
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
+  cout0_(discret_->Comm(), std::cout),
   time_(0.0),
   step_(0),
   stepmax_(params_.get<int>   ("max number timesteps")),
@@ -139,30 +137,27 @@ void FLD::CombustFluidImplicitTimeInt::Integrate(
   const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
-  if (myrank_==0)
+  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+  cout0_ << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
+  cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
+  cout0_ << "\n";
+
+  if(stabparams->get<string>("TDS") == "quasistatic")
   {
-    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-    std::cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    std::cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    std::cout << "\n";
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
+    if(stabparams->get<string>("TRANSIENT")=="yes_transient")
     {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
+      dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
     }
-    std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    std::cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    std::cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    std::cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    std::cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    std::cout << "\n";
   }
+  cout0_ <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+  cout0_ <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+  cout0_ <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+  cout0_ <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+  cout0_ <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+  cout0_ <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+  cout0_ <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+  cout0_ << "\n";
 
   if (timealgo_==timeint_stationary)
     // stationary case
@@ -468,7 +463,7 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
-  std::cout << "switching " << endl;
+  cout0_ << "switching " << endl;
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
@@ -482,41 +477,12 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // switch state vectors to new dof distribution
   // --------------------------------------------
 
-  // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
-  const Epetra_Vector& ivelcoln = *cutterdiscret->GetState("ivelcoln");
-  const Epetra_Vector& iacccoln = *cutterdiscret->GetState("iacccoln");
-
-  BlitzVec3 rigidveln;
-  BlitzVec3 rigidaccn;
-
-  if (ivelcoln.GlobalLength() > 3)
-  {
-    rigidveln(0) = (ivelcoln)[0];
-    rigidveln(1) = (ivelcoln)[1];
-    rigidveln(2) = (ivelcoln)[2];
-
-    // falsch!!!
-    rigidaccn(0) = (iacccoln)[0];
-    rigidaccn(1) = (iacccoln)[1];
-    rigidaccn(2) = (iacccoln)[2];
-
-  }
-  else
-  {
-    std::cout << "Could not compute rigid body velocity/acceleration. Set them to zero..." << std::endl;
-    rigidveln = 0.0;
-    rigidaccn = 0.0;
-  }
-  cout << "rigidveln " << rigidveln << endl;
-  cout << "rigidaccn " << rigidaccn << endl;
-
-
   // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.accn_, rigidaccn);
+  dofswitch.mapVectorToNewDofDistribution(state_.accn_);
 
   // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.velnp_, rigidveln); // use old velocity as start value
-  dofswitch.mapVectorToNewDofDistribution(state_.veln_, rigidveln);
+  dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
+  dofswitch.mapVectorToNewDofDistribution(state_.veln_);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
 //  if (alefluid_)
@@ -617,19 +583,36 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   // get new interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
+  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
-    std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcolnp)[0] << std::endl;
-    std::cout << "applying interface velocity ivelcol[1] = " << (*ivelcolnp)[1] << std::endl;
-    std::cout << "applying interface velocity ivelcol[2] = " << (*ivelcolnp)[2] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
+//    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
     if (step_ <= 1)
-      f.open("outifacevel.txt",std::fstream::trunc);
+      f.open("outifacevelnp.txt",std::fstream::trunc);
     else
-      f.open("outifacevel.txt",std::fstream::ate | std::fstream::app);
+      f.open("outifacevelnp.txt",std::fstream::ate | std::fstream::app);
 
-    f << step_ << " " << (*ivelcolnp)[0] << "  " << endl;
+    f << time_ << " " << (*ivelcolnp)[0] << "  " << endl;
+
+    f.close();
+  }
+
+  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
+  {
+//    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
+//    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
+//    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
+    std::ofstream f;
+    if (step_ <= 1)
+      f.open("outifaceveln.txt",std::fstream::trunc);
+    else
+      f.open("outifaceveln.txt",std::fstream::ate | std::fstream::app);
+
+    f << time_ << " " << (*ivelcoln)[0] << "  " << endl;
 
     f.close();
   }
@@ -642,7 +625,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open("outifaceanalytischvel.txt",std::fstream::ate | std::fstream::app);
 
-    f << step_ << " " << (-1.5*std::sin(2.0*time_* PI) * PI) << "  " << endl;
+    const double periodendauer = 10.0;
+    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << endl;
 
     f.close();
   }
@@ -797,20 +781,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     double fullresnorm;
 
     const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-      Epetra_Vector full(*dofrowmap);
-      Epetra_Import importer(*dofrowmap,residual_->Map());
+    Epetra_Vector full(*dofrowmap);
+    Epetra_Import importer(*dofrowmap,residual_->Map());
 
-      int err = full.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&fullresnorm);
+    int err = full.Import(*residual_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&fullresnorm);
 
-      err = full.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&incfullnorm_L2);
+    err = full.Import(*incvel_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&incfullnorm_L2);
 
-      err = full.Import(*state_.velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      full.Norm2(&fullnorm_L2);
+    err = full.Import(*state_.velnp_,importer,Insert);
+    if (err) dserror("Import using importer returned err=%d",err);
+    full.Norm2(&fullnorm_L2);
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
@@ -988,7 +972,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     if (step_ <= 1)
     {
       f.open("liftdrag.txt",std::fstream::trunc);
-      f << header.str() << endl;
+      //f << header.str() << endl;
     }
     else
     {
@@ -999,6 +983,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
     //cout << header.str() << endl << s.str() << endl;
   }
+
+  if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
+  {
+    std::ofstream f;
+    if (step_ <= 1)
+      f.open("outifaceforce.txt",std::fstream::trunc);
+    else
+      f.open("outifaceforce.txt",std::fstream::ate | std::fstream::app);
+
+    f << time_ << " " << (*iforcecolnp)[0] << "  " << endl;
+
+    f.close();
+  }
+
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1082,13 +1080,13 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 {
 
   // prev. acceleration becomes (n-1)-accel. of next time step
-  state_.accnm_->Update(1.0,*state_.accn_,0.0);
+  const Teuchos::RCP<Epetra_Vector> accn_tmp = rcp(new Epetra_Vector(*state_.accn_));
 
   // compute acceleration
   // note a(n+1) is directly stored in a(n),
-  // hence we use a(n-1) as a(n) (see line above)
+  // hence we use a(n-1) as a(n) to save a vector copy (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
-      state_.velnp_, state_.veln_, state_.velnm_, state_.accnm_,
+      state_.velnp_, state_.veln_, state_.velnm_, accn_tmp,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accn_);
 
@@ -1169,9 +1167,10 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", state_.velnm_);
   }
 
-
-  OutputToGmsh();
-
+  if (discret_->Comm().NumProc() == 1)
+  {
+    OutputToGmsh();
+  }
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -1180,7 +1179,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 {
-  dserror("check wich data was written. one might need 2 discretization writers: \n \
+  dserror("check which data was written. one might need 2 discretization writers: \n \
            one for the output and one for the restart with changing vectors.\n \
            Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
 
@@ -1289,8 +1288,11 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
   if (gmshdebugout)
   {
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
     << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
@@ -1299,14 +1301,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
     {
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
-      << endl;
+      << "\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1334,9 +1336,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           //cout << "eleval DiscPres" << endl;
           //cout << elementvalues << endl;
         }
-        const XFEM::DomainIntCells& domainintcells =
+        const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
-        for (XFEM::DomainIntCells::const_iterator cell =
+        for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -1370,6 +1372,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
     std::stringstream filenamexy;
     std::stringstream filenamexz;
     std::stringstream filenameyz;
+    std::stringstream filenamexxdel;
+    std::stringstream filenameyydel;
+    std::stringstream filenamezzdel;
+    std::stringstream filenamexydel;
+    std::stringstream filenamexzdel;
+    std::stringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
     filenamexx << allfiles.outputfile_kenner << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenameyy << allfiles.outputfile_kenner << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
@@ -1377,7 +1385,20 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
     filenamexy << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenamexz << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenameyz << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexxdel << allfiles.outputfile_kenner << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyydel << allfiles.outputfile_kenner << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamezzdel << allfiles.outputfile_kenner << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexydel << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexzdel << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyzdel << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::remove(filenamexxdel.str().c_str());
+    std::remove(filenameyydel.str().c_str());
+    std::remove(filenamezzdel.str().c_str());
+    std::remove(filenamexydel.str().c_str());
+    std::remove(filenamexzdel.str().c_str());
+    std::remove(filenameyzdel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"...";
+    flush(cout);
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
@@ -1409,7 +1430,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1453,9 +1474,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         BlitzVec elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
 
 
-        const XFEM::DomainIntCells& domainintcells =
+        const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
-        for (XFEM::DomainIntCells::const_iterator cell =
+        for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzMat xyze_cell(3, cell->NumNode());
@@ -1524,7 +1545,6 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
   PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
   PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
   PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
-  PlotVectorFieldToGmsh(state_.accnm_, "_solution_acceleration_old2_step_","Acceleration Solution (Physical) n-1",false);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1657,8 +1677,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           else
             f.open("outflowvel.txt",std::fstream::ate | std::fstream::app);
 
-          //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << step_ << "  " << elementvalues(0,0) << endl;
+          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+          f << time_ << "  " << elementvalues(0,0) << endl;
 
           f.close();
         }

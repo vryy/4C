@@ -31,7 +31,7 @@ Maintainer: Florian Henke
 
 class DRT::Discretization;
 
-using namespace XFEM::PHYSICS;
+  using namespace XFEM::PHYSICS;
 
 //namespace COMBUST
 //{
@@ -126,8 +126,8 @@ static void Sysmat3(
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
-        const Teuchos::RCP<const Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
-        const Teuchos::RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
+        const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
+        const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
@@ -255,7 +255,7 @@ static void Sysmat3(
               cellcenter,
               XFEM::Enrichment::approachUnknown));
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

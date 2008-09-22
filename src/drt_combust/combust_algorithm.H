@@ -63,30 +63,40 @@ namespace COMBUST
 
   protected:
 
+    //! Options to reinitialize the G-function
+    enum ReinitializationAction
+    {
+      initialize,
+      compute_signeddistancefunction
+    };
+
     /// FG iteration number
     int FGiter() const { return fgiter_; }
 
     /// reinitialize G-function
-    void ReinitializeGfunc();
+    void ReinitializeGfunc(ReinitializationAction action);
+
+    /// initialize g-function by scalar function field
+    void InitializeGFunc();
 
     /// build signed distance function
     void SignedDistFunc();
-    
+
     /// tests if the FGI iteration has converged
     bool NotConvergedFGI();
-    
+
     /// prepare a new time step
     void PrepareTimeStep();
-    
+
     /// start a new Fluid-G-function iteration
     void PrepareFGIteration();
-    
+
     /// solve Navier-Stokes equations for current time step
     void DoFluidField();
-    
+
     /// solve G-function equation for current time step
     void DoGfuncField();
-    
+
     /// update fields in FGI iteration;
     void UpdateFGIteration();
 
@@ -116,11 +126,10 @@ namespace COMBUST
     // L2-norm of g-function in Fluid-G-function iteration
     double fggfuncnormL2_;
     //@}
-    
-    // this is a parameter that should be read from the parameter list
-    int reinitialize_action;
-    // this is a parameter that should be contained in the validparameters list as an enum.
-    int signeddistfunc;
+
+    /// options for reinitialization of G-function;
+    ReinitializationAction reinitializationaction_;
+
   };
 
 } // namespace COMBUST

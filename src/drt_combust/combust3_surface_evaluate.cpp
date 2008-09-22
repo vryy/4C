@@ -330,13 +330,13 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateShapeFunction(
 
     // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector      funct       (iel);
-  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+  Epetra_SerialDenseMatrix      deriv       (2,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix      xyze        (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor(2,2);
+  Epetra_SerialDenseMatrix      metrictensor(2,2);
   double                        drs;
 
   // get node coordinates

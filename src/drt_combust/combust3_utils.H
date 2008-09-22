@@ -508,7 +508,7 @@ void gder2(
         template version
  \return enum with optimal gausrule for this element
  */
-inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
+static DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
 {
     DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (distype)
@@ -533,24 +533,46 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
 
 /*!
  \brief get optimal gaussrule for given discretization type
-        template version
+
  \return enum with optimal gausrule for this element
  */
 inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
     const bool                              intersected,
-    const DRT::Element::DiscretizationType  distype
+    const DRT::Element::DiscretizationType  celldistype,
+    const DRT::Element::DiscretizationType  xeledistype
     )
 {
+  GEO::EleGeoType eleGeoType = GEO::CARTESIAN;
+  
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
   if (not intersected)
   {
-    rule = getOptimalVelocityGaussrule(distype);
+    rule = getOptimalVelocityGaussrule(celldistype);
   }
   else
   {
-    if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+    if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
-      rule = DRT::UTILS::intrule_tet_24point;
+      switch (xeledistype)
+      {
+        case DRT::Element::hex8:
+          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_24point;
+          else
+            rule = DRT::UTILS::intrule_tet_45point;
+          break;
+        case DRT::Element::hex20:
+          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_45point;
+          else
+            rule = DRT::UTILS::intrule_tet_125point_peano;
+          break;
+        case DRT::Element::hex27:
+          rule = DRT::UTILS::intrule_tet_343point_peano;
+          break;
+        default:
+          dserror("no rule defined for this xele");
+      }
     }
     else
     {

@@ -16,11 +16,15 @@ Maintainer: Florian Henke
 
 #include "adapter_fluid_combust.H"
 
+#include "../drt_fluid/xfluidresulttest.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Epetra_Export.h>
 
 extern struct _FILES  allfiles;
 extern struct _GENPROB     genprob;
@@ -49,13 +53,19 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
-  std::cout << "noderowmap->UniqueGIDs(): " << noderowmap.UniqueGIDs() << endl;
-  //std::cout << noderowmap << endl;
+  const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
 
-  Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(noderowmap);
-  //std::cout << *newnodecolmap << endl;
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+  
+  // redistribute nodes and elements to column (ghost) map
+  boundarydis_->ExportColumnNodes(nodecolmap);
+  boundarydis_->ExportColumnElements(elemcolmap);
 
-  DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
+  // Now we are done. :)
+  const int err = boundarydis_->FillComplete();
+  if (err) dserror("FillComplete() returned err=%d",err);
 
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
 //  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
@@ -68,7 +78,6 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
 
 //  idispn_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  ivelnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
 //  fluid_.SetFreeSurface(&freesurface_);
@@ -112,9 +121,9 @@ void ADAPTER::FluidCombust::Update()
 //  henke 08/08 const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = params_->get<double>("TIMESTEP");
 
-  // compute acceleration at timestep n
+  // compute acceleration at timestep n+1
   Teuchos::RCP<Epetra_Vector> iaccnp = rcp(new Epetra_Vector(iaccn_->Map()));
-//  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
+  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
   const double theta = 1.0;
   iaccnp->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
   iaccnp->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
@@ -133,7 +142,7 @@ void ADAPTER::FluidCombust::Update()
   iaccn_->Update(1.0,*iaccnp,0.0);
 
   // update velocity n-1
-  ivelnm_->Update(1.0,*iveln_,0.0);
+  iveln_->Update(1.0,*ivelnp_,0.0);
 
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
@@ -158,30 +167,101 @@ void ADAPTER::FluidCombust::Output()
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
   // create interface DOF vectors using the fluid parallel distribution
-  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
-  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
+  Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  
   // map to fluid parallel distribution
 //  LINALG::Export(*idispnp_ ,*idispcol);
-  LINALG::Export(*ivelnp_  ,*ivelcol);
+  LINALG::Export(*ivelnp_  ,*ivelnpcol);
   LINALG::Export(*iveln_   ,*ivelncol);
-  LINALG::Export(*ivelnm_  ,*ivelnmcol);
   LINALG::Export(*iaccn_   ,*iaccncol);
-
   LINALG::Export(*itrueresnp_,*itruerescol);
 
-  PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface force");
-  PrintInterfaceVectorField(idispcol, ivelcol  , "_solution_ivel_"  , "interface velocity n+1");
-  PrintInterfaceVectorField(idispcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-  PrintInterfaceVectorField(idispcol, ivelnmcol, "_solution_ivelnm_", "interface velocity n-1");
-  PrintInterfaceVectorField(idispcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  // print redundant arrays on proc 0
+  if (boundarydis_->Comm().MyPID() == 0)
+  {
+    PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
+    PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
+    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  }
 
 }
+
+/*------------------------------------------------------------------------------------------------*
+ | henke 08/08 |
+ *------------------------------------------------------------------------------------------------*/
+void ADAPTER::FluidCombust::PrintInterfaceVectorField(
+    const Teuchos::RCP<Epetra_Vector>   displacementfield,
+    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const std::string filestr,
+    const std::string name_in_gmsh
+    )
+{
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  if (gmshdebugout)
+  {
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
+    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    std::ofstream f_system(filename.str().c_str());
+    
+    {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
+      for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = boundarydis_->lColElement(i);
+        //      cout << *actele << endl;
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*boundarydis_, lm, lmowner);
+        
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
+        
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
+        
+        const int nsd = 3;
+        const int numnode = actele->NumNode();
+        BlitzMat elementvalues(nsd,numnode);
+        BlitzMat elementpositions(nsd,numnode);
+        int counter = 0;
+        for (int iparam=0; iparam<numnode; ++iparam)
+        {
+          const DRT::Node* node = actele->Nodes()[iparam];
+          //        cout << *node << endl;
+          const double* pos = node->X();
+          for (int isd = 0; isd < nsd; ++isd)
+          {
+            elementvalues(isd,iparam) = myvelnp[counter];
+            elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
+            counter++;
+          }
+        }
+        //      cout << elementpositions << endl;
+        //      exit(1);
+        
+        gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+            actele->Shape(), elementvalues, elementpositions) << endl;
+      }
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+    }
+    f_system.close();
+    std::cout << " done" << endl;
+  }
+}
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -191,38 +271,43 @@ void ADAPTER::FluidCombust::NonlinearSolve()
   cout << "FluidCombust::NonlinearSolve()" << endl;
 
   // create interface DOF vectors using the fluid parallel distribution
-//  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
-//  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-//  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+//  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+//  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnp  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> ivelcoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> iacccoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 //  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //
 //  Teuchos::RCP<Epetra_Vector> ivelncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //  Teuchos::RCP<Epetra_Vector> iaccncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   // map to fluid parallel distribution
-//  LINALG::Export(*ivel_,*ivelcol);
-//  LINALG::Export(*idisp_,*idispcol);
-//
-//  LINALG::Export(*iveln_,*ivelncol);
-//  LINALG::Export(*iaccn_,*iaccncol);
+//  LINALG::Export(*idispnp_,*idispcolnp);
+//  LINALG::Export(*idispn_ ,*idispcoln);
+  LINALG::Export(*ivelnp_ ,*ivelcolnp);
+  LINALG::Export(*iveln_  ,*ivelcoln);
+  LINALG::Export(*iaccn_  ,*iacccoln);
 
   cout << "SetState" << endl;
-//  boundarydis_->SetState("idispcolnp",idispnp_);
-  boundarydis_->SetState("ivelcolnp",ivelnp_);
+//  cout << "SetState" << endl;
+//  boundarydis_->SetState("idispcolnp",idispcolnp);
+//  boundarydis_->SetState("idispcoln" ,idispcoln);
   
-//  boundarydis_->SetState("idispcoln",idispn_);
-  boundarydis_->SetState("ivelcoln",iveln_);
-  boundarydis_->SetState("iacccoln",iaccn_);
+  boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
+  boundarydis_->SetState("ivelcoln"  ,ivelcoln);
+  boundarydis_->SetState("iacccoln"  ,iacccoln);
   
   fluid_.NonlinearSolve(boundarydis_);
   
   Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
   
   boundarydis_->ClearState();
-  
 
   // map back to solid parallel distribution
-  LINALG::Export(*itruerescol,*itrueresnp_);
+  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+  itrueresnp_->PutScalar(0.0);
+  itrueresnp_->Export(*itruerescol,*conimpo,Add); 
+  //LINALG::Export(*itruerescol,*itrueresnp_);
 }
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -338,6 +423,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 {
   return interface_.ExtractCondVector(iveln_);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -360,75 +446,24 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidCombust::CreateFieldTest()
 //  dserror("not implemented!");
 //  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 //}
+
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | henke 08/08 ist die Funktion hier nötig? |
  *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::PrintInterfaceVectorField(
-    const Teuchos::RCP<Epetra_Vector>   displacementfield,
-    const Teuchos::RCP<Epetra_Vector>   vectorfield,
-    const std::string filestr,
-    const std::string name_in_gmsh
-    )
+void ADAPTER::FluidCombust::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,RCP<const Epetra_Vector> noddensnm)
 {
-  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  if (gmshdebugout)
-  {
-    std::stringstream filename;
-    std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
-    std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
-    std::ofstream f_system(filename.str().c_str());
-    
-    {
-      stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
-      for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = boundarydis_->lColElement(i);
-        //      cout << *actele << endl;
-        vector<int> lm;
-        vector<int> lmowner;
-        actele->LocationVector(*boundarydis_, lm, lmowner);
-        
-        // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-        
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
-        
-        const int nsd = 3;
-        const int numnode = actele->NumNode();
-        BlitzMat elementvalues(nsd,numnode);
-        BlitzMat elementpositions(nsd,numnode);
-        int counter = 0;
-        for (int iparam=0; iparam<numnode; ++iparam)
-        {
-          const DRT::Node* node = actele->Nodes()[iparam];
-          //        cout << *node << endl;
-          const double* pos = node->X();
-          for (int isd = 0; isd < nsd; ++isd)
-          {
-            elementvalues(isd,iparam) = myvelnp[counter];
-            elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
-            counter++;
-          }
-        }
-        //      cout << elementpositions << endl;
-        //      exit(1);
-        
-        gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-            actele->Shape(), elementvalues, elementpositions) << endl;
-      }
-      gmshfilecontent << "};" << endl;
-      f_system << gmshfilecontent.str();
-    }
-    f_system.close();
-    std::cout << " done" << endl;
-  }
+   dserror("not implemented!");
+   return;
 }
+
+/*------------------------------------------------------------------------------------------------*
+ | henke 08/08 ist die Funktion hier nötig? |
+ *------------------------------------------------------------------------------------------------*/
+void ADAPTER::FluidCombust::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+{
+   dserror("not implemented!");
+   return;
+}
+
 
 #endif  // #ifdef CCADISCRET

@@ -137,12 +137,10 @@ namespace ADAPTER
 
     ///  set time-step-related fields for low-Mach-number flow
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
-                                   RCP<const Epetra_Vector> noddensnm){ dserror("not implemented!");
-                                                                             return; };
+                                   RCP<const Epetra_Vector> noddensnm);
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp){ dserror("not implemented!");
-                                                                             return; };
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp);
 
     /*--------------------------------------------------------------------------------------------* 
      * group member functions which are implemented and used
@@ -186,6 +184,13 @@ namespace ADAPTER
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
+
+    ///  set time-step-related fields for low-Mach-number flow
+    //virtual void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
+    //                               RCP<const Epetra_Vector> noddensnm);
+
+    /// set outer-iteration-related fields for low-Mach-number flow
+    //virtual void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp);
 
   private:
 

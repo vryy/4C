@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 
 namespace FLD
@@ -231,6 +232,13 @@ public:
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+  /// introduce free surface extractor object
+  /*!
+    This method must (and will) be called during setup with a properly
+    initialized extractor object iff we are on an ale mesh.
+   */
+  void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
+
   /// introduce (robin) fsi surface extractor object
   /*!
     Introduce the FSI surface to the fluid algorithm. This way special case
@@ -238,9 +246,8 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
+  /// calculate lift&drag forces and angular moments
   /*!
-  \brief calculate lift&drag forces and angular moments
-
   Lift and drag forces are based upon the right hand side true-residual entities
   of the corresponding nodes. The contribution of the end node of a line is entirely
   added to a present L&D force.
@@ -290,6 +297,9 @@ protected:
   
   //! the processor ID from the communicator
   const int                     myrank_;
+  
+  //!< a singular stream to stdout in parallel environment
+  IO::Ostream0 cout0_;   
   //@}
 
   //! @name time stepping variables
@@ -371,7 +381,6 @@ protected:
     
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
-    Teuchos::RCP<Epetra_Vector>    accnm_;  ///< accelerations at time n-1
     //@}
 
     //! @name velocities and pressures
@@ -391,6 +400,9 @@ protected:
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
+
+  /// free surface row dof map extractor
+  const LINALG::MapExtractor* freesurface_;
 
   /// (robin) fsi coupling row dof map extractor
   const LINALG::MapExtractor* fsisurface_;
