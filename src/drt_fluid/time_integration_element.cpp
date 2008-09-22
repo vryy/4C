@@ -34,8 +34,7 @@ BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     const double                        theta
 )
 {
-  const int nsd = 3;
-  BlitzVec3 hist = 0.0;
+  BlitzVec3 hist;
   switch (timealgo)
   {
   case timeint_stationary:
@@ -43,23 +42,59 @@ BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     break;
 
   case timeint_one_step_theta:
+  {
+    const int nsd = 3;
     for(int isd = 0; isd < nsd; ++isd)
     {
       hist(isd) = veln(isd) + dta*(1.0-theta)*accn(isd);
     }
     break;
-
+  }
   case timeint_bdf2:
+  {
     dserror("BDF2 temporarily not supported");
+    const int nsd = 3;
     for(int isd = 0; isd < nsd; ++isd)
     {
       hist(isd) = (4.0/3.0)*veln(isd) - (1.0/3.0)*velnm(isd);
     }
     break;
+  }
   default:
     dserror("Time integration scheme unknown!");
+    exit(1);
   }
   return hist;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
+    const FLUID_TIMEINTTYPE    timealgo,
+    const double               dt,
+    const double               theta
+    )
+{
+  double timefac;
+  switch (timealgo)
+  {
+  case timeint_stationary:
+    timefac = 1.0;
+    break;
+
+  case timeint_one_step_theta:
+    timefac = theta*dt;
+    break;
+
+  case timeint_bdf2:
+    timefac = 2/3 * dt;
+    break;
+    
+  default:
+    dserror("Time integration scheme unknown!");
+    exit(1);
+  }
+  return timefac;
 }
 
 #endif /* CCADISCRET       */

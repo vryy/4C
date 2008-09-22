@@ -66,32 +66,11 @@ namespace TIMEINT_THETA_BDF2
    * Compute constant used in the weak form integration 
    * \return timefac time integration factor
    */
-  inline double ComputeTimeFac(
+  double ComputeTimeFac(
       const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
       const double               dt,         ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme
-      )
-  {
-    double timefac = 1.0;
-    switch (timealgo)
-    {
-    case timeint_stationary:
-      timefac = 1.0;
-      break;
-
-    case timeint_one_step_theta:
-      timefac = theta*dt;
-      break;
-
-    case timeint_bdf2:
-      timefac = 2/3 * dt;
-      break;
-      
-    default:
-      dserror("Time integration scheme unknown!");
-    }
-    return timefac;
-  }
+      );
 }
 }
 
