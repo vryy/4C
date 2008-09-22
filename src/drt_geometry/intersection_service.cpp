@@ -698,6 +698,30 @@ bool GEO::currentToVolumeElementCoordinates(
 }
 
 
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 12/07 |
+ |      into element coordinates                                        | 
+ *----------------------------------------------------------------------*/
+BlitzVec3 GEO::currentToVolumeElementCoordinatesExact(
+        const DRT::Element::DiscretizationType  distype,
+        const BlitzMat&                         xyze,
+        const BlitzVec3&                        x,
+        const double                            tol
+        )
+{
+  BlitzVec3 xsi;
+  currentToVolumeElementCoordinates(distype, xyze, x, xsi);
+ 
+  // rounding 1 and -1 to be exact for the CDT
+  // TODO extend for triangles
+  for(int j = 0; j < 3; j++)
+  {
+      if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
+      if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
+  }
+  return xsi;
+} 
+
 
 /*----------------------------------------------------------------------*
  |  RQI:    searches the nearest point on a surface          u.may 02/08|

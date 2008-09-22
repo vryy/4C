@@ -504,28 +504,15 @@ namespace GEO
     \param distype              (in)        : element shape
     \param xyze                 (in)        : element nodal coordinates (3,numnode)
     \param x                    (in)        : node in current coordinates (x, y, z)
-    \param tol                  (out)       : tolerance
+    \param tol                  (in)        : tolerance
     \return                                   vector of element coordinates
     */
-    inline BlitzVec3 currentToVolumeElementCoordinatesExact(
+    BlitzVec3 currentToVolumeElementCoordinatesExact(
             const DRT::Element::DiscretizationType  distype,
             const BlitzMat&                         xyze,
             const BlitzVec3&                        x,
             const double                            tol
-            )
-    {
-      static BlitzVec3 xsi;
-      currentToVolumeElementCoordinates(distype, xyze, x, xsi);
-     
-      // rounding 1 and -1 to be exact for the CDT
-      // TODO extend for triangles
-      for(int j = 0; j < 3; j++)
-      {
-          if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
-          if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
-      }
-      return xsi;
-    } 
+            );
     
    
     /*!
