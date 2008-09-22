@@ -530,7 +530,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   }
   vector<int> iwork(liwork);
 
-  int lwork;
+  int lwork = 0;
   if (dim == 1) lwork = 1;
   else
   {
