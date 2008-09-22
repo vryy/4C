@@ -57,10 +57,6 @@ LOMA::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::TimeLoop()
 {
-    // solve con-dif equation without coupling to Navier-Stokes
-    // ScaTraField().SetVelocityField(1,1);
-    // ScaTraField().Integrate();
-
   // initial thermodynamic pressure (in N/m� = kg/(m*s�) = J/m�)
   // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
   thermpressnp_ = 98100.0;
@@ -109,17 +105,16 @@ return;
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::PrepareTimeStep()
 {
-  // transfer the initial(!!) convective velocity
-  if (Step()==1) ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+  // set field vectors: initial density-weighted convective velocity + density
+  //if (Step()==1) ScaTraField().SetIterLomaFields(2,ConvectiveVelocity(),noddensn_);
 
-  // set field vectors: density*shc-weighted convective velocity + density*shc
+  // set field vectors: density at n and n-1
   ScaTraField().SetTimeLomaFields(noddensn_,noddensnm_);
 
-  // prepare temperature time step 
-  // (+ initialize one-step-theta scheme correctly)
+  // prepare temperature time step (+ initialize one-step-theta scheme correctly)
   ScaTraField().PrepareTimeStep();
 
-  // set field vectors: density*shc-weighted convective velocity + density*shc
+  // set field vectors: density at n and n-1
   FluidField().SetTimeLomaFields(noddensn_,noddensnm_);
 
   // prepare fluid time step, particularly predict velocity field
@@ -135,7 +130,7 @@ void LOMA::Algorithm::OuterLoop()
 {
   const double  ittol = 1e-3;
   int  itnum = 0;
-  int  itemax = 5;
+  int  itemax = 2;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -148,7 +143,7 @@ void LOMA::Algorithm::OuterLoop()
     // get new velocity field
     GetCurrentFluidVelocity();
 
-    // set field vectors: density*shc-weighted convective velocity + density*shc
+    // set field vectors: density-weighted convective velocity + density
     ScaTraField().SetIterLomaFields(2,ConvectiveVelocity(),noddensnp_);
 
     // solve transport equation for temperature
@@ -162,7 +157,7 @@ void LOMA::Algorithm::OuterLoop()
     // compute density using current temperature + thermodynamic pressure
     ComputeDensity();
 
-    // set field vectors: density*shc-weighted convective velocity + density*shc
+    // set field vectors: density
     FluidField().SetIterLomaFields(noddensnp_);
 
     // solve low-Mach-number flow equations

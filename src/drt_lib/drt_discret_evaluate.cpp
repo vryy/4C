@@ -401,7 +401,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
       if (curvenum>=0 && usetime)
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).FctDer(time,deg);
       else
-        for (unsigned i=1; i<deg; ++i) curvefac[i] = 0.0;
+        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
       //cout << "Dirichlet curve factor: ";
       //for (unsigned i=0; i<deg; ++i) cout << curvefac[i] << ", ";
       //cout << curvefac[deg] << endl;
