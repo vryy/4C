@@ -167,13 +167,15 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         accnp->Update(dta/(dtp*sum),*velnm,1.0);
         break;
       }
+      case timeint_stationary:       // no accelerations for stationary problems
+      { 
+        accnp->PutScalar(0.0);
+        break;
+      }
       default:
         dserror("Time integration scheme unknown for mass rhs!");
     }
   }
-
-  // no accelerations for stationary problems
-  if (timealgo == timeint_stationary) accnp->PutScalar(0.0);
 
   return;
 }
