@@ -683,7 +683,8 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
           int found=0;
           actdis->Comm().SumAll(&foundit,&found,1);
           if (found)
-            actdis->SetCondition(condlist[c]->Name(),curr->second);
+	    // Insert a copy since we might insert the same condition in many discretizations.
+            actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
         }
       }
     }
