@@ -1170,6 +1170,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& elchcontrol = list->sublist(
+      "ELCH CONTROL",
+      false,
+      "control parameters for electrochemistry problems\n");
+
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&elchcontrol);
+  IntParameter("NUMSTEP",24,"Total number of time steps",&elchcontrol);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&elchcontrol);
+  IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&elchcontrol);
+  IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,"");
 
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&combustcontrol);
