@@ -130,7 +130,7 @@ Maintainer: Axel Gerstenberger
       {
         for (int j = 0; j < nj; ++j)
         {
-          m(i,j) = 0;
+          m(i,j) = f;
         }
       }
     }
