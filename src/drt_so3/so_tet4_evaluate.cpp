@@ -611,9 +611,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       const bool                ea)             // strain output options
 {
 /* =============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
+** CONST DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > shapefcts = so_tet4_1gp_shapefcts();
   const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
   const static vector<double> gpweights = so_tet4_1gp_weights();
 /* ============================================================================*/
@@ -1004,7 +1003,7 @@ int DRT::ELEMENTS::Sotet4Register::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Shape fcts at 1 Gauss Point                  maf 05/08|
+ |  Evaluate Tet4 Shape fcts at 1 Gauss Point                           |
  *----------------------------------------------------------------------*/
 const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
 {
@@ -1023,7 +1022,7 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > DRT::ELEMENTS
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Shape fct derivs at 1 Gauss Point            maf 05/08|
+ |  Evaluate Tet4 Shape fct derivs at 1 Gauss Point                     |
  *----------------------------------------------------------------------*/
 const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 {
@@ -1054,20 +1053,19 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> >
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Weights at 1 Gauss Point                     maf 05/08|
+ |  Evaluate Tet4 Weights at 1 Gauss Point                              |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 {
   vector<double> weights(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
-  for (int i = 0; i < NUMGPT_SOTET4; ++i) {
+  for (int i = 0; i < NUMGPT_SOTET4; ++i)
     weights[i] = 1.0;
-  }
   return weights;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Shape fcts at 4 Gauss Points                 maf 05/08|
+ |  Evaluate Tet4 Shape fcts at 4 Gauss Points                          |
  *----------------------------------------------------------------------*/
 const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
 {
@@ -1093,7 +1091,7 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > DRT::ELEMENTS
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Shape fct derivs at 4 Gauss Points           maf 05/08|
+ |  Evaluate Tet4 Shape fct derivs at 4 Gauss Points                    |
  *----------------------------------------------------------------------*/
 const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 {
@@ -1124,7 +1122,7 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> >
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet4 Weights at 4 Gauss Points                    maf 05/08|
+ |  Evaluate Tet4 Weights at 4 Gauss Points                             |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 {

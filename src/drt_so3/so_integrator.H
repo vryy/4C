@@ -1,3 +1,7 @@
+// Nobody uses this file anymore.
+
+#if 0
+
 /*!----------------------------------------------------------------------
 \file so_integrator.H
 
@@ -205,3 +209,5 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
 #endif  // #ifndef SO_INTEGRATOR
 #endif  // #ifdef  CCADISCRET
 #endif  // #if D_SOLID3
+
+#endif

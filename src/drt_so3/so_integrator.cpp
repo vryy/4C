@@ -1,3 +1,4 @@
+#if 0
 /*!----------------------------------------------------------------------
 \file so_integrator.cpp
 
@@ -710,3 +711,6 @@ long double LINALG::SerialDenseMatrix::Det_long()
 #endif
 
 #endif // D_SOLID3
+
+
+#endif

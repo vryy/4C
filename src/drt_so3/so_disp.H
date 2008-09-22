@@ -15,7 +15,6 @@ Maintainer: Axel Gerstenberger
 #ifndef SO_DISP_H
 #define SO_DISP_H
 
-#include "so_integrator.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -23,6 +22,7 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
@@ -60,7 +60,6 @@ class SoDisp : public DRT::Element
 public:
   //! @name Friends
   friend class SoDispRegister;
-  friend class Integrator_SoDisp;
   //@}
   //! @name Constructors and destructors and related methods
 

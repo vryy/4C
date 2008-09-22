@@ -13,7 +13,6 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "so_ptet.H"
-#include "so_integrator.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"

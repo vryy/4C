@@ -3896,28 +3896,28 @@ private:
   /// Compute equilibrate scaling
   /*
     \return integer error code. 0 if successful, negative
-    otherwise. This is often, but not always, a LAPACK error code.
+    otherwise. This is a LAPACK error code.
    */
   int ComputeEquilibrateScaling();
 
   /// Equilibrate matrix
   /*
     \return integer error code. 0 if successful, negative
-    otherwise. This is often, but not always, a LAPACK error code.
+    otherwise. This is a LAPACK error code.
    */
   int EquilibrateMatrix();
 
   /// Equilibrate right hand side vector
   /*
     \return integer error code. 0 if successful, negative
-    otherwise. This is often, but not always, a LAPACK error code.
+    otherwise. This is a LAPACK error code.
    */
   int EquilibrateRHS();
 
   /// Unequilibrate vector of unknowns
   /*
     \return integer error code. 0 if successful, negative
-    otherwise. This is often, but not always, a LAPACK error code.
+    otherwise. This is a LAPACK error code.
    */
   int UnequilibrateLHS();
 public:

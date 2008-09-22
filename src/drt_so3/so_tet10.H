@@ -356,6 +356,22 @@ protected:
   void so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
                       LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses);
 
+  // These functions are basically copied from the So_integrator,
+  // along with the rather inconsitent matrix sizes.
+  //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& so_tet10_4gp_shapefcts();
+  //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& so_tet10_4gp_derivs();
+  //! Evaluate Tet10 Weights at 4 gausspoints to keep them static
+  const vector<double>&so_tet10_4gp_weights();
+
+  //! Evaluate Tet10 Shapefcts at 10 gausspoints to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& so_tet10_10gp_shapefcts();
+  //! Evaluate Tet10 Derivs at 10 gausspoints to keep them static
+  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_10gp_derivs();
+  //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
+  const vector<double>& so_tet10_10gp_weights();
+
 //   void so_tet10_stress(struct _MATERIAL* material,
 //                    vector<double>& mydisp,
 //                    Epetra_SerialDenseMatrix* stresses);
