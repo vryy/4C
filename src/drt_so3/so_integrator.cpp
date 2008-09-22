@@ -17,7 +17,6 @@ written by: Alexander Volf
 #include "so_integrator.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
-#include "so_ctet10.H"
 #include "so_hex8.H"
 #include "so_disp.H"
 #include "../drt_lib/drt_discret.H"

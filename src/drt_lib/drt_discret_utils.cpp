@@ -30,7 +30,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 {
   // see whether we have an aztec list
   if (!solveparams.isSublist("Aztec Parameters")) return;
-  
+
   // get the aztec list and see whether we use downwinding
   ParameterList& azlist = solveparams.sublist("Aztec Parameters");
   // downwinding needs nodal block information, compute it
@@ -57,7 +57,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_so_tet4:
     case DRT::Element::element_ptet:
     case DRT::Element::element_so_tet10:
-    case DRT::Element::element_so_ctet10:
     case DRT::Element::element_so_weg6:
     case DRT::Element::element_sodisp:
     case DRT::Element::element_so_shw6:
@@ -98,7 +97,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!(nv+np)) dserror("Cannot determine nodal block size");
   azlist.set<int>("downwinding nv",nv);
   azlist.set<int>("downwinding np",np);
-  
+
   // see whether we have a sublist indicating usage of Trilinos::ML
   if (!solveparams.isSublist("ML Parameters")) return;
 
@@ -154,7 +153,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_so_tet4:
     case DRT::Element::element_ptet:
     case DRT::Element::element_so_tet10:
-    case DRT::Element::element_so_ctet10:
     case DRT::Element::element_so_weg6:
     case DRT::Element::element_sodisp:
     case DRT::Element::element_so_shw6:
@@ -271,7 +269,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       ele->Type() == DRT::Element::element_sosh8 ||
       ele->Type() == DRT::Element::element_so_tet4 ||
       ele->Type() == DRT::Element::element_so_tet10 ||
-      ele->Type() == DRT::Element::element_so_ctet10 ||
       ele->Type() == DRT::Element::element_so_weg6 ||
       ele->Type() == DRT::Element::element_sodisp ||
       ele->Type() == DRT::Element::element_so_shw6)
@@ -409,7 +406,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
           mode[1][lid] = 1.0;
           mode[2][lid] = 0.0;
         break;
-        //rotation of element about z-axis 
+        //rotation of element about z-axis
         //(e.g. x[0]-x0[0] is the arm of lever for translation in y-direction in case of rotation about z-axis)
         //(hence x[0]-x0[0] is the translation in y-direction in case of unit rotation about z-axis)
         case 2:
@@ -424,7 +421,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_beam2)
-  
+
   //there are three rigid body modes for beam2
 
  else if (ele->Type() == DRT::Element::element_beam3)
@@ -502,7 +499,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
    } // for (int i=0; i<NumMyRowNodes(); ++i)
  } // else if (ele->Type() == DRT::Element::element_beam3)
-  
+
    else if (ele->Type() == DRT::Element::element_truss3)
  {
    for (int i=0; i<NumMyRowNodes(); ++i)

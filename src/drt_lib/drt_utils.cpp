@@ -67,7 +67,6 @@ extern "C"
 #include "../drt_so3/so_tet4.H"
 #include "../drt_so3/so_ptet.H"
 #include "../drt_so3/so_tet10.H"
-#include "../drt_so3/so_ctet10.H"
 #include "../drt_so3/so_weg6.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_disp.H"
@@ -326,7 +325,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       object->Unpack(data);
       return object;
     }
-    break;    
+    break;
     case ParObject_Condif3:
     {
       DRT::ELEMENTS::Condif3* object = new DRT::ELEMENTS::Condif3(-1,-1);
@@ -476,21 +475,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Sotet10Register* object =
                 new DRT::ELEMENTS::Sotet10Register(DRT::Element::element_so_tet10);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_So_ctet10:
-    {
-      DRT::ELEMENTS::So_ctet10* object = new DRT::ELEMENTS::So_ctet10(-1,-1);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_Soctet10Register:
-    {
-      DRT::ELEMENTS::Soctet10Register* object =
-                new DRT::ELEMENTS::Soctet10Register(DRT::Element::element_so_ctet10);
       object->Unpack(data);
       return object;
     }
@@ -700,7 +684,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_tet4,
     ptet,
     so_tet10,
-    so_ctet10,
     so_weg6,
     so_shw6,
     sodisp,
@@ -728,7 +711,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDT4") type = so_tet4;
   else if (eletype=="PTET4") type = ptet;
   else if (eletype=="SOLIDT10") type = so_tet10;
-  else if (eletype=="SOLIDCT10") type = so_ctet10;
   else if (eletype=="SOLIDW6") type = so_weg6;
   else if (eletype=="SOLIDSHW6") type = so_shw6;
   else if (eletype=="SOLID3") type = sodisp;
@@ -914,12 +896,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
-      return ele;
-    }
-    break;
-    case so_ctet10:
-    {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_ctet10(id,owner));
       return ele;
     }
     break;

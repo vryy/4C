@@ -21,7 +21,6 @@ Maintainer: Moritz Frenzel
 #include "so_hex8.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
-#include "so_ctet10.H"
 #include "so_weg6.H"
 #include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
@@ -439,58 +438,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
   return;
 }  // of so_tet10_mat_sel
 
-/*----------------------------------------------------------------------* !!!!
- | material laws for So_ctet10                                  vlf 04/07|
- | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
- | different class, and therefore cannot be used in So_tet10)           |
- | one should think about other solutions for this like making this a   |
- | member of a upper class the will be inherited by all so3 classes     |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
-      Epetra_SerialDenseVector* stress,
-      Epetra_SerialDenseMatrix* cmat,
-      double* density,
-      const Epetra_SerialDenseVector* glstrain,
-      const Epetra_SerialDenseMatrix* defgrd,
-      int gp)
-{
-  RefCountPtr<MAT::Material> mat = Material();
-  switch (mat->MaterialType())
-  {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-    {
-      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-
-      stvk->Evaluate(glstrain,cmat,stress);
-
-      *density = stvk->Density();
-
-      break;
-    }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
-    {
-      MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
-      moon->Evaluate(glstrain,cmat,stress);
-      *density = moon->Density();
-
-      break;
-    }
-    case m_neohooke: /*----------------- NeoHookean Material */
-    {
-      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
-      neo->Evaluate(glstrain, cmat, stress);
-      *density = neo->Density();
-
-    break;
-    }
-    default:
-      dserror("Illegal type %d of material for element solid3 ctet10", mat->MaterialType());
-      break;
-  }
-
-  /*--------------------------------------------------------------------*/
-  return;
-}  // of so_ctet10_mat_sel
 
 
 #endif  // #ifdef CCADISCRET
