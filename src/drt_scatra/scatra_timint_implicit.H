@@ -100,22 +100,16 @@ public:
   //! start time loop for startingalgo, normal problems and restarts
   void Integrate();
 
-  //! Do time integration (time loop)
+  //! do time integration (time loop)
   void TimeLoop();
-
-  //! Solve stationary problem
-  void SolveStationaryProblem();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
-  void Solve(bool is_stat=false);
+  //! solve linear system
+  void Solve();
 
-  /*!
-  \brief Update the solution after convergence of the nonlinear
-         iteration. Current solution becomes old solution of next
-         timestep.
-  */
+  //! update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
   //! update configuration and output to file
@@ -262,6 +256,9 @@ protected:
 
   /// actual convective velocity
   RCP<Epetra_MultiVector>    convel_;
+
+  /// Nonlinear iteration increment vector
+  RCP<Epetra_Vector>    increment_;
 
   /// vm3 and avms solver
   RCP<FLD::VM3_Solver> vm3_solver_;

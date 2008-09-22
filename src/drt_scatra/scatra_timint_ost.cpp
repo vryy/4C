@@ -71,24 +71,15 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 void SCATRA::TimIntOneStepTheta::Update()
 {
   // update time derivative of phi
- /*  if (step_ == 1)
-  {
-    // phidt(n) = phi(n)-phi(n-1) / dt(n)
-    phidtn_->Update( 1.0/dta_,*phinp_,1.0);
-    phidtn_->Update(-1.0/dta_,*phin_ ,1.0);
-  }
-   else */
-  {
-    double fact1 = 1.0/(theta_*dta_);
-    double fact2 = (-1.0/theta_) +1.0;
+  double fact1 = 1.0/(theta_*dta_);
+  double fact2 = (-1.0/theta_) +1.0;
 
-    // phidt(n) = (phi(n)-phi(n-1)) / (Theta*dt(n)) - (1/Theta -1)*phidt(n-1)
-    phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+  // phidt(n) = (phi(n)-phi(n-1)) / (Theta*dt(n)) - (1/Theta -1)*phidt(n-1)
+  phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
 
-    // we know the first time derivative on Dirichlet boundaries
-    // so we do not need an approximation of these values!
-    ApplyDirichletBC(time_,Teuchos::null,phidtn_);
-  }
+  // we know the first time derivative on Dirichlet boundaries
+  // so we do not need an approximation of these values!
+  ApplyDirichletBC(time_,Teuchos::null,phidtn_);
 
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
@@ -146,8 +137,6 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
   if (myrank_ == 0)
   cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
-
-  ApplyDirichletBC(time_, phin_,phidtn_);
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");

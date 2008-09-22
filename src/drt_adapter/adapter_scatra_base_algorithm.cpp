@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 
@@ -148,19 +149,28 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // additional parameters and algorithm construction depending on 
   // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  if(timintscheme == INPUTPARAMS::timeint_stationary or
-     timintscheme == INPUTPARAMS::timeint_one_step_theta)
+  if(timintscheme == INPUTPARAMS::timeint_stationary)
   {
     // -----------------------------------------------------------------
-    // set additional parameters in list for OST/stationary scheme
+    // set additional parameters in list for stationary scheme
+    // -----------------------------------------------------------------
+
+    // parameter theta for time-integration schemes
+    scatratimeparams->set<double>           ("theta"                    ,1.0);
+
+    //------------------------------------------------------------------
+    // create instance of time integration class (call the constructor)
+    //------------------------------------------------------------------
+    scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, output));
+  }
+  else if (timintscheme == INPUTPARAMS::timeint_one_step_theta)
+  {
+    // -----------------------------------------------------------------
+    // set additional parameters in list for one-step-theta scheme
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
     scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
-    // number of steps for potential start algorithm
-    scatratimeparams->set<int>              ("number of start steps"    ,0); //hack!
-    // parameter theta for potential start algorithm
-    //scatratimeparams->set<double>         ("start theta"              ,scatradyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -175,16 +185,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
     // parameter theta for time-integration schemes
     scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
-    // number of steps for potential start algorithm
-    scatratimeparams->set<int>              ("number of start steps"    ,0); //hack!
-    // parameter theta for potential start algorithm
-    //scatratimeparams->set<double>         ("start theta"              ,scatradyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams, output));
-  
   }
   else if (timintscheme == INPUTPARAMS::timeint_gen_alpha)
   {

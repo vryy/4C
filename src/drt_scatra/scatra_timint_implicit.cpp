@@ -149,6 +149,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // the residual vector --- more or less the rhs
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
+  // incremental solution vector
+  increment_     = LINALG::CreateVector(*dofrowmap,true);
+
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
   // initialize subgrid-diffusivity matrix + respective ouptput
@@ -215,27 +218,11 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Integrate()
 {
-  // bound for the number of startsteps
-  int    numstasteps         =params_->get<int>   ("number of start steps");
-
-  if (timealgo_==INPUTPARAMS::timeint_stationary) // stationary case
-    SolveStationaryProblem();
-  else  // instationary case
-  {
-    // start procedure
-    if (step_<numstasteps)
-    {
-      if (numstasteps>stepmax_)
-      {
-        dserror("more startsteps than steps");
-      }
-
-      dserror("no starting steps supported");
-    }
-
-    // continue with the final time integration
-    TimeLoop();
-  }
+  // solve the problem
+  TimeLoop();
+  
+  // just beauty
+  cout<<endl<<endl;
 
   // print the results of time measurements
   TimeMonitor::summarize();
@@ -300,11 +287,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //              set time dependent parameters
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
-
-  // -------------------------------------------------------------------
-  //                         out to screen
-  // -------------------------------------------------------------------
-  PrintTimeStepInfo();
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
@@ -387,10 +369,13 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 /*----------------------------------------------------------------------*
  | contains the solver                                          vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Solve(
-  bool is_stat //if true, stationary formulations are used in the element
-  )
+void SCATRA::ScaTraTimIntImpl::Solve()
 {
+  // -------------------------------------------------------------------
+  //                         out to screen
+  // -------------------------------------------------------------------
+  PrintTimeStepInfo();
+
   double tcpu;
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -421,7 +406,10 @@ void SCATRA::ScaTraTimIntImpl::Solve(
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
-    eleparams.set("using stationary formulation",is_stat);
+    if (MethodName()==INPUTPARAMS::timeint_stationary)
+      eleparams.set("using stationary formulation",true);
+    else
+      eleparams.set("using stationary formulation",false);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -628,40 +616,6 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | solve stationary convection-diffusion problem               vg 05/07 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SolveStationaryProblem()
-{
-  // time measurement: time loop (stationary) 
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
-
-  // -------------------------------------------------------------------
-  //                         out to screen
-  // -------------------------------------------------------------------
-  if (myrank_==0) printf("Stationary Solver\n");
-  step_=1;
-
-  // -------------------------------------------------------------------
-  //         evaluate dirichlet and neumann boundary conditions
-  // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_,Teuchos::null);
-  ApplyNeumannBC(time_,phinp_,neumann_loads_);
-
-  // -------------------------------------------------------------------
-  //                     solve nonlinear equation
-  // -------------------------------------------------------------------
-  Solve(true);
-
-  // -------------------------------------------------------------------
-  //                         output of solution
-  // -------------------------------------------------------------------
-  Output();
-
-  return;
-} // ScaTraTimIntImpl::SolveStationaryProblem
 
 
 /*----------------------------------------------------------------------*
