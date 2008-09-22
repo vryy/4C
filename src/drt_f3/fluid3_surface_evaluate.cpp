@@ -835,7 +835,6 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   for (int i=0; i<3; i++)
     normal[i] = normal[i] / length;
 
-
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -879,6 +878,37 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   const DiscretizationType distype = this->Shape();
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
+
+  double invdensity=0.0; // inverse density of my parent element
+
+  // get material of volume element this surface belongs to
+  RefCountPtr<MAT::Material> mat = parent_->Material();
+
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+          dserror("Material law is not a fluid");
+
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_fluid)
+  {
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    invdensity = 1.0/actmat->m.fluid->density;
+  }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    invdensity = 1.0/actmat->m.carreauyasuda->density;
+  }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    invdensity = 1.0/actmat->m.modpowerlaw->density;
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
+
 
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector  	funct       (iel);
@@ -954,7 +984,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
 
-    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure ;
+    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
 
     for (int node=0;node<iel;++node)
     {
