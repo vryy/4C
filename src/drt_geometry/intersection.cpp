@@ -6,7 +6,7 @@
 
     The class intersection handles the intersection computation of
     Cartesian, linear and quadratic discretization. The discretiazation,
-    which is intersected is refered to as xfem discretization and the
+    which is intersected is referred to as xfem discretization and the
     discretization acting as a cutter is called cutter discretization.
     The intersection algorithm returns a list of quadratic integration cells
     for each intersected xfem element.
@@ -16,8 +16,8 @@
             from outside to perform the intersection computation
     GM      general methods
     ICS     intersection candidate search
-    CLI     contruction of the linearized interface
-    CDT     contrained delaunay tetrahedralization
+    CLI     construction of the linearized interface
+    CDT     constrained delaunay tetrahedralization
     RCI     recovery of the curved interface
     DB      debug methods
 
@@ -83,7 +83,7 @@ void GEO::Intersection::computeIntersection(
 
     // initial positions, since the xfem element does not move
     const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
-    checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
+//    checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
     const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
 
     startPointList();
@@ -95,7 +95,7 @@ void GEO::Intersection::computeIntersection(
       if(cutterElement == NULL) dserror("geometry does not obtain elements");
 
       const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
-      checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
+//      checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
       const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
 
       const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
@@ -245,7 +245,6 @@ void GEO::Intersection::initializeXFEM(
   segmentList_.resize(numXFEMSurfaces_);
   surfaceTriangleList_.clear();
   
-  segmentList_.resize(numXFEMSurfaces_);
   isolatedPointList_.clear();
   isolatedPointList_.resize(numXFEMSurfaces_);
 
@@ -340,7 +339,12 @@ void GEO::Intersection::setBoundaryPointBoundaryStatus(
     ip.setSurfaceId(surfaces);
   }
   else
+  {
+    cout << "setBoundaryPointBoundaryStatus()" << endl;
+    cout << "count = " << count << endl;
+    cout << "xsi = " << xsi << endl;
     dserror("not on surface !!!");
+  }
 }
 
 
@@ -409,10 +413,10 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
 {
 
   BlitzVec3 xsi;
-  xsi = 0;
+  xsi = 0.0;
 
   BlitzVec3 x;
-  x = 0;
+  x = 0.0;
 
   // surface element is an xfem surface
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsiSurface, x);
@@ -442,7 +446,16 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
     ip.setSurfaceId(surfaces);
   }
   else
+  {
+    cout << "setIntersectionPointBoundaryStatus" << endl;
+    cout << "count = " << count << endl;
+    cout << "xsi = " << xsi << endl;
+    cout << "x = " << x << endl;
+    cout << "xsiSurface = " << xsiSurface << endl;
+    cout << "xyze_surfaceElement = " << xyze_surfaceElement << endl;
+    
     dserror("not on surface !!!");
+  }
 
 }
 
@@ -679,6 +692,10 @@ bool computeSingularCSI(
   return singular;
 }
 
+inline bool my_isnan(double x)
+{
+  return x != x;
+}
 
 /*!
 \brief computes an interseticon point between a curve and a surface - templated part
@@ -720,7 +737,7 @@ bool computeCurveSurfaceIntersectionT(
   double residual = 1.0;
   static BlitzMat3x3 A;
   static BlitzVec3   b;
-  static BlitzVec3   dx;
+  static BlitzVec3   dx;  dx = 0.0;
 
 
   updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
@@ -753,7 +770,7 @@ bool computeCurveSurfaceIntersectionT(
 
     //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
     // has to to be 8 , otherwise not a number is reached               // detect not a number according to IEEE NaN is not comparable to itself
-    if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8)// || !(xsi(0)==xsi(0))  || !(xsi(1)==xsi(1))  || !(xsi(2)==xsi(2))   )
+    if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || my_isnan(xsi(0)) || my_isnan(xsi(1)) || my_isnan(xsi(2)))// || !(xsi(0)==xsi(0))  || !(xsi(1)==xsi(1))  || !(xsi(2)==xsi(2))   )
     {
       intersection = false;
       break;
@@ -1541,7 +1558,7 @@ void GEO::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pnnQ";    //o2 Y R
+  char switches[] = "pnnQY";    //o2 Y R
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
