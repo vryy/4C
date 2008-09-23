@@ -67,7 +67,7 @@ void XFEM::createDofMap(
         if (has_label)
         {
           const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-          const bool almost_empty_element = (fabs(1.0-volumeratio) < 1.0e-2);
+          const bool almost_empty_element = (fabs(1.0-volumeratio) < 1.0e-4);
           
           if ( not almost_empty_element)  
           { // void enrichments for everybody !!!
