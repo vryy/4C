@@ -1028,7 +1028,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
       // double check
       if(repairedelesign != initelesign){
         ++ secondcheck;
-        //PlotEleGmsh(actele, newnodes);
+        //PlotEleGmsh(actele, newnodes, i_encl->first);
         // still not sane!
 
         // extreme repair: align all normals in one direction
@@ -1071,7 +1071,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             }
           }
         }
-        //PlotEleGmsh(actele, newnodes);
+        //PlotEleGmsh(actele, newnodes, i_encl->first);
 
         int doublerepairedelesign = EleSaneSign(actele,coords);
         if (doublerepairedelesign != initelesign)
@@ -1500,9 +1500,12 @@ map<int,vector<int> > EXODUS::ExtrusionErrorOutput(const int secedgenode,const i
   return leftovers;
 }
 
-void EXODUS::PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes)
+void EXODUS::PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes, const int id)
 {
-  ofstream f_system("ele.gmsh");
+  stringstream filename;
+  filename << "ele_" << id << ".gmsh";
+  ofstream f_system(filename.str().c_str());
+  //ofstream f_system("ele.gmsh");
   stringstream gmshfilecontent;
   gmshfilecontent << "View \" Element \" {" << endl;
   int numnodes = elenodes.size();

@@ -19,6 +19,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #ifdef CCADISCRET
 
 #include "pre_exodus_validate.H"
+#include "pre_exodus_soshextrusion.H" //just temporarly for gmsh-plot
 
 
 /*!----------------------------------------------------------------------
@@ -103,7 +104,10 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for(i_eb=myebs.begin(); i_eb!=myebs.end(); ++i_eb){
     RCP<ElementBlock> eb = i_eb->second;
     const DRT::Element::DiscretizationType distype = PreShapeToDrt(eb->GetShape());
-    ValidateElementJacobian(mymesh,distype,eb); break;
+    ValidateElementJacobian(mymesh,distype,eb);
+    // full check at all gausspoints
+    int invalid_dets = ValidateElementJacobian_fullgp(mymesh,distype,eb);
+    if (invalid_dets > 0) cout << invalid_dets << " negative Jacobian determinants in EB of shape " << ShapeToString(eb->GetShape()) << endl;
   }
   return;
 }
@@ -151,6 +155,59 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   return;
 }
 
+int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb)
+{
+  DRT::UTILS::GaussRule3D integrationrule = DRT::UTILS::intrule3D_undefined;
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+      integrationrule = DRT::UTILS::intrule_hex_8point;
+      break;
+  case DRT::Element::hex20:
+      integrationrule = DRT::UTILS::intrule_hex_27point;
+      break;
+  case DRT::Element::hex27:
+      integrationrule = DRT::UTILS::intrule_hex_27point;
+      break;
+  case DRT::Element::tet4:
+      integrationrule = DRT::UTILS::intrule_tet_4point;
+      break;
+  case DRT::Element::tet10:
+      integrationrule = DRT::UTILS::intrule_tet_10point;
+      break;
+  case DRT::Element::wedge6: case DRT::Element::wedge15:
+      integrationrule = DRT::UTILS::intrule_wedge_6point;
+      break;
+  case DRT::Element::pyramid5:
+      integrationrule = DRT::UTILS::intrule_pyramid_8point;
+      break;
+  default:
+    integrationrule = DRT::UTILS::intrule3D_undefined;
+    break;
+  }
+  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule);
+  const int iel = eb->GetEleNodes(0).size();
+  // shape functions derivatives
+  const int NSD = 3;
+  Epetra_SerialDenseMatrix    deriv(NSD, iel);
+
+  // go through all elements
+  int invalids = 0;
+  RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
+  map<int,vector<int> >::iterator i_ele;
+  for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
+    for (int igp = 0; igp < intpoints.nquad; ++igp) {
+      DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
+      if (PositiveEle(i_ele->second,mymesh,deriv) == false){
+        invalids++;
+      }
+    }
+  }
+
+  return invalids;
+}
+
+
 bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
 {
   const int iel = deriv.N();
@@ -182,31 +239,35 @@ bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetr
 int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
 {
   const int iel = nodes.size();
+  // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
+  LINALG::SerialDenseMatrix local_nodecoords(iel,3);
   DRT::Element::DiscretizationType distype;
-  DRT::UTILS::GaussRule3D integrationrule = DRT::UTILS::intrule3D_undefined;
   switch(iel)
   {
   case 8: // hex8
-      integrationrule = DRT::UTILS::intrule_hex_8point;
-      distype = DRT::Element::hex8;
-      break;
-  case 4: // tet4
-      integrationrule = DRT::UTILS::intrule_tet_1point;
-      distype = DRT::Element::tet4;
-      break;
+    local_nodecoords(0,0) = -1.; local_nodecoords(0,1) = -1.; local_nodecoords(0,2) = -1.;
+    local_nodecoords(1,0) =  1.; local_nodecoords(1,1) = -1.; local_nodecoords(1,2) = -1.;
+    local_nodecoords(2,0) =  1.; local_nodecoords(2,1) =  1.; local_nodecoords(2,2) = -1.;
+    local_nodecoords(3,0) = -1.; local_nodecoords(3,1) =  1.; local_nodecoords(3,2) = -1.;
+    local_nodecoords(4,0) = -1.; local_nodecoords(4,1) = -1.; local_nodecoords(4,2) =  1.;
+    local_nodecoords(5,0) =  1.; local_nodecoords(5,1) = -1.; local_nodecoords(5,2) =  1.;
+    local_nodecoords(6,0) =  1.; local_nodecoords(6,1) =  1.; local_nodecoords(6,2) =  1.;
+    local_nodecoords(7,0) = -1.; local_nodecoords(7,1) =  1.; local_nodecoords(7,2) =  1.;
+    distype = DRT::Element::hex8;
+    break;
   case 6: // wedge6
-      integrationrule = DRT::UTILS::intrule_wedge_6point;
-      distype = DRT::Element::wedge6;
-      break;
-  case 5: // pyramid5
-      integrationrule = DRT::UTILS::intrule_pyramid_1point;
-      distype = DRT::Element::pyramid5;
-      break;
+    local_nodecoords(0,0) = 0.; local_nodecoords(0,1) = 0.; local_nodecoords(0,2) = -1.;
+    local_nodecoords(1,0) = 1.; local_nodecoords(1,1) = 0.; local_nodecoords(1,2) = -1.;
+    local_nodecoords(2,0) = 0.; local_nodecoords(2,1) = 1.; local_nodecoords(2,2) = -1.;
+    local_nodecoords(3,0) = 0.; local_nodecoords(3,1) = 0.; local_nodecoords(3,2) =  1.;
+    local_nodecoords(4,0) = 1.; local_nodecoords(4,1) = 0.; local_nodecoords(4,2) =  1.;
+    local_nodecoords(5,0) = 0.; local_nodecoords(5,1) = 1.; local_nodecoords(5,2) =  1.;
+    distype = DRT::Element::wedge6;
+    break;
   default:
-      // cout<<"No Validation for this kind of Element implemented! Good luck!"<<endl;
-      return 0;
+    dserror("No Element Sanity Check for this distype");
+    break;
   }
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule);
   // shape functions derivatives
   const int NSD = 3;
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
@@ -224,10 +285,9 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
   LINALG::SerialDenseMatrix xjm(NSD,NSD);
   int n_posdet = 0;
   int n_negdet = 0;
-  double tonode = sqrt(3);
 
-  for (int i = 0; i < intpoints.nquad; ++i) {
-    DRT::UTILS::shape_function_3D_deriv1(deriv,tonode*intpoints.qxg[i][0],tonode*intpoints.qxg[i][1],tonode*intpoints.qxg[i][2],distype);
+  for (int i = 0; i < iel; ++i) {
+    DRT::UTILS::shape_function_3D_deriv1(deriv,local_nodecoords(i,0),local_nodecoords(i,1),local_nodecoords(i,2),distype);
     xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
     const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                        xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -242,14 +302,9 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
     else ++n_posdet;
   }
 
-  if (intpoints.nquad == 1){
-    if (n_posdet==1 && n_negdet==0) return 1;
-    else return -1;
-  } else {
-    if (n_posdet==intpoints.nquad && n_negdet==0) return 1;
-    else if (n_posdet==0 && n_negdet==intpoints.nquad) return -1;
-    else return 0;
-  }
+  if (n_posdet==iel && n_negdet==0) return 1;
+  else if (n_posdet==0 && n_negdet==iel) return -1;
+  else return 0;
 
   return 0;
 }

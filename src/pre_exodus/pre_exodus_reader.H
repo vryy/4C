@@ -65,6 +65,9 @@ public:
        const map<int,SideSet>& extSidesets,
        const string newtitle);
 
+  //! empty constructor
+  Mesh();
+
   //! destructor
   virtual ~Mesh();
 

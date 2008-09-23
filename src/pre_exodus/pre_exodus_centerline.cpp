@@ -72,13 +72,13 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
     cout << "...done" << endl;
 
-    cout << "Generating gmsh plots..." << endl;
-    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
-
-    // plot mesh to gmsh
-    string meshname = "centerlinemesh.gmsh";
-    mymesh.PlotElementBlocksGmsh(meshname,mymesh,eb_ids);
-    cout << "...done" << endl;
+//    cout << "Generating gmsh plots..." << endl;
+//    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
+//
+//    // plot mesh to gmsh
+//    string meshname = "centerlinemesh.gmsh";
+//    mymesh.PlotElementBlocksGmsh(meshname,mymesh,eb_ids);
+//    cout << "...done" << endl;
 
 
     return centlineinfo;

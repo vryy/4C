@@ -235,6 +235,15 @@ EXODUS::Mesh::Mesh(const string exofilename)
   return;
 }
 
+EXODUS::Mesh::Mesh()
+{
+  nodes_ = rcp(new map<int,vector<double> >);
+  num_dim_ = 3;
+  num_elem_ = 0;
+  exoid_ = 0;
+  title_ = "emptymesh";
+}
+
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 12/07|
  *----------------------------------------------------------------------*/

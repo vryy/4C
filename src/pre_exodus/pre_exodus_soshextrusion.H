@@ -90,7 +90,7 @@ namespace EXODUS
   map<int,vector<int> > ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
       const set<int>& doneles, const map<int,vector<int> >& ele_conn, const set<int>& todo_eleset);
 
-  void PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes);
+  void PlotEleGmsh(const vector<int> elenodes, const map<int,vector<double> >& nodes, const int id);
   void PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
 
