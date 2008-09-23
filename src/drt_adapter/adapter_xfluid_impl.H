@@ -132,6 +132,9 @@ namespace ADAPTER {
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 
+    //! return type of time integration scheme
+    const FLUID_TIMEINTTYPE TimIntScheme() const {return fluid_.TimIntScheme();}
+
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,

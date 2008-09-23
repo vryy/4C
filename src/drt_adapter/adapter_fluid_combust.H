@@ -177,6 +177,9 @@ namespace ADAPTER
     virtual int Step();
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
+
+    ///   return type of time integration scheme
+    virtual const FLUID_TIMEINTTYPE TimIntScheme() const {return fluid_.TimIntScheme();}
     virtual void LiftDrag();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();

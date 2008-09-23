@@ -249,6 +249,12 @@ public:
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+  /*!
+  \brief return type of time integration scheme
+
+  */
+  const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
+
   /// introduce free surface extractor object
   /*!
     This method must (and will) be called during setup with a properly

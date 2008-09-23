@@ -545,6 +545,12 @@ public:
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   /*!
+  \brief return type of time integration scheme
+
+  */
+  const FLUID_TIMEINTTYPE TimIntScheme() const {return timeint_gen_alpha;}
+
+  /*!
   \brief determine grid velocity according to genalpha time integration
 
   */

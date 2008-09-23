@@ -29,7 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_discret.H"
 
-
+#include "../drt_lib/standardtypes_cpp.H"
 
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
@@ -190,6 +190,9 @@ namespace ADAPTER {
 
     /// communication object at the free surface
     virtual const LINALG::MapExtractor& FreeSurface() const = 0;
+    
+    /// return type of time integration scheme
+    virtual const FLUID_TIMEINTTYPE TimIntScheme() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
     /// The idea is to have one function that does the extraction and call it

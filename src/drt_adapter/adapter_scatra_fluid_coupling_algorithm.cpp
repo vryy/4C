@@ -45,6 +45,39 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 
   // get RCP to actual velocity field (time n+1)
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
+
+  // ensure that both single field solvers use the same 
+  // time integration scheme
+  switch (ScaTraField().MethodName())
+  {
+  case INPUTPARAMS::timeint_stationary:
+  {
+    if (FluidField().TimIntScheme() != timeint_stationary)
+      dserror("Fluid and Scatra time integration schemes do not match");
+    break;
+  }
+  case INPUTPARAMS::timeint_one_step_theta:
+  {
+    if (FluidField().TimIntScheme() != timeint_one_step_theta)
+      dserror("Fluid and Scatra time integration schemes do not match");
+    break;
+  }
+  case INPUTPARAMS::timeint_bdf2:
+  {
+    if (FluidField().TimIntScheme() != timeint_bdf2)
+      dserror("Fluid and Scatra time integration schemes do not match");
+    break;
+  }
+  case INPUTPARAMS::timeint_gen_alpha:
+  {
+    if (FluidField().TimIntScheme() != timeint_gen_alpha)
+      dserror("Fluid and Scatra time integration schemes do not match");
+    break;
+  }
+  default:
+    dserror("Fluid and Scatra time integration schemes do not match");
+  }
+
 }
 
 

@@ -211,6 +211,12 @@ public:
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   /*!
+  \brief return type of time integration scheme
+
+  */
+  const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
+
+  /*!
   \brief set time-step-related fields for low-Mach-number flow
 
   */
