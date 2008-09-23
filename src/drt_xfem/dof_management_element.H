@@ -182,6 +182,9 @@ namespace XFEM
       };
       
     private:
+
+      //! number of element degrees of freedom
+      int numElemDof_;
       
       //! unknowns for each global node id (gid)
       std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
@@ -194,9 +197,6 @@ namespace XFEM
       
       //! number of parameters for each field
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> DisTypePerElementField_;
-      
-      //! number of element degrees of freedom
-      int numElemDof_;
       
       //! local (elemental) dofpos
       std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;

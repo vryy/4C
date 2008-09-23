@@ -21,8 +21,8 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager() :
-  nodalDofSet_(),
-  numElemDof_(0)
+  numElemDof_(0),
+  nodalDofSet_()
 {
   return;
 }
