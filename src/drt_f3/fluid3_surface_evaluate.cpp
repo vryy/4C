@@ -24,6 +24,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_function.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -130,7 +131,11 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
+  // get time parameter
   const double thsl = params.get("thsl",0.0);
+
+  // get constant density (only relevant for incompressible flow)
+  //const double inc_dens = params.get("inc_density",0.0);
 
   // get flag whether outflow stabilization or not
   string outflow_stab = params.get("outflow stabilization","no_outstab");
@@ -140,6 +145,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // set number of nodes
   const int iel   = this->NumNode();
 
+  // Gaussian points
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
@@ -161,15 +167,15 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  funct       (iel);
-  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  deriv(2,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix      xyze        (3,iel);
+  Epetra_SerialDenseMatrix  xyze(3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor(2,2);
-  double                        drs;
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
+  double                    drs;
 
   // get node coordinates
   for(int i=0;i<iel;i++)
@@ -177,6 +183,23 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  // get velocity/density vector
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+  if (vedenp==null) dserror("Cannot get state vector 'vedenp'");
+
+  // extract local values from global vector
+  vector<double> myvedenp(lm.size());
+  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+
+  // create blitz object for density array
+  blitz::Array<double, 1> edensnp(iel);
+
+  // insert density into element array
+  for (int i=0;i<iel;++i)
+  {
+    edensnp(i) = myvedenp[3+(i*4)];
   }
 
   // this part will be run when outflow stabilization is required
@@ -196,13 +219,12 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
     normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
 
-    length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+    length = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
 
     // outward pointing normal of length 1
     for (int i=0; i<3; i++) normal[i] = normal[i] / length;
 
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-
     if (velnp==null) dserror("Cannot get state vector 'velnp'");
 
     // extract local values from the global vectors
@@ -256,7 +278,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
         {
           for(int dim=0;dim<3;dim++)
           {
-            elevec1[node*numdf+dim]+= funct[node] * evelnp(dim,node) * fac;
+            elevec1[node*numdf+dim]+= funct[node] * edensnp(node) * evelnp(dim,node) * fac;
           }
         }
       }
@@ -277,9 +299,11 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     if (curvenum>=0 && usetime)
       curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
-    // get values and switches from the condition
+    // get values, switches and spatial functions from the condition
+    // (assumed to be constant on element boundary)
     const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
     const vector<double>* val   = condition.Get<vector<double> >("val"  );
+    const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
     /*----------------------------------------------------------------------*
     |               start loop over integration points                     |
@@ -301,13 +325,43 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
       // the gauss weight, the timecurve factor and the constant
       // belonging to the time integration algorithm (theta*dt for
       // one step theta, 2/3 for bdf with dt const.)
+      // Furthermore, there may be a divison by the constant scalar density,
+      // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
       const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+
+      // factor given by spatial function
+      double functfac = 1.0;
+      // determine coordinates of current Gauss point
+      double coordgp[3];
+      coordgp[0]=0.0;
+      coordgp[1]=0.0;
+      coordgp[2]=0.0;
+      for (int i = 0; i< iel; i++)
+      {
+        coordgp[0] += xyze(0,i) * funct[i];
+        coordgp[1] += xyze(1,i) * funct[i];
+        coordgp[2] += xyze(2,i) * funct[i];
+      }
+
+      int functnum = -1;
+      const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
       for (int node=0;node<iel;++node)
       {
         for(int dim=0;dim<3;dim++)
         {
-          elevec1[node*numdf+dim]+= funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+          if (func) functnum = (*func)[dim];
+          {
+            if (functnum>0)
+            {
+              // evaluate function at current gauss point
+              functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+            }
+            else
+              functfac = 1.0;
+          }
+
+          elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
         }
       }
     } /* end of loop over integration points gpid */

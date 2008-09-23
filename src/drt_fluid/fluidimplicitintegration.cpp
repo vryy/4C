@@ -752,7 +752,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // evaluate Neumann conditions
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
+    //eleparams.set("inc_density",density_);
 
+    discret_->SetState("vedenp",vedenp_);
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
@@ -845,8 +847,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
         discret_->SetState("velnp",velnp_);
         eleparams.set("thsl",theta_*dta_);
+        //eleparams.set("inc_density",density_);
         eleparams.set("outflow stabilization",outflow_stab_);
 
+        discret_->SetState("vedenp",vedenp_);
         outflow_stabil_->PutScalar(0.0);
         discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
         discret_->ClearState();
@@ -2280,6 +2284,9 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
      discret_->ClearState();
 
      // evaluate Neumann b.c.
+     //eleparams.set("inc_density",density_);
+
+     discret_->SetState("vedenp",vedenp_);
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
      discret_->ClearState();

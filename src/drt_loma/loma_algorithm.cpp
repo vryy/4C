@@ -106,7 +106,7 @@ return;
 void LOMA::Algorithm::PrepareTimeStep()
 {
   // set field vectors: initial density-weighted convective velocity + density
-  //if (Step()==1) ScaTraField().SetIterLomaFields(2,ConvectiveVelocity(),noddensn_);
+  if (Step()==1) ScaTraField().SetIterLomaFields(2,ConvectiveVelocity(),noddensn_);
 
   // set field vectors: density at n and n-1
   ScaTraField().SetTimeLomaFields(noddensn_,noddensnm_);
@@ -116,6 +116,9 @@ void LOMA::Algorithm::PrepareTimeStep()
 
   // set field vectors: density at n and n-1
   FluidField().SetTimeLomaFields(noddensn_,noddensnm_);
+
+  // set field vectors: density at n+1
+  FluidField().SetIterLomaFields(noddensnp_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
