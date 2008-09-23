@@ -1750,8 +1750,8 @@ void GEO::Intersection::storePointList(
   vector<double>              searchPoint(3,0);
   
   // round points an vertices with TOL3 on xfem surface
-  roundPointsOnXFEMBoundary(interfacePoints, GEO::TOL3);
-  roundVerticesOnXFEMBoundary(vertices, GEO::TOL3);
+//  roundPointsOnXFEMBoundary(interfacePoints, GEO::TOL3);
+//  roundVerticesOnXFEMBoundary(vertices, GEO::TOL3);
   
   // store interface points in pointList_
   storePoint(vertices[0], interfacePoints, positions);
@@ -1769,7 +1769,7 @@ void GEO::Intersection::storePointList(
       storePoint(searchPoint, interfacePoints, positions);
   }
   
-  removeDegenerateInterfacePoints(positions);
+//  removeDegenerateInterfacePoints(positions);
 }
 
 
