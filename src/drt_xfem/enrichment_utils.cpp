@@ -678,4 +678,151 @@ double XFEM::DomainCoverageRatio(
 }
 
 
+/*!
+  Calculate ratio between fictitious element size and normal size
+  */
+template <DRT::Element::DiscretizationType DISTYPE>
+double BoundaryCoverageRatioT(
+        const DRT::Element&           ele,           ///< the element whose boundary ratio we want to compute
+        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        )
+{
+  
+  double area_fict = 0.0;
+  
+  // information about boundary integration cells
+  const GEO::BoundaryIntCells& boundaryIntCells = ih.GetBoundaryIntCells(ele.Id());
+  
+  double base_area = 0.0;
+  if (DISTYPE == DRT::Element::tet10 or DISTYPE == DRT::Element::tet4)
+  {
+    base_area = 0.5;
+  }
+  else if (DISTYPE == DRT::Element::hex8 or DISTYPE == DRT::Element::hex20 or DISTYPE == DRT::Element::hex27)
+  {
+    base_area = 4.0;
+  }
+  else
+  {
+    dserror("think about it. factor at the end of this function needs another values");
+  }
+  
+  // loop over boundary integration cells
+  for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
+  {
+    
+    DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
+    switch (cell->Shape())
+    {
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+    {
+      gaussrule = DRT::UTILS::intrule_tri_1point;
+      break;
+    }
+    default:
+      dserror("add your element type here...");
+    }
+    
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+    
+    // get the right boundary element
+//    const DRT::Element* boundaryele = ih.GetBoundaryEle(cell->GetSurfaceEleGid());
+    //cout << (*boundaryele) << endl;
+//    const int numnode_boundary = boundaryele->NumNode();
+    //        cout << "numnode_boundary: " << numnode_boundary << endl;
+    
+    // get current node coordinates
+//    const std::map<int,blitz::TinyVector<double,3> >* positions = ih.cutterposnp();
+//    const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
+    
+    const BlitzMat* nodalpos_xi_domain = cell->NodalPosXiDomainBlitz();
+    const int numnode_cell = cell->NumNode();
+    
+    // integration loop
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta^\boundary
+      GEO::PosEtaBoundary pos_eta_boundary;
+      pos_eta_boundary(0) = intpoints.qxg[iquad][0];
+      pos_eta_boundary(1) = intpoints.qxg[iquad][1];
+      
+      //            cout << pos_eta_boundary << endl;
+      GEO::PosXiDomain posXiDomain;
+      mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
+      //            cout << cell->toString() << endl;
+      //            cout << posXiDomain << endl;
+      
+      // shape functions and their first derivatives
+      BlitzVec funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+      DRT::UTILS::shape_function_2D(funct_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
+      BlitzMat deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+      DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
+      
+      // shape functions and their first derivatives
+      static BlitzVec funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      
+      // get jacobian matrix d x / d \xi  (3x2)
+      static BlitzMat3x2 dxyzdrs;
+      //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
+      for (int isd = 0; isd < 3; ++isd)
+      {
+        for (int j = 0; j < 2; ++j)
+        {
+          dxyzdrs(isd,j) = 0.0;
+          for (int k = 0; k < numnode_cell; ++k)
+          {
+            dxyzdrs(isd,j) += (*nodalpos_xi_domain)(isd,k)*deriv_boundary(j,k);
+          }
+        }
+      }
+      
+      // compute covariant metric tensor G for surface element (2x2)
+      static BlitzMat2x2 metric;
+      //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+      BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+      //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
+      
+      const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
+      if (detmetric <= 0.0)
+      {
+        dserror("negative detmetric! should be a bug!");
+      }
+      
+      const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
+      if (fac <= 0.0)
+      {
+        dserror("negative fac! should be a bug!");
+      }
+      
+      area_fict += fac;
+      
+    } // end loop over gauss points
+  } // end loop over integration cells
+  
+  // scale result by area of one surface of the volume element
+  return area_fict / base_area;
+}
+
+double XFEM::BoundaryCoverageRatio(
+        const DRT::Element&           ele,           ///< the element whose boundary ratio we want to compute
+        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        )
+{
+  switch (ele.Shape())
+  {
+    case DRT::Element::hex8:
+      return BoundaryCoverageRatioT<DRT::Element::hex8>(ele,ih);
+    case DRT::Element::hex20:
+      return BoundaryCoverageRatioT<DRT::Element::hex20>(ele,ih);
+    case DRT::Element::hex27:
+      return BoundaryCoverageRatioT<DRT::Element::hex27>(ele,ih);
+    default:
+      dserror("add you distype here...");
+      exit(1);
+  }
+}
+
 #endif  // #ifdef CCADISCRET

@@ -66,8 +66,8 @@ void XFEM::createDofMap(
 
         if (has_label)
         {
-          const double ratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-          const bool almost_empty_element = (fabs(1.0-ratio) < 1.0e-4);
+          const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+          const bool almost_empty_element = (fabs(1.0-volumeratio) < 1.0e-2);
           
           if ( not almost_empty_element)  
           { // void enrichments for everybody !!!
@@ -91,15 +91,8 @@ void XFEM::createDofMap(
               const int node_gid = nodeidptrs[inen];
               const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
               const int label = ih.PositionWithinConditionNP(nodalpos);
-              bool in_fluid = false;
-              if (label == 0)
-              {
-                in_fluid = true;
-              }
-              else
-              {
-                in_fluid = false;
-              }
+              const bool in_fluid = (label == 0);
+
               if (in_fluid)
               {
                 nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
@@ -110,17 +103,27 @@ void XFEM::createDofMap(
             };            
           }
 
-          // add discontinuous stress unknowns
-          // the number of each of these parameters will be determined later
-          // by using a discretization type and appropriate shape functions
-          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(xfemele->Shape()));
-
-          map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-          for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+          // TODO: check, how much area for integration we have (from BoundaryIntcells)
+          const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
+          const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-2);
+          
+          if ( not almost_zero_surface) 
           {
-            elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+            // add discontinuous stress unknowns
+            // the number of each of these parameters will be determined later
+            // by using a discretization type and appropriate shape functions
+            const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(xfemele->Shape()));
+  
+            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+            for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+            {
+              elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+            }
           }
-
+          else
+          {
+            cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
+          }
         }
       }
     };
