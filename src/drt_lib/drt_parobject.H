@@ -386,6 +386,8 @@ public:
   template<unsigned i, unsigned j>
   static void AddtoPack(vector<char>& data, const LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
   {
+    AddtoPack(data, i);
+    AddtoPack(data, j);
     AddtoPack(data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
   }
 
@@ -508,6 +510,14 @@ public:
   template <unsigned int i, unsigned int j>
   static void ExtractfromPack(int& position, const vector<char>& data, LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
   {
+    int m = 0;
+    ExtractfromPack(position,data,m);
+    if (m!=i)
+      dserror("first dimension mismatch");
+    int n = 0;
+    ExtractfromPack(position,data,n);
+    if (n!=j)
+      dserror("second dimension mismatch");
     ExtractfromPack(position, data, stuff.A(), stuff.M()*stuff.N()*sizeof(double));
   }
 
