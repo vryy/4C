@@ -508,7 +508,7 @@ OBJS_DRT_ALE   =
 OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
-#------------------------------------------------ drt solid 
+#------------------------------------------------ drt solids 
 OBJS_SOH8     = 
 OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_sh8.o \
@@ -540,7 +540,6 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_disp.o \
                 src/drt_so3/so_disp_input.o \
                 src/drt_so3/so_disp_evaluate.o \
-                src/drt_so3/so_integrator.o\
                 src/drt_so3/so_shw6.o \
                 src/drt_so3/so_shw6_evaluate.o \
                 src/drt_so3/so_shw6_input.o \
