@@ -34,8 +34,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
     ) :
       xfemdis_(xfemdis),
       cutterdis_(cutterdis),
-      octTreenp_(rcp( new GEO::SearchTree(5))),
-      octTreen_(rcp( new GEO::SearchTree(5)))
+      octTreenp_(rcp( new GEO::SearchTree(20))),
+      octTreen_(rcp( new GEO::SearchTree(20)))
 {
   if (xfemdis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
@@ -219,9 +219,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
       
-      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
       {
-        DRT::Element* actele = xfemdis_->lColElement(i);
+        DRT::Element* actele = xfemdis_->lRowElement(i);
         const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
