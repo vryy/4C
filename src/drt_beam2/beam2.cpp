@@ -38,7 +38,9 @@ crosssecshear_(0),
 mominer_(0),
 kT_(0),
 zeta_(0),
-halfrotations_(0),
+hrold_(0),
+hrnew_(0),
+hrconv_(0),
 beta0_(0),
 stochasticorder_(0),
 
@@ -61,7 +63,9 @@ crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
 kT_(old.kT_),
 zeta_(old.zeta_),
-halfrotations_(old.halfrotations_),
+hrold_(old.hrold_),
+hrnew_(old.hrnew_),
+hrconv_(old.hrconv_),
 beta0_(old.beta0_),
 stochasticorder_(old.stochasticorder_),
 gaussrule_(old.gaussrule_)
@@ -149,7 +153,9 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   //viscosity in background fluid
   AddtoPack(data,zeta_);
   //number of half rotations in comparision with reference configuration
-  AddtoPack(data,halfrotations_);
+  AddtoPack(data,hrold_);
+  AddtoPack(data,hrnew_);
+  AddtoPack(data,hrconv_);
   //angle relative to x-axis in reference configuration
   AddtoPack(data,beta0_);
   //polynomial order for interpolation of stochastic fields
@@ -194,7 +200,9 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   //viscosity in background fluid
   ExtractfromPack(position,data,zeta_);
   //number of half rotations in comparision with reference configuration
-  ExtractfromPack(position,data,halfrotations_);
+  ExtractfromPack(position,data,hrold_);
+  ExtractfromPack(position,data,hrnew_);
+  ExtractfromPack(position,data,hrconv_);
   //angle relative to x-axis in reference configuration
   ExtractfromPack(position,data,beta0_);
   //polynomial order for interpolation of stochastic fields
@@ -365,9 +373,17 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
       //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
       //system right from the beginning (see also beam2_evaluate.cpp for further explanation)
       if (currele->beta0_ > PI/2)
-    	  currele->halfrotations_ = 1;
+      {
+    	  currele->hrold_ = 1;
+    	  currele->hrnew_ = 1;
+    	  currele->hrconv_ = 1;
+      }
       if (currele->beta0_ < -PI/2)
-        currele->halfrotations_ = -1;  
+      {
+        currele->hrold_ = -1;
+        currele->hrnew_ = -1;
+        currele->hrconv_ = -1;
+      }
       
       //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
        if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )

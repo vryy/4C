@@ -69,7 +69,6 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
     {   
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
-
     }
     break;
        
@@ -113,21 +112,102 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       else if  (act ==  calc_struct_internalforce)
         b2_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1,lumpedmass);
       
+      /*
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not by means of a numerically approximated stiffness matrix
+      if(Id() == 3) //limiting the following tests to certain element numbers
+      {       
+        //variable to store numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_approx;       
+        stiff_approx.Shape(6,6);
+        
+        //relative error of numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_relerr;         
+        stiff_relerr.Shape(6,6);
+        
+        //characteristic length for numerical approximation of stiffness
+        double h_rel = 1e-8;
+        
+        //flag indicating whether approximation lead to significant relative error
+        int outputflag = 0;
+        
+        //calculating strains in new configuration
+        for(int i=0; i<3; i++)
+        {
+          for(int k=0; k<2; k++)
+          {
+            //save current configuration:
+            int hrsave = hrnew_;
+
+            
+            Epetra_SerialDenseVector force_aux;
+            force_aux.Size(6);
+            
+            //create new displacement and velocity vectors in order to store artificially modified displacements
+            vector<double> vel_aux(6);
+            vector<double> disp_aux(6);
+            for(int id = 0;id<6;id++)
+            {
+                DRT::UTILS::ExtractMyValues(*disp,disp_aux,lm);
+                DRT::UTILS::ExtractMyValues(*vel,vel_aux,lm);
+            }
+            
+            //modifying displacment artificially (for numerical derivative of internal forces):
+            disp_aux[i + 3*k] = disp_aux[i + 3*k] + h_rel;
+             vel_aux[i + 3*k] =  vel_aux[i + 3*k] + h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
+
+             
+            b2_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux,lumpedmass);
+            
+            
+            for(int u = 0;u<6;u++)
+            {
+              stiff_approx(u,i+k*3)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+            }
+                       
+            //reset geometric ocnfiguration before  computation of approximated stiffness:
+            hrnew_ = hrsave;
+        
+          }
+        }
+        
+       for(int line=0; line<6; line++)
+       {
+         for(int col=0; col<6; col++)
+         {
+           stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
+                    
+           //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+           if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0)
+             stiff_relerr(line,col) = 0;
+
+           if ( stiff_relerr(line,col) > 0)
+             outputflag = 1;  
+         }
+       } 
+
+       if(outputflag ==1)
+       {
+         std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
+         std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+         std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+       } 
+      } 
+      //end of section in which numerical approximation for stiffness matrix is computed
+      */
+    
+      hrold_ = hrnew_;     
     }
     break;
     case calc_struct_update_istep:
-    {
-      ;// there is nothing to do here at the moment
-    }
-    break;
     case calc_struct_update_imrlike:
     {
-      ;// there is nothing to do here at the moment
+      hrconv_ = hrnew_;
     }
     break;
     case calc_struct_reset_istep:
     {
-      ;// there is nothing to do here at the moment
+      hrold_ = hrconv_;
     }
     break;
     default:
@@ -314,8 +394,8 @@ inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
    * fairly mild restriction to time step size*/
   
   // psi is the rotation angle out of x-axis in a x-y-plane rotatated by halfrotations_*PI
-  double cos_psi = pow(-1.0,halfrotations_)*(xcurr(0,1)-xcurr(0,0))/lcurr;
-  double sin_psi = pow(-1.0,halfrotations_)*(xcurr(1,1)-xcurr(1,0))/lcurr;
+  double cos_psi = pow(-1.0,hrold_)*(xcurr(0,1)-xcurr(0,0))/lcurr;
+  double sin_psi = pow(-1.0,hrold_)*(xcurr(1,1)-xcurr(1,0))/lcurr;
   
   //first we calculate psi in a range between -pi < beta <= pi in the rotated plane
   double psi = 0;
@@ -328,12 +408,12 @@ inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
         	psi = -acos(cos_psi);
    }
   
-  beta = psi + PI*halfrotations_ - beta0_;
+  beta = psi + PI*hrold_ - beta0_;
   
   if (psi > PI/2)
-	  halfrotations_++;
+	  hrnew_ = hrold_ +1;
   if (psi < -PI/2)
- 	  halfrotations_--; 
+    hrnew_ = hrold_ -1; 
 
   rcurr(0) = -cos_beta;
   rcurr(1) = -sin_beta;
@@ -573,166 +653,10 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       else
         dserror("improper value of variable lumpedmass");    
   }
-  
-  //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-  //correctly or not: the function b2_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
-  //finite differences and finally the relative error is printed; in case that there is no significant error in any
-  //element no printout is thrown
-  //activating this part of code also the function b2_nlnstiff_approx(mydisp) has to be activated both in Beam2.H
-  //and Beam2_evaluate.cpp
-  /*
-  if(Id() == 3) //limiting the following tests to certain element numbers
-  {
-   Epetra_SerialDenseMatrix stiff_approx;
-   Epetra_SerialDenseMatrix stiff_relerr;
-   stiff_approx.Shape(6,6);
-   stiff_relerr.Shape(6,6);      
-   double h_rel = 1e-8;
-   int outputflag = 0;
-   stiff_approx = b2_nlnstiff_approx(xcurr,h_rel,*force,vel,disp,params);
-   
-   for(int line=0; line<6; line++)
-   {
-     for(int col=0; col<6; col++)
-     {
-       if( fabs( (*stiffmatrix)(line,col) ) > h_rel)
-         stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-       else
-       {
-         if( fabs( stiff_approx(line,col) ) < h_rel*1000)
-           stiff_relerr(line,col) = 0;
-         else
-           stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-       }
-       //suppressing small entries whose effect is only confusing
-       if (stiff_relerr(line,col)<h_rel*100)
-         stiff_relerr(line,col)=0;
-       //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-       if ( isnan( stiff_relerr(line,col) ) )
-         stiff_relerr(line,col)=0;
-       if (stiff_relerr(line,col)>0)
-         outputflag = 1;  
-     }
-   
-       if(outputflag ==1)
-       {
-         std::cout<<"\n\n acutally calculated stiffness matrix"<< *stiffmatrix;
-         std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-         std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-       }    
-     }
-   } 
-   */
-  
-  
+
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
 
-/*
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(BlitzMat3x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel, vector<double>& disp, ParameterList& params)
-{
-  Epetra_SerialDenseMatrix stiff_approx;
-  stiff_approx.Shape(6,6); 
-  double dt = params.get<double>("delta time",0.01);
-     
-  //calculating strains in new configuration
-  for(int i=0; i<3; i++)
-  {
-    for(int k=0; k<2; k++)
-    {
-      Epetra_SerialDenseVector force_aux;
-      force_aux.Size(6);
-
-      BlitzMat3x2 xcurr;
-      BlitzVec6   vcurr;
-      double lcurr = 0;
-      double beta;
-      BlitzVec6 zcurr;
-      BlitzVec6 rcurr;
-      BlitzMat3x6 Bcurr;
-      BlitzMat3x6 aux_CB;
-      BlitzVec3 force_loc;
-      double ym; //Young's modulus
-      double sm; //shear modulus
-      double density; //density
-
-
-      //calculating refenrence configuration xrefe and current configuration xcurr
-      for (int id=0; id<2; ++id)
-      {
-        xcurr(0,id) = Nodes()[id]->X()[0] + disp[id*3+0];
-        xcurr(1,id) = Nodes()[id]->X()[1] + disp[id*3+1];
-        //note: this is actually not the current director angle, but current director angle minus reference director angle
-        xcurr(2,id) = disp[id*3+2];
-      }     
-      xcurr(i,k) += h_rel;
-      
-      for (int id = 0; id < 6; id++)
-      {
-        vcurr(id) = vel[id];
-      }
-      vcurr(i + 3*k) += h_rel/dt;
-      
-      // calculation of local geometrically important matrices and vectors; notation according to Crisfield
-      //current length
-      lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
-      
-      //calculation of local geometrically important matrices and vectors
-      b2_local_aux(Bcurr, rcurr, zcurr, beta, xcurr, lcurr, lrefe_);
-      
-
-      // get the material law
-      MATERIAL* currmat = &(mat[material_-1]);
-      switch(currmat->mattyp)
-      {
-        case m_stvenant:// only linear elastic material supported
-        {
-          ym = currmat->m.stvenant->youngs;
-          sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
-          density = currmat->m.stvenant->density;
-        }
-        break;
-        default:
-          dserror("unknown or improper type of material law");
-      } 
-      
-      //calculating local internal forces
-      force_loc(0) = ym*crosssec_*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));     
-      force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/lrefe_;
-      force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_);  
-     
-
-      BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,force_aux);
-      
-      if (stochasticorder_ == 0)
-      {
-        //adding internal forces due to viscous damping (by background fluid of thermal bath)
-        force_aux[0] += zeta_*vcurr[0]/2;
-        force_aux[1] += zeta_*vcurr[1]/2;
-        force_aux[3] += zeta_*vcurr[3]/2;
-        force_aux[4] += zeta_*vcurr[4]/2;
-      }
-      else if (stochasticorder_ == 1)
-      {
-        //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-        force_aux[0] += zeta_*(vcurr[0]/3 + vcurr[3]/6);
-        force_aux[1] += zeta_*(vcurr[1]/3 + vcurr[4]/6);
-        force_aux[3] += zeta_*(vcurr[3]/3 + vcurr[0]/6);
-        force_aux[4] += zeta_*(vcurr[4]/3 + vcurr[1]/6);
-      }
-
-      
-      for(int u = 0;u<6;u++)
-      {
-        stiff_approx(u,i+k*3) = ( force_aux(u) - force(u) )/h_rel;
-      }
-   
-    }
-  }
-   
-  return stiff_approx;
-} // DRT::ELEMENTS::Beam3::b3_nlnstiff_approx
-*/
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM2

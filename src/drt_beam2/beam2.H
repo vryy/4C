@@ -307,7 +307,9 @@ private:
   double zeta_;
 
   //! rounded number of half rotations the beam has already carried out counter clockwise;
-  int halfrotations_;
+  int hrold_; //at the end of the last iteration step
+  int hrnew_; //including changes of current iteration step
+  int hrconv_; //at the end of the last converged time step
 
   //! angle relative to x-axis in reference configuration
   double beta0_;
@@ -338,11 +340,6 @@ private:
                        Epetra_SerialDenseVector* force,  //!< element internal force vector
                        int lumpedmass); //!< if set to one lumped mass matrix is calculated
   
-  //calculation of nonlinear stiffness approximated by finite differences; this function should
-  //be activated for bug fixing only
-  /*
-  Epetra_SerialDenseMatrix b2_nlnstiff_approx(BlitzMat3x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel, vector<double>& disp,ParameterList& params);
-  */
   
   // don't want = operator
   Beam2& operator = (const Beam2& old);
