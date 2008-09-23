@@ -37,7 +37,7 @@ TIMEINTEGR   Stationary
 UPRES        1
 RESTARTEVRY  20
 MAXTIME      1.0
-NUMSTEP      10
+NUMSTEP      1
 TIMESTEP     0.1
 THETA        0.5
 INITIALFIELD zero_field
