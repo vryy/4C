@@ -98,10 +98,12 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
 
   {
     // Solve structure equations for sy with the rhs sx
+#if 0
     if (Comm().MyPID()==0)
       std::cout << "    structural stime: " << std::flush;
 
     Epetra_Time ts(Comm());
+#endif
 
     structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
@@ -132,17 +134,21 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
       }
     }
 
+#if 0
     if (Comm().MyPID()==0)
       std::cout << std::scientific << ts.ElapsedTime() << std::flush;
+#endif
   }
 
   {
     // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
 
+#if 0
     if (Comm().MyPID()==0)
       std::cout << "    ale stime: " << std::flush;
 
     Epetra_Time ta(Comm());
+#endif
 
     Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
     if (structuresplit_)
@@ -159,17 +165,21 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
     }
     alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
 
+#if 0
     if (Comm().MyPID()==0)
       std::cout << std::scientific << ta.ElapsedTime() << std::flush;
+#endif
   }
 
   {
     // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
 
+#if 0
     if (Comm().MyPID()==0)
       std::cout << "    fluid stime: " << std::flush;
 
     Epetra_Time tf(Comm());
+#endif
 
     Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
 
@@ -208,12 +218,16 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
           fprintf(err_,"\n");
     }
 
+#if 0
     if (Comm().MyPID()==0)
       std::cout << std::scientific << tf.ElapsedTime() << std::flush;
+#endif
   }
 
+#if 0
   if (Comm().MyPID()==0)
     std::cout << "\n";
+#endif
 
   // build solution vector
 
@@ -221,7 +235,7 @@ void FSI::OverlappingBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
 
-#if 1
+#if 0
 
   double sn,an,fn;
 
