@@ -170,6 +170,8 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     tau_(),
     viscs2_(),
     conv_c_(),
+    mdiv_(),
+    vdiv_(),
     rhsmom_(),
     rhscon_(),
     conv_old_(),
@@ -2183,10 +2185,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
           if (loma)
           {
+            const double v = timefac_tau_C*rhscon_;
             /* continuity stabilisation of rhs term of continuity equation */
-            eforce(vi*4    ) -= timefac_tau_C*densderxy_(0, vi)*rhscon_ ;
-            eforce(vi*4 + 1) -= timefac_tau_C*densderxy_(1, vi)*rhscon_ ;
-            eforce(vi*4 + 2) -= timefac_tau_C*densderxy_(2, vi)*rhscon_ ;
+            eforce(vi*4    ) += v*densderxy_(0, vi) ;
+            eforce(vi*4 + 1) += v*densderxy_(1, vi) ;
+            eforce(vi*4 + 2) += v*densderxy_(2, vi) ;
           }
         }
       }

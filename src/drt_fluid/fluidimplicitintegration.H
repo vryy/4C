@@ -387,11 +387,6 @@ protected:
   RCP<Epetra_Vector>    accnm_;
   //@}
 
-  //! @name momentum/density time derivatives at time n and n-1
-  RCP<Epetra_Vector>    modedtn_;
-  RCP<Epetra_Vector>    modedtnm_;
-  //@}
-
   //! @name velocities and pressures at time n+1, n and n-1
   RCP<Epetra_Vector>    velnp_;
   RCP<Epetra_Vector>    veln_;

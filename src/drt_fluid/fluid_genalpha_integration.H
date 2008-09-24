@@ -611,6 +611,9 @@ private:
   //! parallelism --- my processor id
   int                       myrank_ ;
 
+  //! flag for low-Mach-number solver (no: standard incompressible solver)
+  string loma_;
+
   //! fluid density
   double                    density_;
 
@@ -774,6 +777,11 @@ private:
   //! in velaf_, every component associated to a pressure dof is completely
   //! meaningless since the pressure is treated implicitly.
   RCP<Epetra_Vector>        velaf_;
+
+  //! velocities and densities at time n+alpha_F, n+1 and n
+  RCP<Epetra_Vector>    vedeaf_;
+  RCP<Epetra_Vector>    vedenp_;
+  RCP<Epetra_Vector>    veden_;
 
   //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>        dispnp_   ;

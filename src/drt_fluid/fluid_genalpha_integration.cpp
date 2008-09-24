@@ -75,6 +75,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   numdim_ = params_.get<int>("number of velocity degrees of freedom");
 
+  // type of solver: low-Mach-number or incompressible solver
+  loma_ = params_.get<string>("low-Mach-number solver","No");
+
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -135,6 +138,16 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   velnp_        = LINALG::CreateVector(*dofrowmap,true);
   veln_         = LINALG::CreateVector(*dofrowmap,true);
   velaf_        = LINALG::CreateVector(*dofrowmap,true);
+
+  // velocity/density at time n+1
+  vedeaf_       = LINALG::CreateVector(*dofrowmap,true);
+
+  if (loma_ != "No")
+  {
+    // velocity/density at time n and n-1
+    vedenp_        = LINALG::CreateVector(*dofrowmap,true);
+    veden_       = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // grid displacements and velocities for the ale case
   if (alefluid_)
@@ -283,6 +296,8 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // end time measurement for timeloop
 
+  // set vedenp-vector values to 1.0 for incompressible flow, for the time being
+  if (loma_ == "No") vedeaf_->PutScalar(1.0);
 
   tm7_ref_ = null;
 
@@ -643,6 +658,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("total time",time_-(1-alphaF_)*dt_);
   eleparams.set("thsl",1.);
 
+  discret_->SetState("vedenp",vedeaf_);
   neumann_loads_->PutScalar(0.0);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
@@ -959,6 +975,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     eleparams.set("thsl",1.);
     eleparams.set("outflow stabilization",outflow_stab_);
 
+    discret_->SetState("vedeaf",vedeaf_);
     outflow_stabil_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
     discret_->ClearState();
@@ -977,6 +994,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velaf",velaf_);
+    discret_->SetState("vedeaf",vedeaf_);
 
     // element evaluation for getting convective stresses at nodes
     discret_->Evaluate(eleparams,null,convaf_);
@@ -1042,6 +1060,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+  discret_->SetState("vedeaf",vedeaf_);
 
   if (alefluid_)
   {

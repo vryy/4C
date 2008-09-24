@@ -1766,8 +1766,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           {
             const int tvi = 3*vi;
             /* continuity stabilisation of rhs term of continuity equation */
-            eforce(tvi    ) -= v*densderxy_(0, vi) ;
-            eforce(tvi + 1) -= v*densderxy_(1, vi) ;
+            eforce(tvi    ) += v*densderxy_(0, vi) ;
+            eforce(tvi + 1) += v*densderxy_(1, vi) ;
           }
         }
       }

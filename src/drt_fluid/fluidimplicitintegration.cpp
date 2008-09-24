@@ -1437,10 +1437,12 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
+    eleparams.set("low-Mach-number solver",loma_);
 
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velnp",velnp_);
+    discret_->SetState("vedenp",vedenp_);
     discret_->SetState("hist"  ,hist_ );
 
     // call standard loop over linear elements

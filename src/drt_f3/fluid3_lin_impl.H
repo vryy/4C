@@ -149,7 +149,9 @@ namespace ELEMENTS
       \param ele     (i) the element those matrix is calculated
       \param evelnp  (i) nodal velocities at n+1
       \param eprenp  (i) nodal pressure
-      \param evhist  (i) rhs from beginning of time step
+      \param edensnp (i) nodal density
+      \param emhist  (i) rhs for momentum equation from beginning of time step
+      \param echist  (i) rhs for continuity equation from beginning of time step
       \param edispnp (i) nodal displacements (on moving mesh)
       \param egridv  (i) grid velocity (on moving mesh)
       \param estif   (o) element matrix to calculate
@@ -164,12 +166,15 @@ namespace ELEMENTS
     void Sysmat(Fluid3* ele,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evelnp,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     eprenp,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evhist,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&           estif,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&           eforce,
-                struct _MATERIAL*       material,
-                double                  time,
-                double                  timefac);
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     edensnp,
+                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     emhist,
+                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     echist,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&     estif,
+                LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&         eforce,
+                struct _MATERIAL*                                    material,
+                double                                               time,
+                double                                               timefac,
+                bool                                                 loma);
 
   private:
 
@@ -177,15 +182,16 @@ namespace ELEMENTS
       \brief calculate stabilization parameter
     */
     void Caltau(
-      Fluid3* ele,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
-      const double                            visc,
-      const double                            timefac);
+      Fluid3*                                          ele,
+      const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
+      const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
+      const double                                     visc,
+      const double                                     timefac);
 
     /*!
      * \brief calculate the body force from the nodes condition
      */
-    void BodyForce(Fluid3* ele, const double time, struct _MATERIAL* material);
+    void BodyForce(Fluid3* ele, const double time);
 
     /*!
      * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
@@ -196,17 +202,22 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
     LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
     LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_;
     LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
     LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
     LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
     LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;
     LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
+    LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> pderxy_;
     LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
     LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
+    LINALG::FixedSizeSerialDenseMatrix<3,iel> densderxy_;
     LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> histvec_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> histmom_;
+    double histcon_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> velint_; /* newest, i.e. previous time leve velocity*/
     LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;
@@ -215,7 +226,9 @@ namespace ELEMENTS
     // to one.
     LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_; /* viscous term including 2nd derivatives */
     LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_;   /* linearisation of convect, convective part */
-    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint_; /* total right hand side terms at int.-point */
+    double mdiv_;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsmom_;
+    double rhscon_;
     LINALG::FixedSizeSerialDenseMatrix<6,3> xder2_;
     // this was a blitz::Array<int,1>
     std::vector<int> numepn_;
