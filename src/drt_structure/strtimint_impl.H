@@ -284,7 +284,7 @@ namespace STR
 
     //! Update iteration incrementally
     //!
-    //! This update is carried out by computing the new #veln_ and #acc_
+    //! This update is carried out by computing the new #veln_ and #accn_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors 

@@ -320,9 +320,6 @@ STR::TimInt::TimInt
     }
   }
 
-  // determine mass, damping and initial accelerations
-  DetermineMassDampConsistAccel();
-
   // go away
   return;
 }

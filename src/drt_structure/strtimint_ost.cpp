@@ -59,6 +59,9 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
               << std::endl;
   }
 
+  // determine mass, damping and initial accelerations
+  DetermineMassDampConsistAccel();
+
   // create state vectors
   
   // mid-displacements

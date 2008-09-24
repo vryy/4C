@@ -53,6 +53,9 @@ STR::TimIntAB2::TimIntAB2
               << std::endl;
   }
 
+  // determine mass, damping and initial accelerations
+  DetermineMassDampConsistAccel();
+
   // resize of multi-step quantities
   ResizeMStep();
 

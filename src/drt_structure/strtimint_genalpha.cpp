@@ -96,6 +96,9 @@ STR::TimIntGenAlpha::TimIntGenAlpha
               << std::endl;
   }
 
+  // determine mass, damping and initial accelerations
+  DetermineMassDampConsistAccel();
+
   // create state vectors
   
   // mid-displacements
