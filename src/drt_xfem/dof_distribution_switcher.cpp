@@ -85,7 +85,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             }
             else // if dofkey has not been existed before, check for other dofs on the dofkeys node
             {
-              const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
+//              const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
               
                 // initialize to zero
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
@@ -262,7 +262,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
                                        ++newdof)
         {
             const XFEM::DofKey<XFEM::onNode> newdofkey = newdof->first;
-            const int newdofpos = newdof->second;
+//            const int newdofpos = newdof->second;
             if (newdofkey.getFieldEnr().getField() == XFEM::PHYSICS::Velx)
             {
               transferop[newdofkey] = set<XFEM::DofKey<XFEM::onNode> >();
@@ -271,7 +271,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
             if (olddof != oldNodalDofDistrib_.end())  // if dofkey has existed before, use old value
             {
                 const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
-                const int olddofpos = olddof->second;
+//                const int olddofpos = olddof->second;
                 //cout << newdofkey.toString() << " -> init to old value" << endl;
 //                (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
                 
@@ -284,7 +284,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
             }
             else // if dofkey has not been existed before, check for other dofs on the dofkeys node
             {
-              const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
+//              const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
               
                 // initialize to zero
 //                (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
@@ -297,7 +297,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
                                        ++olddof)
         {
             const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
-            const int olddofpos = olddof->second;
+//            const int olddofpos = olddof->second;
             const XFEM::PHYSICS::Field oldphysvar = olddofkey.getFieldEnr().getField();
             
             // try to find successor
