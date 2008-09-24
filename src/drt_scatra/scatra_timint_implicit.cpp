@@ -118,6 +118,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // density at times n and n-1
     densn_        = LINALG::CreateVector(*dofrowmap,true);
     densnm_       = LINALG::CreateVector(*dofrowmap,true);
+
+    // density increment at time n+1
+    densincnp_    = LINALG::CreateVector(*dofrowmap,true);
   }
   else
     // specific initial setting for non-temperature case
@@ -689,66 +692,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, RCP<const Epetra_Ve
 
 
 /*----------------------------------------------------------------------*
- | set time-step-related fields for low-Mach-number flow       vg 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetTimeLomaFields(
-  RCP<const Epetra_Vector> noddensn,
-  RCP<const Epetra_Vector> noddensnm)
-{
-  // set dof-based vectors for density
-  densn_->Update(1.0,*noddensn,0.0);
-  densnm_->Update(1.0,*noddensnm,0.0);
-
-  return;
-
-} // ScaTraTimIntImpl::SetTimeLomaFields
-
-
-/*----------------------------------------------------------------------*
- | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetIterLomaFields(
-  int veltype,
-  RCP<const Epetra_Vector> extvel,
-  RCP<const Epetra_Vector> noddensnp)
-{
-  if (veltype != cdvel_)
-    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
-
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  if (extvel->MyLength()== (2* convel_->MyLength()))
-    numdim = 2;
-  else if (extvel->MyLength()== (3* convel_->MyLength()))
-    numdim = 3;
-  else
-    dserror("velocity vectors do not match in size");
-
-  // set node-based convective velocity vector weighted by density
-  if ((numdim == 3) or (numdim == 2))
-  {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      double dens  = (*noddensnp)[lnodeid];
-      // get the processor local node
-      for(int index=0;index<numdim;++index)
-      {
-        double velocity = (*extvel)[lnodeid*numdim + index];
-        convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
-      }
-    }
-  }
-
-  // set dof-based vector for density
-  densnp_->Update(1.0,*noddensnp,0.0);
-
-  return;
-
-} // ScaTraTimIntImpl::SetIterLomaFields
-
-
-/*----------------------------------------------------------------------*
  |  set initial field for phi                                 gjb 04/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
@@ -833,6 +776,136 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
   return;
 } // ScaTraTimIntImpl::SetInitialField
+
+
+/*----------------------------------------------------------------------*
+ | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel)
+{
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  if (extvel->MyLength()== (2* convel_->MyLength()))
+    numdim = 2;
+  else if (extvel->MyLength()== (3* convel_->MyLength()))
+    numdim = 3;
+  else
+    dserror("velocity vectors do not match in size");
+
+  // set node-based convective velocity vector weighted by density
+  if ((numdim == 3) or (numdim == 2))
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      double dens  = (*densnp_)[lnodeid];
+      // get the processor local node
+      for(int index=0;index<numdim;++index)
+      {
+        double velocity = (*extvel)[lnodeid*numdim + index];
+        convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
+      }
+    }
+  }
+
+  return;
+
+} // ScaTraTimIntImpl::SetLomaVelocity
+
+
+/*----------------------------------------------------------------------*
+ | predict density for next time step for low-Mach-number flow vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PredictDensity()
+{
+  // predictor: linear extrapolation in time
+  //densnp_->Update(2.0,*densn_,-1.0,*densnm_,0.0);
+
+  // predictor: constant extrapolation in time
+  densnp_->Update(1.0,*densn_,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute density for low-Mach-number flow                    vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeDensity()
+{
+  // set thermodynamic pressure p_therm (in N/m^2 = kg/(m*s^2) = J/m^3): 98100.0
+  // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
+  // set specific gas constant R (in J/(kg*K)): 287.05
+  // compute density based on equation of state: rho = (p_therm/R)*(1/T)
+  double fac = 98100.0/287.05;
+  densnp_->Reciprocal(*phinp_);
+  densnp_->Scale(fac);
+
+  //densnp_->PutScalar(1.0);
+  //densn_->PutScalar(1.0);
+  //densnm_->PutScalar(1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute density for low-Mach-number flow                    vg 08/08 |
+ *----------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
+                                                       int          itmax,
+                                                       const double ittol)
+{
+  bool stopnonliniter = false;
+
+  double densincnorm_L2;
+  double densnorm_L2;
+
+  densincnp_->Update(1.0,*densnp_,-1.0,*densn_,0.0);
+  densincnp_->Norm2(&densincnorm_L2);
+  densnp_->Norm2(&densnorm_L2);
+
+  // care for the case that there is (almost) zero density
+  if (densnorm_L2 < 1e-6) densnorm_L2 = 1.0;
+
+  if (myrank_==0)
+  {
+    cout<<"\n**********************\n OUTER ITERATION STEP \n**********************\n";
+    printf("+------------+-------------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- dens-norm -|-- dens-inc --|\n");
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+             itnum,itmax,ittol,densnorm_L2,densincnorm_L2/densnorm_L2);
+    printf("\n");
+    printf("+------------+-------------------+--------------+--------------+\n");
+  }
+
+  if (densincnorm_L2/densnorm_L2 <= ittol) stopnonliniter=true;
+
+  // warn if itemax is reached without convergence, but proceed to next timestep
+  if ((itnum == itmax) and (densincnorm_L2/densnorm_L2 > ittol))
+  {
+    stopnonliniter=true;
+    if (myrank_==0)
+    {
+      printf("|    >>>>>> not converged in itemax steps!                     |\n");
+      printf("+--------------------------------------------------------------+\n");
+    }
+  }
+
+  return stopnonliniter;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update density at n-1 and n for low-Mach-number flow        vg 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::UpdateDensity()
+{
+  densnm_->Update(1.0,*densn_ ,0.0);
+  densn_->Update(1.0,*densnp_,0.0);
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

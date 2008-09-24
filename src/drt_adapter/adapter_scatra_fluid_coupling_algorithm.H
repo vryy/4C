@@ -88,14 +88,26 @@ namespace ADAPTER
     /// get current velocity from fluid solver
     void GetCurrentFluidVelocity(){ velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp()); }
 
-    /// get current velocity from fluid solver
+    /// current velocity from fluid solver
     RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_; }
 
-    /// get current scalar from scalar transport solver
-    void GetCurrentScalar(){ scalarnp_=ScaTraField().Phinp(); }
+    /// get current density from scalar transport solver
+    void GetCurrentDensity(){ densnp_=ScaTraField().Densnp(); }
 
-    /// get current scalar from scalar transport solver
-    RCP<const Epetra_Vector> Scalar(){ return scalarnp_; }
+    /// current density from scalar transport solver
+    RCP<const Epetra_Vector> Density(){ return densnp_; }
+
+    /// get density at time step n from scalar transport solver
+    void GetNDensity(){ densn_=ScaTraField().Densn(); }
+
+    /// density at time step n from scalar transport solver
+    RCP<const Epetra_Vector> NDensity(){ return densn_; }
+
+    /// get density at time step n-1 from scalar transport solver
+    void GetNmDensity(){ densnm_=ScaTraField().Densnm(); }
+
+    /// density at time step n-1 from scalar transport solver
+    RCP<const Epetra_Vector> NmDensity(){ return densnm_; }
 
     /// increment time and step value
     void IncrementTimeAndStep()
@@ -103,9 +115,6 @@ namespace ADAPTER
       step_ += 1;
       time_ += dt_;
     }
-
-    /// tests if this is not the first time step
-    bool NotFirstTimeStep() { return (step_ > 1); }
 
   private:
 
@@ -115,8 +124,10 @@ namespace ADAPTER
     /// current velocity field at time n+1
     RCP<const Epetra_Vector>    velocitynp_;
 
-    /// current scalar field at time n+1
-    RCP<const Epetra_Vector>    scalarnp_;
+    /// density fields at times n+1, n and n-1
+    RCP<const Epetra_Vector>    densnp_;
+    RCP<const Epetra_Vector>    densn_;
+    RCP<const Epetra_Vector>    densnm_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

@@ -450,7 +450,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidCombust::CreateFieldTest()
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 ist die Funktion hier nötig? |
  *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,RCP<const Epetra_Vector> noddensnm)
+void ADAPTER::FluidCombust::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm)
 {
    dserror("not implemented!");
    return;
@@ -459,7 +459,7 @@ void ADAPTER::FluidCombust::SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 ist die Funktion hier nötig? |
  *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+void ADAPTER::FluidCombust::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
 {
    dserror("not implemented!");
    return;

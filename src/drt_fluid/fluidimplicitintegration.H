@@ -220,14 +220,15 @@ public:
   \brief set time-step-related fields for low-Mach-number flow
 
   */
-  void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
-                         RCP<const Epetra_Vector> noddensnm);
+  void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
+                         RCP<const Epetra_Vector> densn,
+                         RCP<const Epetra_Vector> densnm);
 
   /*!
   \brief set outer-iteration-related fields for low-Mach-number flow
 
   */
-  void SetIterLomaFields(RCP<const Epetra_Vector> noddensnp);
+  void SetIterLomaFields(RCP<const Epetra_Vector> densnp);
 
   /// introduce free surface extractor object
   /*!

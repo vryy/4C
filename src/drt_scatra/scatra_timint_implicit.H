@@ -127,17 +127,29 @@ public:
   //! set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
-  //! set time-step-related fields for low-Mach-number flow
-  void SetTimeLomaFields(RCP<const Epetra_Vector> noddensn,
-                         RCP<const Epetra_Vector> noddensnm);
+  //! set velocity field for low-Mach-number flow
+  void SetLomaVelocity(RCP<const Epetra_Vector> extvel);
 
-  //! set outer-iteration-related fields for low-Mach-number flow
-  void SetIterLomaFields(int veltype,
-                         RCP<const Epetra_Vector> extvel,
-                         RCP<const Epetra_Vector> noddensnp);
+  //! predict density field for low-Mach-number flow
+  void PredictDensity();
 
-  //! routine to return scalar field
-  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
+  //! compute density field for low-Mach-number flow
+  void ComputeDensity();
+
+  //! check convergence of density field for low-Mach-number flow
+  bool DensityConvergenceCheck(int itnum, int itmax, const double ittol);
+
+  //! update density field for low-Mach-number flow
+  void UpdateDensity();
+
+  //! routine to return current density field for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> Densnp() { return densnp_; }
+
+  //! routine to return density field at time step n for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> Densn() { return densn_; }
+
+  //! routine to return density field at time step n-1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> Densnm() { return densnm_; }
 
   double Time() const { return time_; }
   int Step() const { return step_; }
@@ -249,6 +261,9 @@ protected:
   RCP<Epetra_Vector>    densnp_;
   RCP<Epetra_Vector>    densn_;
   RCP<Epetra_Vector>    densnm_;
+
+  /// density increment at time n+1
+  RCP<Epetra_Vector>    densincnp_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)

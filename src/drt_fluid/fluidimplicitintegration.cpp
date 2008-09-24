@@ -2052,18 +2052,19 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
  | set time-step-related fields for low-Mach-number flow       vg 08/08 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
-   RCP<const Epetra_Vector> noddensn,
-   RCP<const Epetra_Vector> noddensnm)
+   RCP<const Epetra_Vector> densnp,
+   RCP<const Epetra_Vector> densn,
+   RCP<const Epetra_Vector> densnm)
 {
   // check vector compatibility and determine space dimension
   int numdim =-1;
   int numdof =-1;
-  if (veln_->MyLength()== (3* noddensn->MyLength()))
+  if (velnp_->MyLength()== (3* densnp->MyLength()))
   {
     numdim = 2;
     numdof = 3;
   }
-  else if (veln_->MyLength()== (4* noddensn->MyLength()))
+  else if (velnp_->MyLength()== (4* densnp->MyLength()))
   {
     numdim = 3;
     numdof = 4;
@@ -2072,6 +2073,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
     dserror("velocity/pressure and density vectors do not match in size");
 
   // get velocity dofs for vede-vectors as copies from vel-vectors
+  vedenp_->Update(1.0,*velnp_,0.0);
   veden_->Update(1.0,*veln_,0.0);
   vedenm_->Update(1.0,*velnm_,0.0);
 
@@ -2082,15 +2084,15 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    double densn   = (*noddensn)[lnodeid];
-    double densnm  = (*noddensnm)[lnodeid];
-
     Indices[numdim] = lnodeid*numdof + numdim;
 
-    Values[numdim] = densn;
+    Values[numdim] = (*densnp)[lnodeid];
+    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+    Values[numdim] = (*densn)[lnodeid];
     veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
 
-    Values[numdim] = densnm;
+    Values[numdim] = (*densnm)[lnodeid];
     vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
   }
 
@@ -2102,17 +2104,18 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 /*----------------------------------------------------------------------*
  | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::SetIterLomaFields(RCP<const Epetra_Vector> noddensnp)
+void FLD::FluidImplicitTimeInt::SetIterLomaFields(
+   RCP<const Epetra_Vector> densnp)
 {
   // check vector compatibility and determine space dimension
   int numdim =-1;
   int numdof =-1;
-  if (velnp_->MyLength()== (3* noddensnp->MyLength()))
+  if (velnp_->MyLength()== (3* densnp->MyLength()))
   {
     numdim = 2;
     numdof = 3;
   }
-  else if (velnp_->MyLength()== (4* noddensnp->MyLength()))
+  else if (velnp_->MyLength()== (4* densnp->MyLength()))
   {
     numdim = 3;
     numdof = 4;
@@ -2130,11 +2133,9 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(RCP<const Epetra_Vector> nodde
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    double densnp  = (*noddensnp)[lnodeid];
-
     Indices[numdim] = lnodeid*numdof + numdim;
 
-    Values[numdim] = densnp;
+    Values[numdim] = (*densnp)[lnodeid];
     vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
   }
 

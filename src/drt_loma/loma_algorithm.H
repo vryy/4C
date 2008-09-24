@@ -47,7 +47,6 @@ namespace LOMA
     /// constructor
     explicit Algorithm(
         Epetra_Comm& comm,                   ///< communicator
-        RCP<DRT::Discretization>  scatradis,
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 
@@ -62,37 +61,14 @@ namespace LOMA
     /// prepare time step
     void PrepareTimeStep();
 
-    /// prepare time step
-    void PrepareIterationStep();
-
     /// do outer iteration loop
     void OuterLoop();
-
-    /// compute current density based on current temperature + therm. pres.
-    void ComputeDensity();
 
     /// save current (converged) results for next time step
     void Update();
 
     /// write output
     void Output();
-
-    /// thermodynamic pressure at time step n+1
-    double thermpressnp_;
-
-    /// scatra discretization
-    RCP<DRT::Discretization>      scatradiscret_;
-
-    /// node-based densities at time steps n+1, n and n-1
-    RCP<Epetra_Vector>    noddensnp_;
-    RCP<Epetra_Vector>    noddensn_;
-    RCP<Epetra_Vector>    noddensnm_;
-
-    /// node-based density increment for convergence check
-    RCP<Epetra_Vector>    densincnp_;
-
-    /// node-based temperatures at time step n+1
-    RCP<Epetra_Vector>    nodtempnp_;
 
   private:
 
