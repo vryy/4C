@@ -380,13 +380,7 @@ private:
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
-  
-  //calculation of nonlinear stiffness approximated by finite differences; this function should
-  //be activated only for bug fixing 
-  
-  Epetra_SerialDenseMatrix b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel,ParameterList& params);
-  
-    
+   
   //! lump mass matrix (bborn 07/08)
   void b3_lumpmass(Epetra_SerialDenseMatrix* emass);
   

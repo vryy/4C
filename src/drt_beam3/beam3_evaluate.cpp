@@ -50,7 +50,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = Beam3::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass") act = Beam3::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass") act = Beam3::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Beam3::calc_struct_nlnstifflmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Beam3::calc_struct_nlnstifflmass; //with lumped mass matrix
   else if (action=="calc_struct_stress") act = Beam3::calc_struct_stress;
   else if (action=="calc_struct_eleload") act = Beam3::calc_struct_eleload;
   else if (action=="calc_struct_fsiload") act = Beam3::calc_struct_fsiload;
@@ -98,18 +98,21 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
       if (act == Beam3::calc_struct_nlnstiffmass)
-      b3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+      {
+        b3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+      }
       else if (act == Beam3::calc_struct_nlnstifflmass)
       {
         b3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
         // lump mass matrix (bborn 07/08)
         // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
-        //b3_lumpmass(&elemat2);
+        //b3_lumpmass(&elemat2);    
       }
       else if (act == Beam3::calc_struct_nlnstiff)
-      b3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+        b3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);     
+        
       else if (act == Beam3::calc_struct_internalforce)
-      b3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+      b3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);  
       
       /*at the end of an iteration step the geometric ocnfiguration has to be updated: the starting point for the
        * next iteration step is the configuration at the end of the current step */  
@@ -117,6 +120,81 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       curvold_ = curvnew_;
       betaplusalphaold_ = betaplusalphanew_;
       betaminusalphaold_ = betaminusalphanew_; 
+      
+      /*
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not by means of a numerically approximated stiffness matrix
+      if(Id() == 3) //limiting the following tests to certain element numbers
+      {       
+        //variable to store numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_approx;       
+        stiff_approx.Shape(12,12);
+        
+        //relative error of numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_relerr;         
+        stiff_relerr.Shape(12,12);
+        
+        //characteristic length for numerical approximation of stiffness
+        double h_rel = 1e-6;
+        
+        //flag indicating whether approximation lead to significant relative error
+        int outputflag = 0;
+        
+        //calculating strains in new configuration
+        for(int i=0; i<6; i++)
+        {
+          for(int k=0; k<2; k++)
+          {          
+            Epetra_SerialDenseVector force_aux;
+            force_aux.Size(12);
+            
+            //create new displacement and velocity vectors in order to store artificially modified displacements
+            vector<double> vel_aux(12);
+            vector<double> disp_aux(12);
+            for(int id = 0;id<12;id++)
+            {
+                DRT::UTILS::ExtractMyValues(*disp,disp_aux,lm);
+                DRT::UTILS::ExtractMyValues(*vel,vel_aux,lm);
+            }
+            
+            //modifying displacment artificially (for numerical derivative of internal forces):
+            disp_aux[i + 6*k] = disp_aux[i + 6*k] + h_rel;
+             vel_aux[i + 6*k] =  vel_aux[i + 6*k] + h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
+            
+            b3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                      
+            for(int u = 0;u<12;u++)
+            {
+              stiff_approx(u,i+k*6)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+            }       
+          }
+        }
+
+       for(int line=0; line<12; line++)
+       {
+         for(int col=0; col<12; col++)
+         {
+           stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
+                    
+           //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+           if ( fabs( stiff_relerr(line,col) ) < h_rel*100 || isnan( stiff_relerr(line,col) ))
+             stiff_relerr(line,col)=0;
+  
+           if (stiff_relerr(line,col)>0)
+             outputflag = 1;  
+          }
+        } 
+        if(outputflag ==1)
+        {
+          std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
+          std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+          std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+        } 
+      } 
+      //end of section in which numerical approximation for stiffness matrix is computed
+      */
+
+      
     
     }
     break;
@@ -292,12 +370,9 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       elevec1[2] += force3;
       elevec1[6] += force1;
       elevec1[7] += force2;
-      elevec1[8] += force3;
-      
-    }
-        
-  }
-  
+      elevec1[8] += force3;     
+    }       
+  }  
   return 0;
 }
 
@@ -672,6 +747,12 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   double lamda = params.get<double>("gamma",0.581) / (params.get<double>("delta time",0.01)*params.get<double>("beta",0.292));
   
   
+  //turning bending strain epsilonm into bending stress stressm
+  epsilonm = curvnew_;
+  epsilonm(0) *= sm*Irr_;
+  epsilonm(1) *= ym*Iyy_;
+  epsilonm(2) *= ym*Izz_;
+  BLITZTINY::MV_product<3,3>(Tnew,epsilonm,stressm); 
   
   //matrix Theta can filter out of a vector the component parallel to beam axis (used for artificial torsional damping):
   BlitzMat3x3 Theta;
@@ -682,14 +763,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       Theta(i,j) = Tnew(i,0)*Tnew(0,j);
     }
   }
-  
-  
-  //turning bending strain epsilonm into bending stress stressm
-  epsilonm = curvnew_;
-  epsilonm(0) *= sm*Irr_;
-  epsilonm(1) *= ym*Iyy_;
-  epsilonm(2) *= ym*Izz_;
-  BLITZTINY::MV_product<3,3>(Tnew,epsilonm,stressm); 
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -709,7 +782,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+9) -= stressn(j)*spinx21(i,j);    
       }
     }
-    
+       
     //for problems of statistical mechanics viscous damping is incalculated
     if(kT_ > 0)
     {
@@ -732,23 +805,31 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)[6] += zeta_*(vel[6]/3 + vel[0]/6);
         (*force)[7] += zeta_*(vel[7]/3 + vel[1]/6);
         (*force)[8] += zeta_*(vel[8]/3 + vel[2]/6);
-      }
+      }          
     }
-   
-    /*       
+    for(int i = 0; i<3;i++)
+    {
+      (*force)[i+3] += (zeta_/2)*vel[i+3]*0.01;
+      (*force)[i+9] += (zeta_/2)*vel[i+9]*0.01;
+    }
+    
+    /*    
     //adding artificial torsional damping in order to stabilize numerically free fluctuations
+    double torsdamp = 0.01;
     for(int i = 0; i<3; i++)
     {
       for(int j = 0; j<3; j++)
       {
         //node 1
-        (*force)[3+i] += Theta(i,j)*vel[3+j]*(zeta_/2)*0.01;
+        (*force)[3+i] += Theta(i,j)*vel[3+j]*(zeta_/2)*torsdamp;
         //node 2
-        (*force)[9+i] += Theta(i,j)*vel[9+j]*(zeta_/2)*0.01;
+        (*force)[9+i] += Theta(i,j)*vel[9+j]*(zeta_/2)*torsdamp;
       }
     }
     */
-       
+    
+    
+    
   }
   
 
@@ -809,18 +890,18 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
     
-  
-    //adding a certain minimal artificial viscosity to each degree of freedom in order to make sure full rank of stiffness matrix even for free fluctuations
-    for(int i = 0; i<12; i++)
+    for(int i = 0; i<3;i++)
     {
-      //factor 1e-8 is chosen arbitrarily; in general the artificial entry should be small enough in order not to adulterate results perceptibly
-      (*stiffmatrix)(i,i) += (zeta_/2)*lamda*1e-8;
+      (*stiffmatrix)(i+3,i+3) += (zeta_/2)*lamda*0.01;
+      (*stiffmatrix)(i+9,i+9) += (zeta_/2)*lamda*0.01;
     }
     
+
     /*
     //adding artifical viscosity stiffness with respect to torsional displacement
     for(int i = 0; i<2;i++)
     {
+      double torsdamp = 0.01;
       BlitzVec3 aux1;
       BlitzVec3 aux2;
       BlitzMat3x3 Aux1;
@@ -833,8 +914,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         for(int k=0;k<3;k++)
         {
-          (*stiffmatrix)(i*6 +j ,3+k ) += Aux1(j,k)*0.01;
-          (*stiffmatrix)(i*6 +j ,9+k ) += Aux1(j,k)*0.01;
+          (*stiffmatrix)(i*6 +j ,3+k ) += Aux1(j,k)*torsdamp;
+          (*stiffmatrix)(i*6 +j ,9+k ) += Aux1(j,k)*torsdamp;
         }
       }
       computespin(Aux1,aux1,0.5);
@@ -843,8 +924,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         for(int k=0;k<3;k++)
         {
-          (*stiffmatrix)(i*6 +j ,3+k ) += Aux2(j,k)*0.01;
-          (*stiffmatrix)(i*6 +j ,9+k ) += Aux2(j,k)*0.01;
+          (*stiffmatrix)(i*6 +j ,3+k ) += Aux2(j,k)*torsdamp;
+          (*stiffmatrix)(i*6 +j ,9+k ) += Aux2(j,k)*torsdamp;
         }
       }
       
@@ -852,66 +933,15 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         for(int k=0;k<3;k++)
         {
-          (*stiffmatrix)(i*6 +j ,i*6 + k ) += Theta(j,k)*(zeta_/2)*lamda*0.01;
+          (*stiffmatrix)(i*6 +j ,i*6 + k ) += Theta(j,k)*(zeta_/2)*lamda*torsdamp;
         }
       }     
      }
      */
+    
+    
      
-    
-
-    
-    
-
-    //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-    //correctly or not: the function b3_nlnstiff_approx(mydisp) calculates the stiffness matrix approximated by
-    //finite differences and finally the relative error is printed; in case that there is no significant error in any
-    //element no printout is thrown
-    //activating this part of code also the function b3_nlnstiff_approx(mydisp) has to be activated both in Beam3.H
-    //and Beam3_evaluate.cpp
-    
-    if(Id() == 3) //limiting the following tests to certain element numbers
-    {
-     Epetra_SerialDenseMatrix stiff_approx;
-     Epetra_SerialDenseMatrix stiff_relerr;
-     stiff_approx.Shape(12,12);
-     stiff_relerr.Shape(12,12);      
-     double h_rel = 1e-8;
-     int outputflag = 0;
-     stiff_approx = b3_nlnstiff_approx(xcurr,h_rel,*force,vel,params);
-     
-     for(int line=0; line<12; line++)
-     {
-       for(int col=0; col<12; col++)
-       {
-         if( fabs( (*stiffmatrix)(line,col) ) > h_rel)
-           stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-         else
-         {
-           if( fabs( stiff_approx(line,col) ) < h_rel*1000)
-             stiff_relerr(line,col) = 0;
-           else
-             stiff_relerr(line,col)= abs( ((*stiffmatrix)(line,col) - stiff_approx(line,col))/(*stiffmatrix)(line,col) );
-         }
-         //suppressing small entries whose effect is only confusing
-         if (stiff_relerr(line,col)<h_rel*100)
-           stiff_relerr(line,col)=0;
-         //there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-         if ( isnan( stiff_relerr(line,col) ) )
-           stiff_relerr(line,col)=0;
-         if (stiff_relerr(line,col)>0)
-           outputflag = 1;  
-        }
-     
-         if(outputflag ==1)
-         {
-           std::cout<<"\n\n acutally calculated stiffness matrix"<< *stiffmatrix;
-           std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-           std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-         }    
-       }
-      } 
-      
+  
    
   }
   
@@ -956,246 +986,6 @@ void DRT::ELEMENTS::Beam3::b3_lumpmass(Epetra_SerialDenseMatrix* emass)
     }
   }
 }
-
-//the following function can be activated in order to find bugs; it calculates a finite difference
-//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
-
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(BlitzMat6x2 xcurr, double h_rel, Epetra_SerialDenseVector force, vector<double>& vel, ParameterList& params)
-{
-
-  BlitzVec3 epsilonn_aux;
-  BlitzVec3 epsilonm_aux;
-  BlitzVec3 stressn_aux;
-  BlitzVec3 stressm_aux;
-  BlitzVec3 x21_aux;
-  BlitzVec3 betaplusalphanew;
-  BlitzVec3 betaminusalphanew;
-  BlitzVec3 deltabetaplusalpha;
-  BlitzVec3 deltabetaminusalpha;
-  BlitzVec3 curvnew;
-  BlitzVec4 Qnew;
-  BlitzMat3x3 Tnew;
-  BlitzMat6x2 xcurr_aux;
-  BlitzMat6x2 vcurr;
-  BlitzMat6x2 vcurr_aux;
-  Epetra_SerialDenseMatrix stiff_approx;
-  Epetra_SerialDenseVector force_aux;
-  stiff_approx.Shape(12,12);
-  double dt = params.get<double>("delta time",0.01);
-  
-  //storing current velocity in a convenient way
-  for(int i=0; i<6; i++)
-  {
-    for(int k=0; k<2; k++)
-    {
-      vcurr(i,k) = vel[i + i*k];
-    }
-  }
-    
-  //calculating strains in new configuration
-  for(int i=0; i<6; i++)
-  {
-    for(int k=0; k<2; k++)
-    {
-      //current displacment including additional infinitesimal displacement h_rel
-      xcurr_aux = xcurr;
-      xcurr_aux(i,k) = xcurr_aux(i,k) + h_rel;
-      
-      //current velocity including additional infinitesimal displacement h_rel
-      vcurr_aux = vcurr;
-      vcurr_aux(i,k) = vcurr_aux(i,k) + h_rel / dt;
-      
-      
-      //difference between coordinates of both nodes, x21_aux' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
-      for (int j=0; j<3; ++j)
-      {
-        x21_aux(j) = xcurr_aux(j,1) - xcurr_aux(j,0);
-        betaplusalphanew(j) = xcurr_aux(j+3,1) + xcurr_aux(j+3,0);
-        betaminusalphanew(j) = xcurr_aux(j+3,1) - xcurr_aux(j+3,0);
-      }
-      deltabetaplusalpha  = betaplusalphanew;
-      deltabetaplusalpha -= betaplusalphanew_;
-    
-      deltabetaminusalpha  = betaminusalphanew;
-      deltabetaminusalpha -= betaminusalphanew_;
-
-      //calculating angle theta by which triad is rotated according to Crisfield, Vol. 2, equation (17.64)
-      BLITZTINY::V_scale<3>(deltabetaplusalpha,0.5);
-      
-      //absolute value of rotation angle theta
-      double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);
-        
-      //computing quaterion for rotation by angle theta
-      BlitzVec4 Qrot;
-      if (abs_theta > 0)
-      {
-        Qrot(0) = deltabetaplusalpha(0) * sin(abs_theta / 2) / abs_theta;
-        Qrot(1) = deltabetaplusalpha(1) * sin(abs_theta / 2) / abs_theta;
-        Qrot(2) = deltabetaplusalpha(2) * sin(abs_theta / 2) / abs_theta;
-        Qrot(3) = cos(abs_theta / 2);
-      }
-      else
-      {
-        BLITZTINY::PutScalar<4>(Qrot,0);
-        Qrot(3) = 1;
-      }
-      
-      //computing quaterion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
-      Qnew(0) = Qrot(3)*Qnew_(0) + Qnew_(3)*Qrot(0) + Qrot(1)*Qnew_(2) - Qnew_(1)*Qrot(2);
-      Qnew(1) = Qrot(3)*Qnew_(1) + Qnew_(3)*Qrot(1) + Qrot(2)*Qnew_(0) - Qnew_(2)*Qrot(0);
-      Qnew(2) = Qrot(3)*Qnew_(2) + Qnew_(3)*Qrot(2) + Qrot(0)*Qnew_(1) - Qnew_(0)*Qrot(1);
-      Qnew(3) = Qrot(3)*Qnew_(3) - Qrot(2)*Qnew_(2) - Qrot(1)*Qnew_(1) - Qrot(0)*Qnew_(0);
-      
-      //separate storage of vector part of Qnew_
-      BlitzVec3 Qnewvec;
-      for(int j = 0; j<3; j++)
-      {
-        Qnewvec(j) = Qnew(j);
-      }
-      
-      //computing the rotation matrix from Crisfield, Vol. 2, equation (17.70) with respect to Qnew_,
-      //which is the new center triad Tnew
-      computespin(Tnew, Qnewvec, 2*Qnew(3));
-      for(int n = 0; n<3; n++)
-      {
-        for(int j = 0; j<3; j++)
-        {
-          Tnew(n,j) += 2*Qnew(n)*Qnew(j);
-          if(n == j)
-            Tnew(n,j) += Qnew(3)*Qnew(3) - Qnew(2)*Qnew(2) - Qnew(1)*Qnew(1) - Qnew(0)*Qnew(0);
-        }
-      }
-  
-      
-      BlitzVec3 omega = deltabetaplusalpha;
-      BlitzVec3 omegaprime = deltabetaplusalpha;
-      
-      if (abs_theta > 0)
-      {
-        BLITZTINY::V_scale<3>(omega,2*tan(0.5*abs_theta) / abs_theta);
-        BlitzMat3x3 Aux;
-        for(int i = 0; i<3; i++)
-        {
-          for(int j = 0; j<3; j++)
-          {
-            Aux(i,j) = 0;
-            Aux(i,j) -= (1 - abs_theta / sin(abs_theta) ) * deltabetaplusalpha(i)*deltabetaplusalpha(j) / pow(abs_theta,2);
-            if(i==j)
-              Aux(i,j) += 1;
-              
-           Aux(i,j) *= 2*tan(abs_theta / 2) / abs_theta;
-          }
-        }
-        BLITZTINY::V_scale<3>(deltabetaminusalpha,1 / lrefe_);
-        BLITZTINY::MV_product<3,3>(Aux,deltabetaminusalpha,omegaprime);       
-      }
-
-       
-      BlitzVec3 curvaux;
-      curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
-      curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
-      curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
-      
-      curvaux += omegaprime;
-      BLITZTINY::V_scale<3>(curvaux,1/(1 + pow(tan(abs_theta/2),2) ));
-      
-      BLITZTINY::MtV_product<3,3>(Tnew,curvaux,curvnew);
-      curvnew += curvnew_;
-      
-     
-      //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
-      BLITZTINY::MtV_product<3,3>(Tnew,x21_aux,epsilonn_aux);
-      BLITZTINY::V_scale<3>(epsilonn_aux,1/lrefe_);
-      epsilonn_aux(0) -=  1;
-
-      // get the material law
-      MATERIAL* currmat = &(mat[material_-1]);
-      double ym;
-      double sm;
-      double density;
-
-      //assignment of material parameters; only St.Venant material is accepted for this beam 
-      switch(currmat->mattyp)
-      {
-        case m_stvenant:// only linear elastic material supported
-        {
-          ym = currmat->m.stvenant->youngs;
-          sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
-          density = currmat->m.stvenant->density;
-        }
-        break;
-        default:
-        dserror("unknown or improper type of material law");
-      }
-
-      //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
-      epsilonn_aux(0) *= ym*crosssec_;
-      epsilonn_aux(1) *= sm*crosssecshear_;
-      epsilonn_aux(2) *= sm*crosssecshear_;
-      BLITZTINY::MV_product<3,3>(Tnew,epsilonn_aux,stressn_aux);  
-
-      //turning bending strain epsilonm into bending stress stressm
-      epsilonm_aux = curvnew;
-      epsilonm_aux(0) *= sm*Irr_;
-      epsilonm_aux(1) *= ym*Iyy_;
-      epsilonm_aux(2) *= ym*Izz_;
-      BLITZTINY::MV_product<3,3>(Tnew,epsilonm_aux,stressm_aux); 
-        
-      //computing spin matrix S(x21_aux)/2 according to Crisfield, Vol. 2, equation (17.74)
-      BlitzMat3x3 spinx21_aux;
-      computespin(spinx21_aux,x21_aux,0.5);
-
-      //computing global internal forces, Crisfield Vol. 2, equation (17.79)
-      //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
-      force_aux.Size(12);
-      for (int u=0; u<3; ++u)
-      {
-        force_aux(u)   -= stressn_aux(u);
-        force_aux(u+3) -= stressm_aux(u);
-        force_aux(u+6) += stressn_aux(u);
-        force_aux(u+9) += stressm_aux(u);
-        
-        for (int j=0; j<3; ++j)
-        {      
-          force_aux(u+3) -= stressn_aux(j)*spinx21_aux(u,j);      
-          force_aux(u+9) -= stressn_aux(j)*spinx21_aux(u,j);       
-        }
-       }
-      /*
-      //adding internal forces due to viscous damping (by background fluid of thermal bath)
-      force_aux[0] += (zeta_/2)*vcurr_aux[0];
-      force_aux[1] += (zeta_/2)*vcurr_aux[1];
-      force_aux[2] += (zeta_/2)*vcurr_aux[2];
-      force_aux[6] += (zeta_/2)*vcurr_aux[6];
-      force_aux[7] += (zeta_/2)*vcurr_aux[7];
-      force_aux[8] += (zeta_/2)*vcurr_aux[8]; 
-      
-         
-      //adding artificial torsional damping in order to stabilize numerically free fluctuations
-      for(int i = 0; i<3; i++)
-      {
-        for(int j = 0; j<3; j++)
-        {
-          //node 1
-          force_aux[3+i] += Theta(i,j)*vel[3+j]*(zeta_/2)*0.01;
-          //node 2
-          force_aux[9+i] += Theta(i,j)*vel[9+j]*(zeta_/2)*0.01;
-        }
-      }
-      */
-      
-      for(int u = 0;u<12;u++)
-      {
-        stiff_approx(u,i+k*6)= ( force_aux(u) - force(u) )/h_rel;
-      }
-   
-    }
-  }
-   
-  return stiff_approx;
-} // DRT::ELEMENTS::Beam3::b3_nlnstiff_approx
-
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM3

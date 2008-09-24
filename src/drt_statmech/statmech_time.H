@@ -16,6 +16,7 @@ Maintainer: Christian Cyron
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_statmech/statmech_manager.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <random/normal.h>
 
 
 // forward declarations
@@ -40,10 +41,6 @@ public:
 
   //! \brief Do time integration
   void Integrate();
-  
-
-  //! \brief do full Newton iteration and suppress large rotations about filament axis
-  virtual void FullNewtonFilament();
     
 
 protected:

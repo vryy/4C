@@ -347,11 +347,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
   //storing locally input parameters with respect to statistical mechanics for later easy access
   Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
-  
-  //random generator for seeding only (necessary for thermal noise)
-  ranlib::Normal<double> seedgenerator(0,1);
-  seedgenerator.seed((unsigned int)std::time(0));
-  
+
   //variable for nodal point coordinates in reference configuration
   BlitzMat3x2 xrefe;
   //center triad in reference configuration

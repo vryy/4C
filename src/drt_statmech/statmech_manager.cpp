@@ -233,7 +233,7 @@ void StatMechManager::StatMechUpdate()
       {
         
         /*the owner of the newly established crosslinker element is the current processor on which the search
-         * is carried out and whose processor Id can be requested by the command discret.Comm().MyPID(); the
+         * is carried out and whose processor Id can be requested by the command discret_.Comm().MyPID(); the
          * global Id of the new element is chosen appropirately by a special algorithm*/     
         discret_.AddElement( DRT::UTILS::Factory("Beam3","Polynomial",crosslinkerid,discret_.Comm().MyPID()) );    
         
