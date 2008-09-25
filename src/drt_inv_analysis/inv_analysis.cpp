@@ -177,7 +177,8 @@ void Inv_analysis::calculate_new_parameters()
 
   for (int i=0; i<mp_; i++)
   {
-    residual_disp_(i) = final_disp_(i) - measured_disp_(i);
+    cout << measured_disp_(i) << "\t" << final_disp_(i) << endl;
+    residual_disp_(i) = int(final_disp_(i)) - measured_disp_(i);
   }
 
   // calculating the errors
@@ -230,11 +231,14 @@ void Inv_analysis::calculate_new_parameters()
 
   //calculating (J.T*J+mu*I).I*J.T*residual_disp_
   delta_p.Multiply('N', 'N', 1,  storage2, residual_disp_, 0);
+  cout << "Parameters:" << endl;
+  //cout << "old:\t" << p_o_[0] << "\t" << p_o_[1] << "\t" << p_o_[2] << endl;
+  //cout << "new:\t" << p_[0] << "\t" << p_[1] << "\t" << p_[2] << endl;
 
   p_o_ = p_;
   for (int i=0; i<3; i++)
   {
-    p_(i)   = p_(i) + delta_p(i);
+    p_(i)   = p_(i) - delta_p(i);
   }
 
   if (error_o_<error_) mu_ = mu_plus_;
@@ -250,7 +254,6 @@ void Inv_analysis::calculate_new_parameters()
     final_disp_o_.Scale(0.0);
   }
 
-  //numb_run_++;
 
   cout << "********************************************ENDE********************************************" << endl;
 
@@ -312,79 +315,10 @@ void Inv_analysis::get_disp_curve(const RefCountPtr<Epetra_Vector> disp,  int nu
 
 void Inv_analysis::get_measured_disp()
 {
-  Epetra_SerialDenseVector measured_disp(50);
-
-  measured_disp(0) = 0.0;
-  measured_disp(1) = 4.0;
-  measured_disp(2) = 12.0;
-  measured_disp(3) = 23.0;
-  measured_disp(4) = 37.0;
-  measured_disp(5) = 53.0;
-  measured_disp(6) = 72.0;
-  measured_disp(7) = 94.0;
-  measured_disp(8) = 119.0;
-  measured_disp(9) = 146.0;
-  measured_disp(10) = 176.0;
-  measured_disp(11) = 208.0;
-  measured_disp(12) = 242.0;
-  measured_disp(13) = 278.0;
-  measured_disp(14) = 317.0;
-  measured_disp(15) = 356.0;
-  measured_disp(16) = 396.0;
-  measured_disp(17) = 439.0;
-  measured_disp(18) = 483.0;
-  measured_disp(19) = 527.0;
-  measured_disp(20) = 573.0;
-  measured_disp(21) = 620.0;
-  measured_disp(22) = 666.0;
-  measured_disp(23) = 713.0;
-  measured_disp(24) = 760.0;
-  measured_disp(25) = 805.0;
-  measured_disp(26) = 853.0;
-  measured_disp(27) = 900.0;
-  measured_disp(28) = 945.0;
-  measured_disp(29) = 990.0;
-  measured_disp(30) = 1034.0;
-  measured_disp(31) = 1077.0;
-  measured_disp(32) = 1119.0;
-  measured_disp(33) = 1159.0;
-  measured_disp(34) = 1198.0;
-  measured_disp(35) = 1235.0;
-  measured_disp(36) = 1270.0;
-  measured_disp(37) = 1302.0;
-  measured_disp(38) = 1333.0;
-  measured_disp(39) = 1362.0;
-  measured_disp(40) = 1388.0;
-  measured_disp(41) = 1412.0;
-  measured_disp(42) = 1432.0;
-  measured_disp(43) = 1451.0;
-  measured_disp(44) = 1466.0;
-  measured_disp(45) = 1479.0;
-  measured_disp(46) = 1489.0;
-  measured_disp(47) = 1496.0;
-  measured_disp(48) = 1500.0;
-  measured_disp(49) = 1510.0;
-
-  if (mp_==50)
+  for (int i=0; i<mp_; i++)
   {
-    measured_disp_=measured_disp;
+    measured_disp_[i] = 1084.625603*(1-exp(-pow((0.003123*(500.0/mp_)*i), 2.281512)));
   }
-  else if (mp_==10)
-  {
-    for (int i=0;i<mp_;i++)
-    {
-      measured_disp_(i)=measured_disp(i*5);
-    }
-  }
-  else if (mp_==5)
-  {
-    for (int i=0;i<mp_;i++)
-    {
-      measured_disp_(i)=measured_disp(i*12);
-    }
-  }
-  else  dserror("Inverse analysis is only implemented for 50, 10 or 5 measurment values");
-
 }
 
 
