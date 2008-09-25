@@ -97,7 +97,8 @@ public:
     ImpedanceCond,
     MPC_NodeOnPlane_3D,
     MPC_NodeOnLine_2D,
-    LJ_Potential
+    LJ_Potential,
+    ElectrodeKinetics
   };
 
   /*!

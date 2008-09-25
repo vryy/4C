@@ -777,6 +777,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   condlist.push_back(nodeonlineconst2D);
 
+
+  /*--------------------------------------------------------------------*/
+  // Electrode kinetics (Electrochemistry)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > eleccomponents;
+
+  eleccomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "electrode type","cathode",
+        Teuchos::tuple<std::string>("cathode","anode"),
+        Teuchos::tuple<std::string>("cathode","anode"))));
+  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("reactant id")));
+  eleccomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "kinetic model","Butler-Volmer",
+        Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"),
+        Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"))));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
+
+  Teuchos::RCP<ConditionDefinition> lineelec =
+    Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",
+                                         "ElectrodeKinetics",
+                                         "Line Electrode Kinetics",
+                                         DRT::Condition::ElectrodeKinetics,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfelec =
+    Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS SURF CONDITIONS",
+                                         "ElectrodeKinetics",
+                                         "Surface Electrode Kinetics",
+                                         DRT::Condition::ElectrodeKinetics,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<eleccomponents.size(); ++i)
+  {
+    lineelec->AddComponent(eleccomponents[i]);
+    surfelec->AddComponent(eleccomponents[i]);
+  }
+
+  condlist.push_back(lineelec);
+  condlist.push_back(surfelec);
+  /*--------------------------------------------------------------------*/
+
   return vc;
 }
 

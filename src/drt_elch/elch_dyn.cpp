@@ -72,6 +72,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
     std::map<string,string> conditions_to_copy;
     conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
     //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
+    conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
     SCATRA::CreateScaTraDiscretization(fluiddis,condifdis,conditions_to_copy,false);
     if (comm.MyPID()==0)
     cout<<"Created scalar transport discretization from fluid field in...."

@@ -1169,6 +1169,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &scatradyn);
 
+  Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
+      "NONLINEAR",
+      false,
+      "control parameters for solving nonlinear SCATRA problems\n");
+
+  IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
       "ELCH CONTROL",
