@@ -144,6 +144,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   {
     scatratimeparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
+  
+  // -------------------sublist for electrochemistry-specific parameters
+  if (genprob.probtyp == prb_elch)
+  {
+    scatratimeparams->sublist("NONLINEAR")=scatradyn.sublist("NONLINEAR");
+  }
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm construction depending on 
