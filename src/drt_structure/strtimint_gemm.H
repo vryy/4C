@@ -28,13 +28,9 @@ namespace STR
   /*!
    * \brief Generalised energy-momentum method (GEMM)
    *
-   * <b>References</b>
-   * - [1] D Kuhl and MA Crisfield, Energy-conserving and decaying algorithms
-   *   in non-linear structural dynamics, International Journal for
-   *   Numerical Methods in Engineering, 45(5):569-599, 1999.
-   * - [2] JC Simo and N Tarnow, The discrete energy-momentum method, 
-   *   Conserving algorithms fro nonlinear elastodynamics, Journal of
-   *   Applied Mathematics and Physics, 43:757-792, 1992.
+   * <h3>References</h3>
+   * - [1] D Kuhl and MA Crisfield, Energy-conserving and decaying algorithms in non-linear structural dynamics, International Journal for Numerical Methods in Engineering, 45(5):569-599, 1999.
+   * - [2] JC Simo and N Tarnow, The discrete energy-momentum method, Conserving algorithms fro nonlinear elastodynamics, Journal of Applied Mathematics and Physics, 43:757-792, 1992.
    *
    * \author bborn
    * \date 07/08

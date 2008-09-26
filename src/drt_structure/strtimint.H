@@ -60,7 +60,30 @@ namespace STR
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for structural dynamics by structure time integration.
+   * \brief Front-end for structural dynamics by integrating in time.
+   *
+   * <h3> Intention </h3>
+   * This front-end for structural dynamics defines an interface to call
+   * several derived time integrators. Thus it describes a plethora of pure 
+   * virtual methods which have to be implemented at the derived integrators.
+   * However, it also offers a few non-empty methods and stores associated 
+   * data. The most important method of this base time integrator object 
+   * is #Integrate().
+   *
+   * #Integrate() performs a time integration (time loop) with constant 
+   * time steps and other parameters as set by the user.
+   *
+   * Although #Integrate is the main interface, this base time integrator
+   * allows the public to access a few of its datum objects, for instance
+   * the tangent system matrix #stiff_ by #Stiff(). This selective access
+   * is needed in environments in which a independent time loop is provided.
+   * This happens e.g. in fluid-structure-interaction. 
+   *
+   * <h3> Responsibilties </h3>
+   * Most importantly the base integrator manages the system state vectors and 
+   * matrices. It also deals with the output to files and offers method to 
+   * determine forces and stiffnesses (tangents).
+   *
    * \author bborn
    * \date 06/08
    */
@@ -497,7 +520,7 @@ namespace STR
                                    //!< vectors and matrices
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
-    double solveradaptolbetter_;  //!< tolerance to which is adapated ????
+    double solveradaptolbetter_;  //!< tolerance to which is adpated ????
     //@}
 
     //! @name Printing and output

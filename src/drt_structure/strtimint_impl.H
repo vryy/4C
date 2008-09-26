@@ -28,6 +28,10 @@ namespace STR
   /*!
    * \brief Front-end for structural dynamics
    *        with \b implicit time integration
+   *
+   * <h3> About </h3>
+   * 
+   *
    * \author bborn
    * \date 06/08
    */

@@ -26,8 +26,9 @@ namespace STR
 
   /*====================================================================*/
   /*!
-   * \brief One-step-theta time integration (or Crank-Nicholson scheme)
+   * \brief One-step-theta time integration (or Crank-Nicholson scheme or generalised trapezoidal rule)
    *
+   * <h3> Background </h3>
    * One-step theta time integration is a finite difference method for 1st order ordinary differential equations (ODE) of the type
    * \f[
    *   F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0
@@ -89,6 +90,38 @@ namespace STR
    *   \frac{1}{\Delta t} ( D_{n+1} - D_n )
    *   &&
    * \end{array}\f]
+   *
+   * <h3>Family members to be aware of</h3>
+   * <table>
+   *   <tr>
+   *     <td>Name</td>
+   *     <td>Abbreviation</td>
+   *     <td>\f$\theta\f$</td>
+   *     <td>Order of accuracy</td>
+   *     <td>Stability</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Backward Euler</td>
+   *     <td>BE</td>
+   *     <td>\f$1\f$</td>
+   *     <td>1</td>
+   *     <td>A,L-stable</td>
+   *   </tr>
+   *   <tr>
+   *     <td>Trapezoidal rule</td>
+   *     <td>TR</td>
+   *     <td>\f$\frac{1}{2}\f$</td>
+   *     <td>2</td>
+   *     <td>A-stable</td>
+   *   </tr>
+   * </table>
+   *
+   * <h3>References</h3>
+   * - [1] HR Schwarz, Numerische Mathematik, Teubner, Stuttgart, 1997.
+   * - [2] TJR Hughes, The finite element method, Dover, Mineola, 1987.
+   * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher Differentialgleichungen, Walter de Gryter, Berlin, 1994.
+   * - [4] ...
+   * 
    * 
    * \author bborn
    * \date 06/08
