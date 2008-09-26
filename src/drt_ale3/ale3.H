@@ -23,6 +23,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 struct _MATERIAL;
 
@@ -35,9 +36,23 @@ class Ale3Register;
 namespace ELEMENTS
 {
 
+  // where should that be put?
+  template <DRT::Element::DiscretizationType dtype>
+  struct DisTypeToNumCornerNodes {};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::tet4>     {static const int numCornerNodes = 4;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::tet10>    {static const int numCornerNodes = 4;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::hex8>     {static const int numCornerNodes = 8;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::hex20>    {static const int numCornerNodes = 8;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::hex27>    {static const int numCornerNodes = 8;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::pyramid5> {static const int numCornerNodes = 5;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::wedge6>   {static const int numCornerNodes = 6;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::wedge15>  {static const int numCornerNodes = 6;};
+
+
+
 class Ale3Surface;
-
-
+class Ale3_Impl_Interface;
+template <DRT::Element::DiscretizationType distype> class Ale3_Impl;
 
 /*!
 \brief A C++ wrapper for the ale3 element
@@ -49,6 +64,8 @@ public:
   //! @name Friends
   friend class Ale3Register;
   friend class Ale3Surface;
+  //friend class Ale3_Impl_Interface;
+  //friend class Ale3_Impl<
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -91,19 +108,29 @@ public:
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-   else if (NumNode()==4 || NumNode()==10) return 4;
-   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-   else {
-   	dserror("Could not determine number of surfaces");
+    {
+      switch (NumNode()) {
+      case 8:
+      case 20:
+      case 27:
+        return 6; // hex
+      case 4:
+      case 10:
+        return 4; // tet
+      case 6:
+      case 15:
+      case 5:
+        return 5; // wedge or pyramid
+      default:
+        dserror("Could not determine number of surfaces");
    	return -1;
-	}
+      }
   }
 
   /*!
   \brief Return number of volumes of this element (always 1)
   */
-  virtual int NumVolume() const {return 1;}
+  virtual inline int NumVolume() const {return 1;}
 
   /*!
   \brief Get vector of RefCountPtrs to the surfaces of this element
@@ -267,73 +294,6 @@ public:
 
 private:
 
-  void ale3_edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
-                          double* length,
-                          double* edge_x,
-                          double* edge_y,
-                          double* edge_z);
-  double ale3_area_tria(const Epetra_SerialDenseMatrix& xyze,
-                        int i, int j, int k);
-
-  /*!
-  \brief Calculates stiffness for triangle ijk with torsional springs.
-
-  According to Farhat et al.
-
-  \param i, j, k (in)    : Nodes
-  \param xyze (in)     : The actual element coordinates (2D). Values for given
-  nodes in columns i, j, k.
-  \param k_torsion (out): 2-dimensional stiffness-matrix. Succession i, j, k.
-  */
-  void ale3_torsional(int i, int j, int k,
-                      const Epetra_SerialDenseMatrix& xyze,
-                      Epetra_SerialDenseMatrix* k_torsion);
-
-  /*!
-  \brief Prevents node s from penetrating face pqr.
-
-  The calculated dynamic triangle sjq is perpendicular to edge pr and face
-  pqr. According to Farhat et al.
-
-  \param node_i (in)    : Determine position of triangle sjq in
-  tetrahedra.
-  \param sysmat (in/out): The element's sys_mat
-  \param xyze (in)     : The actual element coordinates
-  */
-  void ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
-                               Epetra_SerialDenseMatrix* sys_mat,
-                               const Epetra_SerialDenseMatrix& xyze);
-
-  /*!
-  \brief Prevents node-face-penetration for given nodes.
-
-  Twelve-triangle configuration. According to Farhat et al.
-
-  \param tet_i (in)    : Nodes. Arbitrary succession.
-  \param sysmat (in/out): The element's sys_mat
-  \param xyze (in)     : The actual element coordinates
-  */
-  void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
-                                Epetra_SerialDenseMatrix* sys_mat,
-                                const Epetra_SerialDenseMatrix& xyze);
-  void ale3_tors_spring_tet4(Epetra_SerialDenseMatrix* sys_mat,
-                             const Epetra_SerialDenseMatrix& xyze);
-  void ale3_tors_spring_pyramid5(Epetra_SerialDenseMatrix* sys_mat,
-                                 const Epetra_SerialDenseMatrix& xyze);
-  void ale3_tors_spring_wedge6(Epetra_SerialDenseMatrix* sys_mat,
-                               const Epetra_SerialDenseMatrix& xyze);
-  void ale3_tors_spring_hex8(Epetra_SerialDenseMatrix* sys_mat,
-                             const Epetra_SerialDenseMatrix& xyze);
-  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
-                        vector<double>& displacements);
-  void static_ke(vector<int>&              lm,
-                 Epetra_SerialDenseMatrix* sys_mat,
-                 Epetra_SerialDenseVector* residual,
-                 bool                      incremental,
-                 std::vector<double>&      my_dispnp,
-                 RefCountPtr<MAT::Material> material,
-                 ParameterList& 	   params);
-
   //! action parameters recognized by ale3
   enum ActionType
   {
@@ -353,11 +313,107 @@ private:
 
   // don't want = operator
   Ale3& operator = (const Ale3& old);
-
+#if 0
   // get optimal gaussrule for given discretization type
   DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
+#endif
 };
 
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+class Ale3_Impl_Interface
+{
+public:
+  virtual ~Ale3_Impl_Interface() {}
+
+  virtual void static_ke_spring(Ale3*                     ele,
+                                Epetra_SerialDenseMatrix& sys_mat,
+                                const vector<double>&     displacements) = 0;
+  virtual void static_ke(Ale3*                      ele,
+                         vector<int>&               lm,
+                         Epetra_SerialDenseMatrix&  sys_mat,
+                         Epetra_SerialDenseVector&  residual,
+                         bool                       incremental,
+                         std::vector<double>&       my_dispnp,
+                         RefCountPtr<MAT::Material> material,
+                         ParameterList& 	    params) = 0;
+
+  static Ale3_Impl_Interface* Impl(Ale3* ele);
+protected:
+  Ale3_Impl_Interface() {}
+};
+
+template <DRT::Element::DiscretizationType distype>
+class Ale3_Impl: public Ale3_Impl_Interface
+{
+public:
+  Ale3_Impl() {}
+  ~Ale3_Impl() {}
+
+  void static_ke_spring(Ale3*                     ele,
+                        Epetra_SerialDenseMatrix& sys_mat,
+                        const vector<double>&     displacements);
+  void static_ke(Ale3*                      ele,
+                 vector<int>&               lm,
+                 Epetra_SerialDenseMatrix&  sys_mat,
+                 Epetra_SerialDenseVector&  residual,
+                 bool                       incremental,
+                 std::vector<double>&       my_dispnp,
+                 RefCountPtr<MAT::Material> material,
+                 ParameterList& 	    params);
+private:
+  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
+
+  inline void ale3_edge_geometry(int i, int j, const LINALG::FixedSizeSerialDenseMatrix<3, iel>& xyze,
+                                 double& length,
+                                 double& dx,
+                                 double& dy,
+                                 double& dz);
+
+  /*!
+  \brief Prevents node s from penetrating face pqr.
+
+  The calculated dynamic triangle sjq is perpendicular to edge pr and face
+  pqr. According to Farhat et al.
+
+  \param node_i (in)    : Determine position of triangle sjq in
+  tetrahedra.
+  \param sysmat (in/out): The element's sys_mat
+  \param xyze (in)     : The actual element coordinates
+  */
+  void ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
+                               LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                               const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+
+  /*!
+  \brief Prevents node-face-penetration for given nodes.
+
+  Twelve-triangle configuration. According to Farhat et al.
+
+  \param tet_i (in)    : Nodes. Arbitrary succession.
+  \param sysmat (in/out): The element's sys_mat
+  \param xyze (in)     : The actual element coordinates
+  */
+  void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
+                                LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                                const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+  inline void ale3_tors_spring_tet4(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                                    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+  inline void ale3_tors_spring_pyramid5(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                                        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+  inline void ale3_tors_spring_wedge6(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                                      const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+  inline void ale3_tors_spring_hex8(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
+                                    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+
+  inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
+
+  Ale3_Impl<distype> operator=(const Ale3_Impl<distype> other);
+};
 
 //=======================================================================
 //=======================================================================
