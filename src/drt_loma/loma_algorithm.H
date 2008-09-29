@@ -53,7 +53,10 @@ namespace LOMA
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    /// outer LOMA time loop
+    /// LOMA stationary algorithm
+    void SolveStationaryProblem();
+
+    /// LOMA time loop
     void TimeLoop();
 
   protected:
@@ -69,6 +72,10 @@ namespace LOMA
 
     /// write output
     void Output();
+
+    /// maximum number of iterations and tolerance for outer iteration
+    int     itmax_;
+    double  ittol_;
 
   private:
 

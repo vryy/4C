@@ -122,9 +122,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // density increment at time n+1
     densincnp_    = LINALG::CreateVector(*dofrowmap,true);
   }
-  else
-    // specific initial setting for non-temperature case
-    densnp_->PutScalar(1.0);
 
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta)
@@ -175,6 +172,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // set initial field
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
+
+  // set initial density to 1.0:
+  // used throughout simulation for non-temperature case
+  // used as good initial guess for stationary temperature case
+  densnp_->PutScalar(1.0);
 
   return;
 
@@ -833,6 +835,9 @@ void SCATRA::ScaTraTimIntImpl::PredictDensity()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 {
+  // store density of previous iteration for convergence check
+  densincnp_->Update(1.0,*densnp_,0.0);
+
   // set thermodynamic pressure p_therm (in N/m^2 = kg/(m*s^2) = J/m^3): 98100.0
   // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
   // set specific gas constant R (in J/(kg*K)): 287.05
@@ -842,8 +847,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
   densnp_->Scale(fac);
 
   //densnp_->PutScalar(1.0);
-  //densn_->PutScalar(1.0);
-  //densnm_->PutScalar(1.0);
 
   return;
 }
@@ -861,7 +864,7 @@ bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
   double densincnorm_L2;
   double densnorm_L2;
 
-  densincnp_->Update(1.0,*densnp_,-1.0,*densn_,0.0);
+  densincnp_->Update(1.0,*densnp_,-1.0);
   densincnp_->Norm2(&densincnorm_L2);
   densnp_->Norm2(&densnorm_L2);
 

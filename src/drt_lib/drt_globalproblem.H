@@ -221,6 +221,7 @@ public:
   const Teuchos::ParameterList& AleDynamicParams() const { return getParameterList()->sublist("ALE DYNAMIC"); }
   const Teuchos::ParameterList& FSIDynamicParams() const { return getParameterList()->sublist("FSI DYNAMIC"); }
   const Teuchos::ParameterList& XFEMGeneralParams() const { return getParameterList()->sublist("XFEM GENERAL"); }
+  const Teuchos::ParameterList& LOMAControlParams() const { return getParameterList()->sublist("LOMA CONTROL"); }
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
 
   const Teuchos::ParameterList& StructSolverParams() const { return getParameterList()->sublist("STRUCT SOLVER"); }

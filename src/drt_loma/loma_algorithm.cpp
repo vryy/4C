@@ -25,6 +25,10 @@ LOMA::Algorithm::Algorithm(
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
+  // maximum number of iterations and tolerance for outer iteration
+  itmax_ = prbdyn.get<int>   ("ITEMAX");
+  ittol_ = prbdyn.get<double>("CONVTOL");
+
   return;
 }
 
@@ -34,6 +38,61 @@ LOMA::Algorithm::Algorithm(
 LOMA::Algorithm::~Algorithm()
 {
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LOMA::Algorithm::SolveStationaryProblem()
+{
+  int  itnum = 0;
+  bool stopnonliniter = false;
+
+  if (Comm().MyPID()==0)
+    cout<<"\n**********************\n STATIONARY OUTER ITERATION LOOP \n**********************\n";
+
+  // set boundary conditions for scalar transport solver
+  ScaTraField().PrepareTimeStep();
+
+  // set boundary conditions for fluid solver
+  FluidField().PrepareTimeStep();
+
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    // get new velocity field
+    GetCurrentFluidVelocity();
+
+    // set field vectors: density-weighted convective velocity + density
+    ScaTraField().SetLomaVelocity(ConvectiveVelocity());
+
+    // solve transport equation for temperature
+    if (Comm().MyPID()==0)
+      cout<<"\n**********************\n  TEMPERATURE SOLVER \n**********************\n";
+    ScaTraField().Solve();
+
+    // compute density using current temperature + thermodynamic pressure
+    ScaTraField().ComputeDensity();
+
+    // get temperature
+    GetCurrentDensity();
+
+    // set field vectors: density
+    FluidField().SetIterLomaFields(Density());
+
+    // solve low-Mach-number flow equations
+    if (Comm().MyPID()==0)
+      cout<<"\n*********************\n     FLOW SOLVER \n*********************\n";
+    FluidField().NonlinearSolve();
+
+    // check convergence of density
+    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax_,ittol_);
+  }
+
+  Output();
+
+return;
 }
 
 
@@ -106,8 +165,6 @@ void LOMA::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::OuterLoop()
 {
-  const double  ittol = 1e-3;
-  int  itmax = 2;
   int  itnum = 0;
   bool stopnonliniter = false;
 
@@ -144,7 +201,7 @@ void LOMA::Algorithm::OuterLoop()
     FluidField().NonlinearSolve();
 
     // check convergence of density
-    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax,ittol);
+    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax_,ittol_);
   }
 
   return;

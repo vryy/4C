@@ -1178,6 +1178,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& lomacontrol = list->sublist(
+      "LOMA CONTROL",
+      false,
+      "control parameters for low-Mach-number flow problems\n");
+
+  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
+                               "Time Integration Scheme",
+                               tuple<std::string>(
+                                 "Stationary",
+                                 "One_Step_Theta",
+                                 "BDF2"
+                                 ),
+                               tuple<FLUID_TIMEINTTYPE>(
+                                 timeint_stationary,
+                                 timeint_one_step_theta,
+                                 timeint_bdf2
+                                 ),
+                               &lomacontrol);
+  IntParameter("NUMSTEP",24,"Total number of time steps",&lomacontrol);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lomacontrol);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lomacontrol);
+  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&lomacontrol);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
+  IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
       "ELCH CONTROL",
       false,

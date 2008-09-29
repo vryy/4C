@@ -46,8 +46,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
 #endif
 
   // print warning to screen
-  if (comm.MyPID()==0)
-    cout<<"You are now about to enter the module for low-Mach-number flow!"<<endl;
+  if (comm.MyPID()==0) cout<<"You are now about to enter the module for low-Mach-number flow!"<<endl;
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -74,16 +73,20 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     dserror("Fluid AND Scatra discretization present. This is not supported.");
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& lomadyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& lomacontrol = DRT::Problem::Instance()->LOMAControlParams();
 
   // create a LOMA::Algorithm instance
-  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomadyn));
+  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
 
   // read the restart information, set vectors and variables
   if (restart) loma->ReadRestart(restart);
 
-  // enter the time loop for solving the low-Mach-number flow problem
-  loma->TimeLoop();
+  // type of time integration
+  FLUID_TIMEINTTYPE timealgo = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(lomacontrol,"TIMEINTEGR");
+
+  // enter stationary or time loop for solving the low-Mach-number flow problem
+  if (timealgo==timeint_stationary) loma->SolveStationaryProblem();
+  else                              loma->TimeLoop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();

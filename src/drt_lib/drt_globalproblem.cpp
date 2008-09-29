@@ -175,6 +175,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
+  reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
 
   reader.ReadGidSection("--FLUID SOLVER", *list);
