@@ -125,14 +125,6 @@ ALPHA_M      0.5//0.0 //0.333333333
 ALPHA_F      0.5//0.3333333333333 //0.444444444
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
---------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS   No
-MEASURED_DISP0 0
-MEASURED_DISP1 0
-MEASURED_DISP2 0
-MU_MINUS       1
-MU_PLUS        1               
-INV_ANA_TOL    1000
 -----------------------------------------------------THERMAL SOLVER
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 100.0 POISSON 0.499 DENS 0.0000000001 YOUNGS_FAST 1000000.0 RELAX 10.0 THETA 1.0

@@ -326,11 +326,9 @@ UZAWAPARAM                      1
 KIND                            None
 --------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS   No
-MEASURED_DISP0 0
-MEASURED_DISP1 0
-MEASURED_DISP2 0
-MU_MINUS       1
-MU_PLUS        1               
+MEASURED_CURVE0 0
+MEASURED_CURVE1 0
+MEASURED_CURVE2 0               
 INV_ANA_TOL    1000
 -----------------------------------------------------THERMAL SOLVER
 AZBDIAG                         0
