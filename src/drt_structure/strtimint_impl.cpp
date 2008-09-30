@@ -729,7 +729,7 @@ void STR::TimIntImpl::PrintPredictor()
   {
     // relative check of force residual
     if ( (itercnvchk_ != convcheck_absres_or_absdis)
-         and (itercnvchk_ != convcheck_absres_or_absdis) )
+         and (itercnvchk_ != convcheck_absres_and_absdis) )
     {
       std::cout << "Predictor scaled res-norm "
                 << normfres_/normcharforce_
