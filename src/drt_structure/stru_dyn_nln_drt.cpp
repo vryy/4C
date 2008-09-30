@@ -249,11 +249,9 @@ void dyn_nlnstructural_drt()
 
       // parameters for inverse analysis
       genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"));
-      genalphaparams.set<double>("measured_disp0",iap.get<double>("MEASURED_DISP0"));
-      genalphaparams.set<double>("measured_disp1",iap.get<double>("MEASURED_DISP1"));
-      genalphaparams.set<double>("measured_disp2",iap.get<double>("MEASURED_DISP2"));
-      genalphaparams.set<double>("mu_minus",iap.get<double>("MU_MINUS"));
-      genalphaparams.set<double>("mu_plus",iap.get<double>("MU_PLUS"));
+      genalphaparams.set<double>("measured_curve0",iap.get<double>("MEASURED_CURVE0"));
+      genalphaparams.set<double>("measured_curve1",iap.get<double>("MEASURED_CURVE1"));
+      genalphaparams.set<double>("measured_curve2",iap.get<double>("MEASURED_CURVE2"));
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
 
       // non-linear solution technique

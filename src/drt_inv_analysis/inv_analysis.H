@@ -38,14 +38,16 @@ class Inv_analysis : public StruGenAlpha {
 	private:
                 int mp_;      // number of measurment points the
                                // paramters should be fittet to
-                vector<int>    surfneum_nodes_;
+                vector<int>      surfneum_nodes_;
 		vector<double>   disp_;		                // displacment vector in all three direction
+                vector<int>      surfdir_nodes_;
+		vector<double>   load_;		                // displacment vector in all three direction
 
-                Epetra_SerialDenseVector final_disp_;                                                // calculated displacment
-                Epetra_SerialDenseVector final_disp_o_;		// calculated displacment of the previous loop
-		Epetra_SerialDenseVector measured_disp_;	// measured displacment of the experiments (target value)
-		Epetra_SerialDenseVector residual_disp_;	// final_disp_ - measured_disp
-		vector<double> storage_residual_disp_;
+                Epetra_SerialDenseVector final_value_;                                                // calculated displacment
+                Epetra_SerialDenseVector final_value_o_;		// calculated displacment of the previous loop
+		Epetra_SerialDenseVector measured_value_;	// measured displacment of the experiments (target value)
+		Epetra_SerialDenseVector residual_value_;	// final_disp_ - measured_disp
+		vector<double> storage_residual_value_;
 
                 double mu_;
 		double mu_plus_;
@@ -69,10 +71,12 @@ class Inv_analysis : public StruGenAlpha {
 		RefCountPtr<Epetra_CrsMatrix> jacobian_;
 		vector<double> parameters_;
 		RefCountPtr<Epetra_Vector>  ref_disp_;
+		RefCountPtr<Epetra_Vector>  ref_load_;
 		const MATERIAL& mat_;
 		MATERIAL& nonconstmat_;
 
                 vector<DRT::Condition*> surfneum_;
+                vector<DRT::Condition*> surfdir_;
 
 
 	public:
@@ -82,10 +86,10 @@ class Inv_analysis : public StruGenAlpha {
 	                          LINALG::Solver& solver,
 	                          IO::DiscretizationWriter& output,
 	                          bool init = true);
-                void get_measured_disp();
+                void get_measured_values();
   		void reset_parameters();
 		void get_surfneum_nodes();
-		void get_disp_curve(const RefCountPtr<Epetra_Vector> disp, int numb);
+		void get_calculated_curve(const RefCountPtr<Epetra_Vector> disp, const RefCountPtr<Epetra_Vector> fint, int numb);
                 void calculate_new_parameters();
 		void evaluate();
 		void Integrate();
