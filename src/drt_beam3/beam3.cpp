@@ -345,8 +345,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
-  //storing locally input parameters with respect to statistical mechanics for later easy access
-  Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
+
 
   //variable for nodal point coordinates in reference configuration
   BlitzMat3x2 xrefe;
@@ -437,11 +436,10 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
           currele->Qconv_(3) = 0.25*(Tref(k,j) - Tref(j,k)) / currele->Qconv_(i);
         }
       }
-
-    
+  
       currele->Qold_ = currele->Qconv_;
       currele->Qnew_ = currele->Qconv_;
-          
+   
       //the here employed beam element does not need data about the current position of the nodal directors so that
       //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
       //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
@@ -458,21 +456,6 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
         currele->betaminusalphaconv_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
         currele->betaminusalphaold_(k) = 0;
-      }
-      
-      //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
-      if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
-      {
-        currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-        //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
-        currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
-        currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0);
-      }
-      else
-      {
-        currele->kT_ = 0.0;
-        currele->zeta_ = 0.0;
-        currele->stochasticorder_ = 0;
       }
             
     } //for (int num=0; num<dis_.NumMyColElements(); ++num)

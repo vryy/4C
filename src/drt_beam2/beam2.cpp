@@ -383,22 +383,7 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
         currele->hrold_ = -1;
         currele->hrnew_ = -1;
         currele->hrconv_ = -1;
-      }
-      
-      //initializing thermal energy and viscosity of surrounding fluid bath (if no bath both temperature and viscosity are zero)    
-       if( Teuchos::getIntegralValue<int>(statisticalparams,"THERMALBATH") != INPUTPARAMS::thermalbath_none )
-       {
-         currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-         //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
-         currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
-         currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0);
-       }
-       else
-       {
-         currele->kT_ = 0.0;
-         currele->zeta_ = 0.0;
-         currele->stochasticorder_ = 0;
-       }
+      }    
       
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
    

@@ -59,10 +59,33 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = Beam2::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2::calc_struct_reset_istep;
+  else if (action=="calc_stat_forces")          act = Beam2::calc_stat_forces;
   else dserror("Unknown type of action for Beam2");
    
   switch(act)
   {
+     //action type for evaluating statistical forces
+     case Beam2::calc_stat_forces:
+      {   
+        /*evaluate statistical forces only on processor which is owner of the element so that forces
+         * are not evaluated twice for one element (if one did so the final additive export of the
+         * col map statistical force vector to a row map vector would add up the statistical forces
+         *  of all processors on which this element exists at least as a ghost element and with at
+         * least two processors this would entail double statistical forces for DOF of elements on 
+         * which the element domains of the processors overlap*/
+        if(this->Owner() != discretization.Comm().MyPID()) return 0;
+              
+        // get element displacements (for use in shear flow fields)
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        
+        //actual evaluation of statistical forces
+        EvaluateStatisticalNeumann(params,mydisp,elevec1);
+
+      }
+    break;
     /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero dispalcement and 
      residual values*/ 
      case Beam2::calc_struct_linstiff:
@@ -166,8 +189,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
             }
                        
             //reset geometric ocnfiguration before  computation of approximated stiffness:
-            hrnew_ = hrsave;
-        
+            hrnew_ = hrsave;     
           }
         }
         
@@ -303,64 +325,68 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
       ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
     }
 
-
     //sum up load components 
     for (int node=0; node<iel; ++node)
       for (int dof=0; dof<numdf; ++dof)
          elevec1[node*numdf+dof] += funct[node] *ar[dof];
 
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
-  
-  
-/*by the following code part stochastic external forces can be applied elementwise; for decoupling 
- * load frequency and time step size stochastical forces should better be applied outside the element*/
-  
-  if (kT_ > 0)
-  {	    
-    //in case of a lumped damping matrix stochastic forces are applied analogously
-    if (stochasticorder_ == 0)
-    { 	  
-  	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-  	  double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
-  
-  	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-  	  //stand_dev; using Blitz namespace "ranlib" for random number generation
-  	  ranlib::Normal<double> normalGen(0,stand_dev_trans);
-  	  
-  	  //adding statistical forces 
-  	  elevec1[0] += normalGen.random();  
-  	  elevec1[1] += normalGen.random();
-    	elevec1[3] += normalGen.random();
-    	elevec1[4] += normalGen.random();   
-    }
-    //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-    else if (stochasticorder_ == 1)
-    {     
-      //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-      double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
-  
-      //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-      //stand_dev; using Blitz namespace "ranlib" for random number generation
-      ranlib::Normal<double> normalGen(0,stand_dev_trans);
-      
-      //adding uncorrelated components of statistical forces 
-      elevec1[0] += normalGen.random();  
-      elevec1[1] += normalGen.random();
-      elevec1[3] += normalGen.random();
-      elevec1[4] += normalGen.random();  
-      
-      //adding correlated components of statistical forces 
-      double force1 = normalGen.random()/pow(2,0.5);
-      double force2 = normalGen.random()/pow(2,0.5);
-      elevec1[0] += force1;  
-      elevec1[1] += force2;
-      elevec1[3] += force1;
-      elevec1[4] += force2;     
-    }
-  	    
-  }   
+	      
   return 0;
 }
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate Statistical forces                     (public)                                       cyron 09/08|
+ *----------------------------------------------------------------------------------------------------------*/
+
+int DRT::ELEMENTS::Beam2::EvaluateStatisticalNeumann(ParameterList& params,
+    vector<double> mydisp,
+    Epetra_SerialDenseVector& elevec1)
+{
+  
+  //in case of a lumped damping matrix stochastic forces are applied analogously
+  if (stochasticorder_ == 0)
+  {     
+    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+    double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
+  
+    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+    //stand_dev; using Blitz namespace "ranlib" for random number generation
+    ranlib::Normal<double> normalGen(0,stand_dev_trans);
+    
+    //adding statistical forces 
+    elevec1[0] += normalGen.random();  
+    elevec1[1] += normalGen.random();
+    elevec1[3] += normalGen.random();
+    elevec1[4] += normalGen.random();   
+  }
+  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+  else if (stochasticorder_ == 1)
+  {     
+    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+    double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
+  
+    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+    //stand_dev; using Blitz namespace "ranlib" for random number generation
+    ranlib::Normal<double> normalGen(0,stand_dev_trans);
+    
+    //adding uncorrelated components of statistical forces 
+    elevec1[0] += normalGen.random();  
+    elevec1[1] += normalGen.random();
+    elevec1[3] += normalGen.random();
+    elevec1[4] += normalGen.random();  
+    
+    //adding correlated components of statistical forces 
+    double force1 = normalGen.random()/pow(2,0.5);
+    double force2 = normalGen.random()/pow(2,0.5);
+    elevec1[0] += force1;  
+    elevec1[1] += force2;
+    elevec1[3] += force1;
+    elevec1[4] += force2;  
+  }
+
+  return 0;
+} //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
 
 /*-----------------------------------------------------------------------------------------------------------*
  | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|							     

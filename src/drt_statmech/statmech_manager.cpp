@@ -72,43 +72,84 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
       {
-       int testnumber = 0; 
-       endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
-       starttimeoutput_ = time;
-       istart_ = istep;
-       //look for a not yet existing output file name (numbering upwards)
-       do
-       {
-         testnumber++;
-         outputfilename_.str("");
-         outputfilename_ << "EndToEnd"<< testnumber << ".dat";
-         fp = fopen(outputfilename_.str().c_str(), "r");
-       } while(fp != NULL);
-       
-        //set up new file with name "outputfilename" without writing anything into this file
-        fp = fopen(outputfilename_.str().c_str(), "w");
-        fclose(fp);
-       }
-       
-        if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
-        { 
-          endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
-          //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
-          DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
-      
-          //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
-          if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
+         int testnumber = 0; 
+         endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
+         starttimeoutput_ = time;
+         istart_ = istep;
+         //file pointer for operating with numbering file
+         FILE* fpnumbering = NULL;
+         std::ostringstream numberingfilename;
+         
+         //look for a numbering file where number of already existing output files is stored:
+         numberingfilename.str("NumberOfRealizations");
+         fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+         
+         //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+         if(fpnumbering == NULL)
+         {
+           do
+           {
+             testnumber++;
+             outputfilename_.str("");
+             outputfilename_ << "EndToEnd"<< testnumber << ".dat";
+             fp = fopen(outputfilename_.str().c_str(), "r");
+           } while(fp != NULL);
+           
+           //set up new file with name "outputfilename" without writing anything into this file
+           fp = fopen(outputfilename_.str().c_str(), "w");
+           fclose(fp);
+        }         
+        //if there already exists a numbering file
+        else
+        {
+          fclose(fpnumbering);
+          
+          //read the number of the next realization out of the file into the variable testnumber
+          std::fstream f(numberingfilename.str().c_str());            
+          while (f)
+          {
+            std::string tok;
+            f >> tok;
+            if (tok=="Next")
             {
-            // open file and append new data line
-            fp = fopen(outputfilename_.str().c_str(), "a");
-            //defining temporary stringstream variable
-            std::stringstream filecontent;
-            filecontent << scientific << setprecision(12) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
-            // move temporary stringstream to file and close it
-            fprintf(fp,filecontent.str().c_str());
-            fclose(fp);
+              f >> tok; 
+              if (tok=="Number:")     
+                f >> testnumber;
             }
+          } //while(f)
+          
+          //defining outputfilename by meands of new testnumber
+          outputfilename_.str("");
+          outputfilename_ << "EndToEnd"<< testnumber << ".dat";
         }
+         
+        //increasing the number in the numbering file by one
+        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+        std::stringstream filecontent;
+        filecontent << "Next Number: "<< testnumber + 1;
+        fprintf(fpnumbering,filecontent.str().c_str());
+        fclose(fpnumbering);
+        
+      }
+      if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
+      { 
+        endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+        //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
+        DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
+    
+        //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
+        if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
+        {
+          // open file and append new data line
+          fp = fopen(outputfilename_.str().c_str(), "a");
+          //defining temporary stringstream variable
+          std::stringstream filecontent;
+          filecontent << scientific << setprecision(12) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+          // move temporary stringstream to file and close it
+          fprintf(fp,filecontent.str().c_str());
+          fclose(fp);
+        }
+      }
     }
     break;
     case INPUTPARAMS::statout_endtoendergodicity:
@@ -168,12 +209,14 @@ void StatMechManager::StatMechUpdate()
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
     //create random numbers in order to decide whether a crosslinker should be established
-    Epetra_Vector setcrosslinker(*discret_.NodeRowMap());
-    setcrosslinker.Random();
-    
-    //create random numbers in order to decide whether a crosslinker should be deleted
-    Epetra_Vector delcrosslinker(*discret_.NodeRowMap());
-    delcrosslinker.Random();
+    RCP<Epetra_Vector>  setcrosslinker;
+    setcrosslinker = LINALG::CreateVector(*discret_.NodeRowMap(),true);
+    setcrosslinker->Random();
+     
+    //create random numbers in order to decide whether a crosslinker should be deleted   
+    RCP<Epetra_Vector>  delcrosslinker;
+    delcrosslinker = LINALG::CreateVector(*discret_.NodeRowMap(),true);
+    delcrosslinker->Random();
     
     //probability with which a crosslinker is established between neighbouring nodes
     double plink = 1;
@@ -184,7 +227,7 @@ void StatMechManager::StatMechUpdate()
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
     {
       //if the node is already crosslinked the crosslinker is removed with probability punlink
-      if ((*crosslinkerpartner_)[i] != -1.0 && delcrosslinker[i] <  -1.0 + 2*punlink)
+      if ((*crosslinkerpartner_)[i] != -1.0 && (*delcrosslinker)[i] <  -1.0 + 2*punlink)
       {
         //noting that the Id of the now deleted crosslinker will be unused from now on
         unusedids_.push_back((int)(*crosslinkerelements_)[i] );
@@ -227,9 +270,9 @@ void StatMechManager::StatMechUpdate()
       /*crosslinkers are always established from the node with lower global Id to the one with higher
        * global Id only, in order to make sure that the crosslinker is not established twice; furthermore
        * crosslinkers are established only with a certain probability, which is accounted for by menas
-       * of the randomized condition setcrosslinker[i] <  -1.0 + 2*plink; finally a crosslinker is established
+       * of the randomized condition (*setcrosslinker)[i] <  -1.0 + 2*plink; finally a crosslinker is established
        * only if the same node has not already one, which is checked by (*crosslinkerpartner_)[i] == -1.0*/
-      if (discret_.NodeRowMap()->GID(i) < neighbour && setcrosslinker[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0)
+      if (discret_.NodeRowMap()->GID(i) < neighbour && (*setcrosslinker)[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0)
       {
         
         /*the owner of the newly established crosslinker element is the current processor on which the search

@@ -57,10 +57,32 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
+  else if (action=="calc_stat_forces")        act = Beam3::calc_stat_forces;
   else dserror("Unknown type of action for Beam3");
 
   switch(act)
   {
+    //action type for evaluating statistical forces
+    case Beam3::calc_stat_forces:
+     {   
+       /*evaluate statistical forces only on processor which is owner of the element so that forces
+        * are not evaluated twice for one element (if one did so the final additive export of the
+        * col map statistical force vector to a row map vector would add up the statistical forces
+        *  of all processors on which this element exists at least as a ghost element and with at
+        * least two processors this would entail double statistical forces for DOF of elements on 
+        * which the element domains of the processors overlap*/
+       if(this->Owner() != discretization.Comm().MyPID()) return 0;
+             
+       // get element displacements (for use in shear flow fields)
+       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+       if (disp==null) dserror("Cannot get state vector 'displacement'");
+       vector<double> mydisp(lm.size());
+       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+       
+       //actual evaluation of statistical forces
+       EvaluateStatisticalNeumann(params,mydisp,elevec1);
+     }
+   break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
      residual values*/
     case Beam3::calc_struct_linstiff:
@@ -120,7 +142,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       curvold_ = curvnew_;
       betaplusalphaold_ = betaplusalphanew_;
       betaminusalphaold_ = betaminusalphanew_; 
-      
+       
       /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not by means of a numerically approximated stiffness matrix
@@ -141,10 +163,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         int outputflag = 0;
         
         //calculating strains in new configuration
-        for(int i=0; i<6; i++)
-        {
-          for(int k=0; k<2; k++)
-          {          
+        for(int k=0; k<2; k++)
+        {  
+          for(int i=0; i<6; i++)
+          {      
             Epetra_SerialDenseVector force_aux;
             force_aux.Size(12);
             
@@ -166,7 +188,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
             for(int u = 0;u<12;u++)
             {
               stiff_approx(u,i+k*6)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
-            }       
+            } 
           }
         }
 
@@ -184,6 +206,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
              outputflag = 1;  
           }
         } 
+       
         if(outputflag ==1)
         {
           std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
@@ -192,8 +215,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         } 
       } 
       //end of section in which numerical approximation for stiffness matrix is computed
-      */
-
+      */  
       
     
     }
@@ -237,10 +259,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 
 int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
-    DRT::Discretization& discretization,
-    DRT::Condition& condition,
-    vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1)
+                                        DRT::Discretization& discretization,
+                                        DRT::Condition& condition,
+                                        vector<int>& lm,
+                                        Epetra_SerialDenseVector& elevec1)
 {
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -321,60 +343,72 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
     elevec1[node*numdf+dof] += funct[node] *ar[dof];
 
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
-
-  //stochastic forces due to fluctuation-dissipation theorem 
-  if (kT_ > 0)
-  {     
-    //stochastic field of line load is interpolated by zeroth order polynomial functions
-    if (stochasticorder_ == 0)
-    {
-      //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-      double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
   
-      //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-      //stand_dev; using Blitz namespace "ranlib" for random number generation
-      ranlib::Normal<double> normalGen(0,stand_dev_trans);
-      
-      //adding statistical forces 
-      elevec1[0] += normalGen.random();  
-      elevec1[1] += normalGen.random();
-      elevec1[2] += normalGen.random();
-      elevec1[6] += normalGen.random();
-      elevec1[7] += normalGen.random();  
-      elevec1[8] += normalGen.random();   
-    }
-    //stochastic field of line load is interpolated by first order polynomial functions
-    else if (stochasticorder_ == 1)
-    {
-      //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-      double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
-  
-      //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-      //stand_dev; using Blitz namespace "ranlib" for random number generation
-      ranlib::Normal<double> normalGen(0,stand_dev_trans);
-      
-      //adding uncorrelated components of statistical forces 
-      elevec1[0] += normalGen.random();  
-      elevec1[1] += normalGen.random();
-      elevec1[2] += normalGen.random();
-      elevec1[6] += normalGen.random();
-      elevec1[7] += normalGen.random();  
-      elevec1[8] += normalGen.random();   
-      
-      //adding correlated components of statistical forces 
-      double force1 = normalGen.random()/pow(2,0.5);
-      double force2 = normalGen.random()/pow(2,0.5);
-      double force3 = normalGen.random()/pow(2,0.5);
-      elevec1[0] += force1;  
-      elevec1[1] += force2;
-      elevec1[2] += force3;
-      elevec1[6] += force1;
-      elevec1[7] += force2;
-      elevec1[8] += force3;     
-    }       
-  }  
   return 0;
 }
+
+
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate Statistical forces                     (public)                                       cyron 09/08|
+ *----------------------------------------------------------------------------------------------------------*/
+
+int DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann(ParameterList& params,
+                                                    vector<double> mydisp,
+                                                    Epetra_SerialDenseVector& elevec1)
+{
+  
+  //stochastic field of line load is interpolated by zeroth order polynomial functions
+  if (stochasticorder_ == 0)
+  {
+    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+    double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
+
+    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+    //stand_dev; using Blitz namespace "ranlib" for random number generation
+    ranlib::Normal<double> normalGen(0,stand_dev_trans);
+    
+    //adding statistical forces 
+    elevec1[0] += normalGen.random();  
+    elevec1[1] += normalGen.random();
+    elevec1[2] += normalGen.random();
+    elevec1[6] += normalGen.random();
+    elevec1[7] += normalGen.random();  
+    elevec1[8] += normalGen.random();   
+
+  }
+  //stochastic field of line load is interpolated by first order polynomial functions
+  else if (stochasticorder_ == 1)
+  {
+    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+    double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
+
+    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+    //stand_dev; using Blitz namespace "ranlib" for random number generation
+    ranlib::Normal<double> normalGen(0,stand_dev_trans);
+    
+    //adding uncorrelated components of statistical forces 
+    elevec1[0] += normalGen.random();  
+    elevec1[1] += normalGen.random();
+    elevec1[2] += normalGen.random();
+    elevec1[6] += normalGen.random();
+    elevec1[7] += normalGen.random();  
+    elevec1[8] += normalGen.random();   
+    
+    //adding correlated components of statistical forces 
+    double force1 = normalGen.random()/pow(2,0.5);
+    double force2 = normalGen.random()/pow(2,0.5);
+    double force3 = normalGen.random()/pow(2,0.5);
+    elevec1[0] += force1;  
+    elevec1[1] += force2;
+    elevec1[2] += force3;
+    elevec1[6] += force1;
+    elevec1[7] += force2;
+    elevec1[8] += force3;     
+  }  
+
+  return 0;
+} //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
 
 /*-----------------------------------------------------------------------------------------------------------*
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
@@ -434,21 +468,24 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew, con
     for (int j = 0; j < 3; ++j)
     {
       stiffmatrix(i  ,j)   =  TCmTt(i,j);
-      stiffmatrix(i  ,j+3) =  STCmTt(j,i);
-      stiffmatrix(i  ,j+6) = -TCmTt(i,j);
-      stiffmatrix(i  ,j+9) =  STCmTt(j,i);
-      stiffmatrix(i+3,j)   =  STCmTt(i,j);
-      stiffmatrix(i+3,j+3) =  STCmTtSt(i,j) + TCbTt(i,j);
-      stiffmatrix(i+3,j+6) = -STCmTt(i,j);
-      stiffmatrix(i+3,j+9) =  STCmTtSt(j,i) - TCbTt(i,j);
       stiffmatrix(i+6,j)   = -TCmTt(i,j);
-      stiffmatrix(i+6,j+3) = -STCmTt(j,i);
       stiffmatrix(i+6,j+6) =  TCmTt(i,j);
+      stiffmatrix(i  ,j+6) = -TCmTt(i,j);
+      
+      stiffmatrix(i  ,j+3) =  STCmTt(j,i);
+      stiffmatrix(i  ,j+9) =  STCmTt(j,i);
+      stiffmatrix(i+6,j+3) = -STCmTt(j,i);
       stiffmatrix(i+6,j+9) = -STCmTt(j,i);
+          
+      stiffmatrix(i+3,j+6) = -STCmTt(i,j);     
+      stiffmatrix(i+3,j)   =  STCmTt(i,j);
       stiffmatrix(i+9,j)   =  STCmTt(i,j);
-      stiffmatrix(i+9,j+3) =  STCmTtSt(i,j)-TCbTt(i,j);
       stiffmatrix(i+9,j+6) = -STCmTt(i,j);
-      stiffmatrix(i+9,j+9) =  STCmTtSt(i,j)+TCbTt(i,j);
+          
+      stiffmatrix(i+3,j+3) =  STCmTtSt(i,j) + TCbTt(i,j);   
+      stiffmatrix(i+3,j+9) =  STCmTtSt(j,i) - TCbTt(i,j); 
+      stiffmatrix(i+9,j+3) =  STCmTtSt(i,j) - TCbTt(i,j);     
+      stiffmatrix(i+9,j+9) =  STCmTtSt(i,j) + TCbTt(i,j);
     }
   }
   
@@ -511,8 +548,10 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(BlitzVec3 deltabetaplusalpha, Blit
     Qnewvec(i) = Qnew_(i);
   }
   
+  
   //computing the rotation matrix from Crisfield, Vol. 2, equation (17.70) with respect to Qnew_,
   //which is the new center triad Tnew
+  
   computespin(Tnew, Qnewvec, 2*Qnew_(3));
   for(int i = 0; i<3; i++)
   {
@@ -523,6 +562,11 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(BlitzVec3 deltabetaplusalpha, Blit
         Tnew(i,j) += Qnew_(3)*Qnew_(3) - Qnew_(2)*Qnew_(2) - Qnew_(1)*Qnew_(1) - Qnew_(0)*Qnew_(0);
     }
   }
+  
+  Tnew(0,0) = 1 - 2*(Qnew_(1)*Qnew_(1) + Qnew_(2)*Qnew_(2));
+  Tnew(1,1) = 1 - 2*(Qnew_(0)*Qnew_(0) + Qnew_(2)*Qnew_(2));
+  Tnew(2,2) = 1 - 2*(Qnew_(0)*Qnew_(0) + Qnew_(1)*Qnew_(1));
+  
  
 } //DRT::ELEMENTS::Beam3::updatetriad
 
@@ -694,10 +738,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   deltabetaplusalpha -= betaplusalphaold_;
   
   deltabetaminusalpha  = betaminusalphanew_;
-  deltabetaminusalpha -= betaminusalphaold_;
+  deltabetaminusalpha -= betaminusalphaold_; 
   
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
+
   
   //updating local curvature
   updatecurvature(Tnew, deltabetaplusalpha,deltabetaminusalpha);
@@ -706,6 +751,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   BLITZTINY::MtV_product<3,3>(Tnew,x21,epsilonn);
   BLITZTINY::V_scale<3>(epsilonn,1/lrefe_);
   epsilonn(0) -=  1;
+   
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
@@ -733,19 +779,20 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     dserror("unknown or improper type of material law");
   }  
   
+  //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
+  BlitzMat3x3 spinx21;
+  computespin(spinx21,x21,0.5); 
+
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
   epsilonn(0) *= ym*crosssec_;
   epsilonn(1) *= sm*crosssecshear_;
   epsilonn(2) *= sm*crosssecshear_;
+  
   BLITZTINY::MV_product<3,3>(Tnew,epsilonn,stressn);  
    
-  //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
-  BlitzMat3x3 spinx21;
-  computespin(spinx21,x21,0.5); 
   
   //lamda is the derivative of current velocity with respect to current displacement
   double lamda = params.get<double>("gamma",0.581) / (params.get<double>("delta time",0.01)*params.get<double>("beta",0.292));
-  
   
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
@@ -763,6 +810,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       Theta(i,j) = Tnew(i,0)*Tnew(0,j);
     }
   }
+  
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -782,6 +830,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+9) -= stressn(j)*spinx21(i,j);    
       }
     }
+    
        
     //for problems of statistical mechanics viscous damping is incalculated
     if(kT_ > 0)
@@ -806,14 +855,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)[7] += zeta_*(vel[7]/3 + vel[1]/6);
         (*force)[8] += zeta_*(vel[8]/3 + vel[2]/6);
       }          
-    }
-    for(int i = 0; i<3;i++)
-    {
-      (*force)[i+3] += (zeta_/2)*vel[i+3]*0.01;
-      (*force)[i+9] += (zeta_/2)*vel[i+9]*0.01;
-    }
-    
-    /*    
+    }   
+      
     //adding artificial torsional damping in order to stabilize numerically free fluctuations
     double torsdamp = 0.01;
     for(int i = 0; i<3; i++)
@@ -826,12 +869,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)[9+i] += Theta(i,j)*vel[9+j]*(zeta_/2)*torsdamp;
       }
     }
-    */
     
-    
-    
-  }
-  
+  } 
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
@@ -889,55 +928,51 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*stiffmatrix)(8,2) += (zeta_/6)*lamda;
       }
     }
-    
-    for(int i = 0; i<3;i++)
-    {
-      (*stiffmatrix)(i+3,i+3) += (zeta_/2)*lamda*0.01;
-      (*stiffmatrix)(i+9,i+9) += (zeta_/2)*lamda*0.01;
-    }
-    
 
-    /*
-    //adding artifical viscosity stiffness with respect to torsional displacement
-    for(int i = 0; i<2;i++)
+        
     {
-      double torsdamp = 0.01;
       BlitzVec3 aux1;
       BlitzVec3 aux2;
       BlitzMat3x3 Aux1;
       BlitzMat3x3 Aux2;
-      for(int j = 0; j<3; j++)
-        aux1(j) = (zeta_/2)*vel[j + i*6];
-      BLITZTINY::MV_product<3,3>(Theta,aux1,aux2); 
-      computespin(Aux1,aux2,-0.5); 
-      for(int j= 0; j<3; j++)
+      double torsdamp = 0.01;
+      //adding artifical viscosity stiffness with respect to torsional displacement
+      for(int i = 0; i<2;i++)
       {
-        for(int k=0;k<3;k++)
+        for(int j = 0; j<3; j++)
+          aux1(j) = (zeta_/2)*vel[j + i*6];
+        BLITZTINY::MV_product<3,3>(Theta,aux1,aux2); 
+        computespin(Aux1,aux2,-0.5); 
+        for(int j= 0; j<3; j++)
         {
-          (*stiffmatrix)(i*6 +j ,3+k ) += Aux1(j,k)*torsdamp;
-          (*stiffmatrix)(i*6 +j ,9+k ) += Aux1(j,k)*torsdamp;
+          for(int k=0;k<3;k++)
+          {
+            (*stiffmatrix)(i*6 + 3 + j ,3 + k ) += Aux1(j,k)*torsdamp;
+            (*stiffmatrix)(i*6 + 3 + j ,9 + k ) += Aux1(j,k)*torsdamp;
+          }
         }
-      }
-      computespin(Aux1,aux1,0.5);
-      BLITZTINY::MM_product<3,3,3>(Theta,Aux1,Aux2);
-      for(int j= 0; j<3; j++)
-      {
-        for(int k=0;k<3;k++)
+        computespin(Aux1,aux1,0.5);
+        BLITZTINY::MM_product<3,3,3>(Theta,Aux1,Aux2);
+        for(int j= 0; j<3; j++)
         {
-          (*stiffmatrix)(i*6 +j ,3+k ) += Aux2(j,k)*torsdamp;
-          (*stiffmatrix)(i*6 +j ,9+k ) += Aux2(j,k)*torsdamp;
+          for(int k=0;k<3;k++)
+          {
+            (*stiffmatrix)(i*6 + 3 + j ,3 + k ) += Aux2(j,k)*torsdamp;
+            (*stiffmatrix)(i*6 + 3 + j ,9 + k ) += Aux2(j,k)*torsdamp;
+          }
         }
+
+        
+        for(int j= 0; j<3; j++)
+        {
+          for(int k=0;k<3;k++)
+          {
+            (*stiffmatrix)(i*6 + 3 + j, i*6 + 3 + k) += Theta(j,k)*(zeta_/2)*lamda*torsdamp;
+          }
+        }  
+       }
       }
       
-      for(int j= 0; j<3; j++)
-      {
-        for(int k=0;k<3;k++)
-        {
-          (*stiffmatrix)(i*6 +j ,i*6 + k ) += Theta(j,k)*(zeta_/2)*lamda*torsdamp;
-        }
-      }     
-     }
-     */
     
     
      

@@ -38,14 +38,12 @@ using namespace Teuchos;
 #include <random/normal.h>
 #include <blitz/array.h>
 #include "../drt_geometry/blitz_tiny_operation.H"
+#include "../drt_statmech/statmech_time.H"
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
 typedef blitz::TinyVector<double,4> BlitzVec4; ///< a short-cut for a one-dimensional BLITZ vector of length 4
-typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
-typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
 typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
-typedef blitz::TinyMatrix<double,6,6> BlitzMat6x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x6
 typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
@@ -81,6 +79,7 @@ public:
 
   //! @name Friends
   friend class Beam3Register;
+  friend void StatMechTime::Integrate(); ////in order to allow initialization of thermal bath parameters for beam3
 
 
   //! @name Constructors and destructors and related methods
@@ -242,7 +241,7 @@ public:
                        Epetra_SerialDenseVector& elevec1,
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
-
+  
   /*!
   \brief Evaluate a Neumann boundary condition
 
@@ -266,7 +265,24 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);                            
+                              Epetra_SerialDenseVector& elevec1);
+
+  /*!
+  \brief Evaluate a statistical Neumann boundary condition
+
+  An element derived from this class uses the EvaluateNeumann method to receive commands
+  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elevec1 (out)         : Force vector to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateStatisticalNeumann(ParameterList& params,
+                                        vector<double> mydisp,
+                                        Epetra_SerialDenseVector& elevec1);  
   //@}
 
   
@@ -287,8 +303,8 @@ private:
     calc_struct_fsiload,
     calc_struct_update_istep,
     calc_struct_update_imrlike,
-    calc_struct_reset_istep  //!< reset elementwise internal variables
-                             //!< during iteration to last converged state
+    calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
+    calc_stat_forces
   };
   
   //! container containing all kind of Beam3 thisandthat

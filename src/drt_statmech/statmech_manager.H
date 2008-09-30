@@ -16,6 +16,7 @@ Maintainer: Christian Cyron
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
+#include "../drt_lib/linalg_utils.H"
 
 // forward declarations
 
