@@ -15,8 +15,13 @@ Maintainer: Christian Cyron
 #include "statmech_time.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+
+#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
+#endif  // #ifdef D_BEAM3
+#ifdef D_BEAM2
 #include "../drt_beam2/beam2.H"
+#endif  // #ifdef D_BEAM2
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
@@ -100,6 +105,8 @@ void StatMechTime::Integrate()
       //to the head of the loop
       if (discret_.lColElement(num)->Type() != DRT::Element::element_beam3 && discret_.lColElement(num)->Type() != DRT::Element::element_beam2) continue;
       
+      #ifdef D_BEAM3
+      
       //if we get so far current element is a beam3 or beam2 element and  we get a pointer at it
       if (discret_.lColElement(num)->Type() == DRT::Element::element_beam3)
       {
@@ -112,6 +119,11 @@ void StatMechTime::Integrate()
         currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
         currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0); 
       }
+      
+      #endif  // #ifdef D_BEAM3
+      
+      #ifdef D_BEAM2
+      
       if (discret_.lColElement(num)->Type() == DRT::Element::element_beam2)
       {
         DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(discret_.lColElement(num));
@@ -123,6 +135,9 @@ void StatMechTime::Integrate()
         currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
         currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0); 
       }
+      
+      #endif  // #ifdef D_BEAM2
+      
     }
   }
 
