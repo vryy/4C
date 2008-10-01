@@ -348,7 +348,7 @@ int DRT::ELEMENTS::Beam2::EvaluateStatisticalNeumann(ParameterList& params,
   if (stochasticorder_ == 0)
   {     
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2.0 * kT_ * (zeta_/2.0) / params.get<double>("delta time",0.01),0.5);
   
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -364,7 +364,7 @@ int DRT::ELEMENTS::Beam2::EvaluateStatisticalNeumann(ParameterList& params,
   else if (stochasticorder_ == 1)
   {     
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT_ * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2.0 * kT_ * (zeta_/6.0) / params.get<double>("delta time",0.01),0.5);
   
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -573,18 +573,18 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       if (stochasticorder_ == 0)
       {
         //adding internal forces due to viscous damping (by background fluid of thermal bath)
-        (*force)[0] += zeta_*vel[0]/2;
-        (*force)[1] += zeta_*vel[1]/2;
-        (*force)[3] += zeta_*vel[3]/2;
-        (*force)[4] += zeta_*vel[4]/2;
+        (*force)[0] += zeta_*vel[0]/2.0;
+        (*force)[1] += zeta_*vel[1]/2.0;
+        (*force)[3] += zeta_*vel[3]/2.0;
+        (*force)[4] += zeta_*vel[4]/2.0;
       }
       else if (stochasticorder_ == 1)
       {
         //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-        (*force)[0] += zeta_*(vel[0]/3 + vel[3]/6);
-        (*force)[1] += zeta_*(vel[1]/3 + vel[4]/6);
-        (*force)[3] += zeta_*(vel[3]/3 + vel[0]/6);
-        (*force)[4] += zeta_*(vel[4]/3 + vel[1]/6);
+        (*force)[0] += zeta_*(vel[0]/3.0 + vel[3]/6.0);
+        (*force)[1] += zeta_*(vel[1]/3.0 + vel[4]/6.0);
+        (*force)[3] += zeta_*(vel[3]/3.0 + vel[0]/6.0);
+        (*force)[4] += zeta_*(vel[4]/3.0 + vel[1]/6.0);
       }
     }   
   }
@@ -622,23 +622,23 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       if (stochasticorder_ == 0)
       {
         //adding entries for lumped viscous damping "stiffness" (by background fluid of thermal bath) 
-        (*stiffmatrix)(0,0) += (zeta_/2)*lamda;
-        (*stiffmatrix)(1,1) += (zeta_/2)*lamda;
-        (*stiffmatrix)(3,3) += (zeta_/2)*lamda;
-        (*stiffmatrix)(4,4) += (zeta_/2)*lamda;
+        (*stiffmatrix)(0,0) += (zeta_/2.0)*lamda;
+        (*stiffmatrix)(1,1) += (zeta_/2.0)*lamda;
+        (*stiffmatrix)(3,3) += (zeta_/2.0)*lamda;
+        (*stiffmatrix)(4,4) += (zeta_/2.0)*lamda;
       }
       else if (stochasticorder_ == 1)
       {
         //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath) 
-        (*stiffmatrix)(0,0) += (zeta_/3)*lamda;
-        (*stiffmatrix)(1,1) += (zeta_/3)*lamda;
-        (*stiffmatrix)(3,3) += (zeta_/3)*lamda;
-        (*stiffmatrix)(4,4) += (zeta_/3)*lamda;
+        (*stiffmatrix)(0,0) += (zeta_/3.0)*lamda;
+        (*stiffmatrix)(1,1) += (zeta_/3.0)*lamda;
+        (*stiffmatrix)(3,3) += (zeta_/3.0)*lamda;
+        (*stiffmatrix)(4,4) += (zeta_/3.0)*lamda;
         
-        (*stiffmatrix)(0,3) += (zeta_/6)*lamda;    
-        (*stiffmatrix)(3,0) += (zeta_/6)*lamda;   
-        (*stiffmatrix)(1,4) += (zeta_/6)*lamda;
-        (*stiffmatrix)(4,1) += (zeta_/6)*lamda;
+        (*stiffmatrix)(0,3) += (zeta_/6.0)*lamda;    
+        (*stiffmatrix)(3,0) += (zeta_/6.0)*lamda;   
+        (*stiffmatrix)(1,4) += (zeta_/6.0)*lamda;
+        (*stiffmatrix)(4,1) += (zeta_/6.0)*lamda;
       }   
     }
   }
@@ -652,13 +652,13 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       if (lumpedmass == 0)
       {
         //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-        double aux_E[3]={density*lrefe_*crosssec_/6, density*lrefe_*crosssec_/6, density*lrefe_*mominer_/6};
+        double aux_E[3]={density*lrefe_*crosssec_/6.0, density*lrefe_*crosssec_/6.0, density*lrefe_*mominer_/6.0};
         for(int id=0; id<3; id++)
         {
-        	    (*massmatrix)(id,id) = 2*aux_E[id];
-              (*massmatrix)(id+3,id+3) = 2*aux_E[id];
-              (*massmatrix)(id,id+3) = aux_E[id];
-              (*massmatrix)(id+3,id) = aux_E[id];
+        	    (*massmatrix)(id,id)     = 2.0*aux_E[id];
+              (*massmatrix)(id+3,id+3) = 2.0*aux_E[id];
+              (*massmatrix)(id,id+3)   = aux_E[id];
+              (*massmatrix)(id+3,id)   = aux_E[id];
         }
       }
       /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
@@ -669,12 +669,12 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
         (*massmatrix).Shape(6,6);
         //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
         //to a diagonal mass matrix with constant diagonal entries
-        (*massmatrix)(0,0) = density*lrefe_*crosssec_/2;
-        (*massmatrix)(1,1) = density*lrefe_*crosssec_/2;	 
-        (*massmatrix)(2,2) = density*lrefe_*mominer_/2; 
-        (*massmatrix)(3,3) = density*lrefe_*crosssec_/2;
-        (*massmatrix)(4,4) = density*lrefe_*crosssec_/2; 
-        (*massmatrix)(5,5) = density*lrefe_*mominer_/2;
+        (*massmatrix)(0,0) = density*lrefe_*crosssec_/2.0;
+        (*massmatrix)(1,1) = density*lrefe_*crosssec_/2.0;	 
+        (*massmatrix)(2,2) = density*lrefe_*mominer_/2.0; 
+        (*massmatrix)(3,3) = density*lrefe_*crosssec_/2.0;
+        (*massmatrix)(4,4) = density*lrefe_*crosssec_/2.0; 
+        (*massmatrix)(5,5) = density*lrefe_*mominer_/2.0;
        }
       else
         dserror("improper value of variable lumpedmass");    
