@@ -321,7 +321,7 @@ private:
   //! thermal energy responsible for statistical forces
   double kT_;
   
-  //! frictional coefficient per length (approximated by the one for an infinitely long staff)
+  //! frictional coefficient (approximated by the one for an infinitely long staff, but with real element length)
   double zeta_;
 
   //! rounded number of half rotations the beam has already carried out counter clockwise;

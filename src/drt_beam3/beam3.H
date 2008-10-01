@@ -358,7 +358,7 @@ private:
   //! thermal energy responsible for statistical forces
   double kT_;
   
-  //! frictional coefficient per length (approximated by the one for an infinitely long staff)
+  //! frictional coefficient (approximated by the one for an infinitely long staff, but with real element length)
   double zeta_;
   
   //! polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)

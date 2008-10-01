@@ -381,7 +381,7 @@ int DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann(ParameterList& params,
   else if (stochasticorder_ == 1)
   {
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT_ * (zeta_/3) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2 * kT_ * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -396,9 +396,9 @@ int DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann(ParameterList& params,
     elevec1[8] += normalGen.random();   
     
     //adding correlated components of statistical forces 
-    double force1 = normalGen.random()/pow(2,0.5);
-    double force2 = normalGen.random()/pow(2,0.5);
-    double force3 = normalGen.random()/pow(2,0.5);
+    double force1 = normalGen.random();
+    double force2 = normalGen.random();
+    double force3 = normalGen.random();
     elevec1[0] += force1;  
     elevec1[1] += force2;
     elevec1[2] += force3;
