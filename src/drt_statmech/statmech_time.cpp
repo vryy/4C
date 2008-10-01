@@ -90,7 +90,7 @@ void StatMechTime::Integrate()
     /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
      * note that each processor will set up its own random generator and they all have to be pairwise independent*/
     int seedvariable = std::time(0)*(discret_.Comm().MyPID() + 1); // +1 in order to make sure random also for 0-th processor!
-    seedvariable = 1;
+    //seedvariable = 1;
     seedgenerator.seed((unsigned int)seedvariable);
     
     /*before starting calculations elements have to be initilized in order to make them know viscosity and thermal energy of 
