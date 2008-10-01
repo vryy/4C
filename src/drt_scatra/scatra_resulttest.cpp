@@ -55,9 +55,19 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
 
     // we only can test the first(!) scalar of a system (e.g. first dof at every node)
     if (position=="phi")
-    {
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
-    }
+    else if (position=="phi1")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
+    else if (position=="phi2")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,1))];
+    else if (position=="phi3")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,2))];
+    else if (position=="phi4")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,3))];
+    else if (position=="phi5")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,4))];
+    else if (position=="phi6")
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,5))];
     // we rely on the fact, that we have 
     else if (position=="fluxx")
       result = (*myflux_)[0][phinpmap.LID(dis_->Dof(actnode,0))];
