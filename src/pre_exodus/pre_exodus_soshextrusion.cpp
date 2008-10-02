@@ -708,31 +708,26 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 
   } // end of extruding
 
-  /* In case extrusion is based on SideSet
-     transfer nodeIds from initial SideSet Ids to new NodeSets
-     to apply boundary conditions e.g. pressure
-   */
-  if (nodes_from_sideset.size() != 0){
-    set<int> nodes_extrusion_base;
-    set<int> nodes_extrusion_roof;
-    set<int>::iterator it;
-    for(it=nodes_from_sideset.begin(); it!=nodes_from_sideset.end(); ++it){
-      nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
-      nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
-    }
-    std::ostringstream nodesetname;
-    nodesetname << "base_nodes" << extrusion_sideset_id;//sideset.GetName() << "nodes";
-    string propname = "";
-    EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
-    newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
-    highestns ++;
-
-    std::ostringstream nodesetnamer;
-    nodesetnamer << "roof_nodes" << extrusion_sideset_id;//sideset.GetName() << "nodes";
-    EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
-    newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
-    highestns ++;
+  // create 2 NodeSets consisting of the inner extrusion face and the outer extrusion face respectively
+  set<int> nodes_extrusion_base;
+  set<int> nodes_extrusion_roof;
+  map<int,vector<double> >::const_iterator it;
+  for(it=node_normals.begin(); it!=node_normals.end(); ++it){
+    nodes_extrusion_base.insert(node_pair.find(it->first)->second.front());
+    nodes_extrusion_roof.insert(node_pair.find(it->first)->second.back());
   }
+  std::ostringstream nodesetname;
+  nodesetname << "base_nodes" << highestns;//sideset.GetName() << "nodes";
+  string propname = "";
+  EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
+  newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
+  highestns ++;
+
+  std::ostringstream nodesetnamer;
+  nodesetnamer << "roof_nodes" << highestns;//sideset.GetName() << "nodes";
+  EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
+  newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
+  highestns ++;
 
   // extrude NodeSets which transfers a marked NodeSet to its extrudes base- and roof-NodeSet
   // loop through all NodeSets to check for extrusion ones
