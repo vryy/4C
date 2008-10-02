@@ -1138,6 +1138,35 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 
 
 /*----------------------------------------------------------------------*
+|  extract local values from global node-based vector for 2D   vg 09/08 |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::ExtractMyNodeBasedValues2D(
+    const DRT::Element* ele,
+    Epetra_SerialDenseVector& local,
+    const RCP<Epetra_MultiVector>& global)
+{
+  if (global==null) dserror("received a TEUCHOS::null pointer");
+  const int nsd = 2; // get dimension
+  const int iel = ele->NumNode(); // number of nodes
+  if (local.Length()!=(iel*nsd)) dserror("vector size mismatch.");
+
+  for (int i=0; i<nsd; i++)
+  {
+    // access actual component column of multi-vector
+    double* globalcolumn = (*global)[i];
+    // loop over the element nodes
+    for (int j=0;j<iel;j++)
+    {
+      const int nodegid = (ele->Nodes()[j])->Id();
+      const int lid = global->Map().LID(nodegid);
+      local(i+(nsd*j))=globalcolumn[lid];
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
 {

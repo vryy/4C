@@ -92,6 +92,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
 
   // This is a first estimate for the number of non zeros in a row of
+  // This is a first estimate for the number of non zeros in a row of
   // the matrix. Assuming a structured 3d mesh we have 27 adjacent
   // nodes with numdof DOF each.
   // We do not need the exact number here, just for performance reasons
@@ -1219,6 +1220,57 @@ void SCATRA::ScaTraTimIntImpl::UpdateDensity()
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
+{
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_temp_and_dens");
+
+  // variables for integrals of temperature, density and domain
+  double tempint = 0.0;
+  double densint = 0.0;
+  double domint  = 0.0;
+  eleparams.set("temperature integral",tempint);
+  eleparams.set("density integral",    densint);
+  eleparams.set("domain integral",     domint);
+
+  // evaluate integrals of temperature, density and domain
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // get integral values on this proc
+  tempint = eleparams.get<double>("temperature integral");
+  densint = eleparams.get<double>("density integral");
+  domint  = eleparams.get<double>("domain integral");
+
+  // get integral values in parallel case
+  double partempint = 0.0;
+  double pardensint = 0.0;
+  double pardomint  = 0.0;
+  discret_->Comm().SumAll(&tempint,&partempint,1);
+  discret_->Comm().SumAll(&densint,&pardensint,1);
+  discret_->Comm().SumAll(&domint,&pardomint,1);
+
+  // print out mean values of temperature and density
+  if (myrank_ == 0)
+  {
+    cout << "Mean temperature: " << tempint/domint << endl;
+    cout << "Mean density: " << densint/domint << endl;
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  write mass / heat flux vector to BINIO                   gjb   08/08|
+ *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputFlux()
 {
   RCP<Epetra_MultiVector> flux = CalcFlux();
@@ -1304,12 +1356,30 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
   }
-  if (fluxcomputation=="condition")
+  if (fluxcomputation=="boundary")
   {
-    // evaluate fluxes on surface condition only
-    // if restriction to normal(!) fluxes is needed put it here
+    // evaluate fluxes on surface condition: only normal fluxes
+    // normal flux value is stored at fluxx, fluxy and fluxz are set to 0.0
     string condstring("FluxCalculation");
+
+    // calculate integral of normal fluxes over indicated boundary
+    // may be sum over several boundary parts given in input file
+    double normfluxintegral = 0.0;
+    eleparams.set("normfluxintegral",normfluxintegral);
+
+    // do calculation on boundaries
     discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
+
+    // get integral of normal flux on this proc
+    normfluxintegral = eleparams.get<double>("normfluxintegral");
+
+    // get integral of normal flux in parallel case
+    double parnormfluxintegral = 0.0;
+    discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
+
+    // print out integral of normal fluxes over indicated boundary
+    if (myrank_ == 0) 
+      cout << "Integral of normal flux at indicated boundary: " << parnormfluxintegral << endl;
   }
 
   // clean up

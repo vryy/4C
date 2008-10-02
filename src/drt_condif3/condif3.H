@@ -317,7 +317,8 @@ private:
     none,
     calc_condif_systemmat_and_residual,
     calc_condif_flux,
-    initialize_one_step_theta
+    initialize_one_step_theta,
+    calc_temp_and_dens
   };
 
   //! flux parameters recognized by condif3
@@ -348,9 +349,17 @@ private:
   Epetra_SerialDenseMatrix CalculateFlux(
       vector<double>&           phinp,
       struct _MATERIAL*         material,
+      bool                      temperature,
       Epetra_SerialDenseVector& evel,
       Condif3::FluxType         fluxtype,
       const int&                dofindex
+      );
+
+  //! calculate integrals of temperature, density and domain
+ void CalculateTempAndDens(
+      ParameterList&            params,
+      vector<double>&           ephinp,
+      vector<double>&           edensnp
       );
 
 }; // class Condif3
@@ -702,10 +711,29 @@ private:
      const double&              frt   ///< factor F/RT
      );
 
+ /*!
+  brief integral of normal flux over boundary surface
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param xyze (in)          : node coordinates
+  \param enormflux (in)     : normal fluxes at element nodes
+  */
+  void NormalFluxIntegral(ParameterList&                  params,
+                          DRT::Discretization&            discretization,
+                          const vector<int>&              lm,
+                          const Epetra_SerialDenseMatrix  xyze,
+                          const vector<double>&           enormflux);
+
   //! The parent element of this surface
   DRT::ELEMENTS::Condif3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
+  //! number of dofs per node (for systems of transport equations)
+  //! (storage neccessary because we dont know the material in the post filters anymore)
+  int                       numdofpernode_;
 
 
 }; // class Condif3Surface

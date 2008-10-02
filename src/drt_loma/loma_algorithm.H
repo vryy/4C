@@ -77,6 +77,9 @@ namespace LOMA
     int     itmax_;
     double  ittol_;
 
+    /// flag for printing out mean values of temperature and density
+    string outmean_ ;
+
   private:
 
   };

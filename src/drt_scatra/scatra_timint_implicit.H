@@ -148,6 +148,9 @@ public:
   //! update density field for low-Mach-number flow
   void UpdateDensity();
 
+  //! output of mean temperature and density
+  void OutputMeanTempAndDens();
+
   //! routine to return current density field for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> Densnp() { return densnp_; }
 
@@ -238,8 +241,8 @@ protected:
   double theta_;
 
   int cdvel_;
-  
-  // maximum number of nonlinear iterations
+
+  /// maximum number of nonlinear iterations
   int itemax_;
 
   /// fine-scale subgrid-viscosity flag

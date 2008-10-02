@@ -27,6 +27,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/matlist.H"
@@ -74,6 +75,8 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     dserror("action=none");
   case Condif3Surface::calc_condif_flux:
   {
+    const int iel   = this->NumNode();
+
     // get velocity values at the nodes (needed for total flux values)
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     const int ielparent = parent_->NumNode();
@@ -101,10 +104,16 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
       vector<int> dof = discretization.Dof(node);
         // up to now, there's only one dof per node
         if (dof[0]!=lmparent[k])
-        { cout<<"dof[0]= "<<dof[0]<<"  lmparent[j]="<<lmparent[k]<<endl;
+        {
+          cout<<"dof[0]= "<<dof[0]<<"  lmparent[j]="<<lmparent[k]<<endl;
           dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
         }
     }
+
+    // set flag for type of scalar
+    string scaltypestr=params.get<string>("problem type");
+    bool temperature = false;
+    if (scaltypestr =="loma") temperature = true;
 
     // access control parameter
     Condif3::FluxType fluxtype;
@@ -116,12 +125,44 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     else
       fluxtype=Condif3::noflux;  //default value
 
+    // define vector for normal fluxes
+    vector<double> mynormflux(lm.size());
+
+    // node coordinates
+    LINALG::SerialDenseMatrix xyze(3,iel);
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i)=this->Nodes()[i]->X()[0];
+      xyze(1,i)=this->Nodes()[i]->X()[1];
+      xyze(2,i)=this->Nodes()[i]->X()[2];
+    }
+
+    // determine normal to this element
+    std::vector<double> dist1(3), dist2(3), normal(3);
+    double length;
+
+    for (int i=0; i<3; i++)
+    {
+      dist1[i] = xyze(i,1)-xyze(i,0);
+      dist2[i] = xyze(i,2)-xyze(i,0);
+    }
+
+    normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
+    normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
+    normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+
+    // length of normal to this element
+    length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+
+    // outward-pointing normal of length 1.0
+    for (int i=0; i<3; i++) normal[i] = normal[i] / length;
+
     // do a loop for systems of transported scalars
     const int numdofpernode = parent_->numdofpernode_;
     for (int j = 0; j<numdofpernode; ++j)
     {
       // compute fluxes on each node of the parent element
-      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel,fluxtype,j);
+      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,temperature,evel,fluxtype,j);
 
       // handle the result dofs in the right order (compare lm with lmparent)
       int dofcount = 0;
@@ -135,13 +176,18 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
             // form arithmetic mean of assembled nodal flux vectors
             // => factor is the number of adjacent elements for each node
             double factor = (parent_->Nodes()[k])->NumElement();
-            // here, we rely on the right order (see above!)
-            //Node* node = (parent_->Nodes())[k];
-            //vector<int> dof = discretization.Dof(node);
-            //if (dof[0]!=lm[i]) dserror("mismatch");
-            elevec1[i*numdofpernode+j]+=eflux(0,k)/factor;
-            elevec2[i*numdofpernode+j]+=eflux(1,k)/factor;
-            elevec3[i*numdofpernode+j]+=eflux(2,k)/factor;
+
+            // calculate normal flux at present node
+            mynormflux[i] = abs((eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2])/factor);
+
+            // calculate integral of normal flux
+            // => only meaningful for one scalar, for the time being
+            NormalFluxIntegral(params,discretization,lm,xyze,mynormflux);
+
+            // normal flux value is stored in elevec1, other elevecs set to 0.0
+            elevec1[i*numdofpernode+j]+=mynormflux[i];
+            elevec2[i*numdofpernode+j]+=0.0;
+            elevec3[i*numdofpernode+j]+=0.0;
           }
         }
       }
@@ -223,7 +269,130 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {
-  dserror("EvaluateNeumann not implemented.");
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
+  switch(distype)
+  {
+  case DRT::Element::quad4:
+    gaussrule = DRT::UTILS::intrule_quad_4point;
+    break;
+  case DRT::Element::quad8: case DRT::Element::quad9:
+    gaussrule = DRT::UTILS::intrule_quad_9point;
+    break;
+  case DRT::Element::tri3 :
+    gaussrule = DRT::UTILS::intrule_tri_3point;
+    break;
+  case DRT::Element::tri6:
+    gaussrule = DRT::UTILS::intrule_tri_6point;
+    break;
+  default:
+    dserror("shape type unknown!\n");
+  }
+
+  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+
+  // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  deriv(2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix  xyze(3,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
+  double                    drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+  // get values, switches and spatial functions from the condition
+  // (assumed to be constant on element boundary)
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    // coordinates of the current integration point
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight and the timecurve factor
+    const double fac = intpoints.qwgt[iquad] *drs* curvefac;
+
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine coordinates of current Gauss point
+    double coordgp[3];
+    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    coordgp[2]=0.0;
+    for (int i = 0; i< iel; i++)
+    {
+      coordgp[0] += xyze(0,i) * funct[i];
+      coordgp[1] += xyze(1,i) * funct[i];
+      coordgp[2] += xyze(2,i) * funct[i];
+    }
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+
+    // for the time being, only for single scalar transport equations
+    numdofpernode_ = parent_->numdofpernode_;
+
+    for (int node=0;node<iel;++node)
+    {
+      for(int dof=0;dof<numdofpernode_;dof++)
+      {
+        // factor given by spatial function
+        if (func) functnum = (*func)[dof];
+        {
+          if (functnum>0)
+          {
+            // evaluate function at current gauss point
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dof,coordgpref);
+          }
+          else
+            functfac = 1.0;
+        }
+
+        elevec1[node]+= funct(node)*(*onoff)[dof]*(*val)[dof]*fac*functfac;
+      }
+    }
+  } //end of loop over integration points
+
   return 0;
 }
 
@@ -388,6 +557,80 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   return;
 
 } // Condif3Surface::EvaluateElectrodeKinetics()
+
+
+/*----------------------------------------------------------------------*
+ | calculate integral of normal flux (private)                  vg 09/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif3Surface::NormalFluxIntegral(
+   ParameterList&                  params,
+   DRT::Discretization&            discretization,
+   const vector<int>&              lm,
+   const Epetra_SerialDenseMatrix  xyze,
+   const vector<double>&           enormflux
+)
+{
+  const int iel   = this->NumNode();
+  const DiscretizationType distype = this->Shape();
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseVector funct       (iel);
+  LINALG::SerialDenseMatrix deriv       (2,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  LINALG::SerialDenseMatrix metrictensor  (2,2);
+  double                    drs;
+
+  // get variable for integral of normal flux
+  double normfluxintegral = params.get<double>("normfluxintegral");
+
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
+  switch(distype)
+  {
+  case DRT::Element::quad4:
+    gaussrule = DRT::UTILS::intrule_quad_4point;
+    break;
+  case DRT::Element::quad8: case DRT::Element::quad9:
+    gaussrule = DRT::UTILS::intrule_quad_9point;
+    break;
+  case DRT::Element::tri3 :
+    gaussrule = DRT::UTILS::intrule_tri_3point;
+    break;
+  case DRT::Element::tri6:
+    gaussrule = DRT::UTILS::intrule_tri_6point;
+    break;
+  default:
+    dserror("shape type unknown!\n");
+  }
+
+  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D(funct, e0, e1, distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+
+    const double fac = intpoints.qwgt[gpid] * drs;
+
+    // compute integral of normal flux
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        normfluxintegral += funct[node] * enormflux[node] *fac;
+      }
+    }
+  }
+
+  params.set<double>("normfluxintegral",normfluxintegral);
+
+}//DRT::ELEMENTS::Condif3Surface::NormalFluxIntegral
 
 
 #endif  // #ifdef CCADISCRET

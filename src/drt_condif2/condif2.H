@@ -300,7 +300,16 @@ private:
     none,
     calc_condif_systemmat_and_residual,
     calc_condif_flux,
-    initialize_one_step_theta
+    initialize_one_step_theta,
+    calc_temp_and_dens
+  };
+
+  //! flux parameters recognized by condif2
+  enum FluxType
+  {
+    noflux,
+    totalflux,
+    diffusiveflux
   };
 
   //! Gaussrule
@@ -319,8 +328,22 @@ private:
   //! convert action string to condif3 action type
   ActionType convertStringToActionType(const string& action) const;
 
-  //! extract local nodal values from a node-rowmap-based Epetra_Multivector (2D)
-  void ExtractMyNodeBasedValues2D(Epetra_SerialDenseVector& local,const RCP<Epetra_MultiVector>& global);
+  //! calculate flux vector for actual solution
+  Epetra_SerialDenseMatrix CalculateFlux(
+      vector<double>&           phinp,
+      struct _MATERIAL*         material,
+      bool                      temperature,
+      Epetra_SerialDenseVector& evel,
+      Condif2::FluxType         fluxtype,
+      const int&                dofindex
+      );
+
+  //! calculate integrals of temperature, density and domain
+ void CalculateTempAndDens(
+      ParameterList&            params,
+      vector<double>&           ephinp,
+      vector<double>&           edensnp
+      );
 
 }; // class Condif2
 
@@ -631,6 +654,25 @@ private:
   DRT::ELEMENTS::Condif2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
+  //! number of dofs per node (for systems of transport equations)
+  //! (storage neccessary because we dont know the material in the post filters anymore)
+  int                       numdofpernode_;
+
+ /*!
+  brief integral of normal flux over boundary line
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param xye (in)           : node coordinates
+  \param enormflux (in)     : normal fluxes at element nodes
+  */
+  void NormalFluxIntegral(ParameterList&                  params,
+                             DRT::Discretization&            discretization,
+                             const vector<int>&              lm,
+                             const Epetra_SerialDenseMatrix  xye,
+                             const vector<double>&           enormflux);
 
   // compute infintesimal line element dr for integration along the line
   double  condif2_substitution(const Epetra_SerialDenseMatrix  xyze,

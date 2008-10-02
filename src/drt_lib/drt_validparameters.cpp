@@ -559,10 +559,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "determines the material parameter for the hyperpolyconvex material",
                                yesnotuple,yesnovalue,
                                &iap);
-  // Measured displacment/load curve during the experiments  a1*(1-exp(-pow((a2*t), a3)))
-  DoubleParameter("MEASURED_CURVE0",0.0,"measured displacment of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE1",0.0,"measured displacment of the tension testing",&iap);
-  DoubleParameter("MEASURED_CURVE2",0.0,"measured displacment of the tension testing",&iap);
+  // Measured displacment during the experiments
+  DoubleParameter("MEASURED_DISP0",0.0,"measured displacment of the tension testing",&iap);
+  DoubleParameter("MEASURED_DISP1",0.0,"measured displacment of the tension testing",&iap);
+  DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&iap);
+
+  // mu for inv_analysis
+  DoubleParameter("MU_MINUS",1.0,"parameter for inverse analysis",&iap);
+  DoubleParameter("MU_PLUS",1.0,"parameter for inverse analysis",&iap);
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
@@ -1200,6 +1204,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
 
+  setStringToIntegralParameter("OUTMEAN","No",
+                               "print out mean values of temperature/density",
+                               tuple<std::string>(
+                                 "No",
+                                 "Yes"
+                                 ),
+                               tuple<int>(0,1),
+                               &lomacontrol);
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
       "ELCH CONTROL",
@@ -1212,7 +1226,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&elchcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
-  DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,"");

@@ -608,6 +608,51 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
 
     switch(distype)
     {
+        case DRT::Element::quad4:
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+            }
+            break;
+        }
+        case DRT::Element::quad8:
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+            }
+            break;
+        }
+        case DRT::Element::quad9:
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+            }
+            break;
+        }
+        case DRT::Element::tri3:
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_tri6_nodes_reference[inode][isd];
+            }
+            break;
+        }
+        case DRT::Element::tri6:
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_tri6_nodes_reference[inode][isd];
+            }
+            break;
+        }
         case DRT::Element::hex8:
         {
             for(int inode = 0; inode < nNode; inode++)

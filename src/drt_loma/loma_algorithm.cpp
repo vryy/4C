@@ -29,6 +29,9 @@ LOMA::Algorithm::Algorithm(
   itmax_ = prbdyn.get<int>   ("ITEMAX");
   ittol_ = prbdyn.get<double>("CONVTOL");
 
+  // flag for printing out mean values of temperature and density
+  outmean_ = prbdyn.get<string>("OUTMEAN");
+
   return;
 }
 
@@ -112,6 +115,9 @@ void LOMA::Algorithm::TimeLoop()
   // compute initial convective density-weighted velocity field for scalar 
   // transport solver using initial fluid velocity field
   ScaTraField().SetLomaVelocity(ConvectiveVelocity());
+
+  // write initial fields
+  Output();
 
   // time loop
   while (NotFinished())
@@ -229,8 +235,9 @@ void LOMA::Algorithm::Output()
   // discretizations, which in turn defines the dof number ordering of the
   // discretizations.
   FluidField().Output();
-  FluidField().LiftDrag();
+  //FluidField().LiftDrag();
   ScaTraField().Output();
+  if (outmean_=="Yes") ScaTraField().OutputMeanTempAndDens();
 
   return;
 }

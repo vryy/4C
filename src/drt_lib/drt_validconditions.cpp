@@ -107,18 +107,57 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
+  // Neumann conditions for transport problems
+  Teuchos::RCP<ConditionDefinition> pointtransportneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT TRANSPORT NEUMANN CONDITIONS",
+                                         "TransportPointNeumann",
+                                         "Point Neumann",
+                                         DRT::Condition::PointNeumann,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linetransportneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE TRANSPORT NEUMANN CONDITIONS",
+                                         "TransportLineNeumann",
+                                         "Line Neumann",
+                                         DRT::Condition::LineNeumann,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surftransportneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TRANSPORT NEUMANN CONDITIONS",
+                                         "TransportSurfaceNeumann",
+                                         "Surface Neumann",
+                                         DRT::Condition::SurfaceNeumann,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> voltransportneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL TRANSPORT NEUMANN CONDITIONS",
+                                         "TransportVolumeNeumann",
+                                         "Volume Neumann",
+                                         DRT::Condition::VolumeNeumann,
+                                         true,
+                                         DRT::Condition::Volume));
+
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
     pointneumann->AddComponent(neumanncomponents[i]);
     lineneumann->AddComponent(neumanncomponents[i]);
     surfneumann->AddComponent(neumanncomponents[i]);
     volneumann->AddComponent(neumanncomponents[i]);
+
+    pointtransportneumann->AddComponent(neumanncomponents[i]);
+    linetransportneumann->AddComponent(neumanncomponents[i]);
+    surftransportneumann->AddComponent(neumanncomponents[i]);
+    voltransportneumann->AddComponent(neumanncomponents[i]);
   }
 
   condlist.push_back(pointneumann);
   condlist.push_back(lineneumann);
   condlist.push_back(surfneumann);
   condlist.push_back(volneumann);
+
+  condlist.push_back(pointtransportneumann);
+  condlist.push_back(linetransportneumann);
+  condlist.push_back(surftransportneumann);
 
   /*--------------------------------------------------------------------*/
   // Dirichlet
@@ -796,7 +835,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "kinetic model","Butler-Volmer",
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"),
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"))));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot0")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));

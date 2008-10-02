@@ -230,6 +230,29 @@ namespace UTILS
                                                          {1,  2,  5},
                                                          {3,  4,  5}};
 
+  //! for each node the reference coordinates are stored for quad9
+  const double eleNodeNumbering_quad9_nodes_reference[9][2] = { {-1.0, -1.0},
+                                                                { 1.0, -1.0},
+                                                                { 1.0,  1.0},
+                                                                {-1.0,  1.0},
+
+                                                                { 0.0, -1.0},
+                                                                { 1.0,  0.0},
+                                                                { 0.0,  1.0},
+                                                                {-1.0,  0.0},
+
+                                                                { 0.0,  0.0} };
+
+  //! for each node the reference coordinates are stored for tri6
+  const double eleNodeNumbering_tri6_nodes_reference[6][2] = { {0.0, 0.0},
+                                                               {1.0, 0.0},
+                                                               {0.0, 1.0},
+
+                                                               {0.5, 0.0},
+                                                               {0.5, 0.5},
+                                                               {0.0, 0.5} };
+
+
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {    {-1.0,  -1.0,  -1.0},
                                                                     { 1.0,  -1.0,  -1.0},
@@ -264,7 +287,6 @@ namespace UTILS
                                                                     {-1.0,   0.0,   0.0},
                                                                     { 0.0,   0.0,   1.0},
                                                                     { 0.0,   0.0,   0.0}};
-
 
   //! for each node the reference coordinates are stored for a tet10
   const double eleNodeNumbering_tet10_nodes_reference[10][3] = {    { 0.0,   0.0,   0.0},
