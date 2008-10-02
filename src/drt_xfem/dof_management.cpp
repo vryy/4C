@@ -47,7 +47,6 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
     {
       std::cout << "  - " << enr->toString() << endl;
     }
-    flush(cout);
   }
 }
 
@@ -317,7 +316,7 @@ void XFEM::DofManager::toGmsh(
       filename    << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
       filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
-      std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+      std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
       {
         std::ofstream f_system(filename.str().c_str());
         {
