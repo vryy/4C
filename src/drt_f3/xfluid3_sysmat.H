@@ -25,7 +25,7 @@ namespace XFLUID
 {
   /*!
    * \brief entry point for Sysmat call
-   * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
+   * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
    * This is the point.
    */
   void callSysmatTP1(
@@ -33,7 +33,7 @@ namespace XFLUID
           const DRT::ELEMENTS::XFluid3*     ele,
           const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
-          const DRT::ELEMENTS::XFluid3::MyState  mystate,   ///< element state variables
+          const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<const Epetra_Vector> ivelcol,
           const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
@@ -51,7 +51,7 @@ namespace XFLUID
 
   /*!
    * \brief entry point for Sysmat call
-   * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
+   * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
    * This is the point.
    */
   void callSysmat3(
@@ -85,7 +85,7 @@ namespace XFLUID
           const DRT::ELEMENTS::XFluid3*     ele,
           const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
-          const DRT::ELEMENTS::XFluid3::MyState  mystate,   ///< element state variables
+          const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<const Epetra_Vector> ivelcol,
           const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,

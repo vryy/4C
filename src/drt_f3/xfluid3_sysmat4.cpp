@@ -377,25 +377,30 @@ static void SysmatDomain4(
     {
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
         
-        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-        const int labelnp = ih->PositionWithinConditionNP(cellcenter);
-        const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-        bool compute = false;
-        if (labelnp == 0) // fluid
+        int labelnp = 0;
+        
+        if (ASSTYPE == XFEM::xfem_assembly)
         {
-          compute = true;
-        }
-        else if (xlabelset.size() > 1) // multiple interface labels
-        {
-          compute = true;
-        }
-        else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
-        {
-          compute = true;
-        }
-        if (not compute)
-        {
-          continue;
+          // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+          labelnp = ih->PositionWithinConditionNP(cellcenter);
+          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+          bool compute = false;
+          if (labelnp == 0) // fluid
+          {
+            compute = true;
+          }
+          else if (xlabelset.size() > 1) // multiple interface labels
+          {
+            compute = true;
+          }
+          else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+          {
+            compute = true;
+          }
+          if (not compute)
+          {
+            continue;
+          }
         }
             
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
@@ -1805,7 +1810,7 @@ static void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
-        const DRT::ELEMENTS::XFluid3::MyState  mystate,  ///< element state variables
+        const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
@@ -1867,7 +1872,7 @@ void XFLUID::callSysmat4(
         const DRT::ELEMENTS::XFluid3*     ele,
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
-        const DRT::ELEMENTS::XFluid3::MyState  mystate,   ///< element state variables
+        const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,

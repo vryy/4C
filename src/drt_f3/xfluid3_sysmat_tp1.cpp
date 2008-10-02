@@ -71,7 +71,7 @@ Maintainer: Axel Gerstenberger
             class M1, class V1, class M2, class V2>
   void fillElementUnknownsArraysTP1(
           const XFEM::ElementDofManager& dofman,
-          const DRT::ELEMENTS::XFluid3::MyState mystate,
+          const DRT::ELEMENTS::XFluid3::MyState& mystate,
           M1& evelnp,
           M1& eveln,
           M1& evelnm,
@@ -2159,7 +2159,7 @@ void XFLUID::callSysmatTP1(
         const DRT::ELEMENTS::XFluid3*     ele,
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
-        const DRT::ELEMENTS::XFluid3::MyState  mystate,   ///< element state variables
+        const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
