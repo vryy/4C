@@ -109,6 +109,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_fem_general/drt_utils_fem_shapefunctions.o \
                 src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \
                 src/drt_fem_general/drt_utils_bspline.o \
+                src/drt_fem_general/drt_utils_boundary_integration.o \
                 src/drt_lib/drt_nurbs_discret.o \
                 src/drt_lib/drt_control_point.o \
                 src/drt_lib/drt_knotvector.o \

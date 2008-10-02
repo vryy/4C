@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -270,7 +271,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
         shape_function_2D_deriv1(deriv, e0, e1, distype);
-        f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+        DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
         const double fac = intpoints.qwgt[gpid] * drs * thsl * normvel;
 
@@ -319,7 +320,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
       // compute measure tensor for surface element and the infinitesimal
       // area element drs for the integration
-      f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+      DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
       // values are multiplied by the product from inf. area element,
       // the gauss weight, the timecurve factor and the constant
@@ -369,107 +370,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   return 0;
 }
 
-
-/* compute kovariant metric tensor G for fluid element        gammi 04/07
-
-                        +-       -+
-                        | g11 g12 |
-                    G = |         |
-                        | g12 g22 |
-                        +-       -+
-
- where (o denotes the inner product, xyz a vector)
-
-
-                            dxyz   dxyz
-                    g11 =   ---- o ----
-                             dr     dr
-
-                            dxyz   dxyz
-                    g12 =   ---- o ----
-                             dr     ds
-
-                            dxyz   dxyz
-                    g22 =   ---- o ----
-                             ds     ds
-
-
- and the square root of the first fundamental form
-
-
-                          +--------------+
-                         /               |
-           sqrtdetg =   /  g11*g22-g12^2
-                      \/
-
- they are needed for the integration over the surface element
-
-*/
-void  DRT::ELEMENTS::Fluid3Surface::f3_metric_tensor_for_surface(
-  const Epetra_SerialDenseMatrix  xyze,
-  const Epetra_SerialDenseMatrix  deriv,
-  Epetra_SerialDenseMatrix&       metrictensor,
-  double                         *sqrtdetg)
-{
-  /*
-  |                                              0 1 2
-  |                                             +-+-+-+
-  |       0 1 2              0...iel-1          | | | | 0
-  |      +-+-+-+             +-+-+-+-+          +-+-+-+
-  |      | | | | 1           | | | | | 0        | | | | .
-  |      +-+-+-+       =     +-+-+-+-+       *  +-+-+-+ .
-  |      | | | | 2           | | | | | 1        | | | | .
-  |      +-+-+-+             +-+-+-+-+          +-+-+-+
-  |                                             | | | | iel-1
-  |		     	      	     	        +-+-+-+
-  |
-  |       dxyzdrs             deriv              xyze^T
-  |
-  |
-  |                                     +-            -+
-  |  	   	    	    	        | dx   dy   dz |
-  |  	   	    	    	        | --   --   -- |
-  | 	   	   	   	        | dr   dr   dr |
-  | 	yields               dxyzdrs =  |              |
-  |  	   	    	    	        | dx   dy   dz |
-  |  	   	    	    	        | --   --   -- |
-  | 	   	   	   	        | ds   ds   ds |
-  |                                     +-            -+
-  |
-  */
-  Epetra_SerialDenseMatrix dxyzdrs (2,3);
-
-  dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
-
-  /*
-  |
-  |      +-           -+    +-            -+   +-            -+ T
-  |      |             |    | dx   dy   dz |   | dx   dy   dz |
-  |      |  g11   g12  |    | --   --   -- |   | --   --   -- |
-  |      |             |    | dr   dr   dr |   | dr   dr   dr |
-  |      |             |  = |              | * |              |
-  |      |             |    | dx   dy   dz |   | dx   dy   dz |
-  |      |  g21   g22  |    | --   --   -- |   | --   --   -- |
-  |      |             |    | ds   ds   ds |   | ds   ds   ds |
-  |      +-           -+    +-            -+   +-            -+
-  |
-  | the calculation of g21 is redundant since g21=g12
-  */
-  metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
-
-/*
-                          +--------------+
-                         /               |
-           sqrtdetg =   /  g11*g22-g12^2
-                      \/
-*/
-
-  sqrtdetg[0]= sqrt(metrictensor(0,0)*metrictensor(1,1)
-                    -
-                    metrictensor(0,1)*metrictensor(1,0));
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)            gjb 07/07|
@@ -555,7 +455,7 @@ void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
 
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight
@@ -673,7 +573,7 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
 
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element and
     // the gauss weight
@@ -785,7 +685,7 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     shape_function_2D_deriv1(deriv, e0, e1, distype);
 
     //Calculate infinitesimal area of element (drs)
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     const double fac = intpoints.qwgt[gpid] * drs;
 
@@ -900,7 +800,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
     shape_function_2D_deriv1(deriv, e0, e1, distype);
 
     //Calculate infinitesimal area of element (drs)
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
     const double fac = intpoints.qwgt[gpid] * drs;
 
@@ -1035,7 +935,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     shape_function_2D_deriv1(deriv, e0, e1, distype);
 
     // Calculate infinitesimal area of element (drs)
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
 
     const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;

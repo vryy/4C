@@ -579,7 +579,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 1;}
+  {return parent_->numdofpernode_;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -679,11 +679,28 @@ private:
   enum ActionType
   {
     none,
-    calc_condif_flux
+    calc_condif_flux,
+    calc_elch_electrode_kinetics
   };
 
   // don't want = operator
   Condif3Surface& operator = (const Condif3Surface& old);
+
+  //! evaluate an electrode kinetics boundary condition
+  void EvaluateElectrodeKinetics(
+     Epetra_SerialDenseMatrix& emat,  ///< element-matrix
+     Epetra_SerialDenseVector& erhs,  ///< element-rhs
+     const vector<double>&   ephinp,
+     struct _MATERIAL*     material,  ///< the material
+     const double&             sign,
+     const int&          reactantid,
+     const std::string*    kinetics,
+     const double&             pot0,  ///< electrode potential on metal side
+     const double&           alphaa,
+     const double&           alphac,
+     const double&               i0,  ///< exchange current density
+     const double&              frt   ///< factor F/RT
+     );
 
   //! The parent element of this surface
   DRT::ELEMENTS::Condif3* parent_;

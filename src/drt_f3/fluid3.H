@@ -1065,14 +1065,6 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
-  //  compute kovariant metric tensor G for fluid surface element
-  //                                                  gammi 04/07
-
-  void  f3_metric_tensor_for_surface(
-    const Epetra_SerialDenseMatrix  xyze,
-    const Epetra_SerialDenseMatrix  deriv,
-    Epetra_SerialDenseMatrix&       metrictensor,
-    double                         *drs);
 
   void CreateLinesTri(const int& nline,
                       const int& nnode);
