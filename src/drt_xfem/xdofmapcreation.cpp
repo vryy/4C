@@ -100,7 +100,8 @@ void XFEM::createDofMap(
                 nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
                 nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
               }
-            };            
+            };
+            cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio: " << volumeratio << endl;
           }
 
           // TODO: check, how much area for integration we have (from BoundaryIntcells)
