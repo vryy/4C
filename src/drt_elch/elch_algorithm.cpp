@@ -42,9 +42,8 @@ ELCH::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoop()
 {
-    // solve con-dif equation without coupling to Navier-Stokes
-    // ConDifField().SetVelocityField(1,1);
-    // ConDifField().Integrate();
+  // write out inital state
+  Output();
 
   // time loop
   while (NotFinished())

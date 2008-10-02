@@ -39,6 +39,9 @@ SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 /*----------------------------------------------------------------------*/
 void SCATRA::PassiveScaTraAlgorithm::TimeLoop()
 {
+  // write out inital state
+  Output();
+
   // time loop (no-subcycling at the moment)
   while (NotFinished())
   {

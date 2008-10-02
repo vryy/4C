@@ -251,6 +251,9 @@ void SCATRA::ScaTraTimIntImpl::Integrate()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
+  // write out inital state
+  Output();
+
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
