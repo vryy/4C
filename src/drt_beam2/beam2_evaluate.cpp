@@ -64,31 +64,47 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
    
   switch(act)
   {
-     //action type for evaluating statistical forces
-     case Beam2::calc_stat_forces:
-      {   
-        /*evaluate statistical forces only on processor which is owner of the element so that forces
-         * are not evaluated twice for one element (if one did so the final additive export of the
-         * col map statistical force vector to a row map vector would add up the statistical forces
-         *  of all processors on which this element exists at least as a ghost element and with at
-         * least two processors this would entail double statistical forces for DOF of elements on 
-         * which the element domains of the processors overlap*/
-        if(this->Owner() != discretization.Comm().MyPID()) return 0;
-              
-        // get element displacements (for use in shear flow fields)
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        
-        //actual evaluation of statistical forces
-        EvaluateStatisticalNeumann(params,mydisp,elevec1);
+    //action type for evaluating statistical forces
+    case Beam2::calc_stat_forces:
+    {   
+      /*evaluate statistical forces only on processor which is owner of the element so that forces
+       * are not evaluated twice for one element (if one did so the final additive export of the
+       * col map statistical force vector to a row map vector would add up the statistical forces
+       *  of all processors on which this element exists at least as a ghost element and with at
+       * least two processors this would entail double statistical forces for DOF of elements on 
+       * which the element domains of the processors overlap*/
+      if(this->Owner() != discretization.Comm().MyPID()) return 0;
+            
+      // get element displacements (for use in shear flow fields)
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      
+      //evaluation of statistical forces with the local statistical forces vector fstat
+      Epetra_SerialDenseVector fstat(lm.size());
+      EvaluateStatisticalNeumann(params,mydisp,fstat);
+      
+      //assembling local statistical force vector to global statistical force vector
+      //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
+      RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
 
+      for(unsigned int i = 0; i < lm.size(); i++)
+      {
+        //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
+        if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
+        
+        //get local Id of the fstatcol vector related with a certain element of fstat
+        int lid = (fstatcol->Map()).LID(lm[i]);
+        
+        //add to the related element of fstatcol the contribution of fstat
+        (*fstatcol)[lid] += fstat[i];
       }
+    }
     break;
     /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero dispalcement and 
      residual values*/ 
-     case Beam2::calc_struct_linstiff:
+    case Beam2::calc_struct_linstiff:
     {   
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
