@@ -148,7 +148,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
-    scatratimeparams->sublist("NONLINEAR")=scatradyn.sublist("NONLINEAR");
+    scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
+    scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
   }
 
   // -------------------------------------------------------------------
@@ -162,7 +163,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta"                    ,1.0);
+    scatratimeparams->set<double>           ("theta",1.0);
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -176,7 +177,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
+    scatratimeparams->set<double>           ("theta",scatradyn.get<double>("THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -190,7 +191,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
+    scatratimeparams->set<double>           ("theta",scatradyn.get<double>("THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -203,9 +204,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
     // parameter alpha_M for for generalized-alpha scheme
-    scatratimeparams->set<double>           ("alpha_M"                  ,scatradyn.get<double>("ALPHA_M"));
+    scatratimeparams->set<double>           ("alpha_M",scatradyn.get<double>("ALPHA_M"));
     // parameter alpha_F for for generalized-alpha scheme
-    scatratimeparams->set<double>           ("alpha_F"                  ,scatradyn.get<double>("ALPHA_F"));
+    scatratimeparams->set<double>           ("alpha_F",scatradyn.get<double>("ALPHA_F"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)

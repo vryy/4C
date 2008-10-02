@@ -126,12 +126,16 @@ DRT::ELEMENTS::Condif3Impl::Condif3Impl(int iel, int numdofpernode, int numscal)
     rhs_(numdofpernode_),
     hist_(numdofpernode_),
     velint_(3),
+    migvelint_(3),
     tau_(numscal_),
     kart_(numscal_),
     xder2_(6,3),
     fac_(0),
     conv_(iel_),
-    diff_(iel_)
+    diff_(iel_),
+    mig_(iel_),
+    gradpot_(3),
+    conint_(numscal_)
 {
   return;
 }
@@ -142,11 +146,12 @@ DRT::ELEMENTS::Condif3Impl::Condif3Impl(int iel, int numdofpernode, int numscal)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif3Impl::Sysmat(
     const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
+    const vector<double>&           ephinp, ///< current scalar field
     const vector<double>&           ehist, ///< rhs from beginning of time step
     const vector<double>&           edens, ///< density*shc
-    Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
-    Epetra_SerialDenseMatrix*       sys_mat_sd, ///< subgrid-diff. matrix
-    Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
+    Epetra_SerialDenseMatrix&       sys_mat,///< element matrix to calculate
+    Epetra_SerialDenseMatrix&       sys_mat_sd, ///< subgrid-diff. matrix
+    Epetra_SerialDenseVector&       residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
     const struct _MATERIAL*         material, ///< material pointer
     const double                    time, ///< current simulation time
@@ -154,7 +159,8 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     const Epetra_SerialDenseVector& evel, ///< nodal velocities at n+1
     bool                            temperature, ///< temperature flag
     string                          fssgd, ///< subgrid-diff. flag
-    const bool                      is_stationary ///< flag indicating stationary formulation
+    const bool                      is_stationary, ///< flag indicating stationary formulation
+    const double                    frt ///< factor F/RT needed for ELCH calculations
 )
 {
   const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -182,17 +188,11 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
       {
         valence_[k]= singlemat.m.ion->valence;
         diffus_[k]= singlemat.m.ion->diffusivity;
-     /*   cout<<"MatId: "<<material->m.matlist->matids[k]
-        <<" valence["<<k<<"] = "<<valence_[k]
-        <<" diffusivity["<<k<<"] = "<<diffus_[k]<<endl;*/
       }
       else if (singlemat.mattyp == m_condif)
         diffus_[k]= singlemat.m.condif->diffusivity;
       else
         dserror("material type is not allowed");
-#if 0
-      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
-#endif
     }
     // set specific heat capacity at constant pressure to 1.0
     shcacp_ = 1.0;
@@ -220,9 +220,19 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     dserror("Material type is not supported");
 
   /*----------------------------------------------------------------------*/
+  // el. potential at element nodes (ELCH)
+  /*----------------------------------------------------------------------*/
+  Epetra_SerialDenseVector epot(iel_);
+  if (numdofpernode_-numscal_==1) // only true for ELCH problems
+    for (int inode=0;inode<iel_;++inode)
+    {
+      epot[inode] += ephinp[inode*numdofpernode_+numscal_];
+    }
+
+  /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
   /*----------------------------------------------------------------------*/
-  CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,is_stationary);
+  CalTau(ele,sugrvisc,evel,epot,distype,timefac,fssgd,is_stationary,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -277,28 +287,16 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
       if(is_stationary==false)
-        CalMat(*sys_mat,*sys_mat_sd,*residual,higher_order_ele,fssgd,timefac,k);
+        CalMat(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,timefac,k);
       else
-        CalMatStationary(*sys_mat,*sys_mat_sd,*residual,higher_order_ele,fssgd,k);
+        CalMatStationary(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,k);
     } // loop over each scalar
 
-    if (numdofpernode_-numscal_== 1) // ELCH
-    {
-      // AddMigrationTerms();
-      // ApplyElectroNeutralityCond(*sys_mat,valence_);
-    }
+    if (numdofpernode_-numscal_== 1) // only true for ELCH problems
+        AddElchTerms(sys_mat,residual,ephinp,higher_order_ele,frt);
+
   } // integration loop
 
-  if (numdofpernode_-numscal_== 1) // ELCH
-  {
-    // testing: set lower-right block to identity matrix:
-    for (int vi=0; vi<iel_; ++vi)
-    {
-        //fac_funct_vi_densfunct_ui = fac_*funct_[vi]*densfunct_[ui];
-        (*sys_mat)(vi*numdofpernode_+numscal_, vi*numdofpernode_+numscal_) += 1.0;
-    }
-  }
-  //cout<<*sys_mat<<endl;
   return;
 }
 
@@ -382,10 +380,12 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
     const DRT::ELEMENTS::Condif3*&          ele,
     Epetra_SerialDenseVector&               sugrvisc,
     const Epetra_SerialDenseVector&         evel,
+    const Epetra_SerialDenseVector&         epot,
     const DRT::Element::DiscretizationType& distype,
     const double&                           timefac,
     string                                  fssgd,
-    const bool&                             is_stationary
+    const bool&                             is_stationary,
+    const double&                           frt
   )
 {
   /*------------------------------------------------------- initialize ---*/
@@ -464,38 +464,51 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
   // const double hk = pow((6.*vol/PI),(1.0/3.0));
 
   // 2) streamlength (based on velocity vector at element centre)
-  /*------------------------------------------------------------------*/
-  /*       compute global derivates (only necessary for streamlength) */
-  /*------------------------------------------------------------------*/
-  /*------------------------------------------------- initialization */
-  /*for(int k=0;k<iel;k++)
+  if (numdofpernode_-numscal_== 1) // ELCH
   {
-    derxy_(0,k)=0.0;
-    derxy_(1,k)=0.0;
-    derxy_(2,k)=0.0;
-  }
+    /*------------------------------------------------------------------*/
+    /* compute global derivates (only necessary for streamlength & ELCH)*/
+    /*------------------------------------------------------------------*/
+    /*------------------------------------------------- initialization */
+    for(int k=0;k<iel_;k++)
+    {
+      derxy_(0,k)=0.0;
+      derxy_(1,k)=0.0;
+      derxy_(2,k)=0.0;
+    }
 
-  // ---------------------------------------inverse of transposed jacobian
-  double idet = 1./det;
-  xij_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))*idet;
-  xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))*idet;
-  xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))*idet;
-  xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))*idet;
-  xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))*idet;
-  xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))*idet;
-  xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))*idet;
-  xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))*idet;
-  xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))*idet;
+    // ---------------------------------------inverse of transposed jacobian
+    double idet = 1./det;
+    xij_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))*idet;
+    xij_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))*idet;
+    xij_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))*idet;
+    xij_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))*idet;
+    xij_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))*idet;
+    xij_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))*idet;
+    xij_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))*idet;
+    xij_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))*idet;
+    xij_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))*idet;
 
-  //---------------------------------------- calculate global derivatives
-  for (int k=0;k<iel;k++)
-  {
-    derxy_(0,k) +=   xji_(0,0) * deriv_(0,k) + xji_(0,1) * deriv_(1,k) + xji_(0,2) * deriv_(2,k);
-    derxy_(1,k) +=   xji_(1,0) * deriv_(0,k) + xji_(1,1) * deriv_(1,k) + xji_(1,2) * deriv_(2,k);
-    derxy_(2,k) +=   xji_(2,0) * deriv_(0,k) + xji_(2,1) * deriv_(1,k) + xji_(2,2) * deriv_(2,k);
-  }
+    //---------------------------------------- calculate global derivatives
+    for (int k=0;k<iel_;k++)
+    {
+      derxy_(0,k) +=   xij_(0,0) * deriv_(0,k) + xij_(0,1) * deriv_(1,k) + xij_(0,2) * deriv_(2,k);
+      derxy_(1,k) +=   xij_(1,0) * deriv_(0,k) + xij_(1,1) * deriv_(1,k) + xij_(1,2) * deriv_(2,k);
+      derxy_(2,k) +=   xij_(2,0) * deriv_(0,k) + xij_(2,1) * deriv_(1,k) + xij_(2,2) * deriv_(2,k);
+    }
 
-  double strle = 0.0;
+    // get "migration velocity" divided by D_k*z_k at element center
+    for (int i=0;i<3;i++)
+    {
+      migvelint_[i] = 0.0;
+      for (int j=0;j<iel_;j++)
+      {
+        migvelint_[i] += (-frt)*derxy_(i,j)*epot[j];
+      }
+    }
+  } // if ELCH
+
+/*  double strle = 0.0;
   if (vel_norm>1e-6)
   {
     double val = 0;
@@ -556,17 +569,27 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
     }
   }
 
-  // get Euclidean norm of (weighted) velocity at element center
-  const double vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]) + DSQR(velint_[2]));
-
   // some necessary parameter definitions
-  double epe1, epe2, xi1, xi2;
+  double vel_norm, epe1, epe2, xi1, xi2;
+
+  for(int k = 0;k<numscal_;++k) // loop over all transported scalars
+  {
+    if (numdofpernode_ - numscal_ == 1) // ELCH
+    {
+      const double Dkzk = diffus_[k]*valence_[k];
+      // get Euclidean norm of effective velocity at element center:
+      // (weighted) convective velocity + individual migration velocity
+      vel_norm = sqrt(DSQR(velint_[0]+Dkzk*migvelint_[0]) + DSQR(velint_[1]+Dkzk*migvelint_[1]) + DSQR(velint_[2]+Dkzk*migvelint_[2]));
+    }
+    else
+    {
+      // get Euclidean norm of (weighted) velocity at element center
+      vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]) + DSQR(velint_[2]));
+    }
 
   // stabilization parameter definition according to Franca and Valentin (2000)
   if (is_stationary == false)
   {
-    for(int k = 0;k<numscal_;++k)
-    {
       /* parameter relating diffusive : reactive forces */
       epe1 = 2.0 * timefac * diffus_[k] / (mk * DSQR(hk)); 
       if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
@@ -576,26 +599,20 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
       xi2 = DMAX(epe2,1.0);
 
       tau_[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus_[k]/mk)*xi2);
-    }
   }
   else
   {
-    for (int k = 0;k<numscal_;++k)
-    {
       if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
       /* parameter relating convective : diffusive forces */
       epe2 = mk * vel_norm * hk / diffus_[k];
       xi2 = DMAX(epe2,1.0);
 
       tau_[k] = (DSQR(hk)*mk)/(2.0*diffus_[k]*xi2);
-    }
   }
 
   // compute artificial diffusivity kappa_art_[k]
   if (fssgd == "artificial_all")
   {
-    for (int k = 0;k<numdofpernode_;++k)
-    {
       if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
       /* parameter relating convective : diffusive forces */
       epe2 = mk * vel_norm * hk / diffus_[k];
@@ -607,12 +624,13 @@ void DRT::ELEMENTS::Condif3Impl::CalTau(
       {
         sugrvisc(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
       }
-    } // for k
   }
   else if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" ||
            fssgd == "Smagorinsky_small" || fssgd == "scale_similarity" ||
            fssgd == "mixed_Smagorinsky_all" || fssgd == "mixed_Smagorinsky_small")
     dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
+
+  } // loop over scalars
 
 #if 0
    // some debug output
@@ -1484,9 +1502,15 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
     dserror("Material type is not supported");
 
   /*----------------------------------------------------------------------*/
+  // el. potential at element nodes
+  /*----------------------------------------------------------------------*/
+  Epetra_SerialDenseVector epot(iel_); //dummy
+  double frt = 1.0; //dummy
+  
+  /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
   /*----------------------------------------------------------------------*/
-  CalTau(ele,sugrvisc,evel,distype,timefac,fssgd,false);
+  CalTau(ele,sugrvisc,evel,epot,distype,timefac,fssgd,false,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -1669,17 +1693,20 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
   return;
 } // Condif3Impl::InitializeOST
 
+
 /*----------------------------------------------------------------------*
- |  evaluate electroneutrality condition (private)             gjb 09/08|
+ |  add electrochemistry specific terms (private)              gjb 09/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3Impl::ApplyElectroNeutralityCond(
+void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
     Epetra_SerialDenseMatrix& emat,
-    const vector<double>&     valence
+    Epetra_SerialDenseVector& erhs,
+    const vector<double>&     ephinp,
+    const bool&               higher_order_ele,
+    const double&             frt
 )
 {
-  const int numdof =numdofpernode_;
-  double fac_funct_vi_densfunct_ui(0.0);
-  // -------------------------------------------matrix entries
+  // ------------------------------electroneutrality condition
+  static double fac_funct_vi_densfunct_ui(0.0);
 
   for (int vi=0; vi<iel_; ++vi)
   {
@@ -1687,13 +1714,117 @@ void DRT::ELEMENTS::Condif3Impl::ApplyElectroNeutralityCond(
     {
       fac_funct_vi_densfunct_ui = fac_*funct_[vi]*densfunct_[ui];
       for (int k = 0; k < numscal_;++k)
-        emat(vi*numdof+numdof-1, ui*numdof+k) += valence[k]*fac_funct_vi_densfunct_ui;
+      {
+        // matrix entry
+        emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+k) += valence_[k]*fac_funct_vi_densfunct_ui;
+        // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
+        erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac_funct_vi_densfunct_ui*ephinp[ui*numdofpernode_+k];
+      }
     }
   }
-  // nothing else to do, since the rhs-vector is initialized to zero!
+
+  // ------------------------------------------migration term
+
+  // get values of all transported scalars at integration point
+  for (int k=0; k<numscal_; ++k)
+  {
+    conint_[k] = 0.0;
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      conint_[k] += funct_[ui]*ephinp[ui*numdofpernode_+k];
+    }
+    // when concentration becomes zero, the coupling terms in the system matrix get lost!
+    if (abs(conint_[k])<1e-15) dserror("concentration is nearly singular: %lf",conint_[k]);
+  }
+
+  // get gradient of el. potential at integration point
+  static double pot_ui(0.0);
+  gradpot_[0] = 0.0;
+  gradpot_[1] = 0.0;
+  gradpot_[2] = 0.0;
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    pot_ui = ephinp[ui*numdofpernode_+numscal_];
+    gradpot_[0] += derxy_(0,ui)*pot_ui;
+    gradpot_[1] += derxy_(1,ui)*pot_ui;
+    gradpot_[2] += derxy_(2,ui)*pot_ui;
+  }
+
+  for (int i=0; i<iel_; i++)
+  {
+     /* migration part */
+     mig_[i] = (-frt)*(gradpot_[0] * derxy_(0,i) + gradpot_[1] * derxy_(1,i) + gradpot_[2] * derxy_(2,i));
+  }
+
+#if 0
+  // DEBUG output
+  cout<<endl<<"values at GP:"<<endl;
+  cout<<"factor F/RT = "<<frt<<endl;
+  for (int k=0;k<numscal_;++k)
+  {cout<<"conint_["<<k<<"] = "<<conint_[k]<<endl;}
+  for (int k=0;k<3;++k)
+  {cout<<"gradpot_["<<k<<"] = "<<gradpot_[k]<<endl;}
+#endif
+
+  for (int k = 0; k < numscal_;++k)
+  {
+    // stabilization parameter
+    const double taufac = tau_[k]*fac_;
+
+    // ----------------------------------------matrix entries
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      for (int ui=0; ui<iel_; ++ui)
+      {
+        // entries in tangential matrix (directional derivatives)
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += frt*fac_*diffus_[k]*valence_[k]*funct_[ui]*(derxy_(0, vi)*gradpot_[0] + derxy_(1, vi)*gradpot_[1] + derxy_(2, vi)*gradpot_[2]);
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt*fac_*diffus_[k]*valence_[k]*conint_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+
+        // convective stabilization due to migration velocity
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*frt*diffus_[k]*valence_[k]*mig_[vi]*diffus_[k]*valence_[k]*mig_[ui];
+      }
+    }
+    // -------------------------------------------rhs entries
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      // nonlinear migration term
+      erhs[vi*numdofpernode_+k] -= frt*conint_[k]*fac_*diffus_[k]*valence_[k]*(derxy_(0, vi)*gradpot_[0] + derxy_(1, vi)*gradpot_[1] + derxy_(2, vi)*gradpot_[2]);
+
+      for (int ui=0; ui<iel_; ++ui)
+      {
+        // convective term
+        erhs[vi*numdofpernode_+k] -= fac_*funct_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k];
+        // diffusive term
+        erhs[vi*numdofpernode_+k] -= fac_*diffus_[k]*ephinp[ui*numdofpernode_+k]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)+ derxy_(2, ui)*derxy_(2, vi));
+
+        /* Stabilization term: */
+        /* 1) convective stabilization */
+
+        /* convective term */
+        erhs[vi*numdofpernode_+k] -= taufac*conv_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k] ;
+        /* migration term */
+        erhs[vi*numdofpernode_+k] -= taufac*diffus_[k]*valence_[k]*mig_[vi]*diffus_[k]*valence_[k]*mig_[ui]*ephinp[ui*numdofpernode_+k] ;
+
+        if (higher_order_ele)
+        {
+          dserror("higher order terms not yet finished");
+          /* diffusive term */
+          erhs[vi*numdofpernode_+k] -= -taufac*conv_[vi]*diff_[ui]*ephinp[ui*numdofpernode_+k] ;
+
+          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+
+          /* convective term */
+          erhs[vi*numdofpernode_+k] -= taufac*diff_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k] ;
+
+          /* diffusive term */
+          erhs[vi*numdofpernode_+k] += taufac*diff_[vi]*diff_[ui]*ephinp[ui*numdofpernode_+k] ;
+        }
+      }
+    } 
+  } // loop over scalars
 
   return;
-} // Condif3Impl::ApplyElectroneutralityCond
+} // Condif3Impl::AddElchTerms
 
 #endif
 #endif

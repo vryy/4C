@@ -53,7 +53,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!fluiddis->Filled() or !fluiddis->HaveDofs()) fluiddis->FillComplete();
 
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
@@ -71,7 +71,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
     Epetra_Time time(comm);
     std::map<string,string> conditions_to_copy;
     conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-    //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
+    //conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
     conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
     SCATRA::CreateScaTraDiscretization(fluiddis,condifdis,conditions_to_copy,false);
     if (comm.MyPID()==0)

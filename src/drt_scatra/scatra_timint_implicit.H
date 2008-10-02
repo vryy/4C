@@ -106,6 +106,12 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  //! contains the nonlinear iteration loop
+  void NonlinearSolve();
+
+  //! check convergence (or divergence) of nonlinear iteration
+  bool AbortNonlinIter(const int itnum, const int itmax, const double ittol);
+
   //! solve linear system
   void Solve();
 
@@ -232,6 +238,9 @@ protected:
   double theta_;
 
   int cdvel_;
+  
+  // maximum number of nonlinear iterations
+  int itemax_;
 
   /// fine-scale subgrid-viscosity flag
   string fssgd_;
@@ -285,6 +294,8 @@ protected:
   /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
   RCP<Epetra_Vector>    sugrvisc_;
 
+  //! Extractor used for convergence check of nonlinear iteration
+  LINALG::MapExtractor      conpotsplitter_;
 
   // time measurement
   // ----------------

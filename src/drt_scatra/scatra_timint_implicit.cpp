@@ -25,6 +25,7 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/vm3_solver.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_fluid/fluid_utils.H" // for conpotsplitter
 
 // for the condition writer output
 /*
@@ -92,12 +93,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // This is a first estimate for the number of non zeros in a row of
   // the matrix. Assuming a structured 3d mesh we have 27 adjacent
-  // nodes with 1 dof each.
+  // nodes with numdof DOF each.
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+  const int numdof = discret_->NumDof(discret_->lRowNode(0));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,(27*numdof)));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -172,6 +174,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // set initial field
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
+
+  if (prbtype_ == "elch")
+  {
+    const int numscal = numdof - 1;
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
+    if (myrank_==0)
+      cout<<"\nsetup of conpotsplitter: numscal = "<<numscal<<endl;
+  }
 
   // set initial density to 1.0:
   // used throughout simulation for non-temperature case
@@ -368,6 +378,298 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   discret_->ClearState();
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | contains the nonlinear iteration loop                       gjb 09/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
+{
+  // time measurement: nonlinear iteration
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
+
+  // out to screen
+  PrintTimeStepInfo();
+  if (myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|\n");
+  }
+
+  // ---------------------------------------------- nonlinear iteration
+  //stop nonlinear iteration when both increment-norms are below this bound
+  const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
+
+  //------------------------------ turn adaptive solver tolerance on/off
+  //const bool   isadapttol    = params_->sublist("NONLINEAR").get<bool>("ADAPTCONV",true);
+  //const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER",0.01);
+
+  int   itnum = 0;
+  int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
+  bool  stopnonliniter = false;
+  
+  // get ELCH-specific paramter F/RT (default value for the temperature is 298K)
+  const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
+
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    double tcpu;
+
+    // -------------------------------------------------------------------
+    // call elements to calculate system matrix
+    // -------------------------------------------------------------------
+    {
+      // get cpu time
+      tcpu=ds_cputime();
+
+      // zero out matrix entries
+      sysmat_->Zero();
+
+      // reset the residual vector and add actual Neumann loads 
+      // scaled with a factor resulting from time discretization
+      residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+
+      if (prbtype_=="elch")
+      { // evaluate electrode kinetics conditions
+        // create an parameter list
+        ParameterList condparams;
+
+        // action for elements
+        condparams.set("action","calc_elch_electrode_kinetics");
+        condparams.set("frt",frt); // factor F/RT
+
+        // set vector values needed by elements
+        discret_->ClearState();
+        discret_->SetState("phinp",phinp_);
+
+        std::string condstring("ElectrodeKinetics");
+        discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+        discret_->ClearState();
+      }
+
+      // create the parameters for the discretization
+      ParameterList eleparams;
+
+      // action for elements
+      eleparams.set("action","calc_condif_systemmat_and_residual");
+
+      // other parameters that might be needed by the elements
+      eleparams.set("total time",time_);
+      eleparams.set("thsl",theta_*dta_);
+      eleparams.set("problem type",prbtype_);
+      eleparams.set("fs subgrid diffusivity",fssgd_);
+      eleparams.set("frt",frt);// factor F/RT
+      if (MethodName()==INPUTPARAMS::timeint_stationary)
+        eleparams.set("using stationary formulation",true);
+      else
+        eleparams.set("using stationary formulation",false);
+
+      //provide velocity field (export to column map necessary for parallel evaluation)
+      //SetState cannot be used since this Multivector is nodebased and not dofbased
+      const Epetra_Map* nodecolmap = discret_->NodeColMap();
+      RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+      LINALG::Export(*convel_,*tmp);
+      eleparams.set("velocity field",tmp);
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+      discret_->SetState("densnp",densnp_);
+      discret_->SetState("hist" ,hist_);
+
+      {
+        // call standard loop over elements
+        discret_->Evaluate(eleparams,sysmat_,residual_);
+        discret_->ClearState();
+      }
+
+      // finalize the complete matrix
+      sysmat_->Complete();
+
+      // end time measurement for element
+      dtele_=ds_cputime()-tcpu;
+    }
+
+    // blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if velrowmap_ and prerowmap_ would
+    // not include the dirichlet values as well. But it is expensive
+    // to avoid that.
+    {
+      Epetra_Vector residual(*residual_);
+      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
+    }
+
+    stopnonliniter = AbortNonlinIter(itnum,itemax,ittol);
+    if (stopnonliniter == true) break;
+
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    //          residual values are supposed to be zero at Dirichlet boundaries
+    increment_->PutScalar(0.0);
+
+    // Apply dirichlet boundary conditions to system matrix
+    {
+      // time measurement: application of DBC to system
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
+    }
+
+    //------------------------------------------------solve
+    {
+      // get cpu time
+      tcpu=ds_cputime();
+
+      // print (DEBUGGING!)
+      LINALG::PrintSparsityToPostscript(*(sysmat_->EpetraMatrix()));
+      //(sysmat_->EpetraMatrix())->Print(cout);
+
+      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);
+
+      // end time measurement for solver
+      dtsolve_=ds_cputime()-tcpu;
+    }
+
+    //------------------------------------------------ update solution vector
+    phinp_->Update(1.0,*increment_,1.0);
+
+  } // nonlinear iteration
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | check if to stop the nonlinear iteration                    gjb 09/08|
+ *----------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
+    const int itnum,
+    const int itemax,
+    const double ittol)
+{
+  bool stopnonliniter = false;
+
+  //----------------------------------------------------- compute norms
+  double incconnorm_L2(0.0);
+  double incpotnorm_L2(0.0);
+
+  double connorm_L2(0.0);
+  double potnorm_L2(0.0);
+
+  double conresnorm(0.0);
+  double potresnorm(0.0);
+
+  Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter_.ExtractOtherVector(residual_);
+  onlycon->Norm2(&conresnorm);
+
+  conpotsplitter_.ExtractOtherVector(increment_,onlycon);
+  onlycon->Norm2(&incconnorm_L2);
+
+  conpotsplitter_.ExtractOtherVector(phinp_,onlycon);
+  onlycon->Norm2(&connorm_L2);
+
+  Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(residual_);
+  onlypot->Norm2(&potresnorm);
+
+  conpotsplitter_.ExtractCondVector(increment_,onlypot);
+  onlypot->Norm2(&incpotnorm_L2);
+
+  conpotsplitter_.ExtractCondVector(phinp_,onlypot);
+  onlypot->Norm2(&potnorm_L2);
+
+  // care for the case that nothing really happens in the concentration
+  // or potential field
+  if (connorm_L2 < 1e-5)
+  {
+    connorm_L2 = 1.0;
+  }
+  if (potnorm_L2 < 1e-5)
+  {
+    potnorm_L2 = 1.0;
+  }
+
+  //-------------------------------------------------- output to screen
+  /* special case of very first iteration step:
+      - solution increment is not yet available
+      - convergence check is not required (we solve at least once!)    */
+  if (itnum == 1)
+  {
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
+          itnum,itemax,ittol,conresnorm,potresnorm);
+      printf(" (      --     ,te=%10.3E",dtele_);
+      printf(")\n");
+    }
+  }
+  /* ordinary case later iteration steps:
+      - solution increment can be printed
+      - convergence check should be done*/
+  else
+  {
+    // this is the convergence check
+    // We always require at least one solve. Otherwise the
+    // perturbation at the FSI interface might get by unnoticed.
+    if (conresnorm <= ittol and potresnorm <= ittol and
+        incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+            itnum,itemax,ittol,conresnorm,potresnorm,
+            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
+        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+        printf(")\n");
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+              itnum,itemax,ittol,conresnorm,potresnorm,
+              incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
+        }
+      }
+      //break;
+    }
+    else // if not yet converged
+      if (myrank_ == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+            itnum,itemax,ittol,conresnorm,potresnorm,
+            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
+        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+        printf(")\n");
+      }
+  }
+
+  // warn if itemax is reached without convergence, but proceed to
+  // next timestep...
+  if ((itnum == itemax))
+  {
+    stopnonliniter=true;
+    if (myrank_ == 0)
+    {
+      printf("+---------------------------------------------------------------+\n");
+      printf("|            >>>>>> not converged in itemax steps!              |\n");
+      printf("+---------------------------------------------------------------+\n");
+
+      FILE* errfile = params_->get<FILE*>("err file",NULL);
+      if (errfile!=NULL)
+      {
+        fprintf(errfile,"elch unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+            itnum,itemax,ittol,conresnorm,potresnorm,
+            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
+      }
+    }
+    //break;
+  }
+
+  return stopnonliniter;
 }
 
 

@@ -124,7 +124,7 @@ void ELCH::Algorithm::DoTransportStep()
 
   // solve coupled transport equations for ion concentrations and electric 
   // potential
-  ScaTraField().Solve();
+  ScaTraField().NonlinearSolve();
   return;
 }
 
@@ -149,12 +149,6 @@ void ELCH::Algorithm::Output()
   FluidField().Output();
   FluidField().LiftDrag();
   ScaTraField().Output();
-
-  // debug IO
-#if 0
-  // print out convective velocity vector
-  cout<<*velocitynp_<<endl;
-#endif
 
   return;
 }

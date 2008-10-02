@@ -25,8 +25,9 @@ Input/condif2_straight_convection_vm3gls.dat            -        x        -     
 Input/condif3_straight_convection.dat                   x        x        x        -        -        -
 Input/dyn_shell_dirich.dat                              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                                x        x        x        x        -        -
-Input/elch_graetz_problem.dat                           x        x        x                 -        -
-Input/elch_pper_primary_current_distribution.dat        x        x        x                 -        -
+Input/elch_graetz_problem.dat                           -        -        -        -        -        -
+Input/elch_pper_primary_current_distribution.dat        x        x        x        -        -        -
+Input/elch_test.dat                                     x        x        x        -        -        -
 Input/f2_channel_neumann.dat                            x        x        x        x        -        -
 Input/f2_channel_modpowerlaw_impl_drt.dat               x        x        x        -        -        -
 Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        x        -        -        -

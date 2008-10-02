@@ -48,7 +48,7 @@ void SCATRA::CreateScaTraDiscretization(
     )
 {
   // is the fluid discretization ready?
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!fluiddis->Filled() or !fluiddis->HaveDofs()) fluiddis->FillComplete();
 
   // is the second discretization really empty?
   if (scatradis->NumGlobalElements() or scatradis->NumGlobalNodes())

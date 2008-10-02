@@ -130,14 +130,28 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     bool temperature = false;
     if(scaltypestr =="loma") temperature = true;
 
+    // paramters needed for ELCH ;-)
+    vector<double> myphinp(lm.size());
+    double frt(0.0);
+    if(scaltypestr =="elch")
+    {
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+      // extract local values from the global vector
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
+
     // calculate element coefficient matrix and rhs
     DRT::ELEMENTS::Condif3Impl::Impl(this)->Sysmat(
         this,
+        myphinp,
         myhist,
         mydensnp,
-        &elemat1,
-        &elemat2,
-        &elevec1,
+        elemat1,
+        elemat2,
+        elevec1,
         elevec2,
         actmat,
         time,
@@ -145,7 +159,8 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
         evel,
         temperature,
         fssgd,
-        is_stationary);
+        is_stationary,
+        frt);
   }
   break;
   // calculate flux

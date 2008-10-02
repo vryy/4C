@@ -73,11 +73,12 @@ namespace ELEMENTS
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     void Sysmat(
         const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
+        const vector<double>&           ephinp, ///< current scalar field
         const vector<double>&           ehist, ///< rhs from beginning of time step
         const vector<double>&           edens, ///< density
-        Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
-        Epetra_SerialDenseMatrix*       sys_mat_sd, ///< subgrid-diff. matrix
-        Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
+        Epetra_SerialDenseMatrix&       sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseMatrix&       sys_mat_sd, ///< subgrid-diff. matrix
+        Epetra_SerialDenseVector&       residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
@@ -85,7 +86,8 @@ namespace ELEMENTS
         const Epetra_SerialDenseVector& evel, ///< nodal velocities at n+1
         bool                            temperature, ///< temperature flag
         string                          fssgd, ///< subgrid-diff. flag
-        const bool                      is_stationary ///< flag indicating stationary formulation
+        const bool                      is_stationary, ///< flag indicating stationary formulation
+        const double                    frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
@@ -118,10 +120,12 @@ namespace ELEMENTS
         const DRT::ELEMENTS::Condif3*&          ele,
         Epetra_SerialDenseVector&               sugrvisc,
         const Epetra_SerialDenseVector&         evel,
+        const Epetra_SerialDenseVector&         epot,
         const DRT::Element::DiscretizationType& distype,
         const double&                           timefac,
         string                                  fssgd,
-        const bool&                             is_stationary
+        const bool&                             is_stationary,
+        const double&                           frt
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -162,10 +166,13 @@ namespace ELEMENTS
         const int&                dofindex
     );
 
-    //! apply electro-neutrality condition to system
-    void ApplyElectroNeutralityCond(
-        Epetra_SerialDenseMatrix& emat,    ///< element matrix
-        const vector<double>&     valence  ///< charge number of each ion species
+    //! add electrochemistry-specific terms to matrix and rhs
+    void AddElchTerms(
+        Epetra_SerialDenseMatrix& emat,   ///< element matrix
+        Epetra_SerialDenseVector& erhs,   ///< element rhs
+        const vector<double>&     ephinp, ///< current scalar field
+        const bool&               higher_order_ele, ///< are second derivatives needed?
+        const double&             frt     ///< factor F/RT
     );
 
     //! number of nodes
@@ -206,6 +213,8 @@ namespace ELEMENTS
     vector<double> hist_;
     //! velocity vector in gausspoint
     vector<double> velint_;
+    //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
+    vector<double> migvelint_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
     //! artificial diffusivities (one per transported scalar)
@@ -218,6 +227,12 @@ namespace ELEMENTS
     vector<double> conv_;
     //! diffusive part used in stabilization terms
     vector<double> diff_;
+    //! migration part (divided by D_k*z_k) used in stabilization terms (ELCH)
+    vector<double> mig_;
+    //! (global) gradient of el. potential at integration point (ELCH)
+    vector<double> gradpot_;
+    //! values of all transported scalars in gausspoint (ELCH)
+    vector<double> conint_;
   };
 
 }
