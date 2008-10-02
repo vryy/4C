@@ -1228,7 +1228,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for(int k=0;k<numscal;++k)
+  for(int k=1;k<=numscal;++k)
   {
     ostringstream temp;
     temp << k;
@@ -1236,7 +1236,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k);
+      int dofgid = discret_->Dof(actnode,k-1);
       fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);

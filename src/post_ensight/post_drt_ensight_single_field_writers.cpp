@@ -113,12 +113,12 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   }
   else
   {
-    for(int k = 0; k < numdofpernode; k++)
+    for(int k = 1; k <= numdofpernode; k++)
     {
       ostringstream temp;
       temp << k;
       string name = "phi_"+temp.str();
-      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k);
+      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
       // write flux vectors (always 3D)
       EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
     }
@@ -162,19 +162,19 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
   }
 
   // write results for each transported scalar
-  if (numdofpernode <= 1)
+  if (numdofpernode < 3)
     dserror("Problemtype ELCH has at least 3 DOF per node, but got: %d",numdofpernode);
   else
   {
     // do the ion concentrations first
-    for(int k = 0; k < numdofpernode-1; k++)
+    for(int k = 1; k < numdofpernode; k++)
     {
       ostringstream temp;
       temp << k;
       string name = "c_"+temp.str();
-      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k);
+      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
       // write flux vectors (always 3D)
-      EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
+      EnsightWriter::WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
     }
     // finally, handle the electric potential
     EnsightWriter::WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
