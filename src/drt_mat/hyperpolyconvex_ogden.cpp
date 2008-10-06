@@ -177,9 +177,6 @@ void MAT::HyperPolyOgden::Evaluate(const Epetra_SerialDenseVector* glstrain,
   else
     detf = sqrt(iiinv);                   // determinant of deformation gradient
 
-  if (abs(iiinv-1.0)>0.01)
-    exit(0);
-
   //--- prepare some constants -----------------------------------------------------------
   const double third = 1./3.;
   const double twthi = 2./3.;
