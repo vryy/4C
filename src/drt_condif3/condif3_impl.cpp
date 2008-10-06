@@ -1465,9 +1465,6 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
       {
         valence_[k]= singlemat.m.ion->valence;
         diffus_[k]= singlemat.m.ion->diffusivity;
-     /*   cout<<"MatId: "<<material->m.matlist->matids[k]
-        <<" valence["<<k<<"] = "<<valence_[k]
-        <<" diffusivity["<<k<<"] = "<<diffus_[k]<<endl;*/
       }
       else if (singlemat.mattyp == m_condif)
         diffus_[k]= singlemat.m.condif->diffusivity;
@@ -1734,7 +1731,7 @@ void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
       conint_[k] += funct_[ui]*ephinp[ui*numdofpernode_+k];
     }
     // when concentration becomes zero, the coupling terms in the system matrix get lost!
-    if (abs(conint_[k])<1e-15) dserror("concentration is nearly singular: %lf",conint_[k]);
+    if (abs(conint_[k])<1e-18) dserror("concentration is nearly singular: %g",conint_[k]);
   }
 
   // get gradient of el. potential at integration point
@@ -1765,11 +1762,16 @@ void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
   for (int k=0;k<3;++k)
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_[k]<<endl;}
 #endif
+  // some 'working doubles'
+  static double phinp_k_ui(0.0);
+  static double diffus_valence_k(0.0);
 
   for (int k = 0; k < numscal_;++k)
   {
     // stabilization parameter
     const double taufac = tau_[k]*fac_;
+    // factor D_k * z_k
+    diffus_valence_k = diffus_[k]*valence_[k];
 
     // ----------------------------------------matrix entries
     for (int vi=0; vi<iel_; ++vi)
@@ -1777,47 +1779,48 @@ void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
       for (int ui=0; ui<iel_; ++ui)
       {
         // entries in tangential matrix (directional derivatives)
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += frt*fac_*diffus_[k]*valence_[k]*funct_[ui]*(derxy_(0, vi)*gradpot_[0] + derxy_(1, vi)*gradpot_[1] + derxy_(2, vi)*gradpot_[2]);
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt*fac_*diffus_[k]*valence_[k]*conint_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) -= fac_*diffus_valence_k*funct_[ui]*mig_[vi];
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt*fac_*diffus_valence_k*conint_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
 
-        // convective stabilization due to migration velocity
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*frt*diffus_[k]*valence_[k]*mig_[vi]*diffus_[k]*valence_[k]*mig_[ui];
+        // convective stabilization due to migration velocity (only additional terms)
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*diffus_valence_k*mig_[vi]*diffus_valence_k*mig_[ui];
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*conv_[vi]*diffus_valence_k*mig_[ui];
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*diffus_valence_k*mig_[vi]*conv_[ui];
       }
     }
     // -------------------------------------------rhs entries
     for (int vi=0; vi<iel_; ++vi)
     {
       // nonlinear migration term
-      erhs[vi*numdofpernode_+k] -= frt*conint_[k]*fac_*diffus_[k]*valence_[k]*(derxy_(0, vi)*gradpot_[0] + derxy_(1, vi)*gradpot_[1] + derxy_(2, vi)*gradpot_[2]);
+      erhs[vi*numdofpernode_+k] += conint_[k]*fac_*diffus_valence_k*mig_[vi];
 
       for (int ui=0; ui<iel_; ++ui)
       {
+        phinp_k_ui = ephinp[ui*numdofpernode_+k];
         // convective term
-        erhs[vi*numdofpernode_+k] -= fac_*funct_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k];
+        erhs[vi*numdofpernode_+k] -= fac_*funct_[vi]*conv_[ui]*phinp_k_ui;
         // diffusive term
-        erhs[vi*numdofpernode_+k] -= fac_*diffus_[k]*ephinp[ui*numdofpernode_+k]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)+ derxy_(2, ui)*derxy_(2, vi));
+        erhs[vi*numdofpernode_+k] -= fac_*diffus_[k]*phinp_k_ui*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)+ derxy_(2, ui)*derxy_(2, vi));
 
         /* Stabilization term: */
         /* 1) convective stabilization */
 
         /* convective term */
-        erhs[vi*numdofpernode_+k] -= taufac*conv_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k] ;
-        /* migration term */
-        erhs[vi*numdofpernode_+k] -= taufac*diffus_[k]*valence_[k]*mig_[vi]*diffus_[k]*valence_[k]*mig_[ui]*ephinp[ui*numdofpernode_+k] ;
+        erhs[vi*numdofpernode_+k] -= taufac*(conv_[vi]+diffus_valence_k*mig_[vi])*(conv_[ui]+diffus_valence_k*mig_[ui])*phinp_k_ui ;
 
         if (higher_order_ele)
         {
           dserror("higher order terms not yet finished");
           /* diffusive term */
-          erhs[vi*numdofpernode_+k] -= -taufac*conv_[vi]*diff_[ui]*ephinp[ui*numdofpernode_+k] ;
+          erhs[vi*numdofpernode_+k] -= -taufac*conv_[vi]*diff_[ui]*phinp_k_ui ;
 
           /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
 
           /* convective term */
-          erhs[vi*numdofpernode_+k] -= taufac*diff_[vi]*conv_[ui]*ephinp[ui*numdofpernode_+k] ;
+          erhs[vi*numdofpernode_+k] -= taufac*diff_[vi]*conv_[ui]*phinp_k_ui ;
 
           /* diffusive term */
-          erhs[vi*numdofpernode_+k] += taufac*diff_[vi]*diff_[ui]*ephinp[ui*numdofpernode_+k] ;
+          erhs[vi*numdofpernode_+k] += taufac*diff_[vi]*diff_[ui]*phinp_k_ui ;
         }
       }
     } 
