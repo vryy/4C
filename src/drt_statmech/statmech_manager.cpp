@@ -144,7 +144,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
           fp = fopen(outputfilename_.str().c_str(), "a");
           //defining temporary stringstream variable
           std::stringstream filecontent;
-          filecontent << scientific << setprecision(12) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+          filecontent << scientific << setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
           // move temporary stringstream to file and close it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
@@ -179,7 +179,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
             fp = fopen("EndToEndErgo.dat", "a");
             //defining temporary stringstream variable
             std::stringstream filecontent;
-            filecontent << scientific << setprecision(12) << time << "  " << endtoend << endl;
+            filecontent << scientific << setprecision(15) << time << "  " << endtoend << endl;
             // move temporary stringstream to file and close it
             fprintf(fp,filecontent.str().c_str());
             fclose(fp);
@@ -295,6 +295,61 @@ void StatMechManager::StatMechUpdate()
   }
   return;
 } // StatMechManager::StatMechUpdate()
+
+/*----------------------------------------------------------------------*
+ | updates system damping matrix and external force vector according to |
+ | influence of thermal bath (public)                        cyron 10/08|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp)
+{  
+  // zero out damping matrix
+  damp->Zero();
+  
+  /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces; note: zero initilization 
+   * mandatory for correct computations later on*/
+  RCP<Epetra_Vector>    fstatcol;
+  fstatcol = LINALG::CreateVector(*discret_.DofColMap(),true);
+  RCP<Epetra_Vector>    fstatrow;
+  fstatrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
+  
+  //defining parameter list passed down to the elements in order to evalute statistical forces down there
+  ParameterList pstat;
+  pstat.set("action","calc_stat_force_damp");
+  pstat.set("delta time",params.get<double>("delta time",0.0));
+  pstat.set("KT",statmechparams_.get<double>("KT",0.0));
+  pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
+  pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
+  
+  /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
+   * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
+   * special assembly needs of randomly evaluated forces: the evaluate method of the discretization uses the LINALG
+   * assembly method in which a processor assembles to the element of the global vector only ir the processor is the 
+   * row owner of the related DOF; this is efficient for global row map vectors, but does not assemble correctly if a 
+   * global column map vector is used*/
+  pstat.set("statistical force vector",fstatcol);
+  
+  //evaluation of statistical forces on column map vecotor
+  discret_.SetState("displacement",dis); //during evaluation of statistical forces access to current displacement possible
+  discret_.Evaluate(pstat,damp,null,null,null,null);
+  discret_.ClearState();
+
+  
+  /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
+   * vector element with a certain GID in the final row vector is the sum of all elements of the column 
+   * vector related to the same GID*/
+  Epetra_Export exporter(*discret_.DofColMap(),*discret_.DofRowMap());
+  fstatrow->Export(*fstatcol,exporter,Add);
+  
+  //adding statistical forces to external forces passed to this method
+  fext->Update(1.0,*fstatrow,1.0);
+  
+  //complete damping matrix
+  damp->Complete();
+
+  return;
+} // StatMechManager::StatMechForceDamp()
+
+
 
 
 #endif  // #ifdef CCADISCRET

@@ -270,12 +270,14 @@ public:
   \param params (in/out)       : ParameterList for communication between control routine and elements
   \param vector<double> mydisp : current nodal displacement
   \param elevec1 (out)         : Force vector to be filled by element
+  \param elemat1 (out)         : damping matrix to be filled by element
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateStatisticalNeumann(ParameterList& params,
-                                        vector<double> mydisp,
-                                        Epetra_SerialDenseVector& elevec1);  
+  virtual int EvaluateStatForceDamp(ParameterList& params,
+                                    vector<double> mydisp,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseMatrix& elemat1);  
   //@}
 
 
@@ -297,7 +299,7 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_stat_forces
+    calc_stat_force_damp
   };
 
   //! container containing all kind of beam2 thisandthat
@@ -318,12 +320,6 @@ private:
   //! moment of inertia of area
   double mominer_;
 
-  //! thermal energy responsible for statistical forces
-  double kT_;
-  
-  //! frictional coefficient (approximated by the one for an infinitely long staff, but with real element length)
-  double zeta_;
-
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int hrold_; //at the end of the last iteration step
   int hrnew_; //including changes of current iteration step
@@ -332,8 +328,6 @@ private:
   //! angle relative to x-axis in reference configuration
   double beta0_;
   
-  //! polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
-  int stochasticorder_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;

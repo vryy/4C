@@ -33,6 +33,25 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   statmechmanager_ = rcp(new StatMechManager(params,dis));
+  
+  
+  //if according to input file also Rayleigh damping is present exit the program (not allowed in Brownian dynamics)
+  if (params_.get<double>("damping factor K",0.0) != 0.0 || params_.get<double>("damping factor M",0.0) != 0.0) 
+    dserror("No Rayleigh damping allowed in problem type STATISTICAL MECHANICS");
+  
+  //if damping has not yet been activated activate it's always present in Brownian dynamics
+  if (!params_.get<bool>("damping",true))
+    params_.set("damping",true);
+  
+  /*initialize damping matrix: the number 81 indicates the number of entries per row (which is not necessarily the
+   * bandwidth especially if some entries are far from the diagonal); the position of these entries is store in a
+   * graph; if the number passed to the algorithm is surpassed later in use new memory is allocated (but yet this
+   * slows down the process so that this situation should be avoided); if the number is too large more memory than 
+   * actually needed is allocated and the computation time is non-optimal; yet if no more information about the
+   * problem is known at the moment 81 is a reasonable guess*/
+  damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81,true,true));
+    
+ 
   return;
 } // StatMechTime::StatMechTime
 
@@ -112,31 +131,12 @@ void StatMechTime::Integrate()
       {
         DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_.lColElement(num));
         if (!currele) dserror("cast to Beam3* failed");
-        
-        //finally parameters related with thermal bath in beam elements can be set to correct values
-        currele->kT_ =  statisticalparams.get<double>("KT",0.0);
+
         //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
         currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
-        currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0); 
       }
       
       #endif  // #ifdef D_BEAM3
-      
-      #ifdef D_BEAM2
-      
-      if (discret_.lColElement(num)->Type() == DRT::Element::element_beam2)
-      {
-        DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(discret_.lColElement(num));
-        if (!currele) dserror("cast to Beam2* failed");
-        
-        //finally parameters related with thermal bath in beam elements can be set to correct values
-        currele->kT_ =  statisticalparams.get<double>("KT",0.0);
-        //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
-        currele->zeta_ = 4*PI*currele->lrefe_*statisticalparams.get<double>("ETA",0.0);
-        currele->stochasticorder_ = statisticalparams.get<int>("STOCH_ORDER",0); 
-      }
-      
-      #endif  // #ifdef D_BEAM2
       
     }
   }
@@ -384,31 +384,9 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
     
     
-    
-    //declaration of a column and row map Epetra_Vector for evaluation of statistical forces  
-    RCP<Epetra_Vector>    fstatcol;
-    fstatcol = LINALG::CreateVector(*discret_.DofColMap(),true);
-    RCP<Epetra_Vector>    fstatrow;
-    fstatrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
-    
-    //defining parameter list passed down to the elements in order to evalute statistical forces down there
-    ParameterList pstat;
-    pstat.set("action","calc_stat_forces");
-    pstat.set("delta time",dt);
-    
-    //evaluation of statistical forces on column map vecotor
-    discret_.SetState("displacement",dis_); //during evaluation of statistical forces access to current displacement possible
-    discret_.Evaluate(pstat,null,null,fstatcol,null,null);
-    discret_.ClearState();
-    
-    /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
-     * vector element with a certain GID in the final row vector is the sum of all elements of the column 
-     * vector related to the same GID*/
-    Epetra_Export exporter(*discret_.DofColMap(),*discret_.DofRowMap());
-    fstatrow->Export(*fstatcol,exporter,Add);
-    
-    //adding statistical forces to external forces of EvaluateNeumann call in predictor and to residual forces
-    fextn_->Update(1.0,*fstatrow,1.0);
+    //adding thermal forces and related damping matrix according to fluctuation dissipation theorem
+    statmechmanager_->StatMechForceDamp(params_,dis_,fextn_,damp_);
+       
     
   }
 

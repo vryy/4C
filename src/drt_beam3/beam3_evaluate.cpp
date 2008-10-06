@@ -57,20 +57,35 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
-  else if (action=="calc_stat_forces")        act = Beam3::calc_stat_forces;
+  else if (action=="calc_stat_force_damp")        act = Beam3::calc_stat_force_damp;
   else dserror("Unknown type of action for Beam3");
 
   switch(act)
   {
     //action type for evaluating statistical forces
-    case Beam3::calc_stat_forces:
+    case Beam3::calc_stat_force_damp:
     {   
-      /*evaluate statistical forces only on processor which is owner of the element so that forces
-       * are not evaluated twice for one element (if one did so the final additive export of the
-       * col map statistical force vector to a row map vector would add up the statistical forces
-       *  of all processors on which this element exists at least as a ghost element and with at
-       * least two processors this would entail double statistical forces for DOF of elements on 
-       * which the element domains of the processors overlap*/
+      /*in order to understand the way how in the following parallel computing is handled one has to
+       * be aware of what usually happens: each processor evaluates forces on each of its elements no
+       * matter whether it's a real element or only a ghost element; later on in the assembly of the 
+       * evaluation method each processor adds the thereby gained DOF forces only for the DOF of 
+       * which it is the row map owner; if one used this way for random forces the following problem 
+       * would arise: if two processors evaluate both the same element (one time as a real element, one time
+       * as a ghost element) and assemble later only the random forces of their own DOF the assembly for 
+       * different DOF of the same element might take place by means of random forces evaluated during different
+       * element calls (one time the real element was called, one time only the ghost element); as a consequence
+       * prescribing any correlation function between random forces of different DOF is in general 
+       * impossible since the random forces of two different DOF may have been evaluated during different
+       * element calls; the only solution to this problem is obviously to allow element evaluation
+       * to one processor only (the row map owner processor) and to allow this processor to assemble the
+       * thereby gained random forces later on also to DOF of which it is not the row map owner; so fist
+       * we check in this method whether the current processor is the owner of the element (if not 
+       * evaluation is cancelled) and finally this processor assembles the evaluated forces for degrees of
+       * freedom right no matter whether its the row map owner of these DOF (outside the element routine
+       * in the evaluation method of the discretization this would be not possible by default*/
+      
+    
+      //test whether current processor is row map owner of the element
       if(this->Owner() != discretization.Comm().MyPID()) return 0;
             
       // get element displacements (for use in shear flow fields)
@@ -81,14 +96,16 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       
       //evaluation of statistical forces with the local statistical forces vector fstat
       Epetra_SerialDenseVector fstat(lm.size());
-      EvaluateStatisticalNeumann(params,mydisp,fstat);
+      EvaluateStatForceDamp(params,mydisp,fstat,elemat1);
       
-      //assembling local statistical force vector to global statistical force vector
+      /*all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
+       * the row map owner of these DOF*/
       //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
       RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
 
       for(unsigned int i = 0; i < lm.size(); i++)
       {
+        //note: lm contains the global Ids of the degrees of freedom of this element
         //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
         if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
         
@@ -98,6 +115,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         //add to the related element of fstatcol the contribution of fstat
         (*fstatcol)[lid] += fstat[i];
       }
+      
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
@@ -365,21 +383,39 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
 }
 
 
-
 /*-----------------------------------------------------------------------------------------------------------*
- | Evaluate Statistical forces                     (public)                                       cyron 09/08|
+ | Evaluate Statistical forces and viscous damping (public)                                       cyron 09/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann(ParameterList& params,
-                                                    vector<double> mydisp,
-                                                    Epetra_SerialDenseVector& elevec1)
+int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
+                                                vector<double> mydisp,
+                                                Epetra_SerialDenseVector& elevec1,
+                                                Epetra_SerialDenseMatrix& elemat1)
 {
   
+  // thermal energy responsible for statistical forces
+  double kT = params.get<double>("KT",0.0);
+  
+  // frictional coefficient per unit length (approximated by the one of an infinitely long staff)
+  double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+  
+  // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+  int stochasticorder = params.get<int>("STOCH_ORDER",0);
+
+  
   //stochastic field of line load is interpolated by zeroth order polynomial functions
-  if (stochasticorder_ == 0)
+  if (stochasticorder == 0)
   {
+    //adding internal forces due to viscous damping (by background fluid of thermal bath) with zeroth order stochastic interpolation
+    elemat1(0,0) += zeta/2.0;
+    elemat1(1,1) += zeta/2.0;
+    elemat1(2,2) += zeta/2.0;
+    elemat1(6,6) += zeta/2.0;
+    elemat1(7,7) += zeta/2.0;
+    elemat1(8,8) += zeta/2.0;
+    
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT_ * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2 * kT * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -395,10 +431,25 @@ int DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann(ParameterList& params,
 
   }
   //stochastic field of line load is interpolated by first order polynomial functions
-  else if (stochasticorder_ == 1)
+  else if (stochasticorder == 1)
   {
+    //adding internal forces due to viscous damping (by background fluid of thermal bath) with first order stochastic interpolation
+    elemat1(0,0) += zeta/3.0;
+    elemat1(1,1) += zeta/3.0;
+    elemat1(2,2) += zeta/3.0;
+    elemat1(6,6) += zeta/3.0;
+    elemat1(7,7) += zeta/3.0;
+    elemat1(8,8) += zeta/3.0;
+    
+    elemat1(0,6) += zeta/6.0;
+    elemat1(6,0) += zeta/6.0;
+    elemat1(1,7) += zeta/6.0;
+    elemat1(7,1) += zeta/6.0;
+    elemat1(2,8) += zeta/6.0;
+    elemat1(8,2) += zeta/6.0;
+    
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT_ * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2 * kT * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -847,32 +898,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+9) -= stressn(j)*spinx21(i,j);    
       }
     }
-    
-       
-    //for problems of statistical mechanics viscous damping is incalculated
-    if(kT_ > 0)
-    {
-      if (stochasticorder_ == 0)
-      {
-        //adding internal forces due to viscous damping (by background fluid of thermal bath) with zeroth order stochastic interpolation
-        (*force)[0] += (zeta_/2)*vel[0];
-        (*force)[1] += (zeta_/2)*vel[1];
-        (*force)[2] += (zeta_/2)*vel[2];
-        (*force)[6] += (zeta_/2)*vel[6];
-        (*force)[7] += (zeta_/2)*vel[7];
-        (*force)[8] += (zeta_/2)*vel[8];
-      }
-      else if (stochasticorder_ == 1)
-      {
-        //adding internal forces due to viscous damping (by background fluid of thermal bath) with first order stochastic interpolation
-        (*force)[0] += zeta_*(vel[0]/3 + vel[6]/6);
-        (*force)[1] += zeta_*(vel[1]/3 + vel[7]/6);
-        (*force)[2] += zeta_*(vel[2]/3 + vel[8]/6);
-        (*force)[6] += zeta_*(vel[6]/3 + vel[0]/6);
-        (*force)[7] += zeta_*(vel[7]/3 + vel[1]/6);
-        (*force)[8] += zeta_*(vel[8]/3 + vel[2]/6);
-      }          
-    }   
       
     //adding artificial torsional damping in order to stabilize numerically free fluctuations
     double torsdamp = 0.01;
@@ -910,43 +935,15 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     computeKsig2(Ksig2,stressn,x21);
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
-    
-    /*note: the following operations are carried out in order to integrate a semiexplicit viscous damping into the stiffness as necessary
-     * for simulations of statistical mechanics; consequently there is no counterpart of the following lines in the textbook of Crisfield*/
-    
-    //adding diagonal entries for viscous damping "stiffness" (by background fluid of thermal bath) for problems of statistical mechanics
-    if(kT_ > 0)
-    {
-      if (stochasticorder_ == 0)
-      {
-        //adding internal forces due to viscous damping (by background fluid of thermal bath) with zeroth order stochastic interpolation
-        (*stiffmatrix)(0,0) += (zeta_/2)*lamda;
-        (*stiffmatrix)(1,1) += (zeta_/2)*lamda;
-        (*stiffmatrix)(2,2) += (zeta_/2)*lamda;
-        (*stiffmatrix)(6,6) += (zeta_/2)*lamda;
-        (*stiffmatrix)(7,7) += (zeta_/2)*lamda;
-        (*stiffmatrix)(8,8) += (zeta_/2)*lamda;
-      }
-      else if (stochasticorder_ == 1)
-      {
-        //adding internal forces due to viscous damping (by background fluid of thermal bath) with first order stochastic interpolation
-        (*stiffmatrix)(0,0) += (zeta_/3)*lamda;
-        (*stiffmatrix)(1,1) += (zeta_/3)*lamda;
-        (*stiffmatrix)(2,2) += (zeta_/3)*lamda;
-        (*stiffmatrix)(6,6) += (zeta_/3)*lamda;
-        (*stiffmatrix)(7,7) += (zeta_/3)*lamda;
-        (*stiffmatrix)(8,8) += (zeta_/3)*lamda;
-        
-        (*stiffmatrix)(0,6) += (zeta_/6)*lamda;
-        (*stiffmatrix)(6,0) += (zeta_/6)*lamda;
-        (*stiffmatrix)(1,7) += (zeta_/6)*lamda;
-        (*stiffmatrix)(7,1) += (zeta_/6)*lamda;
-        (*stiffmatrix)(2,8) += (zeta_/6)*lamda;
-        (*stiffmatrix)(8,2) += (zeta_/6)*lamda;
-      }
-    }
 
-        
+    
+    
+    
+    
+    
+    
+    
+    
     {
       BlitzVec3 aux1;
       BlitzVec3 aux2;

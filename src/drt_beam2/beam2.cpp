@@ -36,14 +36,10 @@ lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
-kT_(0),
-zeta_(0),
 hrold_(0),
 hrnew_(0),
 hrconv_(0),
 beta0_(0),
-stochasticorder_(0),
-
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
@@ -61,13 +57,10 @@ lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
-kT_(old.kT_),
-zeta_(old.zeta_),
 hrold_(old.hrold_),
 hrnew_(old.hrnew_),
 hrconv_(old.hrconv_),
 beta0_(old.beta0_),
-stochasticorder_(old.stochasticorder_),
 gaussrule_(old.gaussrule_)
 
 {
@@ -148,18 +141,12 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,crosssecshear_);
   //moment of inertia of area
   AddtoPack(data,mominer_);
-  //thermal energy responsible for statistical forces
-  AddtoPack(data,kT_);
-  //viscosity in background fluid
-  AddtoPack(data,zeta_);
   //number of half rotations in comparision with reference configuration
   AddtoPack(data,hrold_);
   AddtoPack(data,hrnew_);
   AddtoPack(data,hrconv_);
   //angle relative to x-axis in reference configuration
   AddtoPack(data,beta0_);
-  //polynomial order for interpolation of stochastic fields
-  AddtoPack(data,stochasticorder_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -195,18 +182,12 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,crosssecshear_);
   //moment of inertia of area
   ExtractfromPack(position,data,mominer_);
-  //thermal energy responsible for statistical forces
-  ExtractfromPack(position,data,kT_);
-  //viscosity in background fluid
-  ExtractfromPack(position,data,zeta_);
   //number of half rotations in comparision with reference configuration
   ExtractfromPack(position,data,hrold_);
   ExtractfromPack(position,data,hrnew_);
   ExtractfromPack(position,data,hrconv_);
   //angle relative to x-axis in reference configuration
   ExtractfromPack(position,data,beta0_);
-  //polynomial order for interpolation of stochastic fields
-  ExtractfromPack(position,data,stochasticorder_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
