@@ -207,16 +207,18 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
-  int node_p, int node_q, int node_r, int node_s,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+    int node_p, int node_q, int node_r, int node_s,
+    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& sq,
+    const double len_sq,
+    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& rp,
+    const double len_rp,
+    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& qp,
+    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& local_x,
+    LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat)
 {
   //Positions for dynamic triangle (2D)
   //sequence: s,j,q
   LINALG::FixedSizeSerialDenseMatrix<2,3> xyze_dyn_tria;
-
-  // temporary matrix
-  LINALG::FixedSizeSerialDenseMatrix<12,3> B;
 
   // Some matrices that can be found in the paper are not assembled
   // here, because it can be done with less memory. I use only one
@@ -225,42 +227,19 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
 
   //transformation matrix from the plane of the triangle to the
   //three-dimensional global frame.
-  //This corresponds to R(sjq) x r(sjq) x S^T from Farhat et al.
-  LINALG::FixedSizeSerialDenseMatrix<3,12> trans_matrix(true);
-
-  // torsion stiffness matrix same as in Farhat et al.
-  LINALG::FixedSizeSerialDenseMatrix<3,3> C(true);
+  //This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.
+  LINALG::FixedSizeSerialDenseMatrix<12, 3> trans_matrix;
 
   //rotational stiffness matrix for tetrahedron with given dynamic triangle
   LINALG::FixedSizeSerialDenseMatrix<12,12> k_dyn_tet;
 
   //local x,y in the plane of the dynamic triangle
   // these are the 3d-vectors that span this plane
-  LINALG::FixedSizeSerialDenseMatrix<3,1> local_x;
   LINALG::FixedSizeSerialDenseMatrix<3,1> local_y;
 
-  //auxiliary vectors
-  // some connection vectors
-  LINALG::FixedSizeSerialDenseMatrix<3,1> sq;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> pq;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> rp;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> pj;
   // the point p relativ to the point (0,0) in the triangle plane
   // transformed into 3d space
   LINALG::FixedSizeSerialDenseMatrix<3,1> p;
-
-  double len_sq, len_rp, length, factor;
-
-  ale3_edge_geometry(node_s,node_q,xyze,len_sq,sq(0),sq(1),sq(2));
-  ale3_edge_geometry(node_p,node_q,xyze,length,pq(0),pq(1),pq(2));
-  ale3_edge_geometry(node_r,node_p,xyze,len_rp,rp(0),rp(1),rp(2));
-
-  //local_x := normal vector of face pqr = pq x rp
-  local_x(0) = pq(1)*rp(2)-pq(2)*rp(1);  //just an intermediate step
-  local_x(1) = pq(2)*rp(0)-pq(0)*rp(2);  //just an intermediate step
-  local_x(2) = pq(0)*rp(1)-pq(1)*rp(0);  //just an intermediate step
-  length = local_x.Norm2();
-  local_x.Scale(1.0/length);
 
   //local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   //local y-value of s xyze_dyn_tria(1,0 := 0.0
@@ -294,7 +273,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
     const int tqp  = tq+1;
     const int tqpp = tq+2;
     // we know the edge-information from above.
-    factor = 1.0 / (len_sq*len_sq*len_sq);
+    const double factor = 1.0 / (len_sq*len_sq*len_sq);
     const double dxx_l3 = sq(0)*sq(0)*factor;
     const double dxy_l3 = sq(0)*sq(1)*factor;
     const double dxz_l3 = sq(0)*sq(2)*factor;
@@ -357,7 +336,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
     //local x,y-values of j, using pO + Oj + jp = 0
     //(O is local origin on plane pqr)
     xyze_dyn_tria(0,1) = 0.0;
-    p.Update(xyze_dyn_tria(1,2), local_y, -1, pq);
+    p.Update(xyze_dyn_tria(1,2), local_y, 1, qp);
 #if 0
     {
       extern struct _FILES  allfiles;
@@ -436,61 +415,75 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
 
 
 #ifdef DEBUG            /*---------------------------------- check edge lengths ---*/
-      if (l_ij_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
-      if (l_jk_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
-      if (l_ki_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
+    if (l_ij_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
+    if (l_jk_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
+    if (l_ki_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
 #endif
 
 /*---------------------------------- determine torsional stiffnesses ---*/
-      C(0,0) = l_ij_sq * l_ki_sq / area_double_sqare;
-      C(1,1) = l_ij_sq * l_jk_sq / area_double_sqare;
-      C(2,2) = l_ki_sq * l_jk_sq / area_double_sqare;
+    // instead of the whole matrix only the non-zero diagonal is stored
+    const double C0 = l_ij_sq * l_ki_sq / area_double_sqare;
+    const double C1 = l_ij_sq * l_jk_sq / area_double_sqare;
+    const double C2 = l_ki_sq * l_jk_sq / area_double_sqare;
 
 /*--------------------------------------- fill transformation matrix ---*/
-    // This corresponds to R(sjq) x r(sjq) x S^T from Farhat et al.
+    // This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.
     trans_matrix(0,0)  = one_minus_lambda*(b_ij_0 - a_ij_0);
-    trans_matrix(0,1)  = one_minus_lambda*(b_ij_1 - a_ij_1);
-    trans_matrix(0,2)  = one_minus_lambda*(b_ij_2 - a_ij_2);
-    trans_matrix(0,3)  = b_ki_0 - a_ki_0;
-    trans_matrix(0,4)  = b_ki_1 - a_ki_1;
-    trans_matrix(0,5)  = b_ki_2 - a_ki_2;
-    trans_matrix(0,6)  = lambda*(b_ij_0 - a_ij_0);
-    trans_matrix(0,7)  = lambda*(b_ij_1 - a_ij_1);
-    trans_matrix(0,8)  = lambda*(b_ij_2 - a_ij_2);
-    trans_matrix(0,9)  = a_ij_0 + a_ki_0 - b_ki_0 - b_ij_0;
-    trans_matrix(0,10) = a_ij_1 + a_ki_1 - b_ki_1 - b_ij_1;
-    trans_matrix(0,11) = a_ij_2 + a_ki_2 - b_ki_2 - b_ij_2;
+    trans_matrix(1,0)  = one_minus_lambda*(b_ij_1 - a_ij_1);
+    trans_matrix(2,0)  = one_minus_lambda*(b_ij_2 - a_ij_2);
+    trans_matrix(3,0)  = b_ki_0 - a_ki_0;
+    trans_matrix(4,0)  = b_ki_1 - a_ki_1;
+    trans_matrix(5,0)  = b_ki_2 - a_ki_2;
+    trans_matrix(6,0)  = lambda*(b_ij_0 - a_ij_0);
+    trans_matrix(7,0)  = lambda*(b_ij_1 - a_ij_1);
+    trans_matrix(8,0)  = lambda*(b_ij_2 - a_ij_2);
+    trans_matrix(9,0)  = a_ij_0 + a_ki_0 - b_ki_0 - b_ij_0;
+    trans_matrix(10,0) = a_ij_1 + a_ki_1 - b_ki_1 - b_ij_1;
+    trans_matrix(11,0) = a_ij_2 + a_ki_2 - b_ki_2 - b_ij_2;
 
-    trans_matrix(1,0)  = one_minus_lambda*(a_jk_0 + a_ij_0 - b_ij_0 - b_jk_0);
+    trans_matrix(0,1)  = one_minus_lambda*(a_jk_0 + a_ij_0 - b_ij_0 - b_jk_0);
     trans_matrix(1,1)  = one_minus_lambda*(a_jk_1 + a_ij_1 - b_ij_1 - b_jk_1);
-    trans_matrix(1,2)  = one_minus_lambda*(a_jk_2 + a_ij_2 - b_ij_2 - b_jk_2);
-    trans_matrix(1,3)  = b_jk_0 - a_jk_0;
-    trans_matrix(1,4)  = b_jk_1 - a_jk_1;
-    trans_matrix(1,5)  = b_jk_2 - a_jk_2;
-    trans_matrix(1,6)  = lambda*(a_jk_0 + a_ij_0 - b_ij_0 - b_jk_0);
-    trans_matrix(1,7)  = lambda*(a_jk_1 + a_ij_1 - b_ij_1 - b_jk_1);
-    trans_matrix(1,8)  = lambda*(a_jk_2 + a_ij_2 - b_ij_2 - b_jk_2);
-    trans_matrix(1,9)  = b_ij_0 - a_ij_0;
-    trans_matrix(1,10) = b_ij_1 - a_ij_1;
-    trans_matrix(1,11) = b_ij_2 - a_ij_2;
+    trans_matrix(2,1)  = one_minus_lambda*(a_jk_2 + a_ij_2 - b_ij_2 - b_jk_2);
+    trans_matrix(3,1)  = b_jk_0 - a_jk_0;
+    trans_matrix(4,1)  = b_jk_1 - a_jk_1;
+    trans_matrix(5,1)  = b_jk_2 - a_jk_2;
+    trans_matrix(6,1)  = lambda*(a_jk_0 + a_ij_0 - b_ij_0 - b_jk_0);
+    trans_matrix(7,1)  = lambda*(a_jk_1 + a_ij_1 - b_ij_1 - b_jk_1);
+    trans_matrix(8,1)  = lambda*(a_jk_2 + a_ij_2 - b_ij_2 - b_jk_2);
+    trans_matrix(9,1)  = b_ij_0 - a_ij_0;
+    trans_matrix(10,1) = b_ij_1 - a_ij_1;
+    trans_matrix(11,1) = b_ij_2 - a_ij_2;
 
-    trans_matrix(2,0)  = one_minus_lambda*(b_jk_0 - a_jk_0);
-    trans_matrix(2,1)  = one_minus_lambda*(b_jk_1 - a_jk_1);
+    trans_matrix(0,2)  = one_minus_lambda*(b_jk_0 - a_jk_0);
+    trans_matrix(1,2)  = one_minus_lambda*(b_jk_1 - a_jk_1);
     trans_matrix(2,2)  = one_minus_lambda*(b_jk_2 - a_jk_2);
-    trans_matrix(2,3)  = a_ki_0 + a_jk_0 - b_jk_0 - b_ki_0;
-    trans_matrix(2,4)  = a_ki_1 + a_jk_1 - b_jk_1 - b_ki_1;
-    trans_matrix(2,5)  = a_ki_2 + a_jk_2 - b_jk_2 - b_ki_2;
-    trans_matrix(2,6)  = lambda*(b_jk_0 - a_jk_0);
-    trans_matrix(2,7)  = lambda*(b_jk_1 - a_jk_1);
-    trans_matrix(2,8)  = lambda*(b_jk_2 - a_jk_2);
-    trans_matrix(2,9)  = b_ki_0 - a_ki_0;
-    trans_matrix(2,10) = b_ki_1 - a_ki_1;
-    trans_matrix(2,11) = b_ki_2 - a_ki_2;
+    trans_matrix(3,2)  = a_ki_0 + a_jk_0 - b_jk_0 - b_ki_0;
+    trans_matrix(4,2)  = a_ki_1 + a_jk_1 - b_jk_1 - b_ki_1;
+    trans_matrix(5,2)  = a_ki_2 + a_jk_2 - b_jk_2 - b_ki_2;
+    trans_matrix(6,2)  = lambda*(b_jk_0 - a_jk_0);
+    trans_matrix(7,2)  = lambda*(b_jk_1 - a_jk_1);
+    trans_matrix(8,2)  = lambda*(b_jk_2 - a_jk_2);
+    trans_matrix(9,2)  = b_ki_0 - a_ki_0;
+    trans_matrix(10,2) = b_ki_1 - a_ki_1;
+    trans_matrix(11,2) = b_ki_2 - a_ki_2;
 
 /*----------------------------------- perform matrix multiplications ---*/
-    B.MultiplyTN(trans_matrix,C);
-
-    k_dyn_tet.Multiply(B,trans_matrix);
+    ////// Compute k_dyn_tet
+    // trans_matrix x C x trans_matrix^(T)
+    // This corresponds to S x r(sjq)^T x R(sjq)^T x C x R(sjq) x r(sjq) x S^T
+    for (int i = 0; i < 12; ++i) {
+        const double C0T0 = C0 * trans_matrix(i, 0);
+        const double C1T1 = C1 * trans_matrix(i, 1);
+        const double C2T2 = C2 * trans_matrix(i, 2);
+        k_dyn_tet(i, i) = C0T0*trans_matrix(i, 0) +
+                          C1T1*trans_matrix(i, 1) +
+                          C2T2*trans_matrix(i, 2);
+        for (int j = 0; j < i; ++j) {
+            k_dyn_tet(i, j) = k_dyn_tet(j, i) = C0T0*trans_matrix(j, 0) +
+                                                C1T1*trans_matrix(j, 1) +
+                                                C2T2*trans_matrix(j, 2);
+        }
+    }
 
     // This makes writing the loop over sys_mat much easier
     std::vector<int> matrix_access(4);
@@ -536,25 +529,52 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(
   //according to Farhat et al.
   //twelve-triangle configuration
 
-  ale3_add_tria_stiffness(tet_1, tet_0, tet_2, tet_3, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_0, tet_3, tet_1, tet_2, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_0, tet_2, tet_3, tet_1, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_2, tet_1, tet_3, tet_0, sys_mat, xyze);
+  LINALG::FixedSizeSerialDenseMatrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
+  double l01, l02, l03, l12, l13, l23;
+  ale3_edge_geometry(tet_0, tet_1, xyze, l01, e01(0), e01(1), e01(2));
+  ale3_edge_geometry(tet_0, tet_2, xyze, l02, e02(0), e02(1), e02(2));
+  ale3_edge_geometry(tet_0, tet_3, xyze, l03, e03(0), e03(1), e03(2));
+  ale3_edge_geometry(tet_1, tet_2, xyze, l12, e12(0), e12(1), e12(2));
+  ale3_edge_geometry(tet_1, tet_3, xyze, l13, e13(0), e13(1), e13(2));
+  ale3_edge_geometry(tet_2, tet_3, xyze, l23, e23(0), e23(1), e23(2));
+  e10(0) = -e01(0);  e10(1) = -e01(1);  e10(2) = -e01(2);
+  e20(0) = -e02(0);  e20(1) = -e02(1);  e20(2) = -e02(2);
+  e21(0) = -e12(0);  e21(1) = -e12(1);  e21(2) = -e12(2);
+  e30(0) = -e03(0);  e30(1) = -e03(1);  e30(2) = -e03(2);
+  e31(0) = -e13(0);  e31(1) = -e13(1);  e31(2) = -e13(2);
+  e32(0) = -e23(0);  e32(1) = -e23(1);  e32(2) = -e23(2);
 
-  // one could also only use 4 triangles, although those choosen above
-  // might not be the smartest choice.
-  // maybe they should be choosen at runtime...
-  //return;
+  local_x(0) = e12(1)*e23(2)-e12(2)*e23(1);
+  local_x(1) = e12(2)*e23(0)-e12(0)*e23(2);
+  local_x(2) = e12(0)*e23(1)-e12(1)*e23(0);
+  local_x.Scale(1.0/local_x.Norm2());
+  ale3_add_tria_stiffness(tet_1, tet_2, tet_3, tet_0, e02, l02, e31, l13, e21, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_1, tet_3, tet_2, tet_0, e03, l03, e21, l12, e31, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_2, tet_1, tet_3, tet_0, e01, l01, e32, l23, e12, local_x, sys_mat);
 
-  ale3_add_tria_stiffness(tet_0, tet_1, tet_2, tet_3, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_0, tet_1, tet_3, tet_2, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_0, tet_2, tet_1, tet_3, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_0, tet_3, tet_2, tet_1, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_1, tet_0, tet_3, tet_2, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_1, tet_2, tet_3, tet_0, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_1, tet_3, tet_2, tet_0, sys_mat, xyze);
-  ale3_add_tria_stiffness(tet_2, tet_0, tet_3, tet_1, sys_mat, xyze);
+  local_x(0) = e23(1)*e03(2)-e23(2)*e03(1);
+  local_x(1) = e23(2)*e03(0)-e23(0)*e03(2);
+  local_x(2) = e23(0)*e03(1)-e23(1)*e03(0);
+  local_x.Scale(1.0/local_x.Norm2());
+  ale3_add_tria_stiffness(tet_0, tet_2, tet_3, tet_1, e12, l12, e30, l03, e20, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_0, tet_3, tet_2, tet_1, e13, l13, e20, l02, e30, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_2, tet_0, tet_3, tet_1, e10, l01, e32, l23, e02, local_x, sys_mat);
 
+  local_x(0) = e01(1)*e03(2)-e01(2)*e03(1);
+  local_x(1) = e01(2)*e03(0)-e01(0)*e03(2);
+  local_x(2) = e01(0)*e03(1)-e01(1)*e03(0);
+  local_x.Scale(1.0/local_x.Norm2());
+  ale3_add_tria_stiffness(tet_0, tet_1, tet_3, tet_2, e21, l12, e30, l03, e10, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_1, tet_0, tet_3, tet_2, e20, l02, e31, l13, e01, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_0, tet_3, tet_1, tet_2, e23, l23, e10, l01, e30, local_x, sys_mat);
+
+  local_x(0) = e01(1)*e12(2)-e01(2)*e12(1);
+  local_x(1) = e01(2)*e12(0)-e01(0)*e12(2);
+  local_x(2) = e01(0)*e12(1)-e01(1)*e12(0);
+  local_x.Scale(1.0/local_x.Norm2());
+  ale3_add_tria_stiffness(tet_0, tet_1, tet_2, tet_3, e31, l13, e20, l02, e10, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_0, tet_2, tet_1, tet_3, e32, l23, e10, l01, e20, local_x, sys_mat);
+  ale3_add_tria_stiffness(tet_1, tet_0, tet_2, tet_3, e30, l03, e21, l12, e01, local_x, sys_mat);
 }
 
 //////

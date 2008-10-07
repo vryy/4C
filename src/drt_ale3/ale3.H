@@ -380,14 +380,28 @@ private:
   The calculated dynamic triangle sjq is perpendicular to edge pr and face
   pqr. According to Farhat et al.
 
+  The interface of this function is rather wierd, I changed it to reduce
+  re-calculation of vectors that are used multiple times.
+
   \param node_i (in)    : Determine position of triangle sjq in
   tetrahedra.
+  \param sq             : edge vector
+  \param len_sq         : length
+  \param rp             : edge vector
+  \param len_rp         : length
+  \param qp             : edge vector
+  \param local_x        : vector needed in calculation
   \param sysmat (in/out): The element's sys_mat
-  \param xyze (in)     : The actual element coordinates
   */
-  void ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
-                               LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                               const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+  void ale3_add_tria_stiffness(
+      int node_p, int node_q, int node_r, int node_s,
+      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& sq,
+      const double len_sq,
+      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& rp,
+      const double len_rp,
+      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& qp,
+      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& local_x,
+      LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat);
 
   /*!
   \brief Prevents node-face-penetration for given nodes.
