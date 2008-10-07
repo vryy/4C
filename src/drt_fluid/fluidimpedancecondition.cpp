@@ -981,31 +981,24 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // some auxiliary stuff
   complex<double> imag(0,1), Z1, Z2, Z3, ZW;
   complex<double> koeff, cwave;
-  // terminal resistance is assumed zero ff
-  //complex<double> zterminal (0,0);
+  // terminal resistance is assumed zero 
+  complex<double> zterminal (0,0);
 
   double omega = 2.0*PI*k/period_;
 
-  // this has to be moved!!
-  double G=0.96e-2;
-  double H=8e-2;
-  double athing=(2.0/PI)*atan(H/G);
-  complex<double> zterminal=(G-imag*H)/(pow(omega,athing));
+  // Alveolar impedance
+  //double G=0.96e-2;
+  //double H=8e-2;
+  //double athing=(2.0/PI)*atan(H/G);
+  //complex<double> zterminal=(G-imag*H)/(pow(omega,athing));
 
   // build up geometry of present generation
   double area = radius*radius*PI;
   double length = lscale * radius;
-  double mu = viscosity * density;
 
   double h=-0.0057*radius*radius+0.2096*radius+0.0904;
   double E=0.0033;
-  double c=343;
-  double R=8.0*mu*length/(PI*radius*radius*radius*radius);
-  double L=4.0*density/(3.0*PI*radius*radius)*length;
-  double C=PI*radius*radius/(density*c)*length;
-  double rw=h*viscosity/(2.0*PI*radius*radius*radius*length);
-  double lw=h*density/(2.0*PI*radius*length);
-  double cw=2.0*PI*radius*radius*radius*length/(h*E);
+  double compliance=2.0*PI*radius*radius*radius/(3.0*h*E);
 
   // get impedances of downward vessels ...
   //*****************************************
@@ -1041,15 +1034,6 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
             }
           }
     // only if both vessels are smaller than the limit truncate
-    //if (leftradius < termradius && rightradius < termradius)
-    /*if (generation >= 23)
-    terminated = true;
-    else
-    {
-      zleft  = LungImpedance(k,generation,leftradius,termradius,density,viscosity,zparent);
-      zright = LungImpedance(k,generation,rightradius,termradius,density,viscosity,zparent);
-    }*/
-
 
     // ... combine this to the impedance at my downstream end ...
     //*************************************************************
@@ -1072,10 +1056,10 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
     koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
 
     // wave speed of this frequency in present vessel
-    cwave=sqrt( area*koeff / (density*cw) );
+    cwave=sqrt( area*koeff / (density*compliance) );
 
     //Convenience coefficient
-    complex<double> gcoeff = cw * cwave;
+    complex<double> gcoeff = compliance * cwave;
 
     // calculate impedance of this, the present vessel
     complex<double> argument = omega*length/cwave;
@@ -1155,17 +1139,6 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
            }
          }
     
-    // only if both vessels are smaller than the limit truncate
-    //if (leftradius < termradius && rightradius < termradius)
-    /*if (generation >= 23)
-    terminated = true;
-    else
-    {
-      zleft  = DCLungImpedance(generation,leftradius,termradius,density,viscosity,zparentdc);
-      zright = DCLungImpedance(generation,rightradius,termradius,density,viscosity,zparentdc);
-    }*/
-
-
     // ... combine this to the impedance at my downstream end ...
     //*************************************************************
     // note, we truncate both terminal vessels at once!
