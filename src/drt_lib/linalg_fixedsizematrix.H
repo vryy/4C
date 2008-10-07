@@ -2978,7 +2978,7 @@ public:
       second factor
     \return dot product
    */
-  inline double Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+  inline double Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other) const
     { return DENSEFUNCTIONS::dot<rows, cols>(data_, other.data_); }
 
   /// Compute absolute value

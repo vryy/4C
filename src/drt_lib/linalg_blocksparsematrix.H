@@ -216,7 +216,7 @@ private:
 
 
 /// Block matrix consisting of SparseMatrix blocks
-/*!  
+/*!
     There are strange algorithms that need to split a large sparse matrix into
     blocks. Such things happen, e.g., in FSI calculations with internal and
     interface splits, in fluid projection preconditioners or in contact
@@ -239,7 +239,7 @@ private:
  */
 template <class Strategy>
 class BlockSparseMatrix : public BlockSparseMatrixBase,
-public Strategy
+                          public Strategy
 {
 public:
   BlockSparseMatrix(const MultiMapExtractor& domainmaps,

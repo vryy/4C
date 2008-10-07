@@ -1396,6 +1396,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "Number of preconditioner reused in monolithic FSI",
                &fsidyn);
 
+  setStringToIntegralParameter("LINEARBLOCKSOLVER","PreconditionedKrylov",
+                               "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
+                               "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
+                               "block Gauss-Seidel methods as well.",
+                               tuple<std::string>(
+                                 "PreconditionedKrylov",
+                                 "PartitionedAitken",
+                                 "PartitionedVectorExtrapolation",
+                                 "PartitionedJacobianFreeNewtonKrylov",
+                                 "BGSAitken",
+                                 "BGSVectorExtrapolation",
+                                 "BGSJacobianFreeNewtonKrylov"
+                                 ),
+                               tuple<INPUTPARAMS::FSILinearBlockSolver>(
+                                 INPUTPARAMS::fsi_PreconditionedKrylov,
+                                 INPUTPARAMS::fsi_PartitionedAitken,
+                                 INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
+                                 INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
+                                 INPUTPARAMS::fsi_BGSAitken,
+                                 INPUTPARAMS::fsi_BGSVectorExtrapolation,
+                                 INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov
+                                 ),
+                               &fsidyn);
+
   IntParameter("ITECHAPP",1,"unused",&fsidyn);
   IntParameter("ICHMAX",1,"unused",&fsidyn);
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
