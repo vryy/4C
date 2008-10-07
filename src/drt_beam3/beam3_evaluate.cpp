@@ -250,7 +250,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         } 
       } 
       //end of section in which numerical approximation for stiffness matrix is computed
-      */  
+     */
       
     
     }
@@ -938,8 +938,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
     
     
-    
-    
+  
     
     
     
@@ -986,11 +985,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         }  
        }
       }
-      
-    
-    
-     
-  
+
+
    
   }
   
