@@ -3,6 +3,7 @@
 
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_statustest.H"
+#include "fsi_nox_linearsystem_bgs.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -18,6 +19,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   : Monolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  linearsolverstrategy_ = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
@@ -463,13 +465,33 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
 
-  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
-                                                             lsParams,
-                                                             Teuchos::rcp(iJac,false),
-                                                             J,
-                                                             Teuchos::rcp(iPrec,false),
-                                                             M,
-                                                             noxSoln));
+  switch (linearsolverstrategy_)
+  {
+  case INPUTPARAMS::fsi_PreconditionedKrylov:
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+                                                               lsParams,
+                                                               Teuchos::rcp(iJac,false),
+                                                               J,
+                                                               Teuchos::rcp(iPrec,false),
+                                                               M,
+                                                               noxSoln));
+    break;
+  case INPUTPARAMS::fsi_BGSAitken:
+  case INPUTPARAMS::fsi_BGSVectorExtrapolation:
+  case INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov:
+    linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
+                                                        lsParams,
+                                                        Teuchos::rcp(iJac,false),
+                                                        J,
+                                                        noxSoln,
+                                                        StructureField().LinearSolver(),
+                                                        FluidField().LinearSolver(),
+                                                        AleField().LinearSolver(),
+                                                        linearsolverstrategy_));
+    break;
+  default:
+    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+  }
 
   return linSys;
 }

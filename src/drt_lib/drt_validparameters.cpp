@@ -644,7 +644,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
   //Reading double parameter for gradient of flow field
   DoubleParameter("GRADIENT",0.0,"Velocity gradient of shear flow",&statmech);
-  //Reading double parameter for viscosity of background fluid 
+  //Reading double parameter for viscosity of background fluid
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
   DoubleParameter("KT",0.0,"thermal energy",&statmech);
@@ -1402,18 +1402,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "block Gauss-Seidel methods as well.",
                                tuple<std::string>(
                                  "PreconditionedKrylov",
-                                 "PartitionedAitken",
-                                 "PartitionedVectorExtrapolation",
-                                 "PartitionedJacobianFreeNewtonKrylov",
+                                 //"PartitionedAitken",
+                                 //"PartitionedVectorExtrapolation",
+                                 //"PartitionedJacobianFreeNewtonKrylov",
                                  "BGSAitken",
                                  "BGSVectorExtrapolation",
                                  "BGSJacobianFreeNewtonKrylov"
                                  ),
                                tuple<INPUTPARAMS::FSILinearBlockSolver>(
                                  INPUTPARAMS::fsi_PreconditionedKrylov,
-                                 INPUTPARAMS::fsi_PartitionedAitken,
-                                 INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
-                                 INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
+                                 //INPUTPARAMS::fsi_PartitionedAitken,
+                                 //INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
+                                 //INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
                                  INPUTPARAMS::fsi_BGSAitken,
                                  INPUTPARAMS::fsi_BGSVectorExtrapolation,
                                  INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov

@@ -112,6 +112,9 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> acolsum_;
 
     //@}
+
+    /// preconditioned block Krylov or block Gauss-Seidel linear solver
+    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
   };
 }
 

@@ -119,6 +119,7 @@ NOX::FSI::LinearBGSSolver::LinearBGSSolver(Teuchos::ParameterList& printParams,
                                            Teuchos::RCP < LINALG::Solver > structure_solver,
                                            Teuchos::RCP < LINALG::Solver > fluid_solver,
                                            Teuchos::RCP < LINALG::Solver > ale_solver,
+                                           INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy,
                                            const Teuchos::RefCountPtr< NOX::Epetra::Scaling> s)
   :
   utils_(printParams),
@@ -132,7 +133,8 @@ NOX::FSI::LinearBGSSolver::LinearBGSSolver(Teuchos::ParameterList& printParams,
   fluidSolver_(fluid_solver),
   aleSolver_(ale_solver),
   timer_(cloneVector.getEpetraVector().Comm()),
-  timeApplyJacbianInverse_(0.0)
+  timeApplyJacbianInverse_(0.0),
+  linearsolverstrategy_(linearsolverstrategy)
 {
   tmpVectorPtr_ = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
 
@@ -234,33 +236,14 @@ bool NOX::FSI::LinearBGSSolver::applyJacobianInverse(Teuchos::ParameterList &p,
   if (zeroInitialGuess_)
     result.init(0.0);
 
-  // ************* Begin linear system scaling *******************
-//   if ( !Teuchos::is_null(scaling) ) {
-
-//     if ( !manualScaling )
-//       scaling->computeScaling(Problem);
-
-//     scaling->scaleLinearSystem(Problem);
-
-//     if (utils.isPrintType(Utils::Details)) {
-//       utils.out() << *scaling << endl;
-//     }
-//   }
-  // ************* End linear system scaling *******************
-
-  // TODO maxit und tol Parameter ermitteln
   int maxit = p.get("Max Iterations", 30);
-  double tol = 1.0e-10; //p.get("Tolerance", 1.0e-10);
+  double tol = p.get("Tolerance", 1.0e-10);
 
   bgs(Teuchos::dyn_cast<const LINALG::BlockSparseMatrixBase>(*jacPtr_.get()),
       result,
       input,
       maxit,
       tol);
-
-  // unscale linear system
-//   if(!Teuchos::is_null(scaling))
-//     scaling->unscaleLinearSystem(Problem);
 
   // Set the output parameters in the "Output" sublist
   if (outputSolveDetails_)
@@ -297,12 +280,10 @@ void NOX::FSI::LinearBGSSolver::bgs(const LINALG::BlockSparseMatrixBase& A,
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
-  dirParams.set("Method","User Defined");
-  Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-    Teuchos::rcp(new NOX::FSI::FixPointFactory());
-  dirParams.set("User Defined Direction Factory",fixpointfactory);
+  nlParams.set("Norm abs F", tol);
+  nlParams.set("Max Iterations", maxit);
 
-  nlParams.set("Jacobian", "None");
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   ///////////////////////////////////////////////////////////////////
 
@@ -310,11 +291,51 @@ void NOX::FSI::LinearBGSSolver::bgs(const LINALG::BlockSparseMatrixBase& A,
   //lineSearchParams.set("Method", "Full Step");
   //lineSearchParams.sublist("Full Step").set("Full Step", fsidyn.get<double>("RELAX"));
 
-  // Aitken relaxation
-  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-    Teuchos::rcp(new NOX::FSI::AitkenFactory());
-  lineSearchParams.set("Method","User Defined");
-  lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+  switch (linearsolverstrategy_)
+  {
+  case INPUTPARAMS::fsi_BGSAitken:
+  {
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+
+    nlParams.set("Jacobian", "None");
+
+    // Aitken relaxation
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+      Teuchos::rcp(new NOX::FSI::AitkenFactory());
+    lineSearchParams.set("Method","User Defined");
+    lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+
+    lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
+    break;
+  }
+  case INPUTPARAMS::fsi_BGSVectorExtrapolation:
+  {
+    nlParams.set("Jacobian", "None");
+    dirParams.set("Method","User Defined");
+
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+    dirParams.set("User Defined Direction Factory",factory);
+
+    Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
+    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+    exParams.set("omega", fsidyn.get<double>("RELAX"));
+    exParams.set("kmax", 10);
+    exParams.set("Method", "RRE");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov:
+    // Newton-Krylov on block Gauss-Seidel? Can there be any difference to
+    // preconditioned block Newton-Krylov (real monolithic)?
+  default:
+    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+  }
 
   ///////////////////////////////////////////////////////////////////
 
@@ -381,9 +402,12 @@ NOX::FSI::LinearBGSSolver::CreateStatusTest(ParameterList& nlParams,
                                             Teuchos::RCP<NOX::Epetra::Group> grp,
                                             Teuchos::RCP<NOX::StatusTest::Combo> converged)
 {
-  Teuchos::RCP<NOX::StatusTest::NormF> absresid =
-    Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
-  converged->addStatusTest(absresid);
+  if (nlParams.isParameter("Norm abs F"))
+  {
+    Teuchos::RCP<NOX::StatusTest::NormF> absresid =
+      Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+    converged->addStatusTest(absresid);
+  }
 
   if (nlParams.isParameter("Norm Update"))
   {

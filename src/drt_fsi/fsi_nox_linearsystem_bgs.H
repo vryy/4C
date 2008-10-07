@@ -96,6 +96,7 @@ namespace FSI {
       Teuchos::RCP < LINALG::Solver > structure_solver,
       Teuchos::RCP < LINALG::Solver > fluid_solver,
       Teuchos::RCP < LINALG::Solver > ale_solver,
+      INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy,
       const Teuchos::RefCountPtr< NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
     ~LinearBGSSolver();
@@ -197,6 +198,8 @@ namespace FSI {
 
     Epetra_Time timer_;
     mutable double timeApplyJacbianInverse_;
+
+    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
   };
 
 }

@@ -295,6 +295,7 @@ namespace UTILS
     /// adaptive Newton direction
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
 
+    /// counter to reuse the block matrix preconditioner
     int precondreusecount_;
 
     /// @name special debugging output
