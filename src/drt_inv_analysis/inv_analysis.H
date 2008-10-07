@@ -38,10 +38,10 @@ class Inv_analysis : public StruGenAlpha {
 	private:
                 int mp_;      // number of measurment points the
                                // paramters should be fittet to
-                vector<int>      surfneum_nodes_;
 		vector<double>   disp_;		                // displacment vector in all three direction
-                vector<int>      surfdir_nodes_;
+                vector<int>      bc_nodes_;
 		vector<double>   load_;		                // displacment vector in all three direction
+                int problem_type_;
 
                 Epetra_SerialDenseVector final_value_;                                                // calculated displacment
                 Epetra_SerialDenseVector final_value_o_;		// calculated displacment of the previous loop
@@ -86,10 +86,9 @@ class Inv_analysis : public StruGenAlpha {
 	                          LINALG::Solver& solver,
 	                          IO::DiscretizationWriter& output,
 	                          bool init = true);
-                void get_measured_values();
-  		void reset_parameters();
+                void reset_parameters();
 		void get_surfneum_nodes();
-		void get_calculated_curve(const RefCountPtr<Epetra_Vector> disp, const RefCountPtr<Epetra_Vector> fint, int numb);
+		void get_calculated_curve(const RefCountPtr<Epetra_Vector> value, int numb);
                 void calculate_new_parameters();
 		void evaluate();
 		void Integrate();

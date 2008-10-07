@@ -22,9 +22,14 @@ Maintainer: Sophie Rausch
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_hdf.H"
 #include "../drt_lib/linalg_ana.H"
+#include "../drt_mat/material.H"
+
 
 using namespace LINALG::ANA;
 using namespace std;
+using namespace DRT;
+using namespace MAT;
+
 
 #include "../drt_structure/stru_resulttest.H"
 
@@ -45,11 +50,20 @@ Inv_analysis::Inv_analysis(ParameterList& params,
    discret_.GetCondition("SurfaceNeumann",surfneum_ );
    discret_.GetCondition("Dirichlet",surfdir_ );
 
-   if (surfneum_.size()==1)
-     surfneum_nodes_ = *(surfneum_[0]->Nodes());
-   else if (surfdir_.size()==2)
-     surfdir_nodes_ = *(surfdir_[1]->Nodes());
+   if (surfneum_.size()==1 && surfdir_.size()==1)
+   {
+     problem_type_ = 0;
+     bc_nodes_ = *(surfneum_[0]->Nodes());
+   }
+   else if ((surfneum_.size()==0 && surfdir_.size()==2))
+   {
+     problem_type_ = 1;
+     bc_nodes_ = *(surfdir_[1]->Nodes());
+   }
    else dserror("The inverse analysis only works for one Neumann or two Dirichlet Conditions!");
+
+  // measured points, gives the number how many displacment steps are measured
+  mp_   = params_.get<int>   ("nstep",5);
 
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
@@ -58,34 +72,46 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   //  tolerance for the curve fitting
   tol_ = params.get("inv_ana_tol", 1.0);
 
-
-  // measured points, gives the number how many displacment steps are measured
-  mp_   = params_.get<int>   ("nstep",5);
-
   // displacment vectors
   final_value_o_.Resize(mp_);                   // calculated displacment
   final_value_.Resize(mp_);                     // calculated displacment of the previous run
   measured_value_.Resize(mp_);                  // measured displacment of the experiment
   residual_value_.Resize(mp_);                  // difference between the measured and the calculated displacment
 
-  get_measured_values();                       // reads the measured values (load or displacment) in
+  //set load/displacment curve
+  double curve_p0 = params.get("measured_curve0", 1.0);
+  double curve_p1 = params.get("measured_curve1", 1.0);
+  double curve_p2 = params.get("measured_curve2", 1.0);
+
+  for (int i=0; i<mp_; i++)
+  {
+    measured_value_[i] = curve_p0*(1-exp(-pow((curve_p1*(500.0/mp_)*i), curve_p2)));
+  }
 
   // trainings parameter
   mu_ = 1;                                     // start value
-  mu_minus_ = params.get("mu_minus", 1.0);
-  mu_plus_  = params.get("mu_plus" , 1.0);
-
+  mu_minus_ = 0.1;
+  mu_plus_  = 10;
 
   // material parameters
   p_.Resize(3);
   p_o_.Resize(3);
-
-  p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c);
-  p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1);
-  p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2);
+  //Which material is used in the input file
+  if (dis.lRowElement(0)->Material()->MaterialType() == m_hyper_polyconvex)
+  {
+    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c);
+    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1);
+    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2);
+  }
+  else if (dis.lRowElement(0)->Material()->MaterialType() == m_hyperpolyogden)
+  {
+    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->c);
+    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k1);
+    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k2);
+  }
+  else dserror("The inverse analysis is only implemented for the Hyperpolyconfex and the Hyperpolyconvex_Ogden material");
 
   numb_run_=0;
-
 }
 
 void Inv_analysis::Integrate()
@@ -93,6 +119,7 @@ void Inv_analysis::Integrate()
   int max_itter = 10000;
 
   do {
+
     int    step    = params_.get<int>   ("step" ,0);
     double maxtime = params_.get<double>("max time",0.0);
     string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -100,7 +127,6 @@ void Inv_analysis::Integrate()
     // can have values takes values "constant" consistent"
     string pred  = params_.get<string>("predictor","constant");
     int predictor=-1;
-
     if      (pred=="constant")   predictor = 1;
     else if (pred=="consistent") predictor = 2;
     else dserror("Unknown type of predictor");
@@ -110,13 +136,21 @@ void Inv_analysis::Integrate()
     {
       for (int i=step; i<mp_; ++i)
       {
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
+        if      (predictor==1) {
+          ConstantPredictor();
+
+        }
+        else if (predictor==2) {
+          ConsistentPredictor();
+        }
 
         // gets the displacments per timestep
-        get_calculated_curve(dis_,fint_,  i);
+        if (problem_type_==0)
+          get_calculated_curve(dis_,  i);
+        else
+          get_calculated_curve(fint_,  i);
 
-        StruGenAlpha::FullNewton();
+       StruGenAlpha::FullNewton();
         StruGenAlpha::UpdateandOutput();
         double time = params_.get<double>("total time",0.0);
         if (time>=maxtime) break;
@@ -157,17 +191,25 @@ void Inv_analysis::evaluate()
 
   numb_run_++;
 
-  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = (p_(0)*p_(0));
-  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = (p_(1)*p_(1));
-  DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = (p_(2)*p_(2));
-
+  if (discret_.lRowElement(0)->Material()->MaterialType() == m_hyper_polyconvex)
+  {
+    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = (p_(0)*p_(0));
+    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = (p_(1)*p_(1));
+    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = (p_(2)*p_(2));
+  }
+  else if (discret_.lRowElement(0)->Material()->MaterialType() == m_hyperpolyogden)
+  {
+    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->c      = (p_(0)*p_(0));
+    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k1     = (p_(1)*p_(1));
+    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k2     = (p_(2)*p_(2));
+    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->youngs = (p_(0)*p_(0));
+  }
   return;
 }
 
 
 void Inv_analysis::calculate_new_parameters()
 {
-
   // initalization of the Jacobi and storage matrix
 
   Epetra_SerialDenseMatrix J(mp_, 3);
@@ -221,9 +263,7 @@ void Inv_analysis::calculate_new_parameters()
     for (int j=0; j<3; j++)
     {
       if (i==j)
-      {
         storage[i][j] = (storage[i][j] + storage[i][j]* mu_);
-      }
     }
   }
 
@@ -255,14 +295,12 @@ void Inv_analysis::calculate_new_parameters()
     final_value_o_.Scale(0.0);
   }
 
-
   cout << "********************************************ENDE********************************************" << endl;
-
   return;
 }
 
 
-void Inv_analysis::get_calculated_curve(const RefCountPtr<Epetra_Vector> disp, const RefCountPtr<Epetra_Vector> fint, int numb)
+void Inv_analysis::get_calculated_curve(const RefCountPtr<Epetra_Vector> value, int numb)
 {
   int direction = 0;
   double nodal_sum = 0;
@@ -271,70 +309,28 @@ void Inv_analysis::get_calculated_curve(const RefCountPtr<Epetra_Vector> disp, c
   // check in which direction the surface neumann conditions pulls
   if      (numb==0)
     direction = 0;
-  else if (surfneum_.size()==1)
-  {
-    if (abs((*disp)[surfneum_nodes_[0]]) > abs((*disp)[surfneum_nodes_[1]]) && abs((*disp)[surfneum_nodes_[0]]) > abs((*disp)[surfneum_nodes_[2]]))
-      direction = 0;
-    else if (abs((*disp)[surfneum_nodes_[1]]) > abs((*disp)[surfneum_nodes_[0]]) && abs((*disp)[surfneum_nodes_[1]]) > abs((*disp)[surfneum_nodes_[2]]))
-      direction = 1;
-    else if (abs((*disp)[surfneum_nodes_[2]]) > abs((*disp)[surfneum_nodes_[0]]) && abs((*disp)[surfneum_nodes_[2]]) > abs((*disp)[surfneum_nodes_[1]]))
-      direction = 2;
-    else dserror("The displacment direction is not clear!");
-  }
-  else if (surfdir_.size()==2)
-  {
-    if (abs((*fint)[surfdir_nodes_[0]]) > abs((*fint)[surfdir_nodes_[1]]) && abs((*fint)[surfdir_nodes_[0]]) > abs((*fint)[surfdir_nodes_[2]]))
-      direction = 0;
-    else if (abs((*fint)[surfdir_nodes_[1]]) > abs((*fint)[surfdir_nodes_[0]]) && abs((*fint)[surfdir_nodes_[1]]) > abs((*fint)[surfdir_nodes_[2]]))
-      direction = 1;
-    else if (abs((*fint)[surfdir_nodes_[2]]) > abs((*fint)[surfdir_nodes_[0]]) && abs((*fint)[surfdir_nodes_[2]]) > abs((*fint)[surfdir_nodes_[1]]))
-      direction = 2;
-    else dserror("The displacment direction is not clear!");
-  }
-  else dserror("The displacment direction is not clear!");
-
-  // summing up the displacments at each of the surface neum nodes
-  if (surfneum_.size()==1)
-  {
-    for (unsigned int i=0; i<surfneum_nodes_.size(); i++)
-    {
-      if (disp->Map().MyGID(surfneum_nodes_[i]*3 + direction))
-      {
-        nodal_sum = nodal_sum + (*disp)[disp->Map().LID(surfneum_nodes_[i]*3 + direction)];
-      }
-    }
-  }
   else
   {
-    for (unsigned int i=0; i<surfdir_nodes_.size(); i++)
-    {
-      if (fint->Map().MyGID(surfdir_nodes_[i]*3 + direction))
-      {
-        nodal_sum = nodal_sum + abs((*fint)[fint->Map().LID(surfdir_nodes_[i]*3 + direction)]);
-      }
-    }
+    if (abs((*value)[bc_nodes_[0]]) > abs((*value)[bc_nodes_[1]]) && abs((*value)[bc_nodes_[0]]) > abs((*value)[bc_nodes_[2]]))
+      direction = 0;
+    else if (abs((*value)[bc_nodes_[1]]) > abs((*value)[bc_nodes_[0]]) && abs((*value)[bc_nodes_[1]]) > abs((*value)[bc_nodes_[2]]))
+      direction = 1;
+    else if (abs((*value)[bc_nodes_[2]]) > abs((*value)[bc_nodes_[0]]) && abs((*value)[bc_nodes_[2]]) > abs((*value)[bc_nodes_[1]]))
+      direction = 2;
+    else dserror("The displacment direction is not clear!");
+  }
+
+  // summing up the displacments at each of the surface neum nodes
+  for (unsigned int i=0; i<bc_nodes_.size(); i++)
+  {
+    if (value->Map().MyGID(bc_nodes_[i]*3 + direction))
+      nodal_sum = nodal_sum + abs((*value)[value->Map().LID(bc_nodes_[i]*3 + direction)]);
   }
 
   // summing up over all processors
   discret_.Comm().SumAll(&nodal_sum, &nodal_sum_2, 1);
-  if (surfneum_.size()==1)
-    final_value_[numb] =  nodal_sum_2/surfneum_nodes_.size();
-  else
-    final_value_[numb] =  nodal_sum_2/surfdir_nodes_.size();
-
-
+  final_value_[numb] =  nodal_sum_2/bc_nodes_.size();
   return;
-}
-
-void Inv_analysis::get_measured_values()
-{
-  for (int i=0; i<mp_; i++)
-  {
-    if (surfneum_.size()==1)
-      measured_value_[i] =  1084.625603*(1-exp(-pow((0.003123*(500.0/mp_)*i), 2.281512)));
-    else
-      measured_value_[i] = 26940.092186*1000*(1-exp(-pow((0.002642*(500.0/mp_)*i), 3.494634)));
-  }
 }
 
 void Inv_analysis::reset_parameters()
