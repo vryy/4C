@@ -23,7 +23,7 @@ void NOX::FSI::Group::CaptureSystemState()
   // we know we already have the first linear system calculated
 
   mfsi_.SetupRHS(RHSVector.getEpetraVector(),true);
-  mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
+  mfsi_.SetupSystemMatrix();
 
   sharedLinearSystem.getObject(this);
   isValidJacobian = true;
@@ -40,7 +40,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeF()
   {
     if (not isValidJacobian)
     {
-      mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
+      mfsi_.SetupSystemMatrix();
       sharedLinearSystem.getObject(this);
       isValidJacobian = true;
     }
@@ -70,9 +70,9 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeJacobian()
  *----------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::ParameterList& p)
 {
-  mfsi_.ScaleSystem(*mfsi_.SystemMatrix(),RHSVector.getEpetraVector());
+  mfsi_.ScaleSystem(RHSVector.getEpetraVector());
   NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
-  mfsi_.UnscaleSolution(*mfsi_.SystemMatrix(),NewtonVector.getEpetraVector());
+  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector());
   return status;
 }
 

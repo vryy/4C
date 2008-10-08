@@ -20,7 +20,7 @@ namespace FSI
     \author u.kue
     \date 06/08
    */
-  class MonolithicStructureSplit : public Monolithic
+  class MonolithicStructureSplit : public BlockMonolithic
   {
   public:
     explicit MonolithicStructureSplit(Epetra_Comm& comm);

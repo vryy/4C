@@ -16,7 +16,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
-  : Monolithic(comm)
+  : BlockMonolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");

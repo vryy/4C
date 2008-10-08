@@ -43,7 +43,7 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class MonolithicOverlap : public Monolithic
+  class MonolithicOverlap : public BlockMonolithic
   {
   public:
     explicit MonolithicOverlap(Epetra_Comm& comm);

@@ -10,7 +10,7 @@ namespace FSI
 {
 
   /// monolithic FSI algorithm with Lagrangian interface coupling
-  class MonolithicLagrange : public Monolithic
+  class MonolithicLagrange : public BlockMonolithic
   {
   public:
     explicit MonolithicLagrange(Epetra_Comm& comm);

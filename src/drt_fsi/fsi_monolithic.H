@@ -87,13 +87,13 @@ namespace UTILS
     bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep();
 
     /// take current results for converged and save for next time step
-    void Update();
+    virtual void Update();
 
     /// write output
-    void Output();
+    virtual void Output();
 
     /// set method name for screen output
     void SetMethod(std::string method) { method_ = method; }
@@ -203,12 +203,9 @@ namespace UTILS
     virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix() = 0;
 
     //@}
-
-    /// the composed system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// Evaluate all fields at position x
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> x);
@@ -217,10 +214,10 @@ namespace UTILS
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void ScaleSystem(Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x) {}
+    virtual void UnscaleSolution(Epetra_Vector& x) {}
 
   protected:
 
@@ -295,15 +292,73 @@ namespace UTILS
     /// adaptive Newton direction
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
 
-    /// counter to reuse the block matrix preconditioner
-    int precondreusecount_;
-
     /// @name special debugging output
 
     Teuchos::RCP<UTILS::DebugWriter> sdbg_;
     Teuchos::RCP<UTILS::DebugWriter> fdbg_;
 
     //@}
+  };
+
+
+  /// Monolithic FSI with block system matrix
+  class BlockMonolithic : public Monolithic
+  {
+  public:
+    explicit BlockMonolithic(Epetra_Comm& comm);
+
+    //! @name NOX methods
+
+    /// compute FSI block matrix
+    bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
+
+    /// preconditioner
+    bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+
+    //@}
+
+    //! @name Apply current field state to system
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+
+    //@}
+
+    /// the composed system matrix
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(),b); }
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(Epetra_Vector& x) { UnscaleSolution(*SystemMatrix(),x); }
+
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x) {}
+
+  protected:
+
+    /// start a new time step
+    virtual void PrepareTimeStep();
+
+  private:
+
+    /// counter to reuse the block matrix preconditioner
+    int precondreusecount_;
+
+  };
+
+  /// Monolithic FSI based on partitioned (interface based) linear solver
+  class PartitionedMonolithic : public Monolithic
+  {
+  public:
+    explicit PartitionedMonolithic(Epetra_Comm& comm);
   };
 }
 

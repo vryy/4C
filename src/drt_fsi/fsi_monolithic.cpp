@@ -202,8 +202,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(Epetra_Comm& comm)
-  : MonolithicBase(comm),
-    precondreusecount_(0)
+  : MonolithicBase(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -257,9 +256,6 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   while (NotFinished())
   {
     PrepareTimeStep();
-
-    // new time step, rebuild preconditioner
-    precondreusecount_ = 0;
 
     if (sdbg_!=Teuchos::null)
       sdbg_->NewTimeStep(Step(),"struct");
@@ -496,10 +492,6 @@ bool FSI::Monolithic::computeF(const Epetra_Vector &x, Epetra_Vector &F, const F
 /*----------------------------------------------------------------------*/
 bool FSI::Monolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeJacobian");
-  Evaluate(Teuchos::rcp(&x,false));
-  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
-  SetupSystemMatrix(mat);
   return true;
 }
 
@@ -510,7 +502,38 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
                                             Epetra_Operator &M,
                                             Teuchos::ParameterList *precParams)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computePreconditioner");
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::BlockMonolithic::BlockMonolithic(Epetra_Comm& comm)
+  : Monolithic(comm),
+    precondreusecount_(0)
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
+  Evaluate(Teuchos::rcp(&x,false));
+  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
+  SetupSystemMatrix(mat);
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
+                                            Epetra_Operator &M,
+                                            Teuchos::ParameterList *precParams)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computePreconditioner");
 
   if (precondreusecount_<=0)
   {
@@ -525,6 +548,25 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
   precondreusecount_ -= 1;
 
   return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::BlockMonolithic::PrepareTimeStep()
+{
+  FSI::Monolithic::PrepareTimeStep();
+
+  // new time step, rebuild preconditioner
+  precondreusecount_ = 0;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
+  : Monolithic(comm)
+{
 }
 
 
