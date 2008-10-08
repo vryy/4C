@@ -62,6 +62,9 @@ namespace LOMA
   protected:
 
     /// prepare time step
+    void InitialCalculations();
+
+    /// prepare time step
     void PrepareTimeStep();
 
     /// do outer iteration loop

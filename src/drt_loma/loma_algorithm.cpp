@@ -48,51 +48,16 @@ LOMA::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::SolveStationaryProblem()
 {
-  int  itnum = 0;
-  bool stopnonliniter = false;
-
   if (Comm().MyPID()==0)
-    cout<<"\n**********************\n STATIONARY OUTER ITERATION LOOP \n**********************\n";
+    cout<<"\n**********************\n STATIONARY LOW-MACH-NUMBER FLOW SOLVER \n**********************\n";
 
-  // set boundary conditions for scalar transport solver
-  ScaTraField().PrepareTimeStep();
+  // prepare time step
+  PrepareTimeStep();
 
-  // set boundary conditions for fluid solver
-  FluidField().PrepareTimeStep();
+  // do outer iteration loop
+  OuterLoop();
 
-  while (stopnonliniter==false)
-  {
-    itnum++;
-
-    // get new velocity field
-    GetCurrentFluidVelocity();
-
-    // set field vectors: density-weighted convective velocity + density
-    ScaTraField().SetLomaVelocity(ConvectiveVelocity());
-
-    // solve transport equation for temperature
-    if (Comm().MyPID()==0)
-      cout<<"\n**********************\n  TEMPERATURE SOLVER \n**********************\n";
-    ScaTraField().Solve();
-
-    // compute density using current temperature + thermodynamic pressure
-    ScaTraField().ComputeDensity();
-
-    // get temperature
-    GetCurrentDensity();
-
-    // set field vectors: density
-    FluidField().SetIterLomaFields(Density());
-
-    // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0)
-      cout<<"\n*********************\n     FLOW SOLVER \n*********************\n";
-    FluidField().NonlinearSolve();
-
-    // check convergence of density
-    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax_,ittol_);
-  }
-
+  // write output to screen and files
   Output();
 
 return;
@@ -103,21 +68,8 @@ return;
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::TimeLoop()
 {
-  // compute initial density field using initial temperature + therm. pressure
-  ScaTraField().ComputeDensity();
-
-  // initially set density at n and n-1
-  ScaTraField().UpdateDensity();
-
-  // get initial velocity field
-  GetCurrentFluidVelocity();
-
-  // compute initial convective density-weighted velocity field for scalar 
-  // transport solver using initial fluid velocity field
-  ScaTraField().SetLomaVelocity(ConvectiveVelocity());
-
-  // write initial fields
-  Output();
+  // do initial calculations
+  InitialCalculations();
 
   // time loop
   while (NotFinished())
@@ -144,6 +96,30 @@ return;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LOMA::Algorithm::InitialCalculations()
+{
+  // compute initial density field using initial temperature + therm. pressure
+  ScaTraField().ComputeDensity();
+
+  // initially set density at 0 and -1
+  ScaTraField().UpdateDensity();
+
+  // get initial velocity field
+  GetCurrentFluidVelocity();
+
+  // compute initial convective density-weighted velocity field for scalar 
+  // transport solver using initial fluid velocity field
+  ScaTraField().SetLomaVelocity(ConvectiveVelocity());
+
+  // write initial fields
+  Output();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void LOMA::Algorithm::PrepareTimeStep()
 {
   // predict density field (from second time step on)
@@ -152,7 +128,7 @@ void LOMA::Algorithm::PrepareTimeStep()
   // prepare temperature time step (+ initialize one-step-theta scheme correctly)
   ScaTraField().PrepareTimeStep();
 
-  // get temperature at n+1, n and n-1
+  // get density at n+1, n and n-1
   GetCurrentDensity();
   GetNDensity();
   GetNmDensity();
@@ -195,7 +171,7 @@ void LOMA::Algorithm::OuterLoop()
     // compute density using current temperature + thermodynamic pressure
     ScaTraField().ComputeDensity();
 
-    // get temperature
+    // get density
     GetCurrentDensity();
 
     // set field vectors: density
@@ -218,9 +194,22 @@ void LOMA::Algorithm::OuterLoop()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::Update()
 {
-  FluidField().Update();
-  ScaTraField().Update();
+  // update density
   ScaTraField().UpdateDensity();
+
+  // update temperature
+  ScaTraField().Update();
+
+  // get density at n+1, n and n-1
+  GetCurrentDensity();
+  GetNDensity();
+  GetNmDensity();
+
+  // set density at n+1, n and n-1
+  FluidField().SetTimeLomaFields(Density(),NDensity(),NmDensity());
+
+  // update fluid
+  FluidField().Update();
 
   return;
 }
