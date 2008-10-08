@@ -836,6 +836,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"),
         Teuchos::tuple<std::string>("Butler-Volmer","Tafel","linear"))));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot0")));
+  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
   eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));

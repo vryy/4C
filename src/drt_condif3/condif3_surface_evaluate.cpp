@@ -216,11 +216,37 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     if ((*eltype)== "anode") sign = -1.0;
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
     const int    reactantid = cond->Getint("reactant id");
-    const double pot0 = cond->GetDouble("pot0");
+    double       pot0 = cond->GetDouble("pot0");
+    const int    curvenum = cond->Getint("curve");
     const double alphaa = cond->GetDouble("alpha_a");
     const double alphac = cond->GetDouble("alpha_c");
-    const double i0 = cond->GetDouble("i0");
+    double       i0 = cond->GetDouble("i0");
     const double frt = params.get<double>("frt"); // = F/RT
+
+    // get control parameter from parameter list
+    const bool is_stationary = params.get<bool>("using stationary formulation");
+    const double time = params.get<double>("total time");
+    double timefac = 1.0;
+    if (not is_stationary)
+    {
+      // One-step-Theta: timefac = theta*dt
+      // BDF2:           timefac = 2/3 * dt
+      timefac = params.get<double>("thsl");
+      if (timefac <= 0.0) dserror("thsl is not positive: %f",timefac);
+      // we multiply i0 with timefac. So we do not have to give down this paramater
+      // and perform autmatically the multiplication of matrix and rhs with timefac 
+      i0 *= timefac;
+
+      // find out whether we shell use a time curve and get the factor
+      if (curvenum>=0)
+      {
+        const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        // adjust potential at metal side accordingly
+        pot0 *= curvefac;
+      }
+    }
+    if ((curvenum>=0) && (is_stationary==true)) 
+      dserror("Stationary simulation, but got a time curve: %d",curvenum);
 
 # if 0
     // print all parameters read from the current condition
@@ -228,10 +254,11 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     cout<<"sign           = "<<sign<<endl;
     cout<<"kinetic model  = "<<*kinetics<<endl;
     cout<<"reactant id    = "<<reactantid<<endl;
-    cout<<"pot0           = "<<pot0<<endl;
+    cout<<"pot0(mod.)     = "<<pot0<<endl;
+    cout<<"curvenum       = "<<curvenum<<endl;
     cout<<"alpha_a        = "<<alphaa<<endl;
     cout<<"alpha_c        = "<<alphac<<endl;
-    cout<<"i0             = "<<i0<<endl<<endl;
+    cout<<"i0(mod.)       = "<<i0<<endl;
     cout<<"F/RT           = "<<frt<<endl<<endl;
 #endif
 

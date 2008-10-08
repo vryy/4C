@@ -43,7 +43,7 @@ ELCH::Algorithm::~Algorithm()
 void ELCH::Algorithm::TimeLoop()
 {
   // write out inital state
-  Output();
+  // Output();
 
   // time loop
   while (NotFinished())

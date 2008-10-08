@@ -166,13 +166,15 @@ namespace ELEMENTS
         const int&                dofindex
     );
 
-    //! add electrochemistry-specific terms to matrix and rhs
-    void AddElchTerms(
+    //! calculate element matrix and rhs vector (Electrochemistry problems)
+    void CalMatElch(
         Epetra_SerialDenseMatrix& emat,   ///< element matrix
         Epetra_SerialDenseVector& erhs,   ///< element rhs
         const vector<double>&     ephinp, ///< current scalar field
         const bool&               higher_order_ele, ///< are second derivatives needed?
-        const double&             frt     ///< factor F/RT
+        const double&             frt,    ///< factor F/RT
+        const bool&               is_stationary, ///< flag indicating stationary formulation
+        const double&             timefac ///< time discretization factor
     );
 
     //! number of nodes

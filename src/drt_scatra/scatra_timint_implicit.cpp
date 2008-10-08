@@ -444,6 +444,12 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         // action for elements
         condparams.set("action","calc_elch_electrode_kinetics");
         condparams.set("frt",frt); // factor F/RT
+        condparams.set("total time",time_);
+        condparams.set("thsl",theta_*dta_);
+        if (MethodName()==INPUTPARAMS::timeint_stationary)
+          condparams.set("using stationary formulation",true);
+        else
+          condparams.set("using stationary formulation",false);
 
         // set vector values needed by elements
         discret_->ClearState();

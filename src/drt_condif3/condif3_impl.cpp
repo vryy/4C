@@ -284,16 +284,18 @@ void DRT::ELEMENTS::Condif3Impl::Sysmat(
     }
 
     /*-------------- perform integration for entire matrix and rhs ---*/
-    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    if (numdofpernode_-numscal_== 0) // 'standard' scalar transport
     {
-      if(is_stationary==false)
-        CalMat(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,timefac,k);
-      else
-        CalMatStationary(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,k);
-    } // loop over each scalar
-
-    if (numdofpernode_-numscal_== 1) // only true for ELCH problems
-        AddElchTerms(sys_mat,residual,ephinp,higher_order_ele,frt);
+      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+      {
+        if(is_stationary==false)
+          CalMat(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,timefac,k);
+        else
+          CalMatStationary(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,k);
+      } // loop over each scalar
+    }
+    else  // ELCH problems
+      CalMatElch(sys_mat,residual,ephinp,higher_order_ele,frt,is_stationary,timefac);
 
   } // integration loop
 
@@ -1322,8 +1324,8 @@ void DRT::ELEMENTS::Condif3Impl::CalMatStationary(
     const int&                dofindex
     )
 {
-static double             rhsint;           /* rhs at int. point     */
-const double fac_diffus = fac_*diffus_[dofindex];
+static double rhsint;           /* rhs at int. point     */
+const double  fac_diffus = fac_*diffus_[dofindex];
 
 // stabilization parameter
 const double taufac = tau_[dofindex]*fac_;
@@ -1692,36 +1694,18 @@ void DRT::ELEMENTS::Condif3Impl::InitializeOST(
 
 
 /*----------------------------------------------------------------------*
- |  add electrochemistry specific terms (private)              gjb 09/08|
+ |  add electrochemistry specific terms (private)              gjb 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
+void DRT::ELEMENTS::Condif3Impl::CalMatElch(
     Epetra_SerialDenseMatrix& emat,
     Epetra_SerialDenseVector& erhs,
     const vector<double>&     ephinp,
     const bool&               higher_order_ele,
-    const double&             frt
+    const double&             frt,
+    const bool&               is_stationary,
+    const double&             timefac
 )
 {
-  // ------------------------------electroneutrality condition
-  static double fac_funct_vi_densfunct_ui(0.0);
-
-  for (int vi=0; vi<iel_; ++vi)
-  {
-    for (int ui=0; ui<iel_; ++ui)
-    {
-      fac_funct_vi_densfunct_ui = fac_*funct_[vi]*densfunct_[ui];
-      for (int k = 0; k < numscal_;++k)
-      {
-        // matrix entry
-        emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+k) += valence_[k]*fac_funct_vi_densfunct_ui;
-        // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
-        erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac_funct_vi_densfunct_ui*ephinp[ui*numdofpernode_+k];
-      }
-    }
-  }
-
-  // ------------------------------------------migration term
-
   // get values of all transported scalars at integration point
   for (int k=0; k<numscal_; ++k)
   {
@@ -1749,6 +1733,11 @@ void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
 
   for (int i=0; i<iel_; i++)
   {
+     /* convective part */
+     /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y +  rho * c_p * u_z * N,z
+        with  N .. form function matrix */
+     conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i) + velint_[2] * derxy_(2,i);
+
      /* migration part */
      mig_[i] = (-frt)*(gradpot_[0] * derxy_(0,i) + gradpot_[1] * derxy_(1,i) + gradpot_[2] * derxy_(2,i));
   }
@@ -1765,65 +1754,189 @@ void DRT::ELEMENTS::Condif3Impl::AddElchTerms(
   // some 'working doubles'
   static double phinp_k_ui(0.0);
   static double diffus_valence_k(0.0);
+   double rhsint(0.0);  // rhs at int. point
+  // integration factors and coefficients of single terms
+  static double timefacfac(0.0);
+  static double timetaufac(0.0);
 
-  for (int k = 0; k < numscal_;++k)
+
+  for (int k = 0; k < numscal_;++k) // loop over all transported sclars
   {
-    // stabilization parameter
+    // stabilization parameters
     const double taufac = tau_[k]*fac_;
+
     // factor D_k * z_k
     diffus_valence_k = diffus_[k]*valence_[k];
+
+    if (is_stationary)
+    {
+      timefacfac  = fac_;
+      timetaufac  = taufac;
+      rhsint = rhs_[k];     // set rhs at integration point
+    }
+    else
+    {
+      timefacfac  = timefac * fac_;
+      timetaufac  = timefac * taufac;
+      rhsint = hist_[k] + rhs_[k]*timefac;     // set rhs at integration point
+    }
+
+    if (higher_order_ele)
+    {
+      for (int i=0; i<iel_; i++)
+      {
+        /* diffusive part */
+        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+        diff_[i] = diffus_[k] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+
+        /* reactive part of migration*/
+        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+        //migr_[i] = diffus_[k] * funct_[i] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+      }
+    }
 
     // ----------------------------------------matrix entries
     for (int vi=0; vi<iel_; ++vi)
     {
       for (int ui=0; ui<iel_; ++ui)
       {
-        // entries in tangential matrix (directional derivatives)
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) -= fac_*diffus_valence_k*funct_[ui]*mig_[vi];
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt*fac_*diffus_valence_k*conint_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+        /* Standard Galerkin terms: */
+        /* convective term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*funct_[vi]*conv_[ui] ;
 
-        // convective stabilization due to migration velocity (only additional terms)
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*diffus_valence_k*mig_[vi]*diffus_valence_k*mig_[ui];
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*conv_[vi]*diffus_valence_k*mig_[ui];
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += taufac*diffus_valence_k*mig_[vi]*conv_[ui];
-      }
-    }
-    // -------------------------------------------rhs entries
+        /* diffusive term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+
+        /* migration term (directional derivatives) */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timefacfac*diffus_valence_k*mig_[vi]*funct_[ui];
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt*timefacfac*diffus_valence_k*conint_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+
+        /* electroneutrality condition */
+        emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+k) += valence_[k]*fac_*funct_[vi]*densfunct_[ui];
+
+        /* Stabilization term: */
+        /* 0) transient stabilization */
+              // not implemented
+
+        /* 1) convective stabilization */
+
+        /* convective term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac*(conv_[vi]+diffus_valence_k*mig_[vi])*(conv_[ui]+diffus_valence_k*mig_[ui]);
+
+        if (higher_order_ele)
+        {
+          /* diffusive term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += -timetaufac*conv_[vi]*diff_[ui] ;
+
+          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+
+          /* convective term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac*diff_[vi]*conv_[ui] ;
+
+          /* diffusive term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timetaufac*diff_[vi]*diff_[ui] ;
+        }
+
+      } // for ui
+    } // for vi
+
+    // ----------------------------------------------RHS
     for (int vi=0; vi<iel_; ++vi)
     {
+      /* RHS source term */
+      erhs[vi*numdofpernode_+k] += fac_*funct_[vi]*rhsint ;
+
+      /* transient stabilization of RHS source term */
+      // not implemented
+
+      /* convective stabilization of RHS source term */
+      erhs[vi*numdofpernode_+k] += taufac*conv_[vi]*rhsint ;
+
+      /* diffusive stabilization of RHS source term */
+      if (higher_order_ele) erhs[vi*numdofpernode_+k] += taufac*diff_[vi]*rhsint ;
+
+      //-----------------------------------residual formulation
       // nonlinear migration term
-      erhs[vi*numdofpernode_+k] += conint_[k]*fac_*diffus_valence_k*mig_[vi];
+      erhs[vi*numdofpernode_+k] += conint_[k]*timefacfac*diffus_valence_k*mig_[vi];
 
       for (int ui=0; ui<iel_; ++ui)
       {
         phinp_k_ui = ephinp[ui*numdofpernode_+k];
         // convective term
-        erhs[vi*numdofpernode_+k] -= fac_*funct_[vi]*conv_[ui]*phinp_k_ui;
+        erhs[vi*numdofpernode_+k] -= timefacfac*funct_[vi]*conv_[ui]*phinp_k_ui;
         // diffusive term
-        erhs[vi*numdofpernode_+k] -= fac_*diffus_[k]*phinp_k_ui*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)+ derxy_(2, ui)*derxy_(2, vi));
+        erhs[vi*numdofpernode_+k] -= timefacfac*diffus_[k]*phinp_k_ui*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)+ derxy_(2, ui)*derxy_(2, vi));
 
         /* Stabilization term: */
         /* 1) convective stabilization */
 
         /* convective term */
-        erhs[vi*numdofpernode_+k] -= taufac*(conv_[vi]+diffus_valence_k*mig_[vi])*(conv_[ui]+diffus_valence_k*mig_[ui])*phinp_k_ui ;
+        erhs[vi*numdofpernode_+k] -= timetaufac*(conv_[vi]+diffus_valence_k*mig_[vi])*(conv_[ui]+diffus_valence_k*mig_[ui])*phinp_k_ui ;
 
         if (higher_order_ele)
         {
           dserror("higher order terms not yet finished");
           /* diffusive term */
-          erhs[vi*numdofpernode_+k] -= -taufac*conv_[vi]*diff_[ui]*phinp_k_ui ;
+          erhs[vi*numdofpernode_+k] -= -timetaufac*conv_[vi]*diff_[ui]*phinp_k_ui ;
 
           /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
 
           /* convective term */
-          erhs[vi*numdofpernode_+k] -= taufac*diff_[vi]*conv_[ui]*phinp_k_ui ;
+          erhs[vi*numdofpernode_+k] -= timetaufac*diff_[vi]*conv_[ui]*phinp_k_ui ;
 
           /* diffusive term */
-          erhs[vi*numdofpernode_+k] += taufac*diff_[vi]*diff_[ui]*phinp_k_ui ;
+          erhs[vi*numdofpernode_+k] += timetaufac*diff_[vi]*diff_[ui]*phinp_k_ui ;
         }
-      }
-    } 
+
+        // electroneutrality condition
+        // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
+        erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac_*funct_[vi]*densfunct_[ui]*phinp_k_ui;
+
+      } // for ui
+    } // for vi
+
+    // -----------------------------------INSTATIONARY TERMS
+    if (!is_stationary)
+    {
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          /* Standard Galerkin terms: */
+          /* transient term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += fac_*funct_[vi]*densfunct_[ui] ;
+
+          /* 1) convective stabilization */
+          /* transient term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*(conv_[vi]+diffus_valence_k*mig_[vi])*densfunct_[ui];
+
+          if (higher_order_ele)
+          {
+            /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+            /* transient term */
+            emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*diff_[vi]*densfunct_[ui] ;
+          }
+        } // for ui
+
+        // residuum on RHS:
+
+        /* Standard Galerkin terms: */
+        /* transient term */
+        erhs[vi*numdofpernode_+k] -= fac_*funct_[vi]*conint_[k];
+
+        /* 1) convective stabilization */
+        /* transient term */
+        erhs[vi*numdofpernode_+k] -= taufac*(conv_[vi]+diffus_valence_k*mig_[vi])*conint_[k];
+
+        if (higher_order_ele)
+        {
+          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+          /* transient term */
+          erhs[vi*numdofpernode_+k] -= taufac*diff_[vi]*conint_[k];
+        }
+      } // for vi
+    } // instationary case
+
   } // loop over scalars
 
   return;

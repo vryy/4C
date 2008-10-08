@@ -303,6 +303,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
          temperature,
          fssgd);
   }
+
   break;
   default:
     dserror("Unknown type of action for Condif3");
