@@ -353,13 +353,6 @@ namespace UTILS
     int precondreusecount_;
 
   };
-
-  /// Monolithic FSI based on partitioned (interface based) linear solver
-  class PartitionedMonolithic : public Monolithic
-  {
-  public:
-    explicit PartitionedMonolithic(Epetra_Comm& comm);
-  };
 }
 
 

@@ -15,6 +15,7 @@
 #include "fsi_monolithicoverlap.H"
 #include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
+#include "fsi_partitionedmonolithic.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
@@ -148,8 +149,14 @@ void fsi_ale_drt()
   {
     Teuchos::RCP<FSI::Monolithic> fsi;
 
-    if (coupling==fsi_iter_monolithic)
-      // Monolithic FSI. The real thing.
+    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
+        linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
+        linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
+      fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
+
+    else if (coupling==fsi_iter_monolithic)
       fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
 
     else if (coupling==fsi_iter_monolithicstructuresplit)
@@ -159,7 +166,7 @@ void fsi_ale_drt()
       fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
 
     else
-      dserror("ups!");
+      dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
 
     if (genprob.restart)
     {

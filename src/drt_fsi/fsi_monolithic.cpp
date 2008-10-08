@@ -562,12 +562,4 @@ void FSI::BlockMonolithic::PrepareTimeStep()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
-  : Monolithic(comm)
-{
-}
-
-
 #endif

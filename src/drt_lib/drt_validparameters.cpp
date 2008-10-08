@@ -1402,18 +1402,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "block Gauss-Seidel methods as well.",
                                tuple<std::string>(
                                  "PreconditionedKrylov",
-                                 //"PartitionedAitken",
-                                 //"PartitionedVectorExtrapolation",
-                                 //"PartitionedJacobianFreeNewtonKrylov",
+                                 "PartitionedAitken",
+                                 "PartitionedVectorExtrapolation",
+                                 "PartitionedJacobianFreeNewtonKrylov",
                                  "BGSAitken",
                                  "BGSVectorExtrapolation",
                                  "BGSJacobianFreeNewtonKrylov"
                                  ),
                                tuple<INPUTPARAMS::FSILinearBlockSolver>(
                                  INPUTPARAMS::fsi_PreconditionedKrylov,
-                                 //INPUTPARAMS::fsi_PartitionedAitken,
-                                 //INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
-                                 //INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
+                                 INPUTPARAMS::fsi_PartitionedAitken,
+                                 INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
+                                 INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
                                  INPUTPARAMS::fsi_BGSAitken,
                                  INPUTPARAMS::fsi_BGSVectorExtrapolation,
                                  INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov
