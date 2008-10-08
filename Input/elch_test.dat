@@ -17,11 +17,11 @@ steady-state diffusion-migration within a binary electrolyte
 // Steady-state solution for electroplating
 // IMA Journal of Applied Mathematics (1993) 51, 251-267
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS 	625
-NODES    	1352
-DIM      	3
-MATERIALS	4
-NUMDF    	6
+ELEMENTS    625
+NODES       1352
+DIM         3
+MATERIALS   4
+NUMDF       6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Electrochemistry
 NUMFIELD     2
@@ -347,8 +347,8 @@ DLINE  0
 DLINE  0
 --------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF  2
-E 1 - anode   2 Butler-Volmer 1.0 1.0 0.0 96485.3399 //1.0 
-E 2 - cathode 2 Butler-Volmer 0.0 1.0 0.0 96485.3399 //1.0
+E 1 - anode   2 Butler-Volmer 1.0 none 1.0 0.0 96485.3399 //1.0 
+E 2 - cathode 2 Butler-Volmer 0.0 none 1.0 0.0 96485.3399 //1.0
 //here, exchange current i0 is scaled by z_1*F in order to get the values of Choi et al.
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
