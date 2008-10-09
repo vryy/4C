@@ -624,6 +624,49 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
+                                    RCP<Epetra_Vector>&      b,
+                                    RCP<const Epetra_Vector> dbcval,
+                                    const Epetra_Map& dbctoggle)
+{
+  if (not dbctoggle.UniqueGIDs())
+    dserror("unique map required");
+
+  if (x != null and b != null)
+  {
+    Epetra_Vector&       X    = *x;
+    Epetra_Vector&       B    = *b;
+    const Epetra_Vector& dbcv = *dbcval;
+
+    // We use two maps since we want to allow dbcv and X to be independent of
+    // each other. So we are slow and flexible...
+    const Epetra_BlockMap& xmap = X.Map();
+    const Epetra_BlockMap& dbcvmap = dbcv.Map();
+
+    const int mylength = dbctoggle.NumMyElements();
+    const int* mygids  = dbctoggle.MyGlobalElements();
+    for (int i=0; i<mylength; ++i)
+    {
+      int gid = mygids[i];
+
+      int dbcvlid = dbcvmap.LID(gid);
+      if (dbcvlid<0)
+        dserror("illegal Dirichlet map");
+
+      int xlid = dbcvlid;
+      xmap.LID(gid);
+      if (xlid<0)
+        dserror("illegal Dirichlet map");
+
+      X[xlid] = dbcv[dbcvlid];
+      B[xlid] = dbcv[dbcvlid];
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
                                     RCP<Epetra_Vector>&         x,
                                     RCP<Epetra_Vector>&         b,

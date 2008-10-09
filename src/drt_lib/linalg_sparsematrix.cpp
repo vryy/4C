@@ -484,6 +484,100 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbct
 
 
 /*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock)
+{
+  if (not Filled())
+    dserror("expect filled matrix to apply dirichlet conditions");
+
+  if (explicitdirichlet_)
+  {
+    // Save graph of original matrix if not done already.
+    // This will never happen as the matrix is guaranteed to be filled. But to
+    // make the code more explicit...
+    if (savegraph_ and graph_==Teuchos::null)
+    {
+      graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+      if (not graph_->Filled())
+        dserror("got unfilled graph from filled matrix");
+    }
+
+    // allocate a new matrix and copy all rows that are not dirichlet
+    const Epetra_Map& rowmap = sysmat_->RowMap();
+    const int nummyrows      = sysmat_->NumMyRows();
+    const int maxnumentries  = sysmat_->MaxNumEntries();
+
+    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    vector<int> indices(maxnumentries,0);
+    vector<double> values(maxnumentries,0.0);
+    for (int i=0; i<nummyrows; ++i)
+    {
+      int row = sysmat_->GRID(i);
+      if (not dbctoggle.MyGID(row))
+      {
+        int numentries;
+        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#endif
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#endif
+      }
+      else
+      {
+        double v;
+        if (diagonalblock)
+          v = 1.0;
+        else
+          v = 0.0;
+#ifdef DEBUG
+        int err = Anew->InsertGlobalValues(row,1,&v,&row);
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        Anew->InsertGlobalValues(row,1,&v,&row);
+#endif
+      }
+    }
+    sysmat_ = Anew;
+    Complete();
+  }
+  else
+  {
+    const int nummyrows = sysmat_->NumMyRows();
+    for (int i=0; i<nummyrows; ++i)
+    {
+      int row = sysmat_->GRID(i);
+      if (dbctoggle.MyGID(row))
+      {
+        int *indexOffset;
+        int *indices;
+        double *values;
+        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
+#ifdef DEBUG
+        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#endif
+        // zero row
+        memset(&values[indexOffset[i]], 0,
+               (indexOffset[i+1]-indexOffset[i])*sizeof(double));
+
+        if (diagonalblock)
+        {
+          double one = 1.0;
+          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
+#ifdef DEBUG
+          if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif
+        }
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(const Teuchos::RCP<Epetra_Vector> dbctoggle)
 {
@@ -518,6 +612,53 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(c
       if (err)
         dserror("InsertGlobalValues: err=%d",err);
     }
+  }
+
+  dl->Complete(sysmat_->DomainMap(),RangeMap());
+  return dl;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(const Epetra_Map& dbctoggle)
+{
+  if (not Filled())
+    dserror("expect filled matrix to extract dirichlet lines");
+  if (not dbctoggle.UniqueGIDs())
+    dserror("unique map required");
+
+  Teuchos::RCP<SparseMatrix> dl = Teuchos::rcp(new SparseMatrix(RowMap(),MaxNumEntries(),ExplicitDirichlet(),SaveGraph()));
+
+  const Epetra_Map& rowmap = sysmat_->RowMap();
+  const Epetra_Map& colmap = sysmat_->ColMap();
+  //const int nummyrows      = sysmat_->NumMyRows();
+
+  std::vector<int> idx(MaxNumEntries());
+
+  const int mylength = dbctoggle.NumMyElements();
+  const int* mygids  = dbctoggle.MyGlobalElements();
+  for (int i=0; i<mylength; ++i)
+  {
+    int gid = mygids[i];
+    int lid = rowmap.LID(gid);
+
+    if (lid<0)
+      dserror("illegal Dirichlet map");
+
+    int NumEntries;
+    double *Values;
+    int *Indices;
+
+    int err = sysmat_->ExtractMyRowView(lid, NumEntries, Values, Indices);
+    if (err)
+      dserror("ExtractMyRowView: err=%d",err);
+    for (int j=0; j<NumEntries; ++j)
+      idx[j] = colmap.GID(Indices[j]);
+
+    err = dl->sysmat_->InsertGlobalValues(gid,NumEntries,Values,&idx[0]);
+    if (err)
+      dserror("InsertGlobalValues: err=%d",err);
   }
 
   dl->Complete(sysmat_->DomainMap(),RangeMap());

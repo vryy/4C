@@ -30,7 +30,7 @@ namespace LINALG
   // forward delcarations:
   class BlockSparseMatrixBase;
   template <class Strategy> class BlockSparseMatrix;
-  
+
   /// A single sparse matrix enhanced with features for FE simulations
   /*!
 
@@ -190,8 +190,13 @@ class SparseMatrix : public SparseOperator
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
+    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock=true);
+
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+
+    /// create matrix that contains all Dirichlet lines from my
+    Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Epetra_Map& dbctoggle);
 
     //@}
 
@@ -426,12 +431,12 @@ class SparseMatrix : public SparseOperator
   /// output of SparseMatrix
   ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
 
-  
+
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                       const SparseMatrix& B, bool transB,
                                       bool completeoutput);
-  
-  
+
+
   /// merge 2x2 system
   Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii,
       const LINALG::SparseMatrix& Aig,

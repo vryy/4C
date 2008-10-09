@@ -491,6 +491,29 @@ namespace LINALG
 
 
   /*!
+  \brief Apply dirichlet boundary condition to a linear system of equations
+
+  This is a flexible routine. The vectors x and dbcval might have different
+  maps. The map does not need to contain all Dirichlet dofs.
+
+  The purpose is to set Dirichlet values at a subset of all Dirichlet
+  boundaries.
+
+  \param x (in/out)         : vector x of Ax=b
+  \param b (in/out)         : vector b of Ax=b
+  \param dbcval (in)        : vector holding values that are supposed to be prescribed
+  \param dbctoggle (in)     : unique map of all dofs that should be
+  constrained
+
+  \pre The map dbctoggle must be subset of the maps of the vectors.
+  */
+  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
+                              RCP<Epetra_Vector>&      b,
+                              RCP<const Epetra_Vector> dbcval,
+                              const Epetra_Map& dbctoggle);
+
+
+  /*!
   \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
 
   Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
