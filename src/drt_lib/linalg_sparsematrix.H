@@ -269,6 +269,7 @@ class SparseMatrix : public SparseOperator
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
+    /// Apply dirichlet boundary condition to a matrix.
     void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock=true);
 
     /// create matrix that contains all Dirichlet lines from my
