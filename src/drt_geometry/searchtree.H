@@ -119,6 +119,18 @@ private:
   
   
   /*!
+   \brief return child(ren) of this tree node in which the ele has to be inserted
+   \param element              element
+   \param xyze_element         coordinates of element
+   \return vector of children ids 
+   */
+  std::vector<int> classifyElement(
+      const DRT::Element*               element,
+      const BlitzMat&                   xyze_element    
+      ) const; 
+  
+  
+  /*!
    \brief return children, whose node box intersects with the circle with the given midpoint and radius
    \param radius              radius
    \param point               point
@@ -334,12 +346,14 @@ public:
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param element              given slave contact element
+  \param xyze_element         coordinates of element
   \return set of node gids
    */
   std::vector<int> queryIntersectionCandidates(
       const DRT::Discretization&        dis,
       const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element
+      DRT::Element*                     element,
+      const BlitzMat&                   xyze_element    
       );
   
   
@@ -497,12 +511,14 @@ public:
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param element              given slave contact element
+  \param xyze_element         coordinates of element
   \return set of node gids
    */
   std::vector<int> queryIntersectionCandidates(
       const DRT::Discretization&        dis,
       const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element
+      DRT::Element*                     element,
+      const BlitzMat&                   xyze_element
       );
   
   

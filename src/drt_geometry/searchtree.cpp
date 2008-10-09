@@ -75,9 +75,9 @@ void GEO::SearchTree::initializeTree(
 
   treeRoot_ = Teuchos::null;
   treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
-
-  // inserts all elements in a map with key -1
-  for (int i=0; i<dis.NumMyColElements(); ++i) 
+  
+  // inserts all elements in a map with key -1 and global id
+  for (int i=0; i<dis.NumMyColElements(); i++)
     treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
 }
 
@@ -184,7 +184,8 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
 std::vector<int> GEO::SearchTree::queryIntersectionCandidates(
     const DRT::Discretization&       dis,
     const std::map<int,BlitzVec3>&   currentpositions, 
-    DRT::Element*                    element) 
+    DRT::Element*                    element,
+    const BlitzMat&                  xyze_element) 
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -194,9 +195,7 @@ std::vector<int> GEO::SearchTree::queryIntersectionCandidates(
       dserror("tree is not yet initialized !!!");
 
   if(!(treeRoot_->getElementList().empty()))
-    elementset = treeRoot_->queryIntersectionCandidates(dis, currentpositions, element);
-  else
-    dserror("element list is empty");
+    elementset = treeRoot_->queryIntersectionCandidates(dis, currentpositions, element, xyze_element);
 
   return elementset;
 }
@@ -597,7 +596,6 @@ void GEO::SearchTree::TreeNode::createChildren(
       }
     }
   }
-  
   // this node becomes an inner tree node
   treeNodeType_ = INNER_NODE;
 }
@@ -759,6 +757,21 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
   return classifyXAABB(elemXAABB);
 }
 
+
+
+/*----------------------------------------------------------------------*
+ | classifiy element in tree node                          u.may   07/08|
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
+        const DRT::Element*               element,
+        const BlitzMat&                   xyze_element    
+        ) const 
+{
+  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+  GEO::checkRoughGeoType(element, xyze_element , eleGeoType);
+  const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(element, xyze_element , eleGeoType));  
+  return classifyXAABB(elemXAABB);
+}
 
 
 
@@ -958,7 +971,8 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
 std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
     const DRT::Discretization&        dis,
     const std::map<int,BlitzVec3>&    currentpositions, 
-    DRT::Element*                     element)
+    DRT::Element*                     element,
+    const BlitzMat&                   xyze_element)
 {
   std::vector< int > elementset;
   
@@ -966,11 +980,11 @@ std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
   {
     case INNER_NODE:
     {     
-      const vector<int> childindex = classifyElement(element,currentpositions);
+      const vector<int> childindex = classifyElement(element,xyze_element);
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1)
-        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element);
+        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element,xyze_element);
       else
         return GEO::getIntersectionCandidates(dis, currentpositions, element, elementList_); 
         
@@ -987,13 +1001,13 @@ std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
   
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in apropriate child node  
-      const vector<int> childindex = classifyElement(element,currentpositions);
+      const vector<int> childindex = classifyElement(element, xyze_element);
       if((int)childindex.size() < 1)
         dserror("no child found\n");
       else if ((int)childindex.size() == 1)
       {
         createChildren(dis, currentpositions);
-        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element);
+        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element, xyze_element);
       }
       else
         return GEO::getIntersectionCandidates(dis, currentpositions, element, elementList_); 

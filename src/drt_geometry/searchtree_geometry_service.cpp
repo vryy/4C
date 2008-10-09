@@ -837,22 +837,22 @@ std::vector<int> GEO::getIntersectionCandidates(
   GEO::EleGeoType xfemGeoType = HIGHERORDER;
   const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
   GEO::checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
-  const BlitzMat3x2 xfemXAABB = GEO::computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
+  const BlitzMat3x2 xfemXAABB(GEO::computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType));
   
   // loop over all entries of elementList (= intersection candidates)
+  // run over global ids
   for(std::set<int>::const_iterator elementIter = (elementList.begin()->second).begin();
       elementIter != (elementList.begin()->second).end(); elementIter++)
   {
-    GEO::EleGeoType cutterGeoType = HIGHERORDER;
     DRT::Element*  cutterElement = dis.gElement(*elementIter);
     
     const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentpositions));
+    GEO::EleGeoType cutterGeoType = HIGHERORDER;
     GEO::checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
     const BlitzMat3x2 cutterXAABB(GEO::computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
-    
-    // compare slaveXAABB and masterXAABB (2D only)
+    // compare 
     if(intersectionOfXAABB(cutterXAABB, xfemXAABB))
-      intersectionCandidateIds.push_back(*elementIter);
+      intersectionCandidateIds.push_back(cutterElement->Id());
   }
 
   return intersectionCandidateIds;

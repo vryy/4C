@@ -64,64 +64,56 @@ void GEO::Intersection::computeIntersection(
   
   static int timestepcounter_ = -1;
   timestepcounter_++;
-  bool xfemIntersection;
   countMissedPoints_ = 0;
-
   const double t_start = ds_cputime();
-
-  //  k < xfemdis->NumMyColElements()
+  
+  // initialize tree for intersection candidates search
+  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
+  Teuchos::RCP<GEO::SearchTree> octTree = rcp(new GEO::SearchTree(8));
+  octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
+  
+  // stop intersection if cutterdis is empty
+  if(cutterdis->NumMyColElements()==0)
+  {  
+    std::cout << " cutter discretization empty ";
+    std::cout << endl;
+    flush(cout);
+    return;
+  }
+  
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
   {
-    //printf("eleid = %d\n", k);
-    xfemIntersection = false;
+    // printf("eleid = %d\n", k);
     EleGeoType xfemGeoType = HIGHERORDER;
-    EleGeoType cutterGeoType = HIGHERORDER;
     DRT::Element* xfemElement = xfemdis->lColElement(k);
     initializeXFEM(k, xfemElement);
-
-    std::set< DRT::Element* >        cutterElements;
-
     // initial positions, since the xfem element does not move
     const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
     checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
-    const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
-
+    // const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
+    
     startPointList();
 
-    // search for intersection candidates
-    for(int kk = 0; kk < cutterdis->NumMyColElements(); ++kk)
-    {
-      DRT::Element*  cutterElement = cutterdis->lColElement(kk);
-      if(cutterElement == NULL) dserror("geometry does not obtain elements");
-
-      const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
-      checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
-      const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
-
-      const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
-
-      if(intersected)
-        cutterElements.insert(cutterElement);
-
-    }// for-loop over all cutterdis->NumMyColElements()
-
+    // serial search
+    // std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
+    
+    // tree search for intersection candidates
+    std::vector<int> cutterElementIds = octTree->queryIntersectionCandidates(*cutterdis, currentcutterpositions, xfemElement, xyze_xfemElement);
+  
     // debugIntersection(xfemElement, cutterElements);
     const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
     const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
 
-    int countCutter = -1;
-    for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
+    for(vector<int>::iterator id = cutterElementIds.begin(); id != cutterElementIds.end(); ++id )
+    //for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
     {
-      countCutter++;
-      // printf("countcutter = %d\n", countCutter);
-      //if(countCutter > 27)
-      //   break;
-
-      DRT::Element* cutterElement = (*i);
+      DRT::Element* cutterElement = cutterdis->gElement(*id);
+      //DRT::Element* cutterElement = (*i);
       cutterDistype_ = cutterElement->Shape();
 
       if(cutterElement == NULL) dserror("cutter element is null\n");
       const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      EleGeoType cutterGeoType = HIGHERORDER;
       checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
       const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
@@ -254,6 +246,45 @@ void GEO::Intersection::initializeXFEM(
 
 
 /*----------------------------------------------------------------------*
+ |  CLI:  serial search of intersection candidates           u.may 06/07|
+ |        by comparing XAABB s                                          |
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::Intersection::serialIntersectionCandidateSearch(
+    const Teuchos::RCP<DRT::Discretization>         cutterdis,
+    const std::map<int,BlitzVec3>&                  currentcutterpositions,
+    DRT::Element*                                   xfemElement)
+{
+  
+  const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
+  EleGeoType xfemGeoType = HIGHERORDER;
+  checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
+  const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
+      
+  std::vector<int> cutterElementIds;
+  // search for intersection candidates
+  for(int kk = 0; kk < cutterdis->NumMyColElements(); ++kk)
+  {
+    DRT::Element*  cutterElement = cutterdis->lColElement(kk);
+    if(cutterElement == NULL) dserror("geometry does not obtain elements");
+
+    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    EleGeoType cutterGeoType = HIGHERORDER;
+    checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
+    const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
+
+    const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
+
+    if(intersected)
+      cutterElementIds.push_back(cutterElement->Id());
+
+  }// for-loop over all cutterdis->NumMyColElements()
+
+  return cutterElementIds;
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  CLI:    collects points that belong to the interface     u.may 06/07|
  |          and lie within an xfem element                              |
  *----------------------------------------------------------------------*/
@@ -293,7 +324,6 @@ bool GEO::Intersection::collectInternalPoints(
     interfacePoints.push_back(ip);
     storeIntersectedCutterElement(cutterElement);
   }
-
   return nodeWithinElement;
 }
 
@@ -306,8 +336,7 @@ bool GEO::Intersection::collectInternalPoints(
 void GEO::Intersection::setBoundaryPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype,
     const BlitzVec3&                        xsi,
-    InterfacePoint&                         ip
-) const
+    InterfacePoint&                         ip) const
 {
   bool onSurface = false;
 
@@ -352,8 +381,7 @@ void GEO::Intersection::setBoundaryPointBoundaryStatus(
 bool GEO::Intersection::setInternalPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype,
     const BlitzVec3&                        xsi,
-    InterfacePoint&                         ip
-) const
+    InterfacePoint&                         ip) const
 {
   bool onSurface = false;
 
@@ -403,8 +431,7 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
     const DRT::Element*                     surfaceElement,
     const BlitzMat&                         xyze_surfaceElement,
     const BlitzVec3&                        xsiSurface,
-    InterfacePoint&                         ip
-) const
+    InterfacePoint&                         ip) const
 {
 
   BlitzVec3 xsi;
@@ -1545,6 +1572,7 @@ void GEO::Intersection::computeCDT(
   tetgenio::polygon *p;
 
 
+  double scalefactor =  1e7;
   // allocate pointlist
   in.numberofpoints = pointList_.size();
   in.pointlist = new REAL[in.numberofpoints * dim];
@@ -1554,7 +1582,7 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i <  in.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
-      in.pointlist[fill] = (REAL) pointList_[i].getCoord()[j];
+      in.pointlist[fill] = (REAL) (pointList_[i].getCoord()[j] * scalefactor);
       fill++;
     }
 
@@ -1668,6 +1696,14 @@ void GEO::Intersection::computeCDT(
   //printTetViewOutputPLC( element, element->Id(), in);
 
   // store interface triangles (+ recovery of higher order meshes)
+  fill = 0; 
+  for(int i = 0; i <  out.numberofpoints; i++)
+    for(int j = 0; j < dim; j++)
+    {
+      out.pointlist[fill] = (REAL) (out.pointlist[fill] * (1.0/scalefactor));
+      fill++;
+    }
+  
   const bool higherorder = false;
   const bool recovery = false;
 
@@ -1732,8 +1768,9 @@ void GEO::Intersection::storePointList(
   vector<double>              searchPoint(3,0);
   
   // round points an vertices with TOL3 on xfem surface
-  roundPointsOnXFEMBoundary(interfacePoints, GEO::TOL3);
-  roundVerticesOnXFEMBoundary(vertices, GEO::TOL3);
+  // has to be fixed within tetgen
+  //roundPointsOnXFEMBoundary(interfacePoints, GEO::TOL3);
+  //roundVerticesOnXFEMBoundary(vertices, GEO::TOL3);
   
   // store interface points in pointList_
   storePoint(vertices[0], interfacePoints, positions);
@@ -1750,8 +1787,8 @@ void GEO::Intersection::storePointList(
       findNextSegment(vertices, searchPoint);
       storePoint(searchPoint, interfacePoints, positions);
   }
-  
-  removeDegenerateInterfacePoints(positions);
+ 
+  // removeDegenerateInterfacePoints(positions);
 }
 
 

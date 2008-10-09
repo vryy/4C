@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 #include "intersection_interfacepoint.H"
 #include "intersection_math.H"
 #include "integrationcell.H"
+#include "../drt_geometry/searchtree.H"
 #include "../drt_tetgen/tetgen.h"
 
 
@@ -147,6 +148,21 @@ class Intersection
     const int             xfemId,
     const DRT::Element*   xfemElement
     );
+  
+  /*!
+    \brief collects points belonging to an interface lying inside xfem elements
+           The nonlinear system of equation is solved with help of the Newton-method.
+ 
+    \param cutterdis                (in)        : cutter discretization
+    \param currentcutterpositions   (in)        : current nodal positions of the cutter element
+    \param xfemElement              (in)        : xfem element
+    */
+  
+  std::vector<int> serialIntersectionCandidateSearch(    
+      const Teuchos::RCP<DRT::Discretization>         cutterdis,
+      const std::map<int,BlitzVec3>&                  currentcutterpositions,
+      DRT::Element*                                   xfemElement
+      );
 
         
   /*!
