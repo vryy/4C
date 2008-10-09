@@ -1041,7 +1041,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 #endif
 
-        trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1583,7 +1583,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
   }
 
-  trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // Apply dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
@@ -3168,7 +3168,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     trueresidual_->Update(dta_,*residual_,1.0);
   }
 
-  trueresidual_->Scale(-density_/dta_/theta_);
+  trueresidual_->Scale(-ResidualScaling());
 
   if (not inrelaxation_)
     inrelaxation_ = true;
