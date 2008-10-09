@@ -56,7 +56,7 @@ namespace FSI {
     /// interface velocity calculation given the interface displacements
     Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
 
-    void ExtractResult(Teuchos::RCP<const Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> result);
+    void ExtractResult(Teuchos::RCP<const Epetra_Vector> idisp, Epetra_Vector& result);
 
   private:
 
@@ -188,6 +188,8 @@ namespace FSI {
 
     bool outputSolveDetails_;
     bool zeroInitialGuess_;
+
+    Teuchos::RCP<Epetra_Vector> oldresult_;
 
     const LINALG::MultiMapExtractor& extractor_;
     ::FSI::PartitionedMonolithic& algorithm_;
