@@ -19,7 +19,6 @@
 #include "../drt_lib/linalg_solver.H"
 
 #include "fsi_nox_aitken.H"
-#include "fsi_nox_epsilon.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_linearsystem_bgs.H"

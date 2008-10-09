@@ -3,6 +3,9 @@
 #include "fsi_partitionedmonolithic.H"
 #include "fsi_statustest.H"
 
+#include "fsi_nox_linearsystem_partitioned.H"
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
@@ -144,9 +147,28 @@ void FSI::PartitionedMonolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::PartitionedMonolithic::CreateLinearSystem(Teuchos::ParameterList&, NOX::Epetra::Vector&, Teuchos::RCP<NOX::Utils>)
+Teuchos::RCP<NOX::Epetra::LinearSystem>
+FSI::PartitionedMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
+                                               NOX::Epetra::Vector& noxSoln,
+                                               Teuchos::RCP<NOX::Utils> utils)
 {
-  return Teuchos::null;
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  linSys = Teuchos::rcp(new NOX::FSI::LinearPartitionedSolver(printParams,
+                                                              lsParams,
+                                                              Extractor(),
+                                                              *this,
+                                                              StructureField(),
+                                                              FluidField(),
+                                                              AleField(),
+                                                              linearsolverstrategy_));
+
+  return linSys;
 }
 
 

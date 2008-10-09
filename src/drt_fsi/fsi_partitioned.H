@@ -108,7 +108,7 @@ protected:
   //! @name Access methods for subclasses
 
   /// interface velocity calculation given the interface displacements
-  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(const Teuchos::RCP<Epetra_Vector> idispnp) const;
+  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
 
   /// current interface displacements
   /*!

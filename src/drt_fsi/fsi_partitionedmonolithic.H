@@ -5,6 +5,14 @@
 
 #include "fsi_monolithic.H"
 
+namespace NOX
+{
+  namespace FSI
+  {
+    class LinearPartitioned;
+  }
+}
+
 namespace FSI
 {
 
@@ -24,6 +32,8 @@ namespace FSI
    */
   class PartitionedMonolithic : public Monolithic
   {
+    friend class NOX::FSI::LinearPartitioned;
+
   public:
     explicit PartitionedMonolithic(Epetra_Comm& comm);
 

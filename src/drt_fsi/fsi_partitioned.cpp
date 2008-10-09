@@ -845,9 +845,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
-    const Teuchos::RCP<Epetra_Vector> idispnp
-) const
+Teuchos::RCP<Epetra_Vector>
+FSI::Partitioned::InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
