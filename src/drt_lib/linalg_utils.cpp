@@ -653,8 +653,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
       if (dbcvlid<0)
         dserror("illegal Dirichlet map");
 
-      int xlid = dbcvlid;
-      xmap.LID(gid);
+      int xlid = xmap.LID(gid);
       if (xlid<0)
         dserror("illegal Dirichlet map");
 
