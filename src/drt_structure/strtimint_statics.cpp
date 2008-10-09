@@ -269,8 +269,12 @@ void STR::TimIntStatics::UpdateStep()
 /* read restart forces */
 void STR::TimIntStatics::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_,step_);
-  reader.ReadVector(fext_,"fexternal");
+  IO::DiscretizationReader reader(discret_, step_);
+  // set 'initial' external force
+  reader.ReadVector(fext_, "fexternal");
+  // set 'initial' internal force vector
+  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
+                          fint_, stiff_);
   return;
 }
 

@@ -521,6 +521,15 @@ void STR::TimIntGenAlpha::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
   reader.ReadVector(fext_, "fexternal");
+  // determine internal force
+  if (midavg_ == midavg_trlike)
+  {
+    fint_->PutScalar(0.0);
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0],
+                            (*dis_)(0), zeros_,  (*vel_)(0), 
+                            fint_, stiff_);
+  }
+  // bye 
   return;
 }
 
