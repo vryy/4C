@@ -2,7 +2,7 @@
 /*!
 \file adapter_ale_lin.cpp
 
-\brief
+\brief ALE implementation
 
 <pre>
 Maintainer: Ulrich Kuettler

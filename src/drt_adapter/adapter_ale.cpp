@@ -1,8 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file
-
-\brief
+\brief ALE base implementation
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -24,6 +22,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include "../drt_lib/drt_validparameters.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -132,7 +132,15 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-      dirichletcond = false;
+      // partitioned MFSI solvers require Dirichlet conditions
+      INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy =
+        Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+      if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
+          linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
+          linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
+        dirichletcond = true;
+      else
+        dirichletcond = false;
     }
   }
 
