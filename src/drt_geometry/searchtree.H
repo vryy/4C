@@ -285,6 +285,7 @@ public:
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param point                point to be examined
+  \param nearestObject        nearestobject
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   int queryXFEMFSIPointType(
@@ -292,6 +293,20 @@ public:
       const std::map<int,BlitzVec3>&    currentpositions,
       const BlitzVec3&                  point,
       GEO::NearestObject&               nearestobject
+      );
+  
+  
+  /*!
+  \brief returns the label 0 -> fluid 1 -> n solid
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \return 0->fluid 1..n->Solid with XFEM-Coupling condition
+   */
+  int queryXFEMFSIPointType(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions,
+      const BlitzVec3&                  point
       );
   
   
@@ -304,13 +319,29 @@ public:
   \param label                label of structure the query point belongs to
   \return set of node gids
    */
-  std::set<int> searchNodesInRadius(
+  std::map<int,std::set<int> > searchElementsInRadius(
       const DRT::Discretization&       dis,
       const std::map<int,BlitzVec3>&   currentpositions, 
       const BlitzVec3&                 point,
       const double                     radius,
       const int                        label
       );
+  
+  
+  /*!
+  \brief   returns a set of elements whose XAABB s are    
+           intersecting with the XAABB of a given volume element
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param element              given slave contact element
+  \return set of node gids
+   */
+  std::vector<int> queryIntersectionCandidates(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      DRT::Element*                     element
+      );
+  
   
   /*!
   \brief returns a vector of gids of contact elements whose AABBs intersect with
@@ -414,22 +445,36 @@ public:
 
 
   /*!
-  \brief returns the label 0 -> fluid 1 -> n solid
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
-  \param point                point to be examined
-  \return 0->fluid 1..n->Solid with XFEM-Coupling condition
-   */
+   \brief returns the label 0 -> fluid 1 -> n solid
+   \param dis                  discretization
+   \param currentpositions     current nodal positions in discretization
+   \param point                point to be examined
+   \param nearestObject        nearestobject
+   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
+  */
   int queryXFEMFSIPointType(
       const DRT::Discretization&      dis,
       const std::map<int,BlitzVec3>&  currentpositions,
       const BlitzVec3&                point,
       GEO::NearestObject&             nearestobject
       );
-
+  
   
   /*!
-  \brief returns a set of gids of nodes lying in a radius around a given point
+    \brief returns the label 0 -> fluid 1 -> n solid
+    \param dis                  discretization
+    \param currentpositions     current nodal positions in discretization
+    \param point                point to be examined
+    \return 0->fluid 1..n->Solid with XFEM-Coupling condition
+     */
+    int queryXFEMFSIPointType(
+        const DRT::Discretization&      dis,
+        const std::map<int,BlitzVec3>&  currentpositions,
+        const BlitzVec3&                point
+        );
+
+  /*!
+  \brief returns a set of gids of nodes lying in a radius around a given point for each object
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param point                point to be examined
@@ -437,13 +482,29 @@ public:
   \param label                label
   \return set of node gids
    */
-  std::set<int> searchNodesInRadius(
+  std::map<int,std::set<int> > searchElementsInRadius(
       const DRT::Discretization&        dis,
       const std::map<int,BlitzVec3>&    currentpositions, 
       const BlitzVec3&                  point,
       const double                      radius,
       const int                         label
       );
+  
+  
+  /*!
+  \brief   returns a vector of elements whose XAABB s are    
+           intersecting with the XAABB of a given volume element
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param element              given slave contact element
+  \return set of node gids
+   */
+  std::vector<int> queryIntersectionCandidates(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      DRT::Element*                     element
+      );
+  
   
   /*!
   \brief returns a vector of gids of contact elements whose AABBs intersect with

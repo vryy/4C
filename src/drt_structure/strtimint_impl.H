@@ -350,12 +350,6 @@ namespace STR
       if (surfstressman_ != Teuchos::null) surfstressman_->Update();
     }
 
-    //! Update step for potential forces
-    void UpdateStepPotential()
-    {
-      if (potman_ != Teuchos::null) potman_->Update();
-    }
-
     //! @name Output
     //@{
 

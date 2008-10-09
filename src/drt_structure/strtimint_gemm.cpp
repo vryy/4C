@@ -404,9 +404,6 @@ void STR::TimIntGEMM::UpdateStep()
   // update surface stress
   UpdateStepSurfstress();
 
-  // update potential forces
-  UpdateStepPotential();
-
   // look out
   return;
 }

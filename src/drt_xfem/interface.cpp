@@ -384,8 +384,7 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  GEO::NearestObject  dummy;
-  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in, dummy);
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);
 }
 
 /*----------------------------------------------------------------------*
@@ -395,8 +394,7 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  GEO::NearestObject  dummy;
-  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in, dummy);
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);
 }
 
 /*----------------------------------------------------------------------*

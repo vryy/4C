@@ -154,6 +154,30 @@ fsisurface_(NULL)
   // dynamic force residual at mid-time R_{n+1-alpha}
   // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
+  
+  // -------------------------------------------------------------------
+  // do surface stress and constraints manager and stresses due to potentials
+  // -------------------------------------------------------------------
+  //initialize Constraint Manager and UzawaSolver
+  constrMan_=rcp(new UTILS::ConstrManager(Discretization(), dis_, params_));
+  constrSolv_=rcp(new UTILS::ConstraintSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
+  dofrowmap = discret_.DofRowMap();
+  // Check for surface stress conditions due to interfacial phenomena
+  vector<DRT::Condition*> surfstresscond(0);
+  discret_.GetCondition("SurfaceStress",surfstresscond);
+  if (surfstresscond.size())
+    surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_));
+  // Check for potential conditions
+  vector<DRT::Condition*> potentialcond;
+  discret_.GetCondition("Potential",potentialcond);
+  if (potentialcond.size())
+  {
+    pot_man_=rcp(new UTILS::PotentialManager(Discretization(),discret_));
+    // if potential conditions exist, the stiffness matrix has to be based on an Epetra_FECrsMatrix
+    // and savegraph_ has to be set false
+    stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+  }  
+     
 
   //-------------------------------------------- calculate external forces
   {
@@ -208,25 +232,7 @@ fsisurface_(NULL)
   // close mass matrix
   mass_->Complete();
 
-  // -------------------------------------------------------------------
-  // do surface stress and constraints manager and stresses due to potentials
-  // -------------------------------------------------------------------
-    //initialize Constraint Manager and ConstraintSolver
-    constrMan_=rcp(new UTILS::ConstrManager(Discretization(), dis_, params_));
-    constrSolv_=rcp(new UTILS::ConstraintSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
-    dofrowmap = discret_.DofRowMap();
-    // Check for surface stress conditions due to interfacial phenomena
-    vector<DRT::Condition*> surfstresscond(0);
-    discret_.GetCondition("SurfaceStress",surfstresscond);
-    if (surfstresscond.size())
-      surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_));
-    // Check for potential conditions
-    vector<DRT::Condition*> potentialcond(0);
-    discret_.GetCondition("Potential",potentialcond);
-    if (potentialcond.size())
-      pot_man_=rcp(new UTILS::PotentialManager(Discretization(),discret_));
-
-
+  
   // build damping matrix if desired
   if (damping and (!dynkindstat))
   {
@@ -235,6 +241,7 @@ fsisurface_(NULL)
     damp_->Add(*mass_,false,mdamp,1.0);
     damp_->Complete();
   }
+  
 
   //--------------------------- calculate consistent initial accelerations
   if (!dynkindstat)
@@ -357,7 +364,9 @@ void StruGenAlpha::ConstantPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
+    cout << "zero out stiff predictor" << endl;
     stiff_->Zero();
+    cout << "zero out stiff predictor" << endl;
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -1093,6 +1102,12 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
+      
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1204,6 +1219,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
+  
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1217,7 +1233,7 @@ void StruGenAlpha::FullNewton()
 #else
       stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
-      if (damping)
+      if(damping)
       {
 #ifdef STRUGENALPHA_BE
         stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
@@ -1226,6 +1242,7 @@ void StruGenAlpha::FullNewton()
 #endif
       }
     }
+    
     stiff_->Complete();
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -1239,10 +1256,10 @@ void StruGenAlpha::FullNewton()
       double worst = fresmnorm;
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
+    }   
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
-
+    
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1303,6 +1320,7 @@ void StruGenAlpha::FullNewton()
     {
       // zero out stiffness
       stiff_->Zero();
+      
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1360,7 +1378,6 @@ void StruGenAlpha::FullNewton()
       }
 
       // do NOT finalize the stiffness matrix to add masses to it later
-
       // If we have a robin condition we need to modify both the rhs and the
       // matrix diagonal corresponding to the dofs at the robin interface.
       if (structrobin)
@@ -1461,7 +1478,7 @@ void StruGenAlpha::FullNewton()
   }
 
   params_.set<int>("num iterations",numiter);
-
+  
   return;
 } // StruGenAlpha::FullNewton()
 
@@ -1920,6 +1937,12 @@ void StruGenAlpha::ModifiedNewton()
       p.set("fintliketr", true);
 #endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      }
+      
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
       }
     }
 
@@ -2907,11 +2930,6 @@ void StruGenAlpha::Update()
   {
     surf_stress_man_->Update();
   }
-
-  if (pot_man_!=null)
-  {
-    pot_man_->Update();
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -2988,14 +3006,6 @@ void StruGenAlpha::Output()
       output_.WriteVector("A", A);
       output_.WriteVector("con", con);
       output_.WriteVector("gamma", gamma);
-    }
-
-    if (pot_man_!=null)
-    {
-      RCP<Epetra_Map> surfrowmap=pot_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      pot_man_->GetHistory(A);
-      output_.WriteVector("Aold", A);
     }
 
     if (constrMan_->HaveConstraint())
@@ -3414,14 +3424,6 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(con, "con");
     reader.ReadVector(gamma, "gamma");
     surf_stress_man_->SetHistory(A,con,gamma);
-  }
-
-  if (pot_man_!=null)
-  {
-    RCP<Epetra_Map> surfmap=pot_man_->GetSurfRowmap();
-    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A_old, "Aold");
-    pot_man_->SetHistory(A_old);
   }
 
   if (DRT::Problem::Instance()->ProblemType()=="struct_multi")

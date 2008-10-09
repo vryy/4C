@@ -26,8 +26,8 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 GEO::SearchTree::SearchTree(
     const int           max_depth): 
-      max_depth_(max_depth),
-      treeRoot_(Teuchos::null)      
+    max_depth_(max_depth),
+    treeRoot_(Teuchos::null)      
 {}
     
 
@@ -111,8 +111,7 @@ int GEO::SearchTree::queryXFEMFSIPointType(
     const DRT::Discretization&       dis,
     const std::map<int,BlitzVec3>&   currentpositions,
     const BlitzVec3&                 point,
-    GEO::NearestObject&              nearestobject
-    )
+    GEO::NearestObject&              nearestobject)
 {
   
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
@@ -128,10 +127,33 @@ int GEO::SearchTree::queryXFEMFSIPointType(
 
 
 
+
+/*----------------------------------------------------------------------*
+ | returns xfem label of point                               u.may 07/08|
+ *----------------------------------------------------------------------*/
+int GEO::SearchTree::queryXFEMFSIPointType(
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions,
+    const BlitzVec3&                 point)
+{
+  
+  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
+  
+  if(treeRoot_ == Teuchos::null)
+      dserror("tree is not yet initialized !!!");
+
+  if(!treeRoot_->getElementList().empty())
+    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point);
+  else 
+    return 0;
+}
+
+
+
 /*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
-std::set<int> GEO::SearchTree::searchNodesInRadius(
+std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>&   currentpositions, 
     const BlitzVec3& 		             point,
@@ -140,18 +162,45 @@ std::set<int> GEO::SearchTree::searchNodesInRadius(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  std::set<int> nodeset;
+  std::map<int,std::set<int> > nodeset;
 
   if(treeRoot_ == Teuchos::null)
       dserror("tree is not yet initialized !!!");
 
   if(!(treeRoot_->getElementList().empty()))
-    nodeset = treeRoot_->searchNodesInRadius(dis, currentpositions, point, radius, label);
+    nodeset = treeRoot_->searchElementsInRadius(dis, currentpositions, point, radius, label);
   else
     dserror("element list is empty");
 
   return nodeset;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | returns a vector of elements whose XAABB s are            u.may 09/08|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::queryIntersectionCandidates(
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    DRT::Element*                    element) 
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  std::vector<int> elementset;
+
+  if(treeRoot_ == Teuchos::null)
+      dserror("tree is not yet initialized !!!");
+
+  if(!(treeRoot_->getElementList().empty()))
+    elementset = treeRoot_->queryIntersectionCandidates(dis, currentpositions, element);
+  else
+    dserror("element list is empty");
+
+  return elementset;
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -763,6 +812,7 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
 
 /*----------------------------------------------------------------------*
  | return xfem label for point (interface method)          u.may   07/08|
+ | and nearest object                                                   |
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     const DRT::Discretization&       dis,
@@ -781,8 +831,11 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     case LEAF_NODE:   
     {
       if (elementList_.empty())
+      {
+        dserror("no nearest object created here");
         return label_;
 
+      }
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
         return GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestobject);
@@ -803,16 +856,56 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
 
 
 /*----------------------------------------------------------------------*
+ | return xfem label for point (interface method)          u.may   07/08|
+ *----------------------------------------------------------------------*/
+int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
+    const DRT::Discretization&       dis,
+    const std::map<int,BlitzVec3>&   currentpositions, 
+    const BlitzVec3&                 point
+    ) 
+{
+  switch (treeNodeType_) 
+  {
+    case INNER_NODE:
+    {       
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
+      break;
+    }
+    case LEAF_NODE:   
+    {
+      if (elementList_.empty())
+        return label_;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
+        return GEO::getXFEMLabel(dis, currentpositions, point, elementList_);
+
+      // dynamically grow tree otherwise, create children and set label for empty children
+      createChildren(dis, currentpositions);
+      setXFEMLabelOfEmptyChildren(dis, currentpositions);
+      // search in apropriate child node
+      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return -1;
+}
+
+
+
+/*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
-std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
+std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
     const DRT::Discretization& 	     dis,
     const std::map<int,BlitzVec3>&   currentpositions, 
     const BlitzVec3& 		             point,
     const double                     radius, 
     const int 			                 label) 
 {  
-  std::set<int> nodeset;
+  std::map<int,std::set<int> > eleMap;
 
   switch (treeNodeType_) 
   {
@@ -822,19 +915,19 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so step down
-        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+        return children_[childindex[0]]->searchElementsInRadius(dis, currentpositions, point, radius, label);
       else
-        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
       break;
     }
     case LEAF_NODE:   
     {
       if(elementList_.empty())
-        return nodeset;
+        return eleMap;
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
 
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in apropriate child node 
@@ -844,17 +937,75 @@ std::set<int> GEO::SearchTree::TreeNode::searchNodesInRadius(
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
       { 
         createChildren(dis, currentpositions);
-        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius, label);
+        return children_[childindex[0]]->searchElementsInRadius(dis, currentpositions, point, radius, label);
       }
       else // AABB does not fit into a single child node box anymore so don t refine any further
-        return GEO::getNodeSetInRadius(dis, currentpositions, point, radius, label, elementList_); 
+        return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
       break;
     }
     default:
       dserror("should not get here\n");
   }
-  return nodeset;
+  return eleMap;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | returns a set of elements whose XAABB s are               u.may 09/08|
+ | intersecting with the XAABB of a given volume element                |
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
+    const DRT::Discretization&        dis,
+    const std::map<int,BlitzVec3>&    currentpositions, 
+    DRT::Element*                     element)
+{
+  std::vector< int > elementset;
+  
+  switch(treeNodeType_) 
+  {
+    case INNER_NODE:
+    {     
+      const vector<int> childindex = classifyElement(element,currentpositions);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1)
+        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element);
+      else
+        return GEO::getIntersectionCandidates(dis, currentpositions, element, elementList_); 
+        
+      break;
+    }
+    case LEAF_NODE:   
+    {
+      if(elementList_.empty())
+        return elementset;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+        return GEO::getIntersectionCandidates(dis, currentpositions, element, elementList_); 
+  
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node  
+      const vector<int> childindex = classifyElement(element,currentpositions);
+      if((int)childindex.size() < 1)
+        dserror("no child found\n");
+      else if ((int)childindex.size() == 1)
+      {
+        createChildren(dis, currentpositions);
+        return children_[childindex[0]]->queryIntersectionCandidates(dis, currentpositions, element);
+      }
+      else
+        return GEO::getIntersectionCandidates(dis, currentpositions, element, elementList_); 
+
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return elementset;
+}
+
 
 
 /*----------------------------------------------------------------------*

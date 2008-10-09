@@ -74,20 +74,27 @@ namespace GEO
       std::map<int, std::set<int> >&          elementList
       );  	
 
+  
   /*!
-  \brief Returns the label for a point, the nearest object and a given map of elements
+  \brief Returns the label and the nearest object for a point and a given map of elements
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param elementList          map of elements label gid
+  \param nearestObject        nearestObject  
   \return                     label
    */
   int getXFEMLabelAndNearestObject(
-      const DRT::Discretization&        dis,              ///< discretization
-      const std::map<int,BlitzVec3>&    currentpositions, ///< current nodal positions in discretization
-      const BlitzVec3&                  querypoint,       ///< point to be examined
-      std::map<int, std::set<int> >&    elementList,      ///< map of elements label gid
-      GEO::NearestObject&               nearestObject     ///< nearest object to querypoint
+      const DRT::Discretization&        dis,              
+      const std::map<int,BlitzVec3>&    currentpositions, 
+      const BlitzVec3&                  querypoint,      
+      std::map<int, std::set<int> >&    elementList,     
+      GEO::NearestObject&               nearestObject
       );
   
+  
   /*!
-  \brief Returns a set of node ids lying in a circle of a given querypoint and a radius
+  \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param querypoint           point to be examined
@@ -96,7 +103,7 @@ namespace GEO
   \param elementList          map of elements label gid
   \return                     label
    */
-  std::set<int> getNodeSetInRadius(
+  std::map<int,std::set<int> > getElementsInRadius(
       const DRT::Discretization&              dis,    
       const std::map<int,BlitzVec3>&          currentpositions,   
       const BlitzVec3&                        querypoint,
@@ -104,6 +111,7 @@ namespace GEO
       const int                               label,
       std::map<int, std::set<int> >&          elementList
       );
+  
   
   /*!
   \brief Returns a vector of element ids intersecting with a given query element (XAABB)
@@ -120,6 +128,7 @@ namespace GEO
       DRT::Element*                           element,
       std::map<int, std::set<int> >&          elementList);
   
+  
   /*!
   \brief checks if two 2D extended axis aligned bounding boxes intersect
          This is for CONTACT search!
@@ -131,6 +140,7 @@ namespace GEO
       const BlitzMat3x2&     slaveXAABB, 
       const BlitzMat3x2&     masterXAABB);
   
+  
   /*!
   \brief Computes a 2D extended axis-aligned bounding box for an element (XAABB)
          This is for CONTACT search!
@@ -141,6 +151,7 @@ namespace GEO
   BlitzMat3x2 computeContactXAABB( 
       DRT::Element*       element,
       const BlitzMat&     xyze);
+  
   
   /*!
   \brief Returns the nearest object to a point 
@@ -239,28 +250,6 @@ namespace GEO
       const DRT::Node*                        node2  
       );
 
-  
-
-  /*!
-  \brief Returns a set of nodes within a the radius of a given point
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
-  \param querypoint           point to be examined
-  \param radius               radius
-  \param label                label
-  \param elementList          map of elements label gid
-  \return                     node set
-   */
-  std::set<int> getNodeSetInRadius(
-    const DRT::Discretization&              dis, 		
-    const std::map<int,BlitzVec3>&          currentpositions, 	
-    const BlitzVec3&                        querypoint,
-    const int				    radius,
-    const int				    label,
-    std::map<int, std::set<int> >&          elementList
-    );  
-
-
 
   /*!
   \brief Merges two axis-aligned bounding boxes
@@ -299,6 +288,22 @@ namespace GEO
       const DRT::Element*                     element,      
       const BlitzMat                          xyze_element, 
       GEO::EleGeoType&                       eleGeoType  
+      );
+  
+  
+  /*!
+  \brief Returns a vector of intersection candidate ids
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param xfemElement          element to be examined
+  \param elementList          map of elements label gid
+  \return                     label
+   */
+  std::vector<int> getIntersectionCandidates(    
+      const DRT::Discretization&              dis,     
+      const std::map<int,BlitzVec3>&          currentpositions,   
+      DRT::Element*                           xfemElement,
+      std::map<int, std::set<int> >&          elementList
       );
 
 

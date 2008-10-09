@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file drt_potential_manager.H
 
+\brief Class controlling surface stresses due to potential forces
+between interfaces
+
 <pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
@@ -19,12 +22,19 @@ Maintainer: Ursula Mayer
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
+#include "Epetra_Import.h"
 
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_io/io.H"
 #include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/intersection_service.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_surfstress/potential_dofset.H"
+
 
 
 using namespace std;
@@ -69,73 +79,24 @@ public:
       RefCountPtr<Epetra_Vector> fint,
       RefCountPtr<LINALG::SparseMatrix> stiff);
 
-  /*!
-    \brief update history variables
-   */
-  void Update();
-
-  /*!
-    \brief get history variables needed for writing restart. Note that
-    the temporal vectors needs to be written since in the old ones we
-    still have the data of the former step. The column map based
-    vectors used for calculations are exported to row map based ones
-    needed for writing.
-   */
-  void GetHistory(RCP<Epetra_Vector> A_old_temp_row);
-
-  /*!
-    \brief get row map of surface elements
-   */
-  RCP<Epetra_Map> GetSurfRowmap() { return surfrowmap_; }
-
-  /*!
-    \brief set history variables after reading restart. The row map
-    based vectors written in case of restart are exported to column
-    based ones needed for calculations again.
-   */
-  void SetHistory(RCP<Epetra_Vector> A_old)
-  {
-    LINALG::Export(*A_old, *A_old_);
-  }
-
+  
   /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena
 
-    \param curvenum (in): number of time curve
-    \param A (in): current interfacial area
-    \param Adiff (in): first partial derivatives of surface area
-    \param Adiff2 (in): second partial derivatives of surface area
-    \param fint (out): element internal force vector
-    \param stiff (out): element stiffness matrix
-    \param ID (in): ID of surface condition
-    \param time (in): current time
-    \param dt (in): timestep size
-    \param surface_flag (in): flag for surfactant model (0) or ideal liquid (1)
-    \param const_gamma (in): constant surface tension in case surface_flag=1
-    \param k1xC (in): adsorption coefficient times bulk concentration
-    \param k2 (in): desorption coefficient
-    \param m1 (in): 1st isothermal slope
-    \param m2 (in): 2nd isothermal slope
-    \param gamma_0 (in): surface tension of water
-    \param gamma_min (in): minimum surface stress
-    \param gamma_min_eq (in): minimum equilibrium surface stress
-    \param con_quot_max (in) maximum surfactant concentration
-    \param con_quot_eq (in) equilibrium surfactant concentration
+    \param element    (in)  : element
+    \param gaussrule  (in)  : gaussrule of element
+    \param params     (in)  : first partial derivatives of surface area
+    \param K_surf     (out) : element stiffness matrix
+    \param fint       (out) : element internal force vector
    */
-  void StiffnessAndInternalForces(
-      const DRT::Element* element,
-      const int curvenum,
-      const double& A,
-      Epetra_SerialDenseVector& fint,
-      Epetra_SerialDenseMatrix& K_surf,
-      const int ID,
-      const double time,
-      const double dt,
-      const double label,
-      const double depth,
-      const double rootDist,
-      const double radius);
+  void StiffnessAndInternalForcesLJPotential(
+      const DRT::Element*               element,
+      const DRT::UTILS::GaussRule2D&    gaussrule,
+      ParameterList&                    params,
+      vector<int>&                      lm,
+      Epetra_SerialDenseMatrix&         K_surf,
+      Epetra_SerialDenseVector&         fint);
 
 
 private:
@@ -159,9 +120,9 @@ private:
           based ones needed for calculations again.
    */
   void searchElementsInCutOffRadius(
-    const BlitzVec3&        point,
-    std::set<int>&          potentialElementIds,
-    const double            radius
+    const BlitzVec3&                  point,
+    std::map<int,std::set<int> >&     potentialElementIds,
+    const double                      radius
     );
 
 
@@ -171,9 +132,10 @@ private:
           based ones needed for calculations again.
    */
   void octTreeSearchElementsInCutOffRadius(
-      const BlitzVec3&        point,
-      std::set<int>&          potentialElementIds,
-      const double            radius
+      const BlitzVec3&                point,
+      std::map<int,std::set<int> >&   potentialElementIds,
+      const double                    radius,
+      const int                       label
       );
 
 
@@ -186,37 +148,108 @@ private:
 
 
   /*!
-  \brief  evaluate potential condition
+  \brief  evaluate potential condition based on Epetra_FECrsMatrix
    */
-  /*
   void EvaluatePotentialCondition(
       ParameterList&                          params,
-      RefCountPtr<LINALG::SparseOperator>     systemmatrix1,
-      RefCountPtr<LINALG::SparseOperator>     systemmatrix2,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
+      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
       RefCountPtr<Epetra_Vector>              systemvector1,
       Teuchos::RCP<Epetra_Vector>             systemvector2,
       Teuchos::RCP<Epetra_Vector>             systemvector3,
-      const string&                           condstring,
-      const int                               condid
+      const string&                           condstring
       );
-  */
+    
 
+  /*!
+  \brief  compute internal force and stiffness matrix
+   */
+  void computeFandK(
+      const DRT::Element*              actEle,
+      const DRT::UTILS::GaussRule2D&   gaussrule,
+      std::map<int,std::set<int> >&    potElements,
+      vector<int>&                     lm,
+      Epetra_SerialDenseMatrix&        K_surf,
+      Epetra_SerialDenseVector&        F_int,
+      const int                        label,
+      const double                     depth,
+      const double                     rootDist,
+      const double                     curvefac
+      );
+  
+  
+  /*!
+  \brief  compute first and second derivative of the Lennard-Jones potential
+   */
+  void EvaluateLennardJonesPotential(
+      const double        depth,
+      const double        rootDist,
+      const BlitzVec3&    x,
+      const BlitzVec3&    y,
+      BlitzVec3&          potderiv1,
+      BlitzMat3x3&        potderiv2
+      );
+  
+  
+  /*!
+  \brief  computes distance related structures
+   */
+  void computeDistance(
+      const BlitzVec3&  x,
+      const BlitzVec3&  y,
+      BlitzMat3x3&      du_tensor_du,
+      BlitzVec3&        dist_vec,
+      BlitzVec3&        dist_unit,
+      double&           distance
+      );
+  
+  
+  /*!
+  \brief  collect global column indices for stiffness matrices with non-local entries
+   */
+  void CollectLmcol(
+      std::map<int,std::set<int> >&     potentialElementIds,
+      vector<int>&                      lmcol
+      );
+  
+  
+  int GetLocalIndex(
+      vector<int>&    lmcol,
+      int             value
+      );
+  
+  
+  void ReferenceConfiguration(
+      const DRT::Element*         element,
+      LINALG::SerialDenseMatrix&  X, 
+      const int                   numdim
+      ) const;
+  
+  
+  void SpatialConfiguration(
+      const DRT::Element*         element,
+      LINALG::SerialDenseMatrix&  x, 
+      const int                   numdim
+      ) const;
+  
+  
+  double ComputeFactor(
+      const DRT::Element*                     element, 
+      LINALG::SerialDenseVector&              funct, 
+      LINALG::SerialDenseMatrix&              deriv, 
+      const DRT::UTILS::IntegrationPoints2D&  intpoints,
+      const int                               gp,
+      BlitzVec3&                              x_gp,
+      const double                            curve_fac
+      );
+ 
   //! name@ Private Attributes
 
-  // current discretization
+  //!  current discretization
   RCP<DRT::Discretization> discretRCP_;
 
-  // current discretization
+  //!  current discretization
   DRT::Discretization& discret_;
-
-  // row map of surfaces
-  RCP<Epetra_Map> surfrowmap_;
-
-  // surface areas of former iteration
-  RefCountPtr<Epetra_Vector> A_old_temp_;
-
-  // surface areas of former time step
-  RefCountPtr<Epetra_Vector> A_old_;
 
   //! SearchTree xTree_
   Teuchos::RCP<GEO::SearchTree>  octTree_;
@@ -231,15 +264,21 @@ private:
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization>      boundarydis_;
+  
   Teuchos::RCP<Teuchos::ParameterList>   params_;
   //@}
 
-  //! @name state vectors using the solid boundary parallel distribution (row vectors)
+  //! @name displacement vector of redundant boundary discretization
   Teuchos::RCP<Epetra_Vector> idisp_total_;
+  
+  //! @name displacement vector of boundary discretization, which is part of the local solid dis
   Teuchos::RCP<Epetra_Vector> idisp_onproc_;
+  
+  Teuchos::RCP<Epetra_Import> importer_;
 
 
 }; //class
-}//namespace DRT
+
+}//namespace UTILS
 
 #endif /*DRT_POTENTIAL_MANAGER_H_*/

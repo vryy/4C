@@ -465,7 +465,6 @@ void STR::TimInt::ReadRestart
   ReadRestartState();
   ReadRestartForce();
   ReadRestartConstraint();
-  ReadRestartPotential();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
   // fix pointer to #dofrowmap_, which has not really changed, but is
@@ -506,19 +505,6 @@ void STR::TimInt::ReadRestartConstraint()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/* Read and set restart values for potentials */
-void STR::TimInt::ReadRestartPotential()
-{
-  if (potman_ != Teuchos::null)
-  {
-    IO::DiscretizationReader reader(discret_, step_);
-    Teuchos::RCP<Epetra_Map> surfmap = potman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap, true);
-    reader.ReadVector(A_old, "Aold");
-    potman_->SetHistory(A_old);
-  }
-}
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
@@ -632,16 +618,6 @@ void STR::TimInt::OutputRestart
     output_->WriteVector("A", A);
     output_->WriteVector("con", con);
     output_->WriteVector("gamma", gamma);
-  }
-
-  // potential forces
-  if (potman_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Map> surfrowmap = potman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A
-      = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    potman_->GetHistory(A);
-    output_->WriteVector("Aold", A);
   }
 
   // constraints

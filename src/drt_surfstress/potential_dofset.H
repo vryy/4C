@@ -1,0 +1,71 @@
+/*!----------------------------------------------------------------------
+\file potential_dofset.H
+
+\brief A set of degrees of freedom for potential discretization
+
+<pre>
+Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef POTENTIAL_DOFSET_H_
+#define POTENTIAL_DOFSET_H_
+
+
+#include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_discret.H"
+
+
+namespace UTILS
+{
+  /*!
+  \brief A set of degrees of freedom for potential discretization
+  */
+  class PotentialDofSet : public DRT::DofSet
+  {
+  public:
+  
+    /*!
+    \brief Standard Constructor
+  
+    */
+    explicit PotentialDofSet(RCP<DRT::Discretization> sourcedis);
+  
+    /*!
+    \brief Destructor
+  
+    */
+    virtual ~PotentialDofSet() { return; }
+  
+    /// Assign dof numbers to all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(
+            const DRT::Discretization& dis,
+            const int start);
+  
+    /// Assign dof numbers for new discretization using dof numbering from source discretization.
+    void TransferDegreesOfFreedom(
+            const DRT::Discretization& sourcedis,    ///< source discret
+            const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
+            const int                  start         ///< offset for dof numbering (obsolete)
+            );
+  
+  private:
+    
+    RCP<DRT::Discretization> sourcedis_; ///< source discretization
+  
+  
+  }; // class PotentialDofSet
+} //namespace
+
+#endif  /*POTENTIAL_DOFSET_H_*/
+#endif  // #ifdef CCADISCRET
+
+
+
+
+
+

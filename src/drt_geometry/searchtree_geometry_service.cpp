@@ -129,10 +129,10 @@ std::vector< BlitzMat3x2 > GEO::computeXAABBForLabeledStructures(
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 int GEO::getXFEMLabel(
-    const DRT::Discretization&              dis,
-    const std::map<int,BlitzVec3>&          currentpositions,
+    const DRT::Discretization&              dis, 		
+    const std::map<int,BlitzVec3>&          currentpositions, 	
     const BlitzVec3&                        querypoint,
-    std::map<int, std::set<int> >&          elementList)
+    std::map<int, std::set<int> >&          elementList)  		
 {
   BlitzVec3 minDistanceVec = 0.0;
  
@@ -143,7 +143,7 @@ int GEO::getXFEMLabel(
   int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);  	
  
   // compute normal in the point found on or in the object 
-  const BlitzVec3 normal = getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
+  BlitzVec3 normal= getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
 
   // compare normals and set label 
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
@@ -158,25 +158,24 @@ int GEO::getXFEMLabel(
 
 
 /*----------------------------------------------------------------------*
- | returns a label and nearest object for a given point      a.ger 08/08|
+ | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 int GEO::getXFEMLabelAndNearestObject(
-    const DRT::Discretization&              dis,
-    const std::map<int,BlitzVec3>&          currentpositions,
-    const BlitzVec3&                        querypoint,
-    std::map<int, std::set<int> >&          elementList,
-    GEO::NearestObject&                     nearestObject
-    )
+    const DRT::Discretization&        dis,              
+    const std::map<int,BlitzVec3>&    currentpositions, 
+    const BlitzVec3&                  querypoint,      
+    std::map<int, std::set<int> >&    elementList,     
+    GEO::NearestObject&               nearestObject)
 {
   BlitzVec3 minDistanceVec = 0.0;
 
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   // returns the label of the surface element structure the projection of the query point is lying on
-  int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);       
+  int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);   
  
   // compute normal in the point found on or in the object 
-  const BlitzVec3 normal = getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
+  BlitzVec3 normal= getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
 
   // compare normals and set label 
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
@@ -194,7 +193,7 @@ int GEO::getXFEMLabelAndNearestObject(
  | a set of nodes in a given radius                          u.may 07/08|
  | from a query point                                                   |
  *----------------------------------------------------------------------*/
-std::set<int> GEO::getNodeSetInRadius(
+std::map<int,std::set<int> > GEO::getElementsInRadius(
     const DRT::Discretization&              dis, 		
     const std::map<int,BlitzVec3>&          currentpositions, 	
     const BlitzVec3&                        querypoint,
@@ -202,8 +201,8 @@ std::set<int> GEO::getNodeSetInRadius(
     const int                               label,
     std::map<int, std::set<int> >&          elementList)  
 {
-  std::map< int, std::set<int> > nodeList;
-  std::set<int> nodeSet;
+  std::map< int, std::set<int> >  nodeList;
+  std::map<int,std::set<int> >    elementMap;
   
   // collect all nodes with different label
   for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
@@ -226,10 +225,13 @@ std::set<int> GEO::getNodeSetInRadius(
       const DRT::Node* node = dis.gNode(*nodeIter);
       GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
       if(distance < (radius + GEO::TOL7) )
-        nodeSet.insert(node->Id());
+      {
+        for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)  
+          elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id()); 
+      }
     }
   
-  return nodeSet;
+  return elementMap;
 }
 
 
@@ -816,6 +818,44 @@ void GEO::checkRoughGeoType(
 
   // TODO check if a higher order element is linear
   // by checking if the higher order node is on the line
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | returns a set of intersection candidate ids             u.may   09/08|
+ *----------------------------------------------------------------------*/
+std::vector<int> GEO::getIntersectionCandidates(    
+    const DRT::Discretization&              dis,     
+    const std::map<int,BlitzVec3>&          currentpositions,   
+    DRT::Element*                           xfemElement,
+    std::map<int, std::set<int> >&          elementList)
+{ 
+  std::vector<int> intersectionCandidateIds;
+  
+  // create XAABB for query xfem  element
+  GEO::EleGeoType xfemGeoType = HIGHERORDER;
+  const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
+  GEO::checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
+  const BlitzMat3x2 xfemXAABB = GEO::computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
+  
+  // loop over all entries of elementList (= intersection candidates)
+  for(std::set<int>::const_iterator elementIter = (elementList.begin()->second).begin();
+      elementIter != (elementList.begin()->second).end(); elementIter++)
+  {
+    GEO::EleGeoType cutterGeoType = HIGHERORDER;
+    DRT::Element*  cutterElement = dis.gElement(*elementIter);
+    
+    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentpositions));
+    GEO::checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
+    const BlitzMat3x2 cutterXAABB(GEO::computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
+    
+    // compare slaveXAABB and masterXAABB (2D only)
+    if(intersectionOfXAABB(cutterXAABB, xfemXAABB))
+      intersectionCandidateIds.push_back(*elementIter);
+  }
+
+  return intersectionCandidateIds;
 }
 
 #endif  // #ifdef CCADISCRET

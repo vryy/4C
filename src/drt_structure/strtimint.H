@@ -466,9 +466,6 @@ namespace STR
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
 
-    //! Read and set restart values for potentials
-    void ReadRestartPotential();
-
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 

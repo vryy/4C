@@ -508,9 +508,6 @@ void STR::TimIntGenAlpha::UpdateStep()
   // update surface stress
   UpdateStepSurfstress();
 
-  // update potential forces
-  UpdateStepPotential();
-
   // look out
   return;
 }
