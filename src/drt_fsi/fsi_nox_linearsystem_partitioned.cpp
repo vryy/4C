@@ -95,7 +95,10 @@ NOX::FSI::LinearPartitioned::StructOp(Teuchos::RCP<const Epetra_Vector> iforce, 
 
   // extract interface displacement
 
-  return structurefield_.Interface().ExtractCondVector(sx_);
+  Teuchos::RCP<Epetra_Vector> idisp =
+    structurefield_.Interface().ExtractCondVector(sx_);
+
+  return idisp;
 }
 
 
@@ -104,7 +107,9 @@ NOX::FSI::LinearPartitioned::StructOp(Teuchos::RCP<const Epetra_Vector> iforce, 
 Teuchos::RCP<Epetra_Vector>
 NOX::FSI::LinearPartitioned::FluidOp(Teuchos::RCP<const Epetra_Vector> idisp, const FillType fillFlag)
 {
-  Teuchos::RCP<Epetra_Vector> ivel = algorithm_.StructToFluid(InterfaceVelocity(idisp));
+  //Teuchos::RCP<Epetra_Vector> ivel = algorithm_.StructToFluid(InterfaceVelocity(idisp));
+  Teuchos::RCP<Epetra_Vector> ivel = algorithm_.StructToFluid(idisp);
+  ivel->Scale(fluidfield_.TimeScaling());
 
   // prepare RHS
 
@@ -127,6 +132,9 @@ NOX::FSI::LinearPartitioned::FluidOp(Teuchos::RCP<const Epetra_Vector> idisp, co
 
   Teuchos::RCP<Epetra_Vector> force = Teuchos::rcp(new Epetra_Vector(fx_->Map()));
   fluiddirichlet_->Apply(*fx_,*force);
+
+  // Can we have fluid forces at the coupling interface?
+  force->Update(-1.0,*frhs_,1.0);
 
   Teuchos::RCP<Epetra_Vector> iforce =
     fluidfield_.Interface().ExtractCondVector(force);
@@ -183,6 +191,7 @@ void NOX::FSI::LinearPartitioned::ExtractResult(Teuchos::RCP<const Epetra_Vector
 {
   AleOp(idisp);
   algorithm_.SetupVector(result,sx_,fx_,ax_,0.);
+  result.Scale(-1.0);
 }
 
 
@@ -254,7 +263,7 @@ bool NOX::FSI::LinearPartitionedSolver::applyJacobianInverse(Teuchos::ParameterL
   if (zeroInitialGuess_)
     result.init(0.0);
 
-  int maxit = params.get("Max Iterations", 30);
+  int maxit = params.get("Max Iterations", 100);
   double tol = params.get("Tolerance", 1.0e-10);
 
   LinearPartitionedSolve(result,input,maxit,tol);
@@ -426,6 +435,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
+  nlParams.set("Norm rel F", tol);
   nlParams.set("Norm abs F", tol);
   nlParams.set("Max Iterations", maxit);
 
@@ -485,13 +495,13 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
 
   ///////////////////////////////////////////////////////////////////
 
-  Teuchos::RCP<Epetra_Vector> disp =
-    extractor_.ExtractVector(result.getEpetraVector(),0);
+//   Teuchos::RCP<Epetra_Vector> disp =
+//     extractor_.ExtractVector(result.getEpetraVector(),0);
 
-  Teuchos::RCP<Epetra_Vector> idisp =
-    structurefield_.Interface().ExtractCondVector(disp);
+//   Teuchos::RCP<Epetra_Vector> idisp =
+//     structurefield_.Interface().ExtractCondVector(disp);
 
-  idisp->Scale(-1.0);
+  Teuchos::RCP<Epetra_Vector> idisp = Teuchos::rcp(new Epetra_Vector(*structurefield_.Interface().CondMap()));
 
   Teuchos::RCP<LinearPartitioned> partitionedInterface =
     Teuchos::rcp(new LinearPartitioned(algorithm_,structurefield_,fluidfield_,alefield_));
@@ -520,18 +530,9 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
 
   const NOX::Epetra::Group& finalGroup = Teuchos::dyn_cast<const NOX::Epetra::Group>(solver->getSolutionGroup());
 
-  if (oldresult_==Teuchos::null)
-  {
-    oldresult_ = Teuchos::rcp(new Epetra_Vector(result.getEpetraVector()));
-  }
-
   partitionedInterface->ExtractResult(
     Teuchos::rcp(&Teuchos::dyn_cast<const NOX::Epetra::Vector>(finalGroup.getX()).getEpetraVector(),false),
     result.getEpetraVector());
-
-  // make an incremental result
-  //result.getEpetraVector().Update(-1.0,*oldresult_,1.0);
-  //oldresult_->Update(1.0,result.getEpetraVector(),1.0);
 
   maxit = nlParams.sublist("Output").get("Nonlinear Iterations",0);
   tol = nlParams.sublist("Output").get("2-Norm of Residual", 0.);

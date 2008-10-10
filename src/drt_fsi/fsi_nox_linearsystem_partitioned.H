@@ -189,8 +189,6 @@ namespace FSI {
     bool outputSolveDetails_;
     bool zeroInitialGuess_;
 
-    Teuchos::RCP<Epetra_Vector> oldresult_;
-
     const LINALG::MultiMapExtractor& extractor_;
     ::FSI::PartitionedMonolithic& algorithm_;
 
