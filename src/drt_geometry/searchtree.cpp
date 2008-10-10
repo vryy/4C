@@ -105,9 +105,9 @@ void GEO::SearchTree::updateTree(
 
 
 /*----------------------------------------------------------------------*
- | returns xfem label of point                               u.may 07/08|
+ | returns xfem label and nearest object to point            u.may 07/08|
  *----------------------------------------------------------------------*/
-int GEO::SearchTree::queryXFEMFSIPointType(
+int GEO::SearchTree::queryFSINearestObject(
     const DRT::Discretization&       dis,
     const std::map<int,BlitzVec3>&   currentpositions,
     const BlitzVec3&                 point,
@@ -120,11 +120,10 @@ int GEO::SearchTree::queryXFEMFSIPointType(
       dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
-    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
+    return treeRoot_->queryFSINearestObject(dis, currentpositions, point, nearestobject);
   else 
     return 0;
 }
-
 
 
 
@@ -224,6 +223,7 @@ std::vector<int> GEO::SearchTree::searchIntersectionElements(
 
   return elementset;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -407,6 +407,17 @@ void GEO::SearchTree::TreeNode::setLabel(
 	const int label)
 {
   label_ = label;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | set nearest object                                        u.may 09/08|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::setNearestObject(
+      const GEO::NearestObject&   nearestObject)
+{
+  nearestObject_ = nearestObject;
 }
 
 
@@ -623,6 +634,30 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
 
 
 /*----------------------------------------------------------------------*
+ | set XFEM label and nearest object of empty children     u.may   08/08|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
+    const DRT::Discretization&        dis,
+    const std::map<int,BlitzVec3>&    currentpositions)
+{    
+  for(int index = 0; index < getNumChildren(); index++)
+  {
+    // if one of the created children is empty, set label immediately
+    if ((children_[index]->getElementList()).empty())
+    {
+      const BlitzVec3 childNodeCenter(children_[index]->getCenterCoord());
+      // xfem label has to be computed on this level because child is empty
+      GEO::NearestObject nearestObject;
+      int label = getXFEMLabelAndNearestObject(dis, currentpositions, childNodeCenter, elementList_, nearestObject);
+      children_[index]->setLabel(label);
+      children_[index]->setNearestObject(nearestObject);
+    }
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
  | classifiy point in node                                  peder   07/08|
  *----------------------------------------------------------------------*/
 const int GEO::SearchTree::TreeNode::classifyPoint(
@@ -827,37 +862,52 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
  | return xfem label for point (interface method)          u.may   07/08|
  | and nearest object                                                   |
  *----------------------------------------------------------------------*/
-int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    const BlitzVec3&                 point,
-    GEO::NearestObject&              nearestobject
+int GEO::SearchTree::TreeNode::queryFSINearestObject(
+    const DRT::Discretization&          dis,
+    const std::map<int,BlitzVec3>&      currentpositions, 
+    const BlitzVec3&                    point,
+    GEO::NearestObject&                 nearestObject
     ) 
 {
   switch (treeNodeType_) 
   {
     case INNER_NODE:
     {       
-      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
+      return children_[classifyPoint(point)]->queryFSINearestObject(dis, currentpositions, point, nearestObject);
       break;
     }
     case LEAF_NODE:   
     {
       if (elementList_.empty())
       {
-        dserror("no nearest object created here");
+        nearestObject = nearestObject_;
         return label_;
-
       }
+      
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestobject);
+      {
+        // nearest object refers only to the nearest object found in this particular tree node
+        int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObject);
+        
+        const TreeNode* workingNode = this;
+        while(!GEO::pointInMinCircleInTreeNode(nearestObject.getPhysCoord(), point, workingNode->getNodeBox(), (!workingNode->hasParent()) ))
+        {
+          if(!workingNode->hasParent())
+            dserror("this treenode has no parent");
+          
+          workingNode = workingNode->getParent();
+          xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, workingNode->getElementList(), nearestObject);
+        }
+        return xfemLabel;
+      }
+      //return GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObject);
 
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(dis, currentpositions);
       setXFEMLabelOfEmptyChildren(dis, currentpositions);
       // search in apropriate child node
-      return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point, nearestobject);
+      return children_[classifyPoint(point)]->queryFSINearestObject(dis, currentpositions, point, nearestObject);
       break;
     }
     default:
@@ -876,7 +926,7 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     const std::map<int,BlitzVec3>&   currentpositions, 
     const BlitzVec3&                 point
     ) 
-{
+{ 
   switch (treeNodeType_) 
   {
     case INNER_NODE:
@@ -888,16 +938,32 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
     {
       if (elementList_.empty())
         return label_;
-
+      
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getXFEMLabel(dis, currentpositions, point, elementList_);
-
+      {
+        // nearest object refers only to the nearest object found in this particular tree node
+        GEO::NearestObject nearestObjectInNode;
+        int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObjectInNode);
+        
+        const TreeNode* workingNode = this;
+        while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
+        {
+          if(!workingNode->hasParent())
+            dserror("this treenode has no parent");
+          
+          workingNode = workingNode->getParent();
+          xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, workingNode->getElementList(), nearestObjectInNode);
+        }
+        return xfemLabel;
+      }
+      
       // dynamically grow tree otherwise, create children and set label for empty children
       createChildren(dis, currentpositions);
       setXFEMLabelOfEmptyChildren(dis, currentpositions);
       // search in apropriate child node
       return children_[classifyPoint(point)]->queryXFEMFSIPointType(dis, currentpositions, point);
+
       break;
     }
     default:

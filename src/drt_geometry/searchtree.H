@@ -58,6 +58,9 @@ private:
   //! stores the label of the XFEM condition or 0 for fluid
   int label_;
   
+  //! stores nearestObject
+  GEO::NearestObject nearestObject_;
+  
   //! axis aligned bounding box of this tree node 
   const BlitzMat3x2 nodeBox_;
     
@@ -86,6 +89,7 @@ private:
       const int childIndex                      
       ) const;
 
+  
   /*!
    \brief returns the child node index, in which a point lies
    \param point                point
@@ -141,6 +145,7 @@ private:
       const BlitzVec3&    point
       ) const;
   
+  
   /*!
    \brief create children of a treenode and insert elements
    \param dis                  discretization
@@ -151,6 +156,7 @@ private:
       const std::map<int, BlitzVec3 >&    currentpositions
       );
   
+  
   /*!
    \brief set XFEM label of empty children
    \param dis                  discretization
@@ -160,6 +166,19 @@ private:
       const DRT::Discretization&        dis,
       const std::map<int,BlitzVec3>&    currentpositions
       );
+  
+  
+  /*!
+   \brief set XFEM label and nearest object of empty children
+   \param dis                  discretization
+   \param currentpositions     current nodal positions in discretization
+   */
+  void setXFEMLabelAndNearestObjectOfEmptyChildren(
+      const DRT::Discretization&        dis,
+      const std::map<int,BlitzVec3>&    currentpositions
+      );
+  
+  
   
 public:
   /*!
@@ -208,6 +227,15 @@ public:
    */
   void setLabel(
       const int label     
+      );
+  
+  
+  /*!
+   \brief sets nearestObject  of a treenode 
+   \param nearestObject                 nearestObject 
+   */
+  void setNearestObject(
+      const GEO::NearestObject&   nearestObject   
       );
 
 
@@ -300,7 +328,7 @@ public:
   \param nearestObject        nearestobject
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
-  int queryXFEMFSIPointType(
+  int queryFSINearestObject(
       const DRT::Discretization&        dis,
       const std::map<int,BlitzVec3>&    currentpositions,
       const BlitzVec3&                  point,
@@ -466,7 +494,7 @@ public:
    \param nearestObject        nearestobject
    \return 0->fluid 1..n->Solid with XFEM-Coupling condition
   */
-  int queryXFEMFSIPointType(
+  int queryFSINearestObject(
       const DRT::Discretization&      dis,
       const std::map<int,BlitzVec3>&  currentpositions,
       const BlitzVec3&                point,

@@ -405,7 +405,7 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in, nearestobject);
+  return octTreenp_->queryFSINearestObject(*(cutterdis_), cutterposnp_, x_in, nearestobject);
 }
 
 /*----------------------------------------------------------------------*
@@ -416,7 +416,7 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(
 ) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in, nearestobject);
+  return octTreen_->queryFSINearestObject(*(cutterdis_), cutterposn_, x_in, nearestobject);
 }
 
 
@@ -443,7 +443,7 @@ int XFEM::PositionWithinConditionBruteForce(
     posInCondition[label] = false; 
     
     // point lies opposite to a element (basis point within element parameter space)
-    // works only, if I can loop over ALL surface elements
+    // works only, if I can loop over ALL surface elements (NO; THIS METHOD ALSO WRONG IF ALL SURFACES ARE TESTED
     // MUST be modified, if only a subset of the surface is used
     bool in_element = false;
     double min_ele_distance = 1.0e12;

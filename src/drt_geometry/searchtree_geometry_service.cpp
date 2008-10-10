@@ -132,7 +132,7 @@ int GEO::getXFEMLabel(
     const DRT::Discretization&              dis, 		
     const std::map<int,BlitzVec3>&          currentpositions, 	
     const BlitzVec3&                        querypoint,
-    std::map<int, std::set<int> >&          elementList)  		
+    const std::map<int, std::set<int> >&    elementList)  		
 {
   BlitzVec3 minDistanceVec = 0.0;
  
@@ -162,11 +162,11 @@ int GEO::getXFEMLabel(
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 int GEO::getXFEMLabelAndNearestObject(
-    const DRT::Discretization&        dis,              
-    const std::map<int,BlitzVec3>&    currentpositions, 
-    const BlitzVec3&                  querypoint,      
-    std::map<int, std::set<int> >&    elementList,     
-    GEO::NearestObject&               nearestObject)
+    const DRT::Discretization&            dis,              
+    const std::map<int,BlitzVec3>&        currentpositions, 
+    const BlitzVec3&                      querypoint,      
+    const std::map<int, std::set<int> >&  elementList,     
+    GEO::NearestObject&                   nearestObject)
 {
   BlitzVec3 minDistanceVec = 0.0;
 
@@ -751,6 +751,67 @@ BlitzVec3 GEO::getNormalAtSurfacePoint(
     dserror("distance type does not exist");
   }
   return normal;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | check s if nearest point found on nearest object          u.may 09/08|
+ | lies in a tree node specified by its box                             |
+ *----------------------------------------------------------------------*/
+bool  GEO::pointInTreeNode(
+    const BlitzVec3&              point,
+    const BlitzMat3x2&            nodeBox) 
+{
+  for(int dim=0; dim<3; dim++)
+    if ( (point(dim) < nodeBox(dim,0)) || (point(dim) > nodeBox(dim,1)) ) // no tolerances here !!!
+      return false;
+  
+  return true;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | check s if nearest point found on nearest object          u.may 09/08|
+ | lies in the minimum circle that fits inside the triangle             |
+ *----------------------------------------------------------------------*/
+bool  GEO::pointInMinCircleInTreeNode(
+    const BlitzVec3&                    nearestpoint,
+    const BlitzVec3&                    querypoint,
+    const BlitzMat3x2&                  nodeBox,
+    const bool                          rootNode) 
+{
+  double minRadius = GEO::LARGENUMBER;
+  
+  if(rootNode)
+    return pointInTreeNode(nearestpoint,nodeBox); 
+  else
+  {
+    // determine minimum distance querypoint to node box wall
+    for(int dim=0; dim<3; dim++)
+      for(int i=0; i<2; i++)
+      {
+        double actRadius = fabs(querypoint(dim) - nodeBox(dim,i));
+        if ( actRadius < minRadius ) 
+          minRadius = actRadius;
+      }
+  }
+  
+  // distance querypoint - nearest point
+  BlitzVec3 distance_vector = 0.0;
+  
+  distance_vector(0) = querypoint(0) - nearestpoint(0);
+  distance_vector(1) = querypoint(1) - nearestpoint(1);
+  distance_vector(2) = querypoint(2) - nearestpoint(2);
+
+  // absolute distance between point and node
+  double distance = GEO::Norm2(distance_vector);
+  
+  if(distance < minRadius)
+    return true;
+  
+  return false;
 }
 
 

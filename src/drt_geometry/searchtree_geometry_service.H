@@ -71,7 +71,7 @@ namespace GEO
       const DRT::Discretization&              dis, 		
       const std::map<int,BlitzVec3>&          currentpositions, 	
       const BlitzVec3&                        querypoint,
-      std::map<int, std::set<int> >&          elementList
+      const std::map<int, std::set<int> >&    elementList
       );  	
 
   
@@ -85,11 +85,11 @@ namespace GEO
   \return                     label
    */
   int getXFEMLabelAndNearestObject(
-      const DRT::Discretization&        dis,              
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      const BlitzVec3&                  querypoint,      
-      std::map<int, std::set<int> >&    elementList,     
-      GEO::NearestObject&               nearestObject
+      const DRT::Discretization&              dis,              
+      const std::map<int,BlitzVec3>&          currentpositions, 
+      const BlitzVec3&                        querypoint,      
+      const std::map<int, std::set<int> >&    elementList,     
+      GEO::NearestObject&                     nearestObject
       );
   
   
@@ -250,7 +250,36 @@ namespace GEO
       const DRT::Node*                        node2  
       );
 
+  
+  /*!
+  \brief  Checks if a point lies with in a node box
+  \param point         query point
+  \param nodeBox       box of tree node
+  \return true, if a point lies with in a node box, false otherwise 
+   */
+  bool  pointInTreeNode(
+      const BlitzVec3&              point,
+      const BlitzMat3x2&            nodeBox
+      );
 
+  
+  /*!
+  \brief  Checks if a point , which classifies a nearest object, lies within a circle (radius is equal 
+          minimum distance between the querypoint and a node box wall)
+  \param nearestpoint         nearestpoint
+  \param querypoint           query point
+  \param nodeBox              nodeBox
+  \param rootNode             rootNode
+  \return true if nearest point lies within a circle around the query point to a wall of the tree node box with minimum distance
+   */
+  bool  pointInMinCircleInTreeNode(
+    const BlitzVec3&                    nearestpoint,
+    const BlitzVec3&                    querypoint,
+    const BlitzMat3x2&                  nodeBox,
+    const bool                          rootNode
+    ); 
+  
+  
   /*!
   \brief Merges two axis-aligned bounding boxes
   \param AABB1          axis - aligned bounding box 1
