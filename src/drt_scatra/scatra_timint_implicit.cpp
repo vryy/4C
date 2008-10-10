@@ -92,15 +92,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
 
   // This is a first estimate for the number of non zeros in a row of
-  // This is a first estimate for the number of non zeros in a row of
   // the matrix. Assuming a structured 3d mesh we have 27 adjacent
   // nodes with numdof DOF each.
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  // initialize standard (stabilized) system matrix
+  // initialize standard (stabilized) system matrix (and save its graph!)
   const int numdof = discret_->NumDof(discret_->lRowNode(0));
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,(27*numdof)));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,(numdof*27),false,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -438,6 +437,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       if (prbtype_=="elch")
       { // evaluate electrode kinetics conditions
+
+        // time measurement: evaluate condition 'ElectrodeKinetics'
+        TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
+
         // create an parameter list
         ParameterList condparams;
 
@@ -459,6 +462,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
         discret_->ClearState();
       }
+
+      {
+      // time measurement: element calls
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
 
       // create the parameters for the discretization
       ParameterList eleparams;
@@ -501,6 +508,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // end time measurement for element
       dtele_=ds_cputime()-tcpu;
+
+      } // time measurement for element
     }
 
     // blank residual DOFs which are on Dirichlet BC
@@ -535,7 +544,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       tcpu=ds_cputime();
 
       // print (DEBUGGING!)
-      LINALG::PrintSparsityToPostscript(*(sysmat_->EpetraMatrix()));
+      //LINALG::PrintSparsityToPostscript(*(sysmat_->EpetraMatrix()));
       //(sysmat_->EpetraMatrix())->Print(cout);
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);

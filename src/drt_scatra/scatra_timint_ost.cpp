@@ -182,6 +182,10 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
 
+  // reset the matrix (and its graph!) since we solved
+  // a very special problem here that has a different sparsity pattern
+  sysmat_->Reset();
+
   return;
 }
 
