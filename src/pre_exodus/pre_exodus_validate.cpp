@@ -130,9 +130,14 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   case DRT::Element::pyramid5:
       integrationrule_1point = DRT::UTILS::intrule_pyramid_1point;
       break;
-  default:
-      // cout<<"No Validation for this kind of Element implemented! Good luck!"<<endl;
+  // do nothing for 2D, 1D and 0D elements
+  case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+  case DRT::Element::tri3  : case DRT::Element::tri6:
+  case DRT::Element::line2: case DRT::Element::line3:
+  case DRT::Element::point1:
       return;
+  default:
+      dserror("Unknown element type, validation failed!");
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
@@ -181,12 +186,14 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   case DRT::Element::pyramid5:
       integrationrule = DRT::UTILS::intrule_pyramid_8point;
       break;
-  case DRT::Element::line2:
-      return 0;
-      break;
+  // do nothing for 2D, 1D and 0D elements
+  case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+  case DRT::Element::tri3  : case DRT::Element::tri6:
+  case DRT::Element::line2: case DRT::Element::line3:
+  case DRT::Element::point1:
+      return;
   default:
-    integrationrule = DRT::UTILS::intrule3D_undefined;
-    break;
+      dserror("Unknown element type, validation failed!");
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule);
   const int iel = eb->GetEleNodes(0).size();
