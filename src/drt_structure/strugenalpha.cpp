@@ -364,9 +364,7 @@ void StruGenAlpha::ConstantPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    cout << "zero out stiff predictor" << endl;
     stiff_->Zero();
-    cout << "zero out stiff predictor" << endl;
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
