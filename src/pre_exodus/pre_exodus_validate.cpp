@@ -181,6 +181,9 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   case DRT::Element::pyramid5:
       integrationrule = DRT::UTILS::intrule_pyramid_8point;
       break;
+  case DRT::Element::line2:
+      return 0;
+      break;
   default:
     integrationrule = DRT::UTILS::intrule3D_undefined;
     break;

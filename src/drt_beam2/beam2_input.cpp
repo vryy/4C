@@ -38,6 +38,15 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   // provide an array of length two in order to store the two figures read
   int nodes[2];
   frint_n("LIN2",nodes,nnode,&ierr);
+  
+  // if that does not work try LINE2, in case .dat file was created with pre_exodus
+  if (ierr != 1)
+  {
+    ierr=0;
+    frchk("LINE2",&ierr);
+    frint_n("LINE2",nodes,nnode,&ierr);
+  }
+  
   if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
 
   // reduce node numbers by one
