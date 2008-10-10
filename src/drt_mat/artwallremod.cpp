@@ -66,25 +66,32 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
   // matdata
   int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
   AddtoPack(data,matdata);
-  int histsize;
+  int numgp;
   if (!Initialized())
   {
-    histsize=0;
+    numgp=0;
   }
   else
   {
-    histsize = gamma_->size();   // size is number of gausspoints
+    numgp = remtime_->size();   // size is number of gausspoints
   }
-  AddtoPack(data,histsize);  // lenght of history vector(s)
-  for (int var = 0; var < histsize; ++var)
+  AddtoPack(data,numgp);  // Length of history vector(s)
+  // Pack internal variables independent of remodeling
+  for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data,gamma_->at(var));
-    AddtoPack(data,phi_->at(var));
-    AddtoPack(data,stresses_->at(var));
-    AddtoPack(data,remtime_->at(var));
-    AddtoPack(data,a1_->at(var));
-    AddtoPack(data,a2_->at(var));
-    AddtoPack(data,lambda_->at(var));
+    AddtoPack(data,remtime_->at(gp));
+    AddtoPack(data,a1_->at(gp));
+    AddtoPack(data,a2_->at(gp));
+  }
+  // Pack internal variables only for remodeling
+  if (matdata_->m.artwallremod->rembegt != -1.){
+    for (int gp = 0; gp < numgp; ++gp)
+    {
+      AddtoPack(data,gamma_->at(gp));
+      AddtoPack(data,phi_->at(gp));
+      AddtoPack(data,stresses_->at(gp));
+      AddtoPack(data,lambda_->at(gp));
+    }
   }
 
   return;
@@ -109,37 +116,78 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
 
   // history data
   isinit_ = true;
-  int histsize;
-  ExtractfromPack(position,data,histsize);
+  int numgp;
+  ExtractfromPack(position,data,numgp);
 
-  if (histsize == 0) isinit_=false;
-  gamma_ = rcp(new vector<double>);
-  phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  remtime_ = rcp(new vector<double>);
-  a1_ = rcp(new vector<vector<double> >);
-  a2_ = rcp(new vector<vector<double> >);
-  lambda_ = rcp(new vector<vector<double> >);
-  for (int var = 0; var < histsize; ++var) {
-    double gamma;
-    Epetra_SerialDenseMatrix tmp(3,3);
-    ExtractfromPack(position,data,gamma);
-    ExtractfromPack(position,data,tmp);
-    gamma_->push_back(gamma);
-    phi_->push_back(tmp);
-    ExtractfromPack(position,data,tmp);
-    stresses_->push_back(tmp);
+  if (numgp == 0) isinit_=false;
+
+  // unpack internal variables independent of remodeling
+  remtime_ = rcp(new vector<double>(numgp));
+  a1_ = rcp(new vector<vector<double> >(numgp));
+  a2_ = rcp(new vector<vector<double> >(numgp));
+  bool haveremodeldata = false;
+  for (int gp = 0; gp < numgp; ++gp) {
     double mytime;
     ExtractfromPack(position,data,mytime);
-    remtime_->push_back(mytime);
+    remtime_->at(gp) = mytime;
+    if (mytime != -1.) haveremodeldata = true;
     vector<double> a;
     ExtractfromPack(position,data,a);
-    a1_->push_back(a);
+    a1_->at(gp) = a;
     ExtractfromPack(position,data,a);
-    a2_->push_back(a);
-    ExtractfromPack(position,data,a);
-    lambda_->push_back(a);
+    a2_->at(gp) = a;
   }
+
+  // check whether we currently want remodeling
+  // because remodeling might be switched after restart
+  if (matdata_->m.artwallremod->rembegt != -1.){
+    // initialize internal variables of remodeling
+    gamma_ = rcp(new vector<double>(numgp));
+    phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+    stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+    lambda_ = rcp(new vector<vector<double> >(numgp));
+    if (haveremodeldata){ // unpack remodel data
+      for (int gp = 0; gp < numgp; ++gp) {
+        double gamma;
+        Epetra_SerialDenseMatrix tmp(3,3);
+        ExtractfromPack(position,data,gamma);
+        ExtractfromPack(position,data,tmp);
+        gamma_->at(gp) = gamma;
+        phi_->at(gp) = tmp;
+        ExtractfromPack(position,data,tmp);
+        stresses_->at(gp) = tmp;
+        vector<double> a;
+        ExtractfromPack(position,data,a);
+        lambda_->at(gp) = a;
+      }
+    } else { // assign input variables or zeros, respectively
+      for (int gp = 0; gp < numgp; ++gp) {
+        gamma_->at(gp) = (matdata_->m.artwallremod->gamma * PI)/180.0;  // convert to radians
+        lambda_->at(gp).resize(3);
+        for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
+        Epetra_SerialDenseMatrix emptymat(3,3);
+        phi_->at(gp) = emptymat;
+        stresses_->at(gp) = emptymat;
+        remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
+      }
+    }
+  }
+
+  // correct position in case remodeling is switched off
+  if ((matdata_->m.artwallremod->rembegt == -1.) && (haveremodeldata)){
+    // read data into nowhere
+    for (int gp = 0; gp < numgp; ++gp) {
+      double gamma;
+      Epetra_SerialDenseMatrix tmp(3,3);
+      ExtractfromPack(position,data,gamma);
+      ExtractfromPack(position,data,tmp);
+      ExtractfromPack(position,data,tmp);
+      vector<double> a;
+      ExtractfromPack(position,data,a);
+      remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
+    }
+  }
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -229,7 +277,8 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                   const int gp,
                                   Teuchos::ParameterList& params,
                                   Epetra_SerialDenseMatrix* cmat,
-                                  Epetra_SerialDenseVector* stress)
+                                  Epetra_SerialDenseVector* stress,
+                                  const int eleid)
 
 {
   const double mue = matdata_->m.artwallremod->mue;
@@ -407,15 +456,15 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
   // watch out! stress matrix will temporarily hold eigenvectors!
   LINALG::SymmetricEigenProblem(stresses_->at(gp),lambda);
 
-#if DEBUG
+#if DEBUG1
   cout << "eigenvectors: " << stresses_->at(gp);
   cout << "eigenvalues: " << lambda << endl;
 #endif
   // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
   double newgamma = atan(lambda(1)/lambda(2));
 
-  // check whether delta gamma is larger than tolerance
-//  const double gammatol = 0.001;
+//  // check whether delta gamma is larger than tolerance
+//  const double gammatol = 0.01;
 //  if (abs( (newgamma - gamma_->at(gp)) / newgamma) < gammatol){
 //    //remtime_->at(gp) = -1.;  // switch off future remodeling for this gp
 //    remtime_->at(gp) = time; // no remodelling, but update time

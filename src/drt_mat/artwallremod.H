@@ -86,14 +86,14 @@ namespace MAT
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+                  Epetra_SerialDenseVector* stress,const int eleid=0);
 
     /// return density
     double Density() {return matdata_->m.artwallremod->density;}
 
     /// check whether internal variables are initialized
     bool Initialized() const
-      { return isinit_&&(gamma_!=Teuchos::null);}
+      { return isinit_&&(remtime_!=Teuchos::null);}
 
     /// return lambdas
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
