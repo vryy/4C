@@ -1970,15 +1970,15 @@ namespace LINALG
 
       // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
       // only with minor changes.
-      double* tmp = new double[i*j];
-      update<i,j>(tmp,mat);
+      std::vector<double> tmp(i*j);
+      update<i,j>(&tmp[0],mat);
       Epetra_LAPACK lapack;
       std::vector<int> ipiv(j);
       int info;
-      lapack.GETRF(i,j,tmp,i,&ipiv[0],&info);
+      lapack.GETRF(i,j,&tmp[0],i,&ipiv[0],&info);
       if (info<0) dserror("Lapack's dgetrf returned %d",info);
       else if (info>0) return 0.0;
-      double d = *tmp;
+      double d = tmp[0];
       for (unsigned int c=1; c<j; ++c) d *= tmp[c+i*c];
       // swapping rows of A changes the sign of the determinant, so we have to
       // undo lapack's permutation w.r.t. the determinant
