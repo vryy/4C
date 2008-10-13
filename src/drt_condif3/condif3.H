@@ -348,7 +348,8 @@ private:
   Epetra_SerialDenseMatrix CalculateFlux(
       vector<double>&           phinp,
       struct _MATERIAL*         material,
-      bool                      temperature,
+      const bool                temperature,
+      const double              frt,
       Epetra_SerialDenseVector& evel,
       Condif3::FluxType         fluxtype,
       const int&                dofindex

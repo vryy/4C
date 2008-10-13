@@ -173,12 +173,19 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     int numscal = numdofpernode_;
     bool temperature = false;
     if (scaltypestr =="loma") temperature = true;
-    if (scaltypestr =="elch") numscal -= 1; // ELCH case: last dof is for el. potential
+
+    double frt(0.0);
+    if (scaltypestr =="elch") 
+    {
+      numscal -= 1; // ELCH case: last dof is for el. potential
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
 
     // do a loop for systems of transported scalars
     for (int i = 0; i<numscal; ++i)
     {
-      Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,temperature,evel,fluxtype,i);
+      Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,temperature,frt,evel,fluxtype,i);
 
       for (int k=0;k<iel;k++)
       { // form arithmetic mean of assembled nodal flux vectors
@@ -241,7 +248,8 @@ int DRT::ELEMENTS::Condif3::EvaluateNeumann(ParameterList& params,
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     vector<double>&           ephinp,
     struct _MATERIAL*         material,
-    bool                      temperature,
+    const bool                temperature,
+    const double              frt,
     Epetra_SerialDenseVector& evel,
     Condif3::FluxType         fluxtype,
     const int&                dofindex
@@ -264,7 +272,9 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   }
 
   // get diffusivity
-  double diffus = 0;
+  double diffus(0.0);
+  double valence(0.0);
+  double diffus_valence_frt(0.0);
 
   if (material->mattyp == m_matlist)
   {
@@ -274,7 +284,11 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     if (singlemat.mattyp == m_condif)
       diffus = singlemat.m.condif->diffusivity;
     else if (singlemat.mattyp == m_ion)
+    {
       diffus = singlemat.m.ion->diffusivity;
+      valence = singlemat.m.ion->valence;
+      diffus_valence_frt = diffus*valence*frt;
+    }
     else
       dserror("type of material found in material list is not supported.");
   }
@@ -390,14 +404,34 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
       derxy(2,k) +=   xij(2,0) * deriv(0,k) + xij(2,1) * deriv(1,k) + xij(2,2) * deriv(2,k);
     } /* end of loop over k */
 
+    // gradient of electric potential
+    Epetra_SerialDenseVector gradpot(3);
+    if (frt > 0.0) // ELCH
+    {
+      for (int k=0;k<iel;k++)
+      {
+        gradpot[0] += derxy(0,k)*ephinp[k*numdofpernode_+(numdofpernode_-1)];
+        gradpot[1] += derxy(1,k)*ephinp[k*numdofpernode_+(numdofpernode_-1)];
+        gradpot[2] += derxy(2,k)*ephinp[k*numdofpernode_+(numdofpernode_-1)];
+      } /* end of loop over k */
+    }
+
+    const double ephinpatnode = ephinp[iquad*numdofpernode_+dofindex];
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
       case Condif3::totalflux:
+        if (frt > 0.0) // ELCH
+        {
+          //migration flux terms
+          flux(0,iquad)-=diffus_valence_frt*gradpot[0]*ephinpatnode;
+          flux(1,iquad)-=diffus_valence_frt*gradpot[1]*ephinpatnode;
+          flux(2,iquad)-=diffus_valence_frt*gradpot[2]*ephinpatnode;
+        }
         //convective flux terms
-        flux(0,iquad)+=evel[iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
-        flux(1,iquad)+=evel[1+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
-        flux(2,iquad)+=evel[2+iquad*nsd]*ephinp[iquad*numdofpernode_+dofindex];
+        flux(0,iquad)+=evel[iquad*nsd]*ephinpatnode;
+        flux(1,iquad)+=evel[1+iquad*nsd]*ephinpatnode;
+        flux(2,iquad)+=evel[2+iquad*nsd]*ephinpatnode;
         // no break statement here!
       case Condif3::diffusiveflux:
         //diffusive flux terms

@@ -63,7 +63,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtp_      (params_->get<double>("time step size")),
   theta_    (params_->get<double>("theta")),
   cdvel_    (params_->get<int>("velocity field")),
-  fssgd_    (params_->get<string>("fs subgrid diffusivity"))
+  fssgd_    (params_->get<string>("fs subgrid diffusivity")),
+  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0)))
 {
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -418,9 +419,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   int   itnum = 0;
   int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
   bool  stopnonliniter = false;
-  
-  // get ELCH-specific paramter F/RT (default value for the temperature is 298K)
-  const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
 
   while (stopnonliniter==false)
   {
@@ -453,7 +451,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
         // action for elements
         condparams.set("action","calc_elch_electrode_kinetics");
-        condparams.set("frt",frt); // factor F/RT
+        condparams.set("frt",frt_); // factor F/RT
         condparams.set("total time",time_);
         condparams.set("thsl",theta_*dta_);
         if (MethodName()==INPUTPARAMS::timeint_stationary)
@@ -485,7 +483,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
-      eleparams.set("frt",frt);// factor F/RT
+      eleparams.set("frt",frt_);// ELCH specific factor F/RT
       if (MethodName()==INPUTPARAMS::timeint_stationary)
         eleparams.set("using stationary formulation",true);
       else
@@ -1354,6 +1352,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");
   eleparams.set("problem type",prbtype_);
+  eleparams.set("frt",frt_);
 
   //provide velocity field (export to column map necessary for parallel evaluation)
   const Epetra_Map* nodecolmap = discret_->NodeColMap();

@@ -112,8 +112,17 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
 
     // set flag for type of scalar
     string scaltypestr=params.get<string>("problem type");
+    int numscal = parent_->numdofpernode_;
     bool temperature = false;
     if (scaltypestr =="loma") temperature = true;
+
+    double frt(0.0);
+    if (scaltypestr =="elch") 
+    {
+      numscal -= 1; // ELCH case: last dof is for el. potential
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
 
     // access control parameter
     Condif3::FluxType fluxtype;
@@ -157,12 +166,13 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     // outward-pointing normal of length 1.0
     for (int i=0; i<3; i++) normal[i] = normal[i] / length;
 
-    // do a loop for systems of transported scalars
     const int numdofpernode = parent_->numdofpernode_;
-    for (int j = 0; j<numdofpernode; ++j)
+
+    // do a loop for systems of transported scalars
+    for (int j = 0; j<numscal; ++j)
     {
       // compute fluxes on each node of the parent element
-      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,temperature,evel,fluxtype,j);
+      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,temperature,frt,evel,fluxtype,j);
 
       // handle the result dofs in the right order (compare lm with lmparent)
       int dofcount = 0;

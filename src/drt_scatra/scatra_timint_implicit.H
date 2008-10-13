@@ -248,6 +248,9 @@ protected:
   /// fine-scale subgrid-viscosity flag
   string fssgd_;
 
+  // ELCH-specific paramter F/RT (default value for the temperature is 298K)
+  double frt_;
+
   /// (standard) system matrix
   RCP<LINALG::SparseMatrix> sysmat_;
 

@@ -84,7 +84,10 @@ void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
   // for problem type ELCH we have one additional degree of freedom per node
   // for the electric potential
   if (DRT::Problem::Instance()->ProblemType()=="elch")
+  {
     numdofpernode_ += 1;
+    dsassert(numdofpernode_>2,"numdofpernode_ is not > 2 for ELCH problem");
+  }
 
   return;
 }
