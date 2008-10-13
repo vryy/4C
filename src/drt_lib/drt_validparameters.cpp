@@ -1736,7 +1736,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   using Teuchos::setStringToIntegralParameter;
 
   setStringToIntegralParameter(
-    "KIND","None","",
+    "KIND","None","Method for time step size adapivity",
     tuple<std::string>(
       "None",
       "ZienkiewiczXie",
@@ -1747,20 +1747,20 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       TIMADA_DYNAMIC::timada_kind_ab2),
     &list);
 
-  DoubleParameter("OUTSYSPERIOD", 0.0, "", &list);
-  DoubleParameter("OUTSTRPERIOD", 0.0, "", &list);
-  DoubleParameter("OUTENEPERIOD", 0.0, "", &list);
-  DoubleParameter("OUTRESTPERIOD", 0.0, "", &list);
-  IntParameter("OUTSIZEEVERY", 0, "", &list);
+  DoubleParameter("OUTSYSPERIOD", 0.0, "Write system vectors (displacements, velocities, etc) every given period of time", &list);
+  DoubleParameter("OUTSTRPERIOD", 0.0, "Write stress/strain every given period of time", &list);
+  DoubleParameter("OUTENEPERIOD", 0.0, "Write energy every given period of time", &list);
+  DoubleParameter("OUTRESTPERIOD", 0.0, "Write restart data every given period of time", &list);
+  IntParameter("OUTSIZEEVERY", 0, "Write step size every given time step", &list);
 
-  DoubleParameter("STEPSIZEMAX", 0.0, "", &list);
-  DoubleParameter("STEPSIZEMIN", 0.0, "", &list);
-  DoubleParameter("SIZERATIOMAX", 0.0, "", &list);
-  DoubleParameter("SIZERATIOMIN", 0.0, "", &list);
-  DoubleParameter("SIZERATIOSCALE", 0.0, "", &list);
+  DoubleParameter("STEPSIZEMAX", 0.0, "Limit maximally permitted time step size (>0)", &list);
+  DoubleParameter("STEPSIZEMIN", 0.0, "Limit minimally allowed time step size (>0)", &list);
+  DoubleParameter("SIZERATIOMAX", 0.0, "Limit maximally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
+  DoubleParameter("SIZERATIOMIN", 0.0, "Limit minimally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
+  DoubleParameter("SIZERATIOSCALE", 0.0, "This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than 0", &list);
 
   setStringToIntegralParameter(
-    "LOCERRNORM", "Vague", "",
+    "LOCERRNORM", "Vague", "Vector norm to treat error vector with",
     tuple<std::string>(
       "Vague",
       "L1",
@@ -1775,8 +1775,8 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       TIMADA_DYNAMIC::timada_err_norm_inf),
     &list);
 
-  DoubleParameter("LOCERRTOL", 0.0, "", &list);
-  IntParameter("ADAPTSTEPMAX", 0, "", &list);
+  DoubleParameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
+  IntParameter("ADAPTSTEPMAX", 0, "Limit maximally allowed step size reduction attempts (>0)", &list);
 }
 
 

@@ -248,6 +248,54 @@ Generalised-alpha coefficient $\alpha_f$ in $[0,1)$
 \kw{XI} $real$\\
 Generalisation damping coefficient $\xi$ in $[0,1)$
 
+\subsection{\baci{} \texttt{STR::TimAda} parameters}
+
+\begin{verbatim}
+---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
+\end{verbatim}
+
+\kw{KIND} (\kw{None}\kor\kw{ZienkiewiczXie}\kor\kw{AdamsBashforth2})\\
+Method for time step size adapivity; \kw{None} means no adapivity in time
+
+\kw{OUTSYSPERIOD} $real$\\
+Write system vectors (displacements, velocities, etc) every given period of time; if $0$ writing is off
+
+\kw{OUTSTRPERIOD} $real$\\
+Write stress/strain every given period of time; if $0$ writing is off
+
+\kw{OUTENEPERIOD} $real$\\
+Write energy every given period of time; if $0$ writing is off
+
+\kw{OUTRESTPERIOD} $real$\\
+Write restart data every given period of time; if $0$ writing is off
+
+\kw{OUTSIZEEVERY} $int$\\
+Write step size every given time step
+
+\kw{STEPSIZEMAX} $real$\\
+Limit maximally permitted time step size ($>0$)
+
+\kw{STEPSIZEMIN} $real$\\
+Limit minimally allowed time step size ($>0$)
+
+\kw{SIZERATIOMAX} $real$\\
+Limit maximally permitted change of time step size compared to previous size, important for multi-step schemes ($>0$)
+
+\kw{SIZERATIOMIN} $real$\\
+Limit minimally permitted change of time step size compared to previous size, important for multi-step schemes ($>0$)
+
+\kw{SIZERATIOSCALE} $real$\\
+This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than $0$
+
+\kw{LOCERRNORM} (\kw{L1}\kor\kw{L2}\kor\kw{Rms}\kor\kw{Inf})\\
+Vector norm to treat error vector with
+
+\kw{LOCERRTOL} $real$\\
+Target local error tolerance ($>0$)
+
+\kw{ADAPTSTEPMAX} $int$\\
+Limit maximally allowed step size reduction attempts ($>0$)
+
 %%
 %%............................generalised-alpha
 \section{Generalised-$\alpha$}
