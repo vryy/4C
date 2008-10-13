@@ -191,7 +191,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   case DRT::Element::tri3  : case DRT::Element::tri6:
   case DRT::Element::line2: case DRT::Element::line3:
   case DRT::Element::point1:
-      return;
+      return 0;
   default:
       dserror("Unknown element type, validation failed!");
   }
