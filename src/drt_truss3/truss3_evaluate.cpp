@@ -41,6 +41,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
+  
   DRT::ELEMENTS::Truss3::ActionType act = Truss3::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
@@ -57,7 +58,12 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Truss3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Truss3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
-  else dserror("Unknown type of action for Truss3");
+  else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
+  else 
+    {
+      cout<<action<<endl;
+      dserror("Unknown type of action for Truss3");
+    }
 
   switch(act)
   {
@@ -90,13 +96,16 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
-      // get element velocities
+      
+      // get element velocities (UNCOMMENT IF NEEDED)
+      /*
       RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
       if (vel==null) dserror("Cannot get state vectors 'velocity'");
       vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
+      */
+      
+      // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
       t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Truss3::calc_struct_nlnstifflmass)
@@ -124,6 +133,17 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       //nothing to do
     }
     break;
+    case calc_struct_stress:
+    {
+      //no stress calculation implemented! Do not crash simulation and just keep quiet!
+    }
+    break;
+    case postprocess_stress:
+    {
+      //no stress calculation for postprocess. Does not really make sense!
+      dserror("No stress output for Truss3!");      
+    }
+    break;  
     default:
     dserror("Unknown type of action for Truss3 %d", act);
   }
@@ -294,8 +314,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     dserror("unknown or improper type of material law");
   }
 
-
-
   //computing global internal forces
   if (force != NULL)
   {
@@ -349,7 +367,128 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
   }
   
   return;
-} // DRT::ELEMENTS::Truss3::b3_nlnstiffmass
+} // DRT::ELEMENTS::Truss3::t3_nlnstiffmass
+
+
+/*------------------------------------------------------------------------------------------------------------*
+ | nonlinear stiffness and mass matrix (private)                                                      tk 10/08|
+ | linear(!) strain measure, large displacements and rotations                                                |
+  *-----------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
+    Epetra_SerialDenseMatrix* stiffmatrix,
+    Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector* force)
+{
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
+  BlitzVec6 xcurr;
+  
+  //Green-Lagrange strain
+  double epsilon;
+  
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  BlitzVec6 aux;
+
+  //current nodal position (first
+  for (int j=0; j<3; ++j) 
+  {
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
+  }
+  
+  //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
+  aux(0) = (xcurr[0] - xcurr[3]);
+  aux(1) = (xcurr[1] - xcurr[4]);
+  aux(2) = (xcurr[2] - xcurr[5]);
+  aux(3) = (xcurr[3] - xcurr[0]);
+  aux(4) = (xcurr[4] - xcurr[1]);
+  aux(5) = (xcurr[5] - xcurr[2]);
+  
+  double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+  
+  //calculating strain epsilon from node position by scalar product:
+  epsilon = (lcurr-lrefe_)/lrefe_;
+
+  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
+   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
+   / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
+   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
+   / the evaluation functions */
+
+  // get the material law
+  MATERIAL* currmat = &(mat[material_-1]);
+  double ym = 0;
+  double density = 0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this truss 
+  switch(currmat->mattyp)
+  {
+    case m_stvenant:// only linear elastic material supported
+    {
+      ym = currmat->m.stvenant->youngs;
+      density = currmat->m.stvenant->density;
+    }
+    break;
+    default:
+    dserror("unknown or improper type of material law");
+  }
+
+  //computing global internal forces
+  if (force != NULL)
+  {
+    (*force).Size(6);
+    
+    double forcescalar=(ym*crosssec_*epsilon)/lcurr;
+    for (int i=0; i<6; ++i)
+    {
+      (*force)(i) = forcescalar * aux(i);
+    }
+  }
+  
+  //computing linear stiffness matrix
+  if (stiffmatrix != NULL)
+  {   
+    //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
+    (*stiffmatrix).Shape(6,6); 
+    
+    for (int i=0; i<3; ++i)
+    {
+        (*stiffmatrix)(i,i)   =  (ym*crosssec_*epsilon/lcurr);
+        (*stiffmatrix)(i,i+3) = -(ym*crosssec_*epsilon/lcurr);
+    }
+    for (int i=3; i<6; ++i)
+    {
+        (*stiffmatrix)(i,i)   =  (ym*crosssec_*epsilon/lcurr);
+        (*stiffmatrix)(i,i-3) = -(ym*crosssec_*epsilon/lcurr);
+    }
+    
+    for (int i=0; i<6; ++i)
+    {
+      for (int j=0; j<6; ++j)
+      {
+        (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
+      }     
+    }  
+ 
+  }
+  
+  //calculating consistent mass matrix
+  if (massmatrix != NULL)
+  {
+    (*massmatrix).Shape(6,6);
+    for (int i=0; i<3; ++i)
+    {
+      (*massmatrix)(i  ,i  ) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 6;
+    }
+    for (int i=3; i<5; ++i)
+    {
+      (*massmatrix)(i  ,i  ) = density*lrefe_*crosssec_ / 3;
+      (*massmatrix)(i-3,i-3) = density*lrefe_*crosssec_ / 6;
+    }
+  }
+  
+  return;
+} // DRT::ELEMENTS::Truss3::bt_nlnstiffmass2
 
 
 // lump mass matrix

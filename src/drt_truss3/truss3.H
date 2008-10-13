@@ -266,6 +266,7 @@ private:
     calc_none,
     calc_struct_linstiff,
     calc_struct_nlnstiff,
+    calc_struct_nlnstiff2,
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
@@ -275,8 +276,9 @@ private:
     calc_struct_fsiload,
     calc_struct_update_istep,
     calc_struct_update_imrlike,
-    calc_struct_reset_istep  //!< reset elementwise internal variables
+    calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
+    postprocess_stress
   };
   
   //! container containing all kind of Truss3 thisandthat
@@ -302,6 +304,18 @@ private:
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
+  
+  /*! 
+   * \brief calculate force, nonlinear stiffness and mass matrix using a linear strain measure.
+   * 
+   * Unlike the fully nonlinear implementation of #t3_nlnstiffmass, this function uses \f$\varepsilon=\Delta d / d\f$
+   * as strain measure. 
+   *  
+  */ 
+  void t3_nlnstiffmass2( vector<double>& disp,
+      Epetra_SerialDenseMatrix* stiffmatrix,
+      Epetra_SerialDenseMatrix* massmatrix,
+      Epetra_SerialDenseVector* force);
   
   //! lump mass matrix
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
