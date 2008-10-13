@@ -96,10 +96,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // nodes with numdof DOF each.
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-
-  // initialize standard (stabilized) system matrix (and save its graph!)
   const int numdof = discret_->NumDof(discret_->lRowNode(0));
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,(numdof*27),false,true));
+  if (fssgd_ == "No")
+  {
+    // initialize standard (stabilized) system matrix (and save its graph!)
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+  }
+  else
+  {
+    // do not save the graph for this application
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+  }
 
   // -------------------------------------------------------------------
   // create empty vectors

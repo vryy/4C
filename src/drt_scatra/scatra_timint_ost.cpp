@@ -156,6 +156,12 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
+    if (prbtype_=="elch")
+    {
+      // get ELCH-specific paramter F/RT (default value for the temperature is 298K)
+      const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
+      eleparams.set("frt",frt); // factor F/RT
+    }
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
