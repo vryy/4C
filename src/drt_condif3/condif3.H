@@ -308,7 +308,6 @@ public:
 
   //@}
 
-
 private:
 
   //! action parameters recognized by condif3

@@ -90,82 +90,38 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-  case calc_condif_systemmat_and_residual:
+  case DRT::ELEMENTS::Condif3::calc_condif_systemmat_and_residual:
   {
-    // need current history vector and density vector
-    RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    if (hist==null || densnp==null)
-      dserror("Cannot get state vector 'hist' and/or 'densnp'");
-
-    // extract local values from the global vector
-    vector<double> myhist(lm.size());
-    vector<double> mydensnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
-
-    // get control parameter
-    const bool is_stationary = params.get<bool>("using stationary formulation");
-    const double time = params.get<double>("total time");
-
-    // One-step-Theta: timefac = theta*dt
-    // BDF2:           timefac = 2/3 * dt
-    double timefac = 0.0;
-    if (not is_stationary)
-    {
-      timefac = params.get<double>("thsl");
-      if (timefac < 0.0) dserror("thsl is negative.");
-    }
-
-    // get (weighted) velocity at the nodes
-    // compare also with DRT::UTILS::ExtractMyValues()
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    const int iel = NumNode();
-    const int nsd=3;
-    Epetra_SerialDenseVector evel(nsd*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
-
-    // get flag for fine-scale subgrid diffusivity
-    string fssgd = params.get<string>("fs subgrid diffusivity","No");
-
-    // set flag for type of scalar whether it is temperature or not
-    string scaltypestr=params.get<string>("problem type");
-    bool temperature = false;
-    if(scaltypestr =="loma") temperature = true;
-
-    // paramters needed for ELCH ;-)
-    vector<double> myphinp(lm.size());
-    double frt(0.0);
-    if(scaltypestr =="elch")
-    {
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
-      // extract local values from the global vector
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
-
-    // calculate element coefficient matrix and rhs
-    DRT::ELEMENTS::Condif3Impl::Impl(this)->Sysmat(
-        this,
-        myphinp,
-        myhist,
-        mydensnp,
-        elemat1,
-        elemat2,
-        elevec1,
-        elevec2,
-        actmat,
-        time,
-        timefac,
-        evel,
-        temperature,
-        fssgd,
-        is_stationary,
-        frt);
+  return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
+           this,
+           params,
+           discretization,
+           lm,
+           elemat1,
+           elemat2,
+           elevec1,
+           elevec2,
+           elevec3,
+           mat,
+           actmat);
   }
   break;
+  // calculate time derivative for time value t_0
+  case DRT::ELEMENTS::Condif3::initialize_one_step_theta:
+  {
+    return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
+             this,
+             params,
+             discretization,
+             lm,
+             elemat1,
+             elemat2,
+             elevec1,
+             elevec2,
+             elevec3,
+             mat,
+             actmat);
+  }
   // calculate flux
   case calc_condif_flux:
   {
@@ -253,57 +209,6 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     // calculate temperature, density and domain integral
     CalculateTempAndDens(params,myphinp,mydensnp);
   }
-  break;
-  // calculate time derivative for time value t_0
-  case initialize_one_step_theta:
-  {
-    const double time = params.get<double>("total time");
-    const double timefac = params.get<double>("thsl");
-
-    // need initial field
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    RefCountPtr<const Epetra_Vector> dens0 = discretization.GetState("dens0");
-    if (phi0==null || dens0==null)
-      dserror("Cannot get state vector 'phi0' and/or 'densnp'");
-
-    // extract local values from the global vector
-    vector<double> myphi0(lm.size());
-    vector<double> mydens0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-    DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
-
-    // get initial velocity values at the nodes
-    // compare also with DRT::UTILS::ExtractMyValues()
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    const int iel = NumNode();
-    const int nsd=3;
-    Epetra_SerialDenseVector evel(nsd*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
-
-    // get flag for fine-scale subgrid diffusivity
-    string fssgd = params.get<string>("fs subgrid diffusivity","No");
-
-    // set flag for type of scalar whether it is temperature or not
-    string scaltypestr=params.get<string>("problem type");
-    bool temperature = false;
-    if(scaltypestr =="loma") temperature = true;
-
-    // calculate mass matrix and rhs
-    DRT::ELEMENTS::Condif3Impl::Impl(this)->InitializeOST(
-         this,
-         myphi0,
-         mydens0,
-         elemat1,
-         elevec1,
-         elevec2,
-         actmat,
-         time,
-         timefac,
-         evel,
-         temperature,
-         fssgd);
-  }
-
   break;
   default:
     dserror("Unknown type of action for Condif3");
