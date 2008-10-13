@@ -53,8 +53,8 @@ neglected.
 %%
 %%::::::::::::::::::::::::::::EBNF
 \section[EBNF]{Extended Backus--Naur formalism}\label{inparams:sec:ebnf}
-An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
-%%\cite{reiser94}
+An extended Backus--Naur Formalism (EBNF)\footnote{M. Reiser and N. Wirth, Programmieren in Oberon: Das neue Pascal, Addison Wesley, 1994}
+%%\cite{reiser94}}
 , is used to describe the input lines.
 
 \begin{itemize}
@@ -336,97 +336,10 @@ upper boundary
 ------------------------------------------------STRUCTURAL DYNAMIC
 \end{verbatim}
 
-
-\kw{DYNAMICTYP} (\kw{Gen_Alfa}\kor\kw{Centr_Diff}\kor\kw{Gen_EMM})\\
-type of time integration control
-
-\kw{EIGEN} (\kw{1}\kor\kw{0})\\
-EIGEN make eigenanalysis of the initial dynamic system (not with every solver): (0,1)
-
-\kw{RESEVRYDISP} $int$\\
-save displacements and contact forces every $int$ steps
-
-\kw{RESEVRYSTRS} $int$\\
-save stresses every $int$ steps
-
-\kw{RESTARTEVRY} $int$\\
-write restart possibility to .pss every $int$ steps
-
-\kw{TIMESTEP} $real$\\
-time step size
-
-\kw{NUMSTEP} $int$\\
-maximum number of steps
-
-\kw{MAXTIME} $real$\\
-maximum time
-
-\kw{BETA} $real$\\
-\kw{GAMMA} $real$\\
-\kw{ALPHA_M} $real$\\
-\kw{ALPHA_F} $real$\\
-\kw{BETA}, \kw{GAMMA}, \kw{ALPHA_M} and \kw{ALPHA_F} generalized-$\alpha$
-factors, BETA and GAMMA also 
-used by explicit time integration
+Please, refer to Report ``Structural dynamics'' (Chapter \ref{struct_dynamics:chap})
 
 
 
-\kw{XSI} $real$\\
-disspipation parameter for GEMM time integration
-
-\kw{DAMPING} (\kw{Yes}\kor\kw{No})\\
-\kw{M_DAMP} $real$\\
-\kw{K_DAMP} $real$\\
-DAMPING build Raleigh damping matrix and use it from $\text{M\_DAMP}
-\times M + \text{K\_DAMP} \times K$
-
-\kw{ITERATION} (\kw{mod}\kor\kw{full}\kor\kw{none})\\
-make Newton Iteration (only full implemented, ignored by explicit
-time int.)
-
-\kw{CONV_CHECK} $string$\\
-type of convergence check in Newton iteration (Generalised-$\alpha$)
-
-\kw{TOLDISP} $real$\\
-tolerance in the displacement norm for the Newton iteration 
-
-\kw{TOLRES} $real$\\
-tolerance in the residual forces norm for the Newton iteration (Generalised-$\alpha$)
-
-\kw{MAXITER} $int$\\
-maximum number of iterations allowed for newton iteration before failure
-
-\kw{CONTACT} (\kw{Yes}\kor\kw{No})\\
-switch contact algorithms for shell8 and wall1 on/off;
-Have to use \kw{SPOOLES_nonsym} in parallel as solver for contact problems
-
-\kw{CET_flag} (\kw{Yes}\kor\kw{No})\\
-switch enforcment for contact lagr. multipliers on/off;
-\kw{Yes} $\to$ penalty method, \kw{No} $\to$ augmented Lagrangean
-
-\kw{FR_flag} (\kw{Yes}\kor\kw{No})\\
-switch friction in contact on/off: (0,1)
-
-\kw{NPP} $real$\\
-penaly parameter for normal contact
-
-\kw{TPP} $real$\\
-penaly parameter for tangential (frictional) contact
-
-\kw{FR_COEF} $real$\\
-frictional coefficient
-
-\kw{TIMEADAPT} (\kw{Yes}\kor\kw{No})\\
-switch time adaptivity dependend on number of newton iterations on/off (only shell8)
-
-\kw{ITWANT} $int$\\
-number of newton iterations wanted (adaptivity)
-
-\kw{MAXDT} $real$\\
-maximum time step size allowed to the time adaptivity
-
-\kw{RESULTDT} $real$\\
-offset when results shall be written to .flavia.res when time adaptivity is on
 
 \subsection{FLUID DYNAMIC}
 \begin{verbatim}

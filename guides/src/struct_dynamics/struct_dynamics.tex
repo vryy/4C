@@ -1,6 +1,7 @@
 
 %%
 %%::::::::::::::::::::::::::::commands
+\input{def}
 \input{cmd-text}
 \input{cmd-math}
 
@@ -13,94 +14,254 @@
 %% available theoretical background information.
 
 \section{Input parameters}
-\subitempart{Text input --- thanks to commented input file}
-\begin{quote}
-\cod{DYNAMICTYP \cgb Gen\_Alfa \cor Centr\_Diff \cor Gen\_EMM \cge} \chs type
-of time integration scheme (TIS) \\
-\cod{EIGEN \cgb 0 \cor 1 \cge} \chs make eigenanalysis of the initial dynamic
-system (not with every solver) \\
-\cod{RESEVRYDISP $int$} \chs print displacements and contact forces every $int$
-steps \\
-\cod{RESEVRYSTRS $int$} \chs print stresses every $int$ time steps \\
-\cod{RESTARTEVRY $int$} \chs print restart information every $int$ time steps
-\\
-\cod{TIMESTEP $real$} \chs time step size $\Delta t$ \\
-\cod{NUMSTEP $int$} \chs maximal number of time steps, $int>0$ \\
-\cod{MAXTIME $real$} \chs final time \\
-\cod{BETA $real$} \chs $\beta$ of Newmark's TIS,
-$real\in[0,0.5]$ \\
-\cod{GAMMA $real$} \chs $\gamma$ of Newmark's TIS,
-$real\in(0,1]$ \\
-\cod{ALPHA\_M $real$} \chs $\alpha_\text{M}$ of Generalised-$\alpha$ time
-integration schem, $real\in[0,1)$ \\
-\cod{ALPHA\_F $real$} \chs $\alpha_\text{F}$ of Generalised-$\alpha$ time
-integration schem, $real\in[0,1)$ \\
-\cod{XSI $real$} \chs disspipation parameter for GEMM time integration \\
-\cod{DAMPING \cgb No \cor Yes \cge}  Rayleigh damping matrix switch \\
-\cod{M\_DAMP $real$} \chs mass matrix coefficient \\
-\cod{K\_DAMP $real$} \chs stiffness matrix coefficient ($\mat{K}(\vct{D}_0)$
-???)\\
-\cod{ITERATION \cgb none \cor mod \cor full \cge} \chs Newton Iteration, only
-\cod{full} works for implicit TISs \\
-\cod{CONV\_CHECK $string$} \chs type of convergence check in Newton iteration (Generalised-$\alpha$)\\
-\cod{TOLDISP $real$} \chs tolerance in the displacement norm for the newton iteration \\
-\cod{TOLRES $real$} \chs tolerance in the residual forces norm for the newton iteration (Generalised-$\alpha$)\\
-\cod{MAXITER $int$} \chs Maximally permitted Newton iterations \\
-\cod{CONTACT \cgb 0 \cor 1 \cge} \chs switch contact algorithms for
-shell8 and wall1 on/off: (0,1). Have to use SPOOLES\_nonsym in parallel as
-solver for contact problems \\
-\cod{CET\_flag \cgb 0 \cor 1 \cge} \chs switch enforcement for contact
-lagr. multipliers on/off: (0,1); 0 $\to$ penalty method, 1$\to$ augm
-lagrangean \\
-\cod{FR\_flag $real$} \chs switch friction in contact on/off: (0,1) \\
-\cod{NPP $real$} \chs penalty parameter for normal contact \\
-\cod{TPP $real$} \chs penalty parameter for tangential (frictional) contact \\
-\cod{FR\_COEF $real$} \chs frictional coefficient \\
-\cod{TIMEADAPT \cgb 0 \cor 1 \cge} \chs switch time adaptivity dependend on
-number of newton iterations on/off (only SHELL8) \\
-\cod{ITWANT $int$} \chs number of newton iterations wanted \\
-\cod{MAXDT $real$} \chs maximum time step size allowed to the time adaptivity
-\\
-\cod{RESULTDT $real$} \chs offset when results shall be written to .flavia.res when time adaptivity is on
-\end{quote}
 
-Observations
-\begin{enumerate}
-\item Eigensolution does not work
-\end{enumerate}
+\subsection{Common parameters}
+\begin{verbatim}
+------------------------------------------------STRUCTURAL DYNAMIC
+\end{verbatim}
+
+\kw{DYNAMICTYP} $string$\\
+type of time integration control with method $string$, i.e.\\
+\begin{tabular}{lll}
+   $string$ & meaning & valid with
+\\ \kw{Gen_Alfa} & generalized-alpha & \ccarat{}, \baci{} \texttt{StruGenAlpha}
+\\ \kw{Centr_Diff} & central differences & \ccarat{}
+\\ \kw{Gen_EMM} & generalized energy-momentum method & \ccarat{}
+\\ \kw{Static} & static analysis & \baci{} \texttt{StruGenAlpha}
+\\ \kw{GenAlpha} & generalised energy-momentum method & \baci{} \texttt{STR::TimInt}
+\\ \kw{OneStepTheta} & one-step-theta method & \baci{} \texttt{STR::TimInt}
+\\ \kw{GEMM} & generalised energy-momentum method & \baci{} \texttt{STR::TimInt}
+\\ \kw{Statics} & static analysis & \baci{} \texttt{STR::TimInt}
+\\ \kw{AdamsBashforth2} & Adams-Bashforthn 2nd order & \baci{} \texttt{STR::TimInt}
+\end{tabular}
+
+\kw{EIGEN} (\kw{1}\kor\kw{0})\\
+EIGEN make eigenanalysis of the initial dynamic system (not with every solver): (0,1)\\
+\textbf{Remark:} Does not work anywhere.
+
+\kw{RESEVRYDISP} $int$\\
+save displacements and contact forces every $int$ steps
+
+\kw{RESEVRYSTRS} $int$\\
+save stresses every $int$ steps
+
+\kw{RESTARTEVRY} $int$\\
+write restart possibility to .pss every $int$ steps
+
+\kw{TIMESTEP} $real$\\
+time step size
+
+\kw{NUMSTEP} $int$\\
+maximum number of steps
+
+\kw{MAXTIME} $real$\\
+maximum time
+
+\kw{DAMPING} $string$\\
+\begin{tabular}{lll}
+   $string$ & meaning & valid in
+\\ \kw{No} & no global damping & \ccarat{}, \baci{}
+\\ \kw{Yes} & Rayleigh-damping & \ccarat{}, \baci{}
+\\ \kw{Rayleigh} & Rayleigh-damping & \baci{}
+\\ \kw{Material} & material-based damping on element-level & \baci{}
+\end{tabular}
+
+
+\kw{M_DAMP} $real$\\
+Rayleigh-coefficient for Rayleigh damping proportional to mass matrix $\text{M\_DAMP} \times M$
+
+\kw{K_DAMP} $real$\\
+Rayleigh-coefficient for Rayleigh damping proportional to initial/reference stiffness matrix $\text{K\_DAMP} \times K$
+
+\kw{NLNSOL} $string$\\
+type of non-linear solution technique chosen, i.e.\\
+\begin{tabular}{lll}
+   $string$ & meaning & valid with
+\\ \kw{fullnewton} & full Newton-Raphson iteration  (tangential) & \ccarat{}, \baci{}
+\\ \kw{modnewton} & modified Newton-Raphson iteration (secantial) & \ccarat{}, \baci{}
+\\ \kw{matfreenewton} & matrix-free Newton-Raphson iteration & \ccarat{}, \baci{}
+\\ \kw{nlncg} & non-linear conjugate-gradient method & \ccarat{}, \baci{}
+\\ \kw{ptc} & ??? & \ccarat{}, \baci{} \texttt{StruGenAlpha}
+\\ \kw{lsnewton} & line-search Newton & \baci{} \texttt{StruGenAlpha}
+\\ \kw{newtonlinuzawa} & linearised Newton-Uzawa & \baci{}
+\\ \kw{augmentedlagrange} & non-linear Newton-Uzawa & \baci{}
+\end{tabular}
+
+\kw{TOLDISP} $real$\\
+tolerance in the displacement norm for the Newton iteration 
+
+\kw{MAXITER} $int$\\
+maximum number of iterations allowed for newton iteration before failure
+
+\subsection{\ccarat{} parameters}
+
+\kw{ITERATION} (\kw{mod}\kor\kw{full}\kor\kw{none})\\
+make Newton Iteration (only full implemented, ignored by explicit
+time int.)
+
+\kw{BETA} $real$\\
+\kw{GAMMA} $real$\\
+\kw{ALPHA_M} $real$\\
+\kw{ALPHA_F} $real$\\
+\kw{BETA}, \kw{GAMMA}, \kw{ALPHA_M} and \kw{ALPHA_F} generalized-$\alpha$
+factors, \kw{BETA} and \kw{GAMMA} also 
+used by explicit time integration
+
+\kw{XSI} $real$\\
+disspipation parameter for GEMM time integration
+
+\kw{CONTACT} (\kw{Yes}\kor\kw{No})\\
+switch contact algorithms for shell8 and wall1 on/off;
+Have to use \kw{SPOOLES_nonsym} in parallel as solver for contact problems
+
+\kw{CET_flag} (\kw{Yes}\kor\kw{No})\\
+switch enforcement for contact lagr. multipliers on/off;
+\kw{Yes} $\to$ penalty method, \kw{No} $\to$ augmented Lagrangean
+
+\kw{FR_flag} (\kw{Yes}\kor\kw{No})\\
+switch friction in contact on/off: (0,1)
+
+\kw{NPP} $real$\\
+penaly parameter for normal contact
+
+\kw{TPP} $real$\\
+penaly parameter for tangential (frictional) contact
+
+\kw{FR_COEF} $real$\\
+frictional coefficient
+
+\kw{TIMEADAPT} (\kw{Yes}\kor\kw{No})\\
+switch time adaptivity dependend on number of newton iterations on/off (only shell8)
+
+\kw{ITWANT} $int$\\
+number of newton iterations wanted (adaptivity)
+
+\kw{MAXDT} $real$\\
+maximum time step size allowed to the time adaptivity
+
+\kw{RESULTDT} $real$\\
+offset when results shall be written to .flavia.res when time adaptivity is on
+
+\subsection{\baci{} common parameters}
+
+\kw{RESEVRYERGY} $int$\\
+write system energies every requested $int$th step
+
+\kw{TOLRES} $real$\\
+tolerance in the residual forces norm for the Newton iteration (Generalised-$\alpha$)
+
+\kw{TOLCONSTR} $real$\\
+tolerance in the constraint error norm for the Newton iteration
+
+\kw{CONV_CHECK} $string$\\
+type of convergence check in non-linear solution technique, i.e. with respect to \kw{TOLDISP} and \kw{TOLRES} we have the following control possibilities\\
+\begin{tabular}{lll}
+   $string$ & meaning
+\\ \kw{AbsRes_And_AbsDis} & absolute norm of residual forces AND absolute norm of iterative displacements increments \\
+\\ \kw{AbsRes_Or_AbsDis} & absolute norm of residual forces OR absolute norm of iterative displacements increments
+\\ \kw{RelRes_And_AbsDis} & relative norm of residual forces AND absolute norm of iterative displacements increments 
+\\ \kw{RelRes_Or_AbsDis}  & relative norm of residual forces OR absolute norm of iterative displacements increments  
+\\ \kw{RelRes_And_RelDis} & relative norm of residual forces AND relative norm of iterative displacements increments 
+\\ \kw{RelRes_Or_RelDis} & relative norm of residual forces OR relative norm of iterative displacements increments  
+\end{tabular}
+The relative norms are calculated by dividing the absolute norm by the norm of the overall displacements and the maximum norm of internal, external, inertial (and possibly viscous) forces of the last time step, respectively.
+
+
+\kw{ADAPTCONV} (\kw{No}\kor\kw{Yes})\\
+Switch on adaptive control of linear solver tolerance for nonlinear solution
+
+\kw{ADAPTCONV_BETTER} $float$\\
+The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
+
+\kw{PREDICT} $string$\\
+set predictor for non-linear solution technique
+\begin{tabular}{ll}
+   \kw{Vague} & undetermined
+\\ \kw{ConstDis} & constant displacements, consistent velocities and accelerations
+\\ \kw{ConstDisVelAcc} & consta displacements, velocties and accelerations
+\end{tabular}
+
+\kw{UZAWAPARAM} $float$\\
+Parameter for Uzawa algorithm dealing with lagrange multipliers
+
+\kw{UZAWATOL} $float$\\
+Tolerance for iterative solve with Uzawa algorithm
+
+\kw{UZAWAMAXITER} $int$\\
+maximum number of iterations allowed for uzawa algorithm before failure going to next newton step
+
+\kw{UZAWAALGO} (\kw{iterative}\kor\kw{direct})\\
+Uzawa algorithm
+
+\subsection{\baci{} \texttt{StruGenAlpha}  parameters}
+
+\kw{BETA} $real$\\
+$\beta$ factor of generalized-$\alpha$
+
+\kw{GAMMA} $real$\\
+$\gamma$ factor of generalized-$\alpha$
+
+\kw{ALPHA_M} $real$\\
+$\alpha_m$ factor of generalized-$\alpha$
+
+\kw{ALPHA_F} $real$\\
+$\alpha_f$ factor of generalized-$\alpha$
+
+\subsection{\baci{} \texttt{STR::TimInt} parameters}
+
+\begin{verbatim}
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+\end{verbatim}
+
+\kw{GENAVG} (\kw{ImrLike}\kor\kw{TrLike})\\
+mid-average type of internal forces
+
+\kw{BETA} $real$\\
+Generalised-alpha coefficient in $(0,1/2]$
+
+\kw{GAMMA} $real$\\
+Generalised-alpha factor in $(0,1]$
+
+\kw{ALPHA_M} $real$\\
+Generalised-alpha factor in $[0,1)$
+
+\kw{ALPHA_F} $real$\\
+Generalised-alpha factor in $[0,1)$
+
+\begin{verbatim}
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+\end{verbatim}
+
+\kw{THETA}
+One-step-theta coefficient $\theta$ in $(0,1]$
+
+\begin{verbatim}
+-------------------------------------------STRUCTURAL DYNAMIC/GEMM
+\end{verbatim}
+
+\kw{ALPHA_M} $real$\\
+Generalised-alpha coefficient $\alpha_m$ in $[0,1)$
+
+\kw{ALPHA_F} $real$\\
+Generalised-alpha coefficient $\alpha_f$ in $[0,1)$
+
+\kw{XI} $real$\\
+Generalisation damping coefficient $\xi$ in $[0,1)$
+
 %%
 %%............................generalised-alpha
 \section{Generalised-$\alpha$}
 
 Works generally.
 
-\subsection{Convergence check}
-
-The type of convergence check can be chosen between currently six variants:
-
-\begin{itemize}
-\item absolute norm of residual forces AND absolute norm of iterative displacements increments \\(AbsRes\_And\_AbsDis) ...
-\item absolute norm of residual forces OR absolute norm of iterative displacements increments  \\(AbsRes\_Or\_AbsDis)  ...
-\item relative norm of residual forces AND absolute norm of iterative displacements increments \\(RelRes\_And\_AbsDis) ...
-\item relative norm of residual forces OR absolute norm of iterative displacements increments  \\(RelRes\_Or\_AbsDis)  ... 
-\item relative norm of residual forces AND relative norm of iterative displacements increments \\(RelRes\_And\_RelDis) ... 
-\item relative norm of residual forces OR relative norm of iterative displacements increments  \\(RelRes\_Or\_RelDis)  ...
-\end{itemize}
-
-... smaller than the respective error norms (TOLRES and TOLDISP).\\
-
-\noindent The relative norms are calculated by dividing the absolute norm by the norm of the overall displacements and the maximum norm of internal, external, inertial (and possibly viscous) forces of the last time step, respectively.
-
-\subsection{Suggestions}
-\begin{enumerate}
-\item Individual/No load curves. Currently, all external loads are scaled with
+\subsection{Shortcomings in \ccarat implementation}
+Individual/No load curves. Currently, all external loads are scaled with
   the load curve \cod{CURVE1}, which \emph{must} be applied
-\item time-step size adaptivity?
-\end{enumerate}
+
 
 %%
 %%............................generalised energy-momentum-conserving
-\section{GEMM}
+\section{Generalized energy-momentum method -- \ccarat{} Gen\_EMM}
 Coded by Izzet \"{O}zdemir (Master thesis ``An approach to contact in
 computational structural dynamics'', 2003)
 
@@ -111,7 +272,7 @@ The routine
   \item WALL1
   \item SHELL8 is malware $\to$ remove
   \end{itemize}
-\item is based on Simo \& Tarnow's energy-momemtum conserving scheme, giving
+\item is based on Simo \& Tarnow energy-momemtum conserving scheme, giving
   an asymmetric stiffness matrix 
 \item conserves total energy (yessssssssssssssssssssssssss) Tested with
   prescribed boundary displacement, loads were not applied.
@@ -135,7 +296,7 @@ The routine
 
 %%
 %%............................central differences
-\section{Central differences}
+\section{Central differences -- \ccarat Centr\_Diff}
 Algorithm:
 \begin{gather*}
   \left\{\begin{array}{l}
@@ -169,7 +330,7 @@ Algorithm:
 
 %%
 %%............................Inclined BCs for retro-discretisation
-\section{Inclined boundary conditions (BCs)}
+\section{Inclined boundary conditions (BCs) -- \ccarat{}}
 
 \subsection{About}
 Sometimes it is desirable to have boundary conditions
