@@ -86,7 +86,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,emptyboundarydis_));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_));
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
   // tell elements about the dofs and the integration
@@ -416,7 +416,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_, cutterdiscret));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
 //  cout << "tree after interfaceconstructor" << endl;
 //  ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
@@ -442,7 +442,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(ih, step_);
+  // XFEM::toGmsh(ih, step_);
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it

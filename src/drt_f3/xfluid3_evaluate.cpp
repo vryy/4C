@@ -306,7 +306,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
           
           // store pointer to interface handle
-          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
           break;
       }
       default:

@@ -33,7 +33,7 @@ namespace XFEM
    * the information can be given via approachdirection
    */
 std::map<XFEM::Enrichment, double> computeEnrvalMap(
-        const RCP<XFEM::InterfaceHandle>      ih,               ///< interface onformation
+        const RCP<XFEM::InterfaceHandle>  ih,               ///< interface onformation
         const std::set<XFEM::Enrichment>&     enrset,           ///< enrichments for which one seeks enrichment values
         const BlitzVec3&                      actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
@@ -48,7 +48,7 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
  */
 void ComputeEnrichedNodalShapefunction(
     const DRT::Element&                        ele,
-    const RCP<XFEM::InterfaceHandle>           ih,
+    const RCP<XFEM::InterfaceHandle>       ih,
     const XFEM::ElementDofManager&             dofman,
     const XFEM::PHYSICS::Field                 field,
     const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -192,7 +192,7 @@ void computeVectorCellNodeValues(
  * \warning should be done separately for each enrichment, but currently it's not done
  */
 double DomainCoverageRatio(
-    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+    const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 
@@ -201,7 +201,7 @@ double DomainCoverageRatio(
  * \warning should be done separately for each enrichment, but currently it's not done
  */
 double BoundaryCoverageRatio(
-    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+    const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 

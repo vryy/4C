@@ -127,7 +127,7 @@ void XFEM::DofManager::toGmsh(
 #if 1
   if (gmshdebugout)
   {
-    const int myrank = ih->cutterdis()->Comm().MyPID();
+    const int myrank = ih->xfemdis()->Comm().MyPID();
     
     std::stringstream filename;
     std::stringstream filenamedel;
@@ -136,7 +136,7 @@ void XFEM::DofManager::toGmsh(
     std::remove(filenamedel.str().c_str());
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
-    f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
+    //f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
     {
       // draw elements with associated gid
       std::stringstream gmshfilecontent;
@@ -526,5 +526,5 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
   return outvec;
 }
 
-    
+
 #endif  // #ifdef CCADISCRET

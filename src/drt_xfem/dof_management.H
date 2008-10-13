@@ -37,12 +37,13 @@ namespace XFEM
       ~DofManager();
       //! return string representation of the dofmanager
       std::string toString() const;
+
       //! print a Gmsh representation of this class
       void toGmsh(
           const Teuchos::RCP<XFEM::InterfaceHandle> ih,  ///< interface information
           const int step                                 ///< step for file numbering
           ) const;
-      
+
       //! return set with enriched fields for requested node
       const std::set<FieldEnr> getNodeDofSet(
           const int gid      ///< global node id
@@ -121,9 +122,7 @@ namespace XFEM
       std::map<int, const std::set<XFEM::FieldEnr> > elementalDofs_;
       
   };
-  
 
-  
 } // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H

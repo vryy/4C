@@ -68,7 +68,6 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
   if (err) dserror("FillComplete() returned err=%d",err);
 
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
-//  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
   // create interface DOF vectors using the solid parallel distribution
   const Epetra_Map* fluidsurface_dofrowmap = boundarydis_->DofRowMap();
@@ -80,7 +79,6 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
   iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
-//  fluid_.SetFreeSurface(&freesurface_);
   std::cout << "FluidCombust constructor done" << endl;
 }
 /*------------------------------------------------------------------------------------------------*
@@ -423,7 +421,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 {
   return interface_.ExtractCondVector(iveln_);
 }
-
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/

@@ -1226,6 +1226,7 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/dof_distribution_switcher.o \
                     src/drt_xfem/enrichment.o \
                     src/drt_xfem/interface.o \
+                    src/drt_xfem/interfacexfsi.o \
                     src/drt_xfem/spacetime_boundary.o \
                     src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
@@ -1247,6 +1248,8 @@ OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
 OBJS_DRT_COMBUST =  src/drt_combust/combust_dyn.o \
                     src/drt_combust/combust_algorithm.o \
                     src/drt_combust/combust_utils.o \
+                    src/drt_combust/combust_interface.o \
+                    src/drt_combust/combust_flamefront.o \
                     src/drt_combust/combust_fluidimplicitintegration.o \
                     src/drt_combust/combust_fluidresulttest.o
 #------------------------------------------------ combustion (drt version)

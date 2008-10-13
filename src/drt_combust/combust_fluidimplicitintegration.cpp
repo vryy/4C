@@ -25,7 +25,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_combust/combust3_interpolation.H"
+#include "combust3_interpolation.H"
+#include "combust_interface.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -64,25 +65,28 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
-
-  // -------------------------------------------------------------------
-  // get the basic parameters first
-  // -------------------------------------------------------------------
+  /*----------------------------------------------------------------------------------------------*
+   * comment missing! Axels comment: get the basic parameters first
+   *----------------------------------------------------------------------------------------------*/
   timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
   dtp_ = dta_ = params_.get<double>("time step size");
   theta_    = params_.get<double>("theta");
 
-  // create empty cutter discretization
-  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
-      actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
-  Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
-  emptyboundarydis_->SetState("idispcolnp",tmpdisp);
-  emptyboundarydis_->SetState("idispcoln",tmpdisp);
+  // not needed for COMBUST: create empty cutter discretization
+//  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
+//      actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
+//  Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
+//  emptyboundarydis_->SetState("idispcolnp",tmpdisp);
+//  emptyboundarydis_->SetState("idispcoln",tmpdisp);
+
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,emptyboundarydis_));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,null));
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
-  // tell elements about the dofs and the integration
+
+  /*----------------------------------------------------------------------------------------------*
+   * comment missing! Axels comment: tell elements about the dofs and the integration  
+   *----------------------------------------------------------------------------------------------*/
   {
     ParameterList eleparams;
     eleparams.set("action","store_xfem_info");
@@ -95,6 +99,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     eleparams.set("assemble vector 3",false);
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
+
+  /*----------------------------------------------------------------------------------------------*
+   * comment missing!
+   *----------------------------------------------------------------------------------------------*/
   discret_->FillComplete();
 
   //output_.WriteMesh(0,0.0);
@@ -108,13 +116,15 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
 
-  // get density from elements
+  /*----------------------------------------------------------------------------------------------*
+   * get density from elements
+   *----------------------------------------------------------------------------------------------*/
   {
     ParameterList eleparams;
     eleparams.set("action","get_density");
     discret_->Evaluate(eleparams,null,null,null,null,null);
-    density_ = eleparams.get("density", 0.0);
-    if (density_ <= 0.0) dserror("received negative density value from elements");
+    density_ = eleparams.get<double>("density");
+    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
@@ -421,7 +431,7 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_, cutterdiscret));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih = rcp(new COMBUST::InterfaceHandleCombust(discret_, cutterdiscret));
 //  cout << "tree after interfaceconstructor" << endl;
 //  ih->PrintTreeInformation(step_);
   ih->toGmsh(step_);
@@ -447,7 +457,7 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(ih, step_);
+  //XFEM::toGmsh(ih, step_);
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it
@@ -1007,7 +1017,7 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 {
   sysmat_->Zero();
   dserror("no monolithic FSI tested, check first!");
-
+/*
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
@@ -1071,6 +1081,7 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
   // conditions
   incvel_->PutScalar(0.0);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+  */
 }
 
 /*------------------------------------------------------------------------------------------------*

@@ -15,7 +15,7 @@
 #define ENRICHMENT_H
 
 
-#include "interface.H"
+#include "interfacexfsi.H"
 
 //! namespace for all XFEM related stuff
 namespace XFEM
@@ -144,14 +144,14 @@ namespace XFEM
       double ModifiedEnrValue(
           const BlitzVec3&                      actpos,            ///< \f$x\f$
           const BlitzVec3&                      nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
+          const XFEM::InterfaceHandle&      ih,                ///< the ubiquitious interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
       
       //! calculate enrichment value based on input \f$\psi(x)\f$
       double EnrValue(
           const BlitzVec3&                      actpos,            ///< \f$x\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
+          const XFEM::InterfaceHandle&      ih,                ///< the ubiquitious interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
               

@@ -49,6 +49,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combust
    * - determine initial enrichment (DofManager wird bereits mit dem Element d.h. Diskretisierung angelegt)
    * - ...
    *----------------------------------------------------------------------------------------------*/
+
+  // brauch ich das hier? Das ist ein relikt von früher    henke 10/08
   ReinitializeGfunc(initialize);
   // CaptureFlameFront();
   // DetermineEnrichment();

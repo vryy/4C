@@ -147,7 +147,9 @@ void combust_dyn()
     combust_->TimeLoop();
     /* Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der combustion 
      * Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
-     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat.*/
+     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat. Dann muss allerdings auch 
+     * das ADAPTER::FluidCombust ein entsprechendes Object GenalphaTimeInt haben. Momentan hat ein
+     * FluidCombust immer ein CombustFluidImplicitTimeInt! */
   }
   else if (timeintscheme == timeint_stationary)
   {

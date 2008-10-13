@@ -18,7 +18,7 @@ Maintainer: Axel Gerstenberger
 #define XDOFMAPCREATION_H
 
 #include "dof_management.H"
-#include "interface.H"
+#include "interfacexfsi.H"
 
 
 namespace XFEM
@@ -29,7 +29,7 @@ namespace XFEM
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-    const XFEM::InterfaceHandle&                      ih,                      ///< interface information
+    const XFEM::InterfaceHandle&                  ih,                      ///< interface information
     std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< enriched fields per node
     std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< enriched fields per element   
 );
@@ -39,7 +39,7 @@ void createDofMap(
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void applyStandardEnrichment(
-    const XFEM::InterfaceHandle&             ih,
+    const XFEM::InterfaceHandle&              ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );
@@ -49,7 +49,7 @@ void applyStandardEnrichment(
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void applyStandardEnrichmentNodalBasedApproach(
-    const XFEM::InterfaceHandle&             ih,
+    const XFEM::InterfaceHandle&              ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );

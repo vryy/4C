@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
-#include "interface.H"
+#include "interfacexfsi.H"
 #include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_geometry/coordinate_transformation.H"
 
@@ -52,7 +52,7 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
 // 
 void XFEM::ComputeEnrichedNodalShapefunction(
     const DRT::Element&                        ele,
-    const RCP<XFEM::InterfaceHandle>           ih,
+    const RCP<XFEM::InterfaceHandle>       ih,
     const XFEM::ElementDofManager&             dofman,
     const XFEM::PHYSICS::Field                 field,
     const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -86,7 +86,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
 // 
 void XFEM::ComputeEnrichedNodalShapefunction(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -126,7 +126,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
 // 
 void XFEM::ComputeEnrichedNodalShapefunction(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -173,7 +173,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
 // 
 void XFEM::ComputeEnrichedElementShapefunction(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -205,7 +205,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
 // 
 void XFEM::ComputeEnrichedElementShapefunction(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
@@ -529,7 +529,7 @@ void XFEM::computeVectorCellNodeValues(
   */
 template <DRT::Element::DiscretizationType DISTYPE>
 double DomainCoverageRatioT(
-        const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+        const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
@@ -659,7 +659,7 @@ double DomainCoverageRatioT(
 }
 
 double XFEM::DomainCoverageRatio(
-        const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+        const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
@@ -683,7 +683,7 @@ double XFEM::DomainCoverageRatio(
   */
 template <DRT::Element::DiscretizationType DISTYPE>
 double BoundaryCoverageRatioT(
-        const DRT::Element&           ele,           ///< the element whose boundary ratio we want to compute
+        const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
@@ -807,7 +807,7 @@ double BoundaryCoverageRatioT(
 }
 
 double XFEM::BoundaryCoverageRatio(
-        const DRT::Element&           ele,           ///< the element whose boundary ratio we want to compute
+        const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {

@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 
 
 void XFEM::createDofMap(
-    const XFEM::InterfaceHandle&                   ih,
+    const XFEM::InterfaceHandle&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal
 )
@@ -147,7 +147,7 @@ void XFEM::createDofMap(
 
 
 void XFEM::applyStandardEnrichment(
-    const XFEM::InterfaceHandle&             ih,
+    const XFEM::InterfaceHandle&              ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 )
@@ -217,7 +217,7 @@ void XFEM::applyStandardEnrichment(
 }
 
 void XFEM::applyStandardEnrichmentNodalBasedApproach(
-    const XFEM::InterfaceHandle&             ih,
+    const XFEM::InterfaceHandle&              ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 )

@@ -238,13 +238,6 @@ public:
   */
   const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
 
-  /// introduce free surface extractor object
-  /*!
-    This method must (and will) be called during setup with a properly
-    initialized extractor object iff we are on an ale mesh.
-   */
-  void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
-
   /// introduce (robin) fsi surface extractor object
   /*!
     Introduce the FSI surface to the fluid algorithm. This way special case
@@ -406,9 +399,6 @@ protected:
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
-
-  /// free surface row dof map extractor
-  const LINALG::MapExtractor* freesurface_;
 
   /// (robin) fsi coupling row dof map extractor
   const LINALG::MapExtractor* fsisurface_;

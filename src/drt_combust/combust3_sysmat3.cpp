@@ -122,7 +122,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 static void Sysmat3(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
@@ -1881,7 +1881,7 @@ static void Sysmat3(
 void callSysmat3(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::Combust3*     ele,
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,

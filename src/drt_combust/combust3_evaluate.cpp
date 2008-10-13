@@ -27,8 +27,6 @@ Maintainer: Florian Henke
 DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActionType(
               const string& action) const
 {
-  dsassert(action != "none", "No action supplied");
-
   DRT::ELEMENTS::Combust3::ActionType act = Combust3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Combust3::calc_fluid_systemmat_and_residual;
@@ -124,6 +122,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         break;
 
       DRT::ELEMENTS::Combust3::MyState mystate;
+      mystate.instationary = true;
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
       DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
@@ -207,6 +206,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // extract local values from the global vector
       DRT::ELEMENTS::Combust3::MyState mystate;
+      mystate.instationary = false;
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
 
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
@@ -313,7 +313,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
 
       // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
     }
     break;
     default:

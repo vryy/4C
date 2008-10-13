@@ -226,8 +226,6 @@ namespace ADAPTER
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
 
-//    LINALG::MapExtractor                   freesurface_;
-
     /// ALE dof map
 //    LINALG::MapExtractor                   meshmap_;
   };

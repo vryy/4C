@@ -31,7 +31,7 @@ namespace XFLUID
   void callSysmatTP1(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<const Epetra_Vector> ivelcol,
@@ -58,7 +58,7 @@ namespace XFLUID
   void callSysmat3(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const std::vector<double>&        locval,
           const std::vector<double>&        locval_hist,
@@ -84,7 +84,7 @@ namespace XFLUID
   void callSysmat4(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<const Epetra_Vector> ivelcol,

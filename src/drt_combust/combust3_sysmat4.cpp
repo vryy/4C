@@ -86,7 +86,7 @@ using namespace XFEM::PHYSICS;
   template<class M>
   static bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
-      const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
       const M&                                   xyze,
       const BlitzVec3&                           posXiDomain,
       const int                                  labelnp,
@@ -205,7 +205,7 @@ using namespace XFEM::PHYSICS;
             class M1, class V1, class M2>
   void fillElementUnknownsArrays4(
           const XFEM::ElementDofManager& dofman,
-          const DRT::ELEMENTS::Combust3::MyState mystate,
+          const DRT::ELEMENTS::Combust3::MyState& mystate,
           M1& evelnp,
           M1& eveln,
           M1& evelnm,
@@ -236,23 +236,32 @@ using namespace XFEM::PHYSICS;
       for (int iparam=0; iparam<numparamvelx; ++iparam)
       {
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
-          eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
-          evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
-          eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          if (mystate.instationary)
+          {
+            eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
+            evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
+            eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvely; ++iparam)
       {
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
-          eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
-          evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
-          eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          if (mystate.instationary)
+          {
+            eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
+            evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
+            eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvelz; ++iparam)
       {
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
-          eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
-          evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
-          eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          if (mystate.instationary)
+          {
+            eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
+            evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
+            eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
@@ -287,7 +296,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatDomain4(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           evelnp,
     const M1&                           eveln,
@@ -379,27 +388,31 @@ static void SysmatDomain4(
     {
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
         
-        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-        const int labelnp = ih->PositionWithinConditionNP(cellcenter);
-        const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-        bool compute = false;
-        if (labelnp == 0) // fluid
+        int labelnp = 0;
+        
+        if (ASSTYPE == XFEM::xfem_assembly)
         {
-          compute = true;
+          // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+          labelnp = ih->PositionWithinConditionNP(cellcenter);
+          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+          bool compute = false;
+          if (labelnp == 0) // fluid
+          {
+            compute = true;
+          }
+          else if (xlabelset.size() > 1) // multiple interface labels
+          {
+            compute = true;
+          }
+          else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+          {
+            compute = true;
+          }
+          if (not compute)
+          {
+            continue;
+          }
         }
-        else if (xlabelset.size() > 1) // multiple interface labels
-        {
-          compute = true;
-        }
-        else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
-        {
-          compute = true;
-        }
-        if (not compute)
-        {
-          continue;
-        }
-            
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
               ih,
               dofman.getUniqueEnrichments(),
@@ -1411,7 +1424,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatBoundary4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M1&                         eveln,
@@ -1805,9 +1818,9 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 static void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
-        const DRT::ELEMENTS::Combust3::MyState  mystate,  ///< element state variables
+        const DRT::ELEMENTS::Combust3::MyState&  mystate,  ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
@@ -1871,9 +1884,9 @@ static void Sysmat4(
 void COMBUST::callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::Combust3*     ele,
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
-        const DRT::ELEMENTS::Combust3::MyState  mystate,   ///< element state variables
+        const DRT::ELEMENTS::Combust3::MyState&  mystate,   ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,

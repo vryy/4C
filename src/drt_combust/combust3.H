@@ -49,6 +49,7 @@ namespace DRT
         
         struct MyState
         {
+          bool instationary;
           vector<double> velnp;
           vector<double> veln;
           vector<double> velnm;
@@ -230,7 +231,7 @@ namespace DRT
         XFEM::ElementDofManager                                   eleDofManager_;
         
         //! store information about the intersection handle
-        Teuchos::RCP<XFEM::InterfaceHandle>                       ih_;
+        Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
         
         // internal calculation methods
         
@@ -272,10 +273,10 @@ namespace DRT
         //! @name Constructors and destructors and related methods
         
         //! Standard Constructor
-        Combust3Register(DRT::Element::ElementType etype);
+        explicit Combust3Register(DRT::Element::ElementType etype);
         
         //! Copy Constructor
-        Combust3Register(const DRT::ELEMENTS::Combust3Register& old);
+        explicit Combust3Register(const DRT::ELEMENTS::Combust3Register& old);
         
         DRT::ELEMENTS::Combust3Register* Clone() const;
         

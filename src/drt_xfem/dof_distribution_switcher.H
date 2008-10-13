@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_DISTRIBUTION_SWITCHER_H
 #define DOF_DISTRIBUTION_SWITCHER_H
 
-#include "interface.H"
+#include "interfacexfsi.H"
 
 
 namespace XFEM
@@ -29,7 +29,7 @@ class DofDistributionSwitcher
 public:
     //! constructor
     explicit DofDistributionSwitcher(
-            const RCP<XFEM::InterfaceHandle>     ih,
+            const RCP<XFEM::InterfaceHandle> ih,
             const RCP<XFEM::DofManager>          dofman,
             const Epetra_Map&                    olddofrowmap,
             const Epetra_Map&                    newdofrowmap,
@@ -95,7 +95,7 @@ private:
     explicit DofDistributionSwitcher();
 
     
-    const RCP<XFEM::InterfaceHandle>     ih_;                      ///< interface information
+    const RCP<XFEM::InterfaceHandle> ih_;                      ///< interface information
     const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
     const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector
     const Epetra_Map                     newdofrowmap_;            ///< dofrowmap of the new state vector

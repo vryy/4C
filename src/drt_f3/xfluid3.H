@@ -225,7 +225,7 @@ namespace DRT
         XFEM::ElementDofManager                                   eleDofManager_;
         
         //! store information about the intersection handle
-        Teuchos::RCP<XFEM::InterfaceHandle>                       ih_;
+        Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
         
         // internal calculation methods
         

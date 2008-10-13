@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/intersection_service.H"
-#include "interface.H"
+#include "interfacexfsi.H"
 #include <string>
 #include <sstream>
 
@@ -54,7 +54,7 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
 double XFEM::Enrichment::EnrValue(
-        const BlitzVec3&                actpos,
+        const BlitzVec3&                    actpos,
         const XFEM::InterfaceHandle&    ih,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
@@ -138,8 +138,8 @@ double XFEM::Enrichment::EnrValue(
  *                                                              ag 11/07
  */
 double XFEM::Enrichment::ModifiedEnrValue(
-        const BlitzVec3&                actpos,
-        const BlitzVec3&                nodalpos,
+        const BlitzVec3&                    actpos,
+        const BlitzVec3&                    nodalpos,
         const XFEM::InterfaceHandle&    ih,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const

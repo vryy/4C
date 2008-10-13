@@ -84,7 +84,7 @@ struct Shp
   template<class M>
   static bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
-      const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
       const M&                                   xyze,
       const BlitzVec3&                           posXiDomain,
       const int                                  labelnp,
@@ -294,7 +294,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatDomain4(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           evelnp,
     const M1&                           eveln,
@@ -1423,7 +1423,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2>
 static void SysmatBoundary4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M1&                         eveln,
@@ -1817,7 +1817,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 static void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
@@ -1879,7 +1879,7 @@ static void Sysmat4(
 void XFLUID::callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
-        const Teuchos::RCP<XFEM::InterfaceHandle>  ih,
+        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,
