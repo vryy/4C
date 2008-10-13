@@ -203,7 +203,7 @@ struct Shp
             class M1, class V1, class M2>
   void fillElementUnknownsArrays4(
           const XFEM::ElementDofManager& dofman,
-          const DRT::ELEMENTS::XFluid3::MyState mystate,
+          const DRT::ELEMENTS::XFluid3::MyState& mystate,
           M1& evelnp,
           M1& eveln,
           M1& evelnm,
@@ -234,23 +234,32 @@ struct Shp
       for (int iparam=0; iparam<numparamvelx; ++iparam)
       {
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
-          eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
-          evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
-          eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
+              evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
+              eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvely; ++iparam)
       {
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
-          eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
-          evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
-          eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
+              evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
+              eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvelz; ++iparam)
       {
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
-          eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
-          evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
-          eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
+              evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
+              eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
@@ -1906,7 +1915,7 @@ void XFLUID::callSysmat4(
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
@@ -1916,7 +1925,7 @@ void XFLUID::callSysmat4(
 //            case DRT::Element::tet10:
 //                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
                 dserror("Sysmat not templated yet");
@@ -1939,12 +1948,12 @@ void XFLUID::callSysmat4(
 //            case DRT::Element::hex27:
 //                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
 //            case DRT::Element::tet10:
 //                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
 //                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
                 dserror("Sysmat not templated yet");

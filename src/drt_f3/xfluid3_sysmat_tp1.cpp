@@ -64,6 +64,121 @@ Maintainer: Axel Gerstenberger
     return v;
   }
   
+  template<class M>
+  static bool modifyOldTimeStepsValues(
+      const DRT::Element*                        ele,           ///< the element those matrix is calculated
+      const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
+      const M&                                   xyze,
+      const BlitzVec3&                           posXiDomain,
+      const int                                  labelnp,
+      const Epetra_Vector&                       ivelcoln,
+      const Epetra_Vector&                       iacccoln,
+      BlitzVec3&                                 gpveln,
+      BlitzVec3&                                 gpaccn
+      )
+  {
+    GEO::PosX posx_gp;
+    GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
+    
+    const bool is_in_fluid = (labelnp == 0);
+    
+    if (not is_in_fluid)
+    {
+      //std::cout << "should I arrive here?" << std::endl;
+      return false;
+    }
+
+    const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
+    
+    const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
+    
+    if (in_space_time_slab_area)
+    {
+      XFEM::SpaceTimeBoundaryCell slab;
+      BlitzVec3 rst;
+      
+      const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
+      
+      if (found_cell)
+      {
+        
+        const double delta_slab = -(rst(2)-1.0)*0.5;
+  
+        if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
+        {
+          cout << rst(2) <<  "  " << delta_slab << endl;
+          cout << slab.toString() << endl << endl;
+          dserror("wrong value of delta_slab");
+        }
+//              theta_dt = theta_dt_pure;// * delta_slab;
+      
+        DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+        const int numnode_boundary = boundaryele->NumNode();
+        
+        BlitzVec3 iveln;
+        BlitzVec3 iaccn;
+        
+        if (ivelcoln.GlobalLength() > 3)
+        {
+          // get interface velocities at the boundary element nodes
+          BlitzMat veln_boundary(3,numnode_boundary*2);
+          BlitzMat accn_boundary(3,numnode_boundary*2);
+          if (numnode_boundary != 4)
+            dserror("needs more generalizashun!");
+          const DRT::Node*const* nodes = boundaryele->Nodes();
+          
+          for (int inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            const std::vector<int> lm = ih->cutterdis()->Dof(node);
+            std::vector<double> myvel(3);
+            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+            veln_boundary(0,inode) = myvel[0];
+            veln_boundary(1,inode) = myvel[1];
+            veln_boundary(2,inode) = myvel[2];
+            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
+            veln_boundary(0,inode+4) = myvel[0];
+            veln_boundary(1,inode+4) = myvel[1];
+            veln_boundary(2,inode+4) = myvel[2];
+            
+            std::vector<double> myacc(3);
+            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+            accn_boundary(0,inode) = myacc[0];
+            accn_boundary(1,inode) = myacc[1];
+            accn_boundary(2,inode) = myacc[2];
+            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
+            accn_boundary(0,inode+4) = myacc[0];
+            accn_boundary(1,inode+4) = myacc[1];
+            accn_boundary(2,inode+4) = myacc[2];
+          }
+  //                cout << "veln_boundary: " << veln_boundary << endl;
+  //                cout << "accn_boundary: " << accn_boundary << endl;
+          
+          BlitzVec funct_ST(numnode_boundary*2);
+          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
+          iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+  //                cout << "iveln " << iveln << endl;
+  //                cout << "iaccn " << iaccn << endl;
+        }
+        else
+        {
+          iveln = 0.0;
+          iaccn = 0.0;
+        }
+      
+        //cout << "using space time boundary values " << ele->Id() << endl; 
+        gpveln(0) = iveln(0);
+        gpveln(1) = iveln(1);
+        gpveln(2) = iveln(2);
+        
+        gpaccn(0) = iaccn(0);
+        gpaccn(1) = iaccn(1);
+        gpaccn(2) = iaccn(2);
+      }
+    }
+    return true;
+  }
   
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
@@ -103,23 +218,32 @@ Maintainer: Axel Gerstenberger
       for (int iparam=0; iparam<numparamvelx; ++iparam)
       {
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
-          eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
-          evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
-          eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
+              evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
+              eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvely; ++iparam)
       {
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
-          eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
-          evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
-          eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
+              evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
+              eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparamvelz; ++iparam)
       {
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
-          eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
-          evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
-          eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          if (mystate.instationary)
+          {
+              eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
+              evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
+              eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+          }
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
@@ -258,25 +382,30 @@ static void SysmatDomainTP1(
     {
         const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
         
-        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-        const int labelnp = ih->PositionWithinConditionNP(cellcenter);
-        const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
-        bool compute = false;
-        if (labelnp == 0) // fluid
+        int labelnp = 0;
+        
+        if (ASSTYPE == XFEM::xfem_assembly)
         {
-          compute = true;
-        }
-        else if (xlabelset.size() > 1) // multiple interface labels
-        {
-          compute = true;
-        }
-        else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
-        {
-          compute = true;
-        }
-        if (not compute)
-        {
-          continue;
+          // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+          labelnp = ih->PositionWithinConditionNP(cellcenter);
+          const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
+          bool compute = false;
+          if (labelnp == 0) // fluid
+          {
+            compute = true;
+          }
+          else if (xlabelset.size() > 1) // multiple interface labels
+          {
+            compute = true;
+          }
+          else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
+          {
+            compute = true;
+          }
+          if (not compute)
+          {
+            continue;
+          }
         }
             
         const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
@@ -560,124 +689,12 @@ static void SysmatDomainTP1(
             BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
             
             
-            
-            GEO::PosX posx_gp;
-            GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
-            
-            bool is_in_fluid = false;
-            if (labelnp == 0)
+            if (ASSTYPE == XFEM::xfem_assembly)
             {
-              is_in_fluid = true;
+              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, gpveln, gpaccn);
+              if (not valid_spacetime_cell_found)
+                continue;
             }
-            else
-            {
-              is_in_fluid = false;
-            }
-            
-            if (not is_in_fluid)
-            {
-              std::cout << "should I arrive here?" << std::endl;
-              continue;
-            }
-
-            bool was_in_fluid = false;
-            if (ih->PositionWithinConditionN(posx_gp) == 0)
-            {
-              was_in_fluid = true;
-            }
-            else
-            {
-              was_in_fluid = false;
-            }
-            
-            const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
-            
-            if (in_space_time_slab_area)
-            {
-              XFEM::SpaceTimeBoundaryCell slab;
-              BlitzVec3 rst;
-              
-              const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
-              
-              if (found_cell)
-              {
-              
-              const double delta_slab = -(rst(2)-1.0)*0.5;
-
-              if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
-              {
-                cout << rst(2) <<  "  " << delta_slab << endl;
-                cout << slab.toString() << endl << endl;
-                dserror("wrong value of delta_slab");
-              }
-//              theta_dt = theta_dt_pure;// * delta_slab;
-              
-              DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
-              const int numnode_boundary = boundaryele->NumNode();
-              
-              BlitzVec3 iveln;
-              BlitzVec3 iaccn;
-              
-              if (ivelcoln.GlobalLength() > 3)
-              {
-                // get interface velocities at the boundary element nodes
-                BlitzMat veln_boundary(3,numnode_boundary*2);
-                BlitzMat accn_boundary(3,numnode_boundary*2);
-                if (numnode_boundary != 4)
-                  dserror("needs more generalizashun!");
-                const DRT::Node*const* nodes = boundaryele->Nodes();
-                
-                for (int inode = 0; inode < numnode_boundary; ++inode)
-                {
-                  const DRT::Node* node = nodes[inode];
-                  const std::vector<int> lm = ih->cutterdis()->Dof(node);
-                  std::vector<double> myvel(3);
-                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-                  veln_boundary(0,inode) = myvel[0];
-                  veln_boundary(1,inode) = myvel[1];
-                  veln_boundary(2,inode) = myvel[2];
-                  DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-                  veln_boundary(0,inode+4) = myvel[0];
-                  veln_boundary(1,inode+4) = myvel[1];
-                  veln_boundary(2,inode+4) = myvel[2];
-                  
-                  std::vector<double> myacc(3);
-                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-                  accn_boundary(0,inode) = myacc[0];
-                  accn_boundary(1,inode) = myacc[1];
-                  accn_boundary(2,inode) = myacc[2];
-                  DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-                  accn_boundary(0,inode+4) = myacc[0];
-                  accn_boundary(1,inode+4) = myacc[1];
-                  accn_boundary(2,inode+4) = myacc[2];
-                }
-//                cout << "veln_boundary: " << veln_boundary << endl;
-//                cout << "accn_boundary: " << accn_boundary << endl;
-                
-                BlitzVec funct_ST(numnode_boundary*2);
-                DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-                iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-                iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
-//                cout << "iveln " << iveln << endl;
-//                cout << "iaccn " << iaccn << endl;
-              }
-              else
-              {
-                iveln = 0.0;
-                iaccn = 0.0;
-              }
-              
-              //cout << "using space time boundary values " << ele->Id() << endl; 
-              gpveln(0) = iveln(0);
-              gpveln(1) = iveln(1);
-              gpveln(2) = iveln(2);
-              
-              gpaccn(0) = iaccn(0);
-              gpaccn(1) = iaccn(1);
-              gpaccn(2) = iaccn(2);
-              }
-            }
-            
 //            cout << gpvelnp << endl;
 //            cout << evelnp << endl;
 //            cout << shp << endl;
@@ -807,126 +824,14 @@ static void SysmatDomainTP1(
 //            cout << bodyforce << endl;
             //////////////////////////////////////////BlitzVec bodyforce_(blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j));
 
+            // compute stabilization parameters (3 taus)
+            double tau_stab_M  = 0.0;
+            double tau_stab_Mp = 0.0;
+            double tau_stab_C  = 0.0;
+            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
+                tau_stab_M, tau_stab_Mp, tau_stab_C);
             
 
-            // get velocity norm
-            const double vel_norm = sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
-
-            // normed velocity at element centre
-            BlitzVec3 velino;
-            if (vel_norm>=1e-6)
-            {
-                for (int isd = 0; isd < nsd; ++isd)
-                    velino(isd) = gpvelnp(isd)/vel_norm;
-            }
-            else
-            {
-                velino = 0.;
-                velino(0) = 1.0;
-            }
-
-            // get streamlength
-            //const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy(j,i),j)));
-            BlitzVec velinoder(numparamvelx);
-            for (int iparam = 0; iparam < numparamvelx; ++iparam)
-            {
-                velinoder(iparam) = 0.0;
-                for (int isd = 0; isd < nsd; ++isd)
-                    velinoder(iparam) += velino(isd)*derxy(isd,iparam);
-            }
-            double val = 0.0;
-            for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                val += fabs(velinoder(iparam));
-            
-            const double strle = 2.0/val;
-
-            double tau_stab_M;
-            double tau_stab_Mp;
-            double tau_stab_C;
-            if (instationary)
-            {
-                // calculate tau: stabilization parameters for stationary case
-                
-                const double visceff = visc;
-                /* viscous : reactive forces */
-                const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
-
-                /* convective : viscous forces */
-                const double re2 = mk * vel_norm * strle / (2.0 * visceff);
-
-                const double xi1 = max(re1,1.0);
-                const double xi2 = max(re2,1.0);
-
-                tau_stab_M = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
-
-                // compute tau_Mp
-                //    stability parameter definition according to Franca and Valentin (2000)
-                //                                       and Barrenechea and Valentin (2002)
-
-                 /* viscous : reactive forces */
-                const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
-                /* convective : viscous forces */
-                const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
-
-                const double xi_viscous = max(re_viscous,1.0);
-                const double xi_convect = max(re_convect,1.0);
-
-                /*
-                                xi1,xi2 ^
-                                        |      /
-                                        |     /
-                                        |    /
-                                      1 +---+
-                                        |
-                                        |
-                                        |
-                                        +--------------> re1,re2
-                                            1
-                */
-                tau_stab_Mp = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
-
-                /*------------------------------------------------------ compute tau_C ---*/
-                /*-- stability parameter definition according to Codina (2002), CMAME 191
-                 *
-                 * Analysis of a stabilized finite element approximation of the transient
-                 * convection-diffusion-reaction equation using orthogonal subscales.
-                 * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-                 *
-                 * */
-                //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
-                // Wall Diss. 99
-                /*
-                                    xi2 ^
-                                        |
-                                      1 |   +-----------
-                                        |  /
-                                        | /
-                                        |/
-                                        +--------------> Re2
-                                            1
-                */
-                const double xi_tau_c = min(re2,1.0);
-                tau_stab_C = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-            }
-            else
-            {
-                // calculate tau: stabilization parameters for stationary case
-                
-                // compute tau_Mu
-                const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-                const double xi_tau_mu = max(re_tau_mu, 1.0);
-                tau_stab_M = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
-    
-                // compute tau_Mp
-                const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-                const double xi_tau_mp = max(re_tau_mp,1.0);
-                tau_stab_Mp = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
-    
-                // compute tau_C
-                const double xi_tau_c = min(re_tau_mp, 1.0);
-                tau_stab_C = 0.5*vel_norm*hk*xi_tau_c;
-            }
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -1652,7 +1557,8 @@ static void SysmatBoundaryTP1(
     const bool                        supg,          ///< flag for stabilization
     const bool                        cstab,         ///< flag for stabilization
     const bool                        instationary,  ///< switch between stationary and instationary formulation
-    const LocalAssembler<DISTYPE, ASSTYPE>& assembler    
+    const LocalAssembler<DISTYPE, ASSTYPE>& assembler,
+    const bool                        ifaceForceContribution
 )
 {
     TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - SysmatTP - boundary");
@@ -2065,8 +1971,9 @@ static void SysmatBoundaryTP1(
         } // end loop over gauss points
         
         // here we need to assemble into the global force vector of the boundary discretization
-        // note that we assemble into a overlapping vector, hence we later have to figure out,
-        // how the values get into the right places of the force vector in unique distribution 
+        // note that we assemble into a overlapping vector, hence we add only, if we are a xfem row element
+        // this way, we can later add all contributions together when exporting to interface row elements
+        if (ifaceForceContribution)
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
           for (int inode = 0; inode < numnode_boundary; ++inode)
@@ -2095,7 +2002,7 @@ static void SysmatTP1(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandle>  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
-        const DRT::ELEMENTS::XFluid3::MyState  mystate,  ///< element state variables
+        const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
         const Teuchos::RCP<const Epetra_Vector> ivelcol,       ///< velocity for interface nodes
         const Teuchos::RCP<Epetra_Vector> iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
@@ -2108,7 +2015,8 @@ static void SysmatTP1(
         const bool                        pstab,         ///< flag for stabilisation
         const bool                        supg,          ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
-        const bool                        instationary   ///< switch between stationary and instationary formulation
+        const bool                        instationary,  ///< switch between stationary and instationary formulation
+        const bool                        ifaceForceContribution
         )
 {
     // initialize arrays
@@ -2147,7 +2055,7 @@ static void SysmatTP1(
     {
       SysmatBoundaryTP1<DISTYPE,ASSTYPE>(
           ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres, ivelcol, iforcecol,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, ifaceForceContribution);
     }
 }
 
@@ -2172,7 +2080,8 @@ void XFLUID::callSysmatTP1(
         const bool                        pstab  ,
         const bool                        supg   ,
         const bool                        cstab  ,
-        const bool                        instationary
+        const bool                        instationary,
+        const bool                        ifaceForceContribution
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -2182,22 +2091,27 @@ void XFLUID::callSysmatTP1(
             case DRT::Element::hex8:
                 SysmatTP1<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
 //            case DRT::Element::hex20:
-//                Sysmat3<DRT::Element::hex20,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                SysmatTP1<DRT::Element::hex20,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
 //            case DRT::Element::hex27:
-//                Sysmat3<DRT::Element::hex27,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                SysmatTP1<DRT::Element::hex27,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
-//            case DRT::Element::tet4:
-//                Sysmat3<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+            case DRT::Element::tet4:
+                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
+//            case DRT::Element::tet10:
+//                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
                 dserror("Sysmat not templated yet");
@@ -2210,17 +2124,22 @@ void XFLUID::callSysmatTP1(
             case DRT::Element::hex8:
                 SysmatTP1<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
 //            case DRT::Element::hex20:
-//                Sysmat3<DRT::Element::hex20,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                SysmatTP1<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
 //            case DRT::Element::hex27:
-//                Sysmat3<DRT::Element::hex27,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                SysmatTP1<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+//                break;
+//            case DRT::Element::tet10:
+//                SysmatTP1<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
                 dserror("Sysmat not templated yet");

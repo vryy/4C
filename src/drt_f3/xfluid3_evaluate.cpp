@@ -113,6 +113,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         
         // extract local values from the global vectors
         DRT::ELEMENTS::XFluid3::MyState mystate;
+        mystate.instationary = true;
         DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
         DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
         DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
@@ -197,6 +198,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           // extract local values from the global vector
           DRT::ELEMENTS::XFluid3::MyState mystate;
+          mystate.instationary = false;
           DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
           
           const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");

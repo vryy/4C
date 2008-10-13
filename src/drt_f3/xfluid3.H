@@ -43,6 +43,7 @@ namespace DRT
         //! this struct stores local vectors extracted from the global unknown arrays
         struct MyState
         {
+          bool instationary;
           vector<double> velnp;
           vector<double> veln;
           vector<double> velnm;

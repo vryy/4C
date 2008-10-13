@@ -46,7 +46,8 @@ namespace XFLUID
           const bool                        pstab  ,
           const bool                        supg   ,
           const bool                        cstab  ,
-          const bool                        instationary
+          const bool                        instationary,
+          const bool                        ifaceForceContribution
           );
 
   /*!
