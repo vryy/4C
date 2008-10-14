@@ -49,6 +49,15 @@ ADAPTER::XFluidImpl::XFluidImpl(
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
   
+  // sanity check
+  vector< DRT::Condition * >      conditions;
+  boundarydis_->GetCondition ("XFEMCoupling", conditions);
+  const unsigned numxfemcond = conditions.size();
+  boundarydis_->GetCondition ("FSICoupling", conditions);
+  const unsigned numfsicond = conditions.size();
+  if (numxfemcond != numfsicond)
+    dserror("number of xfem conditions has to match number of fsi conditions");
+  
 //  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
 //  boundaryoutput_->WriteMesh(0,0.0);
 
@@ -81,7 +90,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
   iaccn_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 
   fluid_.SetFreeSurface(&freesurface_);
-//  std::cout << "XFluidImpl constructor done" << endl;
 }
 
 
@@ -236,8 +244,6 @@ void ADAPTER::XFluidImpl::Update()
 //  }
 //  else
 //  {
-//    cout << "first step" << endl;
-//    //dserror("nope");
 //    gamma = 1.0;
 //    beta = gamma/2.0;
 //  }
@@ -322,11 +328,10 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
+      gmshfilecontent << "View \" " << name_in_gmsh << " \" {\n";
       for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = boundarydis_->lColElement(i);
-        //      cout << *actele << endl;
         vector<int> lm;
         vector<int> lmowner;
         actele->LocationVector(*boundarydis_, lm, lmowner);
@@ -346,7 +351,6 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
         for (int iparam=0; iparam<numnode; ++iparam)
         {
           const DRT::Node* node = actele->Nodes()[iparam];
-          //        cout << *node << endl;
           const double* pos = node->X();
           for (int isd = 0; isd < nsd; ++isd)
           {
@@ -355,13 +359,11 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
             counter++;
           }
         }
-        //      cout << elementpositions << endl;
-        //      exit(1);
         
         gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-            actele->Shape(), elementvalues, elementpositions) << endl;
+            actele->Shape(), elementvalues, elementpositions) << "\n";
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();
@@ -374,8 +376,6 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::NonlinearSolve()
 {
-
-  //cout << "XFluidImpl::NonlinearSolve()" << endl;
 
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
@@ -396,7 +396,6 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   LINALG::Export(*iaccn_  ,*iacccoln);
 
 
-//  cout << "SetState" << endl;
   boundarydis_->SetState("idispcolnp",idispcolnp);
   boundarydis_->SetState("idispcoln" ,idispcoln);
   
