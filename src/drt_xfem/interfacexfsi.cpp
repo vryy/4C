@@ -41,6 +41,28 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
   
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+
+  const int myrank = xfemdis_->Comm().MyPID();
+
+  if (gmshdebugout)
+  {
+    // debug: write both meshes to file in Gmsh format
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename    << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << ".p" << myrank << ".pos";
+    std::remove(filenamedel.str().c_str());
+    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    std::ofstream f_system(filename.str().c_str());
+    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_);
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
+    f_system.close();
+    cout << " done" << endl;
+  }
+
+  
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
   GEO::Intersection is;
