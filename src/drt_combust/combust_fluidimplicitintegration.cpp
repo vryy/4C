@@ -80,7 +80,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 //  emptyboundarydis_->SetState("idispcoln",tmpdisp);
 
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,null));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,null,0));
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
 

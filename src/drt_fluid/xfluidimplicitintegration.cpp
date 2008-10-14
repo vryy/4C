@@ -86,7 +86,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0));
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
   // tell elements about the dofs and the integration
@@ -416,9 +416,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
-//  cout << "tree after interfaceconstructor" << endl;
-//  ih->PrintTreeInformation(step_);
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_));
   ih->toGmsh(step_);
 
   // apply enrichments
@@ -442,7 +440,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
 
   // print global and element dofmanager to Gmsh
-  // XFEM::toGmsh(ih, step_);
+  dofmanager->toGmsh(ih, step_);
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it
@@ -593,7 +591,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open("outifacevelnp.txt",std::fstream::ate | std::fstream::app);
 
-    f << time_ << " " << (*ivelcolnp)[0] << "  " << endl;
+    f << time_ << " " << (*ivelcolnp)[0] << "  " << "\n";
 
     f.close();
   }
@@ -609,7 +607,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open("outifaceveln.txt",std::fstream::ate | std::fstream::app);
 
-    f << time_ << " " << (*ivelcoln)[0] << "  " << endl;
+    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
 
     f.close();
   }
@@ -623,7 +621,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       f.open("outifaceanalytischvel.txt",std::fstream::ate | std::fstream::app);
 
     const double periodendauer = 10.0;
-    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << endl;
+    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
 
     f.close();
   }
@@ -704,8 +702,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
-      //cout << "interface velocity" << endl;
-      //cout << *ivelcol << endl;
 
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
@@ -925,9 +921,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
-
-    //cout << "*iforcecol" << endl;
-    //cout << *iforcecol << endl;
   }
 
   // macht der FSI algorithmus
@@ -975,7 +968,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
     }
-    f << s.str() << endl;
+    f << s.str() << "\n";
     f.close();
 
     //cout << header.str() << endl << s.str() << endl;
@@ -989,7 +982,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open("outifaceforce.txt",std::fstream::ate | std::fstream::app);
 
-    f << time_ << " " << (*iforcecolnp)[0] << "  " << endl;
+    f << time_ << " " << (*iforcecolnp)[0] << "  " << "\n";
 
     f.close();
   }
@@ -1216,8 +1209,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {"
-      << endl;
+      gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
@@ -1259,11 +1251,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << endl;
+              cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
         if (elegid == 1 and elementvalues.size() > 0)
         {
-          //std::cout << elementvalues << std::endl;
+          //std::cout << elementvalues << "\n";
           std::ofstream f;
           if (step_ <= 1)
             f.open("outflowpres.txt",std::fstream::trunc);
@@ -1271,12 +1263,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
             f.open("outflowpres.txt",std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0) << endl;
+          f << time_ << "  " << elementvalues(0) << "\n";
 
           f.close();
         }
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();
@@ -1350,10 +1342,10 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
             //cout << cellvalues << endl;
           }
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << endl;
+              cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();
@@ -1395,8 +1387,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     std::remove(filenamexydel.str().c_str());
     std::remove(filenamexzdel.str().c_str());
     std::remove(filenameyzdel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"...";
-    flush(cout);
+    std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
+    
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
@@ -1416,12 +1408,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
       stringstream gmshfilecontentxz;
       stringstream gmshfilecontentyz;
       //gmshfilecontent << "View \" " << "Discontinous Viscous Stress Solution (Physical) \" {" << endl;
-      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {" << endl;
-      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {" << endl;
-      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {" << endl;
-      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {" << endl;
-      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {" << endl;
-      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {" << endl;
+      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {\n";
+      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {\n";
+      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {\n";
+      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {\n";
+      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {\n";
+      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
@@ -1490,42 +1482,42 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           {
           BlitzVec cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
-          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << endl;
+          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << "\n";
           }
           {
           BlitzVec cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
-          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << endl;
+          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << "\n";
           }
           {
           BlitzVec cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
-          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << endl;
+          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << "\n";
           }
           {
           BlitzVec cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
-          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << endl;
+          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << "\n";
           }
           {
           BlitzVec cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
-          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << endl;
+          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << "\n";
           }
           {
           BlitzVec cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
-          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << endl;
+          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << "\n";
           }
         }
       }
       //gmshfilecontent   << "};" << endl;
-      gmshfilecontentxx << "};" << endl;
-      gmshfilecontentyy << "};" << endl;
-      gmshfilecontentzz << "};" << endl;
-      gmshfilecontentxy << "};" << endl;
-      gmshfilecontentxz << "};" << endl;
-      gmshfilecontentyz << "};" << endl;
+      gmshfilecontentxx << "};\n";
+      gmshfilecontentyy << "};\n";
+      gmshfilecontentzz << "};\n";
+      gmshfilecontentxy << "};\n";
+      gmshfilecontentxz << "};\n";
+      gmshfilecontentyz << "};\n";
       //f_system   << gmshfilecontent.str();
       f_systemxx << gmshfilecontentxx.str();
       f_systemyy << gmshfilecontentyy.str();
@@ -1573,7 +1565,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << name_in_gmsh << "\" {" << endl;
+      gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
@@ -1627,7 +1619,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             BlitzMat xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << endl;
+                cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
         }
         else
@@ -1646,7 +1638,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
               BlitzMat xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
               gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                  cell->Shape(), cellvalues, xyze_cell) << endl;
+                  cell->Shape(), cellvalues, xyze_cell) << "\n";
             }
           }
 
@@ -1660,7 +1652,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
             const BlitzMat xyze_ele(GEO::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                actele->Shape(), elevalues, xyze_ele) << endl;
+                actele->Shape(), elevalues, xyze_ele) << "\n";
           }
 
         }
@@ -1676,13 +1668,13 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             f.open("outflowvel.txt",std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0,0) << endl;
+          f << time_ << "  " << elementvalues(0,0) << "\n";
 
           f.close();
         }
 
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();

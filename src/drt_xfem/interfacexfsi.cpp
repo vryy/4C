@@ -31,7 +31,8 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>  xfemdis,
-    const Teuchos::RCP<DRT::Discretization>  cutterdis
+    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const int step
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis)
 {
@@ -51,8 +52,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << ".p" << myrank << ".pos";
+    filename    << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
