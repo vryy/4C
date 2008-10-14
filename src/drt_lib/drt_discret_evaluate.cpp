@@ -34,6 +34,8 @@ void DRT::Discretization::Evaluate(
                         Teuchos::RCP<Epetra_Vector>          systemvector2,
                         Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
+  
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -56,6 +58,7 @@ void DRT::Discretization::Evaluate(
   // for most element types, just the base class dummy is called
   // that does nothing
   {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
     map<int,RefCountPtr<ElementRegister> >::iterator curr;
     for (curr=elementregister_.begin(); curr != elementregister_.end(); ++curr)
       curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
@@ -66,25 +69,65 @@ void DRT::Discretization::Evaluate(
   EnterElementLoop();
 #endif
 
+  vector<int> lm;
+  vector<int> lmowner;
+
   // loop over column elements
   const int numcolele = NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
     DRT::Element* actele = lColElement(i);
 
+    {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
+    lm.clear();
+    lmowner.clear();
     actele->LocationVector(*this,lm,lmowner);
+    }
+
+    {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate Resize");
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    if (assemblemat1) elematrix1.Shape(eledim,eledim);
-    if (assemblemat2) elematrix2.Shape(eledim,eledim);
-    if (assemblevec1) elevector1.Size(eledim);
-    if (assemblevec2) elevector2.Size(eledim);
-    if (assemblevec3) elevector3.Size(eledim);
+    if (assemblemat1) 
+    {
+      if (elematrix1.M()!=eledim or elematrix1.N()!=eledim)
+        elematrix1.Shape(eledim,eledim);
+      else
+        memset(elematrix1.A(),0,eledim*eledim*sizeof(double));
+    }
+    if (assemblemat2)
+    {
+      if (elematrix2.M()!=eledim or elematrix2.N()!=eledim)
+        elematrix2.Shape(eledim,eledim);
+      else
+        memset(elematrix2.A(),0,eledim*eledim*sizeof(double));
+    }
+    if (assemblevec1) 
+    {
+      if (elevector1.Length()!=eledim)
+        elevector1.Size(eledim);
+      else
+        memset(elevector1.Values(),0,eledim*sizeof(double));
+    }
+    if (assemblevec2)
+    {
+      if (elevector2.Length()!=eledim)
+        elevector2.Size(eledim);
+      else
+        memset(elevector2.Values(),0,eledim*sizeof(double));
+    }
+    if (assemblevec3)
+    {
+      if (elevector3.Length()!=eledim)
+        elevector3.Size(eledim);
+      else
+        memset(elevector3.Values(),0,eledim*sizeof(double));
+    }
+    }
 
 #ifdef THROWELEMENTERRORS
     try {
