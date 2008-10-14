@@ -369,6 +369,12 @@ private:
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
   
+  //!computing a rotation matrix R from a quaternion q
+  void quaterniontotriad(const BlitzVec4& q, BlitzMat3x3& R);
+  
+  //!computing a quaternion q from a rotation matrix R
+  void triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q);
+  
   /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
    * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
   void updatetriad(BlitzVec3 deltabetaplusalpha, BlitzMat3x3& Tnew);

@@ -177,11 +177,15 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       curvold_ = curvnew_;
       betaplusalphaold_ = betaplusalphanew_;
       betaminusalphaold_ = betaminusalphanew_; 
+      
+     
        
       /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not by means of a numerically approximated stiffness matrix
-      if(Id() == 3) //limiting the following tests to certain element numbers
+      //correctly or not by means of a numerically approximated stiffness matrix; remark: due to involved numerics for
+      //this element it's normal that numerical derivation entails relative errors ~1e-2,-3,... in the diagonal elements
+      //of those blocks of the stiffness matrix which connect angular displacements with normal and shear strains
+      if(Id() == 0) //limiting the following tests to certain element numbers
       {       
         //variable to store numerically approximated stiffness matrix
         Epetra_SerialDenseMatrix stiff_approx;       
@@ -448,6 +452,15 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(2,8) += zeta/6.0;
     elemat1(8,2) += zeta/6.0;
     
+    /*
+    elemat1(3,3) += zeta/60.0;
+    elemat1(4,4) += zeta/60.0;
+    elemat1(5,5) += zeta/60.0;
+    elemat1(9,9) += zeta/60.0;
+    elemat1(10,10) += zeta/60.0;
+    elemat1(11,11) += zeta/60.0;
+    */
+    
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
     double stand_dev_trans = pow(2 * kT * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
 
@@ -556,8 +569,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew, con
       stiffmatrix(i+9,j+9) =  STCmTtSt(i,j) + TCbTt(i,j);
     }
   }
-  
-  //Checking variation of strains with respect to displacements
+
   
   return;
 } // DRT::ELEMENTS::Beam3::computestiffbasis
@@ -575,8 +587,75 @@ inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotat
   spin(2,0) = -rotationangle(1);
   spin(2,1) = rotationangle(0);
   spin(2,2) = 0;
+  
   return;
 } // DRT::ELEMENTS::Beam3::computespin 
+
+//computing a rotation matrix R from a quaternion q, cf. Crisfield, Vol. 2, equation (17.70)
+inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const BlitzVec4& q, BlitzMat3x3& R)
+{ 
+  //separate storage of vector part of q
+  BlitzVec3 qvec;
+  for(int i = 0; i<3; i++)
+    qvec(i) = q(i);
+
+  //setting R to third summand of equation (17.70)
+  computespin(R, qvec, 2*q(3));
+  
+  //adding second summand of equation (17.70)
+  for(int i = 0; i<3; i++)
+  {
+    for(int j = 0; j<3; j++)
+    {
+      R(i,j) += 2*q(i)*q(j);
+    }
+  }
+  
+  //correting diagonal entries according to first summand of equation (17.70)
+  R(0,0) = 1 - 2*(q(1)*q(1) + q(2)*q(2));
+  R(1,1) = 1 - 2*(q(0)*q(0) + q(2)*q(2));
+  R(2,2) = 1 - 2*(q(0)*q(0) + q(1)*q(1));
+
+  return;
+} // DRT::ELEMENTS::Beam3::quaterniontotriad 
+
+
+
+/*computing a quaternion q from a rotation matrix R; all operations are performed according to
+* Crisfield, Vol. 2, section 16.10 and the there described Spurrier's algorithm*/
+void DRT::ELEMENTS::Beam3::triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q)
+{
+  double trace = R(0,0) + R(1,1) + R(2,2);
+  if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
+  {
+    q(3) = 0.5 * pow(1 + trace, 0.5);
+    q(0) = (R(2,1) - R(1,2)) / (4*q(3));
+    q(1) = (R(0,2) - R(2,0)) / (4*q(3));
+    q(2) = (R(1,0) - R(0,1)) / (4*q(3));
+  }
+  else 
+  {
+    for(int i = 0 ; i<3 ; i++)
+    { 
+      int j = (i+1)% 3;
+      int k = (i+2)% 3;
+      
+      if(R(i,i) > R(j,j) && R(i,i) > R(k,k))
+      {    
+        //equation (16.78a)
+        q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
+        
+        //equation (16.78b)
+        q(3) = 0.25*(R(k,j) - R(j,k)) / q(i);
+        
+        //equation (16.78c)        
+        q(j) = 0.25*(R(j,i) + R(i,j)) / q(i);       
+        q(k) = 0.25*(R(k,i) + R(i,k)) / q(i);            
+       }
+     }
+   }
+  return;
+}// DRT::ELEMENTS::Beam3::TriadToQuaternion
 
 /*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
  * quaterion product and then calculation of the equivalent rotation matrix according to eq. (16.70*/
@@ -609,32 +688,7 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(BlitzVec3 deltabetaplusalpha, Blit
   Qnew_(2) = Qrot(3)*Qold_(2) + Qold_(3)*Qrot(2) + Qrot(0)*Qold_(1) - Qold_(0)*Qrot(1);
   Qnew_(3) = Qrot(3)*Qold_(3) - Qrot(2)*Qold_(2) - Qrot(1)*Qold_(1) - Qrot(0)*Qold_(0);
   
-  //separate storage of vector part of Qnew_
-  BlitzVec3 Qnewvec;
-  for(int i = 0; i<3; i++)
-  {
-    Qnewvec(i) = Qnew_(i);
-  }
-  
-  
-  //computing the rotation matrix from Crisfield, Vol. 2, equation (17.70) with respect to Qnew_,
-  //which is the new center triad Tnew
-  
-  computespin(Tnew, Qnewvec, 2*Qnew_(3));
-  for(int i = 0; i<3; i++)
-  {
-    for(int j = 0; j<3; j++)
-    {
-      Tnew(i,j) += 2*Qnew_(i)*Qnew_(j);
-      if(i == j)
-        Tnew(i,j) += Qnew_(3)*Qnew_(3) - Qnew_(2)*Qnew_(2) - Qnew_(1)*Qnew_(1) - Qnew_(0)*Qnew_(0);
-    }
-  }
-  
-  Tnew(0,0) = 1 - 2*(Qnew_(1)*Qnew_(1) + Qnew_(2)*Qnew_(2));
-  Tnew(1,1) = 1 - 2*(Qnew_(0)*Qnew_(0) + Qnew_(2)*Qnew_(2));
-  Tnew(2,2) = 1 - 2*(Qnew_(0)*Qnew_(0) + Qnew_(1)*Qnew_(1));
-  
+  quaterniontotriad(Qnew_,Tnew); 
  
 } //DRT::ELEMENTS::Beam3::updatetriad
 
@@ -899,18 +953,21 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
       
+    /*
     //adding artificial torsional damping in order to stabilize numerically free fluctuations
     double torsdamp = 0.01;
     for(int i = 0; i<3; i++)
     {
-      for(int j = 0; j<3; j++)
-      {
-        //node 1
-        (*force)[3+i] += Theta(i,j)*vel[3+j]*(zeta_/2)*torsdamp;
-        //node 2
-        (*force)[9+i] += Theta(i,j)*vel[9+j]*(zeta_/2)*torsdamp;
-      }
+      //damping moment
+      BlitzMat3x3 Told;
+      quaterniontotriad(Qold_,Told);
+      double Mg = Told(i,0)*lrefe_*(curvnew_(0) - curvold_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
+      //node 1
+      (*force)[3+i] += Mg;
+      //node 2
+      (*force)[9+i] += Mg;
     }
+    */
     
   } 
 
@@ -936,56 +993,43 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
 
+ 
+
+    
+    //std::cout<<"\ncurvnew\n"<<curvnew_<<"\n";
+    //std::cout<<"\nstiff\n"<<*stiffmatrix<<"\n";
+    //std::cout<<"\nforce\n"<<*force<<"\n";
+    //std::cout<<"\nxcurr\n"<<xcurr<<"\n";
+    //std::cout<<"\nepsilonn\n"<<epsilonn<<"\n";
+    //std::cout<<"\nepsilonm\n"<<epsilonm<<"\n";
     
     
-  
+    /*
+    //adding artifical torsional damping
+    double torsdamp = 0.01;
+    BlitzMat3x3 Told;
+    quaterniontotriad(Qold_,Told);
     
+    BlitzMat3x3 aux;
     
-    
-    
+    for(int i= 0; i<3; i++)
     {
-      BlitzVec3 aux1;
-      BlitzVec3 aux2;
-      BlitzMat3x3 Aux1;
-      BlitzMat3x3 Aux2;
-      double torsdamp = 0.01;
-      //adding artifical viscosity stiffness with respect to torsional displacement
-      for(int i = 0; i<2;i++)
+      for(int j=0;j<3;j++)
       {
-        for(int j = 0; j<3; j++)
-          aux1(j) = (zeta_/2)*vel[j + i*6];
-        BLITZTINY::MV_product<3,3>(Theta,aux1,aux2); 
-        computespin(Aux1,aux2,-0.5); 
-        for(int j= 0; j<3; j++)
-        {
-          for(int k=0;k<3;k++)
-          {
-            (*stiffmatrix)(i*6 + 3 + j ,3 + k ) += Aux1(j,k)*torsdamp;
-            (*stiffmatrix)(i*6 + 3 + j ,9 + k ) += Aux1(j,k)*torsdamp;
-          }
-        }
-        computespin(Aux1,aux1,0.5);
-        BLITZTINY::MM_product<3,3,3>(Theta,Aux1,Aux2);
-        for(int j= 0; j<3; j++)
-        {
-          for(int k=0;k<3;k++)
-          {
-            (*stiffmatrix)(i*6 + 3 + j ,3 + k ) += Aux2(j,k)*torsdamp;
-            (*stiffmatrix)(i*6 + 3 + j ,9 + k ) += Aux2(j,k)*torsdamp;
-          }
-        }
-
+        aux(i,j) = Told(i,0)*Tnew(j,0)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
         
-        for(int j= 0; j<3; j++)
-        {
-          for(int k=0;k<3;k++)
-          {
-            (*stiffmatrix)(i*6 + 3 + j, i*6 + 3 + k) += Theta(j,k)*(zeta_/2)*lamda*torsdamp;
-          }
-        }  
-       }
+        (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
+        (*stiffmatrix)(3+i, 9+j) += aux(i,j);
+        (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
+        (*stiffmatrix)(3+i, 9+j) += aux(i,j);
       }
-
+    } 
+    
+    std::cout<<"\naux = "<<aux;
+    */
+          
+    
+    
 
    
   }
