@@ -58,20 +58,10 @@ public:
 private:
 
     //! shape
-    const DRT::Element::DiscretizationType distype_;
+    DRT::Element::DiscretizationType distype_;
 
     //! hidden default constructor
     explicit IntCell();
-    
-    /*! hidden = operator
-     * create true copy -> allows to have constant instance members
-     */
-    IntCell& operator = (const IntCell& old)
-    {
-        IntCell intcell(old.distype_);
-        IntCell& ref = intcell;
-        return ref;
-    };
 };
 
 
@@ -106,16 +96,6 @@ public:
             const DRT::Element::DiscretizationType distype  ///< distype of the parent elementintegration cell
             );
     
-    /*!  = operator
-     * create true copy -> allows to have constant instance members
-     */
-    DomainIntCell& operator = (const DomainIntCell& old)
-    {
-        DomainIntCell cell(old.Shape(), old.nodalpos_xi_domain_blitz_);
-        DomainIntCell& ref = cell;
-        return ref;
-    };
-    
     /*!
      \brief Copy Constructor
 
@@ -146,7 +126,7 @@ public:
 private:
     
     //! coordinates of the nodes in the parent domain element coordinates xi_domain
-    const BlitzMat nodalpos_xi_domain_blitz_;
+    BlitzMat nodalpos_xi_domain_blitz_;
     
     //! hide default constructor
     explicit DomainIntCell();
@@ -190,20 +170,6 @@ public:
     //! Copy Constructor
     BoundaryIntCell(
             const BoundaryIntCell& old);
-
-    /*!  = operator
-     * create true copy -> allows to have constant instance members
-     */
-    BoundaryIntCell& operator = (const BoundaryIntCell& old)
-    {
-        BoundaryIntCell cell(
-                old.Shape(),
-                old.surface_ele_gid_,
-                old.nodalpos_xi_domain_blitz_,
-                old.nodalpos_xi_boundary_blitz_);
-        BoundaryIntCell& ref = cell;
-        return ref;
-    };
     
     //! fills an array with the coordinates of the integration cell in physical coordinates
     void NodalPosXYZ(
@@ -240,13 +206,13 @@ private:
     explicit BoundaryIntCell();
     
     //! the boundaryIntCell should know, to which cutterElement it belongs!?
-    const int surface_ele_gid_;
+    int surface_ele_gid_;
     
     //! coordinates of the nodes
-    const BlitzMat nodalpos_xi_domain_blitz_;
+    BlitzMat nodalpos_xi_domain_blitz_;
     
     //! boundary coordinates of the nodes
-    const BlitzMat nodalpos_xi_boundary_blitz_;
+    BlitzMat nodalpos_xi_boundary_blitz_;
     
 };
 
