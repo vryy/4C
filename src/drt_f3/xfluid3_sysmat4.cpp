@@ -30,6 +30,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 
+/// hold arrays for all - potentially enriched - shape functions and their derivatives
+/// with respect to the physical coordinates
 template <int shpVecSize>
 struct Shp
 {
@@ -81,6 +83,7 @@ struct Shp
     return v;
   }
   
+  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
   static bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
@@ -428,7 +431,7 @@ static void SysmatDomain4(
           }
           if (not compute)
           {
-            continue;
+            continue; // next integration cell
           }
         }
             
