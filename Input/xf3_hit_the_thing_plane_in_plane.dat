@@ -66,9 +66,6 @@ TOLCONSTR    1.0E-06
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
-UZAWAPARAM   1.0
-UZAWAMAXITER 20
-UZAWAALGO    iterative
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
@@ -79,7 +76,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       fixed_point_like //Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-6
+CONVTOL          1.0E-8
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-6
@@ -121,7 +118,7 @@ COUPMETHOD   conforming
 COUPFORCE    nodeforce
 COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
-SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ILU           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann

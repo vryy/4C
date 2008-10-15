@@ -49,11 +49,23 @@ STEADYSTEP   5
 STEADYTOL    1.0E-8
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0     
-START_THETA  0.80
+START_THETA  1.0
 INITIALFIELD BELTRAMI-FLOW
 RESSTEP      4
 STARTFUNCNO  8
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based
+TDS                   quasistatic
+TRANSIENT             no_transient
+SUPG                  yes_supg
+PSPG                  yes_pspg
+VSTAB                 vstab_usfem
+CSTAB                 cstab_qs
+CROSS-STRESS          no_cross
+REYNOLDS-STRESS       no_reynolds
 -------------------------------------------------------FSI DYNAMIC
+------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT Yes
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER
@@ -26481,7 +26493,7 @@ Surface: 735 Orientation: SAME1ST
 Surface: 736 Orientation: SAME1ST
 Center: 0.750000 -0.750000 0.250000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 98
 E 1 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
@@ -32640,18 +32652,18 @@ FUNCT1 BELTRAMI
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
+// FLUID 1 - 0 0 0 0 0 0 
+// STRUCTURE 2 - 0 0 0 0 0 0 
+// ALE 3 - 0 0 0 0 0 0 
 ------------------------------------------------RESULT DESCRIPTION
 //FLUID SPECIAL 1
-FLUID DIS 1 NODE 39 POSITION velx     NAME velx     VALUE -7.863123411e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 39 POSITION vely     NAME vely     VALUE -7.863123411e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 39 POSITION velz     NAME velz     VALUE -7.863123411e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 39 POSITION pressure NAME pressure VALUE -8.881236622e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 46 POSITION velx     NAME velx     VALUE  3.562031547e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 46 POSITION vely     NAME vely     VALUE -9.164500356e-02 TOLERANCE 1e-8
-FLUID DIS 1 NODE 46 POSITION velz     NAME velz     VALUE -1.096284704e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 46 POSITION pressure NAME pressure VALUE -3.139097304e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 39 POSITION velx     NAME velx     VALUE -7.868715540e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 39 POSITION vely     NAME vely     VALUE -7.868715540e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 39 POSITION velz     NAME velz     VALUE -7.868715540e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 39 POSITION pressure NAME pressure VALUE -8.882665050e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 46 POSITION velx     NAME velx     VALUE  3.565584373e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 46 POSITION vely     NAME vely     VALUE -9.083559014e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 46 POSITION velz     NAME velz     VALUE -1.089362707e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 46 POSITION pressure NAME pressure VALUE -3.329697426e-02 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

@@ -94,7 +94,7 @@ NUMSTASTEPS      0
 MAXTIME          1000.0
 TIMESTEP         0.01
 THETA            0.67
-START_THETA      0.67
+START_THETA      1.0
 ALPHA_F          1.00
 ALPHA_M          1.00
 LIFTDRAG         no
@@ -1503,7 +1503,7 @@ NODE           92     COORD 0.000000000000000e+00     0.000000000000000e+00     
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_fluid
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 // MAT_Struct_StVenantKirchhoff
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
@@ -1527,10 +1527,10 @@ CURVE1 on EXPR FUNC (1-cos(2.0*t*pi))/2.0 t1 0.0 t2 1000.0
 -----------------------------------------------------------LOCSYS4
 -----------------------------------------------------------LOCSYS5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 85 POSITION velx     NAME velx     VALUE -4.524533041e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 85 POSITION velx     NAME velx     VALUE -4.483223266e+00 TOLERANCE 1e-6
 FLUID DIS 1 NODE 85 POSITION vely     NAME vely     VALUE 0.0e00 TOLERANCE 1e-6
 FLUID DIS 1 NODE 85 POSITION velz     NAME velz     VALUE 0.0e00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 85 POSITION pressure NAME pressure VALUE -7.957190281e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 85 POSITION pressure NAME pressure VALUE -8.853557217e-01 TOLERANCE 1e-6
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0
