@@ -52,7 +52,6 @@ BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
   }
   case timeint_bdf2:
   {
-    dserror("BDF2 temporarily not supported");
     const int nsd = 3;
     for(int isd = 0; isd < nsd; ++isd)
     {
@@ -87,7 +86,7 @@ double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
     break;
 
   case timeint_bdf2:
-    timefac = 2/3 * dt;
+    timefac = 2.0/3.0 * dt;
     break;
     
   default:

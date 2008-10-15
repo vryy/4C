@@ -214,6 +214,7 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 
   Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   cutterdiscret->SetState("idispcolnp",idispcolnp);
@@ -221,6 +222,7 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 
   cutterdiscret->SetState("idispcoln",idispcoln);
   cutterdiscret->SetState("ivelcoln",ivelcoln);
+  cutterdiscret->SetState("ivelcolnm",ivelcolnm);
   cutterdiscret->SetState("iacccoln",iacccoln);
 
   while (step_<stepmax_ and time_<maxtime_)
@@ -325,10 +327,12 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   // do a backward Euler step for the first timestep
   if (step_==1)
   {
+    timealgo_ = timeint_one_step_theta;
     theta_ = 1.0;
   }
   else
   {
+    timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
     theta_ = params_.get<double>("theta");
   }
 }
@@ -1698,6 +1702,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 
     Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
     cutterdiscret->SetState("idispcolnp",idispcolnp);
@@ -1705,6 +1710,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 
     cutterdiscret->SetState("idispcoln",idispcoln);
     cutterdiscret->SetState("ivelcoln",ivelcoln);
+    cutterdiscret->SetState("ivelcolnm",ivelcolnm);
     cutterdiscret->SetState("iacccoln",iacccoln);
 
     ComputeInterfaceAndSetDOFs(cutterdiscret);
@@ -1903,6 +1909,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   const Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
   const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  const Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
@@ -1910,6 +1917,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   cutterdiscret->SetState("idispcoln", idispcoln);
   cutterdiscret->SetState("ivelcolnp",ivelcolnp);
   cutterdiscret->SetState("ivelcoln", ivelcoln);
+  cutterdiscret->SetState("ivelcolnm",ivelcolnm);
   cutterdiscret->SetState("iacccoln", iacccoln);
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);

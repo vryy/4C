@@ -89,8 +89,10 @@ struct Shp
       const BlitzVec3&                           posXiDomain,
       const int                                  labelnp,
       const Epetra_Vector&                       ivelcoln,
+      const Epetra_Vector&                       ivelcolnm,
       const Epetra_Vector&                       iacccoln,
       BlitzVec3&                                 gpveln,
+      BlitzVec3&                                 gpvelnm,
       BlitzVec3&                                 gpaccn
       )
   {
@@ -133,13 +135,15 @@ struct Shp
         const int numnode_boundary = boundaryele->NumNode();
         
         BlitzVec3 iveln;
+        BlitzVec3 ivelnm;
         BlitzVec3 iaccn;
         
         if (ivelcoln.GlobalLength() > 3)
         {
           // get interface velocities at the boundary element nodes
-          BlitzMat veln_boundary(3,numnode_boundary*2);
-          BlitzMat accn_boundary(3,numnode_boundary*2);
+          BlitzMat veln_boundary( 3,numnode_boundary*2);
+          BlitzMat velnm_boundary(3,numnode_boundary*2);
+          BlitzMat accn_boundary( 3,numnode_boundary*2);
           if (numnode_boundary != 4)
             dserror("needs more generalizashun!");
           const DRT::Node*const* nodes = boundaryele->Nodes();
@@ -158,6 +162,16 @@ struct Shp
             veln_boundary(1,inode+4) = myvel[1];
             veln_boundary(2,inode+4) = myvel[2];
             
+            std::vector<double> myvelnm(3);
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
+            velnm_boundary(0,inode) = myvelnm[0];
+            velnm_boundary(1,inode) = myvelnm[1];
+            velnm_boundary(2,inode) = myvelnm[2];
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
+            velnm_boundary(0,inode+4) = myvelnm[0];
+            velnm_boundary(1,inode+4) = myvelnm[1];
+            velnm_boundary(2,inode+4) = myvelnm[2];
+            
             std::vector<double> myacc(3);
             DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
             accn_boundary(0,inode) = myacc[0];
@@ -174,6 +188,7 @@ struct Shp
           BlitzVec funct_ST(numnode_boundary*2);
           DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
           iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          ivelnm = interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
           iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
   //                cout << "iveln " << iveln << endl;
   //                cout << "iaccn " << iaccn << endl;
@@ -181,6 +196,7 @@ struct Shp
         else
         {
           iveln = 0.0;
+          ivelnm = 0.0;
           iaccn = 0.0;
         }
       
@@ -188,6 +204,10 @@ struct Shp
         gpveln(0) = iveln(0);
         gpveln(1) = iveln(1);
         gpveln(2) = iveln(2);
+        
+        gpvelnm(0) = ivelnm(0);
+        gpvelnm(1) = ivelnm(1);
+        gpvelnm(2) = ivelnm(2);
         
         gpaccn(0) = iaccn(0);
         gpaccn(1) = iaccn(1);
@@ -331,9 +351,9 @@ static void SysmatDomain4(
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
-//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+    // get older interface velocities and accelerations
     const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
@@ -647,13 +667,13 @@ static void SysmatDomain4(
             // get velocities and accelerations at integration point
             const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
             BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            const BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
             BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
             
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
-              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, gpveln, gpaccn);
+              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
               if (not valid_spacetime_cell_found)
                 continue;
             }
@@ -799,7 +819,7 @@ static void SysmatDomain4(
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
-
+            //cout << rhsint << endl;
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
