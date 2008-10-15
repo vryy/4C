@@ -36,7 +36,6 @@ using namespace Teuchos;
 #include <random/normal.h>
 #include <blitz/array.h>
 #include "../drt_geometry/blitz_tiny_operation.H"
-#include "../drt_statmech/statmech_time.H"
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
@@ -73,7 +72,6 @@ public:
 
   //! @name Friends
   friend class Beam2Register;
-  friend void StatMechTime::Integrate(); //in order to allow initialization of thermal bath parameters for beam2
 
 
   //! @name Constructors and destructors and related methods
