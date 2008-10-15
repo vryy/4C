@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
-#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/intersection.H"
 
 extern struct _FILES  allfiles;
 

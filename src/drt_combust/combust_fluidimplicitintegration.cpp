@@ -1242,9 +1242,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1597,9 +1595,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;

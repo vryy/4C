@@ -310,7 +310,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // create local copy of information about dofs
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
 
-      eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
+      eleDofManager_ = XFEM::ElementDofManager(*this, element_ansatz, *globaldofman);
 
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);

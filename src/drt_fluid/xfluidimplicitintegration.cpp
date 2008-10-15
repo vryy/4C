@@ -328,7 +328,7 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   if (step_==1)
   {
     timealgo_ = timeint_one_step_theta;
-    theta_ = 1.0;
+    theta_ = params_.get<double>("start theta");
   }
   else
   {
@@ -1225,9 +1225,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1307,9 +1305,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1429,9 +1425,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1580,9 +1574,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;

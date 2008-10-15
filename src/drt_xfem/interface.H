@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "../drt_geometry/intersection.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/searchtree.H"
 
 namespace XFEM
@@ -26,7 +26,7 @@ namespace XFEM
   /*!
  * It knows everything about the XFEM interface geometry
  * 
- * It doen't not deal with DOFs in any way. DOF management is done by
+ * It does not deal with DOFs in any way. DOF management is done by
  * the DofManager and ElementDofManager classes. 
  *
  */

@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #define DOF_MANAGEMENT_ELEMENT_H
 
 
-#include "field_enriched.H"
+#include "dof_management.H"
 
 namespace XFEM
 {
@@ -46,6 +46,13 @@ namespace XFEM
           const std::set<XFEM::FieldEnr>& enrfieldset,
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
+      
+      //! for a given element, collect all information about Dofs for this element and return it
+      explicit ElementDofManager(
+          const DRT::Element&                                                     ele,            ///< construct EleDofMan for this element
+          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz, ///< information about the requested element unknowns
+          const XFEM::DofManager& dofman
+          );
       
       //! copy constructor
       ElementDofManager(const ElementDofManager& old);
@@ -206,6 +213,14 @@ namespace XFEM
       
       //! set of all enrichments that are available on this proc.
       std::set<XFEM::Enrichment> unique_enrichments_;
+      
+      //! used in constructor
+      void ComputeDependendInfo(
+          const DRT::Element& ele,
+          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
+          const std::set<XFEM::FieldEnr>& enrfieldset,
+          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
+      );
   };
   
   

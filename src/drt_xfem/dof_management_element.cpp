@@ -38,6 +38,20 @@ XFEM::ElementDofManager::ElementDofManager(
   nodalDofSet_(nodalDofSet),
   DisTypePerElementField_(element_ansatz)
 {
+  ComputeDependendInfo(ele, nodalDofSet, enrfieldset, element_ansatz);
+ 
+  return;
+}
+    
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::ElementDofManager::ComputeDependendInfo(
+    const DRT::Element& ele,
+    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
+    const std::set<XFEM::FieldEnr>& enrfieldset,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
+)
+{
   // count number of dofs for each node
   map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp;
   for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp)
@@ -117,6 +131,30 @@ XFEM::ElementDofManager::ElementDofManager(
   }
   
   return;
+}
+    
+/*----------------------------------------------------------------------*
+ |  construct element dof manager                               ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::ElementDofManager::ElementDofManager(
+    const DRT::Element&  ele,
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    const XFEM::DofManager& dofman
+) :
+  DisTypePerElementField_(element_ansatz)
+{
+  // nodal dofs for ele
+  nodalDofSet_.clear();
+  for (int inode = 0; inode < ele.NumNode(); ++inode)
+  {
+    const int gid = ele.NodeIds()[inode];
+    nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
+  }
+  
+  // element dofs for ele
+  std::set<XFEM::FieldEnr> enrfieldset(dofman.getElementDofSet(ele.Id()));
+  
+  ComputeDependendInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 }
 
 

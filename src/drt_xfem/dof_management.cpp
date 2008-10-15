@@ -344,57 +344,57 @@ void XFEM::DofManager::toGmsh(
 #endif
 }
 
-/*----------------------------------------------------------------------*
- |  construct element dof manager                               ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
-    const DRT::Element&  ele,
-    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
-) const
-{
-  // nodal dofs for ele
-  std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
-  for (int inode = 0; inode < ele.NumNode(); ++inode)
-  {
-    const int gid = ele.NodeIds()[inode];
-    nodaldofset.insert(make_pair(gid,this->getNodeDofSet(gid)));
-  }
-  
-  // element dofs for ele
-  std::set<XFEM::FieldEnr> enrfieldset;
-  
-  std::map<int,const std::set<XFEM::FieldEnr> >::const_iterator enrfieldsetiter = elementalDofs_.find(ele.Id());
-  if (enrfieldsetiter != elementalDofs_.end())
-  {
-    enrfieldset = enrfieldsetiter->second;
-  }
-  else
-  {
-    // use empty set
-  }
-  
-  // return a local dofmanager
-  return XFEM::ElementDofManager(ele, nodaldofset, enrfieldset, element_ansatz);
-}
+///*----------------------------------------------------------------------*
+// |  construct element dof manager                               ag 11/07|
+// *----------------------------------------------------------------------*/
+//XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
+//    const DRT::Element&  ele,
+//    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
+//) const
+//{
+//  // nodal dofs for ele
+//  std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
+//  for (int inode = 0; inode < ele.NumNode(); ++inode)
+//  {
+//    const int gid = ele.NodeIds()[inode];
+//    nodaldofset.insert(make_pair(gid,this->getNodeDofSet(gid)));
+//  }
+//  
+//  // element dofs for ele
+//  std::set<XFEM::FieldEnr> enrfieldset;
+//  
+//  std::map<int,const std::set<XFEM::FieldEnr> >::const_iterator enrfieldsetiter = elementalDofs_.find(ele.Id());
+//  if (enrfieldsetiter != elementalDofs_.end())
+//  {
+//    enrfieldset = enrfieldsetiter->second;
+//  }
+//  else
+//  {
+//    // use empty set
+//  }
+//  
+//  // return a local dofmanager
+//  return XFEM::ElementDofManager(ele, nodaldofset, enrfieldset, element_ansatz);
+//}
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::DofManager::checkForConsistency(
-    const DRT::Element& ele,
-    const XFEM::ElementDofManager& stored_eledofman
-) const
-{
-  // create local copy of current information about dofs
-  const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.getDisTypePerFieldMap());
-  
-  // compare with given and report error
-  if (current_eledofman != stored_eledofman)
-  {
-    dserror("given elementdofmanager is not consistent with global dofmanger");
-  }
-  return;
-}
+///*----------------------------------------------------------------------*
+// *----------------------------------------------------------------------*/
+//void XFEM::DofManager::checkForConsistency(
+//    const DRT::Element& ele,
+//    const XFEM::ElementDofManager& stored_eledofman
+//) const
+//{
+//  // create local copy of current information about dofs
+//  const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.getDisTypePerFieldMap());
+//  
+//  // compare with given and report error
+//  if (current_eledofman != stored_eledofman)
+//  {
+//    dserror("given elementdofmanager is not consistent with global dofmanger");
+//  }
+//  return;
+//}
 
 
 /*----------------------------------------------------------------------*

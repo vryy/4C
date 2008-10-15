@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/dof_management_element.H"
+#include <Epetra_SerialDenseSolver.h>
 
 
 namespace XFEM

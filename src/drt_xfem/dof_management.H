@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
-#include "dof_management_element.H"
 #include "dofkey.H"
 
 namespace XFEM
@@ -70,17 +69,11 @@ namespace XFEM
         return entry->second;
       };
       
-      //! for a given element, collect all information about Dofs for this element and return it
-      XFEM::ElementDofManager constructElementDofManager(
-          const DRT::Element&                                                     ele,            ///< construct EleDofMan for this element
-          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz  ///< information about the requested element unknowns
-          ) const;
-      
-      //! check whether given ElementDofManager fits the given element
-      void checkForConsistency(
-          const DRT::Element&            ele,        ///< element for which one wants to check the eledofmanager
-          const XFEM::ElementDofManager& eledofman   ///< eledofmanager in question
-      ) const;
+//      //! check whether given ElementDofManager fits the given element
+//      void checkForConsistency(
+//          const DRT::Element&            ele,        ///< element for which one wants to check the eledofmanager
+//          const XFEM::ElementDofManager& eledofman   ///< eledofmanager in question
+//      ) const;
       
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
       void fillDofDistributionMaps(

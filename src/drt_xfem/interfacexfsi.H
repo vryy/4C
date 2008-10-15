@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 
 #include "interface.H"
 
-#include "../drt_geometry/intersection.H"
 #include "spacetime_boundary.H"
 
 namespace XFEM
