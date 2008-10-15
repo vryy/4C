@@ -183,7 +183,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
 {
     int dofcounter = 0;
     
-    const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
+    const std::set<XFEM::FieldEnr> enrfieldset(dofman.getEnrichedFieldsPerEleField(field));
     const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
     const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
     dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
@@ -217,7 +217,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
 {
     int dofcounter = 0;
 
-    const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
+    const std::set<XFEM::FieldEnr> enrfieldset(dofman.getEnrichedFieldsPerEleField(field));
     const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
     const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
     dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");

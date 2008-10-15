@@ -87,7 +87,7 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
   for (int inode=0; inode<ele.NumNode(); ++inode)
   {
     const int gid = nodeids[inode];
-    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
     if (entry == nodalDofSet_.end())
       dserror("impossible ;-)");
     const std::set<XFEM::FieldEnr> enrfieldset = entry->second;
@@ -155,23 +155,6 @@ XFEM::ElementDofManager::ElementDofManager(
   std::set<XFEM::FieldEnr> enrfieldset(dofman.getElementDofSet(ele.Id()));
   
   ComputeDependendInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::ElementDofManager(const ElementDofManager&)
-{
-  dserror("no copying");
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::~ElementDofManager()
-{
-  return;
 }
 
 

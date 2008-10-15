@@ -151,13 +151,13 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
       const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-              eleDofManager_, NumNode(), NodeIds());
+              *eleDofManager_, NumNode(), NodeIds());
 
       //--------------------------------------------------
       // calculate element coefficient matrix and rhs
       //--------------------------------------------------
       COMBUST::callSysmat4(assembly_type,
-        this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+        this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
         actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
 
       // This is a very poor way to transport the density to the
@@ -229,7 +229,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
       const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-              eleDofManager_, NumNode(), NodeIds());
+              *eleDofManager_, NumNode(), NodeIds());
           
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       {
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat4(assembly_type,
-                 this, ih_, eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
       }
     }
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // create local copy of information about dofs
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
 
-      eleDofManager_ = XFEM::ElementDofManager(*this, element_ansatz, *globaldofman);
+      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
 
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);

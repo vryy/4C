@@ -110,7 +110,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                 // no overlapping enrichments allowed for now
                 const int nodegid = olddofkey.getGid();
                 const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(nodegid)->X()));
-                const XFEM::Enrichment oldenr = olddofkey.getFieldEnr().getEnrichment();
+                const XFEM::Enrichment oldenr(olddofkey.getFieldEnr().getEnrichment());
                 //const double enrval = oldenr.EnrValue(actpos, *ih_, Enrichment::approachUnknown);
                 
                 // create alternative dofkey

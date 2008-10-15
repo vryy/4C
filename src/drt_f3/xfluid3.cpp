@@ -31,7 +31,7 @@ DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
 DRT::Element(id,element_xfluid3,owner),
 is_ale_(false),
 data_(),
-eleDofManager_()
+eleDofManager_(rcp(new XFEM::ElementDofManager()))
 {
     return;
 }

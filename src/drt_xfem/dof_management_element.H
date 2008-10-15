@@ -54,11 +54,6 @@ namespace XFEM
           const XFEM::DofManager& dofman
           );
       
-      //! copy constructor
-      ElementDofManager(const ElementDofManager& old);
-      
-      //! destructor
-      ~ElementDofManager();
       //! return a string representation of this class
       std::string toString() const;
       
@@ -166,7 +161,7 @@ namespace XFEM
       }
       
       //! access to map
-      const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
+      const std::set<XFEM::FieldEnr> getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
       {
         return enrichedFieldperPhysField_.find(field)->second;
       }
@@ -221,6 +216,14 @@ namespace XFEM
           const std::set<XFEM::FieldEnr>& enrfieldset,
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
+      
+      /// no copy of this object is allowed
+      
+      //! private =
+      ElementDofManager operator = (const ElementDofManager& old);
+      
+      //! private copy constructor
+      ElementDofManager(const ElementDofManager& old);
   };
   
   

@@ -115,9 +115,9 @@ namespace DRT
         
         //! @name Access methods
 
-        virtual int NumDofPerNode(const DRT::Node& node) const {return this->eleDofManager_.NumDofPerNode(node.Id(), 4);}
+        virtual int NumDofPerNode(const DRT::Node& node) const {return eleDofManager_->NumDofPerNode(node.Id(), 4);}
 
-        virtual int NumDofPerElement() const {return this->eleDofManager_.NumDofPerElement();}
+        virtual int NumDofPerElement() const {return eleDofManager_->NumDofPerElement();}
         
         void Print(ostream& os) const;
         
@@ -228,7 +228,7 @@ namespace DRT
       private:
         
         //! store information about the unknowns of this element
-        XFEM::ElementDofManager                                   eleDofManager_;
+        Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_;
         
         //! store information about the intersection handle
         Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;

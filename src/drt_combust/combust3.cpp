@@ -30,7 +30,7 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,element_combust3,owner),
 data_(),
-eleDofManager_()
+eleDofManager_(rcp(new XFEM::ElementDofManager()))
 {
     return;
 }
