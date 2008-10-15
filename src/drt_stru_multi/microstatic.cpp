@@ -224,6 +224,7 @@ void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   double dt          = params_->get<double>("delta time"     ,0.01);
   string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   int istep          = params_->get<int>   ("step"            ,0);
+  double alphaf    = params_->get<double>("alpha f",0.459);
   //bool   printscreen = params_->get<bool>  ("print to screen",false);
 
   // store norms of old displacements and maximum of norms of
@@ -277,6 +278,7 @@ void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_->ClearState();
     disi_->Scale(0.0);
@@ -290,6 +292,8 @@ void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
+      bool newstep = params_->get<bool>("newstep", false);
+      p.set("newstep", newstep);
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
@@ -329,9 +333,12 @@ void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 //   if (printscreen)
 //     fresm_->Norm2(&fresmnorm);
 //   if (!myrank_ && printscreen)
-//   {
-//     PrintPredictor(convcheck, fresmnorm);
-//   }
+//    if (ele_Id==6 && gp==7)
+//    {
+//      double fresmnorm;
+//      fresm_->Norm2(&fresmnorm);
+//      PrintPredictor(convcheck, fresmnorm);
+//    }
 
   return;
 } // STRUMULTI::MicroStatic::Predictor()
@@ -353,6 +360,9 @@ void STRUMULTI::MicroStatic::FullNewton()
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
   double alphaf    = params_->get<double>("alpha f",0.459);
   //bool printscreen = params_->get<bool>  ("print to screen",true);
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -373,10 +383,19 @@ void STRUMULTI::MicroStatic::FullNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-    else
-      solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
+//     if (!numiter)
+//       solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
+//     else
+//       solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
+
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_->AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_->ResetTolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -397,6 +416,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       // other parameters that might be needed by the elements
       p.set("total time",time);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_->ClearState();
       // we do not need to scale disi_ here with 1-alphaf (cf. strugenalpha), since
@@ -447,11 +467,12 @@ void STRUMULTI::MicroStatic::FullNewton()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-//     if (!myrank_ && printscreen)
-//     {
-//       PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
-//                   fresmnorm,disinorm,convcheck);
-//     }
+    //if (!myrank_ && printscreen)
+//      if (ele_ID==6 && gp==7)
+//      {
+//         PrintNewton(true,print_unconv,timer,numiter,maxiter,
+//                     fresmnorm,disinorm,convcheck);
+//      }
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
@@ -638,6 +659,10 @@ void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   params.set<string>("equilibrium iteration"  ,"full newton");
+
+  params.set<bool>  ("ADAPTCONV",false);
+  params.set<double>("ADAPTCONV_BETTER",0.1);
+
   return;
 }
 
@@ -797,6 +822,9 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* def
       }
     }
   }
+  double alphaf    = params_->get<double>("alpha f",0.459);
+  disn_->Update(1.0, *dism_, -alphaf, *dis_, 0.);
+  disn_->Scale(1.0/(1.0-alphaf));
 }
 
 void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
@@ -837,7 +865,9 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   // to be changed accordingly
 
   double alphaf = params_->get<double>("alpha f",0.459);
-  dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
+  dis->Update(1.0, *disn, 0.0);
+  //dis->Update(1.0, *dism, -alphaf);
+  //dis->Scale(1.0/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
   disn->Update(1.0, *dis, 0.0);
 
@@ -874,6 +904,7 @@ void STRUMULTI::MicroStatic::ClearState()
 {
   dis_ = null;
   dism_ = null;
+  disn_ = null;
 }
 
 void STRUMULTI::MicroStatic::SetUpHomogenization()

@@ -476,7 +476,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
             surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, A, Adiff, elevector1, elematrix1, this->Id(),
                                                       time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                       gamma_min, gamma_min_eq, con_quot_max,
-                                                      con_quot_eq, alphaf, newstep);
+                                                      con_quot_eq, alphaf, newstep, fintliketr);
           }
           else
           {
@@ -498,7 +498,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
             surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
                                                       time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                       gamma_min, gamma_min_eq, con_quot_max,
-                                                      con_quot_eq, alphaf, newstep);
+                                                      con_quot_eq, alphaf, newstep, fintliketr);
           }
         }
         else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid

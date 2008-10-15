@@ -115,7 +115,8 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                            const double con_quot_max,
                                                            const double con_quot_eq,
                                                            const double alphaf,
-                                                           const bool newstep)
+                                                           const bool newstep,
+                                                           const bool fintliketr)
 {
   double gamma, dgamma;
   int LID = A_last_->Map().LID(ID);
@@ -137,9 +138,8 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
     }
     else
     {
-      SurfactantModel(ID, dgamma, dt, k1xC, k2, m1, m2,
-                      gamma_0, gamma_min, gamma_min_eq, con_quot_max, alphaf, newstep);
-      gamma = (1.-alphaf)*(*gamma_current_)[LID]+alphaf*(*gamma_last_)[LID];
+      SurfactantModel(ID, gamma, dgamma, dt, k1xC, k2, m1, m2,
+                      gamma_0, gamma_min, gamma_min_eq, con_quot_max, alphaf, newstep, fintliketr);
     }
   }
 
@@ -182,6 +182,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 *--------------------------------------------------------------------*/
 void UTILS::SurfStressManager::SurfactantModel(
                 const int ID,                // (i) ID of surface condition
+                double& gamma,               // (o) surface stress
                 double& dgamma,              // (o) derivative of surface stress
                 const double dt,             // (i) timestep size
                 double k1xC,                 // (i) adsorption coefficent k1 times bulk concentration C
@@ -193,7 +194,8 @@ void UTILS::SurfStressManager::SurfactantModel(
                 const double gamma_min_eq,   // (i) mimimum equilibrium surface stress
                 const double con_max,        // (i) max. surfactant concentration
                 const double alphaf,         // (i) generalized-alpha parameter alphaf
-                const bool newstep)          // (i) flag for new step (predictor)
+                const bool newstep,          // (i) flag for new step (predictor)
+                const bool fintliketr)
 {
   const int LID = A_last_->Map().LID(ID);
   const double A_last = (*A_last_)[LID];
@@ -212,7 +214,6 @@ void UTILS::SurfStressManager::SurfactantModel(
    * by minimum equilibrium interfacial surfactant concentration!*/
   double con_new = 0.;
   double dcon_new = 0.;
-  double gamma;
 
   /*----------------Regime 1: Langmuir kinetics (adsorption/desorption)*/
 
@@ -295,6 +296,9 @@ void UTILS::SurfStressManager::SurfactantModel(
   /* save history variables */
   (*con_current_)[LID] = con_new;
   (*gamma_current_)[LID] = gamma;
+
+  if (fintliketr==false)
+    gamma = (1.-alphaf)*(*gamma_current_)[LID]+alphaf*(*gamma_last_)[LID];
 
   return;
 }

@@ -135,6 +135,7 @@ public:
     \param con_quot_eq (in): equilibrium surfactant concentration
     \param alphaf (in): generalized-alpha parameter alphaf
     \param newstep (in): flag for new time step
+    \param fintliketr (in): flag for tr-like time integration
   */
   void StiffnessAndInternalForces(const int curvenum,
                                   const double& A,
@@ -159,12 +160,14 @@ public:
                                   const double con_quot_max,
                                   const double con_quot_eq,
                                   const double alphaf,
-                                  const bool newstep);
+                                  const bool newstep,
+                                  const bool fintliketr=false);
 
   /*!
     \brief Surfactant model equations
 
     \param ID (in): ID of surface condition
+    \param gamma (out): current surface stresses
     \param dgamma (out): current derivative of surface stress
     \param dt (in): timestep size
     \param k1xC (in): adsorption coefficient times bulk concentration
@@ -177,8 +180,10 @@ public:
     \param con_quot_max (in) maximum surfactant concentration
     \param alphaf (in): generalized-alpha parameter alphaf
     \param update (in): flag for new time step
+    \param fintliketr (in): flag for tr-like time integration
   */
   void SurfactantModel(const int ID,
+                       double& gamma,
                        double& dgamma,
                        const double dt,
                        double k1xC,
@@ -190,7 +195,8 @@ public:
                        const double gamma_min_eq,
                        const double con_quot_max,
                        const double alphaf,
-                       const bool newstep);
+                       const bool newstep,
+                       const bool fintliketr);
 
 private:
 

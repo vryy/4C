@@ -334,6 +334,9 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
 
+  params->set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
+  params->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
+
   microstaticmap_[microdisnum_] = rcp(new STRUMULTI::MicroStatic(params,actdis,solver));
 }
 
