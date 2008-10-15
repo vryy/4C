@@ -288,6 +288,8 @@ public:
     LINALG::FixedSizeSerialDenseMatrix<3,1> gradpot_;
     //! values of all transported scalars in gausspoint (ELCH)
     vector<double> conint_;
+    //! (global) gradient of transported scalar at integration point
+    LINALG::FixedSizeSerialDenseMatrix<3,1> gradphi_;
 
   };
 
