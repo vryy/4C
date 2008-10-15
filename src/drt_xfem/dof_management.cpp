@@ -125,15 +125,17 @@ void XFEM::DofManager::toGmsh(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 #if 1
+  
+  const int myrank = ih->xfemdis()->Comm().MyPID();
+  
   if (gmshdebugout)
   {
-    const int myrank = ih->xfemdis()->Comm().MyPID();
-    
     std::stringstream filename;
     std::stringstream filenamedel;
     filename    << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
+    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
     //f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
@@ -167,7 +169,7 @@ void XFEM::DofManager::toGmsh(
         }
         
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     {
@@ -179,25 +181,22 @@ void XFEM::DofManager::toGmsh(
         const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
         const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
         const int node_gid = xfemnode->Id();
-        
-        double val = 0.0;
+
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
         
         if (blub != nodalDofSet_.end())
         {
-          const std::set<XFEM::FieldEnr> schnapp = blub->second;
-          val = schnapp.size();
-          
+          const std::set<XFEM::FieldEnr> fieldenrset = blub->second;
           
           gmshfilecontent << "SP(";
           gmshfilecontent << scientific << pos(0) << ",";
           gmshfilecontent << scientific << pos(1) << ",";
           gmshfilecontent << scientific << pos(2);
           gmshfilecontent << "){";
-          gmshfilecontent << val << "};" << endl;
+          gmshfilecontent << fieldenrset.size() << "};\n";
         }
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     
@@ -229,11 +228,11 @@ void XFEM::DofManager::toGmsh(
             gmshfilecontent << scientific << pos(1) << ",";
             gmshfilecontent << scientific << pos(2);
             gmshfilecontent << "){";
-            gmshfilecontent << val << "};" << endl;
+            gmshfilecontent << val << "};\n";
           }
         }
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     
@@ -307,8 +306,12 @@ void XFEM::DofManager::toGmsh(
       };
       gmshfilecontent << "};" << endl;
       f_system << gmshfilecontent.str();
+      f_system.close();
+      std::cout << " done" << endl;
     }
-    
+  }
+  if (gmshdebugout)
+  {
     {
       // debug info: print ele dofmanager information
       std::stringstream filename;
@@ -317,29 +320,26 @@ void XFEM::DofManager::toGmsh(
       filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
       std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
+      std::ofstream f_system(filename.str().c_str());
       {
-        std::ofstream f_system(filename.str().c_str());
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
         {
-          stringstream gmshfilecontent;
-          gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {" << endl;
-          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-          {
-            DRT::Element* actele = ih->xfemdis()->lColElement(i);
-            //const int ele_gid = actele->Id();
-            //double val = 0.0;
-            //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
-            const double val = actele->NumDofPerElement();
-            gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele) << endl;
-            
-          };
-          gmshfilecontent << "};" << endl;
-          f_system << gmshfilecontent.str();
-        }
-        f_system.close();
+          DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          //const int ele_gid = actele->Id();
+          //double val = 0.0;
+          //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
+          const double val = actele->NumDofPerElement();
+          gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele) << "\n";
+          
+        };
+        gmshfilecontent << "};\n";
+        f_system << gmshfilecontent.str();
       }
+      f_system.close();
       std::cout << " done" << endl;
     }
-    f_system.close();
   }
 #endif
 }

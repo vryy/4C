@@ -38,6 +38,8 @@ void XFEM::createDofMap(
   std::map<int,int> labelPerElementId;
   XFEM::InvertElementsByLabel(elementsByLabel, labelPerElementId);
 
+  const double volumeratiolimit = 1.0e-4;
+  
   for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int label = conditer->first;
@@ -67,7 +69,7 @@ void XFEM::createDofMap(
         if (has_label)
         {
           const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-          const bool almost_empty_element = (fabs(1.0-volumeratio) < 1.0e-4);
+          const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
           
           if ( not almost_empty_element)  
           { // void enrichments for everybody !!!
@@ -101,7 +103,7 @@ void XFEM::createDofMap(
                 nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
               }
             };
-            cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio: " << volumeratio << endl;
+            cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs ( 1.0 - " << std::scientific << volumeratio << " )" << endl;
           }
 
           // TODO: check, how much area for integration we have (from BoundaryIntcells)
