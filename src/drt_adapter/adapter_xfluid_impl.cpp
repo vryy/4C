@@ -87,6 +87,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   idispn_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   iveln_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  ivelnm_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   iaccn_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 
   fluid_.SetFreeSurface(&freesurface_);
@@ -260,6 +261,9 @@ void ADAPTER::XFluidImpl::Update()
   // update acceleration n
   iaccn_->Update(1.0,*iaccnp,0.0);
 
+  // update velocity n-1
+  ivelnm_->Update(1.0,*iveln_,0.0);
+  
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
   
@@ -382,6 +386,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> ivelcolnp  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> ivelcoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnm  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> iacccoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 //  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 //
@@ -393,6 +398,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   LINALG::Export(*idispn_ ,*idispcoln);
   LINALG::Export(*ivelnp_ ,*ivelcolnp);
   LINALG::Export(*iveln_  ,*ivelcoln);
+  LINALG::Export(*ivelnm_ ,*ivelcolnm);
   LINALG::Export(*iaccn_  ,*iacccoln);
 
 
@@ -401,6 +407,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   
   boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
   boundarydis_->SetState("ivelcoln"  ,ivelcoln);
+  boundarydis_->SetState("ivelcolnm" ,ivelcolnm);
   boundarydis_->SetState("iacccoln"  ,iacccoln);
   
   fluid_.NonlinearSolve(boundarydis_);

@@ -200,6 +200,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
     Teuchos::RCP<Epetra_Vector>            idispn_;    ///< interface displacement  n
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
+    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
     //@}
 
