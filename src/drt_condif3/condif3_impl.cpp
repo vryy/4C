@@ -1947,6 +1947,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     const double densfunct_ephinp_k = densfunct_.Dot(ephinp[k]);
     double diff_ephinp_k(0.0);
     if (higher_order_ele) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
+    static double taufacresidual(0.0);
+
+    taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k + diff_ephinp_k);
 
     for (int vi=0; vi<iel; ++vi)
     {
@@ -1957,7 +1960,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
       // not implemented
 
       /* convective stabilization of RHS source term */
-      erhs[vi*numdofpernode_+k] += taufac*conv_(vi)*rhsint ;
+      erhs[vi*numdofpernode_+k] += taufac*(conv_(vi)+diffus_valence_k*mig_(vi)) *rhsint ;
 
       //-----------------------------------residual formulation
       // nonlinear migration term
@@ -1993,11 +1996,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
         dserror("higher order terms not yet finished");
 
         /* diffusive stabilization of RHS source term */
-        if (higher_order_ele) erhs[vi*numdofpernode_+k] += taufac*diff_(vi)*rhsint ;
+        erhs[vi*numdofpernode_+k] += taufac*diff_(vi)*rhsint ;
 
         /* convective stabilization */
         /* diffusive term */
-        erhs[vi*numdofpernode_+k] -= -timetaufac*conv_(vi)*diff_ephinp_k ;
+        erhs[vi*numdofpernode_+k] -= -timetaufac*(conv_(vi)+diffus_valence_k*mig_(vi))*diff_ephinp_k ;
 
         /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
 
