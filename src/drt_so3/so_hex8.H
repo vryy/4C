@@ -415,22 +415,22 @@ protected:
     soh8_easfull = 21
   };
   //! kinematic type
-  KinematicType                                    kintype_;
+  KinematicType                                                         kintype_;
   //! type of EAS technology
-  EASType                                          eastype_;
+  EASType                                                               eastype_;
   //! number of EAS parameters (alphas), defined by 'EASType'
-  int                                              neas_;
+  int                                                                   neas_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                   data_;
+  DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
   //vector<Epetra_SerialDenseMatrix>                 invJ_;
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJ_;
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >  invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                   detJ_;
+  vector<double>                                                        detJ_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
-  RCP<DRT::ELEMENTS::PreStress>                    prestress_;
+  RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
 
   // compute Jacobian mapping wrt to deformed configuration
   void UpdateJacobianMapping(const vector<double>& disp,
@@ -444,11 +444,8 @@ protected:
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
-  RCP<DRT::ELEMENTS::InvDesign>                    invdesign_;
+  RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
 #endif
-
-  //! vector for fiber direction, needs better place in future
-  //vector<double>                                   fiberdirection_;
 
 
   // internal calculation methods

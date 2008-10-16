@@ -457,14 +457,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DefGradient(mydisp,gpdefgrd,*prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::SerialDenseMatrix deltaF(3,3);
-      LINALG::SerialDenseMatrix Fhist(3,3);
-      LINALG::SerialDenseMatrix Fnew(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> deltaF;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
       for (int gp=0; gp<NUMGPT_SOH8; ++gp)
       {
         prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-        Fnew.Multiply('N','N',1.0,deltaF,Fhist,0.0);
+        Fnew.Multiply(deltaF,Fhist);
         prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
       }
 
@@ -639,7 +639,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOH8,NUMDIM_SOH8);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
 #endif
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
@@ -680,7 +680,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   // here we already get the inverse transposed T0
   LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> T0invT;  // trafo matrix
 
-  if (eastype_ != soh8_easnone) {
+  if (eastype_ != soh8_easnone) 
+  {
     /*
     ** EAS Update of alphas:
     ** the current alphas are (re-)evaluated out of
@@ -696,7 +697,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
     // we need the (residual) displacement at the previous step
     LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
-    for (int i = 0; i < NUMDOF_SOH8; ++i) {
+    for (int i = 0; i < NUMDOF_SOH8; ++i) 
+    {
       res_d(i) = residual[i];
     }
     // add Kda . res_d to feas
@@ -762,25 +764,25 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get Jacobian mapping wrt to the stored configuration
-      LINALG::SerialDenseMatrix invJdef(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
       prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      LINALG::SerialDenseMatrix N_xyz(NUMDIM_SOH8,NUMNOD_SOH8);
-      N_xyz.Multiply('N','N',1.0,invJdef,int_hex8.deriv_gp[gp],0.0);
+      LINALG::FixedSizeSerialDenseMatrix<3,8> N_xyz;
+      N_xyz.Multiply(invJdef,derivs[gp]);
 
       // build multiplicative incremental defgrd
-      defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+      defgrd.MultiplyTT(xdisp,N_xyz);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
 
       // get stored old incremental F
-      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::SerialDenseMatrix Fnew(3,3);
-      Fnew.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
 #else
@@ -1341,9 +1343,10 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
-
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  
   // update element geometry
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;  // current  coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOH8+0];
@@ -1351,20 +1354,19 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
     xdisp(i,2) = disp[i*NODDOF_SOH8+2];
   }
 
-  const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
-    LINALG::SerialDenseMatrix invJdef(3,3);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
     prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    LINALG::SerialDenseMatrix N_xyz(NUMDIM_SOH8,NUMNOD_SOH8);
-    N_xyz.Multiply('N','N',1.0,invJdef,int_hex8.deriv_gp[gp],0.0);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+    N_xyz.Multiply(invJdef,derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+    defgrd.MultiplyTT(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
@@ -1381,8 +1383,10 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
                                             const vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+
   // get incremental disp
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOH8,NUMDIM_SOH8);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOH8+0];
@@ -1390,27 +1394,26 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
     xdisp(i,2) = disp[i*NODDOF_SOH8+2];
   }
 
-  const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
-  LINALG::SerialDenseMatrix invJhist(NUMDIM_SOH8,NUMDIM_SOH8);
-  LINALG::SerialDenseMatrix invJ(NUMDIM_SOH8,NUMDIM_SOH8);
-  LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-  LINALG::SerialDenseMatrix N_xyz(NUMDIM_SOH8,NUMNOD_SOH8);
-  LINALG::SerialDenseMatrix invJnew(NUMDIM_SOH8,NUMDIM_SOH8);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJhist;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJ;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJnew;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply('N','N',1.0,invJhist,int_hex8.deriv_gp[gp],0.0);
+    N_xyz.Multiply(invJhist,derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    defgrd.MultiplyTT(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
     // make inverse of this defgrd
-    LINALG::NonsymInverse3x3(defgrd);
+    defgrd.Invert();
     // push-forward of Jinv
-    invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
+    invJnew.MultiplyTN(defgrd,invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
   } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)

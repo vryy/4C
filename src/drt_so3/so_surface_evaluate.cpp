@@ -270,7 +270,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_init_vol")                act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
-  else dserror("Unknown type of action for StructuralSurface");
+  else 
+  {
+    cout << action << endl;
+    dserror("Unknown type of action for StructuralSurface");
+  }
 
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();

@@ -336,14 +336,14 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       DefGradient(mydisp,gpdefgrd,*prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::SerialDenseMatrix deltaF(3,3);
-      LINALG::SerialDenseMatrix Fhist(3,3);
-      LINALG::SerialDenseMatrix Fnew(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> deltaF;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
       for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
       {
         prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-        Fnew.Multiply('N','N',1.0,deltaF,Fhist,0.0);
+        Fnew.Multiply(deltaF,Fhist);
         prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
       }
 
@@ -632,7 +632,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
   // current  displacements of element
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
-
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
@@ -679,23 +678,23 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get derivatives wrt to last spatial configuration
-      LINALG::SerialDenseMatrix N_xyz(NUMNOD_SOTET4,NUMDIM_SOTET4);
+      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
       prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
 
       // build multiplicative incremental defgrd
       //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-      defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+      defgrd.MultiplyTN(xdisp,N_xyz);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
 
       // get stored old incremental F
-      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::SerialDenseMatrix Fnew(3,3);
-      Fnew.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
 #else
@@ -1143,7 +1142,7 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const vector<double>& disp,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
   // update element geometry
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
@@ -1154,12 +1153,12 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const vector<double>& disp,
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
   {
     // get derivatives wrt to last spatial configuration
-    LINALG::SerialDenseMatrix N_xyz(NUMNOD_SOTET4,NUMDIM_SOTET4);
+    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
     prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
 
     // build multiplicative incremental defgrd
-    LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
-    defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+    defgrd.MultiplyTN(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
@@ -1177,7 +1176,7 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
                                             DRT::ELEMENTS::PreStress& prestress)
 {
   // get incremental disp
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
@@ -1185,24 +1184,24 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
     xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
   }
 
-  LINALG::SerialDenseMatrix nxyzhist(NUMNOD_SOTET4,NUMDIM_SOTET4);
-  LINALG::SerialDenseMatrix nxyznew(NUMNOD_SOTET4,NUMDIM_SOTET4);
-  LINALG::SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyzhist;
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyznew;
+  LINALG::FixedSizeSerialDenseMatrix<3,3>                         defgrd;
 
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
   {
     // get the nxyz old state
     prestress.StoragetoMatrix(gp,nxyzhist,prestress.JHistory());
     // build multiplicative incremental defgrd
-    defgrd.Multiply('T','N',1.0,xdisp,nxyzhist,0.0);
+    defgrd.MultiplyTN(xdisp,nxyzhist);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
     // make inverse of this defgrd
-    LINALG::NonsymInverse3x3(defgrd);
+    defgrd.Invert();
 
     // push-forward of nxyz
-    nxyznew.Multiply('N','N',1.0,nxyzhist,defgrd,0.0);
+    nxyznew.Multiply(nxyzhist,defgrd);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,nxyznew,prestress.JHistory());
 

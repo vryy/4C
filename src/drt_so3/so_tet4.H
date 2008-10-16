@@ -329,26 +329,26 @@ protected:
   };
 
   //! kinematic type
-  KinematicType                                            kintype_;
+  KinematicType                                                            kintype_;
   //! type of stress evaluation
-  StressType                                               stresstype_;
+  StressType                                                               stresstype_;
   //! no. gaussian points in each spatial dimension
-  int                                                      ngp_[3];
+  int                                                                      ngp_[3];
   //! number of the material law
-  int                                                      material_;
+  int                                                                      material_;
 
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                           data_;
+  DRT::Container                                                           data_;
   //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >                      mat_;
+  vector<RefCountPtr<MAT::Material> >                                      mat_;
   //! volume of the element
-  double                                                   V_;
+  double                                                                   V_;
   //! vector of partial derivatives in material frame
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> >                         nxyz_;
+  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
-  RCP<DRT::ELEMENTS::PreStress>                    prestress_;
+  RCP<DRT::ELEMENTS::PreStress>                                            prestress_;
 
   // compute Jacobian mapping wrt to deformed configuration
   void UpdateJacobianMapping(const vector<double>& disp,
@@ -362,7 +362,7 @@ protected:
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
-  RCP<DRT::ELEMENTS::InvDesign>                    invdesign_;
+  RCP<DRT::ELEMENTS::InvDesign>                                            invdesign_;
 #endif
 
   // internal calculation methods

@@ -329,14 +329,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DefGradient(mydisp,gpdefgrd,*prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::SerialDenseMatrix deltaF(3,3);
-      LINALG::SerialDenseMatrix Fhist(3,3);
-      LINALG::SerialDenseMatrix Fnew(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> deltaF;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
       for (int gp=0; gp<NUMGPT_WEG6; ++gp)
       {
         prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-        Fnew.Multiply('N','N',1.0,deltaF,Fhist,0.0);
+        Fnew.Multiply(deltaF,Fhist);
         prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
       }
 
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
 #endif
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
@@ -508,25 +508,25 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get Jacobian mapping wrt to the stored configuration
-      LINALG::SerialDenseMatrix invJdef(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
       prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
-      N_xyz.Multiply('N','N',1.0,invJdef,derivs[gp],0.0);
+      LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+      N_xyz.Multiply(invJdef,derivs[gp]);
 
       // build multiplicative incremental defgrd
-      defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+      defgrd.MultiplyTT(xdisp,N_xyz);
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
 
       // get stored old incremental F
-      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::SerialDenseMatrix Fnew(3,3);
-      Fnew.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
 #else
@@ -913,13 +913,11 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_WEG6][NUMGPT_WEG6]
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
-  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // update element geometry
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);  // current  coord. of element
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;  // current  coord. of element
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_WEG6+0];
@@ -929,23 +927,25 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
 
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
+#if 0
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
     for (int m=0; m<NUMDIM_WEG6; ++m)
       for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
+#endif
 
     // get Jacobian mapping wrt to the stored deformed configuration
-    LINALG::SerialDenseMatrix invJdef(3,3);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
     prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
-    N_xyz.Multiply('N','N',1.0,invJdef,deriv_gp,0.0);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+    N_xyz.Multiply(invJdef,derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+    defgrd.MultiplyTT(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
@@ -962,13 +962,11 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
                                             const vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_WEG6][NUMGPT_WEG6]
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
-  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // get incremental disp
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
+  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_WEG6+0];
@@ -976,32 +974,26 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
     xdisp(i,2) = disp[i*NODDOF_WEG6+2];
   }
 
-  LINALG::SerialDenseMatrix invJhist(NUMDIM_WEG6,NUMDIM_WEG6);
-  LINALG::SerialDenseMatrix invJ(NUMDIM_WEG6,NUMDIM_WEG6);
-  LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-  LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
-  LINALG::SerialDenseMatrix invJnew(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJhist;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJ;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> invJnew;
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
-    // get submatrix of deriv at actual gp
-    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m)
-      for (int n=0; n<NUMGPT_WEG6; ++n)
-        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
-
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply('N','N',1.0,invJhist,deriv_gp,0.0);
+    N_xyz.Multiply(invJhist,derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    defgrd.MultiplyTT(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
     // make inverse of this defgrd
-    LINALG::NonsymInverse3x3(defgrd);
+    defgrd.Invert();
     // push-forward of Jinv
-    invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
+    invJnew.MultiplyTN(defgrd,invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
   } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
