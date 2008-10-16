@@ -290,7 +290,7 @@ namespace UTILS
   }
 
   return;
-};
+}
 
 
   /*!
@@ -641,7 +641,7 @@ namespace UTILS
   }    
 
   return;
-};
+}
 
   
 /*!
@@ -1364,7 +1364,7 @@ void nurbs_get_3D_funct(
 
   return;
 
-};
+}
 
 
 /*!
@@ -1896,7 +1896,7 @@ void nurbs_get_3D_funct_deriv(
   }    
 
   return;
-};
+}
 
 
 /*!
@@ -2773,7 +2773,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
   }    
 
   return;
-};
+}
 
 
 }// namespace UTILS
