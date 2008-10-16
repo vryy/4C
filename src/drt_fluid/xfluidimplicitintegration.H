@@ -338,7 +338,7 @@ protected:
   /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
 
-  /// density extracted from element material
+  /// constant density extracted from element material for incompressible flow
   double density_;
 
   /// whether we do some extrapolation at the begin of each time step
