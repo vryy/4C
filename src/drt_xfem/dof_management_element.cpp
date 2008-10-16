@@ -130,6 +130,8 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
     }
   }
   
+  numdof_ = dofcounter;
+  
   return;
 }
     

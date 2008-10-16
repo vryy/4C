@@ -21,10 +21,120 @@ Maintainer: Axel Gerstenberger
 #include "../drt_f3/xfluid3_interpolation.H"
 
 
+void XFEM::ApplyNodalEnrichments(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::Enrichment&                       voidenr,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+) 
+{
+  const double volumeratiolimit = 1.0e-4;
+  
+  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
+  
+  if ( not almost_empty_element)  
+  { // void enrichments for everybody !!!
+    const int nen = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inen = 0; inen<nen; ++inen)
+    {
+      const int node_gid = nodeidptrs[inen];
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+    };
+  }
+  else
+  { // void enrichments only in the fluid domain
+    const int nen = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inen = 0; inen<nen; ++inen)
+    {
+      const int node_gid = nodeidptrs[inen];
+      const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
+      const int label = ih.PositionWithinConditionNP(nodalpos);
+      const bool in_fluid = (label == 0);
+  
+      if (in_fluid)
+      {
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+      }
+    };
+    cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs ( 1.0 - " << std::scientific << volumeratio << " )" << endl;
+  }
+}
+
+void XFEM::ApplyElementEnrichments(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::Enrichment&                       voidenr,
+    const bool                                    global_stress_unknowns,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    )
+{
+  const int element_gid = xfemele->Id();
+  
+  // check, how much area for integration we have (from BoundaryIntcells)
+  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
+  const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-2);
+  
+  if ( not almost_zero_surface) 
+  {
+    // add discontinuous stress unknowns
+    // the number of each of these parameters will be determined later
+    // by using a discretization type and appropriate shape functions
+    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz; 
+    if (global_stress_unknowns)
+    {
+      element_ansatz = XFLUID::getElementAnsatz(xfemele->Shape());
+    }
+
+    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+    for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+    {
+      elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+    }
+  }
+  else
+  {
+    cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
+  }
+}
+
+
+void XFEM::ApplyVoidEnrichmentForElement(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const std::map<int,int>&                      labelPerElementId,
+    const XFEM::Enrichment&                       voidenr,
+    const bool                                    global_stress_unknowns,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    )
+{
+  const int element_gid = xfemele->Id();
+  
+  if (ih.ElementIntersected(element_gid))
+  {
+    if (ih.ElementHasLabel(element_gid, voidenr.XFEMConditionLabel()))
+    {
+      ApplyNodalEnrichments(xfemele, ih, voidenr, nodalDofSet); 
+  
+      ApplyElementEnrichments(xfemele, ih, voidenr, global_stress_unknowns, elementalDofs);
+    }
+  }
+}
+
 void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
-    std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal
+    std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
+    const bool global_stress_unknowns
 )
 {
   // temporary assembly
@@ -38,8 +148,7 @@ void XFEM::createDofMap(
   std::map<int,int> labelPerElementId;
   XFEM::InvertElementsByLabel(elementsByLabel, labelPerElementId);
 
-  const double volumeratiolimit = 1.0e-4;
-  
+  // loop condition labels
   for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int label = conditer->first;
@@ -49,92 +158,16 @@ void XFEM::createDofMap(
     for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
     {
       const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
-      const int element_gid = xfemele->Id();
 
-      if (ih.ElementIntersected(element_gid))
-      {
-        const GEO::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
-        bool has_label = false;
-        for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
-        {
-          const int surface_ele_gid = bcell->GetSurfaceEleGid();
-          const int label_for_current_bele = labelPerElementId.find(surface_ele_gid)->second;
-          if (label == label_for_current_bele)
-          {
-            has_label = true;
-            break;
-          }
-        }
-
-        if (has_label)
-        {
-          const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-          const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
-          
-          if ( not almost_empty_element)  
-          { // void enrichments for everybody !!!
-            const int nen = xfemele->NumNode();
-            const int* nodeidptrs = xfemele->NodeIds();
-            for (int inen = 0; inen<nen; ++inen)
-            {
-              const int node_gid = nodeidptrs[inen];
-              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
-              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
-              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
-              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
-            };
-          }
-          else
-          { // void enrichments in the fluid domain
-            const int nen = xfemele->NumNode();
-            const int* nodeidptrs = xfemele->NodeIds();
-            for (int inen = 0; inen<nen; ++inen)
-            {
-              const int node_gid = nodeidptrs[inen];
-              const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
-              const int label = ih.PositionWithinConditionNP(nodalpos);
-              const bool in_fluid = (label == 0);
-
-              if (in_fluid)
-              {
-                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
-                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
-                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
-                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
-              }
-            };
-            cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs ( 1.0 - " << std::scientific << volumeratio << " )" << endl;
-          }
-
-          // TODO: check, how much area for integration we have (from BoundaryIntcells)
-          const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
-          const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-2);
-          
-          if ( not almost_zero_surface) 
-          {
-            // add discontinuous stress unknowns
-            // the number of each of these parameters will be determined later
-            // by using a discretization type and appropriate shape functions
-            const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(xfemele->Shape()));
-  
-            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-            for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
-            {
-              elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
-            }
-          }
-          else
-          {
-            cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
-          }
-        }
-      }
+      ApplyVoidEnrichmentForElement(
+          xfemele, ih, labelPerElementId, voidenr, global_stress_unknowns,
+          nodalDofSet, elementalDofs);
     };
   };
 
   applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet, elementalDofs);
 
-  // create const sets from standard sets, so the sets cannot be accidentily changed
+  // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
   {
@@ -270,5 +303,8 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
     
   };
 }
+
+
+
 
 #endif  // #ifdef CCADISCRET

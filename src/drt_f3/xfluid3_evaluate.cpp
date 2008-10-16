@@ -221,8 +221,55 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
           
-          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                  *eleDofManager_, NumNode(), NodeIds());
+          const bool global_stress_unknowns = params.get<bool>("global_stress_unknowns");
+          
+          if (global_stress_unknowns) // integrate and assemble all unknowns
+          {
+            const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                    *eleDofManager_, NumNode(), NodeIds());
+            
+            // calculate element coefficient matrix and rhs
+            XFLUID::callSysmat4(assembly_type,
+                    this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
+            
+          }
+          else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+          {
+            
+            
+            const int numdof        = eleDofManager_->NumDofElementAndNodes();
+            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElementAndNodes();
+            cout << numdof << "   " << numdof_uncond << endl;
+            
+            // create uncondensed element matrix and vector
+            Epetra_SerialDenseMatrix estiff_uncond(numdof_uncond,numdof_uncond);
+            Epetra_SerialDenseMatrix eforce_uncond(numdof_uncond);
+            
+            
+            const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                    *eleDofManager_, NumNode(), NodeIds());
+            
+            // calculate element coefficient matrix and rhs
+            XFLUID::callSysmat4(assembly_type,
+                    this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
+            
+//            oldKda
+//            
+//            // store current EAS data in iteration history
+//            for (int i=0; i<neas_; ++i)
+//            {
+//              for (int j=0; j<neas_; ++j)
+//                (*oldKaainv)(i,j) = Kaa(i,j);
+//              for (int j=0; j<NUMDOF_SOH8; ++j)
+//                (*oldKda)(i,j) = Kda(i,j);
+//              (*oldfeas)(i,0) = feas(i);
+//            }
+            
+          }
+          
+
           
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
@@ -287,26 +334,57 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
-          {
-          // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat4(assembly_type,
-                  this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
-          }
           break;
       }
       case store_xfem_info:
       {
+          // store pointer to interface handle
+          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
+        
           // get access to global dofman
           const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
           
-          // create local copy of information about dofs
-          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
+          const bool global_stress_unknowns = params.get<bool>("global_stress_unknowns");
+          {
+            // create local copy of information about dofs
+            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+            if (global_stress_unknowns)
+            {
+              element_ansatz = XFLUID::getElementAnsatz(this->Shape());
+            }
+            else
+            {
+              // no element unknowns -> empty stress ansatz
+            }
           
-          eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
+            eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
+          }
           
-          // store pointer to interface handle
-          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
+          if (ih_->ElementIntersected(Id()))
+          {
+            // create local copy of information about dofs
+            const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
+            
+            // TODO: ACHTUNG: hardgecodetes xfemLabel -> 1
+            const XFEM::Enrichment voidenr(1, XFEM::Enrichment::typeVoid);
+            std::set<XFEM::FieldEnr> enrfieldset;
+            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+            for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+            {
+              enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
+            }
+            
+            // nodal dofs for ele
+            eleDofManager_uncondensed_ = 
+              rcp(new XFEM::ElementDofManager(*this, *eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
+            
+            
+          }
+          else
+          {
+            eleDofManager_uncondensed_ = Teuchos::null;
+          }
+          
           break;
       }
       default:

@@ -222,10 +222,22 @@ namespace DRT
       private:
         
         //! store information about the unknowns of this element
+        //!
+        //! this dofman will answer to the outside world, how many dofs this element has
         Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_;
+        
+        //! store information about the unknowns of this element - only for intersected elements
+        //!
+        //! this dofman contains also element dofs, that are not part of the global dofs
+        //! it is used for integration only. After integration, condensation on the element level
+        //! will remove all dofs that are not in eleDofManager_
+        Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_uncondensed_;
         
         //! store information about the intersection handle
         Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
+        
+        //! this map stores element stresses per xfem label
+        std::map<int,Epetra_SerialDenseMatrix> stresses_;
         
         // internal calculation methods
         

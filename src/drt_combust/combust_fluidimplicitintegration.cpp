@@ -82,7 +82,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,null,0));
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,true));
 
   /*----------------------------------------------------------------------------------------------*
    * comment missing! Axels comment: tell elements about the dofs and the integration  
@@ -437,7 +437,7 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   ih->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,true));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;

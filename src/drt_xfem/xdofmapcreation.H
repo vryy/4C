@@ -24,14 +24,41 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+void ApplyNodalEnrichments(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::Enrichment&                       voidenr,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+    );
+
+void ApplyElementEnrichments(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const XFEM::Enrichment&                       voidenr,
+    const bool                                    global_stress_unknowns,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    );
+
+/// apply enrichments and add this info to maps
+void ApplyVoidEnrichmentForElement(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const std::map<int,int>&                      labelPerElementId,
+    const XFEM::Enrichment&                       voidenr,
+    const bool                                    global_stress_unknowns,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    );
+
 /*! 
  * \brief create a map that for each node (gid) and element (gid) on this processor
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
     const XFEM::InterfaceHandle&                  ih,                      ///< interface information
-    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< enriched fields per node
-    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< enriched fields per element   
+    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
+    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
+    const bool global_stress_unknowns
 );
 
 /*! 

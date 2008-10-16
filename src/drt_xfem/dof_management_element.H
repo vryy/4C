@@ -100,6 +100,18 @@ namespace XFEM
         return numElemDof_;
       };
       
+      //! function that returns overal size of element matrices or vectors
+      int NumDofElementAndNodes() const
+      {
+        return numdof_;
+      };
+      
+      //! function that returns dofs for each node of this particular element
+      const std::map<int, const std::set<XFEM::FieldEnr> >* getNodalDofSet() const
+      {
+        return &nodalDofSet_;
+      };
+      
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
        *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
        *  we do not distuingish between nodal and element dofs
@@ -185,6 +197,9 @@ namespace XFEM
       
     private:
 
+      //! number of element and nodal degrees of freedom 
+      int numdof_;
+      
       //! number of element degrees of freedom
       int numElemDof_;
       

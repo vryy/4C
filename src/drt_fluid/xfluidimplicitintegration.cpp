@@ -88,18 +88,14 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0));
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("global_stress_unknowns")));
   // tell elements about the dofs and the integration
   {
     ParameterList eleparams;
     eleparams.set("action","store_xfem_info");
     eleparams.set("dofmanager",dofmanager);
+    eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
     eleparams.set("interfacehandle",ih);
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
   discret_->FillComplete();
@@ -424,7 +420,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   ih->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("global_stress_unknowns")));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -434,12 +430,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       ParameterList eleparams;
       eleparams.set("action","store_xfem_info");
       eleparams.set("dofmanager",dofmanager);
+      eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
       eleparams.set("interfacehandle",ih);
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",false);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
 
@@ -710,6 +702,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
+      
+      eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax

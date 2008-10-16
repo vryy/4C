@@ -60,22 +60,16 @@ void xdyn_fluid_drt()
 
   const int fmyrank = fluiddis->Comm().MyPID();
   std::cout << "FluidProc: " << fmyrank << endl;
-  flush(cout);
   const int smyrank = soliddis->Comm().MyPID();
   std::cout << "SolidProc: " << smyrank << endl;
-  flush(cout);
-  //cout << *soliddis;
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  cout << "fillcomplete ...";
-  flush(cout);
+  cout << "fillcomplete ..." << flush;
   if (!soliddis->Filled()) soliddis->FillComplete();
   if (!fluiddis->Filled()) fluiddis->FillComplete();
-  cout << "done" << endl;
-  
-  flush(cout);
+  cout << " done" << endl;
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -84,9 +78,8 @@ void xdyn_fluid_drt()
   if (soliddis->NumGlobalElements() > 0)
   {
       solidoutput.WriteMesh(0,0.0);
-      // solid displacement (to be removed)
-      const Epetra_Map* soliddofrowmap = soliddis->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddofrowmap,true);
+      // solid displacement
+      Teuchos::RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddis->DofRowMap(),true);
 
       solidoutput.NewStep    (0,0.0);
       soliddispnp->PutScalar(0.0);
@@ -196,6 +189,9 @@ void xdyn_fluid_drt()
     fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
   }
 
+  // ----------------------------------------------- XFEM related stuff
+  fluidtimeparams.set<bool>("global_stress_unknowns",true);
+  
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
