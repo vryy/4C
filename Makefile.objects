@@ -211,9 +211,10 @@ OBJS_DRT_CONTACT_LIB = \
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_time.o \
-                src/drt_statmech/statmech_manager.o
+                src/drt_statmech/statmech_manager.o \
+                src/drt_statmech/bromotion_timeint.o            
 #----------------------------------------------------- drt version statmech
-OBJS_DRT_STATMECH_LIB = 
+OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o 
 #--------------------------------------------------- condif3 (drt version)
 OBJS_DRT_CONDIF3_LIB = src/drt_condif3/condif3.o \
                 src/drt_condif3/condif3_evaluate.o \
@@ -288,6 +289,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_structure.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
+                src/drt_adapter/adapter_structure_bromotion.o \
                 src/drt_adapter/adapter_fluid_base_algorithm.o \
                 src/drt_adapter/adapter_fluid_ale.o \
                 src/drt_adapter/adapter_fluid_xfem.o \
