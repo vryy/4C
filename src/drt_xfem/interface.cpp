@@ -167,5 +167,42 @@ bool XFEM::InterfaceHandle::ElementIntersected(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool XFEM::InterfaceHandle::ElementHasLabel(
+    const int element_gid,
+    const int label
+) const
+{
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells()->find(element_gid)->second;
+  bool has_label = false;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    const int surface_ele_gid = bcell->GetSurfaceEleGid();
+    const int label_for_current_bele = labelPerElementId_.find(surface_ele_gid)->second;
+    if (label == label_for_current_bele)
+    {
+      has_label = true;
+      break;
+    }
+  }
+  return has_label;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
+    const int element_gid
+) const
+{
+  std::set<int> labelset;
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells()->find(element_gid)->second;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    labelset.insert(bcell->GetSurfaceEleGid());
+  }
+  return labelset;
+}
+
 
 #endif  // #ifdef CCADISCRET

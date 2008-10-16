@@ -75,11 +75,21 @@ namespace XFEM
     bool ElementIntersected(
             const int element_gid   ///< unique global element id
             ) const;
+    
+    /// check, whether given element id has been intersected by the given interface (label)
+    bool ElementHasLabel(
+        const int element_gid,
+        const int label
+    ) const;
+    
+    std::set<int> LabelsPerElement(
+        const int element_gid
+    ) const;
 
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     GEO::DomainIntCells GetDomainIntCells(
             const int                              gid,     ///< unique global element id
-            const DRT::Element::DiscretizationType distype  ///< shape of thefinite element
+            const DRT::Element::DiscretizationType distype  ///< shape of the finite element
             ) const;
 
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
@@ -117,6 +127,9 @@ namespace XFEM
 
     //! for each xfem condition label there is a set of boundary elements
     std::map<int,std::set<int> >            elementsByLabel_;
+    
+    //! each boundary element belongs to one label (inverted information of elementsByLabel_)
+    std::map<int,int>                       labelPerElementId_;
 
     //! SearchTree octtree for timestep n+1
     const Teuchos::RCP<GEO::SearchTree>           octTreenp_;

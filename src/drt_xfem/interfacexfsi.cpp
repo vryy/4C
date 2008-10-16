@@ -73,6 +73,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
+  
+  // invert collection
+  labelPerElementId_.clear();
+  XFEM::InvertElementsByLabel(elementsByLabel_, labelPerElementId_);
 
   const BlitzMat3x2 cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
   const BlitzMat3x2 xfemAABB =GEO::getXAABBofDis(*xfemdis);
