@@ -24,6 +24,7 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
+#include "turbulence_statistic_manager.H"
 #include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
 #include "turbulence_statistics_sqc.H"
@@ -65,6 +66,9 @@ using namespace Teuchos;
 namespace FLD
 {
 
+// forwarded declarations
+class TurbulenceStatisticManager;
+
 /*!
 \brief time integration for fluid problems
 
@@ -72,6 +76,7 @@ namespace FLD
 */
 class FluidImplicitTimeInt
 {
+  friend class TurbulenceStatisticManager;
   friend class FluidResultTest;
 
 public:
@@ -426,14 +431,18 @@ protected:
   RCP<Epetra_Vector>    fsconvnp_;
   //@}
 
+
+  //! manager for turbulence statistics 
+  RCP<TurbulenceStatisticManager> statisticsmanager_;
+
   /// turbulence statistics, channel flow
-  RCP<TurbulenceStatistics>    turbulencestatistics_;
+  RCP<TurbulenceStatistics>       turbulencestatistics_;
 
   /// turbulence statistics, lid driven cavity
-  RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
+  RCP<TurbulenceStatisticsLdc>    turbulencestatistics_ldc_;
 
   /// turbulence statistics, square cylinder
-  RCP<TurbulenceStatisticsSqc> turbulencestatistics_sqc_;
+  RCP<TurbulenceStatisticsSqc>    turbulencestatistics_sqc_;
 
   //! @name Vectors used for filtering (for dynamic Smagorinsky model)
 

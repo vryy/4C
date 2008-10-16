@@ -58,7 +58,7 @@ class Fluid3Line;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
-class Fluid3GenalphaResVMM;
+template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
 class Fluid3Register;
 
 /*!
@@ -74,7 +74,7 @@ public:
   friend class Fluid3Register;
   friend class Fluid3Surface;
   friend class Fluid3Line;
-  friend class Fluid3ImplInterface;
+
   // All the template specializations that are used, new ones must be
   // added here.
   friend class Fluid3Impl<DRT::Element::tet4>;
@@ -86,6 +86,7 @@ public:
   friend class Fluid3Impl<DRT::Element::hex20>;
   friend class Fluid3Impl<DRT::Element::hex27>;
   friend class Fluid3StationaryImplInterface;
+
   // All the template specializations that are used, new ones must be
   // added here.
   friend class Fluid3StationaryImpl<DRT::Element::tet4>;
@@ -107,7 +108,18 @@ public:
   friend class Fluid3lin_Impl<DRT::Element::wedge15>;
   friend class Fluid3lin_Impl<DRT::Element::hex20>;
   friend class Fluid3lin_Impl<DRT::Element::hex27>;
-  friend class Fluid3GenalphaResVMM;
+  friend class Fluid3ImplInterface;
+
+  friend class Fluid3GenalphaResVMM<DRT::Element::tet4>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::pyramid5>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::wedge6>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::hex8>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::tet10>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::wedge15>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::hex20>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
+  friend class Fluid3GenalphaResVMMInterface;
+
   friend class Fluid3SystemEvaluator;
 
   //@}

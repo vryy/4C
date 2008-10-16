@@ -16,8 +16,9 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
+#include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "fluid_genalpha_integration.H"
 #include "vm3_solver.H"
 #include "fluid_utils.H"
 
@@ -145,8 +146,8 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   if (loma_ != "No")
   {
     // velocity/density at time n and n-1
-    vedenp_        = LINALG::CreateVector(*dofrowmap,true);
-    veden_       = LINALG::CreateVector(*dofrowmap,true);
+    vedenp_     = LINALG::CreateVector(*dofrowmap,true);
+    veden_      = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // grid displacements and velocities for the ale case
@@ -187,27 +188,26 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
 
-
   //--------------------------------------------------------------------
-  // init some class variables
+  // init some class variables (time integration)
 
+  // time step size
   dt_     = params_.get<double>("time step size");
+  // maximum number of timesteps
+  endstep_= params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  endtime_= params_.get<double>("total time");
 
+  // generalized alpha parameters
+  // (choice of third parameter necessary but not sufficiant for second
+  // order accuracy)
+  //           gamma_  = 0.5 + alphaM_ - alphaF_
   alphaM_ = params_.get<double>("alpha_M");
   alphaF_ = params_.get<double>("alpha_F");
-
-  // choice of third parameter necessary but not sufficiant for second
-  // order accuracy
-  //gamma_  = 0.5 + alphaM_ - alphaF_;
   gamma_  = params_.get<double>("gamma");
 
   // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<string>("Linearisation");
-
-  // maximum number of timesteps
-  endstep_  = params_.get<int>   ("max number timesteps");
-  // maximum simulation time
-  endtime_  = params_.get<double>("total time");
+  newton_   = params_.get<string>("Linearisation");
 
   itenum_   = 0;
   itemax_   = params_.get<int>   ("max nonlin iter steps");
@@ -220,19 +220,14 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // flag for special flow: currently channel flow or flow in a lid-driven cavity
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
 
+  // all averaging is done in this statistics manager
+  statisticsmanager_=rcp(new TurbulenceStatisticManager(*this));
+
   if (special_flow_ != "no")
   {
-    // parameters for sampling/dumping period
-    samstart_  = modelparams->get<int>("SAMPLING_START",1       );
-    samstop_   = modelparams->get<int>("SAMPLING_STOP", endstep_);
-    dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
-
-    if (special_flow_ == "lid_driven_cavity")
-      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
-    else if (special_flow_ == "channel_flow_of_height_2")
-      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
-    else if (special_flow_ == "square_cylinder")
-      turbulencestatistics_sqc_=rcp(new TurbulenceStatisticsSqc(discret_,params_));
+    // parameters for sampling/dumping period --- used for ad-hoc
+    // modification of itemax for turbulent channel flows
+    samstart_  = modelparams->get<int>("SAMPLING_START",1);
   }
 
   // -------------------------------------------------------------------
@@ -262,12 +257,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     csconvaf_ = LINALG::CreateVector(*dofrowmap,true);
     fsconvaf_ = LINALG::CreateVector(*dofrowmap,true);
   }
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct
-  // -------------------------------------------------------------------
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
   // -------------------------------------------------------------------
   // initialise vectors for dynamic Smagorinsky model
   // (the smoothed quantities)
@@ -281,6 +270,12 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
        "Dynamic_Smagorinsky"
       )
     {
+      
+      // ---------------------------------------------------------------
+      // get a vector layout from the discretization to construct
+      // ---------------------------------------------------------------
+      const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
       filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,3,true));
       filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,9,true));
       filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,9,true));
@@ -390,15 +385,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
-    if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
-    {
-      if(special_flow_ == "lid_driven_cavity")
-        turbulencestatistics_ldc_->DoTimeSample(velnp_);
-      else if(special_flow_ == "channel_flow_of_height_2")
-        this->GenAlphaTakeSample();
-      else if(special_flow_ == "square_cylinder")
-        turbulencestatistics_sqc_->DoTimeSample(velnp_);
-    }
+    statisticsmanager_->DoTimeSample(step_,time_);
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -416,7 +403,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
     {
 	stop_timeloop=true;
     }
-
   }
 
   // end time measurement for timeloop
@@ -721,7 +707,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
-
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
 
@@ -773,7 +758,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
     double gdtinv = 1.0/(gamma_*dt_);
     gridveln_->Update(gdtinv,*dispnp_,-gdtinv,*dispn_,(gamma_-1.0)/gamma_);
-
 
     //    n+1         n
     //   d      ---> d
@@ -839,14 +823,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
-
-
-      if(special_flow_ == "channel_flow_of_height_2" &&
-         step_>=samstart_ && step_<=samstop_  && dumperiod_ == 0)
-      {
-        turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-        turbulencestatistics_->ClearStatistics();
-      }
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -876,32 +852,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
-
-    if(special_flow_ == "channel_flow_of_height_2" &&
-       step_>=samstart_ && step_<=samstop_  && dumperiod_ == 0)
-    {
-      turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-      turbulencestatistics_->ClearStatistics();
-    }
   }
 
   // dumping of turbulence statistics if required
-  if (special_flow_ != "no"  && step_>=samstart_ && step_<=samstop_ && dumperiod_ != 0)
-  {
-    int samstep = step_-samstart_+1;
-    double dsamstep=samstep;
-    double ddumperiod=dumperiod_;
-
-    if (fmod(dsamstep,ddumperiod)==0)
-    {
-      if (special_flow_ == "lid_driven_cavity")
-        turbulencestatistics_ldc_->DumpStatistics(step_);
-      else if (special_flow_ == "channel_flow_of_height_2")
-        turbulencestatistics_->DumpStatistics(step_);
-      else if (special_flow_ == "square_cylinder")
-        turbulencestatistics_sqc_->DumpStatistics(step_);
-    }
-  }
+  statisticsmanager_->DoOutput(step_);
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaOutput
@@ -1028,7 +982,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     timelist.set("dt"     ,dt_    );
   }
 
-  // do not compute the elemetn matrix if itmax is reached
+  // do not compute the element matrix if itmax is reached
   // in this case, only the residual is required for the convergence check
   if (itenum_<itemax_)
   {
@@ -1057,73 +1011,15 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p (n+1      ,trial)",velnp_);
-  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-  discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-  discret_->SetState("vedeaf",vedeaf_);
+  discret_->SetState("u and p (n+1      ,trial)",velnp_ );
+  discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
+  discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
+  discret_->SetState("vedeaf"                   ,vedeaf_);
 
   if (alefluid_)
   {
     discret_->SetState("dispnp"    , dispnp_   );
     discret_->SetState("gridvelaf" , gridvelaf_);
-  }
-
-
-  // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
-  // for dynamic Smagorinsky model
-
-  RefCountPtr<vector<double> > global_incr_Cs_sum;
-  RefCountPtr<vector<double> > local_Cs_sum;
-  global_incr_Cs_sum =  rcp(new vector<double> );
-  local_Cs_sum       =  rcp(new vector<double> );
-
-
-  RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
-  RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
-  global_incr_Cs_delta_sq_sum =  rcp(new vector<double> );
-  local_Cs_delta_sq_sum       =  rcp(new vector<double> );
-
-
-  RefCountPtr<vector<double> > global_incr_visceff_sum;
-  RefCountPtr<vector<double> > local_visceff_sum;
-  global_incr_visceff_sum =  rcp(new vector<double> );
-  local_visceff_sum       =  rcp(new vector<double> );
-
-
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
-      ==
-      "CLASSICAL_LES")
-  {
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-       ==
-       "Dynamic_Smagorinsky"
-       ||
-       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-       ==
-       "Smagorinsky_with_van_Driest_damping"
-      )
-    {
-      // get ordered layers of elements in which LijMij and MijMij are averaged
-      if (planecoords_ == null)
-      {
-        planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
-        (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
-      }
-
-      local_Cs_sum->resize      (planecoords_->size()-1,0.0);
-      global_incr_Cs_sum->resize(planecoords_->size()-1,0.0);
-
-      local_Cs_delta_sq_sum->resize      (planecoords_->size()-1,0.0);
-      global_incr_Cs_delta_sq_sum->resize(planecoords_->size()-1,0.0);
-
-      local_visceff_sum->resize      (planecoords_->size()-1,0.0);
-      global_incr_visceff_sum->resize(planecoords_->size()-1,0.0);
-
-      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
-      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_sum",local_Cs_sum);
-      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
-      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_visceff_sum",local_visceff_sum);
-    }
   }
 
   //----------------------------------------------------------------------
@@ -1205,6 +1101,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   density_ = eleparams.get<double>("density");
 
   //----------------------------------------------------------------------
+  // extended statistics (plane average of Cs) for dynamic 
+  // Smagorinsky model --- communication part, store values
+  //----------------------------------------------------------------------
+  statisticsmanager_->StoreElementValues(step_);
+
+  //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions to sysmat_ and residual_
   //----------------------------------------------------------------------
   {
@@ -1234,37 +1136,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // end time measurement for element call
   tm3_ref_=null;
-
-  // extended statistics (plane average of Cs) for dynamic Smagorinsky model --- communication part
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
-      ==
-      "CLASSICAL_LES")
-  {
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-       ==
-       "Dynamic_Smagorinsky"
-       ||
-       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-       ==
-       "Smagorinsky_with_van_Driest_damping"
-      )
-    {
-      // now add all the stuff from the different processors
-      discret_->Comm().SumAll(&((*local_Cs_sum               )[0]),
-                              &((*global_incr_Cs_sum         )[0]),
-                              local_Cs_sum->size());
-      discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum      )[0]),
-                              &((*global_incr_Cs_delta_sq_sum)[0]),
-                              local_Cs_delta_sq_sum->size());
-      discret_->Comm().SumAll(&((*local_visceff_sum          )[0]),
-                              &((*global_incr_visceff_sum    )[0]),
-                              local_visceff_sum->size());
-    }
-    turbulencestatistics_->ReplaceCsIncrement(global_incr_Cs_sum,
-                                              global_incr_Cs_delta_sq_sum,
-                                              global_incr_visceff_sum);
-  }
-
+  
   // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
   force_->Scale(density_);
@@ -1312,16 +1184,25 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 {
-  bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  bool   isadapttol    = params_.get<bool>  ("ADAPTCONV"                ,true  );
+  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER"         ,0.01  );
   double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
 
   //--------------------------- adapt tolerance  in the convergence limit
-  if (isadapttol && itenum_>1) solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
+  if (isadapttol && itenum_>1)
+  {
+    solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
+  }
 
   //-------solve for residual displacements to correct incremental displacements
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itenum_==-1);
+
+  solver_.Solve(sysmat_->EpetraOperator(),
+                increment_               ,
+                residual_                ,
+                true                     ,
+                itenum_==-1              );
+
   solver_.ResetTolerance();
 
   return;
@@ -1343,7 +1224,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   // split between accelerations and pressure increments
   Teuchos::RCP<Epetra_Vector> accinc = velpressplitter_.ExtractOtherVector(increment_);
   Teuchos::RCP<Epetra_Vector> preinc = velpressplitter_.ExtractCondVector (increment_);
-
 
   // ------------------------------------------------------
   // update acceleration
@@ -1422,12 +1302,11 @@ bool FLD::FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& ba
 
   L2incvelnorm_= L2incaccnorm*gamma_*dt_;
 
-  // rescaling of pressure to leep symmetry of matrix
+  // rescaling of pressure to keep symmetry of matrix
   if(numdim_==3)
   {
     L2incprenorm_*=gamma_*dt_;
   }
-
 
   // extract velocity and pressure solutions from solution vector
   onlyvel = velpressplitter_.ExtractOtherVector(velnp_);
@@ -1845,265 +1724,6 @@ void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Take a time sample in a canonical turbulent flow          gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidGenAlphaIntegration::GenAlphaTakeSample()
-{
-  // --------------------------------------------------------------------
-  // add up X, X^2 for velocities and pressure
-  turbulencestatistics_->DoTimeSample(velnp_,*force_);
-
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // --------------------------------------------------------------------
-  // do time averaging for subscales and residual --- this is of interest
-  // only for time dependent subscales
-
-  // action for elements
-  eleparams.set("action","time average for subscales and residual");
-
-  // other parameters that might be needed by the elements
-  {
-    ParameterList& timelist = eleparams.sublist("time integration parameters");
-
-    timelist.set("alpha_M",alphaM_);
-    timelist.set("alpha_F",alphaF_);
-    timelist.set("gamma"  ,gamma_ );
-    timelist.set("time"   ,time_  );
-    timelist.set("dt"     ,dt_    );
-  }
-
-  // parameters for stabilisation
-  {
-    eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
-  }
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("u and p (n+1      ,trial)",velnp_);
-  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-  discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp"    , dispnp_   );
-    discret_->SetState("gridvelaf" , gridvelaf_);
-  }
-
-  // get ordered layers of elements in which values are averaged
-  if (planecoords_ == null)
-  {
-    planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
-  }
-
-  (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
-
-  //--------------------------------------------------
-  // (in plane) averaged values of resM (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrres;
-  local_incrres=  rcp(new vector<double> );
-  local_incrres->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrres;
-  global_incrres=  rcp(new vector<double> );
-  global_incrres->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrres_sq;
-  local_incrres_sq=  rcp(new vector<double> );
-  local_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrres_sq;
-  global_incrres_sq=  rcp(new vector<double> );
-  global_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  //--------------------------------------------------
-  // (in plane) averaged values of sacc (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrsacc;
-  local_incrsacc=  rcp(new vector<double> );
-  local_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrsacc;
-  global_incrsacc=  rcp(new vector<double> );
-  global_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrsacc_sq;
-  local_incrsacc_sq=  rcp(new vector<double> );
-  local_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrsacc_sq;
-  global_incrsacc_sq=  rcp(new vector<double> );
-  global_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  //--------------------------------------------------
-  // (in plane) averaged values of svelaf (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrsvelaf;
-  local_incrsvelaf=  rcp(new vector<double> );
-  local_incrsvelaf->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrsvelaf;
-  global_incrsvelaf=  rcp(new vector<double> );
-  global_incrsvelaf->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrsvelaf_sq;
-  local_incrsvelaf_sq=  rcp(new vector<double> );
-  local_incrsvelaf_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrsvelaf_sq;
-  global_incrsvelaf_sq=  rcp(new vector<double> );
-  global_incrsvelaf_sq->resize(3*(planecoords_->size()-1),0.0);
-
-  //--------------------------------------------------
-  // (in plane) averaged values of resC (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrresC;
-  local_incrresC=  rcp(new vector<double> );
-  local_incrresC->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrresC;
-  global_incrresC=  rcp(new vector<double> );
-  global_incrresC->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrresC_sq;
-  local_incrresC_sq=  rcp(new vector<double> );
-  local_incrresC_sq->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrresC_sq;
-  global_incrresC_sq=  rcp(new vector<double> );
-  global_incrresC_sq->resize((planecoords_->size()-1),0.0);
-
-  //--------------------------------------------------
-  // (in plane) averaged values of spressacc (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrspressacc;
-  local_incrspressacc=  rcp(new vector<double> );
-  local_incrspressacc->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrspressacc;
-  global_incrspressacc=  rcp(new vector<double> );
-  global_incrspressacc->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrspressacc_sq;
-  local_incrspressacc_sq=  rcp(new vector<double> );
-  local_incrspressacc_sq->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrspressacc_sq;
-  global_incrspressacc_sq=  rcp(new vector<double> );
-  global_incrspressacc_sq->resize((planecoords_->size()-1),0.0);
-
-  //--------------------------------------------------
-  // (in plane) averaged values of spressnp (^2)
-  //--------------------------------------------------
-  RefCountPtr<vector<double> > local_incrspressnp;
-  local_incrspressnp=  rcp(new vector<double> );
-  local_incrspressnp->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrspressnp;
-  global_incrspressnp=  rcp(new vector<double> );
-  global_incrspressnp->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > local_incrspressnp_sq;
-  local_incrspressnp_sq=  rcp(new vector<double> );
-  local_incrspressnp_sq->resize((planecoords_->size()-1),0.0);
-
-  RefCountPtr<vector<double> > global_incrspressnp_sq;
-  global_incrspressnp_sq=  rcp(new vector<double> );
-  global_incrspressnp_sq->resize((planecoords_->size()-1),0.0);
-
-
-  // pass pointers to local sum vectors to the element
-  eleparams.set<RefCountPtr<vector<double> > >("planecoords_"    ,planecoords_          );
-  eleparams.set<RefCountPtr<vector<double> > >("incrres"         ,local_incrres         );
-  eleparams.set<RefCountPtr<vector<double> > >("incrres_sq"      ,local_incrres_sq      );
-  eleparams.set<RefCountPtr<vector<double> > >("incrsacc"        ,local_incrsacc        );
-  eleparams.set<RefCountPtr<vector<double> > >("incrsacc_sq"     ,local_incrsacc_sq     );
-  eleparams.set<RefCountPtr<vector<double> > >("incrsvelaf"      ,local_incrsvelaf      );
-  eleparams.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"   ,local_incrsvelaf_sq   );
-  eleparams.set<RefCountPtr<vector<double> > >("incrresC"        ,local_incrresC        );
-  eleparams.set<RefCountPtr<vector<double> > >("incrresC_sq"     ,local_incrresC_sq     );
-  eleparams.set<RefCountPtr<vector<double> > >("incrspressacc"   ,local_incrspressacc   );
-  eleparams.set<RefCountPtr<vector<double> > >("incrspressacc_sq",local_incrspressacc_sq);
-  eleparams.set<RefCountPtr<vector<double> > >("incrspressnp"    ,local_incrspressnp    );
-  eleparams.set<RefCountPtr<vector<double> > >("incrspressnp_sq" ,local_incrspressnp_sq );
-
-  // call loop over elements to compute means
-  {
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    discret_->ClearState();
-  }
-
-  // compute global sums, momentum equation residuals
-  discret_->Comm().SumAll(&((*local_incrres       )[0]),
-                          &((*global_incrres      )[0]),
-                          3*(planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
-                          &((*global_incrres_sq   )[0]),
-                          3*(planecoords_->size()-1));
-
-  discret_->Comm().SumAll(&((*local_incrsacc      )[0]),
-                          &((*global_incrsacc     )[0]),
-                          3*(planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrsacc_sq   )[0]),
-                          &((*global_incrsacc_sq  )[0]),
-                          3*(planecoords_->size()-1));
-
-  discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
-                          &((*global_incrsvelaf   )[0]),
-                          3*(planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
-                          &((*global_incrsvelaf_sq)[0]),
-                          3*(planecoords_->size()-1));
-
-  // compute global sums, incompressibility residuals
-  discret_->Comm().SumAll(&((*local_incrresC      )[0]),
-                          &((*global_incrresC     )[0]),
-                          (planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
-                          &((*global_incrresC_sq  )[0]),
-                          (planecoords_->size()-1));
-
-  discret_->Comm().SumAll(&((*local_incrspressacc    )[0]),
-                          &((*global_incrspressacc   )[0]),
-                          (planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrspressacc_sq )[0]),
-                          &((*global_incrspressacc_sq)[0]),
-                          (planecoords_->size()-1));
-
-  discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
-                          &((*global_incrspressnp    )[0]),
-                          (planecoords_->size()-1));
-  discret_->Comm().SumAll(&((*local_incrspressnp_sq  )[0]),
-                          &((*global_incrspressnp_sq )[0]),
-                          (planecoords_->size()-1));
-
-
-  turbulencestatistics_->AddToResAverage(global_incrres         ,
-                                         global_incrres_sq      ,
-                                         global_incrsacc        ,
-                                         global_incrsacc_sq     ,
-                                         global_incrsvelaf      ,
-                                         global_incrsvelaf_sq   ,
-                                         global_incrresC        ,
-                                         global_incrresC_sq     ,
-                                         global_incrspressacc   ,
-                                         global_incrspressacc_sq,
-                                         global_incrspressnp    ,
-                                         global_incrspressnp_sq);
-  return;
-}
-
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | filter quantities for dynamic Smagorinsky model. Compute averaged    |
  | values for LijMij and MijMij.                             gammi 12/07|
  *----------------------------------------------------------------------*/
@@ -2237,11 +1857,11 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
                                 ep_modeled_stress_grid_scale_hat,
                                 ep_velaf_hat,dummy1,dummy2);
       if (err) dserror("Proc %d: Element %d returned err=%d",
-                       discret_->Comm().MyPID(),nbele->Id(),err);
+      discret_->Comm().MyPID(),nbele->Id(),err);
 
       // get contribution to patch volume of this element. Add it up.
       double volume_contribution =filterparams.get<double>("volume_contribution");
-
+      
       patchvolume+=volume_contribution;
     }
 
@@ -2330,12 +1950,15 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
 
   // get ordered layers of elements in which LijMij and MijMij are averaged
+  // the layers are obtained from the statistics evaluation via the
+  // parameterlist (should be available after construction of the 
+  // statistics manager)
   if (planecoords_ == null)
   {
-    planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
-  }
+    ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
-  (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+    planecoords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_");
+  }
 
   averaged_LijMij_->resize((*planecoords_).size()-1);
   averaged_MijMij_->resize((*planecoords_).size()-1);
@@ -2394,7 +2017,7 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     if (err) dserror("Proc %d: Element %d returned err=%d",
                      discret_->Comm().MyPID(),ele->Id(),err);
 
-
+    
     // get the result from the element call
     double LijMij = calc_smag_const_params.get<double>("LijMij");
     double MijMij = calc_smag_const_params.get<double>("MijMij");
@@ -2448,7 +2071,7 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 
     modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij_);
     modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij_);
-    modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+    modelparams->set<RefCountPtr<vector<double> > >("planecoords_"    ,planecoords_    );
   }
 
   dtfilter_=ds_cputime()-tcpu;
@@ -2658,34 +2281,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             }
             cout << endl;
           }
-
-          if (special_flow_ == "channel_flow_of_height_2")
-          {
-            cout << "                             " ;
-            cout << "Turbulence statistics are evaluated ";
-            cout << "for a turbulent channel flow.\n";
-            cout << "                             " ;
-            cout << "The solution is averaged over the homogeneous ";
-            cout << hom_plane;
-            cout << " plane and over time.\n";
-            cout << "\n";
-            cout << "                             " ;
-            cout << "Sampling period: steps " << samstart_ << " to " << samstop_  << ".\n";
-
-            if(dumperiod_ == 0)
-            {
-              cout << "                             " ;
-              cout << "Using standalone records (i.e. start from 0 for a new record)\n";
-            }
-            else
-            {
-              cout << "                             " ;
-              cout << "Volker-style incremental dumping is used (";
-              cout << dumperiod_ << ")" << endl;
-            }
-          }
-          cout << endl;
-          cout << endl;
         }
 
         //--------------------------------------------------------------------
@@ -2906,166 +2501,18 @@ Lift and drag forces are based upon the right hand side (force) entities
 of the corresponding nodes. The contribution of the end node of a line
 is entirely added to a present L&D force.
 
-Idea of this routine:
-
-create
-
-map< label, set<DRT::Node*> >
-
-which is a set of nodes to each L&D Id
-nodal forces of all the nodes within one set are added to one L&D force
-
 Notice: Angular moments obtained from lift&drag forces currently refere
         to the initial configuration, i.e. are built with the coordinates
         X of a particular node irrespective of its current position.
 */
 void FLD::FluidGenAlphaIntegration::LiftDrag() const
 {
-  std::map< const int, std::set<DRT::Node* > > ldnodemap;
-  std::map< const int, const std::vector<double>* > ldcoordmap;
+  // in this map, the results of the lift drag calculation are stored
+  RCP<map<int,vector<double> > > liftdragvals;
 
-  // allocate and initialise LiftDrag conditions
-  std::vector<DRT::Condition*> ldconds;
-  discret_->GetCondition("LIFTDRAG",ldconds);
-
-  // space dimension of the problem
-  const int ndim = params_.get<int>("number of velocity degrees of freedom");
-
-  // there is an L&D condition if it has a size
-  if( ldconds.size() )
-  {
-
-    // prepare output
-    if (myrank_==0)
-    {
-      cout << "Lift and drag calculation:" << "\n";
-      if (ndim == 2)
-      {
-        cout << "lift'n'drag Id  ";
-        cout << "    F_x         ";
-        cout << "    F_y         ";
-        cout << "    M_z :\n"     ;
-      }
-      if (ndim == 3)
-      {
-        cout << "lift'n'drag Id  ";
-        cout << "    F_x         ";
-        cout << "    F_y         ";
-        cout << "    F_z         ";
-        cout << "    M_x         ";
-        cout << "    M_y         ";
-        cout << "    M_z : \n"    ;
-      }
-    }
-
-    // ---------------------------------------------------------------
-    // sort data
-
-    // loop L&D conditions (i.e. lines in .dat file)
-    for( unsigned i=0; i<ldconds.size(); ++i)
-    {
-      /* get label of present LiftDrag condition  */
-      const unsigned int label = ldconds[i]->Getint("label");
-      /* get new nodeset for new label OR:
-         return pointer to nodeset for known label ... */
-      std::set<DRT::Node*>& nodes = ldnodemap[label];
-
-      // centre coordinates to present label
-      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
-
-      /* get pointer to its nodal Ids*/
-      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
-
-      /* put all nodes belonging to the L&D line or surface into
-         'nodes' which are associated with the present label */
-      for (unsigned j=0; j<ids->size(); ++j)
-      {
-        // give me present node Id
-        const int node_id = (*ids)[j];
-        // put it into nodeset of actual label if node is new and mine
-        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
-	  nodes.insert(discret_->gNode(node_id));
-      }
-    } // end loop over conditions
+  FLD::UTILS::LiftDrag(*discret_,*force_,params_,liftdragvals);
 
 
-    // now step the label map
-    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
-         labelit != ldnodemap.end(); ++labelit )
-    {
-      // pointer to nodeset of present label
-      const std::set<DRT::Node*>& nodes = labelit->second;
-      // the present label
-      const int label = labelit->first;
-      // vector with lift&drag forces
-      std::vector<double> values(6,0.0);
-      // vector with lift&drag forces after communication
-      std::vector<double> resultvec(6,0.0);
-
-      // get also pointer to centre coordinates
-      const std::vector<double>* centerCoord = ldcoordmap[label];
-
-      // loop all nodes within my set
-      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin();
-           actnode != nodes.end();
-           ++actnode)
-      {
-        // pointer to nodal coordinates
-        const double* x = (*actnode)->X();
-        const Epetra_BlockMap& rowdofmap = force_->Map();
-        const std::vector<int> dof = discret_->Dof(*actnode);
-
-        std::vector<double> distances (3);
-        for (unsigned j=0; j<3; ++j)
-        {
-          distances[j]= x[j]-(*centerCoord)[j];
-        }
-        // get nodal forces
-        const double fx = (*force_)[rowdofmap.LID(dof[0])];
-        const double fy = (*force_)[rowdofmap.LID(dof[1])];
-        const double fz = (*force_)[rowdofmap.LID(dof[2])];
-        values[0] += fx;
-        values[1] += fy;
-        values[2] += fz;
-
-        // calculate nodal angular momenta
-        values[3] += distances[1]*fz-distances[2]*fy;
-        values[4] += distances[2]*fx-distances[0]*fz;
-        values[5] += distances[0]*fy-distances[1]*fx;
-      } // end: loop over nodes
-
-      // care for the fact that we are (most likely) parallel
-      force_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
-
-      // do the output
-      if (myrank_==0)
-      {
-        if (ndim == 2)
-	{
-	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
-        }
-        if (ndim == 3)
-	{
-	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[2] << "    ";
-	  cout << std::scientific << resultvec[3] << "    ";
-	  cout << std::scientific << resultvec[4] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
-	}
-      }
-    } // end: loop over L&D labels
-    if (myrank_== 0)
-    {
-      cout << "\n";
-    }
-  }
 }//FluidGenAlphaIntegration::LiftDrag
 
 

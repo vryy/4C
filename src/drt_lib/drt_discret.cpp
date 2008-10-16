@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include <algorithm>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -440,6 +441,8 @@ const Epetra_Map* DRT::Discretization::DofColMap() const
  *----------------------------------------------------------------------*/
 void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_Vector> state)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::SetState");
+
   if (!Filled()) dserror("FillComplete() was not called");
   const Epetra_Map* colmap = DofColMap();
   const Epetra_BlockMap& vecmap = state->Map();

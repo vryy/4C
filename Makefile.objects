@@ -232,6 +232,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/xfluidimplicitintegration.o \
                 src/drt_fluid/fluid_genalpha_integration.o \
                 src/drt_fluid/fluidimpedancecondition.o \
+                src/drt_fluid/turbulence_statistic_manager.o \
                 src/drt_fluid/turbulence_statistics.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
                 src/drt_fluid/turbulence_statistics_sqc.o \

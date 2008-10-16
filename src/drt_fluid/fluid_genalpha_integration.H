@@ -52,9 +52,12 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
-#include "turbulence_statistics.H"
-#include "turbulence_statistics_ldc.H"
-#include "turbulence_statistics_sqc.H"
+#include "turbulence_statistic_manager.H"
+
+#include "../drt_fluid/turbulence_statistics.H"
+#include "../drt_fluid/turbulence_statistics_ldc.H"
+#include "../drt_fluid/turbulence_statistics_sqc.H"
+
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -86,10 +89,16 @@ using namespace Teuchos;
 
 namespace FLD {
 
+// forwarded declarations
+class TurbulenceStatisticManager;
+
 class FluidGenAlphaIntegration
 {
+  //! @name Friends
   friend class FluidResultTest;
+  friend class TurbulenceStatisticManager;
 
+  //@}
 public:
 
   /*!
@@ -208,14 +217,6 @@ public:
          includes an element call.
   */
   void GenAlphaTimeUpdate();
-
-
-  /*!
-  \brief Include this result into the averaging procedure for
-  turbulence statistics
-
-  */
-  void GenAlphaTakeSample();
 
 
   /*!
@@ -612,7 +613,7 @@ private:
   int                       myrank_ ;
 
   //! flag for low-Mach-number solver (no: standard incompressible solver)
-  string loma_;
+  string                    loma_;
 
   //! fluid density
   double                    density_;
@@ -680,25 +681,20 @@ private:
   //! compute and write traction vector
   int                       writestresses_;
 
+  //! @name Turbulence statistics evaluation
+
   //! parameters for sampling/dumping period
   int samstart_;
-  int samstop_;
-  int dumperiod_;
 
-  //! flag for special flow: currently channel flow or flow in a lid-driven cavity
+  //! flag for special flow: currently channel flow, flow in 
+  //! a lid-driven cavity and flow around a square cylinder
   string special_flow_;
 
   //! flag for potential Neumann-type outflow stabilization
   string outflow_stab_;
 
-  //! turbulence statistics for turbulent channel flow example
-  RCP<TurbulenceStatistics> turbulencestatistics_;
-
-  //! turbulence statistics for lid-driven cavity example
-  RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
-
-  //! turbulence statistics for square cylinder example
-  RCP<TurbulenceStatisticsSqc> turbulencestatistics_sqc_;
+  //! manager for turbulence statistics 
+  RCP<TurbulenceStatisticManager> statisticsmanager_;
 
   //@}
 
@@ -725,7 +721,7 @@ private:
   RCP<Epetra_Vector>        neumann_loads_;
 
   //! the vector containing potential Neumann-type outflow stabilization
-  RCP<Epetra_Vector>    outflow_stabil_;
+  RCP<Epetra_Vector>        outflow_stabil_;
 
   //! Nonlinear iteration increment vector contains accleeration
   //! and pressure increment
@@ -779,9 +775,9 @@ private:
   RCP<Epetra_Vector>        velaf_;
 
   //! velocities and densities at time n+alpha_F, n+1 and n
-  RCP<Epetra_Vector>    vedeaf_;
-  RCP<Epetra_Vector>    vedenp_;
-  RCP<Epetra_Vector>    veden_;
+  RCP<Epetra_Vector>        vedeaf_;
+  RCP<Epetra_Vector>        vedenp_;
+  RCP<Epetra_Vector>        veden_;
 
   //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>        dispnp_   ;

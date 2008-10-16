@@ -2,7 +2,7 @@
 /*!
 \file fluid3_genalpha_resVMM.H
 
-\brief Internal implementation of Fluid3 element with a generalised alpha
+\brief Internal implementation of Fluid3 element with a generalisbed alpha
        time integration.
 
 <pre>
@@ -21,147 +21,224 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid3.H"
 #include "fluid3_nurbs.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
-#include <blitz/array.h>
 
-#ifdef PERF
-#include <Teuchos_TimeMonitor.hpp>
-#endif
+#include "../drt_lib/drt_nurbs_discret.H"
+
+
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include <blitz/array.h>
 
 namespace DRT
 {
   namespace ELEMENTS
   {
-  /// Internal Fluid3 implementation (genalpha version)
-  /*!
-    This internal class keeps all the working arrays needed to
-    calculate the Fluid3 element (genalpha implementation).
-    Additionally the method Sysmat() provides this element
-    implementation.
 
-    <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Fluid3)
-    from the mathematical contents (this class). The differences
-    to the default fluid implementation is the time integration
-    scheme and the residual based stabilisation. This affects the
-    factors of some of the contributions and some additional
-    element contributions arise.
+    /// Interface base class for Fluid3Impl
+    /*!
+      This class exists to provide a common interface for all template
+      versions of Fluid3Impl. The only function
+      this class actually defines is Impl, which returns a pointer to
+      the appropriate version of Fluid3Impl.
+    */
+    class Fluid3GenalphaResVMMInterface
+    {
+    public:
+      /// Empty constructor
+      Fluid3GenalphaResVMMInterface() {}
+      /// Empty destructor
+      virtual ~Fluid3GenalphaResVMMInterface() {}
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function, it
+        must be defined in Fluid3GenalphaResVMM.
+      */
+      virtual int Evaluate(Fluid3*                    ele,
+                           ParameterList&             params,
+                           DRT::Discretization&       discretization,
+                           vector<int>&               lm,
+                           Epetra_SerialDenseMatrix&  elemat1_epetra,
+                           Epetra_SerialDenseMatrix&  elemat2_epetra,
+                           Epetra_SerialDenseVector&  elevec1_epetra,
+                           Epetra_SerialDenseVector&  elevec2_epetra,
+                           Epetra_SerialDenseVector&  elevec3_epetra,
+                           RefCountPtr<MAT::Material> mat,
+                           _MATERIAL*                 actmat) = 0;
+      
+      /// Internal implementation class for fluid element
+      static Fluid3GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
+      
+    };
+    
+    /// Internal Fluid3 implementation (genalpha version)
+    /*!
+      This internal class keeps all the working arrays needed to
+      calculate the Fluid3 element (genalpha implementation).
+      Additionally the method Sysmat() provides this element
+      implementation.
+      
+      <h3>Purpose</h3>
 
-    The Fluid3 will allocate exactly one object of this class for all
-    fluid elements with the same number of nodes in the mesh. This
-    allows us to use exactly matching working arrays (and keep them
-    around.)
+      The idea is to separate the element maintenance (class Fluid3)
+      from the mathematical contents (this class). The differences
+      to the default fluid implementation is the time integration
+      scheme and the residual based stabilisation. This affects the
+      factors of some of the contributions and some additional
+      element contributions arise.
+      
+      The Fluid3 will allocate exactly one object of this class for all
+      fluid elements with the same number of nodes in the mesh. This
+      allows us to use exactly matching working arrays (and keep them
+      around.)
 
-    The number of working arrays has to be reduced to
-    a minimum so that the element fits into the cache.
-    (There might be room for improvements.)
+      The number of working arrays has to be reduced to
+      a minimum so that the element fits into the cache.
+      (There might be room for improvements.)
 
-    <h3>Description</h3>
+      <h3>Description</h3>
 
-    The implementation here is based on a generalised alpha time
-    discretisation with an implicit treatment of the continuity
-    equation and pressure, assuring that every solution is divergence
-    free on output.
+      The implementation here is based on a generalised alpha time
+      discretisation with an implicit treatment of the continuity
+      equation and pressure, assuring that every solution is divergence
+      free on output.
+      
+      There are multiple stabilisation options included in this
+      implementation. For the standard residual based method these are:
+      <pre>
+    
+      o Newton/Quasi-Newton (on/off)
+        -------------------
+        Reactive terms are/are not linearised
 
-    There are multiple stabilisation options included in this
-    implementation. For the standard residual based method these are:
-    <pre>
+      o SUPG Stabilisation
+        ------------------
 
-    o Newton/Quasi-Newton (on/off)
-      -------------------
-      Reactive terms are/are not linearised
+      o PSPG Stabilisation
+        ------------------
 
-    o SUPG Stabilisation
-      ------------------
+      o Viscous Stabilisation
+        ---------------------
+        Of the (A)GLS type
 
-    o PSPG Stabilisation
-      ------------------
+      o Cross stress (ResVMM)
+        ---------------------
+        Fix point treatment, no linearisation
 
-    o Viscous Stabilisation
-      ---------------------
-      Of the (A)GLS type
+      o Reynolds stress (ResVMM)
+        ------------------------
+        Fix point treatment, no linearisation
 
-    o Cross stress (ResVMM)
-      ---------------------
-      Fix point treatment, no linearisation
+      </pre>
 
-    o Reynolds stress (ResVMM)
-      ------------------------
-      Fix point treatment, no linearisation
+      Available versions of the stabilisation parameters are
+      <pre>
 
-    </pre>
+      o tauM: Barrenechea, Franca , Valentin
+        tauC: Wall
 
-    Available versions of the stabilisation parameters are
-    <pre>
+      o tauM: Barrenechea, Franca , Valentin
+        tauC: Codina
 
-    o tauM: Barrenechea, Franca , Valentin
-      tauC: Wall
+      o tauM: Bazilevs
+        tauC: Bazilevs
 
-    o tauM: Barrenechea, Franca , Valentin
-      tauC: Codina
+      </pre>
+      For further details on the choice of the stabilisation parameter
+      see the inline documentation.
 
-    o tauM: Bazilevs
-      tauC: Bazilevs
+      For time dependent subscale stabilisation we have an additional
+      option:
+      <pre>
 
-    </pre>
-    For further details on the choice of the stabilisation parameter
-    see the inline documentation.
+      o Stabilisation using subscale accelerations
+        ------------------------------------------
+        Equivalent to include a reaction like expression into the
+        stablilisation operator --- should be included if any remarkable
+        change on the matrix should occur in comparison to quasistatic
+        subscales formulation.
 
-    For time dependent subscale stabilisation we have an additional
-    option:
-    <pre>
+      </pre>
 
-    o Stabilisation using subscale accelerations
-      ------------------------------------------
-      Equivalent to include a reaction like expression into the
-      stablilisation operator --- should be included if any remarkable
-      change on the matrix should occur in comparison to quasistatic
-      subscales formulation.
+      In addition to the stabilisation options, the method allows the use of
+      classical turbulence models
+      <pre>
 
-    </pre>
+      o Standard Smagorinsky
+        --------------------
+        With constant Smagorinsky coefficient
 
-    In addition to the stabilisation options, the method allows the use of
-    classical turbulence models
-    <pre>
+      o Smagorinsky with Van Driest damping
+        -----------------------------------
+        Exponential damping of mixing lenght close to the wall
 
-    o Standard Smagorinsky
-      --------------------
-      With constant Smagorinsky coefficient
+      o Dynamic Smagorinsky
+        -------------------
+        Based on Germano's model, see for example. Note that Cs is averaged over
+        planes in the channel flow and clipping of negative values of Cs is
+        applied (and necessary to keep the algorithm stable)
 
-    o Smagorinsky with Van Driest damping
-      -----------------------------------
-      Exponential damping of mixing lenght close to the wall
+        M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
+        A dynamic subgrid-scale eddy viscosity model
+        (Phys. Fluids 1991)
 
-    o Dynamic Smagorinsky
-      -------------------
-      Based on Germano's model, see for example. Note that Cs is averaged over
-      planes in the channel flow and clipping of negative values of Cs is
-      applied (and necessary to keep the algorithm stable)
+        or
 
-      M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
-      A dynamic subgrid-scale eddy viscosity model
-      (Phys. Fluids 1991)
+        D.K. Lilly:
+        A proposed modification of the Germano subgrid-scale closure method
+        (Phys. Fluids 1992)
 
-      or
+      </pre>
 
-      D.K. Lilly:
-      A proposed modification of the Germano subgrid-scale closure method
-      (Phys. Fluids 1992)
+      The stabilisation flags as well as turbulence model options have been read
+      from the input file and are passed through the evaluate interface.
 
-    </pre>
+      \auther gammi
+      \date 04/08
+    */
 
-    The stabilisation flags as well as turbulence model options have been read
-    from the input file and are passed through the evaluate interface.
-
-    \auther gammi
-    \date 04/08
-  */
-    class Fluid3GenalphaResVMM
+    template<DRT::Element::DiscretizationType distype>
+    class Fluid3GenalphaResVMM: public Fluid3GenalphaResVMMInterface
     {
     public:
       /// Constructor with number of nodes
-      explicit Fluid3GenalphaResVMM(int iel);
+      Fluid3GenalphaResVMM();
+
+      /// empty destructor
+      ~Fluid3GenalphaResVMM(){return;};
+
+      //! number of nodes
+      static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+      /// Evaluate
+      /*!
+        The evaluate function for the generalized-alpha fluid case.
+
+        Get statevetors, extract values required by the element using the
+        location vector.
+        
+        Set parameters for time integration and nonlinear iteration  (i.e. 
+        read control parameters from the parameterlist)
+        
+        Do setup for stabilization, turbulence models and so on.
+
+        Get knots for the nurbs implementation.
+
+        In the end, call Sysmat, i.e. assemble element residual (and matrix)
+        
+      */
+      virtual int Evaluate(Fluid3*                    ele,
+                           ParameterList&             params,
+                           DRT::Discretization&       discretization,
+                           vector<int>&               lm,
+                           Epetra_SerialDenseMatrix&  elemat1_epetra,
+                           Epetra_SerialDenseMatrix&  elemat2_epetra,
+                           Epetra_SerialDenseVector&  elevec1_epetra,
+                           Epetra_SerialDenseVector&  elevec2_epetra,
+                           Epetra_SerialDenseVector&  elevec3_epetra,
+                           RefCountPtr<MAT::Material> mat,
+                           _MATERIAL*                 actmat);
+
 
       /// calculating element matrix and rhs
       /*
@@ -198,74 +275,46 @@ namespace DRT
                                       Smagorinsky constant on output. On input, it corresponds to
                                       (Cs*hk)^2
         \param l_tau              (i) viscous length scale for van Driest damping (zero if unused)
-#ifdef PERF
-        \param timeelederxy2    (i/o) time spent on computation of second derivatives
-        \param timeelederxy     (i/o) time spent on computation of first derivatives
-        \param timeeletau       (i/o) time spent on computation of tauM,tauC
-        \param timeelegalerkin  (i/o) time for galerkin loops (matrix+vector)
-        \param timeelepspg      (i/o) time for pspg loops (matrix+vector)
-        \param timeelesupg      (i/o) time for supg loops (matrix+vector)
-        \param timeelecstab     (i/o) time for cstab loops (matrix+vector)
-        \param timeelevstab     (i/o) time for vstab loops (matrix+vector)
-        \param timeelecrossrey  (i/o) time for cross and reynolds loops (matrix+vector)
-        \param timeeleintertogp (i/o) time for interpolation to gausspoints
-        \param timeeleseteledata(i/o) time for initialisation, computation of bodyforce, xyze etc
-        \param timeeletdextras  (i/o) time spent on td extras
-#endif        
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat(Fluid3*                                         ele,
-		  std::vector<blitz::Array<double,1> >&           myknots,
-                  Epetra_SerialDenseMatrix&                       elemat,
-                  Epetra_SerialDenseVector&                       elevec,
-                  double*                                         edispnp,
-                  double*                                         egridvaf,
-                  double*                                         evelnp,
-		  double*                                         eprenp,
-		  double*                                         eaccam,
-                  blitz::Array<double,2>&                         evelaf,
-                  blitz::Array<double,2>&                         csevelaf,
-                  blitz::Array<double,2>&                         fsevelaf,
-                  blitz::Array<double,2>&                         cseconvaf,
-                  struct _MATERIAL*                               material,
-                  double                                          alphaM,
-                  double                                          alphaF,
-                  double                                          gamma,
-                  double                                          dt,
-                  double                                          time,
-                  enum Fluid3::LinearisationAction                newton,
-                  bool                                            higher_order_ele,                  
-                  enum Fluid3::StabilisationAction                fssgv,
-                  enum Fluid3::StabilisationAction                tds,
-                  enum Fluid3::StabilisationAction                inertia,
-                  enum Fluid3::StabilisationAction                pspg,
-                  enum Fluid3::StabilisationAction                supg,
-                  enum Fluid3::StabilisationAction                vstab,
-                  enum Fluid3::StabilisationAction                cstab,
-                  enum Fluid3::StabilisationAction                cross,
-                  enum Fluid3::StabilisationAction                reynolds,
-                  enum Fluid3::TauType                            whichtau,
-                  enum Fluid3::TurbModelAction                    turb_mod_action,
-                  double&                                         Cs,
-                  double&                                         Cs_delta_sq,
-                  double&                                         visceff,
-                  double                                          l_tau,
-#ifdef PERF
-                  RefCountPtr<Time>                               timeelederxy2    ,
-                  RefCountPtr<Time>                               timeelederxy     ,
-                  RefCountPtr<Time>                               timeeletau       ,
-                  RefCountPtr<Time>                               timeelegalerkin  ,
-                  RefCountPtr<Time>                               timeelepspg      ,
-                  RefCountPtr<Time>                               timeelesupg      ,
-                  RefCountPtr<Time>                               timeelecstab     ,
-                  RefCountPtr<Time>                               timeelevstab     ,
-                  RefCountPtr<Time>                               timeelecrossrey  ,
-                  RefCountPtr<Time>                               timeeleintertogp ,
-                  RefCountPtr<Time>                               timeeleseteledata,
-                  RefCountPtr<Time>                               timeeletdextras  ,
-#endif
-                  bool                                            compute_elemat
+      void Sysmat(Fluid3*                                          ele,
+		  std::vector<blitz::Array<double,1> >&            myknots,
+                  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& elemat,
+                  LINALG::FixedSizeSerialDenseMatrix<4*iel,    1>& elevec,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvaf,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
+                  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf,
+                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf,
+                  struct _MATERIAL*                                material,
+                  double                                           alphaM,
+                  double                                           alphaF,
+                  double                                           gamma,
+                  double                                           dt,
+                  double                                           time,
+                  enum Fluid3::LinearisationAction                 newton,
+                  bool                                             higher_order_ele,                  
+                  enum Fluid3::StabilisationAction                 fssgv,
+                  enum Fluid3::StabilisationAction                 tds,
+                  enum Fluid3::StabilisationAction                 inertia,
+                  enum Fluid3::StabilisationAction                 pspg,
+                  enum Fluid3::StabilisationAction                 supg,
+                  enum Fluid3::StabilisationAction                 vstab,
+                  enum Fluid3::StabilisationAction                 cstab,
+                  enum Fluid3::StabilisationAction                 cross,
+                  enum Fluid3::StabilisationAction                 reynolds,
+                  enum Fluid3::TauType                             whichtau,
+                  enum Fluid3::TurbModelAction                     turb_mod_action,
+                  double&                                          Cs,
+                  double&                                          Cs_delta_sq,
+                  double&                                          visceff,
+                  double                                           l_tau,
+                  bool                                             compute_elemat
         );
 
   /*! \brief evaluate residuals resM and resC on the element and return
@@ -292,6 +341,11 @@ namespace DRT
                    const double                            time,
                    const enum Fluid3::StabilisationAction  tds,
                    const enum Fluid3::TauType              whichtau, 
+                   enum Fluid3::TurbModelAction            turb_mod_action,
+                   double&                                 Cs,
+                   double&                                 Cs_delta_sq,
+                   double&                                 visceff,
+                   double                                  l_tau,
                    const bool                              higher_order_ele,
                    blitz::Array<double,1>&                 mean_res,
                    blitz::Array<double,1>&                 mean_sacc,
@@ -306,7 +360,7 @@ namespace DRT
                    double&                                 mean_spreacc_sq,
                    double&                                 mean_sprenp_sq);
 
-      static Fluid3GenalphaResVMM* Impl(DRT::ELEMENTS::Fluid3* ele);
+      //      static Fluid3GenalphaResVMM* Impl(DRT::ELEMENTS::Fluid3* ele);
 
     private:
       ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
@@ -325,9 +379,6 @@ namespace DRT
        */
       void CalVisc(     const struct _MATERIAL* material,
                         double&                 visc);
-          
-      //! number of nodes --- determines array sizes
-      int iel_;
 
       //! fine-scale subgrid viscosity
       double vart_;
@@ -335,93 +386,93 @@ namespace DRT
       // nodal arrays
       // ------------
       //! node coordinates
-      blitz::Array<double,2> xyze_;
+      LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
       //! weights for nurbs elements
       blitz::Array<double,1> weights_;
       //! value of body force in the nodes of the element
-      blitz::Array<double,2> edeadaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadaf_;
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! vector of shape functions
-      blitz::Array<double,1> funct_;
+      LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
       //! vector of shape function derivatives in reference coordinate system
-      blitz::Array<double,2> deriv_;
+      LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
       //! vector of second shape function derivatives in reference coordinate system
-      blitz::Array<double,2> deriv2_;
+      LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
       //! vector of shape function derivatives in global coordinate system
-      blitz::Array<double,2> derxy_;
+      LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
       //! vector of second shape function derivatives in global coordinate system
-      blitz::Array<double,2> derxy2_;
+      LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
-      blitz::Array<double,2> viscs2_;
       /*
-                       corresponds to the operator
+                       corresponds to a part of the operator
 
-                                 - grad o epsilon
+                                  grad o epsilon
 
                        on the discret level
       */
+      LINALG::FixedSizeSerialDenseMatrix<3,iel> viscs2_;
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xjm_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   xjm_;
       //! its inverse
-      blitz::Array<double,2> xji_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   xji_;
       //! second derivatives of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xder2_;
+      LINALG::FixedSizeSerialDenseMatrix<6,3>   xder2_;
 
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
       double                 prenp_;
       //! acceleration in gausspoint, time n+am
-      blitz::Array<double,1> accintam_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   accintam_;
       //! velocity in gausspoint, time n+1
-      blitz::Array<double,1> velintnp_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   velintnp_;
       //! velocity in gausspoint, time n+af
-      blitz::Array<double,1> velintaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   velintaf_;
       //! coarse-scale velocity in gausspoint, time n+af
-      blitz::Array<double,1> csvelintaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   csvelintaf_;
       //! fine-scale velocity in gausspoint, time n+af
-      blitz::Array<double,1> fsvelintaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   fsvelintaf_;
       //! coarse-scale convective stresses in gausspoint, time n+af
-      blitz::Array<double,1> csconvintaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   csconvintaf_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
-      blitz::Array<double,1> aleconvintaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   aleconvintaf_;
       //! pressure gradient in gausspoint, time n+1
-      blitz::Array<double,1> pderxynp_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
-      blitz::Array<double,2> vderxynp_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
-      blitz::Array<double,2> vderxyaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxyaf_;
       //! coarse-scale velocity derivatives in gausspoint, time n+af
-      blitz::Array<double,2> csvderxyaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   csvderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
-      blitz::Array<double,2> fsvderxyaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,3>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af
-      blitz::Array<double,1> bodyforceaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1>   bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
-      blitz::Array<double,1> conv_c_af_;
+      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_af_;
       //! convective part introduced by grid velocity, time n+af
-      blitz::Array<double,1> conv_g_af_;
+      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_g_af_;
 
       // element data
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
-      blitz::Array<double,1> tau_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
       //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
-      blitz::Array<double,1> svelaf_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> svelaf_;
       //! Convective term, most recent iteration value
-      blitz::Array<double,1> convaf_old_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> convaf_old_;
       //! Convective part of scale-similarity term, most recent iteration value
-      blitz::Array<double,1> convaf_s_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> convaf_s_;
       /*
                          /  n+af        \   n+af
                         |  u     o grad  | u
                          \  (i)         /   (i)
       */
       //! Subgrid velocity convective term, most recent iteration value
-      blitz::Array<double,1> convsubaf_old_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> convsubaf_old_;
       /* Most recent value for subgrid velocity convective term
 
                         /~n+af         \   n+af
@@ -429,16 +480,16 @@ namespace DRT
                         \   (i)        /   (i)
       */
       //! Viscous term, most recent iteration value
-      blitz::Array<double,1> viscaf_old_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> viscaf_old_;
       /*
                                         /  n+af \
                        nabla o  epsilon | u     |
                                         \  (i)  /
       */
       //! Current residual of the momentum equation
-      blitz::Array<double,1> resM_;
+      LINALG::FixedSizeSerialDenseMatrix<3,1> resM_;
       //! This is the convection operator using resM_ as the convecting velocity
-      blitz::Array<double,1> conv_resM_;
+      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
       /*
 
                      /               \
@@ -446,7 +497,7 @@ namespace DRT
                      \    (i)        /
       */
       //! This is the convection operator using the subscale velocity as the convecting velocity
-      blitz::Array<double,1>  conv_subaf_;
+      LINALG::FixedSizeSerialDenseMatrix<iel,1>  conv_subaf_;
       /*
                     /~n+af         \
                    | u      o nabla |
@@ -461,7 +512,7 @@ namespace DRT
       // ------------------------
       //! array used for the computation of jacobian 
       //! determinant and second derivatives
-      blitz::Array<double,2> bm_;
+      LINALG::FixedSizeSerialDenseMatrix<6,6>  bm_;
 
     };
   }

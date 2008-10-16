@@ -337,20 +337,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
-  //if (special_flow_ == "lid_driven_cavity")
+  //
+  statisticsmanager_=rcp(new TurbulenceStatisticManager(*this));
+
   if (special_flow_ != "no")
   {
     // parameters for sampling/dumping period
     samstart_  = modelparams->get<int>("SAMPLING_START",1);
-    samstop_   = modelparams->get<int>("SAMPLING_STOP",stepmax_);
-    dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
-
-    if (special_flow_ == "lid_driven_cavity")
-      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
-    else if (special_flow_ == "channel_flow_of_height_2")
-      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
-    else if (special_flow_ == "square_cylinder")
-      turbulencestatistics_sqc_=rcp(new TurbulenceStatisticsSqc(discret_,params_));
   }
 
   // -------------------------------------------------------------------
@@ -599,29 +592,14 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
     // -------------------------------------------------------------------
-    //                    calculate lift'n'drag forces
+    //          calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
-    const int liftdrag = params_.get<int>("liftdrag");
-
-    if (liftdrag == 0); // do nothing, we don't want lift & drag
-    if (liftdrag == 1)
-      dserror("how did you manage to get here???");
-    if (liftdrag == 2)
-      LiftDrag();
+    LiftDrag();
 
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
-    if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
-    //if(special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
-    {
-      if(special_flow_ == "lid_driven_cavity")
-        turbulencestatistics_ldc_->DoTimeSample(velnp_);
-      else if(special_flow_ == "channel_flow_of_height_2")
-        turbulencestatistics_->DoTimeSample(velnp_,*trueresidual_);
-      else if(special_flow_ == "square_cylinder")
-        turbulencestatistics_sqc_->DoTimeSample(velnp_);
-    }
+    statisticsmanager_->DoTimeSample(step_,time_);
 
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
@@ -1738,23 +1716,9 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 
   // dumping of turbulence statistics if required
-  //if (special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
-  if (special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
-  {
-    int samstep = step_-samstart_+1;
-    double dsamstep=samstep;
-    double ddumperiod=dumperiod_;
+  statisticsmanager_->DoOutput(step_);
 
-    if (fmod(dsamstep,ddumperiod)==0)
-    {
-      if (special_flow_ == "lid_driven_cavity")
-        turbulencestatistics_ldc_->DumpStatistics(step_);
-      else if (special_flow_ == "channel_flow_of_height_2")
-        turbulencestatistics_->DumpStatistics(step_);
-      else if (special_flow_ == "square_cylinder")
-        turbulencestatistics_sqc_->DumpStatistics(step_);
-    }
-  }
+  return;
 } // FluidImplicitTimeInt::Output
 
 
@@ -2306,15 +2270,9 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     NonlinearSolve();
 
     // -------------------------------------------------------------------
-    //                    calculate lift'n'drag forces
+    //         calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
-    int liftdrag = params_.get<int>("liftdrag");
-
-    if(liftdrag == 0); // do nothing, we don't want lift & drag
-    if(liftdrag == 1)
-      dserror("how did you manage to get here???");
-    if(liftdrag == 2)
-      LiftDrag();
+    LiftDrag();
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -2383,159 +2341,18 @@ Lift and drag forces are based upon the right hand side true-residual entities
 of the corresponding nodes. The contribution of the end node of a line is entirely
 added to a present L&D force.
 
-Idea of this routine:
-
-create
-
-map< label, set<DRT::Node*> >
-
-which is a set of nodes to each L&D Id
-nodal forces of all the nodes within one set are added to one L&D force
-
 Notice: Angular moments obtained from lift&drag forces currently refere to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
 void FLD::FluidImplicitTimeInt::LiftDrag() const
 {
-  std::map< const int, std::set<DRT::Node* > > ldnodemap;
-  std::map< const int, const std::vector<double>* > ldcoordmap;
+  // in this map, the results of the lift drag calculation are stored
+  RCP<map<int,vector<double> > > liftdragvals;
 
-  // allocate and initialise LiftDrag conditions
-  std::vector<DRT::Condition*> ldconds;
-  discret_->GetCondition("LIFTDRAG",ldconds);
+  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
 
-  // space dimension of the problem
-  const int ndim = params_.get<int>("number of velocity degrees of freedom");
-
-  // there is an L&D condition if it has a size
-  if( ldconds.size() )
-  {
-
-    // prepare output
-    if (myrank_==0)
-    {
-      cout << "Lift and drag calculation:" << "\n";
-      if (ndim == 2)
-      {
-        cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
-      }
-      if (ndim == 3)
-      {
-        cout << "lift'n'drag Id      F_x             F_y             F_z           ";
-        cout << "M_x             M_y             M_z :" << "\n";
-      }
-    }
-
-    // sort data
-    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
-    {
-      /* get label of present LiftDrag condition  */
-      const unsigned int label = ldconds[i]->Getint("label");
-      /* get new nodeset for new label OR:
-         return pointer to nodeset for known label ... */
-      std::set<DRT::Node*>& nodes = ldnodemap[label];
-
-      // centre coordinates to present label
-      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
-
-      /* get pointer to its nodal Ids*/
-      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
-
-      /* put all nodes belonging to the L&D line or surface into 'nodes' which are
-         associated with the present label */
-      for (unsigned j=0; j<ids->size(); ++j)
-      {
-        // give me present node Id
-        const int node_id = (*ids)[j];
-        // put it into nodeset of actual label if node is new and mine
-        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
-	  nodes.insert(discret_->gNode(node_id));
-      }
-    } // end loop over conditions
-
-
-    // now step the label map
-    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
-         labelit != ldnodemap.end(); ++labelit )
-    {
-      const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
-      const int label = labelit->first;                    // the present label
-      std::vector<double> values(6,0.0);             // vector with lift&drag forces
-      std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
-
-      // get also pointer to centre coordinates
-      const std::vector<double>* centerCoord = ldcoordmap[label];
-
-      // loop all nodes within my set
-      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
-      {
-        const double* x = (*actnode)->X(); // pointer to nodal coordinates
-        const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
-        const std::vector<int> dof = discret_->Dof(*actnode);
-
-        std::vector<double> distances (3);
-        for (unsigned j=0; j<3; ++j)
-        {
-          distances[j]= x[j]-(*centerCoord)[j];
-        }
-        // get nodal forces
-        const double fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
-        const double fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
-        const double fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
-        values[0] += fx;
-        values[1] += fy;
-        values[2] += fz;
-
-        // calculate nodal angular momenta
-        values[3] += distances[1]*fz-distances[2]*fy;
-        values[4] += distances[2]*fx-distances[0]*fz;
-        values[5] += distances[0]*fy-distances[1]*fx;
-      } // end: loop over nodes
-
-      // care for the fact that we are (most likely) parallel
-      trueresidual_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
-
-      // do the output
-      if (myrank_==0)
-      {
-        if (ndim == 2)
-	{
-	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
-        }
-        if (ndim == 3)
-	{
-	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[2] << "    ";
-	  cout << std::scientific << resultvec[3] << "    ";
-	  cout << std::scientific << resultvec[4] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
-	}
-      }
-
-      // -------------------------------------------------------------------
-      // add calculated lift and drag to mean value calculation (statistics)
-      // -------------------------------------------------------------------
-      if(special_flow_ == "square_cylinder" && step_>=samstart_ && step_<=samstop_)
-      {
-        double dragforce = resultvec[0];
-        double liftforce = resultvec[1];
-        turbulencestatistics_sqc_->DoLiftDragTimeSample(dragforce,liftforce);
-      }
-
-    } // end: loop over L&D labels
-    if (myrank_== 0)
-    {
-      cout << "\n";
-    }
-  }
+  return;
 }//FluidImplicitTimeInt::LiftDrag
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2829,12 +2646,15 @@ void FLD::FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
       "channel_flow_of_height_2")
   {
     // get ordered layers of elements in which LijMij and MijMij are averaged
+    // the layers are obtained from the statistics evaluation via the
+    // parameterlist (should be available after construction of the 
+    // statistics manager)
     if (planecoords_ == null)
     {
-      planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      
+      planecoords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_");
     }
-
-    (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
 
     averaged_LijMij_->resize((*planecoords_).size()-1);
     averaged_MijMij_->resize((*planecoords_).size()-1);

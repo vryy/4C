@@ -2,6 +2,7 @@
 \file fluid_utils.H
 \brief utility functions for fluid problems
 
+
 <pre>
 Maintainer: Axel Gerstenberger
             gerstenberger@lnm.mw.tum.de
@@ -222,8 +223,53 @@ void SetupXFluidSplit(
         LINALG::MapExtractor&        extractor  ///< ready made map splitter
         );
 
-}
-}
+/*!
+
+\brief calculate lift&drag forces and angular momenta
+
+Lift and drag forces are based upon the right hand side true-residual entities
+of the corresponding nodes. The contribution of the end node of a line is entirely
+added to a present L&D force.
+
+Idea of this routine:
+
+create
+
+map< label, set<DRT::Node*> >
+
+which is a set of nodes to each L&D Id
+nodal forces of all the nodes within one set are added to one L&D force
+
+Notice: Angular moments obtained from lift&drag forces currently refere to the
+        initial configuration, i.e. are built with the coordinates X of a particular
+        node irrespective of its current position.
+
+<pre>
+Maintainer: Peter Gamnitzer
+            gamnitzer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+
+  \param dis          (in ) the discretisation (node distribution, conditions)
+  \param force        (in ) the true residual (the nodal forces)
+  \param params       (in ) parameterlist including the lifdrag flag
+  \param liftdragvals (out) the computed values for lift and drag in an array 
+  
+
+  \author chfoe 
+  \date 11/07
+ */
+void LiftDrag(
+  const DRT::Discretization&     dis         , //! fluid discretization
+  const Epetra_Vector&           force       , //! vector of nodalforces
+  ParameterList&                 params      , //! parameters 
+  RCP<map<int,vector<double> > > liftdragvals  //! computed ld values
+  );
+
+} // namespace UTILS
+} // namespace FLD
 
 #endif  // #ifndef FLUID_UTILS_H
 #endif  // #ifdef CCADISCRET
