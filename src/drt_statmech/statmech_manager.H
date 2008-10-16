@@ -15,16 +15,22 @@ Maintainer: Christian Cyron
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
-#include <iostream>
-#include "../drt_lib/linalg_utils.H"
 
-// forward declarations
 
 /*!
 \brief management and auxiliary functions for statistical mechanics
-
 \author cyron (cyron@lnm.mw.tum.de)
 */
+
+// forward declarations
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    class Beam3;
+  }
+}
+
 class StatMechManager
 {
 public:
@@ -43,16 +49,16 @@ public:
   
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
   void StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);
+  
+  //! \brief containing statistical mechanics input parameters
+  Teuchos::ParameterList statmechparams_;
 
 protected:
 
   // don't want = operator and cctor
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
-  
-  //! \brief containing statistical mechanics input parameters
-  Teuchos::ParameterList statmechparams_; 
-  
+   
   //! \brief maximal simulation time
   double maxtime_; 
   
@@ -82,6 +88,9 @@ protected:
   
   //! \brief storing for each node global Id of crosslinking Element; -1 means: no crosslink
   RCP<Epetra_Vector> crosslinkerelements_;
+  
+  //! \brief instance of a crosslinker element which is copied and adapted each time a new crosslinker is needed
+  RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy_;
   
 
 }; // class StatMechManager

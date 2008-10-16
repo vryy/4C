@@ -34,11 +34,10 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
-#include <blitz/array.h>
-#include "../drt_geometry/blitz_tiny_operation.H"
+#include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
+#include <blitz/array.h>
+
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
@@ -47,19 +46,10 @@ typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-di
 typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
-// forward declarations
-struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
+//! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
-
-// forward declarations
-class Discretization;
-class Beam3Register;
 
 namespace ELEMENTS
 {
@@ -79,8 +69,9 @@ public:
 
   //! @name Friends
   friend class Beam3Register;
-  friend void StatMechTime::Integrate(); ////in order to allow initialization of thermal bath parameters for beam3
-
+  friend class StatMechManager;
+  friend void StatMechManager::StatMechUpdate();
+  friend void StatMechTime::Integrate();
 
   //! @name Constructors and destructors and related methods
 
@@ -365,6 +356,9 @@ private:
   
 
   //! @name Internal calculation methods
+  
+  //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
+  void SetUpReferenceGeometry();
 
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);

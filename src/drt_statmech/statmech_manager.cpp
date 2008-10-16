@@ -15,6 +15,16 @@ Maintainer: Christian Cyron
 #include "statmech_manager.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
+
+
+
+#ifdef D_BEAM3
+#include "../drt_beam3/beam3.H"
+#endif  // #ifdef D_BEAM3
 
 #include <iostream>
 #include <iomanip>
@@ -50,6 +60,22 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       (*crosslinkerpartner_)[i] = -1;
       (*crosslinkerelements_)[i] = -1;
     }
+    
+    /*
+    #ifdef D_BEAM3
+    
+    //an instance of a typical crosslinker element is generated which is copied and adapted each time a new crosslinker is needed 
+    crosslinkerdummy_ = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
+    crosslinkerdummy_->crosssec_ = 19e-6;
+    crosslinkerdummy_->crosssecshear_ = 19e-6*1.1;
+    crosslinkerdummy_->Iyy_ = 28.74e-12;
+    crosslinkerdummy_->Izz_ = 28.74e-12;
+    crosslinkerdummy_->Irr_ = 28.74e-8;
+    crosslinkerdummy_->material_ = 1;
+    
+    #endif
+    */
+   
   }
 
   return;
@@ -205,6 +231,8 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechUpdate()
 {  
+  #ifdef D_BEAM3
+  
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
@@ -221,6 +249,16 @@ void StatMechManager::StatMechUpdate()
     //probability with which a crosslinker is established between neighbouring nodes
     double plink = 1;
     double punlink = 1;
+    
+    //maximal distance bridged by a crosslinker
+    double rlink = statmechparams_.get<double>("R_LINK",0.0);
+    
+    //searching neighbours of the current node (with global Id "neighbour"):
+    std::vector<int> neighbours(0);
+    
+    /*_________________________________________________________________________________________________________
+     * note: the following part of the code is suitable for serial use only !!!!
+     * _______________________________________________________________________________________________________*/
     
      
     //searching locally with a tree all nodes forming neighbouring couples and establishing crosslinkers between them
@@ -243,14 +281,29 @@ void StatMechManager::StatMechUpdate()
         
       }
       
-      //searching neighbour for the current node (with global Id "neighbour"):
+      //searching nearest neighbour of the current node (with global Id "neighbour"):
       int neighbour = -1;
+      double rneighbour = rlink;
       
-      //???????????????????????????????????????????????????????????????????????????????????????????????????????
+      //we apply a naive search algorithm which migth be later replaced by means of a tree
+      for(int j = 0; j < i; j++)
+      {
+        double dx = (discret_.lRowNode(j))->X()[0] - (discret_.lRowNode(i))->X()[0];
+        double dy = (discret_.lRowNode(j))->X()[1] - (discret_.lRowNode(i))->X()[1];
+        double dz = (discret_.lRowNode(j))->X()[2] - (discret_.lRowNode(i))->X()[2];
+        double rcurrent = pow(dx*dx + dy*dy + dz*dz, 0.5);
+        
+        if(rcurrent < rlink)
+        {
+          if(rcurrent < rneighbour)
+          {
+            neighbour = j;
+            rneighbour = rcurrent;
+          }
+        }     
+      }
       
-      
-  
-      
+
       //defining global Id of new crosslinker element
       int crosslinkerid = 0;
       //if there is a formerly used, but now unused global Id the new crosslinker gets this Id:
@@ -275,24 +328,35 @@ void StatMechManager::StatMechUpdate()
       if (discret_.NodeRowMap()->GID(i) < neighbour && (*setcrosslinker)[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0)
       {
         
-        /*the owner of the newly established crosslinker element is the current processor on which the search
-         * is carried out and whose processor Id can be requested by the command discret_.Comm().MyPID(); the
-         * global Id of the new element is chosen appropirately by a special algorithm*/     
-        discret_.AddElement( DRT::UTILS::Factory("Beam3","Polynomial",crosslinkerid,discret_.Comm().MyPID()) );    
+        /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
+         * of the statmech_manager; note that the dummy has already the proper owner number*/          
+        RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy_) );
         
-        //noting that local node i has no a crosslinkerelement and noting global Id of this element
+        //nodes are assigned to the new crosslinker element
+        int nodes[] = {discret_.NodeRowMap()->GID(i), neighbour};
+        newcrosslinker->SetNodeIds(2, nodes);
+        
+        //correct reference configuration data is computed for the new crosslinker element
+        newcrosslinker->SetUpReferenceGeometry();
+        
+        //add new element to discretization
+        discret_.AddElement(newcrosslinker);    
+        
+        //noting that local node i has now a crosslinkerelement and noting global Id of this element
         (*crosslinkerpartner_)[neighbour] = -1;
         (*crosslinkerelements_)[crosslinkerid] = -1;
       }
     }
     
-    //settling administrative stuff in order to make the discretization ready for the next time step
-    discret_.FillComplete(true,true,true);
+    /*settling administrative stuff in order to make the discretization ready for the next time step: the following
+     * commmand generates ghost elements if necessary and calls FillCompete() method of discretization; note: this is
+     * enough as long as only elements, but no nodes are added in a time step*/
+    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,*( discret_.NodeRowMap() ),*( discret_.NodeColMap() ));
     
-    
-    //???????????????????????????????????????????????????????????????????????????????????????????????????????
- 
   }
+  
+  #endif
+  
   return;
 } // StatMechManager::StatMechUpdate()
 

@@ -238,6 +238,98 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
 }
 
 
+/*----------------------------------------------------------------------*
+ | sets up geometric data from current nodal position as reference 
+ | position; this method can be used by the register class or when ever
+ | a new beam element is generated for which some reference configuration
+ | has to be stored; prerequesite for applying this method is that the
+ | element nodes are already known (public)                   cyron 10/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
+{
+  //variable for nodal point coordinates in reference configuration
+  BlitzMat3x2 xrefe;
+  //center triad in reference configuration
+  BlitzMat3x3 Tref;
+  
+  //getting element's nodal coordinates and treating them as reference configuration
+  if (Nodes()[0] == NULL || Nodes()[1] == NULL)
+    dserror("Cannot get nodes in order to compute reference configuration'");
+  else
+  {
+    for (int k=0; k<2; ++k) //element has two nodes
+    {
+      xrefe(0,k) = Nodes()[k]->X()[0];
+      xrefe(1,k) = Nodes()[k]->X()[1];
+      xrefe(2,k) = Nodes()[k]->X()[2];
+    }
+  }
+
+  //length in reference configuration
+  lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
+  
+  /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
+   * of area tensor */
+  for (int k=0; k<3; k++) 
+  {
+    Tref(k,0) = ( xrefe(k,1)-xrefe(k,0) )/lrefe_;        
+  }
+  
+  /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
+   * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
+   * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
+  
+  //t2 is a unit vector in the x2x3-plane orthogonal to t1
+  Tref(0,1) = 0;
+  //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
+  if (Tref(1,0) == 0 && Tref(2,0) == 0)
+  {    
+    Tref(1,1) = 1;
+    Tref(2,1) = 0;
+  }
+  //otherwise t2 is calculated from the scalar product with t1
+  else
+  { 
+    //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
+      double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+      Tref(1,1) = -Tref(2,0)/lin1norm;
+      Tref(2,1) =  Tref(1,0)/lin1norm;    
+    }
+ 
+    //calculating t3 by crossproduct t1 x t2
+  Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
+  Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
+  Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
+  
+  /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
+   * from the identity matrix into the reference configuration*/
+    triadtoquaternion(Tref,Qconv_);
+     
+    Qold_ = Qconv_;
+    Qnew_ = Qconv_;
+ 
+    //the here employed beam element does not need data about the current position of the nodal directors so that
+  //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
+  //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
+  //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
+  //generality
+  for (int k=0; k<3; k++) 
+  {
+    curvconv_(k) = 0;
+    curvold_(k) = 0;
+    curvnew_(k) = 0;
+    betaplusalphaconv_(k)  = 0;
+    betaplusalphaold_(k)  = 0;   
+    betaplusalphanew_(k)  = 0;
+    betaminusalphaconv_(k) = 0;
+    betaminusalphaold_(k) = 0;
+    betaminusalphaold_(k) = 0;
+  }
+
+  return;
+} //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
+
+
 
 
 //------------- class Beam3Register: -------------------------------------
@@ -333,14 +425,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
-
-
-  //variable for nodal point coordinates in reference configuration
-  BlitzMat3x2 xrefe;
-  //center triad in reference configuration
-  BlitzMat3x3 Tref;
-  
-  //setting beam reference director correctly
+  //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
   {    
     //in case that current element is not a beam3 element there is nothing to do and we go back
@@ -351,75 +436,8 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam3* failed");
     
-    //getting element's reference coordinates     
-    for (int k=0; k<2; ++k) //element has two nodes
-      {
-        xrefe(0,k) = currele->Nodes()[k]->X()[0];
-        xrefe(1,k) = currele->Nodes()[k]->X()[1];
-        xrefe(2,k) = currele->Nodes()[k]->X()[2];
-      }
-    
-    //length in reference configuration
-    currele->lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
-    
-    /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
-     * of area tensor */
-    for (int k=0; k<3; k++)	
-    {
-      Tref(k,0) = ( xrefe(k,1)-xrefe(k,0) )/currele->lrefe_;        
-    }
-    
-    /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
-     * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
-     * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
-    
-    //t2 is a unit vector in the x2x3-plane orthogonal to t1
-    Tref(0,1) = 0;
-    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
-    if (Tref(1,0) == 0 && Tref(2,0) == 0)
-    {    
-      Tref(1,1) = 1;
-      Tref(2,1) = 0;
-    }
-    //otherwise t2 is calculated from the scalar product with t1
-    else
-    { 
-      //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-      double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
-      Tref(1,1) = -Tref(2,0)/lin1norm;
-      Tref(2,1) =  Tref(1,0)/lin1norm;    
-    }
- 
-    //calculating t3 by crossproduct t1 x t2
-    Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
-    Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
-    Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
-    
-    /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
-     * from the identity matrix into the reference configuration*/
-    currele->triadtoquaternion(Tref,currele->Qconv_);
-     
-    currele->Qold_ = currele->Qconv_;
-    currele->Qnew_ = currele->Qconv_;
- 
-    //the here employed beam element does not need data about the current position of the nodal directors so that
-    //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
-    //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
-    //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
-    //generality
-    for (int k=0; k<3; k++) 
-    {
-      currele->curvconv_(k) = 0;
-      currele->curvold_(k) = 0;
-      currele->curvnew_(k) = 0;
-      currele->betaplusalphaconv_(k)  = 0;
-      currele->betaplusalphaold_(k)  = 0;   
-      currele->betaplusalphanew_(k)  = 0;
-      currele->betaminusalphaconv_(k) = 0;
-      currele->betaminusalphaold_(k) = 0;
-      currele->betaminusalphaold_(k) = 0;
-    }
-          
+    currele->SetUpReferenceGeometry();
+       
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
   return 0;

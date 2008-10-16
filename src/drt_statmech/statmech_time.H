@@ -10,22 +10,22 @@ Maintainer: Christian Cyron
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STATMECH_H
-#define STATMECH_H
+#ifndef STATMECH_TIME_H
+#define STATMECH_TIME_H
 
-#include "../drt_structure/strugenalpha.H"
-#include "../drt_statmech/statmech_manager.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <random/normal.h>
-
-
-// forward declarations
-
+#include "../drt_structure/strugenalpha.H"
+#include "../drt_lib/drt_globalproblem.H"
 /*!
 \brief time integration for structural problems with statistical mechanics
 
 \author cyron (cyron@lnm.mw.tum.de)
 */
+
+// forward declarations
+class StatMechManager;
+
+
 class StatMechTime : public virtual StruGenAlpha
 {
 public:
@@ -44,6 +44,13 @@ public:
   
   //! \brief do consistent constant predictor step
   virtual void ConsistentPredictor();
+  
+
+  //!\brief do full Newton iteration
+  virtual void FullNewton();
+  
+  //!\brief do full Newton iteration
+  virtual void PTC();
     
 
 protected:
