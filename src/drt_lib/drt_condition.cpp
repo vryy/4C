@@ -115,6 +115,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==LineWeakDirichlet)           os << "line weak Dirichlet condition";
   else if (Type()==LinePeriodic)                os << "line periodic boundary condition";
   else if (Type()==SurfacePeriodic)             os << "surface periodic boundary condition";
+  else if (Type()==Brownian_Motion)             os << "stochastical surface condition (Brownian Motion)";
   
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);

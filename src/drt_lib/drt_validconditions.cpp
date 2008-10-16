@@ -574,6 +574,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential,"cutOff");
 
   condlist.push_back(lj_potential);
+  
+  /*--------------------------------------------------------------------*/
+  // Brownian Motion 
+  
+  Teuchos::RCP<ConditionDefinition> brownian_motion =
+    Teuchos::rcp(new ConditionDefinition("DESIGN BROWNIAN MOTION SURF CONDITIONS",
+                                         "BrownianMotion",
+                                         "Brownian_Motion",
+                                         DRT::Condition::Brownian_Motion,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  brownian_motion->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(brownian_motion,"label");
+  AddNamedReal(brownian_motion,"boltz_const");
+  AddNamedReal(brownian_motion,"temperatur");
+  AddNamedReal(brownian_motion,"frict_coeff");
+
+  condlist.push_back(brownian_motion);
 
   /*--------------------------------------------------------------------*/
   // microscale boundary

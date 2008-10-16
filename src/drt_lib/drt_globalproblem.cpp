@@ -163,6 +163,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GEMM", *list);
   reader.ReadGidSection("--INVERSE ANALYSIS", *list);
   reader.ReadGidSection("--STRUCTURAL CONTACT", *list);
+  reader.ReadGidSection("--BROWNIAN MOTION", *list);
   reader.ReadGidSection("--STATISTICAL MECHANICS", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);

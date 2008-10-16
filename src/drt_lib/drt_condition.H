@@ -98,7 +98,8 @@ public:
     MPC_NodeOnPlane_3D,
     MPC_NodeOnLine_2D,
     LJ_Potential,
-    ElectrodeKinetics
+    ElectrodeKinetics,
+    Brownian_Motion
   };
 
   /*!

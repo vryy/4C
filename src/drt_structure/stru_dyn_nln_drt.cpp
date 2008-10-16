@@ -34,6 +34,7 @@ Maintainer: Michael Gee
 
 #include "../drt_inv_analysis/inv_analysis.H"
 #include "../drt_statmech/statmech_time.H"
+#include "../drt_statmech/bromotion_timeint.H"
 
 
 /*----------------------------------------------------------------------*
@@ -139,6 +140,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
   const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
   const Teuchos::ParameterList& iap      = DRT::Problem::Instance()->InverseAnalysisParams();
+  const Teuchos::ParameterList& bromop   = DRT::Problem::Instance()->BrownianMotionParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -338,11 +340,15 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of thermal bath");
           break;
       }
-
+     
+      // brownain motion
+      genalphaparams.set<bool>  ("bro_motion",Teuchos::getIntegralValue<int>(bromop,"BROWNIAN_MOTION"));
+      bool bromotion = genalphaparams.get("bro_motion",false);
+      
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !inv_analysis && !thermalbath)
+      if (!contact && !inv_analysis && !thermalbath && !bromotion)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
@@ -352,6 +358,8 @@ void dyn_nlnstructural_drt()
           tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
         if (thermalbath)
           tintegrator = rcp(new StatMechTime(genalphaparams,*actdis,solver,output));
+        if (bromotion)
+          tintegrator = rcp(new BroMotion_TimeInt(genalphaparams,*actdis,solver,output));
       }
 
       // do restart if demanded from input file
@@ -398,9 +406,5 @@ void dyn_nlnstructural_drt()
 
   return;
 } // end of dyn_nlnstructural_drt()
-
-
-
-
 
 #endif  // #ifdef CCADISCRET

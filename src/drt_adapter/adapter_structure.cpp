@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
 #include "adapter_structure_timint.H"
+#include "adapter_structure_bromotion.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -137,6 +138,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& bromop   = DRT::Problem::Instance()->BrownianMotionParams();
 
   //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
@@ -301,8 +303,15 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 #endif
     }
   }
+  
+  // brownian motion
+  genalphaparams->set<bool>  ("bro_motion",Teuchos::getIntegralValue<int>(bromop,"BROWNIAN_MOTION"));
+  bool bromotion = genalphaparams->get("bro_motion",false);
 
-  structure_ = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
+  if(bromotion)
+    structure_ = rcp(new StructureBroMotion(genalphaparams,actdis,solver,output));
+  else
+    structure_ = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
 }
 
 /*----------------------------------------------------------------------*/

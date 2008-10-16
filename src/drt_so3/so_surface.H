@@ -195,7 +195,8 @@ protected:
     calc_struct_monitarea,
     prestress_update,
     prestress_writerestart,
-    prestress_readrestart
+    prestress_readrestart,
+    calc_brownian_motion
   };
 
   // don't want = operator

@@ -607,6 +607,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
+  
+  
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");
+  setStringToIntegralParameter("BROWNIAN_MOTION","No",
+                                "determines whether stochastical forces should be considered",
+                                 yesnotuple,yesnovalue,
+                                 &bromotion);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
@@ -652,7 +660,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
   //order of interpolation for stochastical fields
   IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
-
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 

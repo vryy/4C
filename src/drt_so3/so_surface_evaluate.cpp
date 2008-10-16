@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_statmech/bromotion_manager.H"
 
 using UTILS::SurfStressManager;
 using UTILS::PotentialManager;
@@ -270,6 +271,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_init_vol")                act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
+  else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
   else 
   {
     cout << action << endl;
@@ -534,6 +536,27 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
         { 
           potentialmanager->StiffnessAndInternalForcesLJPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+        }
+        else
+          dserror("Unknown condition type %d",cond->Type());
+      }
+      break;
+      
+      // compute stochastical forces due to Brownian Motion
+      case calc_brownian_motion:
+      {
+        RefCountPtr<BroMotion_Manager> bromotion_manager =
+          params.get<RefCountPtr<BroMotion_Manager> >("bromo_man", null);
+        if (bromotion_manager==null)
+          dserror("No Brownian Manager in Solid3 Surface available");
+         
+        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+         if (cond==null)
+           dserror("Condition not available in Solid3 Surface");
+      
+        if (cond->Type()==DRT::Condition::Brownian_Motion) // Brownian Motion
+        { 
+          bromotion_manager->StochasticalForces(this, gaussrule_, params,lm, elematrix1, elevector1);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
