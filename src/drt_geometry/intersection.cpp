@@ -242,6 +242,9 @@ void GEO::Intersection::initializeXFEM(
 
   intersectingCutterElements_.clear();
   faceMarker_.clear();
+  
+  // clear efficient node map
+  nodemap_.clear();
 }
 
 
@@ -299,10 +302,17 @@ bool GEO::Intersection::collectInternalPoints(
     const int                       nodeId)
 {
   // current nodal position
-  const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
-
   static BlitzVec3 xsi;
-  xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
+        
+  if(nodemap_.find(cutterNode->Id()) == nodemap_.end())
+  {  
+    const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
+    nodemap_[cutterNode->Id()] = xsi;
+  }
+  else
+    xsi = nodemap_.find(cutterNode->Id())->second;
+
   //currentToVolumeElementCoordinates(xfemElement, x, xsi);
   const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
   // debugNodeWithinElement(xfemElement,cutterNode, xsi, elemId ,nodeId, nodeWithinElement);
@@ -503,7 +513,7 @@ bool GEO::Intersection::collectIntersectionPoints(
   upLimit  =  1.0;
   loLimit  = -1.0;
 
-
+  
   if(!doSVD)
     if(checkIfLineInSurface(surfaceElement, xyze_surfaceElement, xyze_lineElement))
       intersected = false;

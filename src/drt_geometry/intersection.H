@@ -138,6 +138,12 @@ class Intersection
   //! list of face markers numbered in the order of the intersected surface elments
   vector<int>                           faceMarker_;
   
+  //! store internal points when computed per xfem element
+  map< int, BlitzVec3 >                 nodemap_;
+  
+  //! store intersection points for faster access
+  std::map< std::vector<int>, std::vector< BlitzVec3> > intersectionpointmap_;
+  
   /*!
   \brief initializes the private members of the xfem element
   
