@@ -2354,7 +2354,6 @@ void StruGenAlpha::PTC()
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  if (dynkindstat) dserror("Static case not implemented");
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
@@ -2391,9 +2390,13 @@ void StruGenAlpha::PTC()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-    if (damping)
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+    else
+    {
+      stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+      if (damping)
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    }
     stiff_->Complete();
 
     //------------------------------- do ptc modification to effective LHS
@@ -2452,6 +2455,13 @@ void StruGenAlpha::PTC()
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 #endif
 
+    // zerofy velocity and acceleration in case of statics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -2483,22 +2493,36 @@ void StruGenAlpha::PTC()
     if (surf_stress_man_!=null) dserror("No surface stresses in case of PTC");
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // Res = M . A_{n+1-alpha_m}
+      //     + C . V_{n+1-alpha_f}
+      //     + F_int(D_{n+1-alpha_f})
+      //     - F_{ext;n+1-alpha_f}
+      // add inertia mid-forces
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add viscous mid-forces
+      if (damping)
+      {
+        //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -2863,7 +2887,6 @@ void StruGenAlpha::Update()
     discret_.SetState("velocity",vel_);
     discret_.SetState("residual displacement",zeros_);
     discret_.Evaluate(p,null,null,null,null,null);
-    discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
   }
 
   //----------------------------- reset the current disp/vel/acc to zero
@@ -2969,21 +2992,6 @@ void StruGenAlpha::Output()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    {
-      RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
-      RCP<Epetra_Map> snrowmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",false);
-      Epetra_MultiVector xhiscol(*sncolmap,12,true);
-      Epetra_MultiVector xhisrow(*snrowmap,12,true);
-      ParameterList p;
-      p.set("action","prestress_writerestart");
-      p.set<Epetra_MultiVector*>("prestress_restartvector",&xhiscol);
-      discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
-      LINALG::Export(xhiscol,xhisrow);
-      output_.WriteVector("prestress_surfaceneumann",rcp(&xhisrow,false));
-    }
-#endif
 
 #ifdef INVERSEDESIGNCREATE // indicate that this restart is from INVERSEDESIGCREATE phase
     output_.WriteInt("InverseDesignRestartFlag",0);
@@ -3263,6 +3271,21 @@ void StruGenAlpha::Integrate()
   }
   else dserror("Unknown type of equilibrium iteration");
 
+#if 0 // used for printing the deformed mesh in *.dat file format (serial only)
+    for (int i=0; i<discret_.NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = discret_.lRowNode(i);
+      printf("NODE %d COORD ",actnode->Id()+1);
+      for (int j=0; j<discret_.NumDof(actnode); ++j)
+      {
+        const int gdof = discret_.Dof(actnode,j);
+        const int lid  = dis_->Map().LID(gdof);
+        printf("%20.15f ",actnode->X()[j]+(*dis_)[lid]);
+      }
+      printf("\n");
+    }
+#endif
+
   return;
 } // void StruGenAlpha::Integrate()
 
@@ -3396,21 +3419,6 @@ void StruGenAlpha::ReadRestart(int step)
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    {
-      RCP<Epetra_Map> sncolmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",true);
-      RCP<Epetra_Map> snrowmap = DRT::UTILS::GeometryElementMap(discret_,"SurfaceNeumann",false);
-      Epetra_MultiVector xhiscol(*sncolmap,12,true);
-      Epetra_MultiVector xhisrow(*snrowmap,12,true);
-      reader.ReadMultiVector(rcp(&xhisrow,false),"prestress_surfaceneumann");
-      LINALG::Export(xhisrow,xhiscol);
-      ParameterList p;
-      p.set("action","prestress_readrestart");
-      p.set<Epetra_MultiVector*>("prestress_restartvector",&xhiscol);
-      discret_.EvaluateCondition(p,"SurfaceNeumann",-1);
-    }
-#endif
 
   if (surf_stress_man_!=null)
   {
