@@ -204,6 +204,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
   }
+  
+  // ----------------------------------------------- XFEM related stuff
+  fluidtimeparams->set<bool>("global_stress_unknowns",true);
 
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field
