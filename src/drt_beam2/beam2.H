@@ -44,15 +44,9 @@ typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-di
 typedef blitz::TinyMatrix<double,3,6> BlitzMat3x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
-// forward declarations
-struct _MATERIAL;
 
 namespace DRT
 {
-
-// forward declarations
-class Discretization;
-class Beam2Register;
 
 namespace ELEMENTS
 {

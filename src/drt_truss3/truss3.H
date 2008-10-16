@@ -42,19 +42,12 @@ using namespace Teuchos;
 typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
 
 
-// forward declarations
-struct _MATERIAL;
-
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
 */
 namespace DRT
 {
-
-// forward declarations
-class Discretization;
-class Truss3Register;
 
 namespace ELEMENTS
 {
