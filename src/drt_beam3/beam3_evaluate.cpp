@@ -456,12 +456,12 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(8,2) += zeta/6.0;
     
     /*
-    elemat1(3,3) += zeta/60.0;
-    elemat1(4,4) += zeta/60.0;
-    elemat1(5,5) += zeta/60.0;
-    elemat1(9,9) += zeta/60.0;
-    elemat1(10,10) += zeta/60.0;
-    elemat1(11,11) += zeta/60.0;
+    elemat1(3,3) += zeta/60000.0;
+    elemat1(4,4) += zeta/60000.0;
+    elemat1(5,5) += zeta/60000.0;
+    elemat1(9,9) += zeta/60000.0;
+    elemat1(10,10) += zeta/60000.0;
+    elemat1(11,11) += zeta/60000.0;
     */
     
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
