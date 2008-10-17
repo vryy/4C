@@ -53,13 +53,43 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     crosslinkerpartner_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
     crosslinkerelements_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
     
-    /*initializing crosslinkerpartner_ and crosslinkerelements with -1 for each element by looping
-     * over all local indices assigned by the map dis.NodeRowMap() to a processor*/
+    
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
     {
+      /*initializing crosslinkerpartner_, crosslinkerelements_ and filamentnumber_ with -1 for each node by looping
+       * over all local indices assigned by the map dis.NodeRowMap() to a processor*/
       (*crosslinkerpartner_)[i] = -1;
       (*crosslinkerelements_)[i] = -1;
+      (*filamentnumber_)[i] = -1;
     }
+    
+    /*since crosslinkers should be established only between different filaments the number of the filament
+     * each node is belonging to is stored in the vector filamentnumber_; the related data is taken from the
+     * file ./OwnInput/FilamentNumbersOfNodes.dat and in case that no such file exists the values of 
+     * filamentnumber_ remain -1 indicating thus that this feature is not in use*/
+    std::stringstream inputname;
+    inputname << "./OwnInput/FilamentNumbersOfNodes.dat";
+
+    /*the following algorithm for reading the filament numbers of each node assumes that the file ./OwnInput/FilamentNumbersOfNodes.dat
+     * consists of two columns: in the first column all the node numbers are listed and in the second one the related filament numbers*/
+    std::fstream readfilamentnumbers(inputname.str().c_str());      
+    while (readfilamentnumbers)
+    {
+      int nodenumber;
+      int filamentnumber;
+      readfilamentnumbers >> nodenumber;
+      readfilamentnumbers >> filamentnumber;
+      
+      //turning global node number into local one
+      nodenumber = discret_.NodeRowMap()->LID(nodenumber);
+      
+      //if the node does not belong to the local processor the local Id is set by LID() to -1
+      if(nodenumber > -1)
+        (*filamentnumber_)[nodenumber] = filamentnumber;
+   
+    } //Ende while(readfilamentnumbers)
+    
+
     
     /*
     #ifdef D_BEAM3
@@ -325,7 +355,10 @@ void StatMechManager::StatMechUpdate()
        * crosslinkers are established only with a certain probability, which is accounted for by menas
        * of the randomized condition (*setcrosslinker)[i] <  -1.0 + 2*plink; finally a crosslinker is established
        * only if the same node has not already one, which is checked by (*crosslinkerpartner_)[i] == -1.0*/
-      if (discret_.NodeRowMap()->GID(i) < neighbour && (*setcrosslinker)[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0)
+      if (discret_.NodeRowMap()->GID(i) < neighbour && (*setcrosslinker)[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0 && 
+          /*furthermore the nodes should lie on different filaments; if no filament numbering is used (filamentnumbers
+           * are by default -1) a crosslinker is established regardless this test*/
+          ( (*filamentnumber_)[i] != (*filamentnumber_)[neighbour] || (*filamentnumber_)[i] == -1) )
       {
         
         /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 

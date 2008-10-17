@@ -89,6 +89,9 @@ protected:
   //! \brief storing for each node global Id of crosslinking Element; -1 means: no crosslink
   RCP<Epetra_Vector> crosslinkerelements_;
   
+  //! \brief storing for each node number of filament to which it belongs
+ RCP<Epetra_Vector> filamentnumber_;
+  
   //! \brief instance of a crosslinker element which is copied and adapted each time a new crosslinker is needed
   RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy_;
   

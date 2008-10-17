@@ -107,7 +107,7 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
      * note that each processor will set up its own random generator and they all have to be pairwise independent*/
-    int seedvariable = std::time(0)*(discret_.Comm().MyPID() + 1); // +1 in order to make sure random also for 0-th processor!
+    int seedvariable = std::time(0); 
     //seedvariable = 4; //4
     seedgenerator.seed((unsigned int)seedvariable);
   }
