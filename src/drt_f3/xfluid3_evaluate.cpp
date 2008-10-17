@@ -102,12 +102,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         params.set("density", actmat->m.fluid->density);
         break;
       }
-  
-    //--------------------------------------------------
-    //--------------------------------------------------
-    // the standard one-step-theta implementation
-    //--------------------------------------------------
-    //--------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
         // do no calculation, if not needed
@@ -143,16 +137,57 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
         
-        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                *eleDofManager_, NumNode(), NodeIds());
+        if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+        {
+          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                  *eleDofManager_, NumNode(), NodeIds());
+          
+          // calculate element coefficient matrix and rhs
+          XFLUID::callSysmat4(assembly_type,
+                  this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
+        }
+        else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+        {
+          // sanity checks
+          if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
+            dserror("NumNodeDof mismatch");
+          if (eleDofManager_->NumElemDof() != 0)
+            dserror("NumElemDof not 0");
+          if (eleDofManager_uncondensed_->NumElemDof() == 0)
+            dserror("uncondensed NumElemDof == 0");
+          
+          // stress update
+          UpdateOldDLMAndDLMRHS(discretization, lm);
+          
+          const int nd = eleDofManager_uncondensed_->NumNodeDof();
+          const int na = eleDofManager_uncondensed_->NumElemDof();
+          const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+          
+          // increase size of element vector (old values stay and zeros are added)
+          mystate.velnp.resize(numdof_uncond,0.0);
+          mystate.veln .resize(numdof_uncond,0.0);
+          mystate.velnm.resize(numdof_uncond,0.0);
+          mystate.accn .resize(numdof_uncond,0.0);
+          for (int i=0;i<na;i++)
+            mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+          
+          // create uncondensed element matrix and vector
+          Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+          Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
+          
+          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                  *eleDofManager_uncondensed_, NumNode(), NodeIds());
+          
+          // calculate element coefficient matrix and rhs
+          XFLUID::callSysmat4(assembly_type,
+                  this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
+                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
+          
+          // condensation
+          CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
+        }
         
-        //--------------------------------------------------
-        // calculate element coefficient matrix and rhs
-        //--------------------------------------------------
-        XFLUID::callSysmat4(assembly_type,
-                this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
-
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
         params.set("density", actmat->m.fluid->density);
@@ -232,7 +267,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // calculate element coefficient matrix and rhs
             XFLUID::callSysmat4(assembly_type,
                     this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
+                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
             
           }
           else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -265,7 +300,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // calculate element coefficient matrix and rhs
             XFLUID::callSysmat4(assembly_type,
                     this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
+                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
             
             // condensation
             CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
