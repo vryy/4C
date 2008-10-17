@@ -206,7 +206,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   
   // ----------------------------------------------- XFEM related stuff
-  fluidtimeparams->set<bool>("global_stress_unknowns",true);
+  fluidtimeparams->set<bool>("DLM_condensation",true);
 
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field

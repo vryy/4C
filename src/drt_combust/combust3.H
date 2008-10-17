@@ -117,7 +117,7 @@ namespace DRT
 
         virtual int NumDofPerNode(const DRT::Node& node) const {return eleDofManager_->NumDofPerNode(node.Id(), 4);}
 
-        virtual int NumDofPerElement() const {return eleDofManager_->NumDofPerElement();}
+        virtual int NumDofPerElement() const {return eleDofManager_->NumElemDof();}
         
         void Print(ostream& os) const;
         
@@ -228,6 +228,8 @@ namespace DRT
       private:
         
         //! store information about the unknowns of this element
+        //!
+        //! this dofman will answer to the outside world, how many dofs this element has
         Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_;
         
         //! store information about the intersection handle

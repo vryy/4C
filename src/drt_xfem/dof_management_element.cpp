@@ -101,6 +101,8 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
       dofcounter++;
     }
   }
+  numNodeDof_ = dofcounter;
+  
   // loop now over element dofs
   // we first loop over the fields and then over the params
   numElemDof_ = 0;
@@ -130,7 +132,8 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
     }
   }
   
-  numdof_ = dofcounter;
+  if (dofcounter != (numNodeDof_ + numElemDof_))
+    dserror("dof number mismatch! -> bug!");
   
   return;
 }
@@ -212,7 +215,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
       };
     };
   };
-  const int eledof = eleDofManager.NumDofPerElement();
+  const int eledof = eleDofManager.NumElemDof();
   if (eledof != 0)
   {
     assembly_type = XFEM::xfem_assembly;

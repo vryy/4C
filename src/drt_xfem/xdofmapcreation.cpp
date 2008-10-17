@@ -73,7 +73,7 @@ void XFEM::ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const XFEM::Enrichment&                       voidenr,
-    const bool                                    global_stress_unknowns,
+    const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
     )
 {
@@ -89,7 +89,7 @@ void XFEM::ApplyElementEnrichments(
     // the number of each of these parameters will be determined later
     // by using a discretization type and appropriate shape functions
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz; 
-    if (global_stress_unknowns)
+    if (not DLM_condensation)
     {
       element_ansatz = XFLUID::getElementAnsatz(xfemele->Shape());
     }
@@ -112,7 +112,7 @@ void XFEM::ApplyVoidEnrichmentForElement(
     const XFEM::InterfaceHandle&                  ih,
     const std::map<int,int>&                      labelPerElementId,
     const XFEM::Enrichment&                       voidenr,
-    const bool                                    global_stress_unknowns,
+    const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
     )
@@ -125,7 +125,7 @@ void XFEM::ApplyVoidEnrichmentForElement(
     {
       ApplyNodalEnrichments(xfemele, ih, voidenr, nodalDofSet); 
   
-      ApplyElementEnrichments(xfemele, ih, voidenr, global_stress_unknowns, elementalDofs);
+      ApplyElementEnrichments(xfemele, ih, voidenr, DLM_condensation, elementalDofs);
     }
   }
 }
@@ -134,7 +134,7 @@ void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
-    const bool global_stress_unknowns
+    const bool DLM_condensation
 )
 {
   // temporary assembly
@@ -160,7 +160,7 @@ void XFEM::createDofMap(
       const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
 
       ApplyVoidEnrichmentForElement(
-          xfemele, ih, labelPerElementId, voidenr, global_stress_unknowns,
+          xfemele, ih, labelPerElementId, voidenr, DLM_condensation,
           nodalDofSet, elementalDofs);
     };
   };

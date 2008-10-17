@@ -190,7 +190,7 @@ void xdyn_fluid_drt()
   }
 
   // ----------------------------------------------- XFEM related stuff
-  fluidtimeparams.set<bool>("global_stress_unknowns",true);
+  fluidtimeparams.set<bool>("DLM_condensation",true);
   
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

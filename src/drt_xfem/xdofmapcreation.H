@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-
+/// apply nodal enrichments to intersected element
 void ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -31,11 +31,12 @@ void ApplyNodalEnrichments(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
     );
 
+/// apply element enrichments to intersected element
 void ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const XFEM::Enrichment&                       voidenr,
-    const bool                                    global_stress_unknowns,
+    const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
     );
 
@@ -45,7 +46,7 @@ void ApplyVoidEnrichmentForElement(
     const XFEM::InterfaceHandle&                  ih,
     const std::map<int,int>&                      labelPerElementId,
     const XFEM::Enrichment&                       voidenr,
-    const bool                                    global_stress_unknowns,
+    const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
     );
@@ -55,10 +56,10 @@ void ApplyVoidEnrichmentForElement(
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-    const XFEM::InterfaceHandle&                  ih,                      ///< interface information
+    const XFEM::InterfaceHandle&                      ih,                  ///< interface information
     std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
     std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
-    const bool global_stress_unknowns
+    const bool DLM_condensation
 );
 
 /*! 
@@ -66,7 +67,7 @@ void createDofMap(
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void applyStandardEnrichment(
-    const XFEM::InterfaceHandle&              ih,
+    const XFEM::InterfaceHandle&                  ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );
@@ -76,7 +77,7 @@ void applyStandardEnrichment(
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void applyStandardEnrichmentNodalBasedApproach(
-    const XFEM::InterfaceHandle&              ih,
+    const XFEM::InterfaceHandle&                  ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
 );

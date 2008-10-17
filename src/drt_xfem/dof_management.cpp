@@ -32,10 +32,10 @@ extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih, const bool global_stress_unknowns) :
+XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih, const bool DLM_condensation) :
   ih_(ih)
 {
-  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, global_stress_unknowns);
+  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, DLM_condensation);
   
   std::set<XFEM::Enrichment> unique_enrichments = GatherUniqueEnrichments();
 

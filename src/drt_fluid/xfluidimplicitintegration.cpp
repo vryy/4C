@@ -88,13 +88,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0));
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("global_stress_unknowns")));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
   // tell elements about the dofs and the integration
   {
     ParameterList eleparams;
     eleparams.set("action","store_xfem_info");
     eleparams.set("dofmanager",dofmanager);
-    eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
+    eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
     eleparams.set("interfacehandle",ih);
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
@@ -420,7 +420,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   ih->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("global_stress_unknowns")));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -430,7 +430,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       ParameterList eleparams;
       eleparams.set("action","store_xfem_info");
       eleparams.set("dofmanager",dofmanager);
-      eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
+      eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
       eleparams.set("interfacehandle",ih);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
@@ -645,6 +645,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
+  // residual of the old iteration step - used for update of condensed element stresses
+  Teuchos::RCP<Epetra_Vector> oldresidual = rcp(new Epetra_Vector(residual_->Map()));
+  oldresidual->PutScalar(0.0);
+  
   while (stopnonliniter==false)
   {
     itnum++;
@@ -695,6 +699,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
+      
+      discret_->SetState("nodal residual",oldresidual);
 
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
@@ -703,7 +709,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
       
-      eleparams.set("global_stress_unknowns",params_.get<bool>("global_stress_unknowns"));
+      eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -919,6 +925,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
+    
+    //----------------------------------------------- store nodal residual
+    oldresidual->Update(1.0,*residual_,0.0);
   }
 
   // macht der FSI algorithmus

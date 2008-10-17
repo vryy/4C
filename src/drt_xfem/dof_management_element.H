@@ -94,16 +94,22 @@ namespace XFEM
         return tmp->second;
       };
       
-      //! function that returns element specific number of dofs or the given default number
-      int NumDofPerElement() const
+      //! return number of dofs at nodes
+      int NumNodeDof() const
+      {
+        return numNodeDof_;
+      };
+
+      //! return number of dofs at elements
+      int NumElemDof() const
       {
         return numElemDof_;
       };
       
-      //! function that returns overal size of element matrices or vectors
-      int NumDofElementAndNodes() const
+      //! return number of dofs at nodes + elements
+      int NumDofElemAndNode() const
       {
-        return numdof_;
+        return numNodeDof_ + numElemDof_;
       };
       
       //! function that returns dofs for each node of this particular element
@@ -114,7 +120,7 @@ namespace XFEM
       
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
        *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
-       *  we do not distuingish between nodal and element dofs
+       *  we do not distinguish between nodal and element dofs
        */
       int NumDofPerField(
           const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
@@ -196,11 +202,11 @@ namespace XFEM
       };
       
     private:
-
-      //! number of element and nodal degrees of freedom 
-      int numdof_;
       
-      //! number of element degrees of freedom
+      //! total number of nodal degrees of freedom
+      int numNodeDof_;
+      
+      //! total number of element degrees of freedom
       int numElemDof_;
       
       //! unknowns for each global node id (gid)

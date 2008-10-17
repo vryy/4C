@@ -25,6 +25,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 namespace DRT
@@ -111,7 +113,7 @@ namespace DRT
 
         virtual int NumDofPerNode(const DRT::Node& node) const {return eleDofManager_->NumDofPerNode(node.Id(), 4);}
 
-        virtual int NumDofPerElement() const {return eleDofManager_->NumDofPerElement();}
+        virtual int NumDofPerElement() const {return eleDofManager_->NumElemDof();}
         
         void Print(ostream& os) const;
         
@@ -235,9 +237,14 @@ namespace DRT
         
         //! store information about the intersection handle
         Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
+
+        //! store matrizes and rhs of the old iteration step
+        LINALG::SerialDenseMatrix      oldKaainv_;
+        LINALG::SerialDenseMatrix      oldKad_;
+        LINALG::SerialDenseVector      oldfa_;
         
-        //! this map stores element stresses per xfem label
-        std::map<int,Epetra_SerialDenseMatrix> stresses_;
+        //! this map stores all element stresses (independent of the xfem label)
+        LINALG::SerialDenseVector      stressdofs_;
         
         // internal calculation methods
         
