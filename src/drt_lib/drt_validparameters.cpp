@@ -1173,6 +1173,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &scatradyn);
 
+  setStringToIntegralParameter("BLOCKPRECOND","no",
+                               "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
+                               yesnotuple,yesnovalue,&scatradyn);
+
+
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
       false,
@@ -1180,6 +1185,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
+  // convergence criteria adaptivity
+  setStringToIntegralParameter("ADAPTCONV","yes",
+                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                               yesnotuple,yesnovalue,&scatra_nonlin);
+  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
@@ -1502,6 +1512,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatrasolver = list->sublist("SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
   SetValidSolverParameters(scatrasolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatrapotsolver = list->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",false,"solver parameters for block-preconditioning");
+  SetValidSolverParameters(scatrapotsolver);
 
   return list;
 }

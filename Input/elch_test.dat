@@ -102,8 +102,10 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL          1e-8
-ITEMAX           50
+CONVTOL                         1e-8
+ITEMAX                          50
+ADAPTCONV                       no
+ADAPTCONV_BETTER                0.1
 ------------------------------------------------------ELCH CONTROL
 ITEMAX                          10
 MAXTIME                         1000

@@ -185,6 +185,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
+  reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
@@ -539,6 +540,16 @@ void DRT::Problem::InputControl()
     // solver for convection-diffusion problem
     solv[genprob.numscatra].fieldtyp = scatra;
     InputSolverControl("SCALAR TRANSPORT SOLVER",&(solv[genprob.numscatra]));
+
+    // additional el. potential solver for block preconditioning (like SIMPLE(R))
+    const ParameterList& scatradyn = ScalarTransportDynamicParams();
+    const int blockprecond = getIntegralValue<int>(scatradyn,"BLOCKPRECOND");
+    if (blockprecond)
+    {
+      solver_.resize(genprob.numfld+1);
+      solv = &solver_[0];
+      InputSolverControl("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",&(solv[genprob.numfld]));
+    }
 
     break;
   }

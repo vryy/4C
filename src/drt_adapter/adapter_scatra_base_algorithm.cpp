@@ -126,16 +126,18 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   scatratimeparams->set<string>   ("write flux"   ,scatradyn.get<string>("WRITEFLUX"));
 
   // ---------------------------------------------------- initial field
-  scatratimeparams->set<int>("scalar initial field"     ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
+  scatratimeparams->set<int>("scalar initial field" ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
   scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
   
   // ----------------------------------------------------velocity field
-  scatratimeparams->set<int>("velocity field"     ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
+  scatratimeparams->set<int>("velocity field" ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
   scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
-  
-  // -------------------------------- (fine-scale) subgrid diffusivity?
-  scatratimeparams->set<string>("fs subgrid diffusivity"   ,scatradyn.get<string>("FSSUGRVISC"));
 
+  // -------------------------------- (fine-scale) subgrid diffusivity?
+  scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRVISC"));
+
+  // -------------------- block preconditioning (only supported by ELCH)
+  scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));
 
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
@@ -150,6 +152,18 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   {
     scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
     scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
+
+    // -------------------------------------------------------------------
+    // create a 2nd solver for block-preconditioning if chosen from input
+    // -------------------------------------------------------------------
+    if (scatratimeparams->get<int>("BLOCKPRECOND"))
+    {
+      // switch to the SIMPLE(R) algorithms
+      ParameterList& p = solveparams->sublist("SIMPLER");
+      RCP<ParameterList> params = rcp(&p,false);
+      LINALG::Solver s(params,actdis->Comm(),allfiles.out_err);
+      s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+    }
   }
 
   // -------------------------------------------------------------------

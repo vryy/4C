@@ -110,7 +110,7 @@ public:
   void NonlinearSolve();
 
   //! check convergence (or divergence) of nonlinear iteration
-  bool AbortNonlinIter(const int itnum, const int itmax, const double ittol);
+  bool AbortNonlinIter(const int itnum, const int itmax, const double ittol, double& actresidual);
 
   //! solve linear system
   void Solve();
@@ -160,8 +160,17 @@ public:
   //! routine to return density field at time step n-1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> Densnm() { return densnm_; }
 
+  //! return current time value
   double Time() const { return time_; }
+
+  //! return current step number
   int Step() const { return step_; }
+
+  //! return system matrix down-casted as sparse matrix
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+
+  //! return system matrix downcasted as block sparse matrix
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
 protected:
 
@@ -217,27 +226,51 @@ protected:
   //! routine to calculate mass/heat flux vectors
   Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
-  RCP<DRT::Discretization>   discret_; /// the scalar transport discretization
+  /// the scalar transport discretization
+  RCP<DRT::Discretization>   discret_;
+  /// the solver
   RCP<LINALG::Solver>        solver_;
+  /// the parameter list
   RCP<ParameterList>         params_;
+  /// the discretization writer
   RCP<IO::DiscretizationWriter>  output_;
+  /// processor id
   int                        myrank_;
 
+  /// actual time
   double time_;
+
+  /// actual step number
   int step_;
+
   /// flag defining type of scalar transport problem
   string prbtype_;
+
+  /// maximum number of steps
   int stepmax_;
+
+  /// maximum simulation time
   double maxtime_;
 
+  /// used time integration scheme
   INPUTPARAMS::ScaTraTimeIntegrationScheme timealgo_;
 
+  /// write results every upres_ steps
   int upres_;
+
+  /// write restart data every uprestart_ steps
   int uprestart_;
+
+  /// flag for writing the flux vector fields
   string writeflux_;
 
+  /// time step size
   double dta_;
+
+  /// time step size
   double dtp_;
+
+  /// time factor given by time integration scheme
   double theta_;
 
   int cdvel_;
@@ -251,8 +284,8 @@ protected:
   // ELCH-specific paramter F/RT (default value for the temperature is 298K)
   double frt_;
 
-  /// (standard) system matrix
-  RCP<LINALG::SparseMatrix> sysmat_;
+  /// system matrix (either sparse matrix or block sparse matrix)
+  RCP<LINALG::SparseOperator> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;

@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "linalg_utils.H"
+#include "drt_globalproblem.H"
 #ifdef D_SHELL8
 #include "../drt_s8/shell8.H"
 #endif
@@ -81,7 +82,12 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_condif2:
     case DRT::Element::element_condif3:
-      nv = 1;
+      nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+      if (DRT::Problem::Instance(0)->ProblemType() == "elch")
+      {
+        nv -= 1;
+        np = 1;
+      }
     break;
     case DRT::Element::element_ale2:
       nv = 2;
@@ -171,8 +177,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_condif2:
     case DRT::Element::element_condif3:
-      numdf = 1;
-      dimns = 1;
+      numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+      dimns = numdf;
     break;
     case DRT::Element::element_ale2:
       numdf = 2;
@@ -675,23 +681,25 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     {
       DRT::Node* actnode = lRowNode(i);
       vector<int> dofs = Dof(actnode);
-      for (unsigned j=0; j<dofs.size(); ++j)
+      const unsigned int ndof = dofs.size();
+      for (unsigned j=0; j<ndof; ++j)
       {
         const int dof = dofs[j];
         const int lid = rowmap->LID(dof);
         if (lid<0) dserror("Cannot find dof");
-        switch (j) // j is degree of freedom
+
+        for (unsigned k=0; k<ndof; ++k)
         {
-        case 0:
-          mode[0][lid] = 1.0;
-        break;
-        default:
-          dserror("Only dof 0 supported");
-        break;
-        } // switch (j)
+          if (k == j)
+            mode[k][lid] = 1.0;
+          else
+            mode[k][lid] = 0.0;
+        }
+
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_condif2)
+  } // else if (ele->Type() == DRT::Element::element_condif2
+    // || ele->Type() == DRT::Element::element_condif3)
 
   else ; // do nothing
 

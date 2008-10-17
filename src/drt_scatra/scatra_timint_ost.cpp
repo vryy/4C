@@ -189,8 +189,11 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
 
   // reset the matrix (and its graph!) since we solved
-  // a very special problem here that has a different sparsity pattern
-  sysmat_->Reset();
+  // a very special problem here that has a different sparsity pattern_
+  if (params_->get<int>("BLOCKPRECOND") )
+    ; //how to reset a block matrix ??
+  else
+    SystemMatrix()->Reset();
 
   return;
 }

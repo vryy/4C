@@ -98,15 +98,37 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
   const int numdof = discret_->NumDof(discret_->lRowNode(0));
-  if (fssgd_ == "No")
+  const int numscal = numdof - 1;
+  if (prbtype_ == "elch")
   {
-    // initialize standard (stabilized) system matrix (and save its graph!)
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+    // set up the condif-el.potential splitter
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
+    if (myrank_==0)
+      cout<<"\nsetup of conpotsplitter: numscal = "<<numscal<<endl;
+  }
+
+  if (params_->get<int>("BLOCKPRECOND",0) )
+  {
+    // we need a block sparse matrix here
+    if (prbtype_ != "elch") dserror("Block-Preconditioning is only for ELCH problems");
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27,false,true));
+    blocksysmat->SetNumdim(numscal);
+    sysmat_ = blocksysmat;
   }
   else
   {
-    // do not save the graph for this application
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    // we need the 'standard' sparse matrix
+    if (fssgd_ == "No")
+    {
+      // initialize standard (stabilized) system matrix (and save its graph!)
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+    }
+    else
+    {
+      // do not save the graph for this application
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    }
   }
 
   // -------------------------------------------------------------------
@@ -182,14 +204,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // set initial field
   SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
-
-  if (prbtype_ == "elch")
-  {
-    const int numscal = numdof - 1;
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
-    if (myrank_==0)
-      cout<<"\nsetup of conpotsplitter: numscal = "<<numscal<<endl;
-  }
 
   // set initial density to 1.0:
   // used throughout simulation for non-temperature case
@@ -413,8 +427,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  //const bool   isadapttol    = params_->sublist("NONLINEAR").get<bool>("ADAPTCONV",true);
-  //const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV") == 1);
+  const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
+  double       actresidual(0.0);
 
   int   itnum = 0;
   int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
@@ -528,7 +543,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       residual_->Multiply(1.0,*invtoggle_,residual,0.0);
     }
 
-    stopnonliniter = AbortNonlinIter(itnum,itemax,ittol);
+    stopnonliniter = AbortNonlinIter(itnum,itemax,ittol,actresidual);
     if (stopnonliniter == true) break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
@@ -548,11 +563,22 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
+      // time measurement: call linear solver
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + call linear solver");
+
+      // do adaptive linear solver tolerance (not in first solve)
+      if (isadapttol && itnum>1)
+      {
+        cout<<"actresidual = "<<actresidual<<endl;
+        solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
+      }
+
       // print (DEBUGGING!)
-      //LINALG::PrintSparsityToPostscript(*(sysmat_->EpetraMatrix()));
-      //(sysmat_->EpetraMatrix())->Print(cout);
+      //LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+      //(SystemMatrix()->EpetraMatrix())->Print(cout);
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);
+      solver_->ResetTolerance();
 
       // end time measurement for solver
       dtsolve_=ds_cputime()-tcpu;
@@ -572,7 +598,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     const int itnum,
     const int itemax,
-    const double ittol)
+    const double ittol,
+    double& actresidual)
 {
   bool stopnonliniter = false;
 
@@ -692,6 +719,11 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     }
     //break;
   }
+
+  // return the maximum residual value -> used for adaptivity of linear solver tolarance
+  actresidual = max(conresnorm,potresnorm);
+  actresidual = max(actresidual,incconnorm_L2/connorm_L2);
+  actresidual = max(actresidual,incpotnorm_L2/potnorm_L2);
 
   return stopnonliniter;
 }
@@ -828,7 +860,8 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
       // call the VM3 scaling:
       // scale precomputed matrix product by subgrid-viscosity-scaling vector
-      vm3_solver_->Scale(sysmat_sd_,sysmat_,zeros_,zeros_,sugrvisc_,zeros_,false );
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
+      vm3_solver_->Scale(sysmat_sd_,sysmat,zeros_,zeros_,sugrvisc_,zeros_,false );
 
     }
     // end encapsulation of direct algebraic VM3 solution approach
