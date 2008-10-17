@@ -593,6 +593,31 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(brownian_motion,"frict_coeff");
 
   condlist.push_back(brownian_motion);
+  
+  /*--------------------------------------------------------------------*/
+  // Filament Number 
+  
+  //declaration of a variable which contains all the components of the condition
+  std::vector<Teuchos::RCP<ConditionComponent> > filamentnumbercomponents;
+  
+  //the condition consists of one component which has to read an integer value (the so called filament number):
+  filamentnumbercomponents.push_back(Teuchos::rcp(new IntConditionComponent("Filament Number")));
+    
+  //the condition itself hast to be defined so that it is clear how to read or write such a condition in the dat file
+  Teuchos::RCP<ConditionDefinition> filamentnumber =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FILAMENT NUMBERS",       //name of input file section
+                                         "FilamentNumber",          
+                                         "Filament Number",               //description of condition
+                                         DRT::Condition::FilamentNumber,  //type of condition in DRT (cf. drt_condition.H)
+                                         true,                            //whether special elements have to be built for the condition
+                                         DRT::Condition::Line));          //type of geometry the condition lives on
+
+  //after definition of the condition all its components have to be added:
+  for (unsigned i =0 ; i < filamentnumbercomponents.size(); ++i)
+    filamentnumber->AddComponent(contactcomponents[i]);
+
+  //the condition itself has to be added to the condition list
+  condlist.push_back(filamentnumber);
 
   /*--------------------------------------------------------------------*/
   // microscale boundary

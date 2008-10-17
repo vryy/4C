@@ -21,7 +21,6 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_condition_utils.H"
 
 
-
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
@@ -64,30 +63,41 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     }
     
     /*since crosslinkers should be established only between different filaments the number of the filament
-     * each node is belonging to is stored in the vector filamentnumber_; the related data is taken from the
-     * file ./OwnInput/FilamentNumbersOfNodes.dat and in case that no such file exists the values of 
-     * filamentnumber_ remain -1 indicating thus that this feature is not in use*/
-    std::stringstream inputname;
-    inputname << "./OwnInput/FilamentNumbersOfNodes.dat";
-
-    /*the following algorithm for reading the filament numbers of each node assumes that the file ./OwnInput/FilamentNumbersOfNodes.dat
-     * consists of two columns: in the first column all the node numbers are listed and in the second one the related filament numbers*/
-    std::fstream readfilamentnumbers(inputname.str().c_str());      
-    while (readfilamentnumbers)
+     * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
+     * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
+     * are allowed*/
+ 
+    //gettin a vector consisting of pointers to all filament number conditions set
+    vector<DRT::Condition*> filamentnumberconditions(0);
+    discret_.GetCondition("FilamentNumber",filamentnumberconditions);
+      
+    //next all the pointers to all the different conditions are looped
+    for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
     {
-      int nodenumber;
-      int filamentnumber;
-      readfilamentnumbers >> nodenumber;
-      readfilamentnumbers >> filamentnumber;
+      //get filament number described by the current condition
+      int filamentnumber = filamentnumberconditions[i]->Getint("Filament Number") ;
       
-      //turning global node number into local one
-      nodenumber = discret_.NodeRowMap()->LID(nodenumber);
+      //get a pointer to nodal cloud coverd by the current condition
+      const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
       
-      //if the node does not belong to the local processor the local Id is set by LID() to -1
-      if(nodenumber > -1)
-        (*filamentnumber_)[nodenumber] = filamentnumber;
-   
-    } //Ende while(readfilamentnumbers)
+      //loop through all the nodes of the nodal cloud
+      for(int j = 0; j < (int)nodeids->size() ; j++)
+      {
+        //get the node's global id
+        int nodenumber = (*nodeids)[j];
+        
+        //turning global id into local one
+        nodenumber = discret_.NodeRowMap()->LID(nodenumber);
+        
+        /*if the node does not belong to the local processor the local Id is set by LID() to -1 and the node is 
+         * ignored by the processor in this loop*/
+        if(nodenumber > -1)
+          (*filamentnumber_)[nodenumber] = filamentnumber;     
+      }
+    }
+
+
+
     
 
     

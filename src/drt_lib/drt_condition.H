@@ -99,7 +99,8 @@ public:
     MPC_NodeOnLine_2D,
     LJ_Potential,
     ElectrodeKinetics,
-    Brownian_Motion
+    Brownian_Motion,
+    FilamentNumber
   };
 
   /*!

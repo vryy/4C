@@ -116,6 +116,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==LinePeriodic)                os << "line periodic boundary condition";
   else if (Type()==SurfacePeriodic)             os << "surface periodic boundary condition";
   else if (Type()==Brownian_Motion)             os << "stochastical surface condition (Brownian Motion)";
+  else if (Type()==FilamentNumber)              os << "line condition for polymer networks";
+  
   
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);
