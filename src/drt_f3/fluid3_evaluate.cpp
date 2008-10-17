@@ -155,26 +155,25 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //--------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
-        //std::cout << "case 'calc_fluid_systemmat_and_residual'\n";
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete" ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"                ]=convective_stab_none;
+          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
           stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
           stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
@@ -204,22 +203,22 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete" ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"                ]=convective_stab_none;
+          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
           stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
           stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
@@ -254,27 +253,27 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
-          stabstrtoact_["time_dependent" ]=subscales_time_dependent;
-          stabstrtoact_["no_transient"   ]=inertia_stab_drop;
-          stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["cstab_td"       ]=continuity_stab_td;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete" ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["quasistatic"            ]=subscales_quasistatic;
+          stabstrtoact_["time_dependent"         ]=subscales_time_dependent;
+          stabstrtoact_["no_transient"           ]=inertia_stab_drop;
+          stabstrtoact_["yes_transient"          ]=inertia_stab_keep;
+          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"                ]=convective_stab_none;
+          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
+          stabstrtoact_["cstab_td"               ]=continuity_stab_td;
+          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
           stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
           stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
@@ -371,8 +370,41 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
 
           // integrate mean values
-          f3_calc_means(discretization,mysol,params);
+          const DiscretizationType distype = this->Shape();
 
+
+          switch (distype)
+          {
+          case DRT::Element::hex8:
+          {
+            f3_calc_means<8>(discretization,mysol,params);
+            break;
+          }
+          case DRT::Element::hex20:
+          {
+            f3_calc_means<20>(discretization,mysol,params);
+            break;
+          }
+          case DRT::Element::hex27:
+          {
+            f3_calc_means<27>(discretization,mysol,params);
+            break;
+          }
+          case DRT::Element::nurbs8:
+          {
+            f3_calc_means<8>(discretization,mysol,params);
+            break;
+          }
+          case DRT::Element::nurbs27:
+          {
+            f3_calc_means<27>(discretization,mysol,params);
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for mean value evaluation\n");
+          }
+          }
         }
       }
       break;
@@ -396,47 +428,41 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         vector<double> myvel(lm.size());
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-        // create blitz objects for element arrays
-        const int numnode = NumNode();
-        blitz::Array<double, 2> evel(3,numnode,blitz::ColumnMajorArray<2>());
-
-        // split velocity and throw away  pressure, insert into element array
-        for (int i=0;i<numnode;++i)
-        {
-          evel(0,i) = myvel[0+(i*4)];
-          evel(1,i) = myvel[1+(i*4)];
-          evel(2,i) = myvel[2+(i*4)];
-        }
-
         // initialise the contribution of this element to the patch volume to zero
         double volume_contribution = 0;
 
-        // wrap Epetra Objects in Blitz array
-        blitz::Array<double, 1> vel_hat(elevec1.Values(),
-                                        blitz::shape(elevec1.Length()),
-                                        blitz::neverDeleteData);
-
-        blitz::Array<double, 2> reystress_hat(elemat1.A(),
-                                              blitz::shape(elemat1.M(),elemat1.N()),
-                                              blitz::neverDeleteData,
-                                              blitz::ColumnMajorArray<2>());
-
-        blitz::Array<double, 2> modeled_stress_grid_scale_hat(elemat2.A(),
-                                                              blitz::shape(elemat2.M(),elemat2.N()),
-                                                              blitz::neverDeleteData,
-                                                              blitz::ColumnMajorArray<2>());
-
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays
-        this->f3_apply_box_filter(evel,
-                                  vel_hat,
-                                  reystress_hat,
-                                  modeled_stress_grid_scale_hat,
-                                  volume_contribution);
+
+        const DiscretizationType distype = this->Shape();
+        switch (distype)
+        {
+        case DRT::Element::hex8:
+        {
+          this->f3_apply_box_filter<8>(myvel,
+                                       elevec1.Values(),
+                                       elemat1.A(),
+                                       elemat2.A(),
+                                       volume_contribution);
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          this->f3_apply_box_filter<4>(myvel,
+                                       elevec1.Values(),
+                                       elemat1.A(),
+                                       elemat2.A(),
+                                       volume_contribution);
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type for box filter application\n");
+        }
+        }
 
         // hand down the volume contribution to the time integration algorithm
         params.set<double>("volume_contribution",volume_contribution);
-
       }
       break;
       case calc_smagorinsky_const:
@@ -448,42 +474,40 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         RefCountPtr<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
           params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
-        const int numnode = this->NumNode();
-        blitz::Array<double, 2> evelaf_hat                           (3  ,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 3> ereynoldsstress_hat                  (3,3,numnode,blitz::ColumnMajorArray<3>());
-        blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat (3,3,numnode,blitz::ColumnMajorArray<3>());
-
-
-        for (int nn=0;nn<numnode;++nn)
-        {
-          DRT::Node* actnode = this->Nodes()[nn];
-
-          for (int dimi=0;dimi<3;++dimi)
-          {
-            evelaf_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[actnode->LID()];
-
-            for (int dimj=0;dimj<3;++dimj)
-            {
-              ereynoldsstress_hat                  (dimi,dimj,nn)
-                =
-                (*((*col_filtered_reynoldsstress        )(3*dimi+dimj)))[actnode->LID()];
-              efiltered_modeled_subgrid_stress_hat (dimi,dimj,nn)
-                =
-                (*((*col_filtered_modeled_subgrid_stress)(3*dimi+dimj)))[actnode->LID()];
-            }
-          }
-        }
-
         double LijMij   = 0;
         double MijMij   = 0;
         double center   = 0;
 
-        this->f3_calc_smag_const_LijMij_and_MijMij(evelaf_hat,
-                                                   ereynoldsstress_hat,
-                                                   efiltered_modeled_subgrid_stress_hat,
-                                                   LijMij,
-                                                   MijMij,
-                                                   center);
+        const DiscretizationType distype = this->Shape();
+        switch (distype)
+        {
+        case DRT::Element::hex8:
+        {
+          this->f3_calc_smag_const_LijMij_and_MijMij<8>(
+            filtered_vel                       ,
+            col_filtered_reynoldsstress        ,
+            col_filtered_modeled_subgrid_stress,
+            LijMij                             ,
+            MijMij                             ,
+            center                             );
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          this->f3_calc_smag_const_LijMij_and_MijMij<4>(
+            filtered_vel                       ,
+            col_filtered_reynoldsstress        ,
+            col_filtered_modeled_subgrid_stress,
+            LijMij                             ,
+            MijMij                             ,
+            center                             );
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type for box filter application\n");
+        }
+        }
 
         // set Cs_delta_sq without averaging (only clipping)
         Cs_delta_sq_ = 0.5 * LijMij / MijMij;
@@ -536,447 +560,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       {
         if(this->Owner() == discretization.Comm().MyPID())
         {
-          // --------------------------------------------------
-          // extract velocities, pressure and accelerations from the
-          // global distributed vectors
 
-          // velocity and pressure values (current iterate, n+1)
-          RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
-
-          // velocities    (intermediate time step, n+alpha_F)
-          RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
-
-          // accelerations (intermediate time step, n+alpha_M)
-          RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
-
-          if (velnp==null || velaf==null || accam==null)
-          {
-            dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
-          }
-
-          // extract local values from the global vectors
-          vector<double> myvelnp(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-          vector<double> myvelaf(lm.size());
-          DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
-
-          vector<double> myaccam(lm.size());
-          DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
-
-          // create blitz matrix objects
-
-          const int numnode = NumNode();
-          blitz::Array<double, 1> eprenp    (  numnode);
-          blitz::Array<double, 2> evelnp    (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> evelaf    (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> eaccam    (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> edispnp   (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> egridvelaf(3,numnode,blitz::ColumnMajorArray<2>());
-
-
-          // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
-          // Additionally only the 'velocity' components of my_velaf
-          // and my_accam are important!
-          for (int i=0;i<numnode;++i)
-          {
-            eprenp(i)   = myvelnp[3+(i*4)];
-
-            evelnp(0,i) = myvelnp[0+(i*4)];
-            evelnp(1,i) = myvelnp[1+(i*4)];
-            evelnp(2,i) = myvelnp[2+(i*4)];
-
-            evelaf(0,i) = myvelaf[0+(i*4)];
-            evelaf(1,i) = myvelaf[1+(i*4)];
-            evelaf(2,i) = myvelaf[2+(i*4)];
-
-            eaccam(0,i) = myaccam[0+(i*4)];
-            eaccam(1,i) = myaccam[1+(i*4)];
-            eaccam(2,i) = myaccam[2+(i*4)];
-          }
-
-          if(is_ale_)
-          {
-            // get most recent displacements
-            RefCountPtr<const Epetra_Vector> dispnp
-              =
-              discretization.GetState("dispnp");
-
-            // get intermediate grid velocities
-            RefCountPtr<const Epetra_Vector> gridvelaf
-              =
-              discretization.GetState("gridvelaf");
-
-            if (dispnp==null || gridvelaf==null)
-            {
-              dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
-            }
-
-            vector<double> mydispnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-
-            vector<double> mygridvelaf(lm.size());
-            DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
-
-            // extract velocity part from "mygridvelaf" and get
-            // set element displacements
-            for (int i=0;i<numnode;++i)
-            {
-              egridvelaf(0,i) = mygridvelaf[0+(i*4)];
-              egridvelaf(1,i) = mygridvelaf[1+(i*4)];
-              egridvelaf(2,i) = mygridvelaf[2+(i*4)];
-
-              edispnp(0,i)    = mydispnp   [0+(i*4)];
-              edispnp(1,i)    = mydispnp   [1+(i*4)];
-              edispnp(2,i)    = mydispnp   [2+(i*4)];
-            }
-          }
-
-          // --------------------------------------------------
-          // set parameters for time integration
-          ParameterList& timelist = params.sublist("time integration parameters");
-
-          const double alphaM = timelist.get<double>("alpha_M");
-          const double alphaF = timelist.get<double>("alpha_F");
-          const double gamma  = timelist.get<double>("gamma");
-          const double dt     = timelist.get<double>("dt");
-          const double time   = timelist.get<double>("time");
-
-          // --------------------------------------------------
-          // set parameters for stabilisation
-          ParameterList& stablist = params.sublist("STABILIZATION");
-
-          // if not available, define map from string to action
-          if(stabstrtoact_.empty())
-          {
-            stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
-            stabstrtoact_["time_dependent" ]=subscales_time_dependent;
-            stabstrtoact_["no_transient"   ]=inertia_stab_drop;
-            stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
-            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-            stabstrtoact_["no_supg"        ]=convective_stab_none;
-            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-            stabstrtoact_["cstab_td"       ]=continuity_stab_td;
-            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-            stabstrtoact_["cross_complete" ]=cross_stress_stab;
-            stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-            stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
-            stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-            stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-            stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-            stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-            stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
-            stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
-            stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
-            stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
-          }
-
-          // check for time dependent subgrid-scale stabilisation
-          StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
-
-          // select tau definition
-          TauType whichtau = tau_not_defined;
-          {
-            const string taudef = stablist.get<string>("DEFINITION_TAU");
-
-            if(taudef == "Barrenechea_Franca_Valentin_Wall")
-            {
-              whichtau = franca_barrenechea_valentin_wall;
-            }
-            else if(taudef == "Bazilevs")
-            {
-              whichtau = bazilevs;
-            }
-            else if(taudef == "Codina")
-            {
-              whichtau = codina;
-            }
-          }
-
-          // flag for higher order elements
-          bool higher_order_ele = isHigherOrderElement(Shape());
-
-          // overrule higher_order_ele if input-parameter is set
-          // this might be interesting for fast (but slightly
-          // less accurate) computations
-          if(stablist.get<string>("STABTYPE") == "inconsistent")
-          {
-            higher_order_ele = false;
-          }
-
-
-          blitz::Array<double, 1>  mean_res(3);
-          blitz::Array<double, 1>  mean_sacc(3);
-          blitz::Array<double, 1>  mean_svelaf(3);
-          blitz::Array<double, 1>  mean_res_sq(3);
-          blitz::Array<double, 1>  mean_sacc_sq(3);
-          blitz::Array<double, 1>  mean_svelaf_sq(3);
-
-          double mean_resC       = 0;
-          double mean_resC_sq    = 0;
-          double mean_spreacc    = 0;
-          double mean_sprenp     = 0;
-          double mean_spreacc_sq = 0;
-          double mean_sprenp_sq  = 0;
-
-
-          mean_res       = 0;
-          mean_sacc      = 0;
-          mean_svelaf    = 0;
-          mean_res_sq    = 0;
-          mean_sacc_sq   = 0;
-          mean_svelaf_sq = 0;
-
-          RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
-          RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
-          RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
-          RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
-          RefCountPtr<vector<double> > incrsvelaf   = params.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
-          RefCountPtr<vector<double> > incrsvelaf_sq= params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
-
-          RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
-          RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
-          RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
-          RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
-          RefCountPtr<vector<double> > spressnp     = params.get<RefCountPtr<vector<double> > >("incrspressnp"    );
-          RefCountPtr<vector<double> > spressnp_sq  = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
-
-          RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_");
-
-          if(planecoords==null)
-            dserror("planecoords is null, but need channel_flow_of_height_2\n");
-
-
-	  // --------------------------------------------------
-	  // Now do the nurbs specific stuff
-	  std::vector<blitz::Array<double,1> > myknots(3);
-
-	  // for isogeometric elements
-	  if(this->Shape()==nurbs8 || this->Shape()==nurbs27)
-	  {
-	    DRT::NURBS::NurbsDiscretization* nurbsdis
-	      =
-	      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-	    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-	  }
-
-          // --------------------------------------------------
-          // set parameters for turbulence model
-          ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
-
-          // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
-          double Cs            = 0.0;
-          double Cs_delta_sq   = 0.0;
-          double l_tau         = 0.0;
-          double visceff       = 0.0;
-
-          // the default action is no model
-          TurbModelAction turb_mod_action = no_model;
-
-
-          int  nlayer=0;
-          if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-          {
-            string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-            if (physical_turbulence_model == "Smagorinsky")
-            {
-              // the classic Smagorinsky model only requires one constant parameter
-              turb_mod_action = smagorinsky;
-              Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-            }
-            else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-            {
-              RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-              // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
-              // the y+ (heigth in wall units)
-              turb_mod_action = smagorinsky_with_wall_damping;
-              Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-              l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-
-              const int iel = NumNode();
-
-              //this will be the y-coordinate of a point in the element interior
-              double center = 0;
-              for(int inode=0;inode<iel;inode++)
-              {
-                center+=Nodes()[inode]->X()[1];
-              }
-              center/=iel;
-
-              bool found = false;
-              for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-              {
-                if(center<(*planecoords)[nlayer+1])
-                {
-                  found = true;
-                  break;
-                }
-                nlayer++;
-              }
-              if (found ==false)
-              {
-                dserror("could not determine element layer");
-              }
-            }
-            else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-            {
-              turb_mod_action = dynamic_smagorinsky;
-
-              if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-                  ==
-                  "channel_flow_of_height_2")
-              {
-                RCP<vector<double> > averaged_LijMij
-                  =
-                  turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-                RCP<vector<double> > averaged_MijMij
-                  =
-                  turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-
-                RCP<vector<double> > planecoords
-                  =
-                  turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-                const int iel = NumNode();
-
-                //this will be the y-coordinate of a point in the element interior
-                double center = 0;
-                for(int inode=0;inode<iel;inode++)
-                {
-                  center+=Nodes()[inode]->X()[1];
-                }
-                center/=iel;
-
-                bool found = false;
-                for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-                {
-                  if(center<(*planecoords)[nlayer+1])
-                  {
-                    found = true;
-                    break;
-                  }
-                  nlayer++;
-                }
-                if (found ==false)
-                {
-                  dserror("could not determine element layer");
-                }
-
-                Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-                // clipping to get algorithm stable
-                if (Cs_delta_sq<0)
-                {
-                  Cs_delta_sq=0;
-                }
-              }
-              else
-              {
-                Cs_delta_sq = Cs_delta_sq_;
-              }
-            }
-            else
-            {
-              dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-            }
-          }
-
-	  // --------------------------------------------------
-          // calculate element residual
-          /*          DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->CalcRes(this,
-                                                                            myknots,
-                                                                            edispnp,
-                                                                            egridvelaf,
-                                                                            evelnp,
-                                                                            eprenp,
-                                                                            eaccam,
-                                                                            evelaf,
-                                                                            actmat,
-                                                                            alphaM,
-                                                                            alphaF,
-                                                                            gamma,
-                                                                            dt,
-                                                                            time,
-                                                                            tds,
-                                                                            whichtau,
-                                                                            turb_mod_action,
-                                                                   Cs,
-                                                                   Cs_delta_sq,
-                                                                   visceff,
-                                                                   l_tau,
-                                                                   higher_order_ele,
-                                                                   mean_res,
-                                                                   mean_sacc,
-                                                                   mean_svelaf,
-                                                                   mean_res_sq,
-                                                                   mean_sacc_sq,
-                                                                   mean_svelaf_sq,
-                                                                   mean_resC,
-                                                                   mean_spreacc,
-                                                                   mean_sprenp,
-                                                                   mean_resC_sq,
-                                                                   mean_spreacc_sq,
-                                                                   mean_sprenp_sq);
-          */
-          //this will be the y-coordinate of a point in the element interior
-          double center = 0;
-
-          // get node coordinates of element
-          blitz::Array<double,2>  xyze(3,NumNode());
-          for(int inode=0;inode<NumNode();inode++)
-          {
-            xyze(0,inode)=Nodes()[inode]->X()[0];
-            xyze(1,inode)=Nodes()[inode]->X()[1];
-            xyze(2,inode)=Nodes()[inode]->X()[2];
-
-            center+=xyze(1,inode);
-          }
-          center/=NumNode();
-
-          bool found = false;
-
-          for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-          {
-            if(center<(*planecoords)[nlayer+1])
-            {
-              found = true;
-              break;
-            }
-            nlayer++;
-          }
-          if (found ==false)
-          {
-            dserror("could not determine element layer");
-          }
-
-          for(int mm=0;mm<3;++mm)
-          {
-            (*incrres      )[3*nlayer+mm] += mean_res      (mm);
-            (*incrres_sq   )[3*nlayer+mm] += mean_res_sq   (mm);
-            (*incrsacc     )[3*nlayer+mm] += mean_sacc     (mm);
-            (*incrsacc_sq  )[3*nlayer+mm] += mean_sacc_sq  (mm);
-
-            (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
-            (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
-          }
-          (*incrresC    )[nlayer] += mean_resC      ;
-          (*incrresC_sq )[nlayer] += mean_resC_sq   ;
-          (*spressacc   )[nlayer] += mean_spreacc   ;
-          (*spressacc_sq)[nlayer] += mean_spreacc_sq;
-          (*spressnp    )[nlayer] += mean_sprenp    ;
-          (*spressnp_sq )[nlayer] += mean_sprenp_sq ;
+          return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->CalcResAvgs(
+            this,
+            params,
+            discretization,
+            lm,
+            mat,
+            actmat);
         }
       }
       break;
@@ -1358,21 +949,21 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
  | All results are communicated via the parameter list!
  |
  *---------------------------------------------------------------------*/
+template<int iel> 
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
   DRT::Discretization&      discretization,
-  vector<double>&           sol  ,
+  vector<double>&           solution      ,
   ParameterList& 	    params
   )
 {
-
+  // get view of solution vector
+  LINALG::FixedSizeSerialDenseMatrix<iel,1> sol(&(solution[0]),true);
+  
   // set element data
-  const int iel = NumNode();
   const DiscretizationType distype = this->Shape();
-
 
   // the plane normal tells you in which plane the integration takes place
   const int normdirect = params.get<int>("normal direction to homogeneous plane");
-
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
@@ -1392,8 +983,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
   RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
 
-
-
   if(distype == DRT::Element::hex8
      ||
      distype == DRT::Element::hex27
@@ -1401,7 +990,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
      distype == DRT::Element::hex20)
   {
     // get node coordinates of element
-    Epetra_SerialDenseMatrix xyze(3,iel);
+    LINALG::FixedSizeSerialDenseMatrix<3,iel>  xyze;
     DRT::Node** nodes = Nodes();
     for(int inode=0;inode<iel;inode++)
     {
@@ -1527,7 +1116,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     }
 
     // allocate vector for shapefunctions
-    Epetra_SerialDenseVector  funct(iel);
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct;
 
     // get the quad9 gaussrule for the in plane integration
     const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
@@ -1574,6 +1163,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	// compute the shape function values
 	shape_function_3D(funct,e[0],e[1],e[2],distype);
 
+#ifdef DEBUG
 	// check whether this gausspoint is really inside the desired plane
 	{
 	  double x[3];
@@ -1582,9 +1172,9 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	  x[2]=0;
 	  for(int inode=0;inode<iel;inode++)
 	  {
-	    x[0]+=funct[inode]*xyze(0,inode);
-	    x[1]+=funct[inode]*xyze(1,inode);
-	    x[2]+=funct[inode]*xyze(2,inode);
+	    x[0]+=funct(inode)*xyze(0,inode);
+	    x[1]+=funct(inode)*xyze(1,inode);
+	    x[2]+=funct(inode)*xyze(2,inode);
 	  }
 
 	  if(abs(x[normdirect]-(*planes)[*id])>2e-9)
@@ -1592,6 +1182,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	    dserror("Mixing up element cut planes during integration");
 	  }
 	}
+#endif
 
 	//interpolated values at gausspoints
 	double ugp=0;
@@ -1607,25 +1198,33 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 	for(int inode=0;inode<iel;inode++)
 	{
-	  ugp += funct[inode]*sol[inode*4  ];
-	  vgp += funct[inode]*sol[inode*4+1];
-	  wgp += funct[inode]*sol[inode*4+2];
-	  pgp += funct[inode]*sol[inode*4+3];
+          int finode=inode*4;
+
+	  ugp += funct(inode)*sol(finode++);
+          vgp += funct(inode)*sol(finode++);
+	  wgp += funct(inode)*sol(finode++);
+	  pgp += funct(inode)*sol(finode  );
 	}
 
 	// add contribution to integral
-	ubar   += ugp*fac;
-	vbar   += vgp*fac;
-	wbar   += wgp*fac;
-	pbar   += pgp*fac;
 
-	usqbar += ugp*ugp*fac;
-	vsqbar += vgp*vgp*fac;
-	wsqbar += wgp*wgp*fac;
-	uvbar  += ugp*vgp*fac;
-	uwbar  += ugp*wgp*fac;
-	vwbar  += vgp*wgp*fac;
-	psqbar += pgp*pgp*fac;
+	double dubar  = ugp*fac;
+	double dvbar  = vgp*fac;
+	double dwbar  = wgp*fac;
+	double dpbar  = pgp*fac;
+
+	ubar   += dubar;
+	vbar   += dvbar;
+	wbar   += dwbar;
+	pbar   += dpbar;
+
+	usqbar += ugp*dubar;
+	vsqbar += vgp*dvbar;
+	wsqbar += wgp*dwbar;
+	uvbar  += ugp*dvbar;
+	uwbar  += ugp*dwbar;
+	vwbar  += vgp*dwbar;
+	psqbar += pgp*dpbar;
       } // end loop integration points
 
       // add increments from this layer to processor local vectors
@@ -1687,18 +1286,14 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       dserror("expected single patch nurbs problem for calculating means");
     }
 
-    // want to loop all control points of the element,
-    // so get the number of points
-    const int numnp = NumNode();
-
     // access elements knot span
     std::vector<blitz::Array<double,1> > eleknots(3);
     knots->GetEleKnots(eleknots,gid);
 
     // aquire weights from nodes
-    blitz::Array<double,1> weights(numnp);
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> weights;
 
-    for (int inode=0; inode<numnp; ++inode)
+    for (int inode=0; inode<iel; ++inode)
     {
       DRT::NURBS::ControlPoint* cp
 	=
@@ -1708,7 +1303,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     }
 
     // get shapefunctions, compute all visualisation point positions
-    blitz::Array<double,1> nurbs_shape_funct(numnp);
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> nurbs_shape_funct;
 
     // there's one additional plane for the last element layer
     int endlayer=0;
@@ -1777,10 +1372,10 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 	for(int inode=0;inode<iel;inode++)
 	{
-	  ugp += nurbs_shape_funct(inode)*sol[inode*4  ];
-	  vgp += nurbs_shape_funct(inode)*sol[inode*4+1];
-	  wgp += nurbs_shape_funct(inode)*sol[inode*4+2];
-	  pgp += nurbs_shape_funct(inode)*sol[inode*4+3];
+	  ugp += nurbs_shape_funct(inode)*sol(inode*4  );
+          vgp += nurbs_shape_funct(inode)*sol(inode*4+1);
+	  wgp += nurbs_shape_funct(inode)*sol(inode*4+2);
+	  pgp += nurbs_shape_funct(inode)*sol(inode*4+3);
 	}
 
 	// add contribution to integral
@@ -1817,36 +1412,53 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   }
   else
   {
-    dserror("Unknown element type\n");
+    dserror("Unknown element type for mean value evaluation\n");
   }
-
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_means
 
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
+template<int iel> 
 void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
-    blitz::Array<double, 2>&  evelaf,
-    blitz::Array<double, 1>&  vel_hat,
-    blitz::Array<double, 2>&  reystr_hat,
-    blitz::Array<double, 2>&  modeled_stress_grid_scale_hat,
+    vector<double>&           myvel,
+    double*                   bvel_hat,
+    double*                   breystr_hat,
+    double*                   bmodeled_stress_grid_scale_hat,
     double&                   volume
     )
 {
-  // number of spatial dimensions is always 3
+  // alloc a fixed size array for nodal velocities
+  LINALG::FixedSizeSerialDenseMatrix<3,iel>   evelaf;
+
+  // wrap matrix objects in fixed-size arrays
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,1> myvelvec(&(myvel[0]),true);
+  LINALG::FixedSizeSerialDenseMatrix<3,1>     vel_hat                      (bvel_hat,true);
+  LINALG::FixedSizeSerialDenseMatrix<3,3>     reystr_hat                   (breystr_hat,true);
+  LINALG::FixedSizeSerialDenseMatrix<3,3>     modeled_stress_grid_scale_hat(bmodeled_stress_grid_scale_hat,true);
+
+  // split velocity and throw away  pressure, insert into element array
+  for (int i=0;i<iel;++i)
+  {
+    int fi =4*i;
+    
+    evelaf(0,i) = myvelvec(fi++);
+    evelaf(1,i) = myvelvec(fi++);
+    evelaf(2,i) = myvelvec(fi  );
+  }
+
+   // number of spatial dimensions is always 3
   const int NSD = 3;
 
   // set element data
   const DiscretizationType distype = this->Shape();
-  const int iel=8;
 
   // allocate arrays for shapefunctions, derivatives and the transposed jacobian
   LINALG::FixedSizeSerialDenseMatrix<iel,  1>  funct;
   LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>  xjm  ;
   LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>  xji  ;
   LINALG::FixedSizeSerialDenseMatrix<NSD,iel>  deriv;
-
 
   // get node coordinates of element
   LINALG::FixedSizeSerialDenseMatrix<NSD,iel> xyze;
@@ -2048,16 +1660,14 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   // determine contribution to patch volume
   volume = wquad*det;
 
-  // add contribution to integral over velocities
-  for (int rr=0;rr<NSD;++rr)
-  {
-    vel_hat(rr) += velintaf(rr)*volume;
-  }
-
-  // add contribution to integral over reynolds stresses
   for (int rr=0;rr<NSD;++rr)
   {
     double temp=velintaf(rr)*volume;
+
+    // add contribution to integral over velocities
+    vel_hat(rr) += temp;
+
+    // add contribution to integral over reynolds stresses
     for (int nn=0;nn<NSD;++nn)
     {
       reystr_hat(rr,nn) += temp*velintaf(nn);
@@ -2083,43 +1693,53 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
 // of the modeled and resolved stress tensor --- from this relation, Cs
 // will be computed
 //----------------------------------------------------------------------
-
-
+template<int iel> 
 void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
-  blitz::Array<double, 2> evel_hat,
-  blitz::Array<double, 3> ereynoldsstress_hat,
-  blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
-  double&                 LijMij,
-  double&                 MijMij,
-  double&                 center)
+  RCP<Epetra_MultiVector>& filtered_vel                       ,
+  RCP<Epetra_MultiVector>& col_filtered_reynoldsstress        ,
+  RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
+  double&                  LijMij,
+  double&                  MijMij,
+  double&                  center)
 {
 
-  //------------------------------------------------------------------
-  //                     BLITZ CONFIGURATION
-  //------------------------------------------------------------------
-  //
-  // We define the variables i,j,k to be indices to blitz arrays.
-  // These are used for array expressions, that is matrix-vector
-  // products in the following.
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> evel_hat                            ;
+  LINALG::FixedSizeSerialDenseMatrix<9,iel> ereynoldsstress_hat                 ;
+  LINALG::FixedSizeSerialDenseMatrix<9,iel> efiltered_modeled_subgrid_stress_hat;
+  
+  for (int nn=0;nn<iel;++nn)
+  {
+    int lid = (Nodes()[nn])->LID();
 
-  blitz::firstIndex  i;   // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-  blitz::thirdIndex  k;   // Placeholder for the third index
+    for (int dimi=0;dimi<3;++dimi)
+    {
+      evel_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[lid];
+      
+      for (int dimj=0;dimj<3;++dimj)
+      {
+        int index=3*dimi+dimj;
 
+        ereynoldsstress_hat(index,nn)
+          =(*((*col_filtered_reynoldsstress)(index)))[lid];
+
+        efiltered_modeled_subgrid_stress_hat (index,nn)
+          =(*((*col_filtered_modeled_subgrid_stress)(index)))[lid];
+      }
+    }
+  }
+  
   // set element data
-  const int iel = NumNode();
   const DiscretizationType distype = this->Shape();
 
   // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-  blitz::Array<double,1>  funct(iel);
-  blitz::Array<double,2>  deriv(3,iel,blitz::ColumnMajorArray<2>());
-
+  LINALG::FixedSizeSerialDenseMatrix<iel,1> funct;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv;
 
   //this will be the y-coordinate of a point in the element interior
   center = 0;
 
   // get node coordinates of element
-  blitz::Array<double,2>  xyze(3,iel);
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze;
   for(int inode=0;inode<iel;inode++)
   {
     xyze(0,inode)=Nodes()[inode]->X()[0];
@@ -2175,7 +1795,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
         dserror("type unknown!\n");
   }
 
-  blitz::Array<double,2> xjm(3,3);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
   // get Jacobian matrix and its determinant
   for (int nn=0;nn<3;++nn)
   {
@@ -2198,7 +1818,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //
   //             compute global first derivates
   //
-  blitz::Array<double,2>  derxy(3,iel,blitz::ColumnMajorArray<2>());
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy;
   /*
     Use the Jacobian and the known derivatives in element coordinate
     directions on the right hand side to compute the derivatives in
@@ -2219,7 +1839,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
           +-                 -+     +-    -+      +-    -+
 
   */
-  blitz::Array<double,2> xji(3,3);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> xji;
   xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
   xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
   xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
@@ -2252,8 +1872,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //                    +-----
   //                    node j
   //
-  blitz::Array<double,1> velint_hat (3);
-  /*
+  LINALG::FixedSizeSerialDenseMatrix<3,1> velint_hat;
   for (int rr=0;rr<3;++rr)
   {
     velint_hat(rr)=funct(0)*evel_hat(rr,0);
@@ -2262,8 +1881,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
       velint_hat(rr)+=funct(mm)*evel_hat(rr,mm);
     }
   }
-*/
-velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
 
   // get velocity (n+alpha_F,i) derivatives at integration point
   //
@@ -2276,8 +1893,8 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
   //
   // j : direction of derivative x/y/z
   //
-  blitz::Array<double,2>  vderxy_hat(3,3);
-  /*
+  LINALG::FixedSizeSerialDenseMatrix<3,3>  vderxy_hat;
+
   for (int nn=0;nn<3;++nn)
   {
     for (int rr=0;rr<3;++rr)
@@ -2289,8 +1906,6 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
       }
     }
   }
-  */
-  vderxy_hat = blitz::sum(derxy(j,k)*evel_hat(i,k),k);
 
   // get filtered reynolds stress (n+alpha_F/1,i) at integration point
   //
@@ -2301,22 +1916,23 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
   //                        +-----
   //                        node k
   //
-  blitz::Array<double,2>  restress_hat(3,3);
-  /*
+  LINALG::FixedSizeSerialDenseMatrix<3,3> restress_hat;
+  
   for (int nn=0;nn<3;++nn)
   {
     for (int rr=0;rr<3;++rr)
     {
-      vderxy_hat(nn,rr)=derxy(rr,0)*evel_hat(nn,0);
+      int index = 3*nn+rr;
+      restress_hat(nn,rr)=funct(0)*ereynoldsstress_hat(index,0);
+
       for (int mm=1;mm<iel;++mm)
       {
-        restress_hat(nn,rr)+=funct(mm)*ereynoldsstress_hat(nn,rr,mm);
+        restress_hat(nn,rr)+=funct(mm)*ereynoldsstress_hat(index,mm);
       }
     }
   }
-  */
 
-  restress_hat = blitz::sum(funct(k)*ereynoldsstress_hat(i,j,k),k);
+  //  restress_hat = blitz::sum(funct(k)*ereynoldsstress_hat(i,j,k),k);
 
   // get filtered modeled subgrid stress (n+alpha_F/1,i) at integration point
   //
@@ -2333,8 +1949,22 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
   //            node k
   //
   //
-  blitz::Array<double,2>  filtered_modeled_subgrid_stress_hat(3,3);
-  filtered_modeled_subgrid_stress_hat = blitz::sum(funct(k)*efiltered_modeled_subgrid_stress_hat(i,j,k),k);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> filtered_modeled_subgrid_stress_hat;
+  for (int nn=0;nn<3;++nn)
+  {
+    for (int rr=0;rr<3;++rr)
+    {
+      int index = 3*nn+rr;
+      filtered_modeled_subgrid_stress_hat(nn,rr)=funct(0)*efiltered_modeled_subgrid_stress_hat(index,0);
+
+      for (int mm=1;mm<iel;++mm)
+      {
+        filtered_modeled_subgrid_stress_hat(nn,rr)+=funct(mm)*efiltered_modeled_subgrid_stress_hat(index,mm);
+      }
+    }
+  }
+
+  //filtered_modeled_subgrid_stress_hat = blitz::sum(funct(k)*efiltered_modeled_subgrid_stress_hat(i,j,k),k);
 
 
   /*
@@ -2344,8 +1974,15 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
           \   / ij    2.0   |       dx              dx          |
                             +-        j               i        -+
   */
-  blitz::Array<double,2> epsilon_hat(3,3,blitz::ColumnMajorArray<2>());
-  epsilon_hat = 0.5 * ( vderxy_hat(i,j) + vderxy_hat(j,i) );
+
+  LINALG::FixedSizeSerialDenseMatrix<3,3>  epsilon_hat;
+  for (int nn=0;nn<3;++nn)
+  {
+    for (int rr=0;rr<3;++rr)
+    {
+      epsilon_hat(nn,rr) = 0.5 * ( vderxy_hat(nn,rr) + vderxy_hat(rr,nn) );
+    }
+  }
 
   //
   // modeled part of subtestfilter scale stresses
@@ -2373,17 +2010,29 @@ velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
   rateofstrain_hat *= 2.0;
   rateofstrain_hat = sqrt(rateofstrain_hat);
 
-  blitz::Array<double, 2> L_ij (3,3,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> M_ij (3,3,blitz::ColumnMajorArray<2>());
-
-  L_ij = restress_hat(i,j) - velint_hat(i)*velint_hat(j);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> L_ij;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> M_ij;
+  
+  for(int rr=0;rr<3;rr++)
+  {
+    for(int mm=0;mm<3;mm++)
+    {
+      L_ij(rr,mm) = restress_hat(rr,mm) - velint_hat(rr)*velint_hat(mm);
+    }
+  }
 
   // this is sqrt(3)
   double filterwidthratio = 1.73;
 
-  M_ij = filtered_modeled_subgrid_stress_hat(i,j)
-         -
-         filterwidthratio*filterwidthratio*rateofstrain_hat*epsilon_hat(i,j);
+  for(int rr=0;rr<3;rr++)
+  {
+    for(int mm=0;mm<3;mm++)
+    {
+      M_ij(rr,mm) = filtered_modeled_subgrid_stress_hat(rr,mm)
+        -
+        filterwidthratio*filterwidthratio*rateofstrain_hat*epsilon_hat(rr,mm);
+    }
+  }
 
   LijMij =0;
   MijMij =0;

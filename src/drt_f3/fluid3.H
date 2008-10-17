@@ -598,7 +598,7 @@ private:
     </pre>
 
    */
-
+  template<int iel> 
   void f3_calc_means(
     DRT::Discretization&      discretization,
     vector<double>&           vel  ,
@@ -634,11 +634,12 @@ private:
     \return void
 
    */
+  template<int iel> 
   void f3_apply_box_filter(
-    blitz::Array<double, 2>&  evelaf,
-    blitz::Array<double, 1>&  vel_hat,
-    blitz::Array<double, 2>&  reystr_hat,
-    blitz::Array<double, 2>&  modeled_stress_grid_scale_hat,
+    vector<double>&           myvel,
+    double*                   vel_hat,
+    double*                   reystr_hat,
+    double*                   modeled_stress_grid_scale_hat,
     double&                   volume
     );
 
@@ -695,14 +696,14 @@ private:
     \return void
 
    */
-
+template<int iel> 
 void f3_calc_smag_const_LijMij_and_MijMij(
-  blitz::Array<double, 2> evelaf_hat,
-  blitz::Array<double, 3> ereynoldsstress_hat,
-  blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
-  double&                 LijMij,
-  double&                 MijMij,
-  double&                 center);
+  RCP<Epetra_MultiVector>& filtered_vel                       ,
+  RCP<Epetra_MultiVector>& col_filtered_reynoldsstress        ,
+  RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
+  double&                  LijMij,
+  double&                  MijMij,
+  double&                  center);
 
   /*!
     \brief calculate convective stresses at element nodes by extrapolation
