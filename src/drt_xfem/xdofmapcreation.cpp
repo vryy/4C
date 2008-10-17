@@ -74,11 +74,9 @@ void XFEM::ApplyElementEnrichments(
     const XFEM::InterfaceHandle&                  ih,
     const XFEM::Enrichment&                       voidenr,
     const bool                                    DLM_condensation,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    std::set<XFEM::FieldEnr>&                     enrfieldset
     )
 {
-  const int element_gid = xfemele->Id();
-  
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
   const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-2);
@@ -97,7 +95,7 @@ void XFEM::ApplyElementEnrichments(
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
     for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
     {
-      elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
     }
   }
   else
@@ -125,7 +123,7 @@ void XFEM::ApplyVoidEnrichmentForElement(
     {
       ApplyNodalEnrichments(xfemele, ih, voidenr, nodalDofSet); 
   
-      ApplyElementEnrichments(xfemele, ih, voidenr, DLM_condensation, elementalDofs);
+      ApplyElementEnrichments(xfemele, ih, voidenr, DLM_condensation, elementalDofs[element_gid]);
     }
   }
 }

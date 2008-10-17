@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/xdofmapcreation.H"
 
 
 // converts a string into an Action for this element
@@ -223,9 +224,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
           
-          const bool DLM_condensation = params.get<bool>("DLM_condensation");
-          
-          if (not DLM_condensation or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+          if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
           {
             const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                     *eleDofManager_, NumNode(), NodeIds());
@@ -238,62 +237,27 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
           {
-            
-            // condensation of stress dofs
-            const int nd = eleDofManager_uncondensed_->NumNodeDof();
-            const int na = eleDofManager_uncondensed_->NumElemDof();
-            
-            Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("nodal residual");
-            
-            vector<double> myres(lm.size());
-            DRT::UTILS::ExtractMyValues(*res,myres,lm);
-                        
-            const int numdof        = eleDofManager_->NumDofElemAndNode();
-            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-//            cout << numdof << "   " << numdof_uncond << endl;
+            // sanity checks
             if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
               dserror("NumNodeDof mismatch");
             if (eleDofManager_->NumElemDof() != 0)
               dserror("NumElemDof not 0");
             
-            // increase size ov new value vector
-            vector<double> tmp = mystate.velnp;
-            vector<double> extended(numdof_uncond,0.0);
-            mystate.velnp.resize(eleDofManager_uncondensed_->NumDofElemAndNode(),0.0);
-            for (int i = 0; i < eleDofManager_uncondensed_->NumNodeDof(); ++i)
-            {
-              mystate.velnp[i] = tmp[i];
-//              cout << mystate.velnp[i];
-            }
-//            cout << endl;
+            // stress update
+            UpdateOldDLMAndDLMRHS(discretization, lm);
+            
+            const int nd = eleDofManager_uncondensed_->NumNodeDof();
+            const int na = eleDofManager_uncondensed_->NumElemDof();
+            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+            
+            // increase size of element vector (old values stay and zeros are added)
+            mystate.velnp.resize(numdof_uncond,0.0);
+            for (int i=0;i<na;i++)
+              mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
             
             // create uncondensed element matrix and vector
             Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
             Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-            
-            
-
-            
-            Epetra_SerialDenseVector res_d(nd);
-            for (int i = 0; i < nd; ++i) {
-              res_d(i) = myres[i];
-            }
-            // add Kda . res_d to feas
-            // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-            
-            //LINALG::DENSEFUNCTIONS::multiply<soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-            for (int i=0;i<na;i++)
-              for (int j=0;j<nd;j++)
-                oldfa_(i) += oldKad_(i,j)*res_d(j);
-            
-            //LINALG::DENSEFUNCTIONS::multiply<soh8_easfull,soh8_easfull,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
-            for (int i=0;i<na;i++)
-              for (int j=0;j<na;j++)
-                stressdofs_(i) -= oldKaainv_(i,j)*oldfa_(j);
-            
-            for (int i=0;i<na;i++)
-              mystate.velnp[i+nd] = stressdofs_(i);
-//            cout << stressdofs_ << endl;
             
             const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                     *eleDofManager_uncondensed_, NumNode(), NodeIds());
@@ -303,104 +267,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                     this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
                     actmat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
             
-
-            
-            // copy nodal dof entries
-            for (int i = 0; i < nd; ++i)
-            {
-              elevec1(i) = elevec1_uncond(i);
-              for (int j = 0; j < nd; ++j)
-              {
-                elemat1(i,j) = elemat1_uncond(i,j);
-              }
-            }
-            
-            {
-              Epetra_SerialDenseMatrix Kda(nd,na);
-              Epetra_SerialDenseMatrix Kaa(na,na);
-              Epetra_SerialDenseMatrix Kad(na,nd);
-              Epetra_SerialDenseVector fa(na);
-  
-              for (int i=0;i<nd;i++)
-                for (int j=0;j<na;j++)
-                  Kda(i,j) = elemat1_uncond(i   ,j+nd);
-              
-              for (int i=0;i<na;i++)
-                for (int j=0;j<na;j++)
-                  Kaa(i,j) = elemat1_uncond(i+nd,j+nd);
-  
-              for (int i=0;i<na;i++)
-                for (int j=0;j<nd;j++)
-                  Kad(i,j) = elemat1_uncond(i+nd,j   );
-              
-              for (int i=0;i<na;i++)
-                fa(i) = elevec1_uncond(i+nd);
-              
-//              cout << endl << "Kda" << endl;
-//              cout << Kda << endl;
-//              
-//              cout << endl << "Kaa" << endl;
-//              cout << Kaa << endl;
-//              
-//              cout << endl << "Kad" << endl;
-//              cout << Kad << endl;
-              
-              // we need the inverse of Kaa
-              Epetra_SerialDenseSolver solve_for_inverseKaa;
-              solve_for_inverseKaa.SetMatrix(Kaa);
-              solve_for_inverseKaa.Invert();
-              // EAS-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
-              // EAS-internal force is: fint - Kda . Kaa^-1 . feas
-  
-              {
-                LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
-                KdaKaainv.Zero();
-                
-                //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,soh8_easfull>(KdaKaa, Kda, Kaa);
-                for (int i=0;i<nd;i++)
-                  for (int j=0;j<na;j++)
-                    for (int k=0;k<na;k++)
-                      KdaKaainv(i,j) += Kda(i,k)*Kaa(k,j);
-//                cout << endl << "KdaKaainv" << endl;
-//                cout << KdaKaainv << endl;
-                
-                //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
-                for (int i=0;i<nd;i++)
-                  for (int j=0;j<nd;j++)
-                    for (int k=0;k<na;k++)
-                      elemat1(i,j) -= KdaKaainv(i,k)*Kad(k,j);
-                
-                //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
-                for (int i=0;i<nd;i++)
-                  for (int j=0;j<na;j++)
-                    elevec1(i) -= KdaKaainv(i,j)*fa(j);
-              }
-//              cout << elevec1 << endl;
-//              cout << elemat1 << endl;
-//              exit(1);
-             
-              {
-                // store current EAS data in iteration history
-//                for (int i=0; i<nd; ++i)
-//                  for (int j=0; j<na; ++j)
-//                    oldKda_(i,j) = Kda(i,j);
-                
-                for (int i=0; i<na; ++i)
-                  for (int j=0; j<na; ++j)
-                    oldKaainv_(i,j) = Kaa(i,j);
-                
-                for (int i=0; i<na; ++i)
-                  for (int j=0; j<nd; ++j)
-                    oldKad_(i,j) = Kad(i,j);
-    
-                for (int i=0; i<na; ++i)
-                  oldfa_(i) = fa(i);
-            }
-            }
-            
+            // condensation
+            CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
           }
-          
-
           
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
@@ -480,30 +349,31 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // create local copy of information about dofs
             map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
             if (not DLM_condensation)
-            {
               element_ansatz = XFLUID::getElementAnsatz(this->Shape());
-            }
-            else
-            {
-              // no element unknowns -> empty stress ansatz
-            }
           
             eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
           }
           
           if (ih_->ElementIntersected(Id()))
           {
+            std::set<XFEM::FieldEnr> enrfieldset;
+            
+            const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
+            // loop condition labels
+            for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
+            {
+              const int label = *labeliter;
+
+              // for surface with label, loop my col elements and add void enrichments to each elements member nodes
+              const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
+              if (ih_->ElementHasLabel(this->Id(), label))
+              {
+                XFEM::ApplyElementEnrichments(this, *ih_, voidenr, false, enrfieldset);
+              }
+            };
+            
             // create local copy of information about dofs
             const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
-            
-            // TODO: ACHTUNG: hardgecodetes xfemLabel -> 1
-            const XFEM::Enrichment voidenr(1, XFEM::Enrichment::typeVoid);
-            std::set<XFEM::FieldEnr> enrfieldset;
-            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-            for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
-            {
-              enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
-            }
             
             // nodal dofs for ele
             eleDofManager_uncondensed_ = 
@@ -511,15 +381,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             
             const int nd = eleDofManager_uncondensed_->NumNodeDof();
             const int na = eleDofManager_uncondensed_->NumElemDof();
-            oldKaainv_.Shape(na,na);  oldKaainv_.Zero();
-            oldKad_.Shape(na,nd);     oldKad_.Zero();
-            oldfa_.Size(na);          for (int i = 0; i< na; ++i) oldfa_(i)=0.0;
-            stressdofs_.Size(na);     for (int i = 0; i< na; ++i) stressdofs_(i)=0.0;
             
+            DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
           }
           else
           {
             eleDofManager_uncondensed_ = Teuchos::null;
+            DLM_info_ = Teuchos::null;
           }
           
           break;
@@ -760,6 +628,128 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   params.set<double>("L2 integrated pressure error",preerr);
 
   return;
+}
+
+
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
+    const DRT::Discretization&      discretization,
+    const std::vector<int>&         lm
+    ) const
+{
+  const int nd = eleDofManager_uncondensed_->NumNodeDof();
+  const int na = eleDofManager_uncondensed_->NumElemDof();
+  
+  // add Kda . res_d to feas
+  // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+  
+  vector<double> res_d(lm.size());
+  DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal residual"),res_d,lm);
+  
+  //update old iteration residuum of the stresses
+  for (int i=0;i<na;i++)
+    for (int j=0;j<nd;j++)
+      DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*res_d[j];
+  
+  // compute element stresses
+  for (int i=0;i<na;i++)
+    for (int j=0;j<na;j++)
+      DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+}
+
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
+    const Epetra_SerialDenseMatrix& elemat1_uncond,
+    const Epetra_SerialDenseVector& elevec1_uncond,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseVector& elevec1    
+) const
+{
+
+  const int nd = eleDofManager_uncondensed_->NumNodeDof();
+  const int na = eleDofManager_uncondensed_->NumElemDof();
+  
+  // copy nodal dof entries
+  for (int i = 0; i < nd; ++i)
+  {
+    elevec1(i) = elevec1_uncond(i);
+    for (int j = 0; j < nd; ++j)
+    {
+      elemat1(i,j) = elemat1_uncond(i,j);
+    }
+  }
+  
+  {
+    // note: the full (u,p,sigma) matrix is unsymmetric, hence we need both, rectangular matrizes Kda and Kad
+    Epetra_SerialDenseMatrix Kda(nd,na);
+    Epetra_SerialDenseMatrix Kaa(na,na);
+    Epetra_SerialDenseMatrix Kad(na,nd);
+    Epetra_SerialDenseVector fa(na);
+
+    for (int i=0;i<nd;i++)
+      for (int j=0;j<na;j++)
+        Kda(i,j) = elemat1_uncond(i   ,j+nd);
+    
+    for (int i=0;i<na;i++)
+      for (int j=0;j<na;j++)
+        Kaa(i,j) = elemat1_uncond(i+nd,j+nd);
+
+    for (int i=0;i<na;i++)
+      for (int j=0;j<nd;j++)
+        Kad(i,j) = elemat1_uncond(i+nd,j   );
+    
+    for (int i=0;i<na;i++)
+      fa(i) = elevec1_uncond(i+nd);
+    
+    
+    // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
+    // DLM-internal force is: fint - Kda . Kaa^-1 . feas
+    
+    // we need the inverse of Kaa
+    Epetra_SerialDenseSolver solve_for_inverseKaa;
+    solve_for_inverseKaa.SetMatrix(Kaa);
+    solve_for_inverseKaa.Invert();
+
+    {
+      LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
+      KdaKaainv.Zero();
+      
+      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,soh8_easfull>(KdaKaa, Kda, Kaa);
+      for (int i=0;i<nd;i++)
+        for (int j=0;j<na;j++)
+          for (int k=0;k<na;k++)
+            KdaKaainv(i,j) += Kda(i,k)*Kaa(k,j);
+//                cout << endl << "KdaKaainv" << endl;
+//                cout << KdaKaainv << endl;
+      
+      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+      for (int i=0;i<nd;i++)
+        for (int j=0;j<nd;j++)
+          for (int k=0;k<na;k++)
+            elemat1(i,j) -= KdaKaainv(i,k)*Kad(k,j);
+      
+      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+      for (int i=0;i<nd;i++)
+        for (int j=0;j<na;j++)
+          elevec1(i) -= KdaKaainv(i,j)*fa(j);
+    }
+   
+    {
+      // store current DLM data in iteration history
+      for (int i=0; i<na; ++i)
+        for (int j=0; j<na; ++j)
+          DLM_info_->oldKaainv_(i,j) = Kaa(i,j);
+      
+      for (int i=0; i<na; ++i)
+        for (int j=0; j<nd; ++j)
+          DLM_info_->oldKad_(i,j) = Kad(i,j);
+
+      for (int i=0; i<na; ++i)
+        DLM_info_->oldfa_(i) = fa(i);
+    }
+  }
 }
 
 

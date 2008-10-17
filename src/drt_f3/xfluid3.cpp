@@ -304,7 +304,19 @@ void DRT::ELEMENTS::XFluid3Register::Print(ostream& os) const
 }
 
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nd, const int na)
+: oldKaainv_(LINALG::SerialDenseMatrix(na,na)),
+  oldKad_(LINALG::SerialDenseMatrix(na,nd)),
+  oldfa_(LINALG::SerialDenseVector(na)),
+  stressdofs_(LINALG::SerialDenseVector(na))
+{
+  oldKaainv_.Zero();
+  oldKad_.Zero();
+  for (int i = 0; i< na; ++i) oldfa_(i)=0.0;
+  for (int i = 0; i< na; ++i) stressdofs_(i)=0.0;
+}
 
 
 #endif  // #ifdef CCADISCRET

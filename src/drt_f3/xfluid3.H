@@ -238,13 +238,28 @@ namespace DRT
         //! store information about the intersection handle
         Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
 
-        //! store matrizes and rhs of the old iteration step
-        LINALG::SerialDenseMatrix      oldKaainv_;
-        LINALG::SerialDenseMatrix      oldKad_;
-        LINALG::SerialDenseVector      oldfa_;
+        //! store element stress info and corresponding matrices used during condensation
+        class DLMInfo
+        {
+        public:
+          //! store matrizes and rhs of the old iteration step
+          LINALG::SerialDenseMatrix      oldKaainv_;
+          LINALG::SerialDenseMatrix      oldKad_;
+          LINALG::SerialDenseVector      oldfa_;
+          
+          //! this map stores all element stresses (independent of the xfem label)
+          LINALG::SerialDenseVector      stressdofs_;
+          
+          //! constructor
+          explicit DLMInfo(const int nd, const int na);
+        private:
+          //! no standard constructor
+          DLMInfo();
+          //! no copy constructor
+          DLMInfo(const DLMInfo&);
+        };
         
-        //! this map stores all element stresses (independent of the xfem label)
-        LINALG::SerialDenseVector      stressdofs_;
+        Teuchos::RCP<DLMInfo>            DLM_info_;
         
         // internal calculation methods
         
@@ -258,6 +273,20 @@ namespace DRT
             const struct _MATERIAL*    material,
             ParameterList&             params
         );
+        
+        //! compute stresses from previous newton iteration and store them in dlm_info_
+        void UpdateOldDLMAndDLMRHS(
+            const DRT::Discretization&      discretization,
+            const std::vector<int>&         lm
+            ) const;
+        
+        //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
+        void CondenseDLMAndStoreOldIterationStep(
+            const Epetra_SerialDenseMatrix& elemat1_uncond,
+            const Epetra_SerialDenseVector& elevec1_uncond,
+            Epetra_SerialDenseMatrix& elemat1,
+            Epetra_SerialDenseVector& elevec1
+            ) const;
         
         /*!
          * \brief get optimal gaussrule for given discretization type

@@ -37,7 +37,7 @@ void ApplyElementEnrichments(
     const XFEM::InterfaceHandle&                  ih,
     const XFEM::Enrichment&                       voidenr,
     const bool                                    DLM_condensation,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    std::set<XFEM::FieldEnr>&                     enrfieldset
     );
 
 /// apply enrichments and add this info to maps
