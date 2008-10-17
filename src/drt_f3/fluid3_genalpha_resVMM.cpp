@@ -110,19 +110,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Fluid3GenalphaResVMM()
 // fine-scale subgrid viscosity
-  : vart_(0.0),
-// nodal data
-//-----------------------+------------+------------------------------------
-//                  dim  | derivative | node
-    weights_      (                     iel                             )
-//-----------------------+------------+-----------------------------------
-// gausspoint data
-//------------------------------------------------------------------------
-//                  dim  | derivative | node
-//-----------------------+------------+------------------------------------
-//----------------------+------------+------------------------------------
-// element data
-//------------------------------------------------------------------------
+  : vart_(0.0)
 {
   return;
 }
@@ -143,40 +131,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   MATERIAL*                  actmat)
 {
 
-
+  // --------------------------------------------------
   // construct views
   LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
   LINALG::FixedSizeSerialDenseMatrix<4*iel,    1> elevec1(elevec1_epetra.A(),true);
 
   // --------------------------------------------------
-  // extract velocities, pressure and accelerations from the
-  // global distributed vectors
-
-  // velocity and pressure values (current iterate, n+1)
-  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
-
-  // velocities    (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
-
-  // accelerations (intermediate time step, n+alpha_M)
-  RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
-
-  if (velnp==null || velaf==null || accam==null)
-  {
-    dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
-  }
-
-  // extract local values from the global vectors
-  vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-  vector<double> myvelaf(lm.size());
-  DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
-
-  vector<double> myaccam(lm.size());
-  DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
-
-  // create blitz matrix objects
+  // create matrix objects for nodal values
   LINALG::FixedSizeSerialDenseMatrix<iel,1> eprenp    ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> evelnp    ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> evelaf    ;
@@ -184,72 +145,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
 
-
-  // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
-  // Additionally only the 'velocity' components of my_velaf
-  // and my_accam are important!
-  for (int i=0;i<iel;++i)
-  {
-    int fi    =4*i;
-    int fip   =fi+1;
-    int fipp  =fip+1;
-
-
-    eprenp(i)   = myvelnp[fipp+1];
-    
-    evelnp(0,i) = myvelnp[fi  ];
-    evelnp(1,i) = myvelnp[fip ];
-    evelnp(2,i) = myvelnp[fipp];
-
-    evelaf(0,i) = myvelaf[fi  ];
-    evelaf(1,i) = myvelaf[fip ];
-    evelaf(2,i) = myvelaf[fipp];
-
-    eaccam(0,i) = myaccam[fi  ];
-    eaccam(1,i) = myaccam[fip ];
-    eaccam(2,i) = myaccam[fipp];
-  }
-
-  if(ele->is_ale_)
-  {
-    // get most recent displacements
-    RefCountPtr<const Epetra_Vector> dispnp
-      =
-      discretization.GetState("dispnp");
-
-    // get intermediate grid velocities
-    RefCountPtr<const Epetra_Vector> gridvelaf
-      =
-      discretization.GetState("gridvelaf");
-    
-    if (dispnp==null || gridvelaf==null)
-    {
-      dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
-    }
-
-    vector<double> mydispnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-
-    vector<double> mygridvelaf(lm.size());
-    DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
-
-    // extract velocity part from "mygridvelaf" and get
-    // set element displacements
-    for (int i=0;i<iel;++i)
-    {
-      int fi    =4*i;
-      int fip   =fi+1;
-      int fipp  =fip+1;
-
-      egridvelaf(0,i) = mygridvelaf[fi  ];
-      egridvelaf(1,i) = mygridvelaf[fip ];
-      egridvelaf(2,i) = mygridvelaf[fipp];
-
-      edispnp(0,i)    = mydispnp   [fi  ];
-      edispnp(1,i)    = mydispnp   [fip ];
-      edispnp(2,i)    = mydispnp   [fipp];
-    }
-  }
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> csevelaf  ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> cseconvaf ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -260,40 +158,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   const double gamma  = timelist.get<double>("gamma");
   const double dt     = timelist.get<double>("dt");
   const double time   = timelist.get<double>("time");
-
-  // if not available, define map from string to action
-  if(ele->stabstrtoact_.empty())
-  {
-    ele->stabstrtoact_["quasistatic"            ]=Fluid3::subscales_quasistatic;
-    ele->stabstrtoact_["time_dependent"         ]=Fluid3::subscales_time_dependent;
-    ele->stabstrtoact_["no_transient"           ]=Fluid3::inertia_stab_drop;
-    ele->stabstrtoact_["yes_transient"          ]=Fluid3::inertia_stab_keep;
-    ele->stabstrtoact_["no_pspg"                ]=Fluid3::pstab_assume_inf_sup_stable;
-    ele->stabstrtoact_["yes_pspg"               ]=Fluid3::pstab_use_pspg;
-    ele->stabstrtoact_["no_supg"                ]=Fluid3::convective_stab_none;
-    ele->stabstrtoact_["yes_supg"               ]=Fluid3::convective_stab_supg;
-    ele->stabstrtoact_["no_vstab"               ]=Fluid3::viscous_stab_none;
-    ele->stabstrtoact_["vstab_gls"              ]=Fluid3::viscous_stab_gls;
-    ele->stabstrtoact_["vstab_gls_rhs"          ]=Fluid3::viscous_stab_gls_only_rhs;
-    ele->stabstrtoact_["vstab_usfem"            ]=Fluid3::viscous_stab_usfem;
-    ele->stabstrtoact_["vstab_usfem_rhs"        ]=Fluid3::viscous_stab_usfem_only_rhs;
-    ele->stabstrtoact_["no_cstab"               ]=Fluid3::continuity_stab_none;
-    ele->stabstrtoact_["cstab_qs"               ]=Fluid3::continuity_stab_yes;
-    ele->stabstrtoact_["cstab_td"               ]=Fluid3::continuity_stab_td;
-    ele->stabstrtoact_["no_cross"               ]=Fluid3::cross_stress_stab_none;
-    ele->stabstrtoact_["cross_complete"         ]=Fluid3::cross_stress_stab;
-    ele->stabstrtoact_["cross_rhs"              ]=Fluid3::cross_stress_stab_only_rhs;
-    ele->stabstrtoact_["no_reynolds"            ]=Fluid3::reynolds_stress_stab_none;
-    ele->stabstrtoact_["reynolds_rhs"           ]=Fluid3::reynolds_stress_stab_only_rhs;
-    ele->stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-    ele->stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-    ele->stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-    ele->stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-    ele->stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
-    ele->stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
-    ele->stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
-    ele->stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
-  }
 
   // --------------------------------------------------
   // set parameters for nonlinear treatment
@@ -313,73 +177,11 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     newton=Fluid3::minimal;
   }
 
+  // --------------------------------------------------
   // get flag for fine-scale subgrid viscosity
   Fluid3::StabilisationAction fssgv =
     ele->ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
 
-  // get coarse- and fine-scale velocity as well as coarse-scale convective stress
-  RCP<const Epetra_Vector> csvelaf;
-  RCP<const Epetra_Vector> fsvelaf;
-  RCP<const Epetra_Vector> csconvaf;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> csevelaf ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> cseconvaf;
-
-  if (fssgv != Fluid3::fssgv_no)
-  {
-    fsvelaf = discretization.GetState("fsvelaf");
-    if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
-    vector<double> myfsvelaf(lm.size());
-    DRT::UTILS::ExtractMyValues(*fsvelaf,myfsvelaf,lm);
-    
-    // get fine-scale velocity and insert into element arrays
-    for (int i=0;i<iel;++i)
-    {
-      fsevelaf(0,i) = myfsvelaf[0+(i*4)];
-      fsevelaf(1,i) = myfsvelaf[1+(i*4)];
-      fsevelaf(2,i) = myfsvelaf[2+(i*4)];
-    }
-    if (fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-        fssgv == Fluid3::fssgv_mixed_Smagorinsky_small ||
-        fssgv == Fluid3::fssgv_scale_similarity)
-    {
-      csvelaf = discretization.GetState("csvelaf");
-      if (csvelaf==null) dserror("Cannot get state vector 'csvelaf'");
-      vector<double> mycsvelaf(lm.size());
-      DRT::UTILS::ExtractMyValues(*csvelaf,mycsvelaf,lm);
-      
-      // get coarse-scale velocity and insert into element arrays
-      for (int i=0;i<iel;++i)
-      {
-        csevelaf(0,i) = mycsvelaf[0+(i*4)];
-        csevelaf(1,i) = mycsvelaf[1+(i*4)];
-        csevelaf(2,i) = mycsvelaf[2+(i*4)];
-      }
-      
-      csconvaf = discretization.GetState("csconvaf");
-      if (csconvaf==null) dserror("Cannot get state vector 'csconvaf'");
-      vector<double> mycsconvaf(lm.size());
-      DRT::UTILS::ExtractMyValues(*csconvaf,mycsconvaf,lm);
-      
-      // get coarse-scale velocity and insert into element arrays
-      for (int i=0;i<iel;++i)
-      {
-        cseconvaf(0,i) = mycsconvaf[0+(i*4)];
-        cseconvaf(1,i) = mycsconvaf[1+(i*4)];
-        cseconvaf(2,i) = mycsconvaf[2+(i*4)];
-      }
-    }
-  }
-  else
-  {
-    for (int i=0;i<iel;++i)
-    {
-      fsevelaf(0,i) = 0.0;
-      fsevelaf(1,i) = 0.0;
-      fsevelaf(2,i) = 0.0;
-    }
-  }
-  
   // --------------------------------------------------
   // set parameters for stabilisation
   ParameterList& stablist = params.sublist("STABILIZATION");
@@ -424,136 +226,55 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
     higher_order_ele = false;
   }
-  
+
   // --------------------------------------------------
   // set parameters for turbulence model
   ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+
+  // the default action is no model
+  Fluid3::TurbModelAction turb_mod_action = Fluid3::no_model;
 
   // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
   double Cs            = 0.0;
   double Cs_delta_sq   = 0.0;
   double l_tau         = 0.0;
-  double visceff       = 0.0;
 
-  // get Smagorinsky model parameter for fine-scale subgrid viscosity
-  // (Since either all-scale Smagorinsky model (i.e., classical LES model
-  // as will be inititalized below) or fine-scale Smagorinsky model is
-  // used (and never both), the same input parameter can be exploited.)
-  if (fssgv != Fluid3::fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-    dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-  if (fssgv != Fluid3::fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-  
-  // the default action is no model
-  Fluid3::TurbModelAction turb_mod_action = Fluid3::no_model;
+  // number of the layer in a turbulent plane channel flow --- used 
+  // to compute averaged viscosity etc
+  int    nlayer        = 0;
 
-  int  nlayer=0;
-  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-  {
-    string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-    if (physical_turbulence_model == "Smagorinsky")
-    {
-      // the classic Smagorinsky model only requires one constant parameter
-      turb_mod_action = Fluid3::smagorinsky;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-    }
-    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-    {
-      RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-      // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
-      // the y+ (heigth in wall units)
-      turb_mod_action = Fluid3::smagorinsky_with_wall_damping;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-
-      //this will be the y-coordinate of a point in the element interior
-      double center = 0;
-      for(int inode=0;inode<iel;inode++)
-      {
-        center+=ele->Nodes()[inode]->X()[1];
-      }
-      center/=iel;
-
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-      {
-        if(center<(*planecoords)[nlayer+1])
-        {
-          found = true;
-          break;
-        }
-        nlayer++;
-      }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-    }
-    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-    {
-      turb_mod_action = Fluid3::dynamic_smagorinsky;
-
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          ==
-          "channel_flow_of_height_2")
-      {
-        RCP<vector<double> > averaged_LijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-        RCP<vector<double> > averaged_MijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-
-        RCP<vector<double> > planecoords
-          =
-          turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-        //this will be the y-coordinate of a point in the element interior
-        double center = 0;
-        for(int inode=0;inode<iel;inode++)
-        {
-          center+=ele->Nodes()[inode]->X()[1];
-        }
-        center/=iel;
-
-        bool found = false;
-        for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-        {
-          if(center<(*planecoords)[nlayer+1])
-          {
-            found = true;
-            break;
-          }
-          nlayer++;
-        }
-        if (found ==false)
-        {
-          dserror("could not determine element layer");
-        }
-
-        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-        // clipping to get algorithm stable
-        if (Cs_delta_sq<0)
-        {
-          Cs_delta_sq=0;
-        }
-      }
-      else
-      {
-        Cs_delta_sq = ele->Cs_delta_sq_;
-      }
-    }
-    else
-    {
-      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-    }
-  }
+  SetParametersForTurbulenceModel(
+    ele            ,
+    turbmodelparams,
+    fssgv          ,
+    turb_mod_action, 
+    Cs             ,
+    Cs_delta_sq    ,
+    l_tau          ,
+    nlayer         );
 
   // --------------------------------------------------
-  // specify what to compute
+  // specify whether to compute the element matrix or not
   const bool compute_elemat = params.get<bool>("compute element matrix");
+
+  // --------------------------------------------------
+  // extract velocities, pressure and accelerations from the
+  // global distributed vectors
+  ExtractValuesFromGlobalVectors(
+        fssgv         ,
+        ele->is_ale_  ,
+        discretization,
+        lm            ,
+        eprenp        ,
+        evelnp        ,
+        evelaf        ,
+        eaccam        ,
+        edispnp       ,
+        egridvelaf    ,
+        fsevelaf      ,
+        csevelaf      ,
+        cseconvaf
+    );
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -568,6 +289,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
   }
+
+  // on output of Sysmat, visceff will contain the computed effective viscosity
+  double visceff       = 0.0;
 
   // --------------------------------------------------
   // calculate element coefficient matrix
@@ -632,19 +356,21 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     }
   }
 
-  // This is a very poor way to transport the density to the
-  // outside world. Is there a better one?
-  double dens = 0.0;
-  if(mat->MaterialType()== m_fluid)
-    dens = actmat->m.fluid->density;
-  else if(mat->MaterialType()== m_carreauyasuda)
-    dens = actmat->m.carreauyasuda->density;
-  else if(mat->MaterialType()== m_modpowerlaw)
-    dens = actmat->m.modpowerlaw->density;
-  else
-    dserror("no fluid material found");
-
-  params.set("density", dens);
+  {
+    // This is a very poor way to transport the density to the
+    // outside world. Is there a better one?
+    double dens = 0.0;
+    if(mat->MaterialType()== m_fluid)
+      dens = actmat->m.fluid->density;
+    else if(mat->MaterialType()== m_carreauyasuda)
+      dens = actmat->m.carreauyasuda->density;
+    else if(mat->MaterialType()== m_modpowerlaw)
+      dens = actmat->m.modpowerlaw->density;
+    else
+      dserror("no fluid material found");
+    
+    params.set("density", dens);
+  }
 
   return 0;
 }
@@ -668,30 +394,30 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf        ,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf        ,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf       ,
-  struct _MATERIAL*                                material        ,
-  double                                           alphaM          ,
-  double                                           alphaF          ,
-  double                                           gamma           ,
-  double                                           dt              ,
-  double                                           time            ,
-  enum Fluid3::LinearisationAction                 newton          ,
-  bool                                             higher_order_ele,
-  enum Fluid3::StabilisationAction                 fssgv           ,
-  enum Fluid3::StabilisationAction                 tds             ,
-  enum Fluid3::StabilisationAction                 inertia         ,
-  enum Fluid3::StabilisationAction                 pspg            ,
-  enum Fluid3::StabilisationAction                 supg            ,
-  enum Fluid3::StabilisationAction                 vstab           ,
-  enum Fluid3::StabilisationAction                 cstab           ,
-  enum Fluid3::StabilisationAction                 cross           ,
-  enum Fluid3::StabilisationAction                 reynolds        ,
-  enum Fluid3::TauType                             whichtau        ,
-  enum Fluid3::TurbModelAction                     turb_mod_action ,
+  const struct _MATERIAL*                          material        ,
+  const double                                     alphaM          ,
+  const double                                     alphaF          ,
+  const double                                     gamma           ,
+  const double                                     dt              ,
+  const double                                     time            ,
+  const enum Fluid3::LinearisationAction           newton          ,
+  const bool                                       higher_order_ele,
+  const enum Fluid3::StabilisationAction           fssgv           ,
+  const enum Fluid3::StabilisationAction           tds             ,
+  const enum Fluid3::StabilisationAction           inertia         ,
+  const enum Fluid3::StabilisationAction           pspg            ,
+  const enum Fluid3::StabilisationAction           supg            ,
+  const enum Fluid3::StabilisationAction           vstab           ,
+  const enum Fluid3::StabilisationAction           cstab           ,
+  const enum Fluid3::StabilisationAction           cross           ,
+  const enum Fluid3::StabilisationAction           reynolds        ,
+  const enum Fluid3::TauType                       whichtau        ,
+  const enum Fluid3::TurbModelAction               turb_mod_action ,
   double&                                          Cs              ,
   double&                                          Cs_delta_sq     ,
   double&                                          visceff         ,
-  double                                           l_tau           ,
-  bool                                             compute_elemat
+  const double                                     l_tau           ,
+  const bool                                       compute_elemat
   )
 {
 
@@ -706,7 +432,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
   //         n+alpha_F     n+1
   //        t          = t     - (1-alpha_F) * dt
-
+  //
   const double timealphaF = time-(1-alphaF)*dt;
 
   //------------------------------------------------------------------
@@ -728,14 +454,29 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
   //------------------------------------------------------------------
-  // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
-  for (int inode=0; inode<iel; inode++)
   {
-    const double* x = nodes[inode]->X();
-    xyze_(0,inode) = x[0];
-    xyze_(1,inode) = x[1];
-    xyze_(2,inode) = x[2];
+    // get node coordinates
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0; inode<iel; inode++)
+    {
+      const double* x = nodes[inode]->X();
+      xyze_(0,inode) = x[0];
+      xyze_(1,inode) = x[1];
+      xyze_(2,inode) = x[2];
+    }
+
+    // get node weights for nurbs elements
+    if(distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs27)
+    {
+      for (int inode=0; inode<iel; inode++)
+      {
+        DRT::NURBS::ControlPoint* cp
+          =
+          dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+        
+        weights_(inode) = cp->W();
+      }
+    }
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -749,18 +490,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     }
   }
 
-  // get node weights for nurbs elements
-  if(distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs27)
-  {
-    for (int inode=0; inode<iel; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
-      weights_(inode) = cp->W();
-    }
-  }
 
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
@@ -813,7 +542,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   gp(0)=intpoints_onepoint.qxg[0][0];
   gp(1)=intpoints_onepoint.qxg[0][1];
   gp(2)=intpoints_onepoint.qxg[0][2];
-
 
   if(distype == DRT::Element::nurbs8
      ||
@@ -1077,7 +805,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if( material->mattyp != m_fluid )
   {
-    CalVisc( material, visc);
+    CalVisc(material, visc);
   }
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
@@ -1494,8 +1222,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     //-------------------------------------------------------
     //        TAUS FOR THE QUASISTATIC FORMULATION
     //-------------------------------------------------------
-
-
     if(whichtau == Fluid3::bazilevs)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
@@ -1919,7 +1645,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     //                          isotropic turbulence)
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
-
+    //
     vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
 
@@ -2939,8 +2665,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
       // update estimates for the subscale quantities
 
-      const double factauC                  = tauC/(tauC+dt);
-      const double facMtau                  = 1./(alphaM*tauM+afgdt);
+      const double factauC = tauC/(tauC+dt);
+      const double facMtau = 1./(alphaM*tauM+afgdt);
 
       if (cstab == Fluid3::continuity_stab_td)
       {
@@ -6268,7 +5994,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	viscous_and_pres[6]-=fac_tauM_tauM_resM_0  *resM_(2);
 	viscous_and_pres[7]-=fac_tauM_tauM_resM_1  *resM_(2);
 	viscous_and_pres[8]-=fac_tauM_tauM*resM_(2)*resM_(2);
-	  
       }
 
       /* continuity equation, factor: +1
@@ -6315,7 +6040,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	  derxy_(2,ui)*viscous_and_pres[8];
 	  
 	/* continuity equation */
-
 	elevec(fui  ) -= fac_divunp*funct_(ui);
       }
 
@@ -6459,69 +6183,189 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                                       +    derxy_(1, ui)*fsvderxyaf_(1, 2)
                                       +    derxy_(1, ui)*fsvderxyaf_(2, 1)
                                       +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2)) ;
-        }
-      }
+        } // end loop ui
+      } // end not fssgv_no and not fssgv_scale_similarity
     }
   } // end loop iquad
   return;
 }
 
-// this is just for comparison of dynamic/quasistatic subscales --- NOT for
-// the comparison with physical turbulence models (Smagorinsky etc.)
-
+/*----------------------------------------------------------------------*
+ |  evaluate residuals resM and resC on the element and return          |
+ |  averaged values together with averaged subgrid-scale quantities.    |
+ |                                                (private) gammi 10/08 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
-     Fluid3*                                               ele,
-     std::vector<blitz::Array<double,1> >&                 myknots,
-     const blitz::Array<double,2>&                         edispnp,
-     const blitz::Array<double,2>&                         egridvaf,
-     const blitz::Array<double,2>&                         evelnp,
-     const blitz::Array<double,1>&                         eprenp,
-     const blitz::Array<double,2>&                         eaccam,
-     const blitz::Array<double,2>&                         evelaf,
-     const struct _MATERIAL*                               material,
-     const double                                          alphaM,
-     const double                                          alphaF,
-     const double                                          gamma,
-     const double                                          dt,
-     const double                                          time,
-     const enum Fluid3::StabilisationAction                tds,
-     const enum Fluid3::TauType                            whichtau,
-     enum Fluid3::TurbModelAction                          turb_mod_action,
-     double&                                               Cs,
-     double&                                               Cs_delta_sq,
-     double&                                               visceff,
-     double                                                l_tau,
-     const bool                                            higher_order_ele,
-     blitz::Array<double,1>&                               mean_res,
-     blitz::Array<double,1>&                               mean_sacc,
-     blitz::Array<double,1>&                               mean_svelaf,
-     blitz::Array<double,1>&                               mean_res_sq,
-     blitz::Array<double,1>&                               mean_sacc_sq,
-     blitz::Array<double,1>&                               mean_svelaf_sq,
-     double&                                               mean_resC,
-     double&                                               mean_spreacc,
-     double&                                               mean_sprenp,
-     double&                                               mean_resC_sq,
-     double&                                               mean_spreacc_sq,
-     double&                                               mean_sprenp_sq
-  )
+int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
+  Fluid3*                    ele,
+  ParameterList&             params,
+  DRT::Discretization&       discretization,
+  vector<int>&               lm,
+  RefCountPtr<MAT::Material> mat,
+  _MATERIAL*                 material)
 {
-#if 0
-  //------------------------------------------------------------------
-  //                     BLITZ CONFIGURATION
-  //------------------------------------------------------------------
-  //
-  // We define the variables i,j,k to be indices to blitz arrays.
-  // These are used for array expressions, that is matrix-vector
-  // products in the following.
 
-  blitz::firstIndex  i;   // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-  blitz::thirdIndex  k;   // Placeholder for the third index
-  blitz::fourthIndex l;   // Placeholder for the fourth index
+  // --------------------------------------------------
+  // create matrix objects for nodal values
+  LINALG::FixedSizeSerialDenseMatrix<iel,1> eprenp    ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelnp    ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelaf    ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> eaccam    ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
 
-  blitz::Range       _ = blitz::Range::all();
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> csevelaf  ;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel> cseconvaf ;
+
+  // --------------------------------------------------
+  // set parameters for time integration
+  ParameterList& timelist = params.sublist("time integration parameters");
+
+  const double alphaF = timelist.get<double>("alpha_F");
+  const double gamma  = timelist.get<double>("gamma");
+  const double dt     = timelist.get<double>("dt");
+  const double time   = timelist.get<double>("time");
+
+  // --------------------------------------------------
+  // disable fine-scale subgrid viscosity
+  Fluid3::StabilisationAction fssgv = ele->ConvertStringToStabAction("No");
+
+  // --------------------------------------------------
+  // set parameters for stabilisation
+  ParameterList& stablist = params.sublist("STABILIZATION");
+  
+  // specify which residual based stabilisation terms
+  // will be used
+  Fluid3::StabilisationAction tds      = ele->ConvertStringToStabAction(stablist.get<string>("TDS"));
+  Fluid3::StabilisationAction inertia  = ele->ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
+  Fluid3::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
+  Fluid3::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
+  Fluid3::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
+  Fluid3::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+  Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+  Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+
+  // select tau definition
+  Fluid3::TauType whichtau = Fluid3::tau_not_defined;
+  {
+    const string taudef = stablist.get<string>("DEFINITION_TAU");
+    
+    if(taudef == "Barrenechea_Franca_Valentin_Wall")
+    {
+      whichtau = Fluid3::franca_barrenechea_valentin_wall;
+    }
+    else if(taudef == "Bazilevs")
+    {
+      whichtau = Fluid3::bazilevs;
+    }
+    else if(taudef == "Codina")
+    {
+      whichtau = Fluid3::codina;
+    }
+  }
+
+  // flag for higher order elements
+  bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  
+  // overrule higher_order_ele if input-parameter is set
+  // this might be interesting for fast (but slightly
+  // less accurate) computations
+  if(stablist.get<string>("STABTYPE") == "inconsistent")
+  {
+    higher_order_ele = false;
+  }
+
+  // --------------------------------------------------
+  // set parameters for turbulence model
+  ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+
+  // the default action is no model
+  Fluid3::TurbModelAction turb_mod_action = Fluid3::no_model;
+
+  // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
+  double Cs            = 0.0;
+  double Cs_delta_sq   = 0.0;
+  double l_tau         = 0.0;
+
+  // number of the layer in a turbulent plane channel flow --- used 
+  // to compute averaged viscosity etc
+  int    nlayer        = 0;
+
+  SetParametersForTurbulenceModel(
+    ele            ,
+    turbmodelparams,
+    fssgv          ,
+    turb_mod_action, 
+    Cs             ,
+    Cs_delta_sq    ,
+    l_tau          ,
+    nlayer         );
+
+  // --------------------------------------------------
+  // extract velocities, pressure and accelerations from the
+  // global distributed vectors
+  ExtractValuesFromGlobalVectors(
+        fssgv         ,
+        ele->is_ale_  ,
+        discretization,
+        lm            ,
+        eprenp        ,
+        evelnp        ,
+        evelaf        ,
+        eaccam        ,
+        edispnp       ,
+        egridvelaf    ,
+        fsevelaf      ,
+        csevelaf      ,
+        cseconvaf
+    );
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<blitz::Array<double,1> > myknots(3);
+
+  // for isogeometric elements
+  if(ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+  }
+
+  // visceff will contain the computed effective viscosity
+  double visceff       = 0.0;
+
+  // the coordinates of the element layers in the channel
+  RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_");
+  
+  if(planecoords==null)
+    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+
+  // ---------------------------------------------------
+  // working arrays for the quantities we want to compute
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_res      ;
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_sacc     ;
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_svelaf   ;
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_res_sq   ;
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_sacc_sq  ;
+  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_svelaf_sq;
+
+  double mean_resC       = 0;
+  double mean_resC_sq    = 0;
+  double mean_spreacc    = 0;
+  double mean_sprenp     = 0;
+  double mean_spreacc_sq = 0;
+  double mean_sprenp_sq  = 0;
+  
+  mean_res       .Clear();
+  mean_sacc      .Clear();
+  mean_svelaf    .Clear();
+  mean_res_sq    .Clear();
+  mean_sacc_sq   .Clear();
+  mean_svelaf_sq .Clear();
 
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
@@ -6544,7 +6388,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   //                      SET ELEMENT DATA
   //------------------------------------------------------------------
   // set element data
-  //  const DRT::Element::DiscretizationType distype = ele->Shape();
 
   // get node coordinates
   DRT::Node** nodes = ele->Nodes();
@@ -6614,15 +6457,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
 
   // shape functions and derivs at element center
-
-  // set gauss point coordinates
-  blitz::Array<double, 1> gp(3);
-  
+  const double wquad = intpoints_onepoint.qwgt[0];
+        
+  LINALG::FixedSizeSerialDenseMatrix<3,1> gp;
   gp(0)=intpoints_onepoint.qxg[0][0];
   gp(1)=intpoints_onepoint.qxg[0][1];
   gp(2)=intpoints_onepoint.qxg[0][2];
-  
-  const double wquad = intpoints_onepoint.qwgt[0];
 
   if(distype == DRT::Element::nurbs8
      ||
@@ -6646,30 +6486,59 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   double mk=0.0;
   switch (distype)
   {
-  case DRT::Element::tet4:
-  case DRT::Element::hex8:
-  case DRT::Element::nurbs8:
-    mk = 0.333333333333333333333;
-    break;
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::nurbs27:
-  case DRT::Element::tet10:
-    mk = 0.083333333333333333333;
-    break;
-  default:
-    dserror("type unknown!\n");
+      case DRT::Element::tet4:
+      case DRT::Element::hex8:
+      case DRT::Element::nurbs8:
+        mk = 0.333333333333333333333;
+        break;
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::nurbs27:
+      case DRT::Element::tet10:
+        mk = 0.083333333333333333333;
+        break;
+      default:
+        dserror("type unknown!\n");
   }
 
-  // get Jacobian matrix and determinant
-  for (int nn=0;nn<3;++nn)
+  // get transposed Jacobian matrix and determinant
+  //
+  //        +-            -+ T      +-            -+
+  //        | dx   dx   dx |        | dx   dy   dz |
+  //        | --   --   -- |        | --   --   -- |
+  //        | dr   ds   dt |        | dr   dr   dr |
+  //        |              |        |              |
+  //        | dy   dy   dy |        | dx   dy   dz |
+  //        | --   --   -- |   =    | --   --   -- |
+  //        | dr   ds   dt |        | ds   ds   ds |
+  //        |              |        |              |
+  //        | dz   dz   dz |        | dx   dy   dz |
+  //        | --   --   -- |        | --   --   -- |
+  //        | dr   ds   dt |        | dt   dt   dt |
+  //        +-            -+        +-            -+
+  //
+  // The Jacobian is computed using the formula
+  //
+  //            +-----
+  //   dx_j(r)   \      dN_k(r)
+  //   -------  = +     ------- * (x_j)_k
+  //    dr_i     /       dr_i       |
+  //            +-----    |         |
+  //            node k    |         |
+  //                  derivative    |
+  //                   of shape     |
+  //                   function     |
+  //                           component of
+  //                          node coordinate
+  //
+  for(int rr=0;rr<3;++rr)
   {
-    for (int rr=0;rr<3;++rr)
+    for(int mm=0;mm<3;++mm)
     {
-      xjm_(nn,rr)=deriv_(nn,0)*xyze_(rr,0);
-      for (int mm=1;mm<iel;++mm)
+      xjm_(rr,mm)=deriv_(rr,0)*xyze_(mm,0);
+      for(int nn=1;nn<iel;++nn)
       {
-        xjm_(nn,rr)+=deriv_(nn,mm)*xyze_(rr,mm);
+        xjm_(rr,mm)+=deriv_(rr,nn)*xyze_(mm,nn);
       }
     }
   }
@@ -6740,15 +6609,25 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
   xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
 
-  // compute global derivates
-  for (int nn=0;nn<3;++nn)
+  // compute global derivates at integration point
+  //
+  //   dN    +-----  dN (xi)    dxi
+  //     i    \        i           k
+  //   --- =   +     ------- * -----
+  //   dx     /        dxi      dx
+  //     j   +-----       k       j
+  //         node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  for(int nn=0;nn<iel;++nn)
   {
-    for (int rr=0;rr<iel;++rr)
+    for(int rr=0;rr<3;++rr)
     {
-      derxy_(nn,rr)=deriv_(0,rr)*xji_(nn,0);
-      for (int mm=1;mm<3;++mm)
+      derxy_(rr,nn)=xji_(rr,0)*deriv_(0,nn);
+      for(int mm=1;mm<3;++mm)
       {
-        derxy_(nn,rr)+=deriv_(mm,rr)*xji_(nn,mm);
+        derxy_(rr,nn)+=xji_(rr,mm)*deriv_(mm,nn);
       }
     }
   }
@@ -6762,12 +6641,30 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   //                 +-----
   //                 node j
   //
-  for (int rr=0;rr<3;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     velintaf_(rr)=funct_(0)*evelaf(rr,0);
-    for (int mm=1;mm<iel;++mm)
+    for(int nn=1;nn<iel;++nn)
     {
-      velintaf_(rr)+=funct_(mm)*evelaf(rr,mm);
+      velintaf_(rr)+=funct_(nn)*evelaf(rr,nn);
+    }
+  }
+  
+  // get velocities (n+1,i)  at integration point
+  //
+  //                +-----
+  //       n+1       \                  n+1
+  //    vel   (x) =   +      N (x) * vel
+  //                 /        j         j
+  //                +-----
+  //                node j
+  //
+  for(int rr=0;rr<3;++rr)
+  {
+    velintnp_(rr)=funct_(0)*evelnp(rr,0);
+    for(int nn=1;nn<iel;++nn)
+    {
+      velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
     }
   }
 
@@ -6782,49 +6679,21 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   //
   // j : direction of derivative x/y/z
   //
-  for (int nn=0;nn<3;++nn)
+  for(int rr=0;rr<3;++rr)
   {
-    for (int rr=0;rr<3;++rr)
+    for(int mm=0;mm<3;++mm)
     {
-      vderxyaf_(nn,rr)=derxy_(rr,0)*evelaf(nn,0);
-      for (int mm=1;mm<iel;++mm)
+      vderxyaf_(rr,mm)=derxy_(mm,0)*evelaf(rr,0);
+      for(int nn=1;nn<iel;++nn)
       {
-        vderxyaf_(nn,rr)+=derxy_(rr,mm)*evelaf(nn,mm);
+        vderxyaf_(rr,mm)+=derxy_(mm,nn)*evelaf(rr,nn);
       }
     }
   }
 
-
-  // get velocities (n+1,i)  at integration point
-  //
-  //                +-----
-  //       n+1       \                  n+1
-  //    vel   (x) =   +      N (x) * vel
-  //                 /        j         j
-  //                +-----
-  //                node j
-  //
-  for (int rr=0;rr<3;++rr)
-  {
-    velintnp_(rr)=funct_(0)*evelnp(rr,0);
-    for (int mm=1;mm<iel;++mm)
-    {
-      velintnp_(rr)+=funct_(mm)*evelnp(rr,mm);
-    }
-  }
-
   // get velocity norms
-  const double vel_normaf = sqrt(velintaf_(0)*velintaf_(0)
-                                 +
-                                 velintaf_(1)*velintaf_(1)
-                                 +
-                                 velintaf_(2)*velintaf_(2));
-  const double vel_normnp = sqrt(velintnp_(0)*velintnp_(0)
-                                 +
-                                 velintnp_(1)*velintnp_(1)
-                                 +
-                                 velintnp_(2)*velintnp_(2));
-
+  const double vel_normaf = velintaf_.Norm2();
+  const double vel_normnp = velintnp_.Norm2();
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -6857,7 +6726,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if( material->mattyp != m_fluid )
   {
-    CalVisc( material, visc);
+    CalVisc(material, visc);
   }
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
@@ -6881,7 +6750,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
 
     double rateofstrain = 0;
     {
-      blitz::Array<double,2> epsilon(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -6937,7 +6806,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
                   +-----
                   node j
       */
-      blitz::Array<double,1> centernodecoord(3);
+      LINALG::FixedSizeSerialDenseMatrix<3,1> centernodecoord;
 
       for(int rr=0;rr<3;++rr)
       {
@@ -7000,7 +6869,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
 
     double rateofstrain = 0;
     {
-      blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
+      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -7070,7 +6939,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
+      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
 
       for (int nn=0;nn<3;++nn)
       {
@@ -7116,8 +6985,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
         }
       }
 
-      // definition of constant from Akkerman et al. (2008)
-      const double CI = 36.0;
+      // definition of constant
+      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+      //  brought 144.0 from Austin...)
+      const double CI = 12.0/mk;
 
       /*                                                 1.0
                  +-                                 -+ - ---
@@ -7139,7 +7010,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      blitz::Array<double,1> g(3);
+      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -7265,13 +7136,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
     {
       dserror("Unknown definition of stabilisation parameter\n");
     }
-  }
+
+  } // end Fluid3::subscales_time_dependent
   else
   {
     //-------------------------------------------------------
     //        TAUS FOR THE QUASISTATIC FORMULATION
     //-------------------------------------------------------
-
     if(whichtau == Fluid3::bazilevs)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
@@ -7305,8 +7176,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
-
+      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
       for (int nn=0;nn<3;++nn)
       {
         for (int rr=0;rr<3;++rr)
@@ -7351,8 +7221,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
         }
       }
 
-      // definition of constant from Akkerman et al. (2008)
-      const double CI = 36.0;
+      // definition of constant
+      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+      //  brought 144.0 from Austin...)
+      const double CI = 12.0/mk;
 
       /*                                                       1.0
                  +-                                       -+ - ---
@@ -7374,7 +7246,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      blitz::Array<double,1> g(3);
+      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -7397,7 +7269,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
       /*
                                 1.0
                   tau  = -----------------
-                     C           /      \
+                     C            /     \
                           tau  * | g * g |
                              M    \-   -/
       */
@@ -7411,22 +7283,34 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      blitz::Array<double,1> normed_velintaf(3);
-      normed_velintaf=velintaf_.copy();
+      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
       {
-        normed_velintaf = velintaf_/vel_normaf;
+        for (int rr=0;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
+        }      
       }
       else
       {
-        normed_velintaf    = 0.;
         normed_velintaf(0) = 1.;
+        for (int rr=1;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=0.0;
+        }      
       }
 
       // get streamlength
-      const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velintaf(0)*derxy_(0,rr)         
+                    +normed_velintaf(1)*derxy_(1,rr)        
+                    +normed_velintaf(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
+      
       const double strle = 2.0/val;
 
       // time factor
@@ -7501,22 +7385,33 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      blitz::Array<double,1> normed_velintaf(3);
-      normed_velintaf=velintaf_.copy();
+      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
       {
-        normed_velintaf = velintaf_/vel_normaf;
+        for (int rr=0;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
+        }      
       }
       else
       {
-        normed_velintaf    = 0.;
         normed_velintaf(0) = 1.;
+        for (int rr=1;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=0.0;
+        }      
       }
 
       // get streamlength
-      const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velintaf(0)*derxy_(0,rr)         
+                    +normed_velintaf(1)*derxy_(1,rr)        
+                    +normed_velintaf(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
       const double strle = 2.0/val;
 
       // time factor
@@ -8096,7 +7991,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
 
       // backward substitution. GETRS replaces the input (chainrulerhs, currently
       // stored on derxy2) with the result
-      solver.GETRS('N',6,iel,bm.data(),6,&(pivot[0]),derxy2_.data(),6,&ierr);
+      solver.GETRS('N',6,iel,bm.data(),6,&(pivot[0]),derxy2_.A(),6,&ierr);
 
       if (ierr!=0)
       {
@@ -8262,7 +8157,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
       {
         for (int mm=0;mm<iel;++mm)
         {
-          aleconvintaf_(rr)-=funct_(mm)*egridvaf(rr,mm);
+          aleconvintaf_(rr)-=funct_(mm)*egridvelaf(rr,mm);
         }
       }
     }
@@ -8403,7 +8298,39 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
       mean_res_sq (rr) += resM_(rr)*resM_(rr);
     }
 
-    if(tds == Fluid3::subscales_time_dependent)
+    if(pspg     == Fluid3::pstab_use_pspg)
+    {
+
+    }
+
+    if(supg     == Fluid3::convective_stab_supg)
+    {
+
+    }
+
+    if(vstab    != Fluid3::viscous_stab_none)
+    {
+
+    }
+
+    if(cstab    != Fluid3::continuity_stab_none)
+    {
+
+    }
+
+    if(cross    != Fluid3::cross_stress_stab_none)
+    {
+
+    }
+
+    if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+    {
+
+    }
+
+    if(tds == Fluid3::subscales_time_dependent
+       &&
+       inertia == Fluid3::inertia_stab_keep) 
     {
       for(int rr=0;rr<3;++rr)
       {
@@ -8456,12 +8383,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
     }
   }
 
-  mean_res        /= intpoints.nquad;
-  mean_res_sq     /= intpoints.nquad;
-  mean_sacc       /= intpoints.nquad;
-  mean_sacc_sq    /= intpoints.nquad;
-  mean_svelaf     /= intpoints.nquad;
-  mean_svelaf_sq  /= intpoints.nquad;
+  for(int rr=0;rr<3;++rr)
+  {
+    mean_res        (rr)/= intpoints.nquad;
+    mean_res_sq     (rr)/= intpoints.nquad;
+    mean_sacc       (rr)/= intpoints.nquad;
+    mean_sacc_sq    (rr)/= intpoints.nquad;
+    mean_svelaf     (rr)/= intpoints.nquad;
+    mean_svelaf_sq  (rr)/= intpoints.nquad;
+  }
   mean_resC       /= intpoints.nquad;
   mean_resC_sq    /= intpoints.nquad;
   mean_spreacc    /= intpoints.nquad;
@@ -8469,11 +8399,374 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcRes(
   mean_sprenp     /= intpoints.nquad;
   mean_sprenp_sq  /= intpoints.nquad;
 
-#endif
-  return;
+  // ---------------------------------------------------
+  // the vectors containing the global sums over layers
+  RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
+  RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
+  RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
+  RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
+  RefCountPtr<vector<double> > incrsvelaf   = params.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
+  RefCountPtr<vector<double> > incrsvelaf_sq= params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
+  
+  RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
+  RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
+  RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
+  RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
+  RefCountPtr<vector<double> > spressnp     = params.get<RefCountPtr<vector<double> > >("incrspressnp"    );
+  RefCountPtr<vector<double> > spressnp_sq  = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
+  
+  //this will be the y-coordinate of a point in the element interior
+  double center = 0;
+
+  // get node coordinates of element
+  LINALG::FixedSizeSerialDenseMatrix<3,iel>  xyze;
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=ele->Nodes()[inode]->X()[0];
+    xyze(1,inode)=ele->Nodes()[inode]->X()[1];
+    xyze(2,inode)=ele->Nodes()[inode]->X()[2];
+    
+    center+=xyze(1,inode);
+  }
+  center/=iel;
+  
+  bool found = false;
+  
+  for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+  {
+    if(center<(*planecoords)[nlayer+1])
+    {
+      found = true;
+      break;
+    }
+    nlayer++;
+  }
+  if (found ==false)
+  {
+    dserror("could not determine element layer");
+  }
+  
+  for(int mm=0;mm<3;++mm)
+  {
+    (*incrres      )[3*nlayer+mm] += mean_res      (mm);
+    (*incrres_sq   )[3*nlayer+mm] += mean_res_sq   (mm);
+    (*incrsacc     )[3*nlayer+mm] += mean_sacc     (mm);
+    (*incrsacc_sq  )[3*nlayer+mm] += mean_sacc_sq  (mm);
+    
+    (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
+    (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
+  }
+  (*incrresC    )[nlayer] += mean_resC      ;
+  (*incrresC_sq )[nlayer] += mean_resC_sq   ;
+  (*spressacc   )[nlayer] += mean_spreacc   ;
+  (*spressacc_sq)[nlayer] += mean_spreacc_sq;
+  (*spressnp    )[nlayer] += mean_sprenp    ;
+  (*spressnp_sq )[nlayer] += mean_sprenp_sq ;
+
+  return(0);
 }
 
+/*----------------------------------------------------------------------*
+ |  extract velocities, pressure and accelerations from the global      |
+ |  distributed vectors                           (private) gammi 10/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVectors(
+        const Fluid3::StabilisationAction          fssgv         ,
+        const bool                                 is_ale        ,
+        const DRT::Discretization&                 discretization,
+        const vector<int>&                         lm            ,
+        LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp        ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp        ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf        ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam        ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp       ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvelaf    ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf      ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf      ,
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf
+        )
+{
+    // velocity and pressure values (current iterate, n+1)
+    RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
 
+    // velocities    (intermediate time step, n+alpha_F)
+    RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
+
+    // accelerations (intermediate time step, n+alpha_M)
+    RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
+
+    if (velnp==null || velaf==null || accam==null)
+    {
+      dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
+    }
+
+    // extract local values from the global vectors
+    vector<double> myvelnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+    
+    vector<double> myvelaf(lm.size());
+    DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+    
+    vector<double> myaccam(lm.size());
+    DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
+
+    // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
+    // Additionally only the 'velocity' components of my_velaf
+    // and my_accam are important!
+    for (int i=0;i<iel;++i)
+    {
+      int fi    =4*i;
+      
+      eaccam(0,i) = myaccam[fi  ];
+      evelnp(0,i) = myvelnp[fi  ];
+      evelaf(0,i) = myvelaf[fi++];
+      evelnp(1,i) = myvelnp[fi  ];
+      eaccam(1,i) = myaccam[fi  ];
+      evelaf(1,i) = myvelaf[fi++];
+      eaccam(2,i) = myaccam[fi  ];
+      evelnp(2,i) = myvelnp[fi  ];
+      evelaf(2,i) = myvelaf[fi++];
+      eprenp(i)   = myvelnp[fi  ];
+    }
+    
+    if(is_ale)
+    {
+      // get most recent displacements
+      RefCountPtr<const Epetra_Vector> dispnp
+        =
+        discretization.GetState("dispnp");
+      
+      // get intermediate grid velocities
+      RefCountPtr<const Epetra_Vector> gridvelaf
+        =
+        discretization.GetState("gridvelaf");
+      
+      if (dispnp==null || gridvelaf==null)
+      {
+        dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
+      }
+
+      vector<double> mydispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+      
+      vector<double> mygridvelaf(lm.size());
+      DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
+
+      // extract velocity part from "mygridvelaf" and get
+      // set element displacements
+      for (int i=0;i<iel;++i)
+      {
+        int fi    =4*i;
+        int fip   =fi+1;
+        int fipp  =fip+1;
+
+        egridvelaf(0,i) = mygridvelaf[fi  ];
+        egridvelaf(1,i) = mygridvelaf[fip ];
+        egridvelaf(2,i) = mygridvelaf[fipp];
+
+        edispnp(0,i)    = mydispnp   [fi  ];
+        edispnp(1,i)    = mydispnp   [fip ];
+        edispnp(2,i)    = mydispnp   [fipp];
+      }
+    }
+
+    // get coarse- and fine-scale velocity as well as coarse-scale convective stress
+    if (fssgv != Fluid3::fssgv_no)
+    {
+      RCP<const Epetra_Vector> csvelaf;
+      RCP<const Epetra_Vector> fsvelaf;
+      RCP<const Epetra_Vector> csconvaf;
+
+      fsvelaf = discretization.GetState("fsvelaf");
+      if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
+      vector<double> myfsvelaf(lm.size());
+      DRT::UTILS::ExtractMyValues(*fsvelaf,myfsvelaf,lm);
+      
+      // get fine-scale velocity and insert into element arrays
+      for (int i=0;i<iel;++i)
+      {
+        fsevelaf(0,i) = myfsvelaf[0+(i*4)];
+        fsevelaf(1,i) = myfsvelaf[1+(i*4)];
+        fsevelaf(2,i) = myfsvelaf[2+(i*4)];
+      }
+      if (fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
+          fssgv == Fluid3::fssgv_mixed_Smagorinsky_small ||
+          fssgv == Fluid3::fssgv_scale_similarity)
+      {
+        csvelaf = discretization.GetState("csvelaf");
+        if (csvelaf==null) dserror("Cannot get state vector 'csvelaf'");
+        vector<double> mycsvelaf(lm.size());
+        DRT::UTILS::ExtractMyValues(*csvelaf,mycsvelaf,lm);
+        
+        // get coarse-scale velocity and insert into element arrays
+        for (int i=0;i<iel;++i)
+        {
+          csevelaf(0,i) = mycsvelaf[0+(i*4)];
+          csevelaf(1,i) = mycsvelaf[1+(i*4)];
+          csevelaf(2,i) = mycsvelaf[2+(i*4)];
+        }
+        
+        csconvaf = discretization.GetState("csconvaf");
+        if (csconvaf==null) dserror("Cannot get state vector 'csconvaf'");
+        vector<double> mycsconvaf(lm.size());
+        DRT::UTILS::ExtractMyValues(*csconvaf,mycsconvaf,lm);
+        
+        // get coarse-scale velocity and insert into element arrays
+        for (int i=0;i<iel;++i)
+        {
+          int fi =4*i;
+          
+          cseconvaf(0,i) = mycsconvaf[fi  ];
+          cseconvaf(1,i) = mycsconvaf[fi+1];
+          cseconvaf(2,i) = mycsconvaf[fi+2];
+        }
+      }
+    }
+    else
+    {
+      for (int i=0;i<iel;++i)
+      {
+        fsevelaf(0,i) = 0.0;
+        fsevelaf(1,i) = 0.0;
+        fsevelaf(2,i) = 0.0;
+      }
+    }
+  return;
+} //ExtractValuesFromGlobalVectors
+
+
+/*----------------------------------------------------------------------*
+ |  Set parameters for turbulence models                                |
+ |                                                (private) gammi 10/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceModel(
+  const Fluid3*                       ele            ,
+  ParameterList                     & turbmodelparams,
+  const Fluid3::StabilisationAction & fssgv          ,
+  Fluid3::TurbModelAction           & turb_mod_action, 
+  double                            & Cs             ,
+  double                            & Cs_delta_sq    ,
+  double                            & l_tau          ,
+  int                               & nlayer         
+  )
+{
+
+  // get Smagorinsky model parameter for fine-scale subgrid viscosity
+  // (Since either all-scale Smagorinsky model (i.e., classical LES model
+  // as will be inititalized below) or fine-scale Smagorinsky model is
+  // used (and never both), the same input parameter can be exploited.)
+  if (fssgv != Fluid3::fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+    dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
+  if (fssgv != Fluid3::fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+
+  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  {
+    string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+
+    if (physical_turbulence_model == "Smagorinsky")
+    {
+      // the classic Smagorinsky model only requires one constant parameter
+      turb_mod_action = Fluid3::smagorinsky;
+      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+    }
+    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
+    {
+      RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+
+      // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
+      // the y+ (heigth in wall units)
+      turb_mod_action = Fluid3::smagorinsky_with_wall_damping;
+      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+
+      //this will be the y-coordinate of a point in the element interior
+      double center = 0;
+      for(int inode=0;inode<iel;inode++)
+      {
+        center+=ele->Nodes()[inode]->X()[1];
+      }
+      center/=iel;
+
+      bool found = false;
+      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+      {
+        if(center<(*planecoords)[nlayer+1])
+        {
+          found = true;
+          break;
+        }
+        nlayer++;
+      }
+      if (found ==false)
+      {
+        dserror("could not determine element layer");
+      }
+    }
+    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
+    {
+      turb_mod_action = Fluid3::dynamic_smagorinsky;
+
+      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+          ==
+          "channel_flow_of_height_2")
+      {
+        RCP<vector<double> > averaged_LijMij
+          =
+          turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+        RCP<vector<double> > averaged_MijMij
+          =
+          turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+
+        RCP<vector<double> > planecoords
+          =
+          turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+
+        //this will be the y-coordinate of a point in the element interior
+        double center = 0;
+        for(int inode=0;inode<iel;inode++)
+        {
+          center+=ele->Nodes()[inode]->X()[1];
+        }
+        center/=iel;
+
+        bool found = false;
+        for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+        {
+          if(center<(*planecoords)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
+        }
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+
+        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+
+        // clipping to get algorithm stable
+        if (Cs_delta_sq<0)
+        {
+          Cs_delta_sq=0;
+        }
+      }
+      else
+      {
+        Cs_delta_sq = ele->Cs_delta_sq_;
+      }
+    }
+    else
+    {
+      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+    }
+  }
+
+  return;
+} // end SetParametersForTurbulenceModel
 
 
 /*----------------------------------------------------------------------*
