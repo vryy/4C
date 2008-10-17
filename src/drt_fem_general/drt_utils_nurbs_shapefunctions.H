@@ -1096,12 +1096,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
 
 */
 
-  template <class V,class W>
+template <class V,class UV,class WG>
 void nurbs_get_3D_funct(
     V                                      & nurbs_shape_funct,
-    const W                                & uv               ,
+    const UV                               & uv               ,
     const vector<blitz::Array<double, 1> > & knots            ,
-    const blitz::Array<double, 1>          & weights          ,
+    const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
 
@@ -1514,13 +1514,13 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta/nu TO u/v/w
 
 */
 
-template <class VF,class W,class MD>
+template <class VF,class UV,class MD,class WG>
 void nurbs_get_3D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     MD                                     & nurbs_shape_deriv,
-    const W                                & uv               ,
+    const UV                               & uv               ,
     const vector<blitz::Array<double, 1> > & knots            ,
-    const blitz::Array<double, 1>          & weights          ,
+    const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
 
@@ -2132,14 +2132,14 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta TO u/v
 
 */
 
-  template <class VF,class MD, class MSD,class W>
+  template <class VF,class MD, class MSD,class UV,class WG>
 void nurbs_get_3D_funct_deriv_deriv2(
     VF                                     & nurbs_shape_funct ,
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
-    const W                                & uv                ,
+    const UV                               & uv                ,
     const vector<blitz::Array<double, 1> > & knots             ,
-    const blitz::Array<double, 1>          & weights           ,
+    const WG                               & weights           ,
     const DRT::Element::DiscretizationType & distype           )
 {
 
