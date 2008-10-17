@@ -277,6 +277,13 @@ namespace FLD
       samstop_   = modelparams->get<int>("SAMPLING_STOP", 1000000000);
       dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1         );
     }
+    else
+    {
+      samstart_  =0;
+      samstop_   =0;
+      dumperiod_ =0;
+    }
+
 
     if(discret_->Comm().MyPID()==0)
     {
