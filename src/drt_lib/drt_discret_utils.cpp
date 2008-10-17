@@ -110,8 +110,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   ParameterList& mllist = solveparams.sublist("ML Parameters");
-  RefCountPtr<vector<double> > ns =
-             mllist.get<RefCountPtr<vector<double> > >("nullspace",null);
+  RCP<vector<double> > ns =
+             mllist.get<RCP<vector<double> > >("nullspace",null);
   if (ns != null && !recompute) return;
 
   // do the usual tests
@@ -122,7 +122,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // or want to recompute it anyway
   // -> compute nullspace
   ns = null;
-  mllist.set<RefCountPtr<vector<double> > >("nullspace",null);
+  mllist.set<RCP<vector<double> > >("nullspace",null);
+  // ML would not tolerate this rcp-ptr in its list otherwise
+  mllist.set<bool>("ML validate parameter list",false);
   const Epetra_Map* rowmap = DofRowMap();
   int numdf = 1; // default value for no. of degrees of freedom
   int dimns = 1; // default value for size of nullspace
@@ -210,7 +212,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   const int lrows = rowmap->NumMyElements();
   ns = rcp(new vector<double>(dimns*lrows));
   double* nullsp = &((*ns)[0]);
-  mllist.set<RefCountPtr<vector<double> > >("nullspace",ns);
+  mllist.set<RCP<vector<double> > >("nullspace",ns);
   mllist.set("null space: vectors",nullsp);
 
   double* mode[6];
