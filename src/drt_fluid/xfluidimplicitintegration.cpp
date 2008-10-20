@@ -314,22 +314,30 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 
-  // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
-  if (timealgo_==timeint_bdf2)
+  if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
   {
-    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-  }
-
-  // do a backward Euler step for the first timestep
-  if (step_==1)
-  {
-    timealgo_ = timeint_one_step_theta;
-    theta_ = params_.get<double>("start theta");
+    timealgo_ = timeint_stationary;
+    theta_ = 1.0;
   }
   else
   {
-    timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
-    theta_ = params_.get<double>("theta");
+    // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
+    if (params_.get<FLUID_TIMEINTTYPE>("time int algo")==timeint_bdf2)
+    {
+      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    }
+    
+    // do a backward Euler step for the first timestep
+    if (step_==1)
+    {
+      timealgo_ = timeint_one_step_theta;
+      theta_ = params_.get<double>("start theta");
+    }
+    else
+    {
+      timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+      theta_ = params_.get<double>("theta");
+    }
   }
 }
 
@@ -649,6 +657,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   Teuchos::RCP<Epetra_Vector> oldresidual = rcp(new Epetra_Vector(residual_->Map()));
   oldresidual->PutScalar(0.0);
   
+  double oldresnorm = 1.0e12;
+  double resnorm = 1.0e11;
+  
   while (stopnonliniter==false)
   {
     itnum++;
@@ -808,6 +819,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       fullnorm_L2 = 1.0;
     }
 
+    if (itnum > 1)
+    {
+      resnorm = fullresnorm;
+    }
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
         - solution increment is not yet available
@@ -864,6 +879,28 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         }
     }
 
+    if (resnorm > oldresnorm and itnum > 2)
+    {
+      cout << resnorm << endl << oldresnorm << endl;
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged due to increasing increment!  |\n");
+        printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+    oldresnorm = resnorm;
+    
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
     if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
