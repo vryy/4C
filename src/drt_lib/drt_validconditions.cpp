@@ -614,7 +614,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   //after definition of the condition all its components have to be added:
   for (unsigned i =0 ; i < filamentnumbercomponents.size(); ++i)
-    filamentnumber->AddComponent(contactcomponents[i]);
+    filamentnumber->AddComponent(filamentnumbercomponents[i]);
 
   //the condition itself has to be added to the condition list
   condlist.push_back(filamentnumber);
