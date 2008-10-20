@@ -27,7 +27,7 @@ namespace XFEM
 void ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
-    const XFEM::Enrichment&                       voidenr,
+    const int&                                    label,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
     );
 
@@ -35,7 +35,7 @@ void ApplyNodalEnrichments(
 void ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
-    const XFEM::Enrichment&                       voidenr,
+    const int&                                    label,
     const bool                                    DLM_condensation,
     std::set<XFEM::FieldEnr>&                     enrfieldset
     );
@@ -45,7 +45,7 @@ void ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const std::map<int,int>&                      labelPerElementId,
-    const XFEM::Enrichment&                       voidenr,
+    const int&                                    label,
     const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs

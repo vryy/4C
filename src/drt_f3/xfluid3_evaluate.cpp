@@ -400,10 +400,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               const int label = *labeliter;
 
               // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-              const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
               if (ih_->ElementHasLabel(this->Id(), label))
               {
-                XFEM::ApplyElementEnrichments(this, *ih_, voidenr, false, enrfieldset);
+                XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
               }
             };
             
