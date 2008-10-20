@@ -12,8 +12,11 @@ LD=g++
 INCLUDEDIRS="-I/lnm/include"
 LIBDIRS="-L/lnm/lib"
 
-# Trilinos
+#=========================================================== Trilinos
 TRILINOS_HOME=/lnm/lib/Trilinos
+#-----------------Baci before 20/10/08 use this path:----------------
+# TRILINOS_HOME=/lnm/lib/Trilinos_dev_28112007
+#--------------------------------------------------------------------
 TRILINOS_ARCH=hop_ser_trilinos
 TRILINOS_INCDIR=$TRILINOS_HOME/$TRILINOS_ARCH/include
 TRILINOS_LIBDIR=$TRILINOS_HOME/$TRILINOS_ARCH/lib
