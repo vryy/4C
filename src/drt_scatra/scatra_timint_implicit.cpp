@@ -569,7 +569,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        cout<<"actresidual = "<<actresidual<<endl;
         solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
       }
 
