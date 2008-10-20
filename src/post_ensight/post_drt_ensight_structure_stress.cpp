@@ -619,11 +619,12 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
   vector<int> startfilepos(numfiles);
   for (int i=0;i<numfiles;++i)
     startfilepos[i] = 0;
-  if (myrank_==0)
+  for (int i=0;i<numfiles;++i)
   {
-    for (int i=0;i<numfiles;++i)
+    files[i] = rcp(new ofstream);
+
+    if (myrank_==0)
     {
-      files[i] = rcp(new ofstream);
       files[i]->open(filenames[i].c_str());
       startfilepos[i] = files[i]->tellp(); // file position should be zero, but we stay flexible
     }
@@ -990,11 +991,13 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
   vector<int> startfilepos(numfiles);
   for (int i=0;i<numfiles;++i)
     startfilepos[i] = 0;
-  if (myrank_==0)
+
+  for (int i=0;i<numfiles;++i)
   {
-    for (int i=0;i<numfiles;++i)
+    files[i] = rcp(new ofstream);
+
+    if (myrank_==0)
     {
-      files[i] = rcp(new ofstream);
       files[i]->open(filenames[i].c_str());
       startfilepos[i] = files[i]->tellp(); // file position should be zero, but we stay flexible
     }
