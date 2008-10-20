@@ -246,7 +246,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
-  setStringToIntegralParameter("PROBLEMTYP","Fluid_Structure_Interaction","",
+  setStringToIntegralParameter<PROBLEM_TYP>(
+                               "PROBLEMTYP",
+                               "Fluid_Structure_Interaction",
+                               "",
                                tuple<std::string>(
                                  "Structure",
                                  "Fluid",
@@ -257,11 +260,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Fluid_Structure_Interaction",
                                  "Fluid_Structure_Interaction_XFEM",
                                  "Ale",
-                                 "Thermal_Structure_Interaction")
-                               .append("Structure_Multiscale")
-                               .append("Low_Mach_Number_Flow")
-                               .append("Electrochemistry")
-                               .append("Combustion"),
+                                 "Thermal_Structure_Interaction",
+                                 "Structure_Multiscale",
+                                 "Low_Mach_Number_Flow",
+                                 "Electrochemistry",
+                                 "Combustion"),
                                tuple<PROBLEM_TYP>(
                                  prb_structure,
                                  prb_fluid,
@@ -272,25 +275,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_fsi,
                                  prb_fsi_xfem,
                                  prb_ale,
-                                 prb_tsi)
-                               .append(prb_struct_multi)
-                               .append(prb_loma)
-                               .append(prb_elch)
-                               .append(prb_combust),
-                               &type);
+                                 prb_tsi,
+                                 prb_struct_multi,
+                                 prb_loma,
+                                 prb_elch,
+                                 prb_combust),
+                                 &type);
+
   IntParameter("NUMFIELD",1,"",&type);
-  setStringToIntegralParameter("TIMETYP","Dynamic","",
+  setStringToIntegralParameter<TIME_TYP>("TIMETYP","Dynamic","",
                                tuple<std::string>("Static","Dynamic"),
                                tuple<TIME_TYP>(time_static,time_dynamic),
                                &type);
   //IntParameter("GRADERW",0,"",&type);
   IntParameter("MULTISC_STRUCT",0,"",&type);
   IntParameter("RESTART",0,"",&type);
-  setStringToIntegralParameter("ALGEBRA","Trilinos","outdated",
+  setStringToIntegralParameter<int>("ALGEBRA","Trilinos","outdated",
                                tuple<std::string>("Trilinos","ccarat"),
                                tuple<int>(1,0),
                                &type);
-  setStringToIntegralParameter("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
+  setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
                                &type);
@@ -299,12 +303,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
   // are these needed?
-  setStringToIntegralParameter("OUTPUT_OUT","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_OUT","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
 
-  setStringToIntegralParameter("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("STRUCT_STRESS","No","",
+  setStringToIntegralParameter<int>("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<STRUCT_STRESS_TYP>("STRUCT_STRESS","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "Cauchy","cauchy",
@@ -314,7 +318,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                         struct_stress_cauchy,struct_stress_cauchy,
                                                         struct_stress_pk,struct_stress_pk),
                                &io);
-  setStringToIntegralParameter("STRUCT_STRAIN","No","",
+  setStringToIntegralParameter<STRUCT_STRAIN_TYP>("STRUCT_STRAIN","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "EA","ea",
@@ -324,14 +328,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                         struct_strain_ea,struct_strain_ea,
                                                         struct_strain_gl,struct_strain_gl),
                                &io);
-  setStringToIntegralParameter("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
 
-  setStringToIntegralParameter("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
 
   IntParameter("FILESTEPS",1000,"",&io);
 
@@ -363,7 +367,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
-  setStringToIntegralParameter("DYNAMICTYP","Gen_Alfa",
+  setStringToIntegralParameter<int>("DYNAMICTYP","Gen_Alfa",
                                "type of time integration control",
                                tuple<std::string>("Centr_Diff",
                                                   "Gen_EMM",
@@ -402,7 +406,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
   DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
   // Damping
-  setStringToIntegralParameter("DAMPING","No",
+  setStringToIntegralParameter<int>("DAMPING","No",
                                "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements",
                                tuple<std::string>("no",
                                                   "No",
@@ -424,11 +428,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
   // Iteration
-  setStringToIntegralParameter("ITERATION","full","unused",
+  setStringToIntegralParameter<int>("ITERATION","full","unused",
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
                                &sdyn);
-  setStringToIntegralParameter("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
+  setStringToIntegralParameter<int>("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
                                tuple<std::string>(
                                  "AbsRes_Or_AbsDis",
                                  "AbsRes_And_AbsDis",
@@ -457,7 +461,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);
 
-  setStringToIntegralParameter("NLNSOL","fullnewton","",
+  setStringToIntegralParameter<int>("NLNSOL","fullnewton","",
                                tuple<std::string>(
                                  "vague",
                                  "fullnewton",
@@ -478,7 +482,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  STRUCT_DYNAMIC::augmentedlagrange),
                                &sdyn);
 
-  setStringToIntegralParameter("PREDICT","ConstDis","",
+  setStringToIntegralParameter<int>("PREDICT","ConstDis","",
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",
@@ -498,7 +502,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   DoubleParameter("UZAWATOL",1.0E-8,"Tolerance for iterative solve with Uzawa algorithm",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
-  setStringToIntegralParameter("UZAWAALGO","iterative","",
+  setStringToIntegralParameter<int>("UZAWAALGO","iterative","",
                                  tuple<std::string>(
                                    "iterative",
                                    "direct"),
@@ -508,7 +512,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &sdyn);
 
   // convergence criteria adaptivity
-  setStringToIntegralParameter("ADAPTCONV","No",
+  setStringToIntegralParameter<int>("ADAPTCONV","No",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&sdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&sdyn);
@@ -524,7 +528,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
 
-  setStringToIntegralParameter("GENAVG","ImrLike",
+  setStringToIntegralParameter<int>("GENAVG","ImrLike",
                                "mid-average type of internal forces",
                                tuple<std::string>("Vague",
                                                   "ImrLike",
@@ -555,7 +559,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
 
   // Inverse Analysis
-  setStringToIntegralParameter("INV_ANALYSIS","No",
+  setStringToIntegralParameter<int>("INV_ANALYSIS","No",
                                "determines the material parameter for the hyperpolyconvex material",
                                yesnotuple,yesnovalue,
                                &iap);
@@ -570,7 +574,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
 
-  setStringToIntegralParameter("CONTACT","None","Type of structural contact",
+  setStringToIntegralParameter<int>("CONTACT","None","Type of structural contact",
                                tuple<std::string>("None","none",
                                                   "Normal","normal",
                                                   "Frictional","frictional",
@@ -582,10 +586,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPUTPARAMS::contact_meshtying),
                                &scontact);
 
-  setStringToIntegralParameter("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
+  setStringToIntegralParameter<int>("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
                                yesnotuple,yesnovalue,&scontact);
 
-  setStringToIntegralParameter("FRICTION","None","Type of friction law",
+  setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
                                                    "Stick","stick",
                                                    "Tresca","tresca",
@@ -599,10 +603,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
-  setStringToIntegralParameter("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
+  setStringToIntegralParameter<int>("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
                                yesnotuple,yesnovalue,&scontact);
 
-  setStringToIntegralParameter("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
+  setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
                                  yesnotuple,yesnovalue,&scontact);
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
@@ -611,7 +615,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");
-  setStringToIntegralParameter("BROWNIAN_MOTION","No",
+  setStringToIntegralParameter<int>("BROWNIAN_MOTION","No",
                                 "determines whether stochastical forces should be considered",
                                  yesnotuple,yesnovalue,
                                  &bromotion);
@@ -620,7 +624,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
   //Reading kind of background fluid stream in the thermal bath
-  setStringToIntegralParameter("THERMALBATH","None","Type of thermal bath applied to elements",
+  setStringToIntegralParameter<int>("THERMALBATH","None","Type of thermal bath applied to elements",
                                //listing possible strings in input file in category THERMALBATH
                                tuple<std::string>("None","none",
                                                   "Uniform","uniform",
@@ -631,7 +635,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow),
                                &statmech);
   //Reading which kind of special output should be written to files
-  setStringToIntegralParameter("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
+  setStringToIntegralParameter<int>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
                                  //listing possible strings in input file in category SPECIAL_OUTPUT
                                  tuple<std::string>("None","none",
                                                     "EndToEnd_Log","endtoend_log","EndtoEnd_log",
@@ -646,7 +650,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //percentage of total simulation time after which writing of statistical output is started
   DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
-  setStringToIntegralParameter("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
+  setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
   //Reading double parameter for maximal cross linker protein length
   DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
@@ -664,7 +668,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
-  setStringToIntegralParameter("LOWMACH","No",
+  setStringToIntegralParameter<int>("LOWMACH","No",
                                "low-mach-number or incompressible flow",
                                tuple<std::string>(
                                  "No",
@@ -673,7 +677,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  setStringToIntegralParameter("DYNAMICTYP","Nlin_Time_Int",
+  setStringToIntegralParameter<int>("DYNAMICTYP","Nlin_Time_Int",
                                "Nonlinear Time Integraton Scheme",
                                tuple<std::string>(
                                  "Nlin_Time_Int",
@@ -685,7 +689,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                                &fdyn);
 
-  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
+  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
@@ -706,7 +710,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  timeint_theta_adamsbashforth
                                  ),
                                &fdyn);
-  setStringToIntegralParameter("STARTINGALGO","One_Step_Theta","",
+  setStringToIntegralParameter<int>("STARTINGALGO","One_Step_Theta","",
                                tuple<std::string>(
                                  "One_Step_Theta"
                                  ),
@@ -714,7 +718,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  timeint_one_step_theta
                                  ),
                                &fdyn);
-  setStringToIntegralParameter("NONLINITER","fixed_point_like",
+  setStringToIntegralParameter<int>("NONLINITER","fixed_point_like",
                                "Nonlinear iteration scheme",
                                tuple<std::string>(
                                  "fixed_point_like",
@@ -724,7 +728,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,2,3),
                                &fdyn);
 
-  setStringToIntegralParameter("CONVCHECK","L_2_norm",
+  setStringToIntegralParameter<int>("CONVCHECK","L_2_norm",
                                "norm for convergence check",
                                tuple<std::string>(
                                  "No",
@@ -748,7 +752,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  FLUID_DYNAMIC::fncc_L2_wo_res
                                  ),
                                &fdyn);
-  setStringToIntegralParameter("STEADYCHECK","L_2_norm",
+  setStringToIntegralParameter<int>("STEADYCHECK","L_2_norm",
                                "Norm of steady state check",
                                tuple<std::string>(
                                  "No",
@@ -763,7 +767,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  FLUID_DYNAMIC::fncc_L2
                                  ),
                                &fdyn);
-  setStringToIntegralParameter("INITIALFIELD","zero_field",
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
                                "Initial Starting Field",
                                tuple<std::string>(
                                  "zero_field",
@@ -778,7 +782,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,6,7,8,9,10),
                                &fdyn);
 
-  setStringToIntegralParameter("LIFTDRAG","No",
+  setStringToIntegralParameter<int>("LIFTDRAG","No",
                                "Calculate lift and drag forces along specified boundary",
                                tuple<std::string>(
                                  "No",
@@ -800,7 +804,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                &fdyn);
 
-  setStringToIntegralParameter("FSSUGRVISC","No","fine-scale subgrid diffusivity/viscosity",
+  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity/viscosity",
                                tuple<std::string>(
                                  "No",
                                  "artificial_all",
@@ -814,11 +818,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,4,5,6,7),
                                &fdyn);
 
-  setStringToIntegralParameter("SIMPLER","no",
+  setStringToIntegralParameter<int>("SIMPLER","no",
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
                                yesnotuple,yesnovalue,&fdyn);
 
-  setStringToIntegralParameter("ADAPTCONV","yes",
+  setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&fdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&fdyn);
@@ -850,7 +854,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
   // this parameter seperates stabilized from unstabilized methods
-  setStringToIntegralParameter("STABTYPE",
+  setStringToIntegralParameter<int>("STABTYPE",
                                "residual_based",
                                "Apply (un)stabilized fluid formulation",
                                tuple<std::string>(
@@ -865,7 +869,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
-  setStringToIntegralParameter("TDS",
+  setStringToIntegralParameter<int>("TDS",
                                "quasistatic",
                                "Flag to allow time dependency of subscales for residual-based stabilization.",
                                tuple<std::string>(
@@ -877,7 +881,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("TRANSIENT",
+  setStringToIntegralParameter<int>("TRANSIENT",
                                "no_transient",
                                "Specify how to treat the transient term.",
                                tuple<std::string>(
@@ -889,7 +893,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("PSPG",
+  setStringToIntegralParameter<int>("PSPG",
                                "yes_pspg",
                                "Flag to (de)activate PSPG.",
                                tuple<std::string>(
@@ -901,7 +905,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("SUPG",
+  setStringToIntegralParameter<int>("SUPG",
                                "yes_supg",
                                "Flag to (de)activate SUPG.",
                                tuple<std::string>(
@@ -913,7 +917,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("VSTAB",
+  setStringToIntegralParameter<int>("VSTAB",
                                "no_vstab",
                                "Flag to (de)activate viscous term in residual-based stabilization.",
                                tuple<std::string>(
@@ -933,7 +937,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,4),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("CSTAB",
+  setStringToIntegralParameter<int>("CSTAB",
                                "cstab_qs",
                                "Flag to (de)activate least-squares stabilization of continuity equation.",
                                tuple<std::string>(
@@ -947,7 +951,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("CROSS-STRESS",
+  setStringToIntegralParameter<int>("CROSS-STRESS",
                                "no_cross",
                                "Flag to (de)activate cross-stress term -> residual-based VMM.",
                                tuple<std::string>(
@@ -963,7 +967,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("REYNOLDS-STRESS",
+  setStringToIntegralParameter<int>("REYNOLDS-STRESS",
                                "no_reynolds",
                                "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
                                tuple<std::string>(
@@ -978,7 +982,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
-  setStringToIntegralParameter("DEFINITION_TAU",
+  setStringToIntegralParameter<int>("DEFINITION_TAU",
                                "Barrenechea_Franca_Valentin_Wall",
                                "Definition of tau_M,C",
                                tuple<std::string>(
@@ -992,7 +996,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("OUTFLOW_STAB",
+  setStringToIntegralParameter<int>("OUTFLOW_STAB",
                                "no_outstab",
                                "Flag to (de)activate outflow stabilization term",
                                tuple<std::string>(
@@ -1007,7 +1011,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 
-  setStringToIntegralParameter("TURBULENCE_APPROACH",
+  setStringToIntegralParameter<int>("TURBULENCE_APPROACH",
                                "DNS_OR_RESVMM_LES",
                                "There are several options to deal with turbulent flows.",
                                tuple<std::string>(
@@ -1021,7 +1025,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_turbu);
 
-  setStringToIntegralParameter("PHYSICAL_MODEL",
+  setStringToIntegralParameter<int>("PHYSICAL_MODEL",
                                "no_model",
                                "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
                                tuple<std::string>(
@@ -1039,7 +1043,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
 
-  setStringToIntegralParameter("CANONICAL_FLOW",
+  setStringToIntegralParameter<int>("CANONICAL_FLOW",
                                "no",
                                "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
                                tuple<std::string>(
@@ -1055,7 +1059,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3),
                                &fdyn_turbu);
 
-  setStringToIntegralParameter("CHANNEL_HOMPLANE",
+  setStringToIntegralParameter<int>("CHANNEL_HOMPLANE",
                                "xz",
                                "Specify the homogenous plane in a channel flow",
                                tuple<std::string>(
@@ -1083,7 +1087,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"",&adyn);
   IntParameter("NUMSTEP",41,"",&adyn);
   DoubleParameter("MAXTIME",4.0,"",&adyn);
-  setStringToIntegralParameter("ALE_TYPE","classic_lin","ale mesh movement algorithm",
+  setStringToIntegralParameter<int>("ALE_TYPE","classic_lin","ale mesh movement algorithm",
                                tuple<std::string>("classic_lin","incr_lin","springs"),
                                tuple<int>(ALE_DYNAMIC::classic_lin,
                                           ALE_DYNAMIC::incr_lin,
@@ -1092,7 +1096,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESEVRYDISP",1,"",&adyn);
 
-  setStringToIntegralParameter("QUALITY","none","unused",
+  setStringToIntegralParameter<int>("QUALITY","none","unused",
                                tuple<std::string>("none","NONE"),
                                tuple<int>(
                                  ALE_DYNAMIC::no_quality,
@@ -1105,7 +1109,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for scalar transport problems\n");
 
-  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
+  setStringToIntegralParameter<INPUTPARAMS::ScaTraTimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
@@ -1130,7 +1134,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
 
-  setStringToIntegralParameter("VELOCITYFIELD","zero",
+  setStringToIntegralParameter<int>("VELOCITYFIELD","zero",
                                "type of velocity field used for scalar tranport problems",
                                tuple<std::string>(
                                  "zero",
@@ -1142,7 +1146,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("VELFUNCNO",-1,"function number for scalar transport velocity field",&scatradyn);
 
-  setStringToIntegralParameter("INITIALFIELD","zero_field",
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
                                "Initial Field for scalar transport problem",
                                tuple<std::string>(
                                  "zero_field",
@@ -1153,7 +1157,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
 
-  setStringToIntegralParameter("WRITEFLUX","No","output of diffusive/total flux vectors",
+  setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(
                                  "No",
                                  "totalflux_domain",
@@ -1164,7 +1168,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,4),
                                &scatradyn);
 
-  setStringToIntegralParameter("FSSUGRVISC","No","fine-scale subgrid diffusivity",
+  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity",
                                tuple<std::string>(
                                  "No",
                                  "artificial_all",
@@ -1173,7 +1177,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &scatradyn);
 
-  setStringToIntegralParameter("BLOCKPRECOND","no",
+  setStringToIntegralParameter<int>("BLOCKPRECOND","no",
                                "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
                                yesnotuple,yesnovalue,&scatradyn);
 
@@ -1186,7 +1190,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
   // convergence criteria adaptivity
-  setStringToIntegralParameter("ADAPTCONV","yes",
+  setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&scatra_nonlin);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
@@ -1197,7 +1201,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for low-Mach-number flow problems\n");
 
-  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
+  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
@@ -1218,7 +1222,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
 
-  setStringToIntegralParameter("OUTMEAN","No",
+  setStringToIntegralParameter<int>("OUTMEAN","No",
                                "print out mean values of temperature/density",
                                tuple<std::string>(
                                  "No",
@@ -1252,7 +1256,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
-  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta","Time Integration Scheme",
+  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta","Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
                                  "One_Step_Theta"),
@@ -1277,7 +1281,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Partitioned FSI solver with various coupling methods"
     );
 
-  setStringToIntegralParameter("COUPALGO","iter_stagg_AITKEN_rel_param",
+  setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                "Iteration Scheme over the fields",
                                tuple<std::string>(
                                  "basic_sequ_stagg",
@@ -1291,10 +1295,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "iter_stagg_MFNK_FSI",
                                  "iter_stagg_MPE",
                                  "iter_stagg_RRE",
-                                 "iter_monolithic")
-                               .append("iter_monolithiclagrange")
-                               .append("iter_monolithicstructuresplit")
-                               .append("pseudo_structure"),
+                                 "iter_monolithic",
+                                 "iter_monolithiclagrange",
+                                 "iter_monolithicstructuresplit",
+                                 "pseudo_structure"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
                                  //fsi_sequ_stagg_pred,
@@ -1307,13 +1311,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_stagg_MFNK_FSI,
                                  fsi_iter_stagg_MPE,
                                  fsi_iter_stagg_RRE,
-                                 fsi_iter_monolithic)
-                               .append(fsi_iter_monolithiclagrange)
-                               .append(fsi_iter_monolithicstructuresplit)
-                               .append(fsi_pseudo_structureale),
-                               &fsidyn);
+                                 fsi_iter_monolithic,
+                                 fsi_iter_monolithiclagrange,
+                                 fsi_iter_monolithicstructuresplit,
+                                 fsi_pseudo_structureale),
+                                 &fsidyn);
 
-  setStringToIntegralParameter("PARTITIONED","DirichletNeumann",
+  setStringToIntegralParameter<INPUTPARAMS::FSIPartitionedCouplingMethod>(
+                               "PARTITIONED","DirichletNeumann",
                                "Coupling strategies for partitioned FSI solvers. Most of the time Dirichlet-Neumann is just right.",
                                tuple<std::string>(
                                  "DirichletNeumann",
@@ -1332,13 +1337,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);
   DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
 
-  setStringToIntegralParameter("DEBUGOUTPUT","No",
+  setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
                                "Output of unconverged interface values during partitioned FSI iteration.\n"
                                "There will be a new control file for each time step.\n"
                                "This might be helpful to understand the coupling iteration.",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
+  setStringToIntegralParameter<int>("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
                                "Predictor for interface displacements",
                                tuple<std::string>(
                                  "d(n)",
@@ -1349,7 +1354,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,2,3,4),
                                &fsidyn);
 
-  setStringToIntegralParameter("CONVCRIT","||g(i)||:sqrt(neq)",
+  setStringToIntegralParameter<int>("CONVCRIT","||g(i)||:sqrt(neq)",
                                "Convergence criterium for iteration over fields (unused)",
                                tuple<std::string>(
                                  "||g(i)||:sqrt(neq)",
@@ -1358,17 +1363,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,2),
                                &fsidyn);
 
-  setStringToIntegralParameter("COUPVARIABLE","Displacement",
+  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
                                "Coupling variable at the interface",
                                tuple<std::string>("Displacement","Force"),
                                tuple<int>(0,1),
                                &fsidyn);
 
-  setStringToIntegralParameter("ENERGYCHECK","No",
+  setStringToIntegralParameter<int>("ENERGYCHECK","No",
                                "Energy check for iteration over fields",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter("IALE","Pseudo_Structure",
+  setStringToIntegralParameter<int>("IALE","Pseudo_Structure",
                                "Treatment of ALE-field (outdated)",
                                tuple<std::string>(
                                  "Pseudo_Structure"
@@ -1376,7 +1381,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1),
                                &fsidyn);
 
-  setStringToIntegralParameter("COUPMETHOD","conforming",
+  setStringToIntegralParameter<int>("COUPMETHOD","conforming",
                                "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                tuple<std::string>(
                                  "MTR",
@@ -1387,7 +1392,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,0,0,1),
                                &fsidyn);
 
-  setStringToIntegralParameter("COUPFORCE","nodeforce",
+  setStringToIntegralParameter<int>("COUPFORCE","nodeforce",
                                "Coupling force. Unused. We always couple with nodal forces.",
                                tuple<std::string>(
                                  "none",
@@ -1400,11 +1405,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  FSI_DYNAMIC::cf_nodeforce),
                                &fsidyn);
 
-  setStringToIntegralParameter("SECONDORDER","No",
+  setStringToIntegralParameter<int>("SECONDORDER","No",
                                "Second order coupling at the interface.",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter("SHAPEDERIVATIVES","No",
+  setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
                                "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
                                "Supported in monolithic FSI for now.",
                                yesnotuple,yesnovalue,&fsidyn);
@@ -1414,7 +1419,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "Number of preconditioner reused in monolithic FSI",
                &fsidyn);
 
-  setStringToIntegralParameter("LINEARBLOCKSOLVER","PreconditionedKrylov",
+  setStringToIntegralParameter<INPUTPARAMS::FSILinearBlockSolver>(
+                               "LINEARBLOCKSOLVER","PreconditionedKrylov",
                                "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
                                "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
                                "block Gauss-Seidel methods as well.",
@@ -1486,7 +1492,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
 
-  setStringToIntegralParameter("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
 
   /*----------------------------------------------------------------------*/
@@ -1528,7 +1534,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  setStringToIntegralParameter("SOLVER","UMFPACK","",
+  setStringToIntegralParameter<_SOLVER_TYP>("SOLVER","UMFPACK","",
                                tuple<std::string>(
                                  "Amesos_KLU_sym",
                                  "Amesos_KLU_nonsym",
@@ -1550,46 +1556,50 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                                  umfpack),
                                &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<_AZSOLVERTYP>(
     "AZSOLVE", "GMRES",
     "Type of linear solver algorithm to use.",
     tuple<std::string>("CG","GMRES","CGS","TFQMR","BiCGSTAB","LU"),
     tuple<_AZSOLVERTYP>(azsolv_CG,azsolv_GMRES,azsolv_CGS,azsolv_TFQMR,azsolv_BiCGSTAB,azsolv_LU),
     &list
     );
-  setStringToIntegralParameter(
-    "AZPREC", "ILU",
-    "Type of internal preconditioner to use.\n"
-    "Note! this preconditioner will only be used if the input operator\n"
-    "supports the Epetra_RowMatrix interface and the client does not pass\n"
-    "in an external preconditioner!",
-    tuple<std::string>(
-      "none",
-      "ILU",
-      "ILUT",
-      "Jacobi",
-      "SymmGaussSeidel",
-      //"Polynomial",
-      "Least_Squares",
-      "Neumann",
-      "ICC",
-      "LU",
-      "RILU").append("BILU").append("ML").append("MLFLUID").append("MLFLUID2").append("MLAPI").append("GaussSeidel").append("DownwindGaussSeidel"),
-    //tuple<EAztecPreconditioner>(
-    tuple<_AZPRECTYP>(
-      azprec_none,
-      azprec_ILU,
-      azprec_ILUT,
-      azprec_Jacobi,
-      azprec_SymmGaussSeidel,
-      //AZTEC_PREC_POLY,
-      azprec_Least_Squares,
-      azprec_Neumann,
-      azprec_ICC,
-      azprec_LU,
-      azprec_RILU).append(azprec_BILU).append(azprec_ML).append(azprec_MLfluid).append(azprec_MLfluid2).append(azprec_MLAPI).append(azprec_GaussSeidel).append(azprec_DownwindGaussSeidel),
-    &list
-    );
+
+  {
+    // this one is longer than 15 and the tuple<> function does not support this, 
+    // so build the Tuple class directly (which can be any size)
+    Teuchos::Tuple<std::string,17> name;
+    Teuchos::Tuple<_AZPRECTYP,17>  number;
+    
+    name[0] = "none";                         number[0] = azprec_none;
+    name[1] = "ILU";                          number[1] = azprec_ILU;
+    name[2] = "ILUT";                         number[2] = azprec_ILUT;
+    name[3] = "Jacobi";                       number[3] = azprec_Jacobi;
+    name[4] = "SymmGaussSeidel";              number[4] = azprec_SymmGaussSeidel;
+    name[5] = "Least_Squares";                number[5] = azprec_Least_Squares;
+    name[6] = "Neumann";                      number[6] = azprec_Neumann;
+    name[7] = "ICC";                          number[7] = azprec_ICC;
+    name[8] = "LU";                           number[8] = azprec_LU;
+    name[9] = "RILU";                         number[9] = azprec_RILU;
+    name[10] = "BILU";                        number[10] = azprec_BILU;
+    name[11] = "ML";                          number[11] = azprec_ML;
+    name[12] = "MLFLUID";                     number[12] = azprec_MLfluid;
+    name[13] = "MLFLUID2";                    number[13] = azprec_MLfluid2;
+    name[14] = "MLAPI";                       number[14] = azprec_MLAPI;
+    name[15] = "GaussSeidel";                 number[15] = azprec_GaussSeidel;
+    name[16] = "DownwindGaussSeidel";         number[16] = azprec_DownwindGaussSeidel;
+    
+    setStringToIntegralParameter<_AZPRECTYP>(
+      "AZPREC", "ILU",
+      "Type of internal preconditioner to use.\n"
+      "Note! this preconditioner will only be used if the input operator\n"
+      "supports the Epetra_RowMatrix interface and the client does not pass\n"
+      "in an external preconditioner!",
+      name,
+      number,
+      &list
+      );
+  }
+
   IntParameter(
     "AZOVERLAP", 0,
     "The amount of overlap used for the internal \"ilu\" and \"ilut\" preconditioners.",
@@ -1644,7 +1654,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     "a restart is performed.",
     &list
     );
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "AZCONV", "AZ_r0", // Same as "rhs" when x=0
     "The convergence test to use for terminating the iterative solver.",
     tuple<std::string>(
@@ -1692,7 +1702,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   DoubleParameter("AZOMEGA", 0.0, "damping for GaussSeidel and jacobi type methods", &list);
   DoubleParameter("DWINDTAU",1.5,"threshold tau for downwinding", &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "AZSCAL","none","scaling of the system",
     tuple<std::string>("none","sym","infnorm"),
     tuple<int>(0,1,2),
@@ -1718,32 +1728,32 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   setNumericStringParameter("ML_SMOTIMES","1 1 1 1 1 1",
                             "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",&list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "ML_COARSEN","UC","",
     tuple<std::string>("UC","METIS","VBMETIS","MIS"),
     tuple<int>(0,1,2,3),
     &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "ML_SMOOTHERFINE","ILU","",
     tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
     tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "ML_SMOOTHERMED","ILU","",
     tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
     tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "ML_SMOOTHERCOARSE","KLU","",
     tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
     tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   // unused
-  setStringToIntegralParameter("PARTITION","Cut_Elements","unused",
+  setStringToIntegralParameter<int>("PARTITION","Cut_Elements","unused",
                                tuple<std::string>("Cut_Elements"),
                                tuple<int>(0),
                                &list);
@@ -1757,7 +1767,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "KIND","None","Method for time step size adapivity",
     tuple<std::string>(
       "None",
@@ -1781,7 +1791,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   DoubleParameter("SIZERATIOMIN", 0.0, "Limit minimally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
   DoubleParameter("SIZERATIOSCALE", 0.0, "This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than 0", &list);
 
-  setStringToIntegralParameter(
+  setStringToIntegralParameter<int>(
     "LOCERRNORM", "Vague", "Vector norm to treat error vector with",
     tuple<std::string>(
       "Vague",
