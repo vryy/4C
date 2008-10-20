@@ -643,7 +643,7 @@ void DRT::ELEMENTS::Beam3::triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q)
       int j = (i+1)% 3;
       int k = (i+2)% 3;
       
-      if(R(i,i) > R(j,j) && R(i,i) > R(k,k))
+      if(R(i,i) >= R(j,j) && R(i,i) >= R(k,k))
       {    
         //equation (16.78a)
         q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
@@ -692,6 +692,7 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(BlitzVec3 deltabetaplusalpha, Blit
   Qnew_(3) = Qrot(3)*Qold_(3) - Qrot(2)*Qold_(2) - Qrot(1)*Qold_(1) - Qrot(0)*Qold_(0);
   
   quaterniontotriad(Qnew_,Tnew); 
+  
  
 } //DRT::ELEMENTS::Beam3::updatetriad
 
@@ -996,8 +997,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig1;
     (*stiffmatrix) += Ksig2;
 
- 
-
     
     //std::cout<<"\ncurvnew\n"<<curvnew_<<"\n";
     //std::cout<<"\nstiff\n"<<*stiffmatrix<<"\n";
@@ -1036,6 +1035,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
    
   }
+  
   
   /*calculating mass matrix; this beam3 element includes only a lumped mass matrix where for torsion and
    * bending the same moments of inertia are assumed; for slender beams the influence of rotational moments
