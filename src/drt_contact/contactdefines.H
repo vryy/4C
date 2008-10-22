@@ -4,6 +4,28 @@
 \brief A set of preprocessor defines for contact methods
 
 <pre>
+-------------------------------------------------------------------------
+                        BACI Contact library
+            Copyright (2008) Technical University of Munich
+              
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is propietary software. It must not be published, distributed, 
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de                   
+
+-------------------------------------------------------------------------
+<\pre>
+
+<pre>
 Maintainer: Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
