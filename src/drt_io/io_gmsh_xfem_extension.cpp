@@ -24,8 +24,7 @@ std::string IO::GMSH::XdisToString(
     const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap)
 {
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {"
-      << endl;
+  gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {\n";
   
   for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
@@ -41,7 +40,7 @@ std::string IO::GMSH::XdisToString(
         static BlitzMat dxyz_ele(3, 27);
         cell->NodalPosXYZ(*actele, dxyz_ele);
         gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
-            scalar, dxyz_ele) << endl;
+            scalar, dxyz_ele) << "\n";
       }
       const GEO::BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
       for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
@@ -50,13 +49,13 @@ std::string IO::GMSH::XdisToString(
         static BlitzMat bxyz_ele(3, 9);
         bcell->NodalPosXYZ(*actele, bxyz_ele);
         gmshfilecontent << IO::GMSH::cellWithScalarToString(bcell->Shape(),
-            scalar, bxyz_ele) << endl;
+            scalar, bxyz_ele) << "\n";
       }
     }
     // print element
-    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
+    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << "\n";
   };
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};\n";
   return gmshfilecontent.str();
 }
 

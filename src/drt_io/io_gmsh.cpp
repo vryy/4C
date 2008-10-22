@@ -179,7 +179,7 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
   std::stringstream gmshfilecontent;
   
   BlitzMat xyze(GEO::getCurrentNodalPositions(ele,currentelepositions));
-  gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << endl;
+  gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << "\n";
  
   return gmshfilecontent.str();
 }
@@ -209,13 +209,13 @@ std::string IO::GMSH::disToString(
     const Teuchos::RCP<DRT::Discretization> dis)
 {
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
+  gmshfilecontent << "View \" " << s << " Elements \" {\n";
   for (int i=0; i<dis->NumMyRowElements(); ++i)
   {
     const DRT::Element* actele = dis->lRowElement(i);
-    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
+    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << "\n";
   };
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};\n";
   return gmshfilecontent.str();
 }
 
@@ -226,16 +226,16 @@ std::string IO::GMSH::disToString(
     std::map<int,BlitzVec3> currentpositions)
 {
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
-  for (int i=0; i<dis->NumMyRowElements(); ++i)
+  gmshfilecontent << "View \" " << s << " Elements \" {\n";
+  for (int i=0; i<dis->NumMyColElements(); ++i)
   {
-    const DRT::Element* actele = dis->lRowElement(i);
+    const DRT::Element* actele = dis->lColElement(i);
     BlitzMat xyze(GEO::getCurrentNodalPositions(actele,
         currentpositions));
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
-        scalar, xyze) << endl;
+        scalar, xyze) << "\n";
   };
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};\n";
   return gmshfilecontent.str();
 }
 
