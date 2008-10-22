@@ -237,7 +237,7 @@ void LINALG::SparseMatrix::Zero()
   // graph_==Teuchos::null if savegraph_==false only
   if (graph_==Teuchos::null)
   {
-    const Epetra_Map& rowmap = sysmat_->RowMap();
+    const Epetra_Map rowmap = sysmat_->RowMap();
     // Remove old matrix before creating a new one so we do not have old and
     // new matrix in memory at the same time!
     sysmat_ = Teuchos::null;
