@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #define COMBUST3_SYSMAT_H
 
 #include "combust3.H"
+#include "../drt_xfem/xfem_enums.H"
 
 namespace COMBUST
 {

@@ -14,8 +14,8 @@ Maintainer: Axel Gerstenberger
 #ifndef ENRICHMENT_UTILS_H
 #define ENRICHMENT_UTILS_H
 
-#include "../drt_geometry/integrationcell.H"
 #include "dof_management_element.H"
+#include "xfem_enums.H"
 
 
 class DRT::Element;
@@ -190,9 +190,11 @@ void computeVectorCellNodeValues(
 /*! 
  * \brief calculates the fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
+ * 
+ * \return ration between fictitious volume and element volume (can be between 0.0 and 1.0)
  */
 double DomainCoverageRatio(
-    const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
+    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
 
@@ -204,6 +206,13 @@ double BoundaryCoverageRatio(
     const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
+
+//! return assembly type depending on the DOF distribution
+XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
+    const ElementDofManager&   eleDofManager,
+    const int                  numnode,
+    const int*                 nodeids
+);
 
 }
 

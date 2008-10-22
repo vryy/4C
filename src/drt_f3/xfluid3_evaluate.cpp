@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation.H"
+#include "../drt_xfem/enrichment_utils.H"
 
 
 // converts a string into an Action for this element

@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/intersection_service.H"
 #include "interfacexfsi.H"
 #include "../drt_geometry/blitz_tiny_operation.H"
-#include "../drt_geometry/coordinate_transformation.H"
+#include "coordinate_transformation.H"
 
 
 class DRT::Discretization;
@@ -529,7 +529,7 @@ void XFEM::computeVectorCellNodeValues(
   */
 template <DRT::Element::DiscretizationType DISTYPE>
 double DomainCoverageRatioT(
-        const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
+        const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
@@ -620,27 +620,6 @@ double DomainCoverageRatioT(
                 dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
             }
 
-            // inverse of jacobian
-            static BlitzMat3x3 xji;
-            GEO::Inverse3x3(xjm, det, xji);
-
-            // compute global derivates
-            static blitz::TinyMatrix<double,nsd,numnode> derxy;
-            //BlitzMat derxy_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
-            //BlitzMat derxy_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
-            //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
-            for (int isd = 0; isd < nsd; ++isd)
-            {
-              for (int inode = 0; inode < numnode; ++inode)
-              {
-                derxy(isd,inode) = 0.0;
-                for (int jsd = 0; jsd < nsd; ++jsd)
-                {
-                   derxy(isd,inode) += xji(isd,jsd)*deriv(jsd,inode);
-                }
-              }
-            }
-            
             area_ele += fac;
             
             const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(ele));
@@ -659,8 +638,8 @@ double DomainCoverageRatioT(
 }
 
 double XFEM::DomainCoverageRatio(
-        const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
-        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        const DRT::Element&           ele,
+        const XFEM::InterfaceHandle&  ih
         )
 {
   switch (ele.Shape())
@@ -823,6 +802,47 @@ double XFEM::BoundaryCoverageRatio(
       dserror("add you distype here...");
       exit(1);
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
+    const ElementDofManager&   eleDofManager,
+    const int                  numnode,
+    const int*                 nodeids
+)
+{
+  // find out whether we can use standard assembly or need xfem assembly
+  XFEM::AssemblyType assembly_type = XFEM::standard_assembly;
+  for (int inode = 0; inode < numnode; ++inode)
+  {
+    if (assembly_type == XFEM::xfem_assembly)
+    {
+      break;
+    }
+    const int gid = nodeids[inode];
+    const std::set<XFEM::FieldEnr>& fields = eleDofManager.FieldEnrSetPerNode(gid);
+    if (fields.size() != 4)
+    {
+      assembly_type = XFEM::xfem_assembly;
+      break;
+    };
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fields.begin(); fieldenr != fields.end(); ++fieldenr)
+    {
+      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
+      {
+        assembly_type = XFEM::xfem_assembly;
+        break;
+      };
+    };
+  };
+  const int eledof = eleDofManager.NumElemDof();
+  if (eledof != 0)
+  {
+    assembly_type = XFEM::xfem_assembly;
+  }
+  
+  return assembly_type;
 }
 
 #endif  // #ifdef CCADISCRET

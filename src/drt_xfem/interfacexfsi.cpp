@@ -24,6 +24,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
+#include "coordinate_transformation.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 extern struct _FILES  allfiles;
 
@@ -63,6 +65,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     cout << " done" << endl;
   }
 
+  const int numsmallele = CheckXFEMElementSize();
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
@@ -145,10 +148,9 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
   {
     const GEO::DomainIntCells cells = entry->second;
     DRT::Element* xfemele = xfemdis_->gElement(entry->first);
-    GEO::DomainIntCells::const_iterator cell;
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
-    for (cell = cells.begin(); cell != cells.end(); ++cell)
+    for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
     {
       const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
       const int current_label = PositionWithinConditionNP(cellcenter);
@@ -394,7 +396,8 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
   return octTreen_->queryFSINearestObject(*(cutterdis_), cutterposn_, x_in, nearestobject);
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
     const Teuchos::RCP<DRT::Discretization>  cutterdis,
     const std::map<int,BlitzVec3>&           cutterposnp,
@@ -432,6 +435,157 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
   }
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::CheckSurfaceElementSize()
+{
+  cout << "Warning: Not implemented, yet! No checking performed!" << endl;
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::CheckXFEMElementSize()
+{
+  
+  int small_ele_counter = 0;
+  double smallest_edge_length = 1.0e12;
+  
+  const double smallest_allowed_edgelength = 1.0e-2;
+  
+  for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+  {
+    const DRT::Element* xfemele = xfemdis_->lColElement(i);
+    const double elevol = XFEM::ElementVolume(*xfemele);
+    
+    // assume that vol = h^3 for a cube
+    const double characteristic_edge_length = std::pow(elevol,1.0/3.0);
+//    cout << "characteristic_edge_length: " << characteristic_edge_length << endl;
+    
+    smallest_edge_length = std::min(smallest_edge_length,characteristic_edge_length);
+    // count to small edges
+    if (characteristic_edge_length < smallest_allowed_edgelength)
+    {
+      small_ele_counter++;
+    }
+  }
+  
+  if (small_ele_counter > 0)
+  {
+    cout << "Warning: Smallest edge length is " << smallest_edge_length << ", ";
+    cout << small_ele_counter << " elements are too small!" << endl;
+  }
+  
+  return small_ele_counter;
+}
+
+/*! 
+ * \brief calculates the volume of an element in initial configuration
+ * 
+ * \return physical volume of the element in initial configuration (without any displacement)
+ */
+template <DRT::Element::DiscretizationType DISTYPE>
+double ElementVolumeT(
+        const DRT::Element&           ele
+        )
+{
+  if (ele.Shape() != DISTYPE)
+  {
+    dserror("mismatch between element shape and template parameter DISTYPE! This is a bug!");
+  }
+
+  // number of nodes for element
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  
+  // dimension for 3d element
+  const int nsd = 3;
+  
+  // get node coordinates of the current element
+  static blitz::TinyMatrix<double,nsd,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
+  
+  // physical element volume 
+  double vol = 0.0;
+  
+  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+  switch (DISTYPE)
+  {
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    {
+      gaussrule = DRT::UTILS::intrule_hex_8point;
+      break;
+    }
+    case DRT::Element::tet4:
+    case DRT::Element::tet10:
+    {
+      gaussrule = DRT::UTILS::intrule_tet_4point;
+      break;
+    }
+    default:
+      dserror("add your element type here...");
+  }
+  
+  // integration points
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    // coordinates of the current integration point in element coordinates \xi
+    static GEO::PosXiDomain posXiDomain;
+    posXiDomain(0) = intpoints.qxg[iquad][0];
+    posXiDomain(1) = intpoints.qxg[iquad][1];
+    posXiDomain(2) = intpoints.qxg[iquad][2];
+    
+    // shape functions and their first derivatives
+    static blitz::TinyVector<double,numnode> funct;
+    static blitz::TinyMatrix<double,nsd,numnode> deriv;
+    DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+    // get transposed of the jacobian matrix d x / d \xi
+    static BlitzMat3x3 xjm;
+    BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+
+    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double fac = intpoints.qwgt[iquad]*det;
+
+    if (det <= 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
+    }
+   
+    vol += fac;
+      
+  }
+  return vol;
+}
+
+double XFEM::ElementVolume(
+        const DRT::Element&           ele
+        )
+{
+  switch (ele.Shape())
+  {
+    case DRT::Element::hex8:
+      return ElementVolumeT<DRT::Element::hex8>(ele);
+    case DRT::Element::hex20:
+      return ElementVolumeT<DRT::Element::hex20>(ele);
+    case DRT::Element::hex27:
+      return ElementVolumeT<DRT::Element::hex27>(ele);
+    default:
+      dserror("add you distype here...");
+      exit(1);
+  }
 }
 
 #endif  // #ifdef CCADISCRET

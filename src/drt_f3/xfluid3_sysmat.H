@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #define XFLUID3_SYSMAT_H
 
 #include "xfluid3.H"
+#include "../drt_xfem/xfem_enums.H"
 
 namespace XFLUID
 {

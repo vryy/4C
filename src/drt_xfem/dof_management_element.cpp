@@ -183,46 +183,7 @@ std::string XFEM::ElementDofManager::toString() const
 
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
-    const ElementDofManager&   eleDofManager,
-    const int                  numnode,
-    const int*                 nodeids
-)
-{
-  // find out whether we can use standard assembly or need xfem assembly
-  XFEM::AssemblyType assembly_type = XFEM::standard_assembly;
-  for (int inode = 0; inode < numnode; ++inode)
-  {
-    if (assembly_type == XFEM::xfem_assembly)
-    {
-      break;
-    }
-    const int gid = nodeids[inode];
-    const std::set<XFEM::FieldEnr>& fields = eleDofManager.FieldEnrSetPerNode(gid);
-    if (fields.size() != 4)
-    {
-      assembly_type = XFEM::xfem_assembly;
-      break;
-    };
-    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fields.begin(); fieldenr != fields.end(); ++fieldenr)
-    {
-      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-      {
-        assembly_type = XFEM::xfem_assembly;
-        break;
-      };
-    };
-  };
-  const int eledof = eleDofManager.NumElemDof();
-  if (eledof != 0)
-  {
-    assembly_type = XFEM::xfem_assembly;
-  }
-  
-  return assembly_type;
-}
+
 
     
 #endif  // #ifdef CCADISCRET

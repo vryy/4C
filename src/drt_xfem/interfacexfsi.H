@@ -24,6 +24,7 @@ namespace XFEM
 
   class DRT::Discretization;
 
+  /// This class describes the interface using an extra discretization with surface element
   class InterfaceHandleXFSI : public InterfaceHandle
   {
   public:
@@ -48,6 +49,18 @@ namespace XFEM
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
     const std::map<int,BlitzVec3>* cutterposn()  const {return &cutterposn_;};
 
+    //! check surface element size to prevent too small elements
+    //! that might conflict with tolerances in the intersection routines
+    //!
+    //! \return number of too small elements
+    int CheckSurfaceElementSize();
+    
+    //! check xfem element size to prevent too small elements
+    //! that might conflict with tolerances in the intersection routines
+    //!
+    //! \return number of too small elements
+    int CheckXFEMElementSize();
+    
     /*!
      * get pointer to boundary element
      * \return pointer to boundary element
@@ -126,6 +139,15 @@ namespace XFEM
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
 
   }; // class InterfacehandleXFSI;
+  
+  /*! 
+   * \brief calculates the volume of an element in initial configuration
+   * 
+   * \return physical volume of the element in initial configuration (without any displacement)
+   */
+  double ElementVolume(
+      const DRT::Element&           ele            ///< the element whose physical volume we want to compute
+      );
 
 } // namespace XFEM
 

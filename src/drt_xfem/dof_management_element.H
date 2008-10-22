@@ -20,14 +20,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
   
-  //! Allows to distinguish between normal assembly and xfem assembly
-  enum AssemblyType
-  {
-    standard_assembly,
-    xfem_assembly
-  };
-  
-  
   /*!
    * \brief He knows everything about the XFEM enrichments for a particular interface setup for one given element
    * 
@@ -246,14 +238,6 @@ namespace XFEM
       //! private copy constructor
       ElementDofManager(const ElementDofManager& old);
   };
-  
-  
-  //! return assembly type depending on the DOF distribution
-  XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
-      const ElementDofManager&   eleDofManager,
-      const int                  numnode,
-      const int*                 nodeids
-  );
   
 } // namespace XFEM
 
