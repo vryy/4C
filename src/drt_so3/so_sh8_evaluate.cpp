@@ -32,6 +32,7 @@ Maintainer: Moritz Frenzel
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -353,6 +354,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 
@@ -364,11 +370,16 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         // alpha := alphao
         LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao);
       }
-      // Update of history for visco material
+      // Reset of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
       if (mat->MaterialType() == m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Reset();
+      }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
       }
     }
@@ -714,6 +725,25 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
     Epetra_SerialDenseMatrix defgrd_epetra; // Caution!! empty!!
+//#define disp_based_F
+#ifdef disp_based_F
+    defgrd_epetra.Shape(NUMDIM_SOH8,NUMDIM_SOH8);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
+    invJ.Multiply(derivs[gp],xrefe);
+    invJ.Invert();
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ,derivs[gp]);
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd;
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+    for (int i = 0; i < NUMDIM_SOH8; ++i) {
+      for (int j = 0; j < NUMDIM_SOH8; ++j) {
+        defgrd_epetra(i,j) = defgrd(i,j);
+      }
+    }
+#endif
     soh8_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&defgrd_epetra,gp,params);
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);

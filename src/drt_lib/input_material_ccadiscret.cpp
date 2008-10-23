@@ -581,6 +581,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("RELAX"       ,&(localmat.m.visconeohooke->relax)      ,&ierr);
       frdouble("THETA"       ,&(localmat.m.visconeohooke->theta)      ,&ierr);
    }
+   // Viscoelastic Anisotropic Fiber material law
+   frchk("MAT_VISCOANISO",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp      = m_viscoanisotropic;
+      localmat.m.viscoanisotropic = new VISCOANISOTROPIC();
+      frdouble("KAPPA", &(localmat.m.viscoanisotropic->kappa),&ierr);
+      frdouble("MUE", &(localmat.m.viscoanisotropic->mue),&ierr);
+      frdouble("DENS", &(localmat.m.viscoanisotropic->density),&ierr);
+      frdouble("K1", &(localmat.m.viscoanisotropic->k1),&ierr);
+      frdouble("K2", &(localmat.m.viscoanisotropic->k2),&ierr);
+      frdouble("GAMMA", &(localmat.m.viscoanisotropic->gamma),&ierr);
+      frdouble("BETA_ISO", &(localmat.m.viscoanisotropic->beta[0]),&ierr);
+      frdouble("BETA_ANISO", &(localmat.m.viscoanisotropic->beta[1]),&ierr);
+      frdouble("RELAX_ISO", &(localmat.m.viscoanisotropic->relax[0]),&ierr);
+      frdouble("RELAX_ANISO", &(localmat.m.viscoanisotropic->relax[1]),&ierr);
+   }
    // Continuum Chain Network material law
    frchk("MAT_CONTCHAINNETW",&ierr);
    if (ierr==1)

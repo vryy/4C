@@ -946,6 +946,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/hyperpolyconvex_ogden.o \
                 src/drt_mat/neohooke.o \
                 src/drt_mat/visconeohooke.o \
+                src/drt_mat/viscoanisotropic.o \
                 src/drt_mat/aaaneohooke.o \
                 src/drt_mat/anisotropic_balzani.o \
                 src/drt_mat/mooneyrivlin.o \

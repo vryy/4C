@@ -41,6 +41,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/hyperpolyconvex_ogden.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/biocell.H"
@@ -114,6 +115,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       break;
     }
+    case m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
+    {
+      MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = visco->Density();
+
+      break;
+    }
     case m_contchainnetw: /*------------ Continuum Chain Network Material */
     {
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
@@ -127,7 +136,43 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      remo->Evaluate(glstrain,*defgrd,gp,params,cmat,stress);
+//      // Check if we use EAS
+//      if (eastype_ != soh8_easnone)
+//      {
+//        // In this case, we have to calculate the "enhanced" deformation gradient
+//        // from the enhanced GL strains with the help of two polar decompositions
+//
+//        // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
+//        // -> get C_enh from enhanced GL strains
+//        LINALG::SerialDenseMatrix C_enh(NUMDIM_SOH8,NUMDIM_SOH8);
+//        for (int i = 0; i < NUMDIM_SOH8; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
+//        // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+//        C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
+//        C_enh(1,2) =  (*glstrain)(4);  C_enh(2,1) =  (*glstrain)(4);
+//        C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
+//
+//        // -> polar decomposition of (U^mod)^2
+//        LINALG::SerialDenseMatrix Q(NUMDIM_SOH8,NUMDIM_SOH8);
+//        LINALG::SerialDenseMatrix S(NUMDIM_SOH8,NUMDIM_SOH8);
+//        LINALG::SerialDenseMatrix VT(NUMDIM_SOH8,NUMDIM_SOH8);
+//        SVD(C_enh,Q,S,VT); // Singular Value Decomposition
+//        LINALG::SerialDenseMatrix U_enh(NUMDIM_SOH8,NUMDIM_SOH8);
+//        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
+//        for (int i = 0; i < NUMDIM_SOH8; ++i) S(i,i) = sqrt(S(i,i));
+//        temp.Multiply('N','N',1.0,Q,S,0.0);
+//        U_enh.Multiply('N','N',1.0,temp,VT,0.0);
+//
+//        // Second step: determine rotation tensor R from F (F=R*U)
+//        // -> polar decomposition of displacement based F
+//        SVD(*defgrd,Q,S,VT); // Singular Value Decomposition
+//        LINALG::SerialDenseMatrix R(NUMDIM_SOH8,NUMDIM_SOH8);
+//        R.Multiply('N','N',1.0,Q,VT,0.0);
+//
+//        // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
+//        defgrd->Multiply('N','N',1.0,R,U_enh,0.0);
+//      }
+
+      remo->Evaluate(glstrain,*defgrd,gp,params,cmat,stress,this->Id());
       *density = remo->Density();
 
       break;

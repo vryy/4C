@@ -57,6 +57,7 @@ typedef struct _MATERIAL
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
      struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
+     struct _VISCOANISOTROPIC *viscoanisotropic; /* Viscous Anisotropic fiber material */
      struct _CONTCHAINNETW    *contchainnetw; /* Continuum Chain Network material law */
      struct _ARTWALLREMOD     *artwallremod;  /* Arterial Wall Material Law with Remodeling */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
@@ -622,7 +623,7 @@ typedef struct _HYPER_POLY_OGDEN
      DOUBLE                    poisson;       /* Poisson ratio */
      DOUBLE                    c;             /* ground substance parameter */
      DOUBLE                    k1;	      /* fiber parameter */
-     DOUBLE                    k2;            /* fiber parameter */  
+     DOUBLE                    k2;            /* fiber parameter */
      DOUBLE                    density;        /* material specific weight */
 } HYPER_POLY_OGDEN;
 /*----------------------------------------------------------------------*
@@ -688,6 +689,20 @@ typedef struct _VISCONEOHOOKE
      DOUBLE                    relax;
      DOUBLE                    theta;
 } VISCONEOHOOKE;
+/*----------------------------------------------------------------------*
+ | Viscous Anisotropic Fiber material                          tk 10/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _VISCOANISOTROPIC
+{
+     DOUBLE                    kappa;
+     DOUBLE                    mue;
+     DOUBLE                    density;
+     DOUBLE                    k1;
+     DOUBLE                    k2;
+     DOUBLE                    gamma;
+     DOUBLE                    beta[2];
+     DOUBLE                    relax[2];
+} VISCOANISOTROPIC;
 /*----------------------------------------------------------------------*
  | Continuum Chain Network Material Law                       maf 06/08 |
  *----------------------------------------------------------------------*/

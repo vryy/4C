@@ -80,6 +80,7 @@ extern "C"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/convecdiffus.H"
@@ -554,6 +555,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     case ParObject_ViscoNeoHooke:
     {
       MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
+      visco->Unpack(data);
+      return visco;
+    }
+    case ParObject_ViscoAnisotropic:
+    {
+      MAT::ViscoAnisotropic* visco = new MAT::ViscoAnisotropic();
       visco->Unpack(data);
       return visco;
     }

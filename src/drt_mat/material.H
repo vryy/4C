@@ -28,6 +28,8 @@ Maintainer: Lena Wiechert
 namespace MAT
 {
 
+  const int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
+
 /// Interface class for materials in elements
 /*!
 

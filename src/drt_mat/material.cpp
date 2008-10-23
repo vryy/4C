@@ -25,6 +25,7 @@ Maintainer: Lena Wiechert
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
 #include "visconeohooke.H"
+#include "viscoanisotropic.H"
 #include "contchainnetw.H"
 #include "artwallremod.H"
 #include "carreauyasuda.H"
@@ -81,6 +82,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new MooneyRivlin(actmat));
   case m_visconeohooke:
     return Teuchos::rcp(new ViscoNeoHooke(actmat));
+  case m_viscoanisotropic:
+    return Teuchos::rcp(new ViscoAnisotropic(actmat));
   case m_contchainnetw:
     return Teuchos::rcp(new ContChainNetw(actmat));
   case m_artwallremod:

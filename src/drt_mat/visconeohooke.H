@@ -19,8 +19,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-const int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
-
 using namespace Teuchos;
 
 namespace MAT
@@ -53,7 +51,7 @@ namespace MAT
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
       unique parobject id delivered by UniqueParObjectId() which will then
-      identify the exact class on the receiving processor. 
+      identify the exact class on the receiving processor.
       This material contains history variables, which are packed for restart purposes.
 
       \param data (in/out): char vector to store class information
@@ -68,7 +66,7 @@ namespace MAT
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
-      History data is unpacked in restart. 
+      History data is unpacked in restart.
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -79,52 +77,52 @@ namespace MAT
 
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
-    
+
     /// Initialize internal stress variables
     void Initialize
     (
       const int numgp  ///< number of Gauss points
     );
-    
+
     /// Update internal stress variables
     void Update();
 
-    /// Reset internal stress variables 
+    /// Reset internal stress variables
     void Reset();
-    
-    /// Evaluate material 
+
+    /// Evaluate material
     void Evaluate
     (
       const Epetra_SerialDenseVector* glstrain,  ///<green lagrange strain
       const int gp,   ///< number of Gauss points
       Teuchos::ParameterList& params,  ///< parameter list for communication
       Epetra_SerialDenseMatrix* cmat,  ///< material stiffness matrix
-      Epetra_SerialDenseVector* stress  ///< 2nd PK-stress 
+      Epetra_SerialDenseVector* stress  ///< 2nd PK-stress
     );
 
     /// Return density
-    double Density() 
-    { 
+    double Density()
+    {
       return matdata_->m.visconeohooke->density;
     };
-    
+
     /// Check if history variables are already initialized
     bool Initialized() const
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
-    
+
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
-    
+
     /// visco history stresses
     Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_; ///< current stress
     Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_; ///< stress of last converged state
     Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;  ///< current artificial stress
     Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;  ///< artificial stress in last converged state
-    
+
     bool isinit_;  ///< indicates if #Initialize routine has been called
-    
+
   };
 }
 

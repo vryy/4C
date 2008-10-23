@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -375,6 +376,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 
@@ -397,6 +403,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       if (mat->MaterialType() == m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Reset();
+      }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
       }
     }
@@ -680,7 +691,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   // here we already get the inverse transposed T0
   LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> T0invT;  // trafo matrix
 
-  if (eastype_ != soh8_easnone) 
+  if (eastype_ != soh8_easnone)
   {
     /*
     ** EAS Update of alphas:
@@ -697,7 +708,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
     // we need the (residual) displacement at the previous step
     LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
-    for (int i = 0; i < NUMDOF_SOH8; ++i) 
+    for (int i = 0; i < NUMDOF_SOH8; ++i)
     {
       res_d(i) = residual[i];
     }
@@ -1344,7 +1355,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const vector<double>& disp,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
   const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  
+
   // update element geometry
   LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;  // current  coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i)
