@@ -582,6 +582,10 @@ double XFEM::ElementVolume(
       return ElementVolumeT<DRT::Element::hex20>(ele);
     case DRT::Element::hex27:
       return ElementVolumeT<DRT::Element::hex27>(ele);
+    case DRT::Element::tet4:
+      return ElementVolumeT<DRT::Element::tet4>(ele);
+    case DRT::Element::tet10:
+      return ElementVolumeT<DRT::Element::tet10>(ele);
     default:
       dserror("add you distype here...");
       exit(1);
