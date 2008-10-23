@@ -90,6 +90,59 @@ namespace SCATRA
   }
 
 
+    //! for each distype there should be an m_k needed for stabilization computation
+    template<DRT::Element::DiscretizationType DISTYPE>
+    double MK()
+    {
+      switch (DISTYPE)
+      {
+        case DRT::Element::tet4:
+        case DRT::Element::pyramid5:
+        case DRT::Element::hex8:
+        case DRT::Element::wedge6:
+          return 0.333333333333333333333;
+          break;
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+        case DRT::Element::tet10:
+        case DRT::Element::wedge15:
+          return 0.083333333333333333333;
+          break;
+        default:
+          dserror("type unknown!\n");
+      }   
+      return -1.0;
+    }
+
+
+    //! get one point gauss rule to calculate tau at element center
+    template<DRT::Element::DiscretizationType DISTYPE>
+    DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
+    {
+      switch (DISTYPE)
+      {
+        case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+          return DRT::UTILS::intrule_hex_1point;
+          break;
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
+          return DRT::UTILS::intrule_tet_1point;
+          break;
+        case DRT::Element::wedge6:
+        case DRT::Element::wedge15:
+          return DRT::UTILS::intrule_wedge_1point;
+          break;
+        case DRT::Element::pyramid5:
+          return DRT::UTILS::intrule_pyramid_1point;
+          break;
+        default:
+          dserror("invalid discretization type for condif3");
+          return DRT::UTILS::intrule3D_undefined;
+      }
+    }
+
 } // namespace SCATRA
 
 #endif

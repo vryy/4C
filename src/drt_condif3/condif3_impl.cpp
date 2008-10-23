@@ -595,31 +595,10 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
 {
   /*------------------------------------------------------- initialize ---*/
   // use one point gauss rule to calculate tau at element center
-  DRT::UTILS::GaussRule3D integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
-  switch (distype)
-  {
-  case DRT::Element::hex8:
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-    integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
-    break;
-  case DRT::Element::tet4:
-  case DRT::Element::tet10:
-    integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
-    break;
-  case DRT::Element::wedge6:
-  case DRT::Element::wedge15:
-    integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
-    break;
-  case DRT::Element::pyramid5:
-    integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
-    break;
-  default:
-    dserror("invalid discretization type for fluid3");
-  }
+  DRT::UTILS::GaussRule3D intrule_stabili = SCATRA::getIntegrationRuleForStabilization<distype>();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(intrule_stabili);
 
   // prepare the standard FE stuff for this single integration point
   // we do not need second derivatives for the calculation of tau
@@ -694,27 +673,10 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   const double hk = pow(vol,(1.0/3.0));
 
   // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-  case DRT::Element::tet4:
-  case DRT::Element::pyramid5:
-  case DRT::Element::hex8:
-  case DRT::Element::wedge6:
-    mk = 0.333333333333333333333;
-    break;
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::tet10:
-  case DRT::Element::wedge15:
-    mk = 0.083333333333333333333;
-    break;
-  default:
-    dserror("type unknown!\n");
-  }
+  const double mk = SCATRA::MK<distype>();
 
   // get (density*specific heat capacity-weighted) velocity at element center
-  velint_.MultiplyNN(evelnp,funct_);
+  velint_.Multiply(evelnp,funct_);
 
   // some necessary parameter definitions
   double vel_norm, epe1, epe2, xi1, xi2;
