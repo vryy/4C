@@ -94,7 +94,7 @@ namespace MAT
     void Evaluate
     (
       const Epetra_SerialDenseVector* glstrain,  ///<green lagrange strain
-      const int gp,   ///< number of Gauss points
+      const int gp,   ///< current Gauss point
       Teuchos::ParameterList& params,  ///< parameter list for communication
       Epetra_SerialDenseMatrix* cmat,  ///< material stiffness matrix
       Epetra_SerialDenseVector* stress  ///< 2nd PK-stress

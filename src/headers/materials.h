@@ -700,6 +700,7 @@ typedef struct _VISCOANISOTROPIC
      DOUBLE                    k1;
      DOUBLE                    k2;
      DOUBLE                    gamma;
+     INT                       numstresstypes;
      DOUBLE                    beta[2];
      DOUBLE                    relax[2];
 } VISCOANISOTROPIC;

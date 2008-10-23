@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 #include "so_sh8.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -63,6 +64,9 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   } else if (Material()->MaterialType() == m_anisotropic_balzani){
     MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
     balz->Setup();
+  } else if (Material()->MaterialType() == m_viscoanisotropic){
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_SOH8);
   }
 
   // read possible gaussian points, obsolete for computation

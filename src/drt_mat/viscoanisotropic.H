@@ -100,7 +100,7 @@ namespace MAT
     void Evaluate
     (
       const Epetra_SerialDenseVector* glstrain,  ///<green lagrange strain
-      const int gp,   ///< number of Gauss points
+      const int gp,   ///< current Gauss point
       Teuchos::ParameterList& params,  ///< parameter list for communication
       Epetra_SerialDenseMatrix* cmat,  ///< material stiffness matrix
       Epetra_SerialDenseVector* stress  ///< 2nd PK-stress
@@ -121,11 +121,19 @@ namespace MAT
     /// my material parameters
     MATERIAL* matdata_;
 
+    // internal variables for fibers
+    Teuchos::RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp
+    Teuchos::RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp
+
     // visco history stresses for every gausspoint and every stress type
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+//    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+//    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+//    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+//    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_; ///< current stress
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;  ///< current artificial stress
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if material is initialized
 

@@ -597,6 +597,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("BETA_ANISO", &(localmat.m.viscoanisotropic->beta[1]),&ierr);
       frdouble("RELAX_ISO", &(localmat.m.viscoanisotropic->relax[0]),&ierr);
       frdouble("RELAX_ANISO", &(localmat.m.viscoanisotropic->relax[1]),&ierr);
+      localmat.m.viscoanisotropic->numstresstypes = 3;
    }
    // Continuum Chain Network material law
    frchk("MAT_CONTCHAINNETW",&ierr);
