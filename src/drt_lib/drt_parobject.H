@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_parobject.H
 
-<pre>
+drt_parser.cpp<pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
