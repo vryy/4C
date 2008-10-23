@@ -14,6 +14,14 @@
 \usepackage{multicol}  % Multi-column mode
 \usepackage{multirow}  % Make an entry that will span multiple rows of a table.
 \usepackage[nostruktxf]{styles/struktex/struktex}  % Nassi-Sheiderman flow charts
+\usepackage{bibunits}  % allow individual references at each chapter
+\let\stdthebibliography\thebibliography
+\renewcommand{\thebibliography}{%
+  \let\chapter\section
+  \stdthebibliography}
+\makeatletter
+\renewcommand{\@bibunitname}{\jobname.\the\@bibunitauxcnt}
+\makeatother
 
 \newcommand{\ccarat}{{\tt ccarat}}
 \newcommand{\baci}{\textsc{BACI}}
@@ -55,6 +63,11 @@
 
 %------------------------------------------------
 \begin{document}
+
+%------------------------------------------------
+\bibliographyunit[\chapter]
+%\bibliography{}
+\bibliographystyle*{plain}
 
 %------------------------------------------------
 \frontmatter

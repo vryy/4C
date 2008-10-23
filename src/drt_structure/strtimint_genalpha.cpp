@@ -45,6 +45,34 @@ enum STR::TimIntGenAlpha::MidAverageEnum STR::TimIntGenAlpha::MapMidAvgStringToE
 }
 
 /*----------------------------------------------------------------------*/
+STR::TimIntGenAlpha::VerifyCoeff()
+{
+  // beta
+  if ( (beta_ <= 0.0) or (beta_ > 0.5) )
+    dserror("beta out of range (0.0,0.5]")
+  else
+    std::cout << "   beta = " << beta_ << std::endl;
+  // gamma
+  if ( (gamma_ <= 0.0) or (gamma_ > 1.0) )
+    dserror("gamma out of range (0.0,1.0]")
+  else
+    std::cout << "   gamma = " << gamma_ << std::endl;
+  // alpha_f
+  if ( (alphaf_ <= 0.0) or (alphaf_ > 1.0) )
+    dserror("alpha_f out of range [0.0,1.0)")
+  else
+    std::cout << "   alpha_f = " << alphaf_ << std::endl;
+  // alpha_m 
+  if ( (alpham_ <= 0.0) or (alpham_ > 1.0) )
+    dserror("alpha_m out of range [0.0,1.0)")
+  else
+    std::cout << "   alpha_m = " << alpham_ << std::endl;
+
+  // done
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntGenAlpha::TimIntGenAlpha
 (
@@ -83,15 +111,12 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   fviscm_(Teuchos::null),
   frobin_(Teuchos::null)
 {
-  // info to user : OST --- your oriental scheme
+  // info to userxs
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha" << std::endl
-              << "   beta = " << beta_ << std::endl
-              << "   gamma = " << gamma_ << std::endl
-              << "   alpha_f = " << alphaf_ << std::endl
-              << "   alpha_m = " << alpham_ << std::endl
-              << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
+    std::cout << "with generalised-alpha" << std::endl;
+    VerifyCoeff();
+    std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
   }

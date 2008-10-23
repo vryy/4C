@@ -7,7 +7,7 @@
 
 %%
 %%::::::::::::::::::::::::::::dynamics
-\chapter{Structural dynamics}\label{struct_dynamics:chap}
+\chapter{Structural dynamics}\label{strdyn:chap}
 
 %% This documents should be split to several files which describe the
 %% individual time integration schemes. Right now, we do not have readily
@@ -303,20 +303,20 @@ Limit maximally allowed step size reduction attempts ($>0$)
 \subsection{Order of accuracy}\label{strdyn:sec:accuracy}
 The difference of an exact solution compared to an approximate solution
 is called \intro{global error} $\vct{g}$ (\name{Hairer} \etal{}
-\cite{hairer87}, \name{Deuflhard} \etal{} \cite{deuflhard94})\@. The global
+\cite{strdyn:hairer87}, \name{Deuflhard} \etal{} \cite{strdyn:deuflhard94})\@. The global
 error at time 
 $t_{n+1}$ 
 can be written as
-\begin{equation}\label{global-error}
+\begin{equation}\label{strdyn:eq:global-error}
   \vct{g}_{n+1} = \vct{y}(t_{n+1}) - \vct{y}_{n+1}
   \period
 \end{equation}
 
 Although techniques exist to estimate the global
-error (\name{Hairer} \etal{} \cite{hairer87, hairer91}), it is easier to deal
+error (\name{Hairer} \etal{} \cite{strdyn:hairer87, strdyn:hairer91}), it is easier to deal
 with 
 the \intro{local discretisation error} (\cf{} \name{Hairer} \etal{}
-\cite{hairer87}, \name{Deuflhard} \etal{} \cite{deuflhard94}; it is
+\cite{strdyn:hairer87}, \name{Deuflhard} \etal{} \cite{strdyn:deuflhard94}; it is
 abbreviated with LDE)\@.  
 The global error can be split in a local part and a propagation
 part. The local part or the local discretisation error, $\vct{l}$, 
@@ -327,7 +327,7 @@ previous steps. As a consequence, the global error coincides with the
 local discretisation error for the very first integration step
 $\vct{g}_1 = \vct{l}_1$, because of the shared initial conditions
 $\vct{y}(t_0) = \vct{y}_0$
-\begin{equation}\label{eq:adap:ge-lde-prop}
+\begin{equation}\label{strdyn:eq:adap:ge-lde-prop}
 \begin{split}
   \vct{g}_{n+1}
   & = \vct{y}(t_{n+1}) - \vct{y}_{n+1}
@@ -348,7 +348,7 @@ time integration method but applied to exact rather than
 approximate values. A \name{Taylor} expansion of the local discretisation error leads to an
 expression 
 in $\dt_n^{p+1}$, where $p$ is the order of accuracy of the scheme:
-\begin{equation} \label{eq:adap:lde}
+\begin{equation} \label{strdyn:eq:lde}
   \vct{l}_{n+1} 
   = \OO(\Delta t_n^{p+1})
   = \vct{c}(t_n)\, \dt_n^{p+1} + \OO(\dt_n^{p+2})
@@ -380,18 +380,18 @@ Works generally.
 %%----------------------------
 \subsubsection{Newmark's method}
 
-Newmark's method is a family of schemes with two parameters $\gamma\in[0,1]$
-and $\beta\in[0,\frac{1}{2}]$. The basic assumption of Newmark's method is a linear approximation of the acceleration $\vct{A}$ as shown in Figure~\ref{fig:lindyn-newmark}
+Newmark's method \cite{strdyn:newmark59} is a family of schemes with two parameters $\gamma\in[0,1]$
+and $\beta\in[0,\frac{1}{2}]$. The basic assumption of Newmark's method is a linear approximation of the acceleration $\vct{A}$ as shown in Figure~\ref{strdyn:fig:lindyn-newmark}
 \begin{figure}[H]
 \begin{center}
-  \subfigure[Acceleration]{ \label{fig:lindyn-newmark_acceleration}
+  \subfigure[Acceleration]{ \label{strdyn:fig:lindyn-newmark_acceleration}
   \includegraphics[width=0.32\textwidth]{gfx/lindyn-newmark_acceleration}}
-  \subfigure[Velocity]{\label{fig:lindyn-newmark_velocity}
+  \subfigure[Velocity]{\label{strdyn:fig:lindyn-newmark_velocity}
   \includegraphics[width=0.32\textwidth]{gfx/lindyn-newmark_velocity}}
-  \subfigure[Displacement]{\label{fig:lindyn-newmark_displacement}
+  \subfigure[Displacement]{\label{strdyn:fig:lindyn-newmark_displacement}
   \includegraphics[width=0.32\textwidth]{gfx/lindyn-newmark_displacement}}
   \caption{Newmark scheme approximations}
-  \label{fig:lindyn-newmark}
+  \label{strdyn:fig:lindyn-newmark}
 \end{center}
 \end{figure}
 \begin{equation*}
@@ -441,7 +441,7 @@ Now we can express the new time steps velocity and acceleration solely from old 
 \end{eqnarray*}
 
 The final pair of equations can be rewritten such that (with $\beta\in[0,\frac{1}{2}]$):
-\begin{equation}\label{eq:strdyn:newmark}
+\begin{equation}\label{strdyn:eq:newmark}
 \begin{aligned}
 & \left\{\begin{array}{rcl}
   \dfrac{\vct{D}_{n+1} - \vct{D}_n}{\Dt}
@@ -481,13 +481,13 @@ $\ndof$-dimensional system of nonlinear equations in the unknown displacements
 $\vct{D}_{n+1}$. This statements can be clarified by writing Newmark's method
 such that the velocity and acceleration at $t_{n+1}$ are given depending on the
 displacements $\vct{D}_{n+1}$:
-\begin{align}\label{eq:newmark-velnew}
+\begin{align}\label{strdyn:eq:newmark-velnew}
    \vct{V}_{n+1}(\vct{D}_{n+1})
 &  = \frac{\gamma}{\beta\, \Dt} \big( \vct{D}_{n+1} - \vct{D}_n \big)
    - \frac{\gamma-\beta}{\beta} \vct{V}_{n}
    - \frac{\gamma-2\beta}{2\beta}\Dt \vct{A}_n
    \comma
-\\ \label{eq:newmark-accnew}
+\\ \label{strdyn:eq:newmark-accnew}
    \vct{A}_{n+1}(\vct{D}_{n+1})
 &  = \frac{1}{\beta\, \Dt^2} \big( \vct{D}_{n+1} - \vct{D}_n \big)
    - \frac{1}{\beta\,\Dt} \vct{V}_{n}
@@ -498,7 +498,7 @@ displacements $\vct{D}_{n+1}$:
 %%
 %%----------------------------
 \subsubsection{Generalised-alpha method}
-The key idea behind the generalised-alpha method is a modification of the
+The key idea behind the generalised-alpha method \cite{strdyn:chung95} is a modification of the
 time point at
 which the discretised equations of motion is evaluated. Newmark's method
 searches for equilibrium at the end of the current time step $[t_n,t_{n+1}]$,
@@ -515,7 +515,7 @@ equation of motion becomes at the generalised mid-point\\
 
 The mid accelerations, velocities, displacements and external forces are
 defined as linear combinations of the corresponding start and end vector:\\
-\begin{equation}\label{eq:genalpha-middef}
+\begin{equation}\label{strdyn:eq:genalpha-middef}
 \begin{aligned}
 &   \vct{A}_{n+1-\alpha_\text{m}}
     := \big( 1- \alpha_\text{m} \big) \vct{A}_{n+1}
@@ -551,18 +551,18 @@ The
 end-point accelerations and velocities, i.e. $\vct{A}_{n+1}$ and
 $\vct{V}_{n+1}$, are related linearly to the end-point displacements
 $\vct{D}_{n+1}$ by 
-Newmark's method \eqref{eq:newmark-velnew} and
-\eqref{eq:newmark-accnew}. Therefore, the mid-equilibrium can be still thought
+Newmark's method \eqref{strdyn:eq:newmark-velnew} and
+\eqref{strdyn:eq:newmark-accnew}. Therefore, the mid-equilibrium can be still thought
 of a system of nonlinear equations in $\vct{D}_{n+1}$. Let us again write the
 unknown mid-velocities and mid-accelerations in terms of $\vct{D}_{n+1}$:
-\begin{align}\label{eq:genalpha-velnew}
+\begin{align}\label{strdyn:eq:genalpha-velnew}
    \vct{V}_{n+1-\alpha_\text{f}}(\vct{D}_{n+1})
 &  = \frac{(1-\alpha_\text{f})\gamma}{\beta\, \Dt} \big( \vct{D}_{n+1} -
      \vct{D}_n \big) 
    - \frac{(1-\alpha_\text{f})\gamma-\beta}{\beta} \vct{V}_{n}
    - \frac{(1-\alpha_\text{f})(\gamma-2\beta)}{2\beta}\Dt \vct{A}_n
    \comma
-\\ \label{eq:genalpha-accnew}
+\\ \label{strdyn:eq:genalpha-accnew}
    \vct{A}_{n+1-\alpha_\text{m}}(\vct{D}_{n+1})
 &  = \frac{1-\alpha_\text{m}}{\beta\, \Dt^2} \big( \vct{D}_{n+1} - \vct{D}_n \big)
    - \frac{1-\alpha_\text{m}}{\beta\,\Dt} \vct{V}_{n}
@@ -677,8 +677,8 @@ but it is convenient to calculate $\vct{R}_\effdyn(\vct{D}_{n+1}^i)$ using
 the 
 current mid-displacements, -velocities and -accelerations. These
 current vectors can be calculated based on the formulas given in
-\eqref{eq:genalpha-middef} or \eqref{eq:genalpha-velnew} and
-\eqref{eq:genalpha-accnew}.  Optionally, they can be evaluated with an update
+\eqref{strdyn:eq:genalpha-middef} or \eqref{strdyn:eq:genalpha-velnew} and
+\eqref{strdyn:eq:genalpha-accnew}.  Optionally, they can be evaluated with an update
 mechanism with these increments
 \begin{equation}
 \begin{aligned}
@@ -786,28 +786,34 @@ According to Section \ref{strdyn:sec:accuracy} we can deduce the order of accura
    \vct{l}_{n+1}^{\text{GA}}
 &  = \vct{D}(t_{n+1}) - \vct{\Psi}_{n+1,n}^{\text{GA}} \vct{D}(t_n)
 \\
-&  = \dt^3 \Big( \frac{1}{6} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \beta \Big) 
+&  = \frac{\dt^3}{2} \Big( \frac{1}{3} - 2\beta + \alpha_\text{f} - \alpha_\text{m}\Big) 
    \dotvct{A}(t_n)
-   + \dt^4 \Big( \frac{1}{6} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \beta \Big)  
+\\
+&  + \frac{\dt^4}{4} \Big( \frac{1}{6} - 2\beta\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)  
    \ddotvct{A}(t_n) 
-   + \OO(\dt^5)
+\\
+&   + \OO(\dt^5)
 \end{align}
-This equation implies: The displacements are always at least $2$nd order accurate and they are even $3$rd order accurate if $\frac{1}{6} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \beta = 0$. 
+This equation implies: The displacements are always at least $2$nd order accurate and they are even $3$rd order accurate if $\frac{1}{3} - 2\beta + \alpha_\text{f} - \alpha_\text{m} = 0$. 
 
 Since the governing equations are a set of second order ODEs, we provide the LDE of the velocities as well. These are
 \begin{align}
    \dotvct{l}_{n+1}^{\text{GA}}
 &  = \vct{V}(t_{n+1}) - \dotvct{\Psi}_{n+1,n}^{\text{GA}} \vct{V}(t_n)
 \\
-&  = \dt^2 \Big( \frac{1}{2} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \gamma \Big) 
+&  = \dt^2 \Big( \frac{1}{2} - \gamma + \alpha_\text{f} - \alpha_\text{m} \Big) 
    \dotvct{A}(t_n)
-   + \dt^3 \Big( \frac{1}{6} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \gamma \Big)  
+\\
+&  + \frac{\dt^3}{2} \Big( \frac{1}{3} - \gamma\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)  
    \ddotvct{A}(t_n) 
-   + \OO(\dt^4)
+\\
+&   + \OO(\dt^4)
 \end{align}
-in which $\dotvct{l}_{n+1}^{\text{GA}}$ and $\dotvct{\Psi}_{n+1,n}^{\text{GA}}$ do \emph{not} imply a time differentation -- the dot is merely a notation. It can be seen the velocities are $2$nd order accurate if $\frac{1}{2} - \frac{1-\alpha_\text{f}}{1-\alpha_\text{m}} \gamma$ otherwise only $1$st order.
+in which $\dotvct{l}_{n+1}^{\text{GA}}$ and $\dotvct{\Psi}_{n+1,n}^{\text{GA}}$ do \emph{not} imply a time differentation -- the dot is merely a notation. It can be seen the velocities are $2$nd order accurate if $\frac{1}{2} - \gamma + \alpha_\text{f} - \alpha_\text{m}$ otherwise only $1$st order.
 
-As stated before, the semi-discrete equations of motion are second order ODE, thus both LDEs have to be taken into account and the worse value determines the overall order of accuracy according to \name{Hairer} \etal{} \cite{hairer87, hairer91}). 
+The order of accuracy of the generalised-alpha method follows the lower value of the order of the displacements or velocities.
+
+As stated before, the semi-discrete equations of motion are second order ODE, thus both LDEs have to be taken into account and the worse value determines the overall order of accuracy according to \name{Hairer} \etal{} \cite{strdyn:hairer87, strdyn:hairer91}). 
 
 \subsection{Shortcomings in \ccarat{} implementation}
 Individual/No load curves. Currently, all external loads are scaled with
@@ -887,12 +893,12 @@ Algorithm:
 %%............................Adaptivity
 \section{Time adaptivity}
 
+This section is an excerpt of \cite{strdyn:bornemann03}.
+
 \subsection{Theory of time adaptivity based on indication of the local discretisation error}
 Different ways exist to adapt the time step size $\Dt$, here we only apply an \lat{a posteriori} method utilising the local discretisation error (LDE). 
 
-
-
-\subsubsection{Step size adaptivity} \label{sec:adaptivity}
+\subsubsection{Step size adaptivity} \label{strdyn:sec:adaptivity}
 Local error control is based on requiring the estimated local
 discretisation error to stay below a user-defined tolerance
 $\tol$\@. If the local discretisation error, resulting from a time integration with time
@@ -904,45 +910,44 @@ found. Then the `optimal' time step size might be used as an initial value
 for the next time step size $\Delta t_{n+1} = \Delta t_n^*$\@. 
 
 Therefore the basic requirement for the local discretisation error is
-\begin{equation} \label{eq:lde-leq-tol}
+\begin{equation} \label{strdyn:eq:lde-leq-tol}
   \Abs{\vct{l}_{n+1}(\dt_n)} \leq \tol
 %%  \comma\quad \tol > 0
   \comma
 \end{equation}
 whereby the dimensionless tolerance $\tol>0$ is user-prescribed. The above
 described procedure is contained in 
-Figure~\ref{fig:adap-sch}\@. 
+Figure~\ref{strdyn:fig:adap-sch}\@. 
 \begin{figure}[ht!]
 \begin{center}
 \includegraphics[width=0.6\textwidth]{gfx/adap-sch}
 \caption{Diagram of LDE-based step size adaptivity}
-\label{fig:adap-sch}
+\label{strdyn:fig:adap-sch}
 \end{center}
 \end{figure}
 Different norms, such as 
 average, root-mean-square or infinity norm, can be used to obtain a
-dimensionless scalar from the local discretisation error vector
-(Appendix~\ref{app:norms})\@. 
+dimensionless scalar from the local discretisation error vector.
 
 The `optimal' step size
 $\Delta t_n^*$ is derived in the following equations. The starting point is
 the usual definition of the local discretisation error in which the local discretisation error obtained with $\dt_n$ is
 assumed to be larger than $\tol$:
 \begin{gather}
-  \label{LDE-old-step-size-greater-tol}
+  \label{strdyn:eq:LDE-old-step-size-greater-tol}
   \Abs{ \vct{l}_{n+1}(\Delta t_n) }
   \approx \vct{C}(t_n)\, \Delta t_n^{p+1} 
   \geq \tol
   \comma
 \\
-  \label{LDE-new-step-size-approx-tol}
+  \label{strdyn:eq:LDE-new-step-size-approx-tol}
   \Abs{ \vct{l}_{n+1}(\Delta t_n^*) }
   \approx \vct{C}(t_n)\, {\Delta t_n^*}^{p+1} 
   \approx \tol
   \period
 \end{gather}
-Equation \eqref{LDE-new-step-size-approx-tol} can be transformed to
-\begin{equation} \label{LDE-new-step-size-approx-tol-2}
+Equation \eqref{strdyn:LDE-new-step-size-approx-tol} can be transformed to
+\begin{equation} \label{strdyn:eq:LDE-new-step-size-approx-tol-2}
   \vct{C}(t_n)
   \approx \frac{\Abs{ \vct{l}_{n+1}(\Delta t_n^*) }}{{\Delta
   t_n^*}^{p+1}}
@@ -950,40 +955,40 @@ Equation \eqref{LDE-new-step-size-approx-tol} can be transformed to
   \period
 \end{equation}
 
-Introducing (\ref{LDE-new-step-size-approx-tol-2}) into
-(\ref{LDE-old-step-size-greater-tol}) results in
-\begin{equation}\label{new-step-size}
+Introducing \eqref{strdyn:eq:LDE-new-step-size-approx-tol-2} into
+\eqref{strdyn:eq:LDE-old-step-size-greater-tol} results in
+\begin{equation}\label{strdyn:eq:new-step-size}
   \Delta t_n^* \leq \sqrt[{p+1}]{\frac{\tol}{\Abs{
   \vct{l}_{n+1}(\Delta t_n) }}}\, \Delta t_n
   \period
 \end{equation}
 The `optimal' step size corresponds to the lower bound in
-\eqref{new-step-size}\@. 
+\eqref{strdyn:eq:new-step-size}\@. 
 
 Furthermore, the `optimal' step size might be more reliable if the
 tolerance is reduced by `safety' scale factors
-\begin{equation}\label{eq:new-step-size-scaled}
+\begin{equation}\label{strdyn:eq:new-step-size-scaled}
   \dt_n^\text{new}
   = \min\big\{ \dt_\text{max}, \max\{\min\big( r_\text{max}, \max(
   r_\text{min}, s r^*)\dt_n, \dt_\text{min} \} \big\}
   \period
 \end{equation}
 In the previous equation the `optimal' ratio is abbreviated with
-\begin{equation}\label{eq:new-step-size-optscal}
+\begin{equation}\label{strdyn:eq:new-step-size-optscal}
   r^* = \sqrt[{p+1}]{\frac{\tol}{\Abs{
   \vct{l}_{n+1}(\Delta t_n) }}}
   \period
 \end{equation}
-The step size $\dt_n^\text{new}$,  \eqref{eq:new-step-size-scaled},
+The step size $\dt_n^\text{new}$,  \eqref{strdyn:eq:new-step-size-scaled},
 replaces the `optimal' step size $\dt_n^*$ in 
-the algorithm (Figure \ref{fig:adap-sch})\@. The factor $r_\text{max}$
+the algorithm (Figure \ref{strdyn:fig:adap-sch})\@. The factor $r_\text{max}$
 limits the maximum size increase between two steps, $r_\text{min}$ bounds the
 decrease. 
 In the same spirit, a
 maximum and minimum step size, $\dt_\text{max}$ and $\dt_\text{min}$, is
 imposed to achieve a more robust algorithm. Sometimes, $p$ instead of $(p+1)$
 is 
-used in \eqref{eq:new-step-size-optscal} to reflect the order of the
+used in \eqref{strdyn:eq:new-step-size-optscal} to reflect the order of the
 global error. 
 \newline
 
@@ -1002,14 +1007,14 @@ The algorithms based on
 embedded \name{Runge}-\name{Kutta} methods are instances of such local error
 control with time step adaption.
 
-\subsection{\name{Zienkiewicz} and \name{Xie} indicator}\label{sec:zx}
-\name{Zienkiewicz} and \name{Xie} presented in \cite{zienkiewicz91} a local
+\subsection{\name{Zienkiewicz} and \name{Xie} indicator}\label{strdyn:sec:zx}
+\name{Zienkiewicz} and \name{Xie} presented in \cite{strdyn:zienkiewicz91} a local
 error indicator for the \name{Newmark} algorithm (Section
-\ref{sec:new})\@. The estimator advantageously uses the member which
+\ref{strdyn:sec:new})\@. The estimator advantageously uses the member which
 integrates the displacements with third-order accuracy, \ie{}
-$\beta=\frac{1}{6}$, $\gamma$ arbitrary, \cf{} \eqref{eq:new-lde-1}\@. The concept can be straight forwardly applied to the generalised-alpha method.
+$\beta=\frac{1}{6}$, $\gamma$ arbitrary, \cf{} \eqref{strdyn:eq:new-lde-1}\@. The concept can be straight forwardly applied to the generalised-alpha method.
 
-In essence, the general generalised-alpha method with $2$nd order accurate displacements (dubbed here GA2 with $\beta\neq\frac{1}{6}\cdot\frac{1-\alpha_\text{m}}{1-\alpha_\text{f}}$) is considered as the marching time integration scheme. Its $3$rd order accurate sibling GA3 is used as the auxiliary scheme to eventually obtain the
+In essence, the general generalised-alpha method with $2$nd order accurate displacements (dubbed here GA2) is considered as the marching time integration scheme. Its $3$rd order accurate sibling GA3 is used as the auxiliary scheme to eventually obtain the
 local discretisation error estimation/indication of the displacements. 
 
 The GA2 and GA3 methods are implicit schemes, hence a
@@ -1029,8 +1034,8 @@ The ZX method is defined as
   \period
 \end{equation*}
 The dependence of this algorithm on $\vct{D}_{n+1}^\text{GA2}$ is revealed
-by introducing \eqref{eq:new-algo}
-\begin{equation}\label{eq:zx-algo}
+by introducing \eqref{strdyn:eq:new-algo}
+\begin{equation}\label{strdyn:eq:zx-algo}
   \vct{D}_{n+1}^\text{ZX}
   = \frac{1}{6\beta} \Big( \vct{D}_{n+1}^\text{GA2}
   + (6\beta-1)(\vct{D}_n + \dt\vct{V}_n +
@@ -1039,7 +1044,7 @@ by introducing \eqref{eq:new-algo}
   \beta\neq\frac{1}{6}
   \period
 \end{equation}
-The local discretisation error of the ZX is based on \eqref{eq:zx-algo} by expanding it in
+The local discretisation error of the ZX is based on \eqref{strdyn:eq:zx-algo} by expanding it in
 \name{Taylor} series:
 \begin{equation*}
   \vct{l}_{n+1}^\text{ZX}
@@ -1053,14 +1058,14 @@ in which the third-order accuracy is shown.
 definitions of the local discretisation errors for the displacements and assumes direct differences
 as feasible approximations
 \begin{subequations}
-\begin{equation}\label{eq:zx-nm-lde1}
+\begin{equation}\label{strdyn:eq:zx-nm-lde1}
   \vct{l}_{n+1}^\text{GA2}
   = \vct{D}(t_{n+1}) - \mat{\Psi}_{n+1,n}^\text{GA2}\vct{D}(t_n) 
   \approx \vct{D}(t_{n+1}) - \vct{D}_{n+1}^\text{GA2}
   = \OO(\dt^3)
   \comma
 \end{equation}
-\begin{equation}\label{eq:zx-nm-lde2}
+\begin{equation}\label{strdyn:eq:zx-nm-lde2}
   \vct{l}_{n+1}^\text{ZX}
   = \vct{D}(t_{n+1}) - \mat{\Psi}_{n+1,n}^\text{ZX}
   \approx \vct{D}(t_{n+1}) - \vct{D}_{n+1}^\text{ZX}
@@ -1068,8 +1073,8 @@ as feasible approximations
   \period
 \end{equation}
 \end{subequations}
-Equations \eqref{eq:zx-nm-lde1} and
-\eqref{eq:zx-nm-lde2} are subtracted from each other leading to
+Equations \eqref{strdyn:eq:zx-nm-lde1} and
+\eqref{strdyn:eq:zx-nm-lde2} are subtracted from each other leading to
 \begin{equation*}
   \vct{l}_{n+1}^\text{GA2}
   = \vct{D}_{n+1}^\text{ZX} -\vct{D}_{n+1}^\text{GA2}
@@ -1084,7 +1089,7 @@ $\vct{l}_{n+1}^\text{GA2}$\@. The indicator is given alternatively as
   \comma
 \end{equation*}
 which coincides with the formula of \name{Zienkiewicz} and \name{Xie}
-\cite{zienkiewicz91} except the sign.
+\cite{strdyn:zienkiewicz91} except the sign.
 
 The presented local discretisation error estimator allows only to assess the
 displacements, the velocities are not checked. 
@@ -1149,3 +1154,8 @@ oriented (except for intermediate operations at solution algo level)
 \item fsiloads in \texttt{WALL1}???
 \item test file \texttt{so3\_dyn\_inclined\_bc.dat}
 \end{itemize}
+
+%%
+%%............................references
+%\bibliographystyle{plain}
+\putbib[struct_dynamics]

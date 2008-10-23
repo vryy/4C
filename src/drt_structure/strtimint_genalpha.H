@@ -69,6 +69,10 @@ namespace STR
       const std::string name  //!< input string
     );
 
+    //! verify if given coefficients are in admissable range;
+    //! prints also info to STDOUT
+    void VerifyCoeff();
+
     //! @name Construction
     //@{
 
@@ -132,13 +136,17 @@ namespace STR
     //! 2nd order linear error coefficient of displacements
     double MethodLinErrCoeffDis2()
     {
-      return 1./6. - beta_*(1.-alphaf_)/(1.-alpham_);
+      // at least true for am<1/2 and large enough n->infty
+      return 1.0/6.0 - beta_ + alphaf_/2.0 - alpham_/2.0;
     }
 
     //! 3rd order linear error coefficient of displacements
     double MethodLinErrCoeffDis3()
     {
-      return 1./12. - beta_*(1.-alphaf_)/(1.-alpham_);
+      // at least true for am<1/2 and large enough n->infty
+      return 1./24. 
+             - beta_/2.*(1.-2*alphaf_+2.*alpham_) 
+             - 1./4.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
     //! Return linear error coefficient of velocities
@@ -153,13 +161,17 @@ namespace STR
     //! 1st order linear error coefficient of velocities
     double MethodLinErrCoeffVel1()
     {
-      return 1./2. - gamma_*(1.-alphaf_)/(1.-alpham_);
+      // at least true for am<1/2 and large enough n->infty
+      return 1.0/2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! 2nd order linear error coefficient of velocities
     double MethodLinErrCoeffVel2()
     {
-      return 1./3. - gamma_*(1.-alphaf_)/(1.-alpham_);
+      // at least true for am<1/2 and large enough n->infty
+      return 1./6. 
+             - gamma_/2.*(1.-2*alphaf_+2.*alpham_) 
+             - 1./2.*(alphaf_-alpham_)*(1.-2.*alpham_);
     }
 
     //! Consistent predictor with constant displacements

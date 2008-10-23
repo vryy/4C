@@ -39,4 +39,8 @@
    Do NOT use the \graphicspath command!
    It is already used by the configure script.
 
+   If you want to use citations then add them in Bibtex format
+   to src/titleofreport/titleofreport.bib and provide the command
+   \putbib[titleofreport] at the bottom of the TEX report file.
+
    -> run ./configure and make

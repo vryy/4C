@@ -4,8 +4,10 @@
 # All aux, toc and log files will appear in this
 # directory
 
-latex_wd=build
-
+latex_wd="build"
+bibinputs="export BIBINPUTS=\$BIBINPUTS:"$latex_wd
+bibtex="bibtex "$latex_wd"/"
+bibtexbu="bin/bibtexbu.sh"
 execute_command="pdflatex -output-directory="$latex_wd" "$latex_wd"/"
 
 echo "--------------------------------------------------"
@@ -72,6 +74,9 @@ do
         directory=${full_name%/*}
         inputname=${src_name%.*}
 
+	# list of input directories
+	bibinputs=$bibinputs":"$directory
+
         ###################################################
         #
         #  THE SINGLE REPORTS
@@ -96,6 +101,10 @@ do
         # input document
         #echo "\begin{document}" >> $latex_wd/$single_report_base$file_name
         echo "\input{"${inputname}"}" >> $latex_wd/$single_report_base$file_name
+#	if [ -e $directory/$inputname.bib ]
+#        then
+#	    echo "\putbib["$inputname"]" >> $latex_wd/$single_report_base$file_name
+#	fi
         echo "\end{document}" >> $latex_wd/$single_report_base$file_name
 
         ###################################################
@@ -203,12 +212,17 @@ do
         directory=${full_name%/*}
         inputname=${file_name%.*}
         single_report_dependency=reports/$single_report_base$inputname".pdf"
+	bibinput="export BIBINPUTS=\$BIBINPUTS:"$directory
 
         echo -e "" >> Makefile
 
         echo -e $single_report_dependency: Makefile $directory"/*.tex" $single_report_template >> Makefile
 
         echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+        echo -e "\\t"$bibtexbu" \""$bibinputs"\" "$latex_wd" "$single_report_base$inputname >> Makefile
+        echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+        # the \bibcite commands do not turn up in AUX file, but in LOG, push them to correct destination
+	# echo -e "\\tgrep bibcite "$latex_wd/$single_report_base$inputname.log" >> "$latex_wd/$single_report_base$inputname.aux >> Makefile
         echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
         echo -e "\\t""mv $latex_wd/$single_report_base$inputname".pdf" reports" >> Makefile
     fi
@@ -236,6 +250,10 @@ IFS=$IFS_ORIG
 echo -e $global_report_dependency >> Makefile
 
 echo -e "\\t"$execute_command$global_report >> Makefile
+echo -e "\\t"$bibtexbu" \""$bibinputs"\" "$latex_wd" "$global_report >> Makefile
+echo -e "\\t"$execute_command$global_report >> Makefile
+# the \bibcite commands do not turn up in AUX file, but in LOG, push them to correct destination
+# echo -e "\\tgrep bibcite "$latex_wd/$global_report.log" >> "$latex_wd/$global_report.aux >> Makefile
 echo -e "\\t"$execute_command$global_report >> Makefile
 echo -e "\\tmv "$latex_wd/$global_report".pdf reports/$global_report.pdf" >> Makefile
 

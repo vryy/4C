@@ -399,6 +399,12 @@ namespace STR
     //! a \f$m\f$-multistep method returns \f$m\f$
     virtual int MethodSteps() = 0;
 
+    //! Give order of accuracy
+    int MethodOrderOfAccuracy()
+    {
+      return min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
+    }
+
     //! Give local order of accuracy of displacement part
     virtual int MethodOrderOfAccuracyDis() = 0;
 
