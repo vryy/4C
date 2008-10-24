@@ -124,7 +124,7 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Initialize(const int numgp)
+void MAT::ViscoNeoHooke::Setup(const int numgp)
 {
   histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
@@ -142,6 +142,13 @@ void MAT::ViscoNeoHooke::Initialize(const int numgp)
     artstresscurr_->at(j) = emptyvec;
     artstresslast_->at(j) = emptyvec;
   }
+ 
+  const double E_s  = matdata_->m.visconeohooke->youngs_slow;
+  double E_f  = matdata_->m.visconeohooke->youngs_fast;
+  double tau  = matdata_->m.visconeohooke->relax;
+ 
+  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
+  if (tau<=0.0) dserror("Relaxation time tau has to be positive!");
   isinit_=true;
   return ;
 
@@ -182,10 +189,7 @@ void MAT::ViscoNeoHooke::Reset()
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
- *----------------------------------------------------------------------*
-
-*/
-
+ *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                   const int gp,
                                   Teuchos::ParameterList& params,
@@ -205,13 +209,10 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   double tau1=tau;
   //check for meaningful values
-  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
-  else if (E_f>E_s)
+  if (E_f>E_s)
   {
-    if (tau<=0.0) dserror("Relaxation time tau has to be positive in case E_Fast > E_Slow!");
     tau1=tau*E_s/(E_f-E_s);
   }
-  else if (tau==0.0) tau1=1.0; // for algorithmic reasons tau has to be positive
 
   //initialize scalars
   double alpha0;
@@ -223,49 +224,47 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double artscalar2;
   double scalarvisco;
 
-  if (E_f/E_s<=1E10)  // generalized Maxwell model in case stiffness ratio is not too high
-  {
-    tau=tau1;
-    // evaluate "alpha" factors which distribute stress or stiffness between parallel springs
-    // sum_0^i alpha_j = 1
-    alpha0 = E_s / E_f;
-    alpha1 = 1.0 - alpha0;
+#define GEN_MAXWELL
+#ifdef GEN_MAXWELL 
+  tau=tau1;
+  // evaluate "alpha" factors which distribute stress or stiffness between parallel springs
+  // sum_0^i alpha_j = 1
+  alpha0 = E_s / E_f;
+  alpha1 = 1.0 - alpha0;
 
-    // evaluate Lame constants, bulk modulus
-    lambda = nue*E_f / ((1.0+nue)*(1.0-2.0*nue));
-    mue = E_f / (2.0*(1.0+nue));
-    kappa = lambda + 2.0/3.0 * mue;
+  // evaluate Lame constants, bulk modulus
+  lambda = nue*E_f / ((1.0+nue)*(1.0-2.0*nue));
+  mue = E_f / (2.0*(1.0+nue));
+  kappa = lambda + 2.0/3.0 * mue;
 
-    // evaluate scalars to compute
-    // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
-    artscalar1=(tau - dt + theta*dt)/tau;
-    artscalar2=tau/(tau + theta*dt);
+  // evaluate scalars to compute
+  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+  artscalar1=(tau - dt + theta*dt)/tau;
+  artscalar2=tau/(tau + theta*dt);
 
-    // factor to calculate visco stiffness matrix from elastic stiffness matrix
-    scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
-  }
-  else //in case stiffness ratio is very high, Kelvin-Voigt like model is used
-  {
+  // factor to calculate visco stiffness matrix from elastic stiffness matrix
+  scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
+  
+#else
+  //in this case we have a parallel layout of a spring and a dashpot,
+  //so no stress distribution between parallel springs
+  alpha0 = 1.;
+  alpha1 = 1.;
 
-    //in this case we have a parallel layout of a spring and a dashpot,
-    //so no stress distribution between parallel springs
-    alpha0 = 1.;
-    alpha1 = 1.;
+  // evaluate Lame constants, bulk modulus
+  lambda = nue*E_s / ((1.0+nue)*(1.0-2.0*nue));
+  mue = E_s / (2.0*(1.0+nue));
+  kappa = lambda + 2.0/3.0 * mue;
 
-    // evaluate Lame constants, bulk modulus
-    lambda = nue*E_s / ((1.0+nue)*(1.0-2.0*nue));
-    mue = E_s / (2.0*(1.0+nue));
-    kappa = lambda + 2.0/3.0 * mue;
+  // evaluate sclars to compute
+  // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+  artscalar1=(-dt+theta*dt)/tau;
+  artscalar2=tau/(theta*dt);
 
-    // evaluate sclars to compute
-    // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt)/tau Q + S^(n+1) - S^n]
-    artscalar1=(-dt+theta*dt)/tau;
-    artscalar2=tau/(theta*dt);
-
-    // factor to calculate visco stiffness matrix from elastic stiffness matrix
-    scalarvisco = 1.0+tau/(theta*dt);
-  }
-
+  // factor to calculate visco stiffness matrix from elastic stiffness matrix
+  scalarvisco = 1.0+tau/(theta*dt);
+  
+#endif
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I

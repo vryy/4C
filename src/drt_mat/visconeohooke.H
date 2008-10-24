@@ -79,7 +79,7 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
 
     /// Initialize internal stress variables
-    void Initialize
+    void Setup
     (
       const int numgp  ///< number of Gauss points
     );

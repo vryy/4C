@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/visconeohooke.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -66,6 +67,9 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
     balz->Setup();
   } else if (Material()->MaterialType() == m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == m_visconeohooke){
+    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     visco->Setup(NUMGPT_SOH8);
   }
 

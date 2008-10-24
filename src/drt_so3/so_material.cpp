@@ -108,8 +108,9 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-      if (!visco->Initialized())
-        visco->Initialize(NUMGPT_SOH8);
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */ 
+      //if (!visco->Initialized())
+      //  visco->Setup(NUMGPT_SOH8);
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
 
