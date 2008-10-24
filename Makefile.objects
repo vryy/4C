@@ -107,12 +107,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_fem_general/drt_utils_integration.o \
                 src/drt_fem_general/drt_utils_dgfem_basisfunctions.o \
                 src/drt_fem_general/drt_utils_fem_shapefunctions.o \
-                src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \
-                src/drt_fem_general/drt_utils_bspline.o \
                 src/drt_fem_general/drt_utils_boundary_integration.o \
-                src/drt_lib/drt_nurbs_discret.o \
-                src/drt_lib/drt_control_point.o \
-                src/drt_lib/drt_knotvector.o \
                 src/drt_fem_general/drt_utils_local_connectivity_matrices.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
@@ -144,6 +139,13 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_tetgen/predicates.o \
                 src/drt_tetgen/tetgen.o \
                 src/drt_geometry/integrationcell.o
+#               nurbs discretization for isogeometric fe (c++)
+OBJS_DRT_NURBS_DISCRET = \
+                src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \
+                src/drt_fem_general/drt_utils_bspline.o \
+                src/drt_nurbs_discret/drt_nurbs_discret.o \
+                src/drt_nurbs_discret/drt_control_point.o \
+                src/drt_nurbs_discret/drt_knotvector.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \

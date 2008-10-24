@@ -22,7 +22,7 @@ Maintainer: Peter Gamnitzer
 #include "fluid3.H"
 #include "fluid3_nurbs.H"
 
-#include "../drt_lib/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 

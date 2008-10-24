@@ -15,7 +15,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_NURBS_H
 
 #include "fluid3.H"
-#include "../drt_lib/drt_control_point.H"
+#include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 
 

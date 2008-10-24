@@ -70,7 +70,7 @@ extern "C"
 
 #include "drt_utils.H"
 #include "drt_node.H"
-#include "drt_control_point.H"
+#include "../drt_nurbs_discret/drt_control_point.H"
 #include "drt_dofset.H"
 #include "drt_discret.H"
 #include "../drt_beam2/beam2.H"

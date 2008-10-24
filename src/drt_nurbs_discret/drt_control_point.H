@@ -22,7 +22,7 @@ Maintainer: Peter Gamnitzer
 
 using namespace std;
 
-#include "drt_node.H"
+#include "../drt_lib/drt_node.H"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

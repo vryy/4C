@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 #include "drt_discret.H"
-#include "drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "drt_inputreader.H"
 
 #include "standardtypes_cpp.H"

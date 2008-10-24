@@ -79,6 +79,11 @@ $(OBJS_DRT_LIB):
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
+$(OBJS_DRT_NURBS_DISCRET):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 $(OBJS_DRT):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
@@ -228,7 +233,7 @@ $(OBJS_DRT_B3):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr	
-	
+
 $(OBJS_DRT_T3_LIB):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
