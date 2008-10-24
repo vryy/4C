@@ -413,8 +413,8 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // fibers take compression only
   double fib1_tension = 1.;
   double fib2_tension = 1.;
-  if (J4 < 0.0) fib1_tension = 0.;
-  if (J6 < 0.0) fib2_tension = 0.;
+  if (J4 < 1.0) fib1_tension = 0.;
+  if (J6 < 1.0) fib2_tension = 0.;
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   Epetra_SerialDenseVector Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
