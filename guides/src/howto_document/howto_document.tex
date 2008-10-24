@@ -14,11 +14,11 @@ In the \verb|guide| folder, type
 \section{HowTo create a new report}
 In the following, we assume you work within the guide subfolder
 \begin{enumerate}
-  \item create a new folder \verb|src_project| in subfolder \verb|src/|
-  \item create a new file \verb|src_project.tex| within \verb|src_project|
+  \item create a new folder \verb|myreport| in subfolder \verb|src/|
+  \item create a new file \verb|myreport.tex| within \verb|myreport|
   \item start the file with \verb|\chapter{Project Title X}|
   \item add the file to \texttt{Makefile.in} (at an appropriate position; the files are compiled consecutively), e.g.\\
-  \verb|src/src_project/src_project.tex|
+  \verb|src/myreport/myreport.tex|
   \item run \verb|./configure| $\to$ your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the beginning of the Makefile.
 \end{enumerate}
 
@@ -27,7 +27,7 @@ In the following, we assume you work within the guide subfolder
 If you want to work without all the make magic using your editor of choice, do the following:
 After creating your folder and main file and running configure, do
 \begin{enumerate}
- \item copy the file \verb|templates/single_report_project.tex| to your \verb|src/src_project| folder
+ \item copy the file \verb|templates/single_report_project.tex| to your \verb|src/myreport| folder
  \item delete \verb|inputpath| and \verb|figurepath| stuff from this file
  \item use \verb|latex single_report_project| as usual
 \end{enumerate}
@@ -80,3 +80,26 @@ All figures have to be provided in EPS format. This allows usage of latex and pd
 Do not use endings in your including statement.
 
 eps images will be translated automatically via \verb|epstopdf| to a pdf file of the same size (and same bounding box) and is always uptodate with the eps file during compilation of the documents.
+
+
+\subsection{Citations}
+
+If you want to add citations to your documentation -- admittingly, this appears 
+only useful in a few phantastic cases by deducing Jones \cite{howtodoc:jones97} -- you can do
+it as usual by \verb|\cite{myproject:jones97}| commands which refer to a report-wise Bibtex
+file. This Bibtex or BIB file should be called like the report and placed in
+its source directory, i.e. \verb|src/myreport/myreport.bib|. Finally you need
+to place a \verb|\putbib[myreport]| at the very end of your report TEX file.
+
+The BIB file looks like
+\begin{verbatim}
+@Book{myreport:jones97,
+  author    = {Terry Jones},
+  title     = {Douglas Adams' Starship Titanic},
+  publisher = {Random House},
+  year      = {1997}
+}
+\end{verbatim}
+
+%% 
+\putbib[howto_document]
