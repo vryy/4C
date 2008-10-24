@@ -178,15 +178,66 @@ protected:
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name);
+
     RefCountPtr<Epetra_Map> WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) ;
+
+  /*! \brief Write the coordinates for a Polynomial discretization
+    The ccordinates of the vizualisation points (i.e. the corner 
+    nodes of elements displayed in paraview) are just the node 
+    coordinates of the nodes in the discretization.
+  */
+    void WriteCoordinatesForPolynomialShapefunctions(
+      ofstream&                              geofile ,
+      const RefCountPtr<DRT::Discretization> dis     ,
+      RefCountPtr<Epetra_Map>&               proc0map
+      );
+
+  /*! \brief Write the coordinates for a Nurbs discretization
+    The ccordinates of the vizualisation points (i.e. the corner 
+    nodes of elements displayed in paraview) are not the control point 
+    coordinates of the nodes in the discretization but the points the
+    knot values are mapped to.
+  */
+    void WriteCoordinatesForNurbsShapefunctions(
+      ofstream&                              geofile ,
+      const RefCountPtr<DRT::Discretization> dis     ,
+      RefCountPtr<Epetra_Map>&               proc0map
+      );
+
+
     void WriteCells(
             ofstream& geofile,///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
             const RefCountPtr<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
             ) const;
+
+
+  /*! \brief Write the cells for a Nurbs discretization
+    quadratic nurbs split one element in knot space into 
+    four(2d)/eight(3d) cells. The global numbering of the 
+    vizualisation points (i.e. the corner points of the 
+    cells) is computed from the local patch numbering and 
+    the patch offset.                              (gammi)
+
+    \param DRT::Element::DiscretizationType (i)          the nurbs discretisation type
+    \param int                              (i)          global element id
+    \param ofstream                         (used for o) direct print to file
+    \param vector<int>                      (o)          remember node values for parallel IO
+    \param RefCountPtr<DRT::Discretization> (i)          the discretisation holding knots etc
+    \param RefCountPtr<Epetra_Map>          (i)          an allreduced nodemap
+
+  */  
+    void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
+                        const int                              gid       ,
+                        ofstream&                              geofile   ,
+                        vector<int>                            nodevector,
+                        const RefCountPtr<DRT::Discretization> dis       ,
+                        const RefCountPtr<Epetra_Map>&         proc0map  ) const;
+
+
     void WriteNodeConnectivityPar(
             ofstream& geofile,
             const RefCountPtr<DRT::Discretization> dis,
@@ -201,6 +252,43 @@ protected:
             const string name,
             const int numdf,
             const int from) const;
+
+
+  /*! \brief Write the results for a NURBS discretisation
+    (dof based).
+    
+    On input, result data for an ndimensional computation
+    is provided (from the result file)
+
+    This element data is communicated in such a way that
+    all elements have access to their (dof-accessible) data.
+    Here we seperate velocity and pressure output, since
+    for velocity and pressure different dofs are required.
+
+    Then, all elements are looped and function values are
+    evaluated at visualisation points. This is the place 
+    where we need the dof data (again, different data for 
+    velocity and pressure output)
+
+    The resulting vector is allreduced on proc0 and written.
+
+                         .                              (gammi)
+
+    \param ofstream                         (used for o) direct print to file
+    \param int                              (i)          number of degrees of freedom
+    \param RefCountPtr<Epetra_Vector>       (i)          the result data read from the baci output
+    \param string                           (i)          name of the thing we are writing
+                                                         (velocity, pressure etc.)
+
+  */  
+  void WriteDofResultStepForNurbs(
+    ofstream&                        file ,
+    const int                        numdf,
+    const RefCountPtr<Epetra_Vector> data ,
+    const string                     name
+    ) const;
+
+
     void WriteNodalResultStep(
             ofstream& file,
             PostResult& result,
