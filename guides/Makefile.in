@@ -10,7 +10,7 @@ src/inparams/inparams.tex
 src/fluid_input_details/fluid_input_details.tex
 \part{Development guide}
 src/design/design.tex
-src/src_howto_document/src_howto_document.tex
+src/howto_document/howto_document.tex
 src/code_commentation/code_commentation.tex
 src/cppforbacists/cppforbacists.tex
 src/conventions/conventions.tex
