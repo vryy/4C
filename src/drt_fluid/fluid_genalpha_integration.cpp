@@ -1197,11 +1197,19 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   //-------solve for residual displacements to correct incremental displacements
   increment_->PutScalar(0.0);
 
+  // always refactor the matrix for a new solver call --- we assume that 
+  // it has changed since the last call
+  bool refactor=true;
+  // never reset solver from time integration level
+  // the preconditioner does the job on its own according to the AZreuse
+  // parameter
+  bool reset   =false;
+
   solver_.Solve(sysmat_->EpetraOperator(),
                 increment_               ,
                 residual_                ,
-                true                     ,
-                itenum_==-1              );
+                refactor                 ,
+                reset                    );
 
   solver_.ResetTolerance();
 
