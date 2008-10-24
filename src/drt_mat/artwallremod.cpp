@@ -248,10 +248,15 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
     if (ierr!=1) dserror("Reading of element local cosy failed");
     Epetra_SerialDenseMatrix locsys(3,3);
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    for (int i = 0; i < 3; ++i) {
+      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
     for (int i=0; i<3; ++i){
-      locsys(i,0) = rad[i];
-      locsys(i,1) = axi[i];
-      locsys(i,2) = cir[i];
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
     }
     for (int gp = 0; gp < numgp; ++gp) {
       a1_->at(gp).resize(3);

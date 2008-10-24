@@ -369,7 +369,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
+  Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
   vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
   LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,soshw6_easpoisthick> M; // EAS matrix M at current GP, fixed for sosh8
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
@@ -622,6 +622,25 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
     Epetra_SerialDenseMatrix defgrd_epetra; // Caution!! empty!!
+//#define disp_based_F
+#ifdef disp_based_F
+    defgrd_epetra.Shape(NUMDIM_WEG6,NUMDIM_WEG6);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> invJ;
+    invJ.Multiply(derivs[gp],xrefe);
+    invJ.Invert();
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ,derivs[gp]);
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd;
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+    for (int i = 0; i < NUMDIM_WEG6; ++i) {
+      for (int j = 0; j < NUMDIM_WEG6; ++j) {
+        defgrd_epetra(i,j) = defgrd(i,j);
+      }
+    }
+#endif
     sow6_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra, &defgrd_epetra, gp, params);
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(cmat_epetra.A(),true);
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> stress(stress_epetra.A(),true);

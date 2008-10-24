@@ -168,19 +168,26 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   vector<double> rad(3);
   vector<double> axi(3);
   vector<double> cir(3);
-  frdouble_n("RAD",&rad[0],3,&ierr); error*=(1-ierr);
-  frdouble_n("AXI",&axi[0],3,&ierr); error*=(1-ierr);
-  frdouble_n("CIR",&cir[0],3,&ierr); error*=(1-ierr);
+  frdouble_n("RAD",&rad[0],3,&ierr); error*=ierr;
+  frdouble_n("AXI",&axi[0],3,&ierr); error*=ierr;
+  frdouble_n("CIR",&cir[0],3,&ierr); error*=ierr;
   if (error == 0) dserror("Problems with reading element local cosy, check RAD,AXI,CIR!");
 
   LINALG::FixedSizeSerialDenseMatrix<3,3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+  double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+  for (int i = 0; i < 3; ++i) {
+    radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+  }
+  radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
   for (int i=0; i<3; ++i){
-    locsys(i,0) = rad[i];
-    locsys(i,1) = axi[i];
-    locsys(i,2) = cir[i];
+    locsys(i,0) = rad[i]/radnorm;
+    locsys(i,1) = axi[i]/axinorm;
+    locsys(i,2) = cir[i]/cirnorm;
   }
   for (int gp = 0; gp < numgp; ++gp) {
+    a1_->at(gp).resize(3);
+    a2_->at(gp).resize(3);
     for (int i = 0; i < 3; ++i) {
       // a1 = cos gamma e3 + sin gamma e2
       a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
@@ -200,6 +207,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
 //  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
 //  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
 //  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> emptyvec;
+  
   histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
@@ -364,8 +372,8 @@ void MAT::ViscoAnisotropic::Evaluate
   // fibers take compression only
   double fib1_tension = 1.;
   double fib2_tension = 1.;
-  if (J4 < 0.0) fib1_tension = 0.;
-  if (J6 < 0.0) fib2_tension = 0.;
+  if (J4 < 1.0) fib1_tension = 0.;
+  if (J6 < 1.0) fib2_tension = 0.;
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   Epetra_SerialDenseVector SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
@@ -439,6 +447,11 @@ void MAT::ViscoAnisotropic::Evaluate
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
 
+  
+  /* Time integration according Holzapfel paper
+   * with some intrinsic usage of the analytic solution
+   * of the underlying ODE (exp-function) */
+  /*
   // evaluate exp-factors
   const double expfac_nh = exp(-dt*0.5/tau_nh);
   const double expfac_fib = exp(-dt*0.5/tau_fib);
@@ -451,22 +464,41 @@ void MAT::ViscoAnisotropic::Evaluate
   Epetra_SerialDenseVector Q_fib2(SisoEla_fib2);
   Q_fib2.Scale(beta_fib*expfac_fib);
 
-  // update history
-  histstresscurr_->at(numst*gp + 0) = SisoEla_nh;
-  histstresscurr_->at(numst*gp + 1) = SisoEla_fib1;
-  histstresscurr_->at(numst*gp + 2) = SisoEla_fib2;
-  artstresscurr_->at(numst*gp + 0) = Q_nh;
-  artstresscurr_->at(numst*gp + 1) = Q_fib1;
-  artstresscurr_->at(numst*gp + 2) = Q_fib2;
-
   // evaluate 'H' history summands
   SisoEla_nh_old.Scale(-beta_nh*expfac_nh);
   Q_nh_old.Scale(expfac_nh*expfac_nh);
   SisoEla_fib1_old.Scale(-beta_fib*expfac_fib);
-  Q_fib1_old.Scale(expfac_nh*expfac_fib);
+  Q_fib1_old.Scale(expfac_fib*expfac_fib);
   SisoEla_fib2_old.Scale(-beta_fib*expfac_fib);
-  Q_fib2_old.Scale(expfac_nh*expfac_fib);
+  Q_fib2_old.Scale(expfac_fib*expfac_fib);
+  */
+  
+  
+  /* Time integration according Zien/Taylor and the viscoNeoHooke */
+  const double theta = 0.5;
+  const double artscalar1_nh=(tau_nh - dt + theta*dt)/tau_nh;
+  const double artscalar2_nh=tau_nh/(tau_nh + theta*dt);
+  const double artscalar1_fib=(tau_fib - dt + theta*dt)/tau_fib;
+  const double artscalar2_fib=tau_fib/(tau_fib + theta*dt);
 
+  
+  // evaluate current Q's
+  Epetra_SerialDenseVector Q_nh(SisoEla_nh);
+  Q_nh.Scale(artscalar2_nh*beta_nh);
+  Epetra_SerialDenseVector Q_fib1(SisoEla_fib1);
+  Q_fib1.Scale(beta_fib*artscalar2_fib);
+  Epetra_SerialDenseVector Q_fib2(SisoEla_fib2);
+  Q_fib2.Scale(beta_fib*artscalar2_fib);
+  
+  // scale history
+  SisoEla_nh_old.Scale(-beta_nh*artscalar2_nh);
+  Q_nh_old.Scale(artscalar1_nh*artscalar2_nh);
+  SisoEla_fib1_old.Scale(-beta_fib*artscalar2_fib);
+  Q_fib1_old.Scale(artscalar1_fib*artscalar2_fib);
+  SisoEla_fib2_old.Scale(-beta_fib*artscalar2_fib);
+  Q_fib2_old.Scale(artscalar1_fib*artscalar2_fib);
+  
+  
   /* evaluate current stress */
 
   // elastic part
@@ -474,28 +506,47 @@ void MAT::ViscoAnisotropic::Evaluate
   (*stress) += SisoEla_fib1;
   (*stress) += SisoEla_fib2;  // S_{n+1} = S_vol^ela + S_iso^ela
 
-  // visco part
-  (*stress) += Q_nh_old;
-  (*stress) += SisoEla_nh_old;  // H_nh = Q_nh_old + S_nh_old
+  // viscous part
+  Q_nh += Q_nh_old;
+  Q_nh += SisoEla_nh_old;  // H_nh = Q_nh_old + S_nh_old
   (*stress) += Q_nh;            // S_{n+1} += H_nh + Q_nh_{n+1}
 
-  (*stress) += Q_fib1_old;
-  (*stress) += SisoEla_fib1_old;  // H_fib1 = Q_fib1_old + S_fib1_old
+  Q_fib1 += Q_fib1_old;
+  Q_fib1 += SisoEla_fib1_old;  // H_fib1 = Q_fib1_old + S_fib1_old
   (*stress) += Q_fib1;            // S_{n+1} += H_fib1 + Q_fib1_{n+1}
 
-  (*stress) += Q_fib2_old;
-  (*stress) += SisoEla_fib2_old;  // H_fib2 = Q_fib2_old + S_fib2_old
+  Q_fib2 += Q_fib2_old;
+  Q_fib2 += SisoEla_fib2_old;  // H_fib2 = Q_fib2_old + S_fib2_old
   (*stress) += Q_fib2;            // S_{n+1} += H_fib2 + Q_fib2_{n+1}
 
   /* evaluate current C-mat */
+ 
+  /* Time integration according Holzapfel paper */
+  /*
   CisoEla_nh.Scale(1.+beta_nh*expfac_nh);
   CisoEla_fib1.Scale(1.+beta_fib*expfac_fib);
   CisoEla_fib2.Scale(1.+beta_fib*expfac_fib);
+  */
+  
+  
+  /* Time integration according Zien/Taylor and the viscoNeoHooke */
+  CisoEla_nh.Scale(1+beta_nh*artscalar2_nh);
+  CisoEla_fib1.Scale(1+beta_fib*artscalar2_fib);
+  CisoEla_fib2.Scale(1+beta_fib*artscalar2_fib);
 
+  
   (*cmat) += CisoEla_nh;
   (*cmat) += CisoEla_fib1;
   (*cmat) += CisoEla_fib2;
 
+  // update history
+  histstresscurr_->at(numst*gp + 0) = SisoEla_nh;
+  histstresscurr_->at(numst*gp + 1) = SisoEla_fib1;
+  histstresscurr_->at(numst*gp + 2) = SisoEla_fib2;
+  artstresscurr_->at(numst*gp + 0) = Q_nh;
+  artstresscurr_->at(numst*gp + 1) = Q_fib1;
+  artstresscurr_->at(numst*gp + 2) = Q_fib2;
+  
   return;
 }
 

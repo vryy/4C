@@ -216,5 +216,7 @@ Input/constr2D_fsi.dat                                  x        x        x     
 Input/constr2D_MPC_dist.dat                             x        x        x        x        -        -
 Input/constr2D_MPC_angle.dat                            x        x        x        x        -        -
 Input/viscoNeoHooke_creep.dat                           x        x        x        x        -        -
+Input/viscoAnisotropic_creep.dat                        x        x        x        x        -        -
+Input/viscoAnisotropic_anisocreep.dat                   x        x        x        x        -        -
 Input/mat_contchain_remo.dat                            x        -        x        -        -        -
 Input/mat_holzharit_remo.dat                            x        -        x        -        -        -

@@ -332,6 +332,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 

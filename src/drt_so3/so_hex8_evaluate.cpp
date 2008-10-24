@@ -337,6 +337,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 
@@ -398,7 +403,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         }
       }
-      // Update of history for visco material
+      // Reset of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
       if (mat->MaterialType() == m_visconeohooke)
       {
