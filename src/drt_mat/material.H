@@ -177,6 +177,17 @@ public:
                                   Epetra_SerialDenseVector& invc,
                                   const double scalar);
 
+  /*!
+  \brief Add 'Holzapfel product' contribution to constitutive tensor
+  using Voigt notation
+
+  \param cmat (in/out): Material tangent matrix(6x6) to be modified
+  \param invc   (in)  : Inverse right Cauchy-Green vector(6)
+  \param scalar (in)  : scalar corresponding to delta7
+  */
+  void AddtoCmatHolzapfelProduct( LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                                  LINALG::FixedSizeSerialDenseMatrix<6,1>& invc,
+                                  const double scalar);
 
 
 }

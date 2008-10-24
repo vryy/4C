@@ -73,12 +73,12 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_stvenant; }
     
     //evaluates stresses for 3d
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                  Epetra_SerialDenseMatrix* cmat_e,
+                  Epetra_SerialDenseVector* stress_e);
                   
     // computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(Epetra_SerialDenseMatrix* cmat);
+    void SetupCmat(LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat);
     
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry

@@ -83,9 +83,9 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_aaaneohooke; }
 
     // THE material routine
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-		  Epetra_SerialDenseMatrix* cmat,
-		  Epetra_SerialDenseVector* stress);
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+		  Epetra_SerialDenseMatrix* cmat_e,
+		  Epetra_SerialDenseVector* stress_e);
 
   private:
 

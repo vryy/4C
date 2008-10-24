@@ -128,10 +128,15 @@ double MAT::AAAneohooke::Density()
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                      Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                                      Epetra_SerialDenseMatrix* cmat_e,
+                                      Epetra_SerialDenseVector* stress_e)
 {
+  // this is temporary as long as the material does not have a 
+  // FixedSizeSerialDenseMatrix-type interface
+  const LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(glstrain_e->A(),true);
+        LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(cmat_e->A(),true);
+        LINALG::FixedSizeSerialDenseMatrix<6,1> stress(stress_e->A(),true);
 
   // material parameters for isochoric part
   double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
@@ -145,12 +150,12 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  Epetra_SerialDenseVector identity(6);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  Epetra_SerialDenseVector rcg(*glstrain);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -170,7 +175,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  Epetra_SerialDenseVector invc(6);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> invc(false);
 
   double invdet = 1./iiinv;
 
@@ -198,7 +203,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
 
   // contribution: Cinv
-  Epetra_SerialDenseVector pktwoiso(invc);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -211,18 +216,19 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double scalar = komp/beta2 * (1.0-pow(detf,-beta2));
 
   // initialise PKtwo with volumetric part
-  Epetra_SerialDenseVector pktwovol(invc);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
   //============================
-  (*stress)  = pktwoiso;
-  (*stress) += pktwovol;
+  stress  = pktwoiso;
+  stress += pktwovol;
 
 
   //--- do elasticity matrix -------------------------------------------------------------
   // ensure that cmat is zero when it enters the computation
-  cmat->Scale(0.0);
+  // It is an implicit law that cmat is zero upon input
+  //cmat.PutScalar(0.0);
 
   // 1st step: isochoric part
   //=========================
@@ -240,20 +246,20 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // contribution: I \obtimes I
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      (*cmat)(i,j) = delta1;
+      cmat(i,j) = delta1;
 
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
     {
       // contribution: Cinv \otimes I + I \otimes Cinv
-      (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
+      cmat(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
       // contribution: Cinv \otimes Cinv
-      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
+      cmat(i,j) += delta6 * invc(i)*invc(j);
     }
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
+  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -263,10 +269,10 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
-      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
+      cmat(i,j) += delta6 * invc(i)*invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
+  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
 
   return;
 }

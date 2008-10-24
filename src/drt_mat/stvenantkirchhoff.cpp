@@ -16,17 +16,26 @@ Maintainer: ???
 
 extern struct _MATERIAL *mat;
 
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 MAT::StVenantKirchhoff::StVenantKirchhoff()
   : matdata_(NULL)
 {
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 MAT::StVenantKirchhoff::StVenantKirchhoff(MATERIAL* matdata)
   : matdata_(matdata)
 {
 }
 
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -40,6 +49,9 @@ void MAT::StVenantKirchhoff::Pack(vector<char>& data) const
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
 {
   int position = 0;
@@ -57,8 +69,10 @@ void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
+/*----------------------------------------------------------------------*
 // computes isotropic eplane strain, rotational symmetry
 // plane strain, rotational symmetry
+ *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 {
   const double ym  = matdata_->m.stvenant->youngs;
@@ -90,8 +104,10 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
   (*cmat)(3,3)=a1;
 }
 
+/*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
-void MAT::StVenantKirchhoff::SetupCmat(Epetra_SerialDenseMatrix* cmat)
+ *----------------------------------------------------------------------*/
+void MAT::StVenantKirchhoff::SetupCmat(LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat)
 {
   // get material parameters
   double Emod = matdata_->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
@@ -109,33 +125,44 @@ void MAT::StVenantKirchhoff::SetupCmat(Epetra_SerialDenseMatrix* cmat)
    */
   double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
   /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
+  cmat(0,0) = mfac*(1.0-nu);
+  cmat(0,1) = mfac*nu;
+  cmat(0,2) = mfac*nu;
+  cmat(1,0) = mfac*nu;
+  cmat(1,1) = mfac*(1.0-nu);
+  cmat(1,2) = mfac*nu;
+  cmat(2,0) = mfac*nu;
+  cmat(2,1) = mfac*nu;
+  cmat(2,2) = mfac*(1.0-nu);
   /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+  cmat(3,3) = mfac*0.5*(1.0-2.0*nu);
+  cmat(4,4) = mfac*0.5*(1.0-2.0*nu);
+  cmat(5,5) = mfac*0.5*(1.0-2.0*nu);
 }
 
 
+/*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
-void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                      Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+ *----------------------------------------------------------------------*/
+void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                                      Epetra_SerialDenseMatrix* cmat_e,
+                                      Epetra_SerialDenseVector* stress_e)
 {
+  // this is temporary as long as the material does not have a 
+  // FixedSizeSerialDenseMatrix-type interface
+  const LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(glstrain_e->A(),true);
+        LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(cmat_e->A(),true);
+        LINALG::FixedSizeSerialDenseMatrix<6,1> stress(stress_e->A(),true);
+
   SetupCmat(cmat);
   // evaluate stresses
-  (*cmat).Multiply(false,(*glstrain),(*stress));   // sigma = C . epsilon
+  stress.MultiplyNN(cmat,glstrain);  // sigma = C . epsilon
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 double MAT::StVenantKirchhoff::Density()
 {
   return matdata_->m.stvenant->density;  // density, returned to evaluate mass matrix

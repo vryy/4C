@@ -80,9 +80,9 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_neohooke; }
     
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                  Epetra_SerialDenseMatrix* cmat_e,
+                  Epetra_SerialDenseVector* stress_e);
     
 
     inline double Density() { return matdata_->m.neohooke->density; }
