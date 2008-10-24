@@ -138,9 +138,30 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     a2_->at(gp) = a;
   }
 
+  // post_drt wants to unpack but has no input variables!
+  if (!matdata_){
+    if(haveremodeldata){
+      // read data into nowhere
+      for (int gp = 0; gp < numgp; ++gp) {
+        double gamma;
+        Epetra_SerialDenseMatrix tmp(3,3);
+        ExtractfromPack(position,data,gamma);
+        ExtractfromPack(position,data,tmp);
+        ExtractfromPack(position,data,tmp);
+        vector<double> a;
+        ExtractfromPack(position,data,a);
+        remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
+      }
+    }
+    if (position != (int)data.size())
+      dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
+    return;
+  }
+  
   // check whether we currently want remodeling
   // because remodeling might be switched after restart
-  if (matdata_->m.artwallremod->rembegt != -1.){
+  if ((!matdata_) && (matdata_->m.artwallremod->rembegt != -1.)){
     // initialize internal variables of remodeling
     gamma_ = rcp(new vector<double>(numgp));
     phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
@@ -242,7 +263,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   } else dserror("Unknown init for ARTWALLREMOD");
 
   // check for remodelling option and initialize
-  if (matdata_->m.artwallremod->rembegt != -1.){
+  if ((matdata_->m.artwallremod->rembegt > 0.)){
     // history
     gamma_ = rcp(new vector<double> (numgp));  // of alignment angles
     lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
@@ -256,6 +277,9 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
       phi_->at(gp) = emptymat;
       stresses_->at(gp) = emptymat;
     }
+  } else {
+    // no remodeling
+    matdata_->m.artwallremod->rembegt = -1.0;
   }
   remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
   for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
