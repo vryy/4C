@@ -1105,8 +1105,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   LINALG::FixedSizeSerialDenseMatrix<3,  3  > xjm;
   LINALG::FixedSizeSerialDenseMatrix<3,  3  > xji;
   LINALG::FixedSizeSerialDenseMatrix<6,  nd > bop;
-  Epetra_SerialDenseMatrix D_epetra (6,  6  ) ;
-  LINALG::FixedSizeSerialDenseMatrix<6,  6  > D(D_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<6,  6  > D;
 
   double                        vol=0.;
 
@@ -1172,7 +1171,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
     }
 
     // call material law
-    actmat->SetupCmat(&D_epetra);
+    actmat->SetupCmat(D);
 
     // elastic stiffness matrix ke
     //ale3_keku(estif,bop,D,fac,nd);
