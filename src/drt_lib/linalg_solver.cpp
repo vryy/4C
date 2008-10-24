@@ -258,22 +258,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
                            bool refactor,
                            bool reset)
 {
-  // overrule reset flag if AZTEC preconditioner is existent and 
-  // not reused
-  if (Params().isSublist("Aztec Parameters"))
-  {
-    ParameterList& azlist = Params().sublist("Aztec Parameters");
-    int  reuse  = azlist.get("reuse",0);
-    
-    if (reuse==0)
-    {
-      reset=true;
-    }
-    else
-    {
-      if (Ncall()%reuse==0) reset=true;
-    }
-  }
 
   // reset data flags on demand
   if (reset)
@@ -349,6 +333,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (create)
   {
     // create an aztec solver
+    aztec_ = Teuchos::null;
     aztec_ = rcp(new AztecOO());
     aztec_->SetAztecDefaults();
     // tell aztec to which stream to write
@@ -465,6 +450,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
+    Pmatrix_ = Teuchos::null;
+    P_ = Teuchos::null;
     Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     // get the type of ifpack preconditioner from aztec
     string prectype = azlist.get("preconditioner","ILU");
@@ -487,6 +474,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     {
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner several times
+      Pmatrix_ = Teuchos::null;
+      P_ = Teuchos::null;
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
     }
@@ -494,6 +483,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     {
       // create a copy of the scaled (and downwinded) matrix
       // so we can reuse the preconditioner several times
+      Pmatrix_ = Teuchos::null;
+      P_ = Teuchos::null;
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
       // for debugging ML
@@ -506,6 +497,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       // SIMPLER does not need copy of preconditioning matrix to live
       // SIMPLER does not use the downwinding installed here, it does
       // its own downwinding inside if desired
+      P_ = Teuchos::null;
       P_ = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
                                             Params().sublist("SIMPLER"),
                                             outfile_));
