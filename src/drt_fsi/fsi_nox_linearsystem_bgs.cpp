@@ -80,7 +80,7 @@ bool NOX::FSI::LinearBGS::computeF(const Epetra_Vector &x, Epetra_Vector &F, con
   tmpsy_->Update(-1.0,*tmpsx_,1.0,*sy_,0.0);
   A02.Multiply(false,*ax,*tmpsx_);
   tmpsy_->Update(-1.0,*tmpsx_,1.0);
-  structureSolver_->Solve(A00.EpetraMatrix(),sx,tmpsy_,callcount_==0);
+  structureSolver_->Solve(A00.EpetraMatrix(),sx,tmpsy_,true,callcount_==0);
 
   // ALE
   // ax_{k+1} = A22^(-1) (ay - A20 * sx_{k+1} - A21 * fx_{k+1})
@@ -88,7 +88,7 @@ bool NOX::FSI::LinearBGS::computeF(const Epetra_Vector &x, Epetra_Vector &F, con
   tmpay_->Update(-1.0,*tmpax_,1.0,*ay_,0.0);
   A21.Multiply(false,*fx,*tmpax_);
   tmpay_->Update(-1.0,*tmpax_,1.0);
-  aleSolver_->Solve(A22.EpetraMatrix(),ax,tmpay_,callcount_==0);
+  aleSolver_->Solve(A22.EpetraMatrix(),ax,tmpay_,true,callcount_==0);
 
   // Fluid
   // fx_{k+1} = A11^(-1) (fy - A10 * sx_{k+1} - A12 * ax_{k})
@@ -96,7 +96,7 @@ bool NOX::FSI::LinearBGS::computeF(const Epetra_Vector &x, Epetra_Vector &F, con
   tmpfy_->Update(-1.0,*tmpfx_,1.0,*fy_,0.0);
   A12.Multiply(false,*ax,*tmpfx_);
   tmpfy_->Update(-1.0,*tmpfx_,1.0);
-  fluidSolver_->Solve(A11.EpetraMatrix(),fx,tmpfy_,callcount_==0);
+  fluidSolver_->Solve(A11.EpetraMatrix(),fx,tmpfy_,true,callcount_==0);
 
   A_.DomainExtractor().InsertVector(*sx,0,F);
   A_.DomainExtractor().InsertVector(*fx,1,F);

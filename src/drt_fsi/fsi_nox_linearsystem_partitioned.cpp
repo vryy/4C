@@ -91,7 +91,7 @@ NOX::FSI::LinearPartitioned::StructOp(Teuchos::RCP<const Epetra_Vector> iforce, 
 
   // solve
 
-  slin_->Solve(s_->EpetraOperator(),sx_,stmp_,callcount_==0);
+  slin_->Solve(s_->EpetraOperator(),sx_,stmp_,true,callcount_==0);
 
   // extract interface displacement
 
@@ -126,7 +126,7 @@ NOX::FSI::LinearPartitioned::FluidOp(Teuchos::RCP<const Epetra_Vector> idisp, co
 
   // solve
 
-  flin_->Solve(f_->EpetraOperator(),fx_,ftmp_,callcount_==0);
+  flin_->Solve(f_->EpetraOperator(),fx_,ftmp_,true,callcount_==0);
 
   // calculate interface forces
 
@@ -157,7 +157,7 @@ NOX::FSI::LinearPartitioned::AleOp(Teuchos::RCP<const Epetra_Vector> idisp)
   // The matrix has already been modified.
   LINALG::ApplyDirichlettoSystem(ax_,atmp_,algorithm_.StructToAle(idisp),*alefield_.Interface().CondMap());
 
-  alin_->Solve(a_->EpetraOperator(),ax_,atmp_,true);
+  alin_->Solve(a_->EpetraOperator(),ax_,atmp_,true,true);
 }
 
 
