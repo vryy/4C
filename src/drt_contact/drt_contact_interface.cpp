@@ -38,6 +38,9 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#ifndef PARALLEL
+#include "Epetra_SerialComm.h"
+#endif
 #include "drt_contact_interface.H"
 #include "drt_cdofset.H"
 #include "../drt_lib/linalg_utils.H"
