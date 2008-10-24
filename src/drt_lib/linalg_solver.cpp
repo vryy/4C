@@ -258,7 +258,24 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
                            bool refactor,
                            bool reset)
 {
-  // reset data flags
+  // overrule reset flag if AZTEC preconditioner is existent and 
+  // not reused
+  if (Params().isSublist("Aztec Parameters"))
+  {
+    ParameterList& azlist = Params().sublist("Aztec Parameters");
+    int  reuse  = azlist.get("reuse",0);
+    
+    if (reuse==0)
+    {
+      reset=true;
+    }
+    else
+    {
+      if (Ncall()%reuse==0) reset=true;
+    }
+  }
+
+  // reset data flags on demand
   if (reset)
   {
     Reset();
@@ -327,7 +344,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   else if (!Ncall())         create = true;
   else if (!reuse)           create = true;
   else if (Ncall()%reuse==0) create = true;
-
+  
   // Allocate an aztec solver with default parameters
   if (create)
   {
