@@ -420,6 +420,16 @@ protected:
                     const int gp,
                     ParameterList&            params);         // algorithmic parameters e.g. time
 
+  //! material selection for sow6
+  void sow6_mat_sel(
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp,
+                    ParameterList&  params);         // algorithmic parameters e.g. time
+
   //! Evaluate Wedge6 Shapefcts to keep them static
   const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > sow6_shapefcts();
   //! Evaluate Wedge6 Derivs to keep them static

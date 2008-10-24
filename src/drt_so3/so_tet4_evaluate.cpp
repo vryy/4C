@@ -480,9 +480,6 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
       }
     }
   }/* ==================================================== end of Loop over GP */
-#ifdef PRINT_DEBUG
-  writeArray(elevec1,"elevec1");
-#endif
   return 0;
 } // DRT::ELEMENTS::So_tet4::EvaluateNeumann
 
@@ -516,13 +513,6 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
       jac(row+1,col)= xrefe(col,row);
   // volume of the element
   V_ = jac.Determinant()/6.0;
-
-#ifdef PRINT_DEBUG
-  writeArray(xrefe,"xrefe");
-  LINALG::FixedSizeSerialDenseMatrix<1,1> jac_mat;
-  jac_mat(0) = V_;
-  writeArray(jac_mat,"V_");
-#endif
 
   nxyz_.resize(NUMGPT_SOTET4);
   const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
@@ -564,13 +554,6 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [  -------  -------  ------- ]
     **             [    dX       dY       dZ    ]
     */
-
-#ifdef PRINT_DEBUG
-  writeArray(tmp,"tmp");
-  writeArray(I_aug,"I_aug");
-  writeArray(partials,"partials");
-  writeArray(nxyz_[gp],"nxyz_[gp]");
-#endif
 
 #ifdef PRESTRESS
     if (!(prestress_->IsInit()))
@@ -673,8 +656,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
 
     // size is 3x3
-    LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_SOTET4,NUMDIM_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(defgrd_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd(false);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get derivatives wrt to last spatial configuration
@@ -713,7 +695,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
       LINALG::FixedSizeSerialDenseMatrix<3,3> tmp3x3;
       tmp3x3.Multiply(defgrd,Fhist);
-      defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
+      defgrd = tmp3x3;
 
       // make detJ and nxyzmat refer to the ref. configuration that resulted from
       // the inverse design analysis
@@ -726,12 +708,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     // size is 3x3
     LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
     cauchygreen.MultiplyTN(defgrd,defgrd);
-    //multiply<NUMDIM_SOTET4,NUMDIM_SOTET4,NUMDIM_SOTET4,'T','N'>(cauchygreen,defgrd,defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(false);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -838,22 +818,11 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     ** every necessary data must be passed.
     */
     // size is 6x6
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOTET4,NUMSTR_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(cmat_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
     // size is 6
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> stress(stress_epetra.A(),true);
-#ifdef PRINT_DEBUG
-  writeArray(defgrd,"defgrd");
-  writeArray(glstrain,"glstrain");
-#endif
-  so_tet4_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra, &defgrd_epetra, gp);
-#ifdef PRINT_DEBUG
-  writeArray(stress,"stress");
-  writeArray(cmat,"cmat");
-  writeArray(glstrain,"glstrain");
-  writeArray(defgrd,"defgrd");
-#endif
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+
     // return gp stresses
     if (elestress != NULL)
     { // return 2nd Piola-Kirchhoff stresses

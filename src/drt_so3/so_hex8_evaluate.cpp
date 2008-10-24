@@ -757,8 +757,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  Epetra_SerialDenseMatrix defgrd_epetra(NUMDIM_SOH8,NUMDIM_SOH8);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(defgrd_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd(false);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
@@ -810,7 +809,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
       LINALG::FixedSizeSerialDenseMatrix<3,3> tmp3x3;
       tmp3x3.Multiply(defgrd,Fhist);
-      defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
+      defgrd = tmp3x3;
 
       // make detJ and invJ refer to the ref. configuration that resulted from
       // the inverse design analysis
@@ -952,12 +951,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOH8);
-    double density;
-    soh8_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&defgrd_epetra,gp,params);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);
+    double density = 0.0;
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -973,7 +970,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       {
         const double detF = defgrd.Determinant();
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> pkstress;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> pkstress;
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -984,8 +981,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchystress;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> temp;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> cauchystress;
         temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
         cauchystress.MultiplyNT(temp,defgrd);
 
@@ -1005,14 +1002,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8, NUMDOF_SOH8> cb;
+      LINALG::FixedSizeSerialDenseMatrix<6,NUMDOF_SOH8> cb;
       cb.Multiply(cmat,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> sfac(stress); // auxiliary integrated stress
+      LINALG::FixedSizeSerialDenseMatrix<6,1> sfac(stress); // auxiliary integrated stress
       sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      vector<double> SmB_L(NUMDIM_SOH8); // intermediate Sm.B_L
+      vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
@@ -1025,9 +1022,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<NUMDIM_SOH8; ++idim)
             bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-          (*stiffmatrix)(NUMDIM_SOH8*inod+0, NUMDIM_SOH8*jnod+0) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOH8*inod+1, NUMDIM_SOH8*jnod+1) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOH8*inod+2, NUMDIM_SOH8*jnod+2) += bopstrbop;
+          (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
+          (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
+          (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
         }
       } // end of integrate `geometric' stiffness******************************
 

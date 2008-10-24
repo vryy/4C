@@ -523,6 +523,15 @@ protected:
                     ParameterList&  params,
                     const string action = string());
 
+  void soh8_mat_sel(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp,
+                    ParameterList&  params,
+                    const string action = string());
+
   //! EAS technology, init
   void soh8_easinit();
 

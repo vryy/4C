@@ -416,6 +416,15 @@ protected:
                        const Epetra_SerialDenseMatrix* defgrd,
                        int gp);
 
+  /// material selection for so_tet4
+  void so_tet4_mat_sel(
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp);
+
 }; // class So_tet4
 
 /*!

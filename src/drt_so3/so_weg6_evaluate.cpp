@@ -503,8 +503,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_WEG6,NUMDIM_WEG6);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(defgrd_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd(false);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get Jacobian mapping wrt to the stored configuration
@@ -559,8 +558,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_WEG6);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(false);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -659,12 +657,10 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_WEG6,NUMSTR_WEG6);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_WEG6);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> stress(stress_epetra.A(),true);
-    double density;
-    sow6_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&defgrd_epetra, gp, params);
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    double density = 0.0;
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

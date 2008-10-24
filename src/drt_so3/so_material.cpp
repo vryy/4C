@@ -53,6 +53,38 @@ using namespace LINALG; // our linear algebra
  | material laws for So_hex8                                   maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp,
+                    ParameterList&  params,
+                    const string action)
+{
+#ifdef DEBUG
+  // I'm not sure whether all of these are always supplied, we'll see....
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain) dserror("No GL strains supplied");
+  if (!defgrd) dserror("No defgrd supplied");
+#endif
+
+  Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
+  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+  const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
+  Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
+
+  soh8_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params,action);
+
+  return;
+}                    
+
+
+/*----------------------------------------------------------------------*
+ | material laws for So_hex8                                   maf 04/07|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -263,6 +295,35 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 }  // of soh8_mat_sel
 
 /*----------------------------------------------------------------------*
+ | material laws for So_weg6                                   gee 10/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp,
+                    ParameterList&  params)         // algorithmic parameters e.g. time
+{
+#ifdef DEBUG
+  // I'm not sure whether all of these are always supplied, we'll see....
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain) dserror("No GL strains supplied");
+  if (!defgrd) dserror("No defgrd supplied");
+#endif
+
+  Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
+  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+  const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
+  Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
+
+  sow6_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params);
+
+}
+
+/*----------------------------------------------------------------------*
  | material laws for So_weg6                                   maf 08/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
@@ -386,7 +447,34 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
   return;
 }  // of sow6_mat_sel
 
-/*----------------------------------------------------------------------* !!!!
+/*----------------------------------------------------------------------*
+ | material laws for So_tet4                                  gee 10/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    double* density,
+                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    const int gp)
+{
+#ifdef DEBUG
+  // I'm not sure whether all of these are always supplied, we'll see....
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain) dserror("No GL strains supplied");
+  if (!defgrd) dserror("No defgrd supplied");
+#endif
+
+  Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
+  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+  const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
+  Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
+
+  so_tet4_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp);
+}
+
+/*----------------------------------------------------------------------*
  | material laws for So_tet4                                  vlf 04/07|
  | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
  | different class, and therefore cannot be used in So_tet10)           |
@@ -424,7 +512,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     }
     default:
       dserror("Illegal type %d of material for element solid3 tet4", mat->MaterialType());
-      break;
+    break;
   }
 
   /*--------------------------------------------------------------------*/
