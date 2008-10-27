@@ -472,7 +472,10 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 void DRT::UTILS::RedistributeWithNewNodalDistribution(
     DRT::Discretization&     dis,
     const Epetra_Map&        noderowmap,
-    const Epetra_Map&        nodecolmap
+    const Epetra_Map&        nodecolmap,
+    bool     assigndegreesoffreedom = true,
+    bool    initelements = true,
+    bool    doboundaryconditions = true
     )
 {
   // redistribute nodes to column (ghost) map
