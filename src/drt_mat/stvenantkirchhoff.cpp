@@ -161,6 +161,20 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
 
 
 /*----------------------------------------------------------------------*
+//calculates stresses using one of the above method to evaluate the elasticity tensor
+ *----------------------------------------------------------------------*/
+void MAT::StVenantKirchhoff::Evaluate(
+                  const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress)
+{
+  SetupCmat(cmat);
+  // evaluate stresses
+  stress.MultiplyNN(cmat,glstrain);  // sigma = C . epsilon
+}
+
+
+/*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
 double MAT::StVenantKirchhoff::Density()

@@ -84,6 +84,9 @@ namespace MAT
                   Epetra_SerialDenseMatrix* cmat_e,
                   Epetra_SerialDenseVector* stress_e);
     
+    void Evaluate(const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress);
 
     inline double Density() { return matdata_->m.neohooke->density; }
 
