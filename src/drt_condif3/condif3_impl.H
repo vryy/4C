@@ -141,7 +141,7 @@ public:
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
         const double                    timefac, ///< time discretization factor
-        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities att_{n+1}
+        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities at t_{n+1}
         const bool                      temperature, ///< temperature flag
         const string                    fssgd, ///< subgrid-diff. flag
         const bool                      is_stationary, ///< flag indicating stationary formulation
@@ -151,19 +151,19 @@ public:
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
     virtual void InitializeOST(
         const DRT::ELEMENTS::Condif3*   ele,  ///< the element
-        const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephi0,
-        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,
-        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,
-        Epetra_SerialDenseMatrix&       massmat,
-        Epetra_SerialDenseVector&       rhs,
-        Epetra_SerialDenseVector&       sugrvisc,
-        const struct _MATERIAL*         material,
-        const double                    time,
-        const double                    timefac,
-        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evel,
-        const bool                      temperature,
-        const string                    fssgd,
-        const double                    frt
+        const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephi0, ///< initial scalar field
+        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,  ///< density
+        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,  ///< el. potential at element nodes
+        Epetra_SerialDenseMatrix&       massmat, ///< mass matrix to calculate
+        Epetra_SerialDenseVector&       rhs, ///< element rhs to calculate
+        Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
+        const struct _MATERIAL*         material, ///< material pointer
+        const double                    time, ///< current simulation time
+        const double                    timefac, ///< time discretization factor
+        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evel, ///< nodal velocities at t_{n+1}
+        const bool                      temperature, ///< temperature flag
+        const string                    fssgd, ///< subgrid-diff. flag
+        const double                    frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! get the body force
@@ -181,13 +181,13 @@ public:
     //! calculate stabilization parameter
     virtual void CalTau(
         const DRT::ELEMENTS::Condif3*&          ele, ///< the element
-        Epetra_SerialDenseVector&               sugrvisc,
-        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities att_{n+1}
-        const LINALG::FixedSizeSerialDenseMatrix<iel,1>&         epot,
-        const double&                           timefac,
-        string                                  fssgd,
-        const bool&                             is_stationary,
-        const double&                           frt
+        Epetra_SerialDenseVector&               sugrvisc, ///< subgrid-diff. vector
+        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities at t_{n+1}
+        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot,  ///< el. potential at element nodes
+        const double&                           timefac, ///< time discretization factor
+        string                                  fssgd, ///< subgrid-diff. flag
+        const bool&                             is_stationary, ///< flag indicating stationary formulation
+        const double&                           frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! evaluate shape functions and their derivatives at current integration point
