@@ -75,7 +75,7 @@ HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 # exodus
 EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
 
-LIBS="-lc -lg2c -lmetis -lblitz -llapack -lblas"
+LIBS="-lc -lmetis -lblitz -L/usr/lib64/atlas -llapack -lblas"
 
 CFLAGS_OPT="-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
 CPFLAGS_OPT="-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
