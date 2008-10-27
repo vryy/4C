@@ -312,8 +312,6 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,3> csvderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> fsvderxy_;
-    //! global second velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
     //! global derivatives of shape functions w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
     //! density-weighted global derivatives of shape functions w.r.t x,y,z

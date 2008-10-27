@@ -153,7 +153,6 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     mderxy_(),
     csvderxy_(),
     fsvderxy_(),
-    vderxy2_(),
     derxy_(),
     densderxy_(),
     derxy2_(),
@@ -882,19 +881,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
       gder2(ele);
-
-      // calculate 2nd velocity derivatives at integration point
-      //vderxy2_ = blitz::sum(derxy2_(j,k)*evelnp(i,k),k);
-      vderxy2_.MultiplyNT(evelnp,derxy2_);
     }
-    else
-    {
-      derxy2_.Clear();
-      vderxy2_.Clear();
-    }
+    else derxy2_.Clear();
 #ifdef PRINTDEBUG
     writeArray(derxy2_,"derxy2_");
-    writeArray(vderxy2_,"vderxy2_");
 #endif // PB
 
     // get momentum (n+g,i) at integration point
@@ -1013,46 +1003,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     rhscon_ = histcon_ - dens;
 
     /*----------------- get numerical representation of single operators ---*/
-
-    /* Convective term  u_old * grad u_old: */
-    //conv_old_ = blitz::sum(vderxy_(i, j)*convvelint_(j), j);
-    conv_old_.Multiply(vderxy_,convvelint_);
-
-    if (higher_order_ele)
-    {
-      /* Viscous term  div epsilon(u_old) */
-      visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
-      visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
-      visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
-    }
-    else
-    {
-      visc_old_.Clear();
-    }
-
-#ifdef PRINTDEBUG
-    writeArray(rhsint_,"rhsint_");
-    writeArray(conv_old_,"conv_old_");
-    writeArray(visc_old_,"visc_old_");
-    Epetra_SerialDenseVector ttttttttvf(10);
-    ttttttttvf(0) = tau_M;
-    ttttttttvf(1) = tau_Mp;
-    ttttttttvf(2) = tau_C;
-    ttttttttvf(3) = timetauM;
-    ttttttttvf(4) = timetauMp;
-    ttttttttvf(5) = ttimetauM;
-    ttttttttvf(6) = ttimetauMp;
-    ttttttttvf(7) = timefacfac;
-    ttttttttvf(8) = vartfac;
-    ttttttttvf(9) = fac;
-    writeArray(ttttttttvf,"tau(3),timetau(4),fac(3)");
-#endif // PB
-
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
     //conv_c_ = blitz::sum(derxy_(j,i)*convvelint_(j), j);
     conv_c_.MultiplyTN(derxy_,convvelint_);
+
+    /* Convective term  u_old * grad u_old: */
+    //conv_old_ = blitz::sum(vderxy_(i, j)*convvelint_(j), j);
+    conv_old_.Multiply(vderxy_,convvelint_);
 
     if (higher_order_ele)
     {
@@ -1068,52 +1027,85 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
            with N_x .. x-line of N
            N_y .. y-line of N                                             */
 
-      for (int i=0; i<numnode; ++i) {
-        viscs2_(0,i) = 0.5 * (2.0 * derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
-        viscs2_(1,i) = 0.5 *  derxy2_(3,i);
-        viscs2_(2,i) = 0.5 *  derxy2_(4,i);
-        viscs2_(3,i) = 0.5 *  derxy2_(3,i);
-        viscs2_(4,i) = 0.5 * (derxy2_(0,i) + 2.0 * derxy2_(1,i) + derxy2_(2,i));
-        viscs2_(5,i) = 0.5 *  derxy2_(5,i);
-        viscs2_(6,i) = 0.5 *  derxy2_(4,i);
-        viscs2_(7,i) = 0.5 *  derxy2_(5,i);
-        viscs2_(8,i) = 0.5 * (derxy2_(0,i) + derxy2_(1,i) + 2.0 * derxy2_(2,i));
-      }
-
-      if (loma)
-      {
-        /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
-        /*   /                            \
-             |  N_x,xx + N_y,yx + N_z,zx  |
-           1 |                            |
-        -  - |  N_x,xy + N_y,yy + N_z,zy  |
-           3 |                            |
-             |  N_x,xz + N_y,yz + N_z,zz  |
-             \                            /
+      /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+      /*   /                            \
+           |  N_x,xx + N_y,yx + N_z,zx  |
+         1 |                            |
+      -  - |  N_x,xy + N_y,yy + N_z,zy  |
+         3 |                            |
+           |  N_x,xz + N_y,yz + N_z,zz  |
+           \                            /
 
              with N_x .. x-line of N
              N_y .. y-line of N                                             */
 
-        for (int i=0; i<numnode; ++i) {
-          viscs2_(0,i) -=  derxy2_(0,i)/3.0;
-          viscs2_(1,i) -=  derxy2_(3,i)/3.0;
-          viscs2_(2,i) -=  derxy2_(4,i)/3.0;
-          viscs2_(3,i) -=  derxy2_(3,i)/3.0;
-          viscs2_(4,i) -=  derxy2_(1,i)/3.0;
-          viscs2_(5,i) -=  derxy2_(5,i)/3.0;
-          viscs2_(6,i) -=  derxy2_(4,i)/3.0;
-          viscs2_(7,i) -=  derxy2_(5,i)/3.0;
-          viscs2_(8,i) -=  derxy2_(2,i)/3.0;
-        }
+      double prefac;
+      if (loma)
+      {
+        prefac = 1.0/3.0;
+        derxy2_.Scale(prefac);
+      }
+      else prefac = 1.0;
+
+      double sum = (derxy2_(0,0)+derxy2_(1,0)+derxy2_(2,0))/prefac;
+
+      viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
+      viscs2_(1,0) = 0.5 *  derxy2_(3,0);
+      viscs2_(2,0) = 0.5 *  derxy2_(4,0);
+      viscs2_(3,0) = 0.5 *  derxy2_(3,0);
+      viscs2_(4,0) = 0.5 * (sum + derxy2_(1,0));
+      viscs2_(5,0) = 0.5 *  derxy2_(5,0);
+      viscs2_(6,0) = 0.5 *  derxy2_(4,0);
+      viscs2_(7,0) = 0.5 *  derxy2_(5,0);
+      viscs2_(8,0) = 0.5 * (sum + derxy2_(2,0));
+
+      visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0)+viscs2_(2,0)*evelnp(2,0);
+      visc_old_(1) = viscs2_(3,0)*evelnp(0,0)+viscs2_(4,0)*evelnp(1,0)+viscs2_(5,0)*evelnp(2,0);
+      visc_old_(2) = viscs2_(6,0)*evelnp(0,0)+viscs2_(7,0)*evelnp(1,0)+viscs2_(8,0)*evelnp(2,0);
+
+      for (int i=1; i<numnode; ++i)
+      {
+        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+
+        viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
+        viscs2_(1,i) = 0.5 *  derxy2_(3,i);
+        viscs2_(2,i) = 0.5 *  derxy2_(4,i);
+        viscs2_(3,i) = 0.5 *  derxy2_(3,i);
+        viscs2_(4,i) = 0.5 * (sum + derxy2_(1,i));
+        viscs2_(5,i) = 0.5 *  derxy2_(5,i);
+        viscs2_(6,i) = 0.5 *  derxy2_(4,i);
+        viscs2_(7,i) = 0.5 *  derxy2_(5,i);
+        viscs2_(8,i) = 0.5 * (sum + derxy2_(2,i));
+
+        visc_old_(0) += viscs2_(0,i)*evelnp(0,i)+viscs2_(1,i)*evelnp(1,i)+viscs2_(2,i)*evelnp(2,i);
+        visc_old_(1) += viscs2_(3,i)*evelnp(0,i)+viscs2_(4,i)*evelnp(1,i)+viscs2_(5,i)*evelnp(2,i);
+        visc_old_(2) += viscs2_(6,i)*evelnp(0,i)+viscs2_(7,i)*evelnp(1,i)+viscs2_(8,i)*evelnp(2,i);
       }
     }
     else
     {
       viscs2_.Clear();
+      visc_old_.Clear();
     }
+
 #ifdef PRINTDEBUG
+    writeArray(rhsint_,"rhsint_");
     writeArray(conv_c_,"conv_c_");
     writeArray(viscs2_,"viscs2_");
+    writeArray(conv_old_,"conv_old_");
+    writeArray(visc_old_,"visc_old_");
+    Epetra_SerialDenseVector ttttttttvf(10);
+    ttttttttvf(0) = tau_M;
+    ttttttttvf(1) = tau_Mp;
+    ttttttttvf(2) = tau_C;
+    ttttttttvf(3) = timetauM;
+    ttttttttvf(4) = timetauMp;
+    ttttttttvf(5) = ttimetauM;
+    ttttttttvf(6) = ttimetauMp;
+    ttttttttvf(7) = timefacfac;
+    ttttttttvf(8) = vartfac;
+    ttttttttvf(9) = fac;
+    writeArray(ttttttttvf,"tau(3),timetau(4),fac(3)");
 #endif // PB
 
     /* momentum and velocity divergence: */

@@ -205,7 +205,6 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<2,2>   vderxy_;    /// velocity vector derivative
     LINALG::FixedSizeSerialDenseMatrix<2,2>   mderxy_;    /// momentum derivative
     LINALG::FixedSizeSerialDenseMatrix<2,2>   fsvderxy_;  /// fine-scale velocity vector derivative
-    LINALG::FixedSizeSerialDenseMatrix<2,3>   vderxy2_;   /// second derivatives of the velocity vector
     LINALG::FixedSizeSerialDenseMatrix<2,iel> derxy_;     /// shape derivative with respect to x
     LINALG::FixedSizeSerialDenseMatrix<2,iel> densderxy_; /// density-weighted shape derivative w.r.t. x
     LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy2_;    /// second shape derivative with respect to x

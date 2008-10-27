@@ -89,7 +89,6 @@ DRT::ELEMENTS::Fluid2Stationary<distype>::Fluid2Stationary()
     vderxy_(),
     mderxy_(),
     fsvderxy_(),
-    vderxy2_(),
     derxy_(),
     densderxy_(),
     derxy2_(),
@@ -614,15 +613,8 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
       solver_bm.Solve();                      // Solve A*X = B
       if (ierr!=0)
         dserror("Unable to perform backward substitution after factorisation of jacobian");
-
-      // calculate 2nd velocity derivatives at integration point
-      vderxy2_.MultiplyNT(evelnp, derxy2_);
     }
-    else
-    {
-      derxy2_.Clear();
-      vderxy2_.Clear();
-    }
+    else derxy2_  = 0.;
 
     // get momentum (n+g,i) at integration point
     velint_.Multiply(evelnp, densfunct_);
@@ -661,24 +653,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
     rhsmom_.Update(bodyforce_);
 
     /*----------------- get numerical representation of single operators ---*/
-    /* Convective term  u_old * grad u_old: */
-    conv_old_.Multiply(vderxy_, velint_);
-
-    /* Viscous term  div epsilon(u_old) */
-    if (higher_order_ele)
-    {
-      visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,2));
-      visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,2));
-    }
-    else
-    {
-      visc_old_.Clear();
-    }
-
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
     conv_c_.MultiplyTN(derxy_, velint_);
+
+    /* Convective term  u_old * grad u_old: */
+    conv_old_.Multiply(vderxy_, velint_);
 
     if (higher_order_ele)
     {
@@ -689,32 +670,51 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
            2 |  N_y,xx + N_x,yx + 2 N_y,yy  |
              \                              /                            */
 
-      for (int i=0; i<numnode; ++i) viscs2_(0,i) = 0.5 * (2.0 * derxy2_(0,i) + derxy2_(1,i));
-      for (int i=0; i<numnode; ++i) viscs2_(1,i) = 0.5 *  derxy2_(2,i);
-      for (int i=0; i<numnode; ++i) viscs2_(2,i) = 0.5 *  derxy2_(2,i);
-      for (int i=0; i<numnode; ++i) viscs2_(3,i) = 0.5 * (derxy2_(0,i) + 2.0 * derxy2_(1,i));
+      /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+      /*    /                   \
+          1 |  N_x,xx + N_y,yx  |
+       -  - |                   |
+          3 |  N_x,xy + N_y,yy  |
+            \                   /
 
+               with N_x .. x-line of N
+               N_y .. y-line of N                                      */
+
+      double prefac;
       if (loma)
       {
-        /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
-        /*    /                   \
-            1 |  N_x,xx + N_y,yx  |
-         -  - |                   |
-            3 |  N_x,xy + N_y,yy  |
-              \                   /
+        prefac = 1.0/3.0;
+        derxy2_.Scale(prefac);
+      }
+      else prefac = 1.0;
 
-                 with N_x .. x-line of N
-                 N_y .. y-line of N                                      */
+      double sum = (derxy2_(0,0)+derxy2_(1,0))/prefac;
 
-        for (int i=0; i<numnode; ++i) viscs2_(0,i) -=  derxy2_(0,i)/3.0;
-        for (int i=0; i<numnode; ++i) viscs2_(1,i) -=  derxy2_(2,i)/3.0;
-        for (int i=0; i<numnode; ++i) viscs2_(2,i) -=  derxy2_(2,i)/3.0;
-        for (int i=0; i<numnode; ++i) viscs2_(3,i) -=  derxy2_(1,i)/3.0;
+      viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
+      viscs2_(1,0) = 0.5 * derxy2_(2,0);
+      viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
+
+      /* viscous term  div epsilon(u_old) */
+      visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0);
+      visc_old_(1) = viscs2_(1,0)*evelnp(0,0)+viscs2_(3,0)*evelnp(1,0);
+
+      for (int i=1; i<numnode; ++i) 
+      {
+        double sum = (derxy2_(0,i)+derxy2_(1,i))/prefac;
+
+        viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
+        viscs2_(1,i) = 0.5 * derxy2_(2,i);
+        viscs2_(3,i) = 0.5 * (sum + derxy2_(1,i));
+
+        /* viscous term  div epsilon(u_old) */
+        visc_old_(0) += viscs2_(0,i)*evelnp(0,i)+viscs2_(1,i)*evelnp(1,i);
+        visc_old_(1) += viscs2_(1,i)*evelnp(0,i)+viscs2_(3,i)*evelnp(1,i);
       }
     }
     else
     {
       viscs2_.Clear();
+      visc_old_.Clear();
     }
 
     /* momentum and velocity divergence: */
