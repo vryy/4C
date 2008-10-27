@@ -58,12 +58,12 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   else
     std::cout << "   gamma = " << gamma_ << std::endl;
   // alpha_f
-  if ( (alphaf_ <= 0.0) or (alphaf_ > 1.0) )
+  if ( (alphaf_ < 0.0) or (alphaf_ >= 1.0) )
     dserror("alpha_f out of range [0.0,1.0)");
   else
     std::cout << "   alpha_f = " << alphaf_ << std::endl;
   // alpha_m 
-  if ( (alpham_ <= 0.0) or (alpham_ > 1.0) )
+  if ( (alpham_ < 0.0) or (alpham_ >= 1.0) )
     dserror("alpha_m out of range [0.0,1.0)");
   else
     std::cout << "   alpha_m = " << alpham_ << std::endl;
