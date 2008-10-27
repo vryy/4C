@@ -1,11 +1,20 @@
+//
+// Maintainer: Georg Bauer
+//             bauer@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15252
+//
+// necessary defines: D_FLUID3 CCADISCRET BINIO
+//
 ==================================================================
         General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE                             
+-------------------------------------------------------------TITLE
 2D Analytical solution for Diffusion-Migration
 // Reference:
 // Kwok, Yue-Kuen and Wu, Charles C. K.
-// "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+// "Fractional step algorithm for solving a multi-dimensional 
+// diffusion-migration equation"
 // Numerical Methods for Partial Differential Equations
 // 1995, Vol 11, 389-397
 ------------------------------------------------------PROBLEM SIZE
