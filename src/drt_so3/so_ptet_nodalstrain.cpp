@@ -637,75 +637,26 @@ void DRT::ELEMENTS::PtetRegister::SelectMaterial(
                       LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
                       int gp)
 {
-  Epetra_SerialDenseVector stress_e(View,stress.A(),stress.Rows());
-  Epetra_SerialDenseMatrix cmat_e(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
-  const Epetra_SerialDenseVector glstrain_e(View,glstrain.A(),glstrain.Rows());
-  //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
-
   switch (mat->MaterialType())
   {
     case m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(glstrain,cmat,stress);
       density = stvk->Density();
     }
     break;
     case m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
-      neo->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain,cmat,stress);
       density = neo->Density();
     }
     break;
     case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
-      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
-      density = aaa->Density();
-    }
-    break;
-    default:
-      dserror("Illegal type %d of material for element Ptet tet4", mat->MaterialType());
-    break;
-  }
-
-  /*--------------------------------------------------------------------*/
-  return;
-}  // DRT::ELEMENTS::Ptet::SelectMaterial
-
-/*----------------------------------------------------------------------*
- | material laws for Ptet (protected)                          gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::SelectMaterial(
-                                RCP<MAT::Material> mat,
-                                Epetra_SerialDenseVector& stress,
-                                Epetra_SerialDenseMatrix& cmat,
-                                double& density,
-                                const Epetra_SerialDenseVector& glstrain,
-                                const Epetra_SerialDenseMatrix& defgrd,
-                                int gp)
-{
-  switch (mat->MaterialType())
-  {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-    {
-      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(&glstrain,&cmat,&stress);
-      density = stvk->Density();
-    }
-    break;
-    case m_neohooke: /*----------------- NeoHookean Material */
-    {
-      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
-      neo->Evaluate(&glstrain,&cmat,&stress);
-      density = neo->Density();
-    }
-    break;
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
-    {
-      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(&glstrain,&cmat,&stress);
+      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(glstrain,cmat,stress);
       density = aaa->Density();
     }
     break;

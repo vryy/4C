@@ -193,14 +193,6 @@ private:
 
 
   void SelectMaterial(RCP<MAT::Material> mat,
-                      Epetra_SerialDenseVector& stress,
-                      Epetra_SerialDenseMatrix& cmat,
-                      double& density,
-                      const Epetra_SerialDenseVector& glstrain,
-                      const Epetra_SerialDenseMatrix& defgrd,
-                      int gp);
-
-  void SelectMaterial(RCP<MAT::Material> mat,
                       LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
                       LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
                       double& density,
