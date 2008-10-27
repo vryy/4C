@@ -82,8 +82,8 @@ namespace ADAPTER
     /// current time
     double Time() const {return time_;}
 
-    /// tests if there are more time steps to do
-    bool NotFinished() { return ((step_ < nstep_) and (time_ < maxtime_)); }
+    /// tests whether there are more time steps to do or not
+    bool NotFinished() { return ((step_ < nstep_) and ((time_ + 1.0e-12) < maxtime_)); }
 
     /// get current velocity from fluid solver
     void GetCurrentFluidVelocity(){ velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp()); }
