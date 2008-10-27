@@ -50,7 +50,7 @@ using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
- | material laws for So_hex8                                   maf 04/07|
+ | material laws for So_hex8                                   gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
                     LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
@@ -70,11 +70,46 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
+  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // interface go to the material law here, all others go through to
+  // the old interface
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = stvk->Density();
+      return;
+      break;
+    }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain,*cmat,*stress);
+      *density = neo->Density();
+      return;
+      break;
+    }
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(*glstrain,*cmat,*stress);
+      *density = aaa->Density();
+      return;
+      break;
+    }
+    default:
+    break;
+  } // switch (mat->MaterialType())
+  
+  
+  // This is a wrapper for the Epetra style material interface
   Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
   Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
   const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
   Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-
   soh8_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params,action);
 
   return;
@@ -370,11 +405,46 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
+  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // interface go to the material law here, all others go through to
+  // the old interface
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = stvk->Density();
+      return;
+      break;
+    }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain,*cmat,*stress);
+      *density = neo->Density();
+      return;
+      break;
+    }
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(*glstrain,*cmat,*stress);
+      *density = aaa->Density();
+      return;
+      break;
+    }
+    default:
+    break;
+  } // switch (mat->MaterialType())
+
+
+  // This is a wrapper for the Epetra style material interface
   Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
   Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
   const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
   Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-
   sow6_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params);
 
 }
@@ -522,12 +592,41 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
-  Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
-  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
-  const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
-  Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
+  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // interface go to the material law here, all others go through to
+  // the old interface
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = stvk->Density();
+      return;
+      break;
+    }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain,*cmat,*stress);
+      *density = neo->Density();
+      return;
+      break;
+    }
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(*glstrain,*cmat,*stress);
+      *density = aaa->Density();
+      return;
+      break;
+    }
+    default:
+      dserror("Unknown material to tet4 element");
+    break;
+  } // switch (mat->MaterialType())
 
-  so_tet4_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp);
 }
 
 /*----------------------------------------------------------------------*
