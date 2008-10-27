@@ -262,7 +262,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate()
+void StatMechManager::StatMechUpdate(double dt)
 {  
   #ifdef D_BEAM3
   
@@ -280,10 +280,10 @@ void StatMechManager::StatMechUpdate()
     delcrosslinker->Random();
     
     //probability with which a crosslinker is established between neighbouring nodes
-    double plink = 1;
+    double plink = statmechparams_.get<double>("K_ON",0.0) * dt;;
     
-    //probability with which a crosslink breaks up in the current time step
-    double punlink = statmechparams_.get<double>("K_OFF",0.0);
+    //probability with which a crosslink breaks up in the current time step (off rate multiplied by length of time step)
+    double punlink = statmechparams_.get<double>("K_OFF",0.0) * dt;
     
     //maximal distance bridged by a crosslinker
     double rlink = statmechparams_.get<double>("R_LINK",0.0);

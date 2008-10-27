@@ -156,7 +156,7 @@ void StatMechTime::Integrate()
     
     //special update and output for statistical mechanics
     statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
-    statmechmanager_->StatMechUpdate();
+    statmechmanager_->StatMechUpdate(dt);
 
     /*
     //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
