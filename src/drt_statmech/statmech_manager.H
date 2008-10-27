@@ -22,15 +22,6 @@ Maintainer: Christian Cyron
 \author cyron (cyron@lnm.mw.tum.de)
 */
 
-// forward declarations
-namespace DRT
-{
-  namespace ELEMENTS
-  {
-    class Beam3;
-  }
-}
-
 class StatMechManager
 {
 public:
@@ -88,9 +79,7 @@ protected:
   
   //! \brief storing for each node number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
-  
-  //! \brief instance of a crosslinker element which is copied and adapted each time a new crosslinker is needed
-  RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy_;
+
   
 
 }; // class StatMechManager

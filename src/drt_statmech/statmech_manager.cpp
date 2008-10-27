@@ -95,22 +95,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
     }
-    
-    
-    /*
-    #ifdef D_BEAM3
-    
-    //an instance of a typical crosslinker element is generated which is copied and adapted each time a new crosslinker is needed 
-    crosslinkerdummy_ = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
-    crosslinkerdummy_->crosssec_ = 19e-6;
-    crosslinkerdummy_->crosssecshear_ = 19e-6*1.1;
-    crosslinkerdummy_->Iyy_ = 28.74e-12;
-    crosslinkerdummy_->Izz_ = 28.74e-12;
-    crosslinkerdummy_->Irr_ = 28.74e-8;
-    crosslinkerdummy_->material_ = 1;
-    
-    #endif
-    */
+
    
   }
 
@@ -290,6 +275,20 @@ void StatMechManager::StatMechUpdate(double dt)
     
     //searching neighbours of the current node (with global Id "neighbour"):
     std::vector<int> neighbours(0);
+       
+    /*in order not to have to set all the parameters for each single crosslinker element a dummy crosslinker element 
+     * is set up before setting and deleting crosslinkers*/
+    RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
+    crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
+    
+    crosslinkerdummy->crosssec_ = 19e-6;
+    crosslinkerdummy->crosssecshear_ = 19e-6*1.1;
+    crosslinkerdummy->Iyy_ = 28.74e-12;
+    crosslinkerdummy->Izz_ = 28.74e-12;
+    crosslinkerdummy->Irr_ = 28.74e-8;
+    crosslinkerdummy->material_ = 1;
+    
+
     
     
     /*_________________________________________________________________________________________________________
@@ -356,7 +355,7 @@ void StatMechManager::StatMechUpdate(double dt)
         {
           /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
-          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy_) );
+          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
           
           /*assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
            * only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
