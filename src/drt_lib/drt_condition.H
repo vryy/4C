@@ -129,7 +129,8 @@ public:
     LJ_Potential,
     ElectrodeKinetics,
     Brownian_Motion,
-    FilamentNumber
+    FilamentNumber,
+    FlowRateThroughInterface_3D
   };
 
   /*!

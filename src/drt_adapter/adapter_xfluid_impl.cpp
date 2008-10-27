@@ -492,7 +492,12 @@ double ADAPTER::XFluidImpl::ResidualScaling() const
 /*----------------------------------------------------------------------*/
 double ADAPTER::XFluidImpl::TimeScaling() const
 {
-  return 1./fluid_.Dt();
+  if (params_->get<bool>("interface second order"))
+  {
+    return 2./fluid_.Dt();
+  }
+  else
+    return 1./fluid_.Dt();
 }
 
 
@@ -524,6 +529,60 @@ int ADAPTER::XFluidImpl::Step()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::LiftDrag()
 {
+  // get forces on all procs
+  // create interface DOF vectors using the fluid parallel distribution
+  Teuchos::RCP<Epetra_Vector> iforcecol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+
+  // map to fluid parallel distribution
+  LINALG::Export(*itrueresnp_,*iforcecol);
+  
+  
+  if (boundarydis_->Comm().MyPID() == 0)
+  {
+    // compute force components
+    const int nsd = 3;
+    const Epetra_Map* dofcolmap = boundarydis_->DofColMap();
+    BlitzVec3 c = 0.0;
+    for (int inode = 0; inode < boundarydis_->NumMyColNodes(); ++inode)
+    {
+      const DRT::Node* node = boundarydis_->lColNode(inode);
+      const std::vector<int> dof = boundarydis_->Dof(node);
+      for (int isd = 0; isd < nsd; ++isd)
+      {
+        // minus to get correct sign of lift and drag (force acting on the body)
+        c(isd) -= (*iforcecol)[dofcolmap->LID(dof[isd])];
+      }
+    } 
+    
+    // print to file
+    std::stringstream s;
+    std::stringstream header;
+
+    header << left  << std::setw(10) << "Time"
+           << right << std::setw(16) << "F_x"
+           << right << std::setw(16) << "F_y"
+           << right << std::setw(16) << "F_z";
+    s << left  << std::setw(10) << scientific << Time()
+      << right << std::setw(16) << scientific << c(0)
+      << right << std::setw(16) << scientific << c(1)
+      << right << std::setw(16) << scientific << c(2);
+
+    std::ofstream f;
+    if (Step() <= 1)
+    {
+      f.open("liftdrag.txt",std::fstream::trunc);
+      //f << header.str() << endl;
+    }
+    else
+    {
+      f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
+    }
+    f << s.str() << "\n";
+    f.close();
+
+    std::cout << header.str() << endl << s.str() << endl;
+  }
+  
   fluid_.LiftDrag();
 }
 

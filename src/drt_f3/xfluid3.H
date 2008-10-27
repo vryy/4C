@@ -453,7 +453,8 @@ namespace DRT
         enum ActionType
         {
           none,
-          integrate_Shapefunction
+          integrate_Shapefunction,
+          calc_flux
         };
         
         //! don't want = operator
@@ -466,13 +467,22 @@ namespace DRT
 
         //!  compute kovariant metric tensor G for fluid surface element
         void f3_metric_tensor_for_surface(
-            const Epetra_SerialDenseMatrix  xyze,
-            const Epetra_SerialDenseMatrix  deriv,
+            const Epetra_SerialDenseMatrix& xyze,
+            const Epetra_SerialDenseMatrix& deriv,
             Epetra_SerialDenseMatrix&       metrictensor,
-            double                         *drs);
+            double&                         drs);
         
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(
+            ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
+            DRT::Discretization&             discretization,  ///< vector to be filled by element
+            const std::vector<int>&          lm,              ///< location vector of this element
+            Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
+            const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
+            );
+        
+        //! integrate shapefunction over surface element
+        void IntegrateSurfaceFlow(
             ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
             DRT::Discretization&             discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element

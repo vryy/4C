@@ -908,7 +908,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(lineelec);
   condlist.push_back(surfelec);
+
+
   /*--------------------------------------------------------------------*/
+  // flow rate through surface
+
+  std::vector<Teuchos::RCP<ConditionComponent> > flowratecomponents;
+  flowratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  Teuchos::RCP<ConditionDefinition> surfflowrate =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
+                                         "SurfFlowRate",
+                                         "Surface Flow Rate",
+                                         DRT::Condition::FlowRateThroughInterface_3D,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<flowratecomponents.size(); ++i)
+  {
+    surfflowrate->AddComponent(flowratecomponents[i]);
+  }
+  condlist.push_back(surfflowrate);
 
   return vc;
 }

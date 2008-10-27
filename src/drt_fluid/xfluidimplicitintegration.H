@@ -295,6 +295,9 @@ public:
     Needed for Mortar coupling at the FSI interface
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+  
+  /// integrate mass flow over a surface 
+  void ComputeSurfaceFlowrates() const;
 
   /// switch fluid field to block matrix
   void UseBlockMatrix(

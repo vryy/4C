@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "xfluid3.H"
+#include "xfluid3_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -40,26 +41,36 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = XFluid3Surface::integrate_Shapefunction;
+    else if (action == "calc_flux")
+        act = XFluid3Surface::calc_flux;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
     {
-    case integrate_Shapefunction:
-    {
-      Teuchos::RCP<const Epetra_Vector> dispnp;
-      std::vector<double> mydispnp;
-
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      case integrate_Shapefunction:
       {
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+        Teuchos::RCP<const Epetra_Vector> dispnp;
+        std::vector<double> mydispnp(lm.size(),0.0);
+  
+        dispnp = discretization.GetState("dispnp");
+        if (dispnp!=null)
+        {
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+        }
+        IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
+        break;
       }
-      IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
-      break;
-    }
-    default:
-        dserror("Unknown type of action for Fluid3_Surface");
+      case calc_flux:
+      {
+        const Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        
+        std::vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+        IntegrateSurfaceFlow(params,discretization,lm,elevec1,myvelnp);
+        break;
+      }
+      default:
+          dserror("Unknown type of action for Fluid3_Surface");
     } // end of switch(act)
 
     return 0;
@@ -217,10 +228,10 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
 
 */
 void  DRT::ELEMENTS::XFluid3Surface::f3_metric_tensor_for_surface(
-  const Epetra_SerialDenseMatrix  xyze,
-  const Epetra_SerialDenseMatrix  deriv,
+  const Epetra_SerialDenseMatrix& xyze,
+  const Epetra_SerialDenseMatrix& deriv,
   Epetra_SerialDenseMatrix&       metrictensor,
-  double                         *sqrtdetg)
+  double&                         sqrtdetg)
 {
   /*
   |                                              0 1 2
@@ -275,7 +286,7 @@ void  DRT::ELEMENTS::XFluid3Surface::f3_metric_tensor_for_surface(
                       \/
 */
 
-  sqrtdetg[0]= sqrt(metrictensor(0,0)*metrictensor(1,1)
+  sqrtdetg   = sqrt(metrictensor(0,0)*metrictensor(1,1)
                     -
                     metrictensor(0,1)*metrictensor(1,0));
 
@@ -374,7 +385,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
 
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,drs);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight and the constant
@@ -398,6 +409,115 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
 
 return;
 } // DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlow(
+    ParameterList&                   params,
+    DRT::Discretization&             discretization,
+    const std::vector<int>&          lm,
+    Epetra_SerialDenseVector&        elevec1,
+    const std::vector<double>&       myvelnp)
+{
+  // there are 3 velocities and 1 pressure
+  const int numdf = 4;
+
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = DRT::UTILS::intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = DRT::UTILS::intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = DRT::UTILS::intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = DRT::UTILS::intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+
+  // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector      funct       (iel);
+  Epetra_SerialDenseMatrix      deriv       (2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix      xyze        (3,iel);
+  // node velocities
+  Epetra_SerialDenseMatrix      evelnp      (3,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix      metrictensor(2,2);
+  double                        drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+  
+  // get element velocities
+  for(int i=0;i<iel;i++)
+  {
+    evelnp(0,i)=myvelnp[i*iel+0];
+    evelnp(1,i)=myvelnp[i*iel+1];
+    evelnp(2,i)=myvelnp[i*iel+2];
+  }
+
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  const DRT::UTILS::IntegrationPoints2D  intpoints = DRT::UTILS::getIntegrationPoints2D(gaussrule);
+
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    BlitzVec2 xi_gp;
+    xi_gp(0) = intpoints.qxg[gpid][0];
+    xi_gp(1) = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D(funct, xi_gp(0), xi_gp(1), distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv, xi_gp(0), xi_gp(1), distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,drs);
+    
+    // values are multiplied by the product from inf. area element and gauss weight
+    const double fac = drs * intpoints.qwgt[gpid];
+
+    // velocity at gausspoint
+    const BlitzVec3 gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
+    
+    // get normal vector (in x coordinates) to surface element at integration point
+    BlitzVec3 n;
+    n = 0.0;
+    GEO::computeNormalToSurfaceElement(this, xyze, xi_gp, n);
+
+    // flowrate = u_i * n_i
+    const double flowrate = gpvelnp(0)*n(0) + gpvelnp(1)*n(1) + gpvelnp(2)*n(2);
+    
+    // store flowrate at first dof of each node
+    // use negatve value so that inflow is positiv
+    for (int node=0;node<iel;++node)
+    {
+      elevec1[node*numdf] -= funct[node] * fac * flowrate;
+    }
+  }
+
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

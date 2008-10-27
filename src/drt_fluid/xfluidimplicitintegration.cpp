@@ -63,6 +63,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   step_(0),
   stepmax_(params_.get<int>   ("max number timesteps")),
   maxtime_(params_.get<double>("total time")),
+  timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
@@ -75,9 +76,16 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-  timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
-  dtp_ = dta_ = params_.get<double>("time step size");
-  theta_    = params_.get<double>("theta");
+  if (timealgo_ == timeint_stationary)
+  {
+    dtp_ = dta_ = 1.0;
+    theta_    = 1.0;
+  }
+  else
+  {
+    dtp_ = dta_ = params_.get<double>("time step size");
+    theta_    = params_.get<double>("theta");
+  }
 
   // create empty cutter discretization
   Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
@@ -377,12 +385,6 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
   {
     ParameterList eleparams;
 
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
@@ -459,8 +461,6 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   dofmanager->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
-
-  cout0_ << "switching " << endl;
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
@@ -631,21 +631,17 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   }
 
 
-
+  // action for elements
+  if (timealgo_!=timeint_stationary)
+  {
+    cout0_ << "******************************************************" << endl;
+    cout0_ << "* Warning! Does not work for moving boundaries, yet! *" << endl;
+    cout0_ << "******************************************************" << endl;
+  }
+  
+  
   if (myrank_ == 0)
   {
-    // action for elements
-    if (timealgo_==timeint_stationary)
-    {
-
-    }
-    else
-    {
-      cout << "******************************************************" << endl;
-      cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
-      cout << "******************************************************" << endl;
-    }
-
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
@@ -686,9 +682,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       if (timealgo_==timeint_stationary)
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
-      {
         eleparams.set("action","calc_fluid_systemmat_and_residual");
-      }
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -735,9 +729,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
         discret_->ClearState();
 
-        // How to extract the density from the fluid material?
-        //trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
-        iforcecolnp->Scale(density_/dta_/theta_);
+        // get physical surface force
+        iforcecolnp->Scale(ResidualScaling());
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -972,52 +965,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
 
-
-  const int nsd = 3;
-  const Epetra_Map* dofcolmap = cutterdiscret->DofColMap();
-  BlitzVec3 c;
-  c = 0.0;
-  for (int inode = 0; inode < cutterdiscret->NumMyColNodes(); ++inode)
-  {
-    const DRT::Node* node = cutterdiscret->lColNode(inode);
-    const std::vector<int> dof = cutterdiscret->Dof(node);
-    for (int isd = 0; isd < nsd; ++isd)
-    {
-      const double val = (*iforcecolnp)[dofcolmap->LID(dof[isd])];
-      c(isd) -= val; // minus to get correct sign of lift and drag (force acting on the body)
-    }
-
-  }
-
-  {
-    std::stringstream s;
-    std::stringstream header;
-
-    header << left  << std::setw(10) << "Time"
-           << right << std::setw(16) << "F_x"
-           << right << std::setw(16) << "F_y"
-           << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << time_
-      << right << std::setw(16) << scientific << c(0)
-      << right << std::setw(16) << scientific << c(1)
-      << right << std::setw(16) << scientific << c(2);
-
-    std::ofstream f;
-    if (step_ <= 1)
-    {
-      f.open("liftdrag.txt",std::fstream::trunc);
-      //f << header.str() << endl;
-    }
-    else
-    {
-      f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
-    }
-    f << s.str() << "\n";
-    f.close();
-
-    //cout << header.str() << endl << s.str() << endl;
-  }
-
   if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
   {
     std::ofstream f;
@@ -1206,6 +1153,8 @@ void FLD::XFluidImplicitTimeInt::Output()
     OutputToGmsh();
   }
 
+  ComputeSurfaceFlowrates();
+  
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -2240,6 +2189,76 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(
   return integratedshapefunc;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
+{
+  
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","calc_flux");
+  
+  
+  std::map<int,double> volumeflowratepersurface;
+  // Reset
+  volumeflowratepersurface.clear();
+  
+  // get condition
+  vector< DRT::Condition * >      conds;
+  discret_->GetCondition ("SurfFlowRate", conds);
+  cout << "found " << conds.size() << " conditions..." << endl;
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  {
+    DRT::Condition* cond = *conditer;
+//    const int label = cond->Getint("label");
+    const vector<int>*    CondIDVec  = cond->Get<vector<int> >("ConditionID");
+    int condID=(*CondIDVec)[0];
+    
+    cout << "working on label: " << condID << endl;
+    
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices
+    //                 local <-> global dof numbering
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // create vector (+ initialization with zeros)
+    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
+    // call loop over elements
+    discret_->ClearState();
+    discret_->SetState("velnp",state_.velnp_);
+    discret_->EvaluateCondition(eleparams,flowrates,"SurfFlowRate",condID);
+    discret_->ClearState();
+    
+    double locflowrate = 0.0;
+    for (int i=0; i < dofrowmap->NumMyElements(); i++)
+      locflowrate += (*flowrates)[i];
+    
+    double flowrate = 0.0;
+    dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
+    
+    volumeflowratepersurface[condID] += flowrate;
+  }
+  
+  double overall_flowrate = 0.0;
+  std::map<int,double>::const_iterator entry;
+  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )
+  {
+    const int condID = entry->first;
+    const double value = entry->second;
+    overall_flowrate += value;
+    if (myrank_ == 0)
+    {
+      cout << "flowrate for label " << condID << ":  " <<  scientific << value << endl;
+    }
+  }
+  cout << "flowrate over all boundaries: " << overall_flowrate << endl;
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
