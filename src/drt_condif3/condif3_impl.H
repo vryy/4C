@@ -150,7 +150,7 @@ public:
 
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
     virtual void InitializeOST(
-        const DRT::ELEMENTS::Condif3*   ele,
+        const DRT::ELEMENTS::Condif3*   ele,  ///< the element
         const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephi0,
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,
@@ -172,9 +172,15 @@ public:
         const double time                  ///< current simulation time
     );
 
+    //! get the material parameters
+    virtual void GetMaterialParams(
+        const struct _MATERIAL*      material,    ///< material pointer
+        const bool&                  temperature  ///< temperature flag
+    );
+
     //! calculate stabilization parameter
     virtual void CalTau(
-        const DRT::ELEMENTS::Condif3*&          ele,
+        const DRT::ELEMENTS::Condif3*&          ele, ///< the element
         Epetra_SerialDenseVector&               sugrvisc,
         const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities att_{n+1}
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>&         epot,
@@ -230,6 +236,16 @@ public:
         const double&             frt,    ///< factor F/RT
         const bool&               is_stationary, ///< flag indicating stationary formulation
         const double&             timefac ///< time discretization factor
+    );
+
+    //! calculate error compared to analytical solutions
+    virtual void CalErrorComparedToAnalytSolution(
+        const DRT::ELEMENTS::Condif3*   ele, ///< the element
+        ParameterList& params, ///< parameter list
+        const LINALG::FixedSizeSerialDenseMatrix<iel,2>& ephinp, ///< actual numerical sol. of concentrations
+        const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
+        Epetra_SerialDenseVector& errors, ///< vector of error values
+        struct _MATERIAL* material ///< material pointer
     );
 
     //! number of dof per node
