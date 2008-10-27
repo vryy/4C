@@ -253,6 +253,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   constraintnodecolvec.clear();
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
+  newdis->FillComplete();
   
   map<int,RCP<DRT::Discretization> > newdismap;
   newdismap[startID]=newdis;

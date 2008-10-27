@@ -338,6 +338,7 @@ void DRT::UTILS::CreateAleDiscretization()
 
   // redistribute nodes to column (ghost) map
   RedistributeWithNewNodalDistribution(*aledis, *alenoderowmap, *alenodecolmap);
+  aledis->FillComplete();
 }
 
 
@@ -462,6 +463,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 
   // redistribute nodes to column (ghost) map
   RedistributeWithNewNodalDistribution(*conditiondis, *condnoderowmap, *condnodecolmap);
+  conditiondis->FillComplete();
 
   return conditiondis;
 }
@@ -472,10 +474,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 void DRT::UTILS::RedistributeWithNewNodalDistribution(
     DRT::Discretization&     dis,
     const Epetra_Map&        noderowmap,
-    const Epetra_Map&        nodecolmap,
-    bool     assigndegreesoffreedom = true,
-    bool    initelements = true,
-    bool    doboundaryconditions = true
+    const Epetra_Map&        nodecolmap
     )
 {
   // redistribute nodes to column (ghost) map
@@ -495,8 +494,6 @@ void DRT::UTILS::RedistributeWithNewNodalDistribution(
   // export to the column map / create ghosting of elements
   dis.ExportColumnElements(*elecolmap);
 
-  // Now we are done. :)
-  dis.FillComplete();
 }
 
 #endif

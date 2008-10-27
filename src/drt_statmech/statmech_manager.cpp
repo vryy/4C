@@ -39,26 +39,27 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   endtoendref_(0.0),
   istart_(0),
   rlink_(params.get<double>("R_LINK",0.0)),
-  unusedids_(0),
   discret_(discret)
 { 
   //if dynamic crosslinkers are used additional variables are initialized
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
-    /*crosslinkerpartner_ and crosslinkerelements_ are generated based on the discretization
+    /*crosslinkerpartner_, filamentnumber_ are generated based on the discretization
      * as it is generated from the input data file; this discretization does not yet comprise
      * any additional crosslinker elements which is o.K. since both variables are applied in 
      * order to administrate only the nodes of the original discretization*/
     crosslinkerpartner_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
-    crosslinkerelements_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
+    filamentnumber_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
+    
+    //basiselements_ is the number of elements existing in the discretization from the very beginning on
+    basiselements_ = discret_.NumGlobalElements();
     
     
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
     {
-      /*initializing crosslinkerpartner_, crosslinkerelements_ and filamentnumber_ with -1 for each node by looping
+      /*initializing crosslinkerpartner_ and filamentnumber_ with -1 for each node by looping
        * over all local indices assigned by the map dis.NodeRowMap() to a processor*/
       (*crosslinkerpartner_)[i] = -1;
-      (*crosslinkerelements_)[i] = -1;
       (*filamentnumber_)[i] = -1;
     }
     
@@ -66,7 +67,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
      * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
      * are allowed*/
- 
+    
     //gettin a vector consisting of pointers to all filament number conditions set
     vector<DRT::Condition*> filamentnumberconditions(0);
     discret_.GetCondition("FilamentNumber",filamentnumberconditions);
@@ -89,13 +90,12 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         //turning global id into local one
         nodenumber = discret_.NodeRowMap()->LID(nodenumber);
         
-        /*if the node does not belong to the local processor the local Id is set by LID() to -1 and the node is 
-         * ignored by the processor in this loop*/
+        //if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored
         if(nodenumber > -1)
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
     }
-
+    
 
 
     
@@ -256,9 +256,6 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
     case INPUTPARAMS::statout_none:
     case INPUTPARAMS::statout_viscoelasticity:
     default:
-    {
-      std::cout<<"\nno special output written\n";
-    }
     break;
   }
  
@@ -296,6 +293,7 @@ void StatMechManager::StatMechUpdate()
     //searching neighbours of the current node (with global Id "neighbour"):
     std::vector<int> neighbours(0);
     
+    
     /*_________________________________________________________________________________________________________
      * note: the following part of the code is suitable for serial use only !!!!
      * _______________________________________________________________________________________________________*/
@@ -307,94 +305,92 @@ void StatMechManager::StatMechUpdate()
       //if the node is already crosslinked the crosslinker is removed with probability punlink
       if ((*crosslinkerpartner_)[i] != -1.0 && (*delcrosslinker)[i] <  -1.0 + 2*punlink)
       {
-        //noting that the Id of the now deleted crosslinker will be unused from now on
-        unusedids_.push_back((int)(*crosslinkerelements_)[i] );
         //noting that node responsible for the crosslinker to be deleted has from now on no crosslinker
         (*crosslinkerpartner_)[i] = -1;
-        //deleting the crosslinker element number
-        (*crosslinkerelements_)[i] = -1;
+
+        /*since each node can have only one crosslinker at the same time a unique Id for the crosslinker 
+         * element can be found by adding the lower one of the global Ids of the two nodes to basiselements_;
+         * this is the way new crosslinkers are numbered below and hence also the way old crosslinkers can
+         * be deleted*/
+        int crosslinkerid = basiselements_ + discret_.NodeRowMap()->GID(i);
         
         //delete crosslinker element
-        
-        //???????????????????????????????????????????????????????????????????????????????????????????????????????
-        
-        
+        //discret_.DeleteElement(crosslinkerid);
+     
       }
       
-      //searching nearest neighbour of the current node (with global Id "neighbour"):
-      int neighbour = -1;
-      double rneighbour = rlink;
-      
-      //we apply a naive search algorithm which migth be later replaced by means of a tree
-      for(int j = 0; j < i; j++)
-      {
-        double dx = (discret_.lRowNode(j))->X()[0] - (discret_.lRowNode(i))->X()[0];
-        double dy = (discret_.lRowNode(j))->X()[1] - (discret_.lRowNode(i))->X()[1];
-        double dz = (discret_.lRowNode(j))->X()[2] - (discret_.lRowNode(i))->X()[2];
-        double rcurrent = pow(dx*dx + dy*dy + dz*dz, 0.5);
+      /*in the following new crosslinkers are established; however this is possibleonly if the current node has not 
+       * yet one, i.e. (*crosslinkerpartner_)[i] == -1.0 and if the node has passed a random test by which it's figured
+       * out whether it can get a new crosslinker in this time step, i.e. (*setcrosslinker)[i] <  -1.0 + 2*plink*/
+     if( (*crosslinkerpartner_)[i] == -1.0 && (*setcrosslinker)[i] <  -1.0 + 2*plink  )
+     {    
+        //searching nearest neighbour of the current node (with global Id "neighbour"):
+        int neighbour = -1;
+        double rneighbour = rlink;
         
-        if(rcurrent < rlink)
+        //we apply a naive search algorithm which migth be later replaced by means of a tree
+        for(int j = 0; j < i; j++)
         {
-          if(rcurrent < rneighbour)
-          {
-            neighbour = j;
-            rneighbour = rcurrent;
-          }
-        }     
+          /*crosslinkers are established only if either two nodes belong to the same filament or if the filament
+           * numbering is deactivated (-> all filamentnumbers set to -1); furthermore the node with the higher
+           * global Id decides whether a crosslinker is established between two nodes so that we search only the
+           * nodes with lower global Ids whether they are close to a certain node */
+           if( (*filamentnumber_)[i] != (*filamentnumber_)[j] || (*filamentnumber_)[i] == -1)
+           {
+              double dx = (discret_.lRowNode(j))->X()[0] - (discret_.lRowNode(i))->X()[0];
+              double dy = (discret_.lRowNode(j))->X()[1] - (discret_.lRowNode(i))->X()[1];
+              double dz = (discret_.lRowNode(j))->X()[2] - (discret_.lRowNode(i))->X()[2];
+              double rcurrent = pow(dx*dx + dy*dy + dz*dz, 0.5);
+              
+              if(rcurrent < rlink)
+              {
+                if(rcurrent < rneighbour)
+                {
+                  neighbour = j;
+                  rneighbour = rcurrent;
+                }
+              } 
+           }
+        }
+        
+        //if a neighbour within the prescribed maximal distance has been found a crosslinker is established
+        if(neighbour > -1)
+        {
+          /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
+           * of the statmech_manager; note that the dummy has already the proper owner number*/          
+          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy_) );
+          
+          /*assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
+           * only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
+           * before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved*/     
+          newcrosslinker->SetId( basiselements_ + discret_.NodeRowMap()->GID(i) );
+          
+          //nodes are assigned to the new crosslinker element
+          int nodes[] = {discret_.NodeRowMap()->GID(i), neighbour};
+          newcrosslinker->SetNodeIds(2, nodes);
+          
+          //correct reference configuration data is computed for the new crosslinker element
+          newcrosslinker->SetUpReferenceGeometry();
+          
+          //add new element to discretization
+          discret_.AddElement(newcrosslinker);    
+          
+          //noting that local node i has now a crosslinkerelement and noting global Id of this element
+          (*crosslinkerpartner_)[neighbour] = -1;
+
+        }
       }
       
-
-      //defining global Id of new crosslinker element
-      int crosslinkerid = 0;
-      //if there is a formerly used, but now unused global Id the new crosslinker gets this Id:
-      if(unusedids_.size() > 0)
-      {
-        crosslinkerid = unusedids_.back();
-        unusedids_.pop_back();     
-      }
-      //otherwise the new crosslinker element gets the lowest global Id currently not yet in use
-      else
-      {
-        /*note: if there are no gaps (i.e. unused numbers) in the global Id distribution the highest
-         *global element Id currently in use is ( discret_.NumGlobalElements() - 1 ) */    
-        crosslinkerid = discret_.NumGlobalElements();
-      }
-    
-      /*crosslinkers are always established from the node with lower global Id to the one with higher
-       * global Id only, in order to make sure that the crosslinker is not established twice; furthermore
-       * crosslinkers are established only with a certain probability, which is accounted for by menas
-       * of the randomized condition (*setcrosslinker)[i] <  -1.0 + 2*plink; finally a crosslinker is established
-       * only if the same node has not already one, which is checked by (*crosslinkerpartner_)[i] == -1.0*/
-      if (discret_.NodeRowMap()->GID(i) < neighbour && (*setcrosslinker)[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0 && 
-          /*furthermore the nodes should lie on different filaments; if no filament numbering is used (filamentnumbers
-           * are by default -1) a crosslinker is established regardless this test*/
-          ( (*filamentnumber_)[i] != (*filamentnumber_)[neighbour] || (*filamentnumber_)[i] == -1) )
-      {
-        
-        /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
-         * of the statmech_manager; note that the dummy has already the proper owner number*/          
-        RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy_) );
-        
-        //nodes are assigned to the new crosslinker element
-        int nodes[] = {discret_.NodeRowMap()->GID(i), neighbour};
-        newcrosslinker->SetNodeIds(2, nodes);
-        
-        //correct reference configuration data is computed for the new crosslinker element
-        newcrosslinker->SetUpReferenceGeometry();
-        
-        //add new element to discretization
-        discret_.AddElement(newcrosslinker);    
-        
-        //noting that local node i has now a crosslinkerelement and noting global Id of this element
-        (*crosslinkerpartner_)[neighbour] = -1;
-        (*crosslinkerelements_)[crosslinkerid] = -1;
-      }
+      /*settling administrative stuff in order to make the discretization ready for the next time step: the following
+       * commmand generates ghost elements if necessary and calls FillCompete() method of discretization; note: this is
+       * enough as long as only elements, but no nodes are added in a time step*/  
+      RefCountPtr<Epetra_Map> noderowmap = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
+      RefCountPtr<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*(discret_.NodeColMap())));  
+      
+      DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,*noderowmap,*nodecolmap);
+      discret_.FillComplete(true,false,false);
+  
     }
-    
-    /*settling administrative stuff in order to make the discretization ready for the next time step: the following
-     * commmand generates ghost elements if necessary and calls FillCompete() method of discretization; note: this is
-     * enough as long as only elements, but no nodes are added in a time step*/
-    DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,*( discret_.NodeRowMap() ),*( discret_.NodeColMap() ));
     
   }
   

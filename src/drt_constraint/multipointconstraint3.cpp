@@ -316,6 +316,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
   
     constraintnodecolvec.clear();
     DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
+    newdis->FillComplete();
     //put new discretization into the map
     newdiscmap[(*(*conditer)->Get<vector<int> >("ConditionID"))[0]]=newdis;
     // increase counter 

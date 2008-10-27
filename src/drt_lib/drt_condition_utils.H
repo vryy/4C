@@ -69,10 +69,7 @@ namespace DRT
     void RedistributeWithNewNodalDistribution(
         DRT::Discretization&     dis,
         const Epetra_Map&        noderowmap,
-        const Epetra_Map&        nodecolmap,
-        bool     assigndegreesoffreedom = true,
-        bool    initelements = true,
-        bool    doboundaryconditions = true
+        const Epetra_Map&        nodecolmap
         );
   }
 }

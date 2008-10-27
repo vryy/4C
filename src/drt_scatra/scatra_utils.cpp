@@ -234,6 +234,7 @@ void SCATRA::CreateScaTraDiscretization(
 
   // redistribute nodes to column (ghost) map
   DRT::UTILS::RedistributeWithNewNodalDistribution(*scatradis, *scatranoderowmap, *scatranodecolmap);
+  scatradis->FillComplete();
 }
 
 

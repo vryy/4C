@@ -747,6 +747,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
 
   // distribute ghost nodes resolving the node dependencies given by the final graph
   DRT::UTILS::RedistributeWithNewNodalDistribution(*dis, *rownodes, *colnodes);
+  dis->FillComplete();
 
 #if 0
   dis->Print(cout);
