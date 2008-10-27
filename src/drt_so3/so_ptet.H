@@ -200,19 +200,13 @@ private:
                       const Epetra_SerialDenseMatrix& defgrd,
                       int gp);
 
-#if 0 // The fixed size matrices can do this by themselves
-  // compute determinant of a 3x3
-  inline static double Det(Epetra_SerialDenseMatrix& A)
-  {
-   double detA = A(0,0)*A(1,1)*A(2,2) +
-                 A(0,1)*A(1,2)*A(2,0) +
-                 A(0,2)*A(1,0)*A(2,1) -
-                 A(0,2)*A(1,1)*A(2,0) -
-                 A(0,0)*A(1,2)*A(2,1) -
-                 A(0,1)*A(1,0)*A(2,2);
-    return detA;
-  }
-#endif
+  void SelectMaterial(RCP<MAT::Material> mat,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
+                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      double& density,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      int gp);
 
    // compute deviatoric stresses and tangent
   static void DevStressTangent(LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1>& Sdev,
@@ -545,6 +539,13 @@ protected:
                       double& density,
                       const Epetra_SerialDenseVector& glstrain,
                       const Epetra_SerialDenseMatrix& defgrd,
+                      int gp);
+
+  void SelectMaterial(LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
+                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      double& density,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
                       int gp);
 
 }; // class Ptet

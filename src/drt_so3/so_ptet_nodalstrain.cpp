@@ -353,8 +353,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
   // this can make get rid of FnodeL and VnodeL
-  Epetra_SerialDenseMatrix FnodeL_epetra(3,3);
-  LINALG::FixedSizeSerialDenseMatrix<3,3> FnodeL(FnodeL_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> FnodeL(true);
   double VnodeL = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
@@ -431,17 +430,14 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   } // for (int ele=0; ele<neleinpatch; ++ele)
 
   //----------------------------------------- averaged material and stresses
-  Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_PTET,NUMSTR_PTET);
-  Epetra_SerialDenseVector stress_epetra(NUMSTR_PTET);
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> cmat(cmat_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> stress(stress_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
 
   // right cauchy green
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> cauchygreen;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> cauchygreen;
   cauchygreen.MultiplyTN(FnodeL,FnodeL);
   // Green-Lagrange ( 2x on offdiagonal!)
-  LINALG::SerialDenseVector glstrain_epetra(NUMSTR_PTET);
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> glstrain(glstrain_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(false);
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -493,15 +489,13 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   {
     double density; // just a dummy density
     RCP<MAT::Material> mat = adjele[0]->Material();
-    SelectMaterial(mat,stress_epetra,cmat_epetra,density,glstrain_epetra,FnodeL_epetra,0);
+    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0);
   }
   else
   {
     double density; // just a dummy density
-    Epetra_SerialDenseMatrix cmatele_epetra(NUMSTR_PTET,NUMSTR_PTET);
-    Epetra_SerialDenseVector stressele_epetra(NUMSTR_PTET);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> cmatele(cmatele_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,          1> stressele(stressele_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatele(true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stressele(true);
     for (int ele=0; ele<neleinpatch; ++ele)
     {
       // current element
@@ -510,7 +504,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
       const double V = actele->Volume()/NUMNOD_PTET;
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
-      SelectMaterial(mat,stressele_epetra,cmatele_epetra,density,glstrain_epetra,FnodeL_epetra,0);
+      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
       // here scaling of stresses/tangent with 1.0-alpha
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
@@ -555,8 +549,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 #if 1 // dev stab on cauchy stresses
   {
     // define stuff we need
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> cmatdev;
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> stressdev;
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatdev;
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stressdev;
 
     // compute deviatoric stress and tangent
     DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
@@ -575,11 +569,16 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 #endif
 
   //----------------------------------------------------- internal forces
-  if (force) force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
+  if (force) 
+  {
+    Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
+    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
+  }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
+    Epetra_SerialDenseMatrix cmat_epetra(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(NUMSTR_PTET,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bop,0.0);
     stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
@@ -627,6 +626,55 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 }
 
 /*----------------------------------------------------------------------*
+ | material laws for Ptet (protected)                          gee 10/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::PtetRegister::SelectMaterial(
+                      RCP<MAT::Material> mat,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
+                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      double& density,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      int gp)
+{
+  Epetra_SerialDenseVector stress_e(View,stress.A(),stress.Rows());
+  Epetra_SerialDenseMatrix cmat_e(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
+  const Epetra_SerialDenseVector glstrain_e(View,glstrain.A(),glstrain.Rows());
+  //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
+
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = stvk->Density();
+    }
+    break;
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = neo->Density();
+    }
+    break;
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = aaa->Density();
+    }
+    break;
+    default:
+      dserror("Illegal type %d of material for element Ptet tet4", mat->MaterialType());
+    break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  return;
+}  // DRT::ELEMENTS::Ptet::SelectMaterial
+
+/*----------------------------------------------------------------------*
  | material laws for Ptet (protected)                          gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PtetRegister::SelectMaterial(
@@ -669,7 +717,6 @@ void DRT::ELEMENTS::PtetRegister::SelectMaterial(
   /*--------------------------------------------------------------------*/
   return;
 }  // DRT::ELEMENTS::Ptet::SelectMaterial
-
 
 /*----------------------------------------------------------------------*
  |  compute deviatoric tangent and stresses (private/static)   gee 06/08|

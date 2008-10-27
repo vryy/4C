@@ -383,31 +383,30 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
 
   //------------------------------------------------- call material law
 #if 1 // dev stab on cauchy stresses
-  Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_PTET,NUMSTR_PTET);
-  Epetra_SerialDenseVector stress_epetra(NUMSTR_PTET);
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> cmat(cmat_epetra.A(),true); // Views
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> stress(stress_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true); // Views
+  LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
   double density = -999.99;
   {
     // do deviatoric F, C, E
     const double J = defgrd.Determinant();
     LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> Cbar(cauchygreen);
     Cbar.Scale(pow(J,-2./3.));
-    LINALG::SerialDenseVector glstrainbar(NUMSTR_PTET);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> glstrainbar(false);
     glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
     glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
     glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
     glstrainbar(3) = Cbar(0,1);
     glstrainbar(4) = Cbar(1,2);
     glstrainbar(5) = Cbar(2,0);
-    Epetra_SerialDenseMatrix Fbar(Copy,defgrd.A(),NUMDIM_PTET,NUMDIM_PTET,NUMDIM_PTET);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> Fbar(false);
+    Fbar.SetCopy(defgrd.A());
     Fbar.Scale(pow(J,-1./3.));
 
-    SelectMaterial(stress_epetra,cmat_epetra,density,glstrainbar,Fbar,0);
+    SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
 
     // define stuff we need to do the split
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> cmatdev; // set to zero?
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> stressdev;
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatdev; // set to zero?
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stressdev;
 
     // do just the deviatoric components
     PtetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
@@ -538,6 +537,56 @@ void DRT::ELEMENTS::Ptet::DeformationGradient(vector<double>& disp)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | material laws for Ptet (protected)                          gee 10/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ptet::SelectMaterial(
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
+                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      double& density,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
+                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      int gp)
+{
+  Epetra_SerialDenseVector stress_e(View,stress.A(),stress.Rows());
+  Epetra_SerialDenseMatrix cmat_e(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
+  const Epetra_SerialDenseVector glstrain_e(View,glstrain.A(),glstrain.Rows());
+  //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
+  
+
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = stvk->Density();
+    }
+    break;
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = neo->Density();
+    }
+    break;
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      density = aaa->Density();
+    }
+    break;
+    default:
+      dserror("Illegal type %d of material for element Ptet tet4", mat->MaterialType());
+    break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  return;
+}  // DRT::ELEMENTS::Ptet::SelectMaterial
 
 /*----------------------------------------------------------------------*
  | material laws for Ptet (protected)                          gee 05/08|
