@@ -330,8 +330,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
 } //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
 
 
-
-
 //------------- class Beam3Register: -------------------------------------
 
 

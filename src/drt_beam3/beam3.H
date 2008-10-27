@@ -355,10 +355,14 @@ private:
   DRT::UTILS::GaussRule1D gaussrule_;
   
 
-  //! @name Internal calculation methods
+  //! @name methods for initilization of the element
   
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   void SetUpReferenceGeometry();
+  
+  //@}
+  
+  //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
   void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
@@ -366,8 +370,19 @@ private:
   //!computing a rotation matrix R from a quaternion q
   void quaterniontotriad(const BlitzVec4& q, BlitzMat3x3& R);
   
+  //!computing an angle vector from a quaternion q
+  void quaterniontoangle(const BlitzVec4& q, BlitzVec3& theta);
+  
   //!computing a quaternion q from a rotation matrix R
   void triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q);
+  
+  //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
+  BlitzMat3x3 Hinv(const BlitzVec3& theta);
+
+  
+  //@}
+  
+  //! @name Internal calculation methods
   
   /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
    * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/

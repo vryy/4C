@@ -577,6 +577,25 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew, con
   return;
 } // DRT::ELEMENTS::Beam3::computestiffbasis
 
+/*----------------------------------------------------------------------*
+ |computes from a quaternion q the related angle theta (public)cyron10/08|
+ *----------------------------------------------------------------------*/
+inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const BlitzVec4& q, BlitzVec3& theta)
+{
+  double sin_thetahalf = pow( q(0)*q(0) + q(1)*q(1) + q(2)*q(2) , 0.5);
+  double theta_abs = 2*asin( sin_thetahalf );
+  
+  /*if cos(theta/2), i.e. q(3) is negative the true value is not theta_abs, but
+   * (PI - theta_abs)*/ 
+  if(q(3) < 0)
+    theta_abs = PI - theta_abs;
+  
+  for(int i = 0; i<3; i++)
+    theta(i) = theta_abs * q(i) / sin_thetahalf;
+   
+  return;
+} //DRT::ELEMENTS::Beam3::quaterniontoangle()
+
 //computing spin matrix out of a rotation vector
 inline void DRT::ELEMENTS::Beam3::computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale)
 {
@@ -659,6 +678,7 @@ void DRT::ELEMENTS::Beam3::triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q)
    }
   return;
 }// DRT::ELEMENTS::Beam3::TriadToQuaternion
+
 
 /*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
  * quaterion product and then calculation of the equivalent rotation matrix according to eq. (16.70*/
