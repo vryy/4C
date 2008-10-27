@@ -1,0 +1,93 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=yes
+
+LINUX_DIST=fc7.x86_64
+MPI_VERSION=openmpi
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+F77="LC_ALL=C mpif77"
+CC="LC_ALL=C mpicc"
+CP="LC_ALL=C mpic++"
+LD="LC_ALL=C mpic++"
+
+MPIBOOT=lamboot
+MPIHALT=lamhalt
+
+BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
+
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/openmpi -I/usr/include/openmpi/openmpi -I/usr/include/netcdf-3"
+LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
+
+#=========================================================== Trilinos
+TRILINOS_HOME=$BASEDIR/trilinos
+TRILINOS_INCDIR=$TRILINOS_HOME/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="\
+        -lmoertel \
+	-ltrilinoscouplings \
+	-lnoxepetra \
+	-lnox \
+	-lanasazi \
+        -lifpack \
+	-laztecoo \
+	-lamesos \
+	-lml \
+	-lepetraext \
+	-lepetra \
+	-lteuchos"
+TRILINOS_FILTER_LIB=$TRILINOS_LIB
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec_gcc"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
+# qhull
+QHULL_INC=
+QHULL_LIB="-lqhull"
+
+# super_lu
+SUPERLU_LIB="-lsuperlu_dist"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+# hdf5
+HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
+
+# exodus
+EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
+
+LIBS="-lc -lg2c -lmetis -lblitz -llapack -lblas"
+
+CFLAGS_OPT="-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+CPFLAGS_OPT="-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+FFLAGS_OPT="-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+LDFLAGS_OPT="-O3"
+
+#CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+CFLAGS="-Wall -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
