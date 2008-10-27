@@ -274,15 +274,15 @@ STR::TimInt::TimInt
 
   // create empty matrices
   stiff_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
+    new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
   );
   mass_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
+    new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
   );
   if (damping_ == damp_rayleigh)
   {
     damp_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
+      new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
     );
   }
 
@@ -292,10 +292,10 @@ STR::TimInt::TimInt
                                                   sdynparams));
   // initialize Uzawa solver
   consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
-                                                   *solver_,
-                                                   dirichtoggle_,
-                                                   invtoggle_,
-                                                   sdynparams));
+                                                      *solver_,
+                                                      dirichtoggle_,
+                                                      invtoggle_,
+                                                      sdynparams));
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
@@ -303,7 +303,7 @@ STR::TimInt::TimInt
   // Check for surface stress conditions due to interfacial phenomena
   {
     vector<DRT::Condition*> surfstresscond(0);
-    discret_->GetCondition("SurfaceStress",surfstresscond);
+    discret_->GetCondition("SurfaceStress", surfstresscond);
     if (surfstresscond.size())
     {
       surfstressman_ = rcp(new UTILS::SurfStressManager(*discret_));
@@ -313,14 +313,14 @@ STR::TimInt::TimInt
   // Check for potential conditions
   {
     vector<DRT::Condition*> potentialcond(0);
-    discret_->GetCondition("Potential",potentialcond);
+    discret_->GetCondition("Potential", potentialcond);
     if (potentialcond.size())
     {
       potman_ = rcp(new UTILS::PotentialManager(Discretization(), *discret_));
     }
   }
 
-  // go away
+  // stay with us
   return;
 }
 
@@ -394,7 +394,12 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     solver_->Solve(mass_->EpetraMatrix(), (*acc_)(0), rhs, true, true);
   }
 
-  // leave this
+  // We need to reset the stiffness matrix because its graph (topology)
+  // is not finished yet in case of constraints and posssibly other side
+  // effects (basically managers).
+  stiff_->Reset();
+
+  // leave this hell
   return;
 }
 

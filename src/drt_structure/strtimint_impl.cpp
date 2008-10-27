@@ -354,7 +354,7 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 {
   if (conman_->HaveConstraint())
   {
-    conman_->StiffnessAndInternalForces(time,dis,disn,fint,stiff,pcon);
+    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff, pcon);
   }
 
   // wotcha
@@ -631,6 +631,9 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // make negative residual
     fres_->Scale(-1.0);
 
+//    // uncomplete stiffness matrix, so stuff can be inserted again
+//    stiff_->UnComplete();
+
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
@@ -639,8 +642,8 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     lagrincr->PutScalar(0.0);
     // Call constraint solver to solve system with zeros on diagonal
     consolv_->Solve(stiff_, conmatrix,
-                      disi_, lagrincr,
-                      fres_, conrhs);
+                    disi_, lagrincr,
+                    fres_, conrhs);
 
     
     // update Lagrange multiplier

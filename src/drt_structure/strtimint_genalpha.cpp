@@ -252,7 +252,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   {
     ParameterList pcon;
     // for TR scale constraint matrix with the same value fintn_ is scaled with
-    pcon.set("scaleConstrMat",(1.0-alphaf_));
+    pcon.set("scaleConstrMat", (1.0-alphaf_));
     ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
   }
   else if (midavg_ == midavg_imrlike)
@@ -337,6 +337,9 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax()
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-0.5, *fifc_, 0.0);
+
+  // oh gosh
+  return;
 }
 
 /*----------------------------------------------------------------------*/
