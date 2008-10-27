@@ -96,10 +96,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       }
     }
     
-
-
-    
-
     
     /*
     #ifdef D_BEAM3
@@ -285,7 +281,9 @@ void StatMechManager::StatMechUpdate()
     
     //probability with which a crosslinker is established between neighbouring nodes
     double plink = 1;
-    double punlink = 1;
+    
+    //probability with which a crosslink breaks up in the current time step
+    double punlink = statmechparams_.get<double>("K_OFF",0.0);
     
     //maximal distance bridged by a crosslinker
     double rlink = statmechparams_.get<double>("R_LINK",0.0);

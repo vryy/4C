@@ -74,8 +74,8 @@ protected:
   //! \brief maximal radius within which crosslinkers are established
   double rlink_;
   
-  //! \brief vector storing the currently unused global element Ids (due to former deletion of crosslinker elements)
-  vector<int> unusedids_;
+  //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
+  int basiselements_;
   
   //! \brief reference to current discretization
   DRT::Discretization& discret_; 
@@ -86,11 +86,8 @@ protected:
   //! \brief storing for each node global Id of node with which it is crosslinked; -1 means: no crosslink
   RCP<Epetra_Vector>  crosslinkerpartner_;
   
-  //! \brief storing for each node global Id of crosslinking Element; -1 means: no crosslink
-  RCP<Epetra_Vector> crosslinkerelements_;
-  
   //! \brief storing for each node number of filament to which it belongs
- RCP<Epetra_Vector> filamentnumber_;
+  RCP<Epetra_Vector> filamentnumber_;
   
   //! \brief instance of a crosslinker element which is copied and adapted each time a new crosslinker is needed
   RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy_;

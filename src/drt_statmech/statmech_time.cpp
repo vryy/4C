@@ -108,7 +108,7 @@ void StatMechTime::Integrate()
     /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
      * note that each processor will set up its own random generator and they all have to be pairwise independent*/
     int seedvariable = std::time(0); 
-    //seedvariable = 4; //4
+    seedvariable = 4; //4
     seedgenerator.seed((unsigned int)seedvariable);
   }
   
