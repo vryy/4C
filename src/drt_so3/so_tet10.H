@@ -450,6 +450,14 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
       Epetra_SerialDenseMatrix** deriv_gp_ptr,
       Epetra_SerialDenseVector** weights);
 
+  void so_tet10_mat_sel(
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                      LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                      double* density,
+                      LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                      LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                      const int gp);
+  
   /// material selection
   void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,

@@ -817,10 +817,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    // size is 6x6
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-    // size is 6
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> stress(true);
     so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
 
     // return gp stresses

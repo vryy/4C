@@ -503,7 +503,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd(false);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get Jacobian mapping wrt to the stored configuration
@@ -657,8 +657,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> stress(true);
     double density = 0.0;
     sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc

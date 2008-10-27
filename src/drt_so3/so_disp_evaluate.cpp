@@ -313,10 +313,13 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat(NUMSTR_DISP,NUMSTR_DISP);
-    Epetra_SerialDenseVector stress(NUMSTR_DISP);
-    double density;
-    sodisp_mat_sel(&stress,&cmat,&density,&glstrain, params);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_DISP,NUMSTR_DISP> cmat_f(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_DISP,1> stress_f(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_DISP,1> glstrain_f(glstrain.A());
+    double density = 0.0;
+    sodisp_mat_sel(&stress_f,&cmat_f,&density,&glstrain_f, params);
+    Epetra_SerialDenseMatrix cmat(View,cmat_f.A(),cmat_f.Rows(),cmat_f.Rows(),cmat_f.Columns());
+    Epetra_SerialDenseVector stress(View,stress_f.A(),stress_f.Rows());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

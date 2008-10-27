@@ -582,8 +582,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **             [    dZ       dZ       dZ    ]
     */
 
-    LINALG::SerialDenseMatrix defgrd_epetra(NUMDIM_SOTET10,NUMDIM_SOTET10);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(defgrd_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(true);
     defgrd.MultiplyTN(xdisp,N_XYZ);
     //multiply<NUMDIM_SOTET10,NUMNOD_SOTET10,NUMDIM_SOTET10,'T','N'>(defgrd,xdisp,N_XYZ);
     defgrd(0,0)+=1;
@@ -688,12 +687,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     ** every necessary data must be passed.
     */
 
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOTET10,NUMSTR_SOTET10);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOTET10);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,1> stress(stress_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,1> stress(true);
 
-    so_tet10_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra, &defgrd_epetra, gp);
+    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
     #ifdef VERBOSE_OUTPUT
     cout << "material input\n";
     #endif //VERBOSE_OUTPUT

@@ -762,7 +762,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd(false);
+  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
@@ -957,10 +957,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
-
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

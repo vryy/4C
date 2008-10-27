@@ -344,6 +344,12 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     ParameterList&            params);         // algorithmic parameters e.g. time
+  void sodisp_mat_sel(
+          LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+          LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+          double* density,
+          LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+          ParameterList&            params);        // algorithmic parameters e.g. time
 
   //! evaluate shape functions and derivatives - non-static due to flexible shape
   void sodisp_shapederiv(
