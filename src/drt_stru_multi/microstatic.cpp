@@ -790,8 +790,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* def
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
       double dism_prescribed[3];
-      Epetra_SerialDenseMatrix Du(*defgrd);
-      Epetra_SerialDenseMatrix I(3,3);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> Du(defgrd->A(),false);
+      LINALG::FixedSizeSerialDenseMatrix<3,3> I(true);
       I(0,0)=-1.0;
       I(1,1)=-1.0;
       I(2,2)=-1.0;
