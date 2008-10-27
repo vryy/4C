@@ -364,8 +364,43 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         fssgd,
         frt);
   }
+  else if (action=="calc_elch_kwok_error")
+  {
+    // need current solution
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // create objects for element arrays
+    LINALG::FixedSizeSerialDenseMatrix<iel,2> ephinp;
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> epotnp;
+
+    // fill element arrays
+    for (int i=0;i<iel;++i)
+    {
+      for (int k = 0; k< 2; ++k)
+      {
+        // split for each tranported scalar, insert into element arrays
+        ephinp(i,k) = myphinp[k+(i*numdofpernode_)];
+      }
+
+      // get values for el. potential at element nodes
+      epotnp(i) = myphinp[i*numdofpernode_+numscal_];
+    } // for i
+
+    CalErrorComparedToAnalytSolution(
+        ele,
+        params,
+        ephinp,
+        epotnp,
+        elevec1_epetra,
+        actmat);
+  }
   else
-    dserror("Unknown type of action for Condif3");
+    dserror("Unknown type of action for Condif3: %s",action.c_str());
 
 return 0;
 }
@@ -406,48 +441,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   // dead load in element nodes
   BodyForce(ele,time);
 
-  // get diffusivity / diffusivities
-  if (material->mattyp == m_matlist)
-  {
-    for (int k = 0;k<numscal_;++k)
-    {
-      const int matid = material->m.matlist->matids[k];
-      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
-
-      if (singlemat.mattyp == m_ion)
-      {
-        valence_[k]= singlemat.m.ion->valence;
-        diffus_[k]= singlemat.m.ion->diffusivity;
-      }
-      else if (singlemat.mattyp == m_condif)
-        diffus_[k]= singlemat.m.condif->diffusivity;
-      else
-        dserror("material type is not allowed");
-    }
-    // set specific heat capacity at constant pressure to 1.0
-    shcacp_ = 1.0;
-  }
-  else if (material->mattyp == m_condif)
-  {
-    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
-
-    // in case of a temperature equation, we get thermal conductivity instead of
-    // diffusivity and have to divide by the specific heat capacity at constant
-    // pressure; otherwise, it is the "usual" diffusivity
-    if (temperature)
-    {
-      shcacp_ = material->m.condif->shc;
-      diffus_[0] = material->m.condif->diffusivity/shcacp_;
-    }
-    else
-    {
-      // set specific heat capacity at constant pressure to 1.0, get diffusivity
-      shcacp_ = 1.0;
-      diffus_[0] = material->m.condif->diffusivity;
-    }
-  }
-  else
-    dserror("Material type is not supported");
+  // get material constants
+  GetMaterialParams(material,temperature);
 
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
@@ -576,6 +571,63 @@ void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
   return;
 
 } //Condif3Impl::BodyForce
+
+
+/*----------------------------------------------------------------------*
+ |  get the material constants  (private)                      gjb 10/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::GetMaterialParams
+(
+    const struct _MATERIAL*   material,
+    const bool&               temperature  
+)
+{
+// get diffusivity / diffusivities
+if (material->mattyp == m_matlist)
+{
+  for (int k = 0;k<numscal_;++k)
+  {
+    const int matid = material->m.matlist->matids[k];
+    const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+
+    if (singlemat.mattyp == m_ion)
+    {
+      valence_[k]= singlemat.m.ion->valence;
+      diffus_[k]= singlemat.m.ion->diffusivity;
+    }
+    else if (singlemat.mattyp == m_condif)
+      diffus_[k]= singlemat.m.condif->diffusivity;
+    else
+      dserror("material type is not allowed");
+  }
+  // set specific heat capacity at constant pressure to 1.0
+  shcacp_ = 1.0;
+}
+else if (material->mattyp == m_condif)
+{
+  dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
+
+  // in case of a temperature equation, we get thermal conductivity instead of
+  // diffusivity and have to divide by the specific heat capacity at constant
+  // pressure; otherwise, it is the "usual" diffusivity
+  if (temperature)
+  {
+    shcacp_ = material->m.condif->shc;
+    diffus_[0] = material->m.condif->diffusivity/shcacp_;
+  }
+  else
+  {
+    // set specific heat capacity at constant pressure to 1.0, get diffusivity
+    shcacp_ = 1.0;
+    diffus_[0] = material->m.condif->diffusivity;
+  }
+}
+else
+  dserror("Material type is not supported");
+
+return;
+} //Condif3Impl::GetMaterialParams
 
 
 /*----------------------------------------------------------------------*
@@ -1518,50 +1570,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   // dead load in element nodes
   BodyForce(ele,time);
 
-  // get diffusivity / diffusivities
-  if (material->mattyp == m_matlist)
-  {
-    for (int k = 0;k<numscal_;++k)
-    {
-      const int matid = material->m.matlist->matids[k];
-      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
-
-      if (singlemat.mattyp == m_ion)
-      {
-        valence_[k]= singlemat.m.ion->valence;
-        diffus_[k]= singlemat.m.ion->diffusivity;
-      }
-      else if (singlemat.mattyp == m_condif)
-        diffus_[k]= singlemat.m.condif->diffusivity;
-      else
-        dserror("material type is not allowed");
-#if 0
-      cout<<"MatId: "<<material->m.matlist->matids[k]<<"diffusivity["<<k<<"] = "<<diffus[k]<<endl;
-#endif
-    }
-    // set specific heat capacity at constant pressure to 1.0
-    shcacp_ = 1.0;
-  }
-  else if (material->mattyp == m_condif)
-  {
-    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
-
-    // in case of a temperature equation, we get thermal conductivity instead of
-    // diffusivity and have to divide by the specific heat capacity at constant
-    // pressure; otherwise, it is the "usual" diffusivity
-    if (temperature)
-    {
-      shcacp_ = material->m.condif->shc;
-      diffus_[0] = material->m.condif->diffusivity/shcacp_;
-    }
-    else 
-    {
-      shcacp_ = 1.0;
-      diffus_[0] = material->m.condif->diffusivity;
-    }
-  }
-  else
-    dserror("Material type is not supported");
+  // get material constants
+  GetMaterialParams(material,temperature);
 
   /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
@@ -2001,7 +2011,107 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
   } // loop over scalars
 
   return;
-} // Condif3Impl::AddElchTerms
+} // Condif3Impl::CalMatElch
+
+
+/*---------------------------------------------------------------------*
+ |  calculate error compared to analytical solution           gjb 10/08|
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
+    const DRT::ELEMENTS::Condif3*   ele,
+    ParameterList& params,
+    const LINALG::FixedSizeSerialDenseMatrix<iel,2>& ephinp,
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp,
+    Epetra_SerialDenseVector& errors,
+    struct _MATERIAL* material
+)
+{
+  //at the moment, there is only one analytical test problem available!
+  if (params.get<string>("action") != "calc_elch_kwok_error")
+    dserror("Unknown analytical solution");
+
+  //------------------------------------------------- Kwok et Wu,1995
+  //   Reference:
+  //   Kwok, Yue-Kuen and Wu, Charles C. K.
+  //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+  //   Numerical Methods for Partial Differential Equations
+  //   1995, Vol 11, 389-397
+
+  // get node coordinates
+  for (int i=0;i<iel;i++)
+  {
+    xyze_(0,i)=ele->Nodes()[i]->X()[0];
+    xyze_(1,i)=ele->Nodes()[i]->X()[1];
+    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+  }
+
+  // set constants for analytical solution
+  const double t = params.get("total time",-1.0);
+  dsassert (t >= 0.0, "no total time for error calculation");
+  const double frt = params.get<double>("frt");
+
+  // get material constants
+  GetMaterialParams(material,false);
+
+
+  // working arrays
+  double                                  potint;
+  LINALG::FixedSizeSerialDenseMatrix<2,1> conint;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> xint;
+  LINALG::FixedSizeSerialDenseMatrix<2,1> c;
+  double                                  deltapot;
+  LINALG::FixedSizeSerialDenseMatrix<2,1> deltacon(true);
+
+  // integration points
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point; // for cos/sin
+  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+
+  // start loop over integration points
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
+
+    // get both concentration solutions at integration point
+    conint.MultiplyTN(ephinp,funct_);
+
+    // get el. potential solution at integration point
+    potint = funct_.Dot(epotnp);
+
+    // get global coordinate of integration point
+    xint.Multiply(xyze_,funct_);
+
+    // compute varous constants
+    const double d= (frt*(diffus_[0]*valence_[0]-diffus_[1]*valence_[1]));
+    if (abs(d) == 0.0) dserror("division by zero");
+    const double D = frt*(valence_[0]*diffus_[0]*diffus_[1] - valence_[1]*diffus_[1]*diffus_[0])/d;
+
+    // compute analytical concentrations for the problem of Kwok(1995)
+    const double A0 = 5.0;
+    const double m = 2.0;
+    const double n = 2.0;
+    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1)))*exp((-D)*(m*m + n*n)*t*PI*PI));
+    c(1) = (-valence_[0]/valence_[1])* c(0);
+
+    // compute analytical el. potential
+    const double c_0_0_t = A0 + exp((-D)*(m*m + n*n)*t*PI*PI);
+    const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_t);
+
+    // compute differences between analytical solution and numerical solution
+    deltapot = potint - pot;
+
+    deltacon = conint;
+    deltacon -= c;
+
+    // add square to L2 error
+    errors[0] += deltacon(0)*deltacon(0)*fac_;
+    errors[1] += deltacon(1)*deltacon(1)*fac_;
+    errors[2] += deltapot*deltapot*fac_;
+
+  } // end of loop over integration points
+
+  return;
+} // Condif3Impl::CalErrorComparedToAnalytSolution
 
 #endif
 #endif

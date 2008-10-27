@@ -54,6 +54,8 @@ DRT::ELEMENTS::Condif3::ActionType DRT::ELEMENTS::Condif3::convertStringToAction
     act = Condif3::calc_condif_flux;
   else if (action == "calc_temp_and_dens")
     act = Condif3::calc_temp_and_dens;
+  else if (action == "calc_elch_kwok_error")
+    act = Condif3::calc_elch_kwok_error;
   else
     dserror("Unknown type of action for Condif3");
   return act;
@@ -215,6 +217,25 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
 
     // calculate temperature, density and domain integral
     CalculateTempAndDens(params,myphinp,mydensnp);
+  }
+  break;
+  case calc_elch_kwok_error:
+  {
+    // check if length suffices
+    if (elevec1.Length() < 1) dserror("Result vector too short");
+    // determine errors
+    return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
+             this,
+             params,
+             discretization,
+             lm,
+             elemat1,
+             elemat2,
+             elevec1,
+             elevec2,
+             elevec3,
+             mat,
+             actmat);
   }
   break;
   default:

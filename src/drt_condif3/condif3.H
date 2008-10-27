@@ -317,7 +317,8 @@ private:
     calc_condif_systemmat_and_residual,
     calc_condif_flux,
     initialize_one_step_theta,
-    calc_temp_and_dens
+    calc_temp_and_dens,
+    calc_elch_kwok_error
   };
 
   //! flux parameters recognized by condif3

@@ -45,6 +45,9 @@ void ELCH::Algorithm::TimeLoop()
   // write out inital state
   // Output();
 
+  // compute error for problems with analytical solution
+  ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+
   // time loop
   while (NotFinished())
   {
@@ -59,6 +62,9 @@ void ELCH::Algorithm::TimeLoop()
 
     // update all single field solvers
     Update();
+
+    // compute error for problems with analytical solution
+    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
 
     // write output to screen and files
     Output();

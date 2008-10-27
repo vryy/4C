@@ -1159,6 +1159,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
 
+  setStringToIntegralParameter<int>("CALCERROR","No",
+                               "compute error compared to analytical solution",
+                               tuple<std::string>(
+                                 "No",
+                                 "Kwok_Wu"
+                                 ),
+                               tuple<int>(0,1),
+                               &scatradyn);
+
   setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(
                                  "No",

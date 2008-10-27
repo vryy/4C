@@ -172,6 +172,9 @@ public:
   //! return system matrix downcasted as block sparse matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
+  //! calculate error compared to analytical solution
+  void EvaluateErrorComparedToAnalyticalSol();
+
 protected:
 
   // don't want = operator and cctor

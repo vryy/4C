@@ -133,6 +133,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   scatratimeparams->set<int>("velocity field" ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
   scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
 
+  // -------------------- compute error compared to analytical solution
+  scatratimeparams->set<int>("CALCERROR",Teuchos::getIntegralValue<int>(scatradyn,"CALCERROR"));
+
   // -------------------------------- (fine-scale) subgrid diffusivity?
   scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRVISC"));
 

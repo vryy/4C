@@ -104,7 +104,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // set up the condif-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
     if (myrank_==0)
-      cout<<"\nsetup of conpotsplitter: numscal = "<<numscal<<endl;
+    {
+      cout<<"\nSetup of conpotsplitter: numscal = "<<numscal<<endl;
+      cout<<"Temperature value T (Kelvin)     = "<<params_->get<double>("TEMPERATURE",298.0)<<endl;
+      cout<<"Constant F/RT                    = "<<frt_<<endl;
+    }
   }
 
   if (params_->get<int>("BLOCKPRECOND",0) )
@@ -293,6 +297,11 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
     Update();
+
+    // -------------------------------------------------------------------
+    // evaluate error for problems with analytical solution
+    // -------------------------------------------------------------------
+    EvaluateErrorComparedToAnalyticalSol();
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -1448,6 +1457,64 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 
   return flux;
 } // ScaTraImplicitTimeInt::CalcNormalFlux
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculate error compared to analytical solution            gjb 10/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
+{
+  int calcerr = params_->get<int>("CALCERROR");
+
+  switch (calcerr)
+  {
+  case 0: // do nothing (the usual case)
+    break;
+  case 1:
+  {
+    //------------------------------------------------- Kwok et Wu,1995
+    //   Reference:
+    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+    //   Numerical Methods for Partial Differential Equations
+    //   1995, Vol 11, 389-397
+
+    // create the parameters for the discretization
+    ParameterList p;
+
+    // parameters for the elements
+    p.set("action","calc_elch_kwok_error");
+    p.set("total time",time_);
+    p.set("frt",frt_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(p, errors);
+    discret_->ClearState();
+
+    // for the L2 norm, we need the square root
+    double conerr1 = sqrt((*errors)[0]);
+    double conerr2 = sqrt((*errors)[1]);
+    double poterr  = sqrt((*errors)[2]);
+
+    if (myrank_ == 0)
+    {
+      printf("\nL2_err for Kwok et Wu:\n concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
+             conerr1,conerr2,poterr);
+    }
+  }
+  break;
+  default:
+    dserror("Cannot calculate error. Unknown type of analytical test problem");
+  }
+  return;
+} // end EvaluateErrorComparedToAnalyticalSol
 
 
 /*----------------------------------------------------------------------*
