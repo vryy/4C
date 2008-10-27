@@ -606,9 +606,9 @@ namespace GEO
     \param eleCoord              (in)   node in element coordinates (r, s)
     \param unitnormalvec         (out)  unit normal vector
     */
-    template<DRT::Element::DiscretizationType DISTYPE>
-    inline void computeNormalToSurfaceElement(
-        const BlitzMat&          xyze_surfaceElement,               
+    template<DRT::Element::DiscretizationType DISTYPE, class M>
+    inline void computeNormalToSurfaceElementT(
+        const M&                 xyze_surfaceElement,               
         const BlitzVec2&         eleCoord,               
         BlitzVec3&               unitnormalvec)
     {
@@ -628,25 +628,26 @@ namespace GEO
     \param eleCoord              (in) :  node in element coordinates (r, s)
     \param unitnormalvec         (out):  unit normal vector
     */
+    template <class M>
     inline void computeNormalToSurfaceElement(
         const DRT::Element*      surfaceElement,    
-        const BlitzMat&          xyze_surfaceElement,                
+        const M&                 xyze_surfaceElement,                
         const BlitzVec2&         eleCoord,               
         BlitzVec3&               unitnormalvec)
     {
       switch (surfaceElement->Shape())
       {
           case DRT::Element::quad4:
-              computeNormalToSurfaceElement<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
+              computeNormalToSurfaceElementT<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::quad8:
-              computeNormalToSurfaceElement<DRT::Element::quad8>(xyze_surfaceElement, eleCoord, unitnormalvec);
+              computeNormalToSurfaceElementT<DRT::Element::quad8>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::quad9:
-              computeNormalToSurfaceElement<DRT::Element::quad9>(xyze_surfaceElement, eleCoord, unitnormalvec);
+              computeNormalToSurfaceElementT<DRT::Element::quad9>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           case DRT::Element::tri3:
-              computeNormalToSurfaceElement<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec);
+              computeNormalToSurfaceElementT<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec);
               break;
           default:
               cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
