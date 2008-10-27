@@ -106,7 +106,7 @@ DRT::Discretization::~Discretization()
 /*----------------------------------------------------------------------*
  |  Add an element (public)                                  mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AddElement(RefCountPtr<DRT::Element> ele)
+void DRT::Discretization::AddElement(RCP<DRT::Element> ele)
 {
   element_[ele->Id()] = ele;
   Reset();
@@ -116,11 +116,35 @@ void DRT::Discretization::AddElement(RefCountPtr<DRT::Element> ele)
 /*----------------------------------------------------------------------*
  |  Add a node (public)                                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AddNode(RefCountPtr<DRT::Node> node)
+void DRT::Discretization::AddNode(RCP<DRT::Node> node)
 {
   node_[node->Id()] = node;
   Reset();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  delete an element (public)                               mwgee 10/08|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::DeleteElement(RCP<DRT::Element> ele)
+{
+  map<int,RCP<DRT::Element> >::iterator fool = element_.find(ele->Id());
+  if (fool==element_.end()) return false;
+  element_.erase(fool);
+  Reset();
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  delete an element (public)                               mwgee 10/08|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::DeleteElement(const int gid)
+{
+  map<int,RCP<DRT::Element> >::iterator fool = element_.find(gid);
+  if (fool==element_.end()) return false;
+  element_.erase(fool);
+  Reset();
+  return true;
 }
 
 /*----------------------------------------------------------------------*

@@ -453,7 +453,7 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void SetComm(RefCountPtr<Epetra_Comm> comm)
+  virtual void SetComm(RCP<Epetra_Comm> comm)
   { filled_=false; comm_ = comm; return; }
 
   /*!
@@ -465,7 +465,7 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void AddElement(RefCountPtr<DRT::Element> ele);
+  virtual void AddElement(RCP<DRT::Element> ele);
 
   /*!
   \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -476,7 +476,36 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void AddNode(RefCountPtr<DRT::Node> node);
+  virtual void AddNode(RCP<DRT::Node> node);
+
+  /*!
+  \brief Delete an element from the discretization (Filled()==true NOT prerequisite)
+
+  Delete an element from the discretization. Element can either be ghosted or not.
+  If element on calling processor is not found nothing is done and false is returned.
+  Note that this is not a fatal error and no message will be posted.
+  
+  \return Returns true upon successful deletion or element, returns false if element
+          was not found on calling proc.
+
+  \note Sets Filled()=false and calls Reset() upon discretization.
+  */
+  virtual bool DeleteElement(RCP<DRT::Element> ele);
+
+  /*!
+  \brief Delete an element with global id gid from the discretization 
+         (Filled()==true NOT prerequisite)
+
+  Delete an element from the discretization. Element can either be ghosted or not.
+  If element on calling processor is not found nothing is done and false is returned.
+  Note that this is not a fatal error and no message will be posted.
+  
+  \return Returns true upon successful deletion or element, returns false if element
+          was not found on calling proc.
+
+  \note Sets Filled()=false and calls Reset() upon discretization.
+  */
+  virtual bool DeleteElement(const int gid);
 
   /*!
   \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
@@ -1327,33 +1356,33 @@ private:
 protected:
 
   // internal data
-  string                                        name_;              // name of this discretization
-  RefCountPtr<Epetra_Comm>                      comm_;              // an Epetra_comm
-  bool                                          filled_;            // flag indicating whether getOrganized has been called
-  bool                                          havedof_;           // flag indicating whether degrees of freedom where assigned
+  string                                name_;              // name of this discretization
+  RCP<Epetra_Comm>                      comm_;              // an Epetra_comm
+  bool                                  filled_;            // flag indicating whether getOrganized has been called
+  bool                                  havedof_;           // flag indicating whether degrees of freedom where assigned
 
-  RefCountPtr<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))
+  RCP<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
+  RCP<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))
 
-  RefCountPtr<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
-  RefCountPtr<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements
-  vector<DRT::Element*>                         elerowptr_;         // vector of pointers to row elements for faster access
-  vector<DRT::Element*>                         elecolptr_;         // vector of pointers to column elements for faster access
-  map<int,RefCountPtr<DRT::Element> >           element_;           // map of elements
+  RCP<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
+  RCP<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements
+  vector<DRT::Element*>                 elerowptr_;         // vector of pointers to row elements for faster access
+  vector<DRT::Element*>                 elecolptr_;         // vector of pointers to column elements for faster access
+  map<int,RCP<DRT::Element> >           element_;           // map of elements
 
-  RefCountPtr<Epetra_Map>                       noderowmap_;        // unique distribution of nodal ownerships
-  RefCountPtr<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
-  vector<DRT::Node*>                            noderowptr_;        // vector of pointers to row nodes for faster access
-  vector<DRT::Node*>                            nodecolptr_;        // vector of pointers to column nodes for faster access
-  map<int,RefCountPtr<DRT::Node> >              node_;              // map of nodes
+  RCP<Epetra_Map>                       noderowmap_;        // unique distribution of nodal ownerships
+  RCP<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
+  vector<DRT::Node*>                    noderowptr_;        // vector of pointers to row nodes for faster access
+  vector<DRT::Node*>                    nodecolptr_;        // vector of pointers to column nodes for faster access
+  map<int,RCP<DRT::Node> >              node_;              // map of nodes
 
-  map<string,RefCountPtr<const Epetra_Vector> > state_;             // map of references to solution states
-  map<int,RefCountPtr<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
+  map<string,RCP<const Epetra_Vector> > state_;             // map of references to solution states
+  map<int,RCP<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
 
-  multimap<string,RefCountPtr<Condition> >      condition_;         // some conditions e.g. BCs
+  multimap<string,RCP<Condition> >      condition_;         // some conditions e.g. BCs
 
-  vector<RefCountPtr<DofSet> >                  dofsets_;           // set of DofSets
-  int                                           currentdofset_;     // number of the DofSet we are currently working with
+  vector<RCP<DofSet> >                  dofsets_;           // set of DofSets
+  int                                   currentdofset_;     // number of the DofSet we are currently working with
 }; // class Discretization
 } // namespace DRT
 
