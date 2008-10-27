@@ -44,9 +44,9 @@ public:
   void ReadRestart();
 
   /// Perform microscale simulation
-  void PerformMicroSimulation(const Epetra_SerialDenseMatrix* defgrd,
-                              Epetra_SerialDenseVector* stress,
-                              Epetra_SerialDenseMatrix* cmat,
+  void PerformMicroSimulation(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                              LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                              LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
                               double* density,
                               const double time,
                               const bool eleowner);

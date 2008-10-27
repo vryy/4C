@@ -50,16 +50,16 @@ extern struct _GENPROB     genprob;
 // -> see also Makefile.objects and setup-objects.sh
 //
 // In case of any changes of the function prototype make sure that the
-// corresponding prototype in post_drt_evaluation.cpp is adapted, too!!
+// corresponding prototype in src/filter_common/filter_evaluation.cpp is adapted, too!!
 
-void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
-                                  Epetra_SerialDenseMatrix* cmat,
-                                  Epetra_SerialDenseVector* stress,
+void MAT::MicroMaterial::Evaluate(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
                                   double* density,
                                   const int gp,
                                   const int ele_ID,
                                   const double time,
-                                  const string action)
+                                  string action)
 {
   // activate microscale material
 

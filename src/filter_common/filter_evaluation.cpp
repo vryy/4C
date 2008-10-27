@@ -151,9 +151,9 @@ class MicroMaterialGP
 
 }
 
-void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress,
+void MAT::MicroMaterial::Evaluate(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
                   double* density,
                   const int gp,
                   const int ele_ID,

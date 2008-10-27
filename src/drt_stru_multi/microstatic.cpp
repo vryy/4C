@@ -215,7 +215,7 @@ solver_(solver)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
+void STRUMULTI::MicroStatic::Predictor(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -505,9 +505,9 @@ void STRUMULTI::MicroStatic::FullNewton()
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
-                         const double time,
-                         const int istep,
-                         const double dt)
+                                    const double time,
+                                    const int istep,
+                                    const double dt)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -767,7 +767,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
   np_ = np;
 }
 
-void STRUMULTI::MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
+void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd)
 {
   vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
@@ -1182,10 +1182,10 @@ void STRUMULTI::MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 
 
 
-void STRUMULTI::MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
-                                                  Epetra_SerialDenseMatrix* cmat,
+void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+                                                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
                                                   double *density,
-                                                  const Epetra_SerialDenseMatrix* defgrd,
+                                                  LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                                                   const bool mod_newton,
                                                   bool& build_stiff)
 {
@@ -1230,7 +1230,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stre
 
   fp.Scale(-1.0);
 
-  Epetra_SerialDenseMatrix P(3,3);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> P(true);
 
   for (int i=0; i<3; ++i)
   {
@@ -1246,44 +1246,23 @@ void STRUMULTI::MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stre
 
   // determine inverse of deformation gradient
 
-  Epetra_SerialDenseMatrix F_inv(3,3);
-
-  double detF= (*defgrd)(0,0) * (*defgrd)(1,1) * (*defgrd)(2,2)
-             + (*defgrd)(0,1) * (*defgrd)(1,2) * (*defgrd)(2,0)
-             + (*defgrd)(0,2) * (*defgrd)(1,0) * (*defgrd)(2,1)
-             - (*defgrd)(0,0) * (*defgrd)(1,2) * (*defgrd)(2,1)
-             - (*defgrd)(0,1) * (*defgrd)(1,0) * (*defgrd)(2,2)
-             - (*defgrd)(0,2) * (*defgrd)(1,1) * (*defgrd)(2,0);
-
-  F_inv(0,0) = ((*defgrd)(1,1)*(*defgrd)(2,2)-(*defgrd)(1,2)*(*defgrd)(2,1))/detF;
-  F_inv(0,1) = ((*defgrd)(0,2)*(*defgrd)(2,1)-(*defgrd)(2,2)*(*defgrd)(0,1))/detF;
-  F_inv(0,2) = ((*defgrd)(0,1)*(*defgrd)(1,2)-(*defgrd)(1,1)*(*defgrd)(0,2))/detF;
-  F_inv(1,0) = ((*defgrd)(1,2)*(*defgrd)(2,0)-(*defgrd)(2,2)*(*defgrd)(1,0))/detF;
-  F_inv(1,1) = ((*defgrd)(0,0)*(*defgrd)(2,2)-(*defgrd)(2,0)*(*defgrd)(0,2))/detF;
-  F_inv(1,2) = ((*defgrd)(0,2)*(*defgrd)(1,0)-(*defgrd)(1,2)*(*defgrd)(0,0))/detF;
-  F_inv(2,0) = ((*defgrd)(1,0)*(*defgrd)(2,1)-(*defgrd)(2,0)*(*defgrd)(1,1))/detF;
-  F_inv(2,1) = ((*defgrd)(0,1)*(*defgrd)(2,0)-(*defgrd)(2,1)*(*defgrd)(0,0))/detF;
-  F_inv(2,2) = ((*defgrd)(0,0)*(*defgrd)(1,1)-(*defgrd)(1,0)*(*defgrd)(0,1))/detF;
+  LINALG::FixedSizeSerialDenseMatrix<3,3> F_inv(defgrd->A(),false);
+  F_inv.Invert();
 
   // convert to second Piola-Kirchhoff stresses and store them in
   // vector format
   // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
-  Epetra_SerialDenseVector S(6);
+  stress->Scale(0.);
 
   for (int i=0; i<3; ++i)
   {
-    S[0] += F_inv(0, i)*P(i,0);                     // S11
-    S[1] += F_inv(1, i)*P(i,1);                     // S22
-    S[2] += F_inv(2, i)*P(i,2);                     // S33
-    S[3] += F_inv(0, i)*P(i,1);                     // S12
-    S[4] += F_inv(1, i)*P(i,2);                     // S23
-    S[5] += F_inv(0, i)*P(i,2);                     // S13
-  }
-
-  for (int i=0; i<6; ++i)
-  {
-    (*stress)[i]=S[i];
+    (*stress)(0) += F_inv(0, i)*P(i,0);                     // S11
+    (*stress)(1) += F_inv(1, i)*P(i,1);                     // S22
+    (*stress)(2) += F_inv(2, i)*P(i,2);                     // S33
+    (*stress)(3) += F_inv(0, i)*P(i,1);                     // S12
+    (*stress)(4) += F_inv(1, i)*P(i,2);                     // S23
+    (*stress)(5) += F_inv(0, i)*P(i,2);                     // S13
   }
 
   if (build_stiff)
@@ -1351,7 +1330,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stre
 
   *density = density_;
 
-  //cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";
+  return;
 }
 
 

@@ -59,8 +59,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
                     LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params,
-                    const string action)
+                    ParameterList&  params)
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -100,20 +99,69 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case m_struct_multiscale: /*------------------- multiscale approach */
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+
+      // Check if we use EAS on this (macro-)scale
+      if (eastype_ != soh8_easnone)
+      {
+        // In this case, we have to calculate the "enhanced" deformation gradient
+        // from the enhanced GL strains with the help of two polar decompositions
+
+        // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
+        // -> get C_enh from enhanced GL strains
+        Epetra_SerialDenseMatrix C_enh(3,3);
+        for (int i = 0; i < 3; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
+        // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+        C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
+        C_enh(1,2) =  (*glstrain)(4);  C_enh(2,1) =  (*glstrain)(4);
+        C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
+
+        // -> polar decomposition of (U^mod)^2
+        LINALG::SerialDenseMatrix Q(3,3);
+        LINALG::SerialDenseMatrix S(3,3);
+        LINALG::SerialDenseMatrix VT(3,3);
+        SVD(C_enh,Q,S,VT); // Singular Value Decomposition
+        LINALG::SerialDenseMatrix U_enh(3,3);
+        LINALG::SerialDenseMatrix temp(3,3);
+        for (int i = 0; i < 3; ++i) S(i,i) = sqrt(S(i,i));
+        temp.Multiply('N','N',1.0,Q,S,0.0);
+        U_enh.Multiply('N','N',1.0,temp,VT,0.0);
+
+        // Second step: determine rotation tensor R from F (F=R*U)
+        // -> polar decomposition of displacement based F
+        Epetra_SerialDenseMatrix defgrd_lin(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
+        SVD(defgrd_lin,Q,S,VT); // Singular Value Decomposition
+        LINALG::SerialDenseMatrix R(3,3);
+        R.Multiply('N','N',1.0,Q,VT,0.0);
+
+        // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
+        LINALG::FixedSizeSerialDenseMatrix<3,3> R_f(R.A(),true);
+        LINALG::FixedSizeSerialDenseMatrix<3,3> U_enh_f(U_enh.A(),true);
+        defgrd->MultiplyNN(R_f,U_enh_f);
+      }
+
+      const double time = params.get("total time",-1.0);
+
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time);
+      return;
+      break;
+    }
     default:
     break;
   } // switch (mat->MaterialType())
-  
-  
+
+
   // This is a wrapper for the Epetra style material interface
   Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
   Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
   const Epetra_SerialDenseVector glstrain_e(View,glstrain->A(),glstrain->Rows());
   Epetra_SerialDenseMatrix defgrd_e(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-  soh8_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params,action);
+  soh8_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp,params);
 
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  | material laws for So_hex8                                   maf 04/07|
@@ -142,7 +190,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
   so_tet10_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,&defgrd_e,gp);
 
   return;
-}     
+}
 
 /*----------------------------------------------------------------------*
  | material laws for SoDisp                                   maf 08/07|
@@ -168,7 +216,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
   sodisp_mat_sel(&stress_e,&cmat_e,density,&glstrain_e,params);
 
   return;
-}     
+}
 
 
 
@@ -182,8 +230,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const Epetra_SerialDenseVector* glstrain,
       Epetra_SerialDenseMatrix* defgrd,
       const int gp,
-      ParameterList&  params,
-      const string action)
+      ParameterList&  params)
 {
   RefCountPtr<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -231,7 +278,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */ 
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
       //if (!visco->Initialized())
       //  visco->Setup(NUMGPT_SOH8);
       visco->Evaluate(glstrain,gp,params,cmat,stress);
@@ -298,51 +345,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       remo->Evaluate(glstrain,*defgrd,gp,params,cmat,stress,this->Id());
       *density = remo->Density();
-
-      break;
-    }
-    case m_struct_multiscale: /*------------------- multiscale approach */
-    {
-      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-
-      // Check if we use EAS on this (macro-)scale
-      if (eastype_ != soh8_easnone)
-      {
-        // In this case, we have to calculate the "enhanced" deformation gradient
-        // from the enhanced GL strains with the help of two polar decompositions
-
-        // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
-        // -> get C_enh from enhanced GL strains
-        LINALG::SerialDenseMatrix C_enh(NUMDIM_SOH8,NUMDIM_SOH8);
-        for (int i = 0; i < NUMDIM_SOH8; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
-        // off-diagonal terms are already twice in the Voigt-GLstrain-vector
-        C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
-        C_enh(1,2) =  (*glstrain)(4);  C_enh(2,1) =  (*glstrain)(4);
-        C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
-
-        // -> polar decomposition of (U^mod)^2
-        LINALG::SerialDenseMatrix Q(NUMDIM_SOH8,NUMDIM_SOH8);
-        LINALG::SerialDenseMatrix S(NUMDIM_SOH8,NUMDIM_SOH8);
-        LINALG::SerialDenseMatrix VT(NUMDIM_SOH8,NUMDIM_SOH8);
-        SVD(C_enh,Q,S,VT); // Singular Value Decomposition
-        LINALG::SerialDenseMatrix U_enh(NUMDIM_SOH8,NUMDIM_SOH8);
-        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
-        for (int i = 0; i < NUMDIM_SOH8; ++i) S(i,i) = sqrt(S(i,i));
-        temp.Multiply('N','N',1.0,Q,S,0.0);
-        U_enh.Multiply('N','N',1.0,temp,VT,0.0);
-
-        // Second step: determine rotation tensor R from F (F=R*U)
-        // -> polar decomposition of displacement based F
-        SVD(*defgrd,Q,S,VT); // Singular Value Decomposition
-        LINALG::SerialDenseMatrix R(NUMDIM_SOH8,NUMDIM_SOH8);
-        R.Multiply('N','N',1.0,Q,VT,0.0);
-
-        // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
-        defgrd->Multiply('N','N',1.0,R,U_enh,0.0);
-      }
-
-      const double time = params.get("total time",-1.0);
-      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, action);
 
       break;
     }

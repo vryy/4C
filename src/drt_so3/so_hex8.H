@@ -520,8 +520,7 @@ protected:
                     const Epetra_SerialDenseVector* glstrain,
                     Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
-                    ParameterList&  params,
-                    const string action = string());
+                    ParameterList&  params);
 
   void soh8_mat_sel(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
                     LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
@@ -529,8 +528,7 @@ protected:
                     LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params,
-                    const string action = string());
+                    ParameterList&  params);
 
   //! EAS technology, init
   void soh8_easinit();
