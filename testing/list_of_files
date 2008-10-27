@@ -201,6 +201,7 @@ Input/scatra_gaussian_hill_pbc.dat                      x        x        x     
 Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x        x        -        -        -
 Input/soshw6_thin_nonlinear_pinched_hemisphere.dat      x        x        x        -        -        -
 Input/sosh8_freeflying_ruler.dat                        x        x        x        -        -        -
+Input/sosh8_freeflying_ruler_sti.dat                    x        x        x        -        -        -
 Input/sohex8_easfull_cooks_nl.dat                       x        x        x        -        -        -
 Input/sohex8_easmild_cooks_nl.dat                       x        x        x        -        -        -
 Input/sohex8_easmild_cooks_nl_dynsta.dat                x        x        x        -        -        -
