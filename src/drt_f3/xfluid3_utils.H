@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/dof_management_element.H"
+#include "../drt_xfem/xfem_enums.H"
 #include <Epetra_SerialDenseSolver.h>
 
 
@@ -639,6 +640,30 @@ bool isHigherOrderElement()
 
 
 } // namespace XFEM
+
+namespace XFLUID
+{
+
+//! interpolate from nodal vector array to integration point vector using the shape function
+template <class M, class VS>
+static BlitzVec3 interpolateVectorFieldToIntPoint(
+    const M&  eleVectorField,       ///< array with nodal vector values
+    const VS& shp,                  ///< array with nodal shape function
+    const int numparam              ///< number of parameters
+    )
+{
+  BlitzVec3 v;
+  const int nsd = 3;
+  for (int isd = 0; isd < nsd; ++isd)
+  {
+      v(isd) = 0.0;
+      for (int iparam = 0; iparam < numparam; ++iparam)
+          v(isd) += eleVectorField(isd,iparam)*shp(iparam);
+  }
+  return v;
+}
+
+} // namespace XFLUID
 
 #endif
 #endif  // #ifdef CCADISCRET

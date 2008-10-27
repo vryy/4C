@@ -63,26 +63,6 @@ struct Shp
   /// specialization of SizeFac for XFEM::xfem_assembly
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const int fac = 3;};
 
-
-  //! interpolate from nodal vector array to integration point vector using the shape function
-  template <class M, class MS>
-  static BlitzVec3 interpolateVectorFieldToIntPoint(
-      const M&  eleVectorField,       ///< array with nodal vector values
-      const MS& shp,                  ///< array with nodal shape function
-      const int numparam              ///< number of parameters
-      )
-  {
-    BlitzVec3 v;
-    const int nsd = 3;
-    for (int isd = 0; isd < nsd; ++isd)
-    {
-        v(isd) = 0.0;
-        for (int iparam = 0; iparam < numparam; ++iparam)
-            v(isd) += eleVectorField(isd,iparam)*shp(iparam);
-    }
-    return v;
-  }
-  
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
   static bool modifyOldTimeStepsValues(
@@ -190,9 +170,9 @@ struct Shp
           
           BlitzVec funct_ST(numnode_boundary*2);
           DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          ivelnm = interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
-          iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+          iveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          ivelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
+          iaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
   //                cout << "iveln " << iveln << endl;
   //                cout << "iaccn " << iaccn << endl;
         }
@@ -668,10 +648,10 @@ static void SysmatDomain4(
             }
             
             // get velocities and accelerations at integration point
-            const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const BlitzVec3 gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+            BlitzVec3 gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            BlitzVec3 gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            BlitzVec3 gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
             
             
             if (ASSTYPE == XFEM::xfem_assembly)
@@ -1513,7 +1493,7 @@ static void SysmatBoundary4(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
-        const std::map<int,blitz::TinyVector<double,3> >* positions = ih->cutterposnp();
+        const std::map<int,BlitzVec3 >* positions = ih->cutterposnp();
         const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
         
         // get interface velocities at the boundary element nodes
@@ -1539,7 +1519,7 @@ static void SysmatBoundary4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-          GEO::PosEtaBoundary pos_eta_boundary;
+            GEO::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
 //            cout << pos_eta_boundary << endl;
@@ -1687,7 +1667,7 @@ static void SysmatBoundary4(
               shp_tau(iparam) = enr_funct_stress(iparam);
             }
             
-            // get normal vector (in x coordinates) to surface element at integration point
+            // get normal vector (in physical coordinates) to surface element at integration point
             BlitzVec3 normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
