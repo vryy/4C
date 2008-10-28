@@ -13,7 +13,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 
 #include <vector>
 #include "visconeohooke.H"
-#include "../drt_lib/linalg_serialdensevector.H"
 
 extern struct _MATERIAL *mat;  ///< C-style material struct
 

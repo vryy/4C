@@ -14,8 +14,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "material.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 

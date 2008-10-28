@@ -111,6 +111,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
+    {
+      MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = visco->Density();
+      return;
+      break;
+    }
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -287,15 +295,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       break;
     }
-    case m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
-    {
-      MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-      visco->Evaluate(glstrain,gp,params,cmat,stress);
-      *density = visco->Density();
-
-      break;
-    }
-    case m_contchainnetw: /*------------ Continuum Chain Network Material */
+   case m_contchainnetw: /*------------ Continuum Chain Network Material */
     {
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       if (!chain->Initialized())
