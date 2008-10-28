@@ -288,16 +288,16 @@ void ADAPTER::XFluidImpl::Output()
 
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+//  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+//  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   
   // map to fluid parallel distribution
   LINALG::Export(*idispnp_ ,*idispnpcol);
   LINALG::Export(*ivelnp_  ,*ivelnpcol);
-  LINALG::Export(*iveln_   ,*ivelncol);
-  LINALG::Export(*iaccn_   ,*iaccncol);
+//  LINALG::Export(*iveln_   ,*ivelncol);
+//  LINALG::Export(*iaccn_   ,*iaccncol);
   LINALG::Export(*itrueresnp_,*itruerescol);
   
   // print redundant arrays on proc 0
@@ -305,8 +305,8 @@ void ADAPTER::XFluidImpl::Output()
   {
     PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
     PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
-    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+//    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
+//    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
   }
 
 }
@@ -320,6 +320,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool screen_out = false;
   if (gmshdebugout)
   {
     std::stringstream filename;
@@ -327,7 +328,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
     filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     
     {
@@ -371,7 +372,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 }
 
