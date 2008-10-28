@@ -32,14 +32,16 @@ Maintainer: Christian Cyron
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
-StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
+StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff, RCP<LINALG::SparseMatrix>& damp):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
   istart_(0),
   rlink_(params.get<double>("R_LINK",0.0)),
-  discret_(discret)
+  discret_(discret),
+  stiff_(stiff),
+  damp_(damp)
 { 
   //if dynamic crosslinkers are used additional variables are initialized
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
@@ -247,7 +249,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(double dt)
+void StatMechManager::StatMechUpdate(const double dt)
 {  
   #ifdef D_BEAM3
   
@@ -288,6 +290,14 @@ void StatMechManager::StatMechUpdate(double dt)
     crosslinkerdummy->Irr_ = 28.74e-8;
     crosslinkerdummy->material_ = 1;
     
+    /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
+     * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
+     * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
+     * cannot be called from the discretization before calling FillComplete() again which should be done only in the very end
+     * note: this way of getting node maps is all right only if no nodes are added/ deleted, but elements only*/
+    RefCountPtr<Epetra_Map> noderowmap = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
+    RefCountPtr<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*(discret_.NodeColMap())));
+    
 
     
     
@@ -311,17 +321,22 @@ void StatMechManager::StatMechUpdate(double dt)
          * be deleted*/
         int crosslinkerid = basiselements_ + discret_.NodeRowMap()->GID(i);
         
-        //delete crosslinker element
-        //discret_.DeleteElement(crosslinkerid);
+        /*delete crosslinker element; when trying to delete a crosslinker element not administrated by the calling processor
+         * an error is issued*/
+        if( !discret_.DeleteElement(crosslinkerid) )
+          dserror("Deleting crosslinker element failed");
+
      
       }
+         
       
       /*in the following new crosslinkers are established; however this is possibleonly if the current node has not 
        * yet one, i.e. (*crosslinkerpartner_)[i] == -1.0 and if the node has passed a random test by which it's figured
        * out whether it can get a new crosslinker in this time step, i.e. (*setcrosslinker)[i] <  -1.0 + 2*plink*/
      if( (*crosslinkerpartner_)[i] == -1.0 && (*setcrosslinker)[i] <  -1.0 + 2*plink  )
-     {    
-        //searching nearest neighbour of the current node (with global Id "neighbour"):
+     {     
+       
+       //searching nearest neighbour of the current node (with global Id "neighbour"):
         int neighbour = -1;
         double rneighbour = rlink;
         
@@ -339,13 +354,10 @@ void StatMechManager::StatMechUpdate(double dt)
               double dz = (discret_.lRowNode(j))->X()[2] - (discret_.lRowNode(i))->X()[2];
               double rcurrent = pow(dx*dx + dy*dy + dz*dz, 0.5);
               
-              if(rcurrent < rlink)
+              if(rcurrent < rneighbour)
               {
-                if(rcurrent < rneighbour)
-                {
                   neighbour = j;
                   rneighbour = rcurrent;
-                }
               } 
            }
         }
@@ -357,20 +369,26 @@ void StatMechManager::StatMechUpdate(double dt)
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
           
+          
           /*assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
            * only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
            * before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved*/     
           newcrosslinker->SetId( basiselements_ + discret_.NodeRowMap()->GID(i) );
           
-          //nodes are assigned to the new crosslinker element
-          int nodes[] = {discret_.NodeRowMap()->GID(i), neighbour};
-          newcrosslinker->SetNodeIds(2, nodes);
           
+          //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
+          int globalnodeids[] = {discret_.NodeRowMap()->GID(i), neighbour};      
+          newcrosslinker->SetNodeIds(2, globalnodeids);
+          DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
+          newcrosslinker->BuildNodalPointers(&nodes[0]);
+          
+                
           //correct reference configuration data is computed for the new crosslinker element
           newcrosslinker->SetUpReferenceGeometry();
+
           
           //add new element to discretization
-          discret_.AddElement(newcrosslinker);    
+          discret_.AddElement(newcrosslinker);  
           
           //noting that local node i has now a crosslinkerelement and noting global Id of this element
           (*crosslinkerpartner_)[neighbour] = -1;
@@ -380,13 +398,13 @@ void StatMechManager::StatMechUpdate(double dt)
       
       /*settling administrative stuff in order to make the discretization ready for the next time step: the following
        * commmand generates ghost elements if necessary and calls FillCompete() method of discretization; note: this is
-       * enough as long as only elements, but no nodes are added in a time step*/  
-      RefCountPtr<Epetra_Map> noderowmap = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
-      RefCountPtr<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*(discret_.NodeColMap())));  
-      
+       * enough as long as only elements, but no nodes are added in a time step*/        
       DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,*noderowmap,*nodecolmap);
       discret_.FillComplete(true,false,false);
-  
+      
+      /*since graph of Crs matrices has changed stiff_ and damp_ are deleted completely and made ready for completely new assembly*/
+      stiff_->Reset();
+      damp_->Reset();
     }
     
   }

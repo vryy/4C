@@ -27,7 +27,7 @@ class StatMechManager
 public:
 
   //! \brief Standard Constructor
-  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret);
+  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff, RCP<LINALG::SparseMatrix>& damp);
 
   //! \brief Destructor
   virtual ~StatMechManager() {};
@@ -36,7 +36,7 @@ public:
   void StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis);
   
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(double dt);
+  void StatMechUpdate(const double dt);
   
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
   void StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);
@@ -70,6 +70,12 @@ protected:
   
   //! \brief reference to current discretization
   DRT::Discretization& discret_; 
+  
+  //! \brief reference to current stiffness matrix
+  RCP<LINALG::SparseMatrix>& stiff_;
+  
+  //! \brief reference to current damping matrix
+  RCP<LINALG::SparseMatrix>& damp_;
   
   //! \brief name of file into which output is written
   std::ostringstream outputfilename_; 
