@@ -283,7 +283,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
-  while (step_<stepmax_ and time_<maxtime_)
+  while ((step_<stepmax_) and ((time_+ EPS12) < maxtime_))
   {
     PrepareTimeStep();
 
