@@ -470,7 +470,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
 
     const Teuchos::ParameterList& conditionnames = problem.ConditionNamesParams();
 
-    for (std::vector<const char*>::iterator i=++section.begin();
+    for (std::vector<const char*>::iterator i=section.begin()+1;
          i!=section.end();
          ++i)
     {
