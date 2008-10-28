@@ -8,11 +8,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -24,11 +24,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 <\pre>
@@ -2869,6 +2869,19 @@ public:
 
   /// Constructor
   /*!
+    Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
+    \e view==false (the default) the data is copied, otherwise a view to
+    it is constructed.
+
+    \param d
+      matrix to be copied or viewed
+    \param view
+      whether the data is to be viewed or copied
+   */
+  explicit FixedSizeSerialDenseMatrix(Epetra_SerialDenseMatrix& d, bool view=false);
+
+  /// Constructor
+  /*!
     Constructs a new FixedSizeSerialDenseMatrix from \e source. If
     \e view==false the data is copied, otherwise a view to
     it is constructed.
@@ -3669,6 +3682,24 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(double* d, bo
   else {
     data_ = new double[rows*cols];
     std::memcpy(data_, d, rows*cols*sizeof(double));
+  }
+}
+
+template<unsigned int rows, unsigned int cols>
+FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(Epetra_SerialDenseMatrix& d, bool view) :
+    data_(0), isview_(view)
+{
+  DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+  if (d.A()==0)
+    return;
+  if (d.M()!=rows or d.N()!=cols)
+    dserror("illegal matrix dimension (%d,%d)",d.M(),d.N());
+  if (isview_) {
+    data_ = d.A();
+  }
+  else {
+    data_ = new double[rows*cols];
+    std::memcpy(data_, d.A(), rows*cols*sizeof(double));
   }
 }
 

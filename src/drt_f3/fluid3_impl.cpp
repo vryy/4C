@@ -29,42 +29,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_SerialDenseSolver.h>
 
 #ifdef DEBUG
-//#define PRINTDEBUG
 #endif
-
-#ifdef PRINTDEBUG
-#include <string>
-#include <sstream>
-#include <cstring>
-template <class T>
-void writeArray(const T& mat, std::string name = "unnamed")
-{
-  int M = mat.M();
-  int N = mat.N();
-  if (mat.A() == NULL) {
-    M = N = 0;
-  }
-  std::stringstream header;
-  header << 'M' << name << ':' << M << 'x' << N << ':';
-  unsigned int s = header.str().size() + M*N*sizeof(double);
-  std::cerr.write(reinterpret_cast<const char*>(&s),sizeof(unsigned int));
-  std::cerr << header.str();
-  if (M*N)
-    std::cerr.write(reinterpret_cast<const char*>(mat.A()),M*N*sizeof(double));
-  if (not std::cerr.good()) {
-    std::cout << "Error: "<< std::cerr.good() << std::cerr.eof() << std::cerr.fail() << std::cerr.bad() << '\n';
-    std::cerr.clear();
-  }
-}
-
-void writeComment(const std::string v)
-{
-  unsigned int s = v.size()+1;
-  std::cerr.write(reinterpret_cast<const char*>(&s),sizeof(unsigned int));
-  std::cerr << 'C' << v;
-}
-
-#endif // PB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -202,9 +167,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const int numnode = iel;
 
   // construct views
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,     1> elevec1(elevec1_epetra.A(),true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra,true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,    1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are never used anyway
 
   //--------------------------------------------------
@@ -661,13 +626,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
     dserror("no fluid material found");
 
   params.set("density", dens);*/
-#ifdef PRINTDEBUG
-  writeArray(elemat1,"elemat1");
-  writeArray(elemat2,"elemat2");
-  writeArray(elevec1,"elevec1");
-  //writeArray(elevec2,"elemat2");
-  //writeArray(elevec3,"elemat3");
-#endif
 
   return 0;
 }
@@ -717,11 +675,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 {
   // set element data
   const int numnode = iel;
-#ifdef PRINTDEBUG
-  std::stringstream s;
-  s << "Element:" << ele->Id();
-  writeComment(s.str());
-#endif // PB
 
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
@@ -751,17 +704,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally
-#ifdef PRINTDEBUG
-  writeArray(evelnp,"evelnp");
-  writeArray(fsevelnp,"fsevelnp");
-  Epetra_SerialDenseVector vccvl(5);
-  vccvl(0) = visc;
-  vccvl(1) = Cs;
-  vccvl(2) = Cs_delta_sq;
-  vccvl(3) = visceff;
-  vccvl(4) = l_tau;
-  writeArray(vccvl,"visc,Cs(2),visceff,l_tau");
-#endif // PB
   Caltau(ele,
          evelnp,
          fsevelnp,
@@ -777,17 +719,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
          visceff,
          l_tau,
          fssgv);
-#ifdef PRINTDEBUG
-  writeArray(evelnp,"evelnp#2");
-  writeArray(fsevelnp,"fsevelnp#2");
-  Epetra_SerialDenseVector vccvl2(5);
-  vccvl2(0) = visc;
-  vccvl2(1) = Cs;
-  vccvl2(2) = Cs_delta_sq;
-  vccvl2(3) = visceff;
-  vccvl2(4) = l_tau;
-  writeArray(vccvl2,"visc,Cs(2),visceff,l_tau#2");
-#endif // PB
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
@@ -806,11 +737,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-#ifdef PRINTDEBUG
-    std::stringstream s3;
-    s3 << "Point:" << iquad;
-    writeComment(s.str());
-#endif // PB
     // coordinates of the current integration point
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
@@ -819,9 +745,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // shape functions and their derivatives
     DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
-#ifdef PRINTDEBUG
-    writeArray(funct_,"funct_#1");
-#endif // PB
 
     // get Jacobian matrix and determinant
     // actually compute its transpose....
@@ -849,14 +772,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
     }
-#ifdef PRINTDEBUG
-    writeArray(xjm_,"xjm_");
-    Epetra_SerialDenseVector dummy(2);
-    dummy(0) = det;
-    dummy(1) = fac;
-    writeArray(dummy,"det,fac");
-    writeArray(xji_,"xji_");
-#endif // PB
 
     // compute global derivates
     //derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
@@ -883,9 +798,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       gder2(ele);
     }
     else derxy2_.Clear();
-#ifdef PRINTDEBUG
-    writeArray(derxy2_,"derxy2_");
-#endif // PB
 
     // get momentum (n+g,i) at integration point
     //velint_ = blitz::sum(densfunct_(j)*evelnp(i,j),j);
@@ -932,18 +844,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       //csconvint_ = blitz::sum(funct_(j)*cseconvnp(i,j),j);
       csconvint_.Multiply(cseconvnp,funct_);
     }
-#ifdef PRINTDEBUG
-    //writeArray(csevelnp,"csevelnp");
-    writeArray(funct_,"funct_#2");
-    writeArray(velint_,"velint_");
-    writeArray(histvec_,"histvec_");
-    writeArray(vderxy_,"vderxy_");
-    //writeArray(fsvderxy_,"fsvderxy_");
-    //writeArray(csvelint_,"csvelint_");
-    //writeArray(csvderxy_,"csvderxy_");
-    //writeArray(conv_s_,"conv_s_");
-    //writeArray(csconvint_,"csconvint_");
-#endif // PB
 
     // get convective velocity at integration point
     // We handle the ale case very implicitely here using the (possible mesh
@@ -967,14 +867,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // get (density-weighted) bodyforce in gausspoint
     //bodyforce_ = blitz::sum(edeadng_(i,j)*densfunct_(j),j);
     bodyforce_.Multiply(edeadng_,densfunct_);
-
-#ifdef PRINTDEBUG
-    writeArray(tau_,"tau_");
-    writeArray(convvelint_,"convvelint_");
-    writeArray(gradp_,"gradp_");
-    writeArray(funct_,"funct_#3");
-    writeArray(bodyforce_,"bodyforce_");
-#endif // PB
 
     //--------------------------------------------------------------
     // perform integration for entire matrix and rhs
@@ -1088,26 +980,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       visc_old_.Clear();
     }
 
-#ifdef PRINTDEBUG
-    writeArray(rhsint_,"rhsint_");
-    writeArray(conv_c_,"conv_c_");
-    writeArray(viscs2_,"viscs2_");
-    writeArray(conv_old_,"conv_old_");
-    writeArray(visc_old_,"visc_old_");
-    Epetra_SerialDenseVector ttttttttvf(10);
-    ttttttttvf(0) = tau_M;
-    ttttttttvf(1) = tau_Mp;
-    ttttttttvf(2) = tau_C;
-    ttttttttvf(3) = timetauM;
-    ttttttttvf(4) = timetauMp;
-    ttttttttvf(5) = ttimetauM;
-    ttttttttvf(6) = ttimetauMp;
-    ttttttttvf(7) = timefacfac;
-    ttttttttvf(8) = vartfac;
-    ttttttttvf(9) = fac;
-    writeArray(ttttttttvf,"tau(3),timetau(4),fac(3)");
-#endif // PB
-
     /* momentum and velocity divergence: */
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1) + mderxy_(2, 2);
     if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2);
@@ -1133,10 +1005,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       //conv_resM_ =  blitz::sum(res_old_(j)*densderxy_(j,i),j);
       conv_resM_.MultiplyTN (densderxy_,res_old_);
-#ifdef PRINTDEBUG
-    writeArray(res_old_,"res_old_");
-    writeArray(conv_resM_,"conv_resM_");
-#endif // PB
 
     {
       //----------------------------------------------------------------------
@@ -1458,10 +1326,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           eforce(fvi + 3) += fac*functdens_(vi)*rhscon_ ;
         }
       }
-#ifdef PRINTDEBUG
-    writeArray(estif,"estif");
-    writeArray(eforce,"eforce");
-#endif // PB
 
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
@@ -1618,10 +1482,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                                          res_old_(2)*derxy_(2, vi)) ;
         }
       }
-#ifdef PRINTDEBUG
-    writeArray(estif,"estif");
-    writeArray(eforce,"eforce");
-#endif // PB
 
       //----------------------------------------------------------------------
       //                     SUPG STABILISATION PART
@@ -1948,11 +1808,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 #endif
       }
 
-#ifdef PRINTDEBUG
-    writeArray(estif,"estif");
-    writeArray(eforce,"eforce");
-#endif // PB
-
       //----------------------------------------------------------------------
       //                       STABILISATION, VISCOUS PART
 
@@ -2125,10 +1980,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           }
         }
       }
-#ifdef PRINTDEBUG
-    writeArray(estif,"estif");
-    writeArray(eforce,"eforce");
-#endif // PB
 
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
@@ -2313,10 +2164,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
     }
 
-#ifdef PRINTDEBUG
-    writeArray(estif,"estif");
-    writeArray(eforce,"eforce");
-#endif // PB
     // linearization with respect to mesh motion
     if (emesh.IsInitialized())
     {
@@ -2415,10 +2262,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         }
       }
 
-#ifdef PRINTDEBUG
-    writeArray(emesh,"emesh");
-    writeArray(vderiv_,"vderiv_");
-#endif // PB
       // viscosity
 
 #define xji_00 xji_(0,0)
@@ -2827,9 +2670,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
 
     }
-#ifdef PRINTDEBUG
-    writeArray(emesh,"emesh");
-#endif // PB
   } // loop gausspoints
 }
 
@@ -2857,9 +2697,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   const enum Fluid3::StabilisationAction           fssgv
   )
 {
-#ifdef PRINTDEBUG
-  writeComment("enter Caltau");
-#endif // PB
   // use one point gauss rule to calculate tau at element center
   DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
@@ -2936,16 +2773,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
   // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
   const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-#ifdef PRINTDEBUG
-  writeArray(velint_,"velint_");
-  writeArray(xjm_,"xjm_");
-  writeArray(xji_,"xji_#2");
-  Epetra_SerialDenseVector dvh(3);
-  dvh(0) = det;
-  dvh(1) = vol;
-  dvh(2) = hk;
-  writeArray(dvh,"det,vol,hk");
-#endif // PB
 
   // compute global derivates
   //derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
@@ -2974,16 +2801,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   tmp.MultiplyTN(derxy_,velino_);
   const double val = tmp.Norm1();
   const double strle = 2.0/val;
-#ifdef PRINTDEBUG
-  writeArray(derxy_,"derxy_");
-  writeArray(vderxy_,"vderxy_");
-  writeArray(velino_,"velino_");
-  LINALG::FixedSizeSerialDenseMatrix<3,1> vvs;
-  vvs(0) = vel_norm;
-  vvs(1) = val;
-  vvs(2) = strle;
-  writeArray(vvs,"vel_norm,val,strle");
-#endif // PB
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -3051,11 +2868,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
       }
       rateofstrain = sqrt(rateofstrain);
     }
-#ifdef PRINTDEBUG
-  Epetra_SerialDenseVector ros(1);
-  ros(0) = rateofstrain;
-  writeArray(ros,"rateofstrain");
-#endif // PB
+
     //
     // Choices of the Smagorinsky constant Cs:
     //
@@ -3162,11 +2975,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
       }
       rateofstrain = sqrt(rateofstrain);
     }
-#ifdef PRINTDEBUG
-  Epetra_SerialDenseVector ros2(1);
-  ros2(0) = rateofstrain;
-  writeArray(ros2,"rateofstrain2");
-#endif // PB
 
     visceff = visc + dens * Cs_delta_sq * rateofstrain;
 
@@ -3259,9 +3067,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     */
     const double xi_tau_c = DMIN(re2,1.0);
     tau_(2) = vel_norm * hk * 0.5 * xi_tau_c / ( timefac * dens );
-#ifdef PRINTDEBUG
-  writeArray(tau_,"tau_");
-#endif // PB
   }
   else if(whichtau == Fluid3::bazilevs)
   {
@@ -3381,14 +3186,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     tau_(1)/=timefac;
     // same division for tau_C
     tau_(2)/=timefac;
-#ifdef PRINTDEBUG
-    writeArray(tau_,"tau_");
-    Epetra_SerialDenseVector ggg(3);
-    ggg(0) = normG;
-    ggg(1) = Gnormu;
-    ggg(2) = normgsq;
-    writeArray(ggg,"normG,Gnormu,normgsq");
-#endif // PB  }
 
   }
   else if(whichtau == Fluid3::codina)
@@ -3459,9 +3256,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
     // rescaling of tau_C for this implementation
     tau_(2)/=timefac;
-#ifdef PRINTDEBUG
-  writeArray(tau_,"tau_");
-#endif // PB
 
   }
   else
@@ -3532,11 +3326,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
       }
       rateofstrain = sqrt(rateofstrain);
     }
-#ifdef PRINTDEBUG
-  Epetra_SerialDenseVector ros3(1);
-  ros3(0) = rateofstrain;
-  writeArray(ros3,"rateofstrain3");
-#endif // PB
     //
     // Choices of the fine-scale Smagorinsky constant Cs:
     //
@@ -3547,11 +3336,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //             0.1 < Cs < 0.24 (depending on the flow)
 
     vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
-#ifdef PRINTDEBUG
-    Epetra_SerialDenseVector va(1);
-    va(0) = vart_;
-    writeArray(va,"vart_");
-#endif // PB
   }
 }
 
@@ -3915,9 +3699,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
 
   //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
   xder2_.MultiplyNT(deriv2_,xyze_);
-#ifdef PRINTDEBUG
-  writeArray(xder2_,"xder2_");
-#endif
 
   /*
   |        0...iel-1             0 1 2
@@ -3940,10 +3721,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
 
   //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
   derxy2_.Multiply(-1.0,xder2_,derxy_);
-#ifdef PRINTDEBUG
-  writeArray(derxy_,"derxy_");
-  writeArray(derxy2_,"derxy2_#1");
-#endif
 
   /*
   |        0...iel-1            0...iel-1         0...iel-1
@@ -3966,9 +3743,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
 
   //derxy2_ += deriv2_;
   derxy2_.Update(1.0,deriv2_,1.0);
-#ifdef PRINTDEBUG
-  writeArray(derxy2_,"derxy2_#2");
-#endif
 
   /* make LR decomposition and solve system for all right hand sides
    * (i.e. the components of chainrulerhs)
@@ -4011,11 +3785,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
   |    	          	 +-+-+-+-+
   */
 
-#ifdef PRINTDEBUG
-  writeArray(bm,"bm(presolv)");
-  writeArray(derxy2_,"derxy2(presolv)");
-#endif
-
 
   LINALG::FixedSizeSerialDenseSolver<6,6,iel> solver;
   solver.SetMatrix(bm);
@@ -4024,10 +3793,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
   // vector. The solver will destroy the rhs and return the solution.
   solver.SetVectors(derxy2_,derxy2_);
   solver.Solve();
-#ifdef PRINTDEBUG
-  writeArray(derxy2_,"derxy2(solved)");
-#endif
-  return;
 }
 
 
