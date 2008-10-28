@@ -1105,7 +1105,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   LINALG::FixedSizeSerialDenseMatrix<3,  3  > xjm;
   LINALG::FixedSizeSerialDenseMatrix<3,  3  > xji;
   LINALG::FixedSizeSerialDenseMatrix<6,  nd > bop;
-  LINALG::FixedSizeSerialDenseMatrix<6,  6  > D;
+  LINALG::FixedSizeSerialDenseMatrix<6,  6  > D(true);
 
   double                        vol=0.;
 
