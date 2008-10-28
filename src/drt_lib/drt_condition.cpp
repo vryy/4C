@@ -124,6 +124,9 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==SurfaceNeumann)              os << "Surface Neumann boundary condition: ";
   else if (Type()==VolumeNeumann)               os << "Volume Neumann boundary condition: ";
   else if (Type()==Contact)                     os << "Contact boundary condition: ";
+  else if (Type()==PointLocsys)                 os << "Point local coordinate system condition: ";
+  else if (Type()==LineLocsys)                  os << "Line local coordinate system condition: ";
+  else if (Type()==SurfaceLocsys)               os << "Surface local coordinate system condition: ";
   else if (Type()==FSICoupling)                 os << "FSI Coupling condition:";
   else if (Type()==XFEMCoupling)                os << "XFEM Coupling condition:";
   else if (Type()==LineLIFTDRAG)                os << "Line LIFTDRAG condition:";

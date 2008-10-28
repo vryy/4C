@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
+#include "../drt_lib/drt_locsys.H"
 
 
 #include "Epetra_Vector.h"
@@ -472,6 +473,9 @@ protected:
   /// stresses due to molecular interaction potentials between structural surfaces
   RCP<UTILS::PotentialManager>    pot_man_;
 
+  /// local coordinate systems
+  RCP<DRT::UTILS::LocsysManager>   locsysmanager_;
+    
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step
   // of a simulation (either step=0 or step=genprob.restart) in

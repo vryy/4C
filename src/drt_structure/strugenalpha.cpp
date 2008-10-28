@@ -177,8 +177,15 @@ fsisurface_(NULL)
     // and savegraph_ has to be set false
     stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
   }  
-     
-
+  
+  // -------------------------------------------------------------------
+  // check whether we have locsys B.C. and create locsys manager if so
+  // -------------------------------------------------------------------
+  // Check for locsys conditions
+  vector<DRT::Condition*> locsysconditions(0);
+  discret_.GetCondition("Locsys",locsysconditions);
+  if (locsysconditions.size()) locsysmanager_ = rcp(new DRT::UTILS::LocsysManager(discret_));
+  
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -323,7 +330,10 @@ void StruGenAlpha::ConstantPredictor()
     discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
+    // in the case of local systems we have to rotate forth and back
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(disn_);
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disn_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     discret_.SetState("velocity",veln_);
@@ -455,10 +465,13 @@ void StruGenAlpha::ConstantPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
-  // blank residual at DOFs on Dirichlet BC
+  // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
   {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
 
 
@@ -543,7 +556,10 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
+    // in the case of local systems we have to rotate forth and back
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(disn_);
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disn_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     discret_.SetState("velocity",veln_);
@@ -747,10 +763,13 @@ void StruGenAlpha::ConsistentPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
-  // blank residual at DOFs on Dirichlet BC
+  // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
   {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
 
   //------------------------------------------------ build residual norm
@@ -1243,6 +1262,9 @@ void StruGenAlpha::FullNewton()
     
     stiff_->Complete();
 
+    //-----------------------------transform to local coordinate systems
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+    
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -1257,6 +1279,9 @@ void StruGenAlpha::FullNewton()
     }   
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
+    
+    //----------------------- transform back to global coordinate system
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
     
     //---------------------------------- update mid configuration values
     // displacements
@@ -1433,9 +1458,12 @@ void StruGenAlpha::FullNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
     // blank residual DOFs that are on Dirichlet BC
+    // in the case of local systems we have to rotate forth and back
     {
+      if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+      if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
 
     //---------------------------------------------- build residual norm

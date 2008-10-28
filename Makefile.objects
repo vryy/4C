@@ -138,7 +138,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_geometry/intersection.o \
                 src/drt_tetgen/predicates.o \
                 src/drt_tetgen/tetgen.o \
-                src/drt_geometry/integrationcell.o
+                src/drt_geometry/integrationcell.o \
+                src/drt_lib/drt_locsys.o
 #               nurbs discretization for isogeometric fe (c++)
 OBJS_DRT_NURBS_DISCRET = \
                 src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \

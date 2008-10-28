@@ -318,6 +318,47 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfcontact);
 
   /*--------------------------------------------------------------------*/
+  // local coordinate systems
+
+  std::vector<Teuchos::RCP<ConditionComponent> > locsyscomponents;
+
+  locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("normal",3)));
+  locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("tangent",3)));
+ 
+  Teuchos::RCP<ConditionDefinition> pointlocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
+                                         "Locsys",
+                                         "Point local coordinate system",
+                                         DRT::Condition::PointLocsys,
+                                         true,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linelocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LOCSYS CONDITIONS",
+                                         "Locsys",
+                                         "Line local coordinate system",
+                                         DRT::Condition::LineLocsys,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surflocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF LOCSYS CONDITIONS",
+                                         "Locsys",
+                                         "Surface local coordinate system",
+                                         DRT::Condition::SurfaceLocsys,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<locsyscomponents.size(); ++i)
+  {
+    pointlocsys->AddComponent(locsyscomponents[i]);
+    linelocsys->AddComponent(locsyscomponents[i]);
+    surflocsys->AddComponent(locsyscomponents[i]);
+  }
+
+  condlist.push_back(pointlocsys);
+  condlist.push_back(linelocsys);
+  condlist.push_back(surflocsys);
+
+  /*--------------------------------------------------------------------*/
   // periodic boundary
 
   std::vector<Teuchos::RCP<ConditionComponent> > pbccomponents;

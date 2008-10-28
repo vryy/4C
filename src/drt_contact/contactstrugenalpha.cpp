@@ -132,7 +132,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
+    // in the case of local systems we have to rotate forth and back
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(disn_);
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disn_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
@@ -371,9 +374,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   contactmanager_->Evaluate(stiff_,fresm_);
 
   // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
   {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmdbc(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
 
   //---------------------------------------------------- contact forces
@@ -464,7 +470,10 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
+    // in the case of local systems we have to rotate forth and back
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(disn_);
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disn_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
@@ -624,9 +633,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   contactmanager_->Evaluate(stiff_,fresm_);
 
   // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
   {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmdbc(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
 
   //---------------------------------------------------- contact forces
@@ -716,6 +728,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<maxiter)
   {
+    //-----------------------------transform to local coordinate systems
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -730,6 +745,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
+
+    //----------------------- transform back to global coordinate system
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 
     //------------------------------------ -- recover disi and Lag. Mult.
     {
@@ -925,9 +943,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     }
 
     // blank residual DOFs that are on Dirichlet BC
+    // in the case of local systems we have to rotate forth and back
     {
+      if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
       Epetra_Vector fresmdbc(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+      if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
 
     //--------------------------------------------------- contact forces
@@ -1046,6 +1067,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
           !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
   {
+    //-----------------------------transform to local coordinate systems
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -1060,6 +1084,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
+
+    //----------------------- transform back to global coordinate system
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 
     //------------------------------------ -- recover disi and Lag. Mult.
     {
@@ -1262,9 +1289,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     }
 
     // blank residual DOFs that are on Dirichlet BC
+    // in the case of local systems we have to rotate forth and back
     {
+      if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
       Epetra_Vector fresmdbc(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+      if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
 
     //--------------------------------------------------- contact forces

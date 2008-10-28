@@ -50,6 +50,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 {
+  if (locsysmanager_ != null) dserror("Locsys not yet implemented for LS-Newton!");  
   const int myrank = discret_.Comm().MyPID();
 
   // -------------------------------------------------------------------
@@ -676,6 +677,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 {
+  if (locsysmanager_ != null) dserror("Locsys not yet implemented for LS-Newton!");  
   const int myrank = discret_.Comm().MyPID();
 
   // -------------------------------------------------------------------
