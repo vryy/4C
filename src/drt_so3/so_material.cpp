@@ -45,6 +45,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/biocell.H"
+#include "../drt_mat/material.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -53,10 +54,10 @@ using namespace LINALG; // our linear algebra
  | material laws for So_hex8                                   gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params)
@@ -96,6 +97,17 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
+    {
+      MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      //if (!visco->Initialized())
+      //  visco->Setup(NUMGPT_SOH8);
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = visco->Density();
       return;
       break;
     }
@@ -167,10 +179,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
  | material laws for So_hex8                                   maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp)
 {
@@ -196,10 +208,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
  | material laws for SoDisp                                   maf 08/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
-        LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-        LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
+        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
         double* density,
-        LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
         ParameterList&            params)         // algorithmic parameters e.g. time
 {
 #ifdef DEBUG
@@ -272,17 +284,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-
-      break;
-    }
-    case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
-    {
-      MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      //if (!visco->Initialized())
-      //  visco->Setup(NUMGPT_SOH8);
-      visco->Evaluate(glstrain,gp,params,cmat,stress);
-      *density = visco->Density();
 
       break;
     }
@@ -391,10 +392,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
  | material laws for So_weg6                                   gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params)         // algorithmic parameters e.g. time
@@ -579,10 +580,10 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
  | material laws for So_tet4                                  gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
                     const int gp)
 {
