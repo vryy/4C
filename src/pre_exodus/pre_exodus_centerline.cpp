@@ -15,13 +15,22 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
     map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
     map<int,EXODUS::NodeSet>::const_iterator i_ns;
-    // check for Centerline Nodeset
+    // check for Centerline or Centerpoint Nodeset
+    bool clbool;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
       const string myname = i_ns->second.GetName();
-      if (myname.find("centerline") != string::npos) centerlineid = i_ns->first;
+      if (myname.find("centerline") != string::npos) 
+      {
+        centerlineid = i_ns->first;
+        clbool=true;
+      }
+      else if (myname.find("centerpoint") != string::npos) 
+      {
+        clbool=false;
+        centerlineid = i_ns->first;
+      }
     }
     if (centerlineid == -1) dserror("Have not found centerline NodeSet");
-
     EXODUS::Centerline myCLine(nss.find(centerlineid)->second,mymesh.GetNodes());
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
 
@@ -33,13 +42,20 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb){
       const string myname = i_eb->second->GetName();
       if (myname.find("centerline") != string::npos) mymesh.EraseElementBlock(i_eb->first);
+      // check for CenterPoints block
+      else if (myname.find("centerpoint") != string::npos) mymesh.EraseElementBlock(i_eb->first);
       else eb_ids.push_back(i_eb->first);
     }
 
     //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
-
-    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
+    map<int,map<int,vector<vector<double> > > > centlineinfo;
+    if (clbool)
+      centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
+    //generation of degenerated coordinate systems
+    else 
+      centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
+    if (clbool)
+      EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
     // plot mesh to gmsh
     string meshname = "centerlinemesh.gmsh";
     mymesh.PlotElementBlocksGmsh(meshname,mymesh);
@@ -355,7 +371,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 {
 
   map<int,vector<double> > midpoints;  // here midpoints are stored
-  //mp_eb_el contains (midpoint-ID, eblock-ID, element-ID)
+  //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
   map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
@@ -455,6 +471,109 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 
 	}
 	return ebID_elID_local_cosy;
+}
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
+(
+  EXODUS::Centerline& mycline,
+  const EXODUS::Mesh& mymesh, 
+  const vector<int>& eb_ids)
+{
+  map<int,vector<double> > midpoints;  // here midpoints are stored
+  //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
+  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  //conn_mp_cp will contain (midpoint-ID, centerpoint-ID)
+  map<int,int > conn_mp_cp;
+  //auxiliary variables
+  int clID;
+  double min_distance,temp;
+
+  map<int,vector<double> > clpoints = *(mycline.GetPoints());
+
+  // this search should later be replaced by a nice search-tree!
+  //in this section for each element the nearest point on the centerline is searched
+  //and the ids of each element midpoint and the accordant centerline points are stored
+  //
+  //loop over all midpoints of all elements
+  for(map<int,vector<double> >::const_iterator el_iter = midpoints.begin(); el_iter != midpoints.end(); ++el_iter)
+  {
+    min_distance = -1;
+
+    //loop over all points of the centerline to find nearest
+    for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
+    {
+      temp = EXODUS::distance3d(el_iter->second,cl_iter->second);
+
+      if(min_distance == -1) //just for the first step
+      {
+        min_distance = temp;
+        clID = cl_iter->first;
+      }
+      else
+      {
+        if(min_distance > temp)
+        {
+        min_distance = temp;
+        clID = cl_iter->first;
+        }
+      }
+    }
+    conn_mp_cp[el_iter->first]=clID;
+  }
+
+  //in this section the three directions of all local coordinate systems are calculated
+  //with the aid of conn_mp_cp
+  //
+  //map that will be returned containing (eblock-ID, (element-ID, directions of local coordinate systems))
+  map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
+
+  vector<double> r_0(3,0);
+//  vector<double> r_1(3,0);
+//  vector<double> r_2(3,0);
+//  vector<double> r_3(3,0);
+  vector<vector<double> > directions;
+
+  //loop over conn_mp_cp
+  for(map<int,int>::const_iterator it = conn_mp_cp.begin(); it != conn_mp_cp.end(); ++it)
+  {
+    directions.clear();
+
+    //position vector from centerline point 1 to midpoint of element
+    r_0 = EXODUS::substract3d(midpoints.find(it->first)->second,mycline.GetPoints()->find(it->second)->second);
+    normalize3d(r_0);
+//    //position vector from centerline point 1 to centerline point 2 (axial direction)
+//    r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,mycline.GetPoints()->find(it->second[0])->second);
+//    normalize3d(r_1);
+//
+//    //if last CLPoint has been reached
+//    if (it->second[0] == ((int) mycline.GetPoints()->size())-1 )
+//    {
+//      r_1[0]=-r_1[0];
+//      r_1[1]=-r_1[1];
+//      r_1[2]=-r_1[2];
+//    }
+//
+//    //r_2 = r_0 x r_1 (circumferential direction)
+//    r_2 = EXODUS::cross_product3d(r_0,r_1);
+//    normalize3d(r_2);
+//
+//    //r_3 = r_1 x r_2 (radial direction)
+//    r_3 = EXODUS::cross_product3d(r_1,r_2);
+//    normalize3d(r_3);
+
+    //directions = {r_0,r_0,r_0}
+    directions.push_back(r_0);
+    directions.push_back(r_0);
+    directions.push_back(r_0);
+
+    //ebID_elID_local_cosy(ebID,elID,directions)
+    pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+    ebID_elID_local_cosy[eb_el.first][eb_el.second] = directions;
+
+  }
+  return ebID_elID_local_cosy;
 }
 
 /*------------------------------------------------------------------------*
