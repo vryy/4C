@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
 
 // inverse design object
@@ -423,7 +424,9 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 //    fiber = "l3_0";
 //    names[fiber] = 1;
   }
-  if (Material()->MaterialType() == m_artwallremod){
+  if ((Material()->MaterialType() == m_artwallremod) ||
+      (Material()->MaterialType() == m_viscoanisotropic))
+  {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
@@ -548,6 +551,24 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   }
   if (Material()->MaterialType() == m_artwallremod){
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
+    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
+    } else if (name == "Owner"){
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Owner();
+    } else {
+      cout << name << endl;
+      dserror("Unknown VisData!");
+    }
+  }
+  if (Material()->MaterialType() == m_viscoanisotropic){
+    MAT::ViscoAnisotropic* art = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
     vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
     if (name == "Fiber1"){

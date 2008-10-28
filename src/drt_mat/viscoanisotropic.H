@@ -111,6 +111,13 @@ namespace MAT
     /// Check if history variables are already initialized
     bool Initialized() const
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
+    
+    /// return a1s
+    RCP<vector<vector<double> > > Geta1() const {return a1_;}
+
+    /// return a2s
+    RCP<vector<vector<double> > > Geta2() const {return a2_;}
+
 
   private:
 
@@ -118,14 +125,14 @@ namespace MAT
     MATERIAL* matdata_;
 
     // internal variables for fibers
-    Teuchos::RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp
-    Teuchos::RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp
+    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp
+    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp
 
     // visco history stresses for every gausspoint and every stress type
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+    RCP<vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
    
     bool isinit_;  ///< indicates if material is initialized
 
