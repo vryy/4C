@@ -39,9 +39,11 @@ namespace XFEM
 
       //! print a Gmsh representation of this class
       void toGmsh(
-          const Teuchos::RCP<XFEM::InterfaceHandle> ih,  ///< interface information
           const int step                                 ///< step for file numbering
           ) const;
+      
+      //! return global (i.e. from all procs) number of nodal dofs only
+      int NumNodalDof() const;
 
       //! return set with enriched fields for requested node
       const std::set<FieldEnr> getNodeDofSet(

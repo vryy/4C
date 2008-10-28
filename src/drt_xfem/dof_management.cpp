@@ -118,7 +118,6 @@ std::string XFEM::DofManager::toString() const
 }
 
 void XFEM::DofManager::toGmsh(
-    const Teuchos::RCP<XFEM::InterfaceHandle> ih,
     const int step
 ) const
 {
@@ -126,7 +125,9 @@ void XFEM::DofManager::toGmsh(
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 #if 1
   
-  const int myrank = ih->xfemdis()->Comm().MyPID();
+  const bool screen_out = false;
+  
+  const int myrank = ih_->xfemdis()->Comm().MyPID();
   
   if (gmshdebugout)
   {
@@ -135,7 +136,7 @@ void XFEM::DofManager::toGmsh(
     filename    << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
     //f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
@@ -143,9 +144,9 @@ void XFEM::DofManager::toGmsh(
       // draw elements with associated gid
       std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+      for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = ih->xfemdis()->lColElement(i);
+        DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele);
       };
       gmshfilecontent << "};" << endl;
@@ -154,9 +155,9 @@ void XFEM::DofManager::toGmsh(
     {
       std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+      for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = ih->xfemdis()->lColElement(i);
+        DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         const int ele_gid = actele->Id();
         double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
@@ -174,11 +175,11 @@ void XFEM::DofManager::toGmsh(
     }
     {
       std::stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      gmshfilecontent << "View \" " << "NumDof per node \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        //DRT::Element* actele = ih->xfemdis()->lColElement(i);
-        const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+        //DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
         const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
         const int node_gid = xfemnode->Id();
 
@@ -202,10 +203,10 @@ void XFEM::DofManager::toGmsh(
     
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
         const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
         const int node_gid = xfemnode->Id();
         
@@ -238,10 +239,10 @@ void XFEM::DofManager::toGmsh(
     
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
         const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
         const int node_gid = xfemnode->Id();
         
@@ -264,20 +265,20 @@ void XFEM::DofManager::toGmsh(
             gmshfilecontent << scientific << pos(1) << ",";
             gmshfilecontent << scientific << pos(2);
             gmshfilecontent << "){";
-            gmshfilecontent << val << "};" << endl;
+            gmshfilecontent << val << "};\n";
           }
         }
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
-      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
         const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
         const int node_gid = xfemnode->Id();
         
@@ -290,7 +291,7 @@ void XFEM::DofManager::toGmsh(
           {
             if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
             {
-              val = val+1.0;
+              val += 1.0;
             }
           }
           if (val > 0.5)
@@ -300,30 +301,30 @@ void XFEM::DofManager::toGmsh(
             gmshfilecontent << scientific << pos(1) << ",";
             gmshfilecontent << scientific << pos(2);
             gmshfilecontent << "){";
-            gmshfilecontent << val << "};" << endl;
+            gmshfilecontent << val << "};\n";
           }
         }
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
       f_system.close();
-      std::cout << " done" << endl;
+      if (screen_out) std::cout << " done" << endl;
     }
   }
+#if 0
   if (gmshdebugout)
   {
-    {
       // debug info: print ele dofmanager information
       std::stringstream filename;
       std::stringstream filenamedel;
       filename    << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
       filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
-      std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
+      if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
       std::ofstream f_system(filename.str().c_str());
       {
         stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {" << endl;
+        gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";
         for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
         {
           DRT::Element* actele = ih->xfemdis()->lColElement(i);
@@ -338,63 +339,28 @@ void XFEM::DofManager::toGmsh(
         f_system << gmshfilecontent.str();
       }
       f_system.close();
-      std::cout << " done" << endl;
-    }
+      if (screen_out) std::cout << " done" << endl;
   }
+#endif
 #endif
 }
 
-///*----------------------------------------------------------------------*
-// |  construct element dof manager                               ag 11/07|
-// *----------------------------------------------------------------------*/
-//XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
-//    const DRT::Element&  ele,
-//    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
-//) const
-//{
-//  // nodal dofs for ele
-//  std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
-//  for (int inode = 0; inode < ele.NumNode(); ++inode)
-//  {
-//    const int gid = ele.NodeIds()[inode];
-//    nodaldofset.insert(make_pair(gid,this->getNodeDofSet(gid)));
-//  }
-//  
-//  // element dofs for ele
-//  std::set<XFEM::FieldEnr> enrfieldset;
-//  
-//  std::map<int,const std::set<XFEM::FieldEnr> >::const_iterator enrfieldsetiter = elementalDofs_.find(ele.Id());
-//  if (enrfieldsetiter != elementalDofs_.end())
-//  {
-//    enrfieldset = enrfieldsetiter->second;
-//  }
-//  else
-//  {
-//    // use empty set
-//  }
-//  
-//  // return a local dofmanager
-//  return XFEM::ElementDofManager(ele, nodaldofset, enrfieldset, element_ansatz);
-//}
+int XFEM::DofManager::NumNodalDof() const
+{
+  int locnumnodaldof = 0;
+  
+  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter;
+  for (iter = nodalDofSet_.begin(); iter != nodalDofSet_.end(); ++iter)
+  {
+    locnumnodaldof += iter->second.size();
+  }
 
-
-///*----------------------------------------------------------------------*
-// *----------------------------------------------------------------------*/
-//void XFEM::DofManager::checkForConsistency(
-//    const DRT::Element& ele,
-//    const XFEM::ElementDofManager& stored_eledofman
-//) const
-//{
-//  // create local copy of current information about dofs
-//  const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.getDisTypePerFieldMap());
-//  
-//  // compare with given and report error
-//  if (current_eledofman != stored_eledofman)
-//  {
-//    dserror("given elementdofmanager is not consistent with global dofmanger");
-//  }
-//  return;
-//}
+  // collect number of nodal dofs from all procs
+  int numnodaldof = 0.0;
+  ih_->xfemdis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
+  
+  return numnodaldof;
+}
 
 
 /*----------------------------------------------------------------------*

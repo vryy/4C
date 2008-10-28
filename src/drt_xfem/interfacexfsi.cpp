@@ -47,6 +47,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
+  const bool screen_out = false;
+  
   const int myrank = xfemdis_->Comm().MyPID();
 
   if (gmshdebugout)
@@ -57,12 +59,12 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     filename    << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
     f_system.close();
-    cout << " done" << endl;
+    if (screen_out) cout << " done" << endl;
   }
 
   const int numsmallele = CheckXFEMElementSize();
@@ -177,6 +179,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
   
+  const bool screen_out = false;
+  
   const bool gmsh_tree_output = false;
   
   const int myrank = xfemdis_->Comm().MyPID();
@@ -189,12 +193,12 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     filename    << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
     f_system.close();
-    cout << " done" << endl;
+    if (screen_out) cout << " done" << endl;
   }
   
   if (gmshdebugout)
@@ -204,7 +208,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     filename    << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
     std::ofstream f_system(filename.str().c_str());
     {
@@ -233,7 +237,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    cout << " done" << endl;
+    if (screen_out) cout << " done" << endl;
   }
   
   if (gmshdebugout) // print space time layer
@@ -243,7 +247,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     filename    << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
     std::ofstream f_system(filename.str().c_str());
     {
@@ -263,7 +267,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    cout << " done" << endl;
+    if (screen_out) cout << " done" << endl;
   }
   
   

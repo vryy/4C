@@ -446,7 +446,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(ih, step_);
+  dofmanager->toGmsh(step_);
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it
@@ -454,6 +454,11 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   discret_->FillComplete();
   Epetra_Map newdofrowmap = *discret_->DofRowMap();
 
+  // print information about dofs
+  const int numdof = newdofrowmap.NumGlobalElements();
+  const int numnodaldof = dofmanager->NumNodalDof();
+  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl; 
+  
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
   XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
@@ -1186,6 +1191,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
+  const bool screen_out = false;
+  
   if (gmshdebugout)
   {
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
@@ -1195,7 +1202,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     filename << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1263,9 +1270,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
-#if 1
+#if 0
   if (gmshdebugout)
   {
     std::stringstream filename;
@@ -1274,7 +1281,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     << ".pos";
     filenamedel << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
@@ -1338,10 +1345,10 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 #endif
-#if 1
+#if 0
   if (gmshdebugout)
   {
     //std::stringstream filename;
@@ -1376,7 +1383,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
     std::remove(filenamexydel.str().c_str());
     std::remove(filenamexzdel.str().c_str());
     std::remove(filenameyzdel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
     
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
@@ -1513,15 +1520,15 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
       f_systemxz << gmshfilecontentxz.str();
       f_systemyz << gmshfilecontentyz.str();
     }
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 #endif
 
 
   PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
-  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
-  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
-  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+//  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
+//  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
+//  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
 }
 
 
@@ -1538,6 +1545,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
+  const bool screen_out = false;
+  
   if (gmshdebugout)
   {
 
@@ -1547,7 +1556,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     filename << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
     filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     {
@@ -1663,7 +1672,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 }
 
@@ -2194,30 +2203,26 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(
 /*----------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 {
-  
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_flux");
   
-  
   std::map<int,double> volumeflowratepersurface;
-  // Reset
-  volumeflowratepersurface.clear();
   
   // get condition
-  vector< DRT::Condition * >      conds;
+  std::vector< DRT::Condition * >      conds;
   discret_->GetCondition ("SurfFlowRate", conds);
-  cout << "found " << conds.size() << " conditions..." << endl;
+  if (not conds.empty())
+  {
+    cout << "Number of flow rate conditions... " << conds.size() << endl;
+  }
   
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
-    DRT::Condition* cond = *conditer;
-//    const int label = cond->Getint("label");
-    const vector<int>*    CondIDVec  = cond->Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    const DRT::Condition* cond = *conditer;
     
-    cout << "working on label: " << condID << endl;
+    const int condID = cond->Getint("ConditionID");
     
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -2235,7 +2240,9 @@ void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
     
     double locflowrate = 0.0;
     for (int i=0; i < dofrowmap->NumMyElements(); i++)
+    {
       locflowrate += (*flowrates)[i];
+    }
     
     double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
@@ -2252,10 +2259,13 @@ void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
     overall_flowrate += value;
     if (myrank_ == 0)
     {
-      cout << "flowrate for label " << condID << ":  " <<  scientific << value << endl;
+      cout << " - flowrate for label " << condID << ":  " <<  scientific << value << endl;
     }
   }
-  cout << "flowrate over all boundaries: " << overall_flowrate << endl;
+  if (not conds.empty())
+  {
+    cout << " - flowrate over all boundaries: " << overall_flowrate << endl;
+  }
 
   return;
 }
