@@ -47,6 +47,10 @@ SPOOLES_LIB="-lspooles-gcc-3.3"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack-gcc-3.3 -lamd-gcc-3.3"
 
+# qhull
+QHULL_INC=
+QHULL_LIB="-lqhull"
+
 # fast elements
 LOOPL="-DLOOPL=15"
 
