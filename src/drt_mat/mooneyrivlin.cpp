@@ -131,26 +131,26 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(glstrain);
-  C.Scale(2.0);
+  for (int i = 0; i < 3; i++) C(i) = 2.*C(i);  // respect factor 2 in shear terms of glstrain
   C += Id;
 
   // invariants
   const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
   const double I3 = C(0)*C(1)*C(2)
-        + 0.25 * C(3)*C(4)*C(5)
-        - 0.25 * C(1)*C(5)*C(5)
-        - 0.25 * C(2)*C(3)*C(3)
-        - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+        + C(3)*C(4)*C(5)
+        - C(1)*C(5)*C(5)
+        - C(2)*C(3)*C(3)
+        - C(0)*C(4)*C(4);    // 3rd invariant, determinant
 
   // invert C
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Cinv(false);
 
-  Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
-  Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
-  Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
-  Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
-  Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
-  Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+  Cinv(0) = C(1)*C(2) - C(4)*C(4);
+  Cinv(1) = C(0)*C(2) - C(5)*C(5);
+  Cinv(2) = C(0)*C(1) - C(3)*C(3);
+  Cinv(3) = C(5)*C(4) - C(3)*C(2);
+  Cinv(4) = C(3)*C(5) - C(0)*C(4);
+  Cinv(5) = C(3)*C(4) - C(5)*C(1);
   Cinv.Scale(1.0/I3);
 
   /* //Compute strain-energy function W
@@ -169,10 +169,10 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   
   // S += 2 (dW/dI1 + I1 dW/dI2) times Identity
   double scalar2 = 2.0 * (c1 + I1*c2);
-  stress.Update(scalar2,Id);
+  stress.Update(scalar2,Id,1.0);
 
   double scalar3 = - m1 - m2 + 0.5*I3*pen - 0.5*pen;   // 2 I3 dW/dI3
-  stress.Update(scalar3,Cinv);    // S += 2 I3 dW/dI3 Cinv
+  stress.Update(scalar3,Cinv,1.0);    // S += 2 I3 dW/dI3 Cinv
   // end of ******* evaluate 2nd PK stress ********************
 
   // ********** evaluate C-Matrix *****************************
@@ -181,7 +181,6 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   double delta7 = 2.0*m1 + 2.0*m2 - pen*I3 + pen;
   double delta8 = - 4.0*c2;
 
-  
   for (unsigned int i = 0; i < NUM_STRESS_3D; ++i) {
     for (unsigned int j = 0; j < NUM_STRESS_3D; ++j) {
       cmat(i,j) += delta1 * Id(i)*Id(j)         // add d1 I x I
@@ -191,6 +190,7 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   AddtoCmatHolzapfelProduct(cmat,Cinv,delta7);  // add d7 Cinv o Cinv
   AddtoCmatHolzapfelProduct(cmat,Id,delta8);    // add d8 I o I
+  
   // end of ********** evaluate C-Matrix *****************************
 
 
