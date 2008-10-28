@@ -422,7 +422,7 @@ void XFEM::computeVectorCellNodeValues(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -444,18 +444,7 @@ void XFEM::computeVectorCellNodeValues(
       (*nodalPosXiDomain)(1,inen),
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
-    if (cell.Shape() == DRT::Element::tet4 or cell.Shape() == DRT::Element::tet10)
-    {
-      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
-    }
-    else
-    {
-      static BlitzVec3 actpos;
-      actpos(0) = xyz_cell(0,inen);
-      actpos(1) = xyz_cell(1,inen);
-      actpos(2) = xyz_cell(2,inen);
-      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
-    }
+    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -487,7 +476,7 @@ void XFEM::computeVectorCellNodeValues(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -713,7 +702,7 @@ double BoundaryCoverageRatioT(
     //        cout << "numnode_boundary: " << numnode_boundary << endl;
     
     // get current node coordinates
-//    const std::map<int,blitz::TinyVector<double,3> >* positions = ih.cutterposnp();
+//    const std::map<int,BlitzVec3 >* positions = ih.cutterposnp();
 //    const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
     
     const BlitzMat* nodalpos_xi_domain = cell->NodalPosXiDomainBlitz();
