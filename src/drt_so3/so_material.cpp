@@ -100,6 +100,25 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case m_hyperpolyogden: /* slightly compressible hyperelastic polyconvex material for alveoli */
+    {
+      MAT::HyperPolyOgden* hpo = static_cast <MAT::HyperPolyOgden*>(mat.get());
+      hpo->Evaluate(glstrain,cmat,stress);
+      *density = hpo->Density();
+      return;
+      break;
+    }
+    case m_hyper_polyconvex: /* hyperelastic polyconvex material for alveoli based on penalty function */
+    {
+      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+
+      const double time = params.get("total time",-1.0);
+      hypo->Evaluate(glstrain,defgrd,gp,Id(),time,cmat,stress);
+
+      *density = hypo->Density();
+      return;
+      break;
+    }
     case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -131,7 +150,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
         // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
         // -> get C_enh from enhanced GL strains
-        Epetra_SerialDenseMatrix C_enh(3,3);
+        LINALG::FixedSizeSerialDenseMatrix<3,3> C_enh;
         for (int i = 0; i < 3; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
         // off-diagonal terms are already twice in the Voigt-GLstrain-vector
         C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
@@ -139,27 +158,24 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
 
         // -> polar decomposition of (U^mod)^2
-        LINALG::SerialDenseMatrix Q(3,3);
-        LINALG::SerialDenseMatrix S(3,3);
-        LINALG::SerialDenseMatrix VT(3,3);
-        SVD(C_enh,Q,S,VT); // Singular Value Decomposition
-        LINALG::SerialDenseMatrix U_enh(3,3);
-        LINALG::SerialDenseMatrix temp(3,3);
+        LINALG::FixedSizeSerialDenseMatrix<3,3> Q;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> S;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> VT;
+        LINALG::SVD<3,3>(C_enh,Q,S,VT); // Singular Value Decomposition
+        LINALG::FixedSizeSerialDenseMatrix<3,3> U_enh;
+        LINALG::FixedSizeSerialDenseMatrix<3,3> temp;
         for (int i = 0; i < 3; ++i) S(i,i) = sqrt(S(i,i));
-        temp.Multiply('N','N',1.0,Q,S,0.0);
-        U_enh.Multiply('N','N',1.0,temp,VT,0.0);
+        temp.MultiplyNN(Q,S);
+        U_enh.MultiplyNN(temp,VT);
 
         // Second step: determine rotation tensor R from F (F=R*U)
         // -> polar decomposition of displacement based F
-        Epetra_SerialDenseMatrix defgrd_lin(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-        SVD(defgrd_lin,Q,S,VT); // Singular Value Decomposition
-        LINALG::SerialDenseMatrix R(3,3);
-        R.Multiply('N','N',1.0,Q,VT,0.0);
+        LINALG::SVD<3,3>(*defgrd,Q,S,VT); // Singular Value Decomposition
+        LINALG::FixedSizeSerialDenseMatrix<3,3> R;
+        R.MultiplyNN(Q,VT);
 
         // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
-        LINALG::FixedSizeSerialDenseMatrix<3,3> R_f(R.A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<3,3> U_enh_f(U_enh.A(),true);
-        defgrd->MultiplyNN(R_f,U_enh_f);
+        defgrd->MultiplyNN(R,U_enh);
       }
 
       const double time = params.get("total time",-1.0);

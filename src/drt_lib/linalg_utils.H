@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 <\pre>
@@ -174,6 +174,47 @@ namespace LINALG
             LINALG::SerialDenseMatrix& U,
             LINALG::SerialDenseMatrix& SIGMA,
             LINALG::SerialDenseMatrix& Vt);
+
+
+  /*!
+    \brief Singular value decomposition (SVD) of a real M-by-N matrix in fixed
+    size format
+
+            A = Q * S * VT
+
+    \param A (in):        M-by-N matrix to be decomposed
+    \param Q (out):       M-by-M orthogonal matrix
+    \param S (out):       M-by-N matrix which is zero except for its min(m,n) diagonal elements
+    \param VT (out):      N-by-N orthogonal matrix (transpose of V)
+  */
+  template <unsigned int rows, unsigned int cols>
+  void SVD(LINALG::FixedSizeSerialDenseMatrix<rows,cols>& A,
+           LINALG::FixedSizeSerialDenseMatrix<rows,rows>& Q,
+           LINALG::FixedSizeSerialDenseMatrix<rows,cols>& S,
+           LINALG::FixedSizeSerialDenseMatrix<cols,cols>& VT)
+  {
+    FixedSizeSerialDenseMatrix<rows,cols> tmp(A.A(),false);  // copy, because content of matrix ist destroyed
+    Epetra_LAPACK lapack;
+    const char jobu = 'A';  // compute and return all M columns of U
+    const char jobvt = 'A'; // compute and return all N rows of V^T
+    std::vector<double> s(std::min(rows,cols));
+    int info;
+    int lwork = max(3*std::min(rows,cols)+std::max(rows,cols),5*std::min(rows,cols));
+    std::vector<double> work(lwork);
+
+    lapack.GESVD(jobu,jobvt,rows,cols,tmp.A(),tmp.M(),&s[0],
+                 Q.A(),Q.M(),VT.A(),VT.M(),&work[0],&lwork,&info);
+
+    if (info) dserror("Lapack's dgesvd returned %d",info);
+
+    for (unsigned int i = 0; i < std::min(rows,cols); ++i) {
+      for (unsigned int j = 0; j < std::min(rows,cols); ++j) {
+        S(i,j) = (i==j) * s[i];   // 0 for off-diagonal, otherwise s
+      }
+    }
+    return;
+  }
+
 
   /*!
   \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix

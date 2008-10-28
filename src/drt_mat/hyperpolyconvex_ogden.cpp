@@ -136,6 +136,152 @@ double MAT::HyperPolyOgden::Density()
 
 
 */
+void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+                                   LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                                   LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
+{
+  // material parameters for isochoric part
+  double c  = matdata_->m.hyper_poly_ogden->c;             // parameter for ground substance
+  double k1 = matdata_->m.hyper_poly_ogden->k1;            // parameter for fiber potential
+  double k2 = matdata_->m.hyper_poly_ogden->k2;            // parameter for fiber potential
+
+  // material parameters for volumetric part
+  double young = matdata_->m.hyper_poly_ogden->youngs;     // Young's modulus
+  double nu = matdata_->m.hyper_poly_ogden->poisson;       // Poisson ratio
+  double komp = young/(3.-6.*nu);                          // bulk modulus
+  double beta = 9.;                                        // parameter from Holzapfel
+
+  //--------------------------------------------------------------------------------------
+  // build identity tensor I
+  LINALG::FixedSizeSerialDenseMatrix<6,1> identity(true);
+  for (int i = 0; i < 3; i++)
+    identity(i) = 1.;
+
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::FixedSizeSerialDenseMatrix<6,1> rcg;
+  rcg.Update(2.0, *glstrain, 1.0, identity);
+
+  // invariants
+  double inv = rcg(0) + rcg(1) + rcg(2);  // 1st invariant, trace
+  double iiinv = rcg(0)*rcg(1)*rcg(2)
+        + 0.25 * rcg(3)*rcg(4)*rcg(5)
+        - 0.25 * rcg(1)*rcg(5)*rcg(5)
+        - 0.25 * rcg(2)*rcg(3)*rcg(3)
+        - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinant
+
+  double detf;
+  if (iiinv < 0.0)
+    dserror("fatal failure in HyperPolyOgden material");
+  else
+    detf = sqrt(iiinv);                   // determinant of deformation gradient
+
+  //--- prepare some constants -----------------------------------------------------------
+  const double third = 1./3.;
+  const double twthi = 2./3.;
+  const double K = third*inv;
+
+  //--------------------------------------------------------------------------------------
+  // invert C
+  LINALG::FixedSizeSerialDenseMatrix<6,1> invc;
+
+  double invdet = 1./iiinv;
+
+  invc(0) = rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4);
+  invc(1) = rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5);
+  invc(2) = rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3);
+  invc(3) = 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2);
+  invc(4) = 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4);
+  invc(5) = 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1);
+
+  invc.Scale(invdet);
+
+  //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
+  // 1st step: isochoric part
+  //=========================
+  double isochor1 = 2.*c*pow(iiinv,-third);                     // ground substance/elastin fiber part
+
+  if (K>1.)                                                     // no need to include 1 since in that
+  {                                                             // case the contribution is 0 anyway
+    isochor1 += twthi*k1*exp(k2*pow((K-1.),2.))*(K-1.);         // collagen fiber part
+  }
+
+  double isochor2 = - twthi*c*pow(iiinv,-third)*inv;            // ground substance/elastin fiber  part
+
+  // contribution: Cinv
+  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwoiso(invc, false);
+  pktwoiso.Scale(isochor2);
+
+  // contribution: I
+  for (int i = 0; i < 3; i++)
+    pktwoiso(i) += isochor1;
+
+  // 2nd step: volumetric part
+  //==========================
+  double scalar = komp/beta*(1.-pow(detf,-beta));
+
+  // initialise PKtwo with volumetric part
+  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwovol(invc, false);
+  pktwovol.Scale(scalar);
+
+  // 3rd step: add everything up
+  //============================
+  (*stress)  = pktwoiso;
+  (*stress) += pktwovol;
+
+  //--- do elasticity matrix -------------------------------------------------------------
+  // ensure that cmat is zero when it enters the computation
+  cmat->Scale(0.0);
+
+  // 1st step: isochoric part
+  //=========================
+
+  // deltas (see also Holzapfel p.261)
+  // note that these deltas serve for the isochoric part only
+  double delta1 = 4./9.*k1*exp(k2*pow((K-1.),2.))*(2.*k2*pow((K-1),2.0)+1.);   // collagen fiber part
+  double delta3 = -4./3.*c*pow(iiinv,-third);                                  // ground substance part
+  double delta6 = 4./9.*c*inv*pow(iiinv,-third);                               // ground substance part
+  double delta7 = 4./3.*c*inv*pow(iiinv,-third);
+
+  // contribution: I \obtimes I
+  if (K>1.)       // delta1 has only contributions of collagen fibers
+  {
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+        (*cmat)(i,j) = delta1;
+  }
+
+  // contribution: Cinv \otimes Cinv
+  for (int i = 0; i < 6; i++)
+    for (int j = 0; j < 6; j++)
+    {
+      // contribution: Cinv \otimes I + I \otimes Cinv
+      (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
+      // contribution: Cinv \otimes Cinv
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
+    }
+
+  // contribution: boeppel-product
+  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
+
+  // 2nd step: volumetric part
+  //==========================
+  delta6 = komp*pow(detf,-beta);
+  delta7 = - 2.*scalar;
+
+  // contribution: Cinv \otimes Cinv
+  for (int i = 0; i < 6; i++)
+    for (int j = 0; j < 6; j++)
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
+
+  // contribution: boeppel-product
+  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
+
+  return;
+}
+
+
+
+
 void MAT::HyperPolyOgden::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                          Epetra_SerialDenseMatrix* cmat,
                                          Epetra_SerialDenseVector* stress)
@@ -159,7 +305,10 @@ void MAT::HyperPolyOgden::Evaluate(const Epetra_SerialDenseVector* glstrain,
     identity(i) = 1.;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  Epetra_SerialDenseVector rcg(*glstrain);
+//   Epetra_SerialDenseVector rcg(*glstrain);
+//   rcg.Scale(2.0);
+  Epetra_SerialDenseVector rcg(6);
+  rcg += *glstrain;
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -227,7 +376,9 @@ void MAT::HyperPolyOgden::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // 3rd step: add everything up
   //============================
-  (*stress)  = pktwoiso;
+  //(*stress)  = pktwoiso;
+  stress->Scale(0.0);
+  (*stress) += pktwoiso;
   (*stress) += pktwovol;
 
   //--- do elasticity matrix -------------------------------------------------------------
@@ -245,7 +396,7 @@ void MAT::HyperPolyOgden::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double delta7 = 4./3.*c*inv*pow(iiinv,-third);
 
   // contribution: I \obtimes I
-  if (K>=1.)       // delta1 has only contributions of collagen fibers
+  if (K>1.)       // delta1 has only contributions of collagen fibers
   {
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
