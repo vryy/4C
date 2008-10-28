@@ -324,9 +324,7 @@ void StatMechManager::StatMechUpdate(const double dt)
         /*delete crosslinker element; when trying to delete a crosslinker element not administrated by the calling processor
          * an error is issued*/
         if( !discret_.DeleteElement(crosslinkerid) )
-          dserror("Deleting crosslinker element failed");
-
-     
+          dserror("Deleting crosslinker element failed"); 
       }
          
       
@@ -381,11 +379,9 @@ void StatMechManager::StatMechUpdate(const double dt)
           newcrosslinker->SetNodeIds(2, globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
-          
-                
+                       
           //correct reference configuration data is computed for the new crosslinker element
           newcrosslinker->SetUpReferenceGeometry();
-
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  

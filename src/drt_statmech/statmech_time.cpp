@@ -31,7 +31,7 @@ StatMechTime::StatMechTime(ParameterList& params,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
-  statmechmanager_ = rcp(new StatMechManager(params,dis));
+  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_,damp_));
   
   
   //if according to input file also Rayleigh damping is present exit the program (not allowed in Brownian dynamics)
@@ -157,6 +157,8 @@ void StatMechTime::Integrate()
     //special update and output for statistical mechanics
     statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
     statmechmanager_->StatMechUpdate(dt);
+    
+    std::cout<<"\n\nAnzahl der Elemente = "<<discret_.NumGlobalElements()<<"\n\n";
 
     /*
     //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
