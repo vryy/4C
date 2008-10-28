@@ -189,7 +189,6 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
-//  constrMatrix_->Complete(*constrmap_,*dofrowmap);
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);

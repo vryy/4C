@@ -77,7 +77,6 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
     break;
     case calc_MPC3D_state:
     {
-      if (NumDofPerNode(*(Nodes()[0]))!=3) dserror ("MPC only working with 3 dof per node");
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
@@ -101,7 +100,6 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
     break;
     case calc_MPC3D_stiff:
     {
-      if (NumDofPerNode(*(Nodes()[0]))!=3) dserror ("MPC only working with 3 dof per node");
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
