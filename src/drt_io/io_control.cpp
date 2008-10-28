@@ -60,7 +60,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     if (comm.MyPID()==0)
     {
       int number = 0;
-      unsigned pos = filename_.rfind('-');
+      size_t pos = filename_.rfind('-');
       if (pos!=string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
@@ -138,7 +138,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     // insert back reference
     if (restart)
     {
-      unsigned pos = outputname.rfind('/');
+      size_t pos = outputname.rfind('/');
       controlfile_ << "restarted_run = \""
                    << ((pos!=string::npos) ? outputname.substr(pos+1) : outputname)
                    << "\"\n\n";
@@ -238,7 +238,7 @@ void IO::OutputControl::NewResultFile(int numb_run)
 {
   if (numb_run > 1)
   {
-    unsigned pos = filename_.rfind("_");
+    size_t pos = filename_.rfind("_");
     if (pos==string::npos)
       dserror("inconsistent file name");
     filename_ = filename_.substr(0, pos);
