@@ -298,21 +298,21 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "Element Block, named: "<<endl<<
   "of Shape: TET4"<<endl<<
   "has 9417816 Elements"<<endl<<
-  "\"*eb0=\"ELEMENT\""<<endl<<
+  "'*eb0=\"ELEMENT\"'"<<endl<<
   "sectionname=\"FLUID\""<<endl<<
   "description=\"MAT 1 NA Euler GP_TET 4 GP_ALT standard\""<<endl<<
   "elementname=\"FLUID3\" \n"<<endl<<
   "Element Block, named: "<<endl<<
   "of Shape: HEX8"<<endl<<
   "has 9417816 Elements"<<endl<<
-  "\"*eb0=\"ELEMENT\""<<endl<<
+  "'*eb0=\"ELEMENT\"'"<<endl<<
   "sectionname=\"STRUCTURE\""<<endl<<
   "description=\"MAT 1 EAS mild\""<<endl<<
   "elementname=\"SOLIDH8\" \n"<<endl<<
   "Node Set, named:"<<endl<<
   "Property Name: INFLOW"<<endl<<
   "has 45107 Nodes"<<endl<<
-  "\"*ns0=\"CONDITION\""<<endl<<
+  "'*ns0=\"CONDITION\"'"<<endl<<
   "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
   "description=\"1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0\""
   <<endl<<endl;
