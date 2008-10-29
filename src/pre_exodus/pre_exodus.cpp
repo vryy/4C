@@ -49,6 +49,12 @@ int main(
 
 #ifdef PARALLEL
   MPI_Init(&argc,&argv);
+
+  int myrank = 0;
+  int nproc  = 1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+  if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
 #endif
 
   string exofile;
@@ -237,39 +243,27 @@ int main(
 
     // screen info
     cout << "creating and checking BACI input file       --> " << datfile << endl;
-    //cout << "checking BACI input file       --> "<<datfile<< endl;
-
-    // communication objects needed for rewinding timer
-  #ifdef PARALLEL
-    int myrank = 0;
-    int nproc  = 1;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-    if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
-    RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-  #else
-    RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
-  #endif
+    RCP<Time> timer = TimeMonitor::getNewTimer("pre-exodus timer");;
 
     // check for positive Element-Center-Jacobians and otherwise rewind them
-    Epetra_Time time(*comm);
-    RCP<Time> timerewind;
-    timerewind= TimeMonitor::getNewTimer("Rewinding");
-    RCP<TimeMonitor> tm_rewind = rcp(new TimeMonitor(*timerewind));
-    ValidateMeshElementJacobians(mymesh);
-    tm_rewind = null;
-    cout << "...Ensure positive element jacobians";
-    cout << "        in...." << time.ElapsedTime() <<" secs" << endl;
-    //TimeMonitor::summarize();
+    {
+      timer->start();
+      ValidateMeshElementJacobians(mymesh);
+      timer->stop();
+      cout << "...Ensure positive element jacobians";
+      cout << "        in...." << timer->totalElapsedTime() <<" secs" << endl;
+      timer->reset();
+    }
 
     // write the BACI input file
-    RCP<Time> timewrite;
-    timewrite = TimeMonitor::getNewTimer("Writing");
-    RCP<TimeMonitor> tm_write = rcp(new TimeMonitor(*timewrite));
-    EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
-    tm_write = null;
-    cout << "...Writing dat-file";
-    cout << "                         in...." << time.ElapsedTime() << " secs" << endl;
+    {
+      timer->start();
+      EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
+      timer->stop();
+      cout << "...Writing dat-file";
+      cout << "                         in...." << timer->totalElapsedTime() << " secs" << endl;
+      timer->reset();
+    }
 
     //validate the generated BACI input file
     EXODUS::ValidateInputFile(datfile);
