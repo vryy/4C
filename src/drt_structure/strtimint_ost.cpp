@@ -302,8 +302,6 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   // correctly 'predicted', final values.
   Teuchos::RCP<Epetra_Vector> aux
       = LINALG::CreateVector(*dofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> aux2
-      = LINALG::CreateVector(*dofrowmap_, false);
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -314,13 +312,8 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
                -1.0/(theta_*(*dt_)[0]), *(*dis_)(0), 
                0.0);
   aux->Update(-(1.0-theta_)/theta_, *(*vel_)(0), 1.0);
-  // blank entries on DBC DOFs
-  aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
-  // blank entries on non-DBC DOFs
-  aux->Scale(1.0, *veln_);
-  veln_->Multiply(1.0, *dirichtoggle_, *aux, 0.0);
-  // add new velocities only on non-DBC/free DOFs
-  veln_->Update(1.0, *aux2, 1.0);
+  // put only to free/non-DBC DOFs
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
   // new end-point accelerations
   aux->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_, 
@@ -329,13 +322,8 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   aux->Update(-1.0/(theta_*theta_*(*dt_)[0]), *(*vel_)(0), 
               -(1.0-theta_)/theta_, *(*acc_)(0),
               1.0);
-  // blank entries on DBC DOFs
-  aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
-  // blank entries on non-DBC DOFs
-  aux->Scale(1.0, *accn_);
-  accn_->Multiply(1.0, *dirichtoggle_, *aux, 0.0);
-  // add new accelerations only on free DOFs
-  accn_->Update(1.0, *aux2, 1.0);
+  // put only to free/non-DBC DOFs
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), accn_);
 
   // bye
   return;

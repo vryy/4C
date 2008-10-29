@@ -42,16 +42,29 @@ namespace UTILS
   {
   public:
 
+
+
     /*!
-    \brief Constructor
+    \brief Constructor 
     */
     ConstraintSolver
     (
       RCP<DRT::Discretization> discr,     ///< Discretization
       LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
-      RCP<Epetra_Vector>    dirichtoggle, ///< Vector used for ApplyDirichletToSystem
-      RCP<Epetra_Vector>    invtoggle,    ///< Vector to blank residuals of Dirichlet DOFs
-      ParameterList param              ///< parameterlist containing solver parameters
+      RCP<LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
+      ParameterList param                 ///< parameterlist containing solver parameters
+    );
+
+    /*!
+    \brief Constructor with depreciated Dirichlet toggle vector
+    */
+    ConstraintSolver
+    (
+      RCP<DRT::Discretization> discr,     ///< Discretization
+      LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
+      RCP<Epetra_Vector> dirichtoggle,    ///< Vector used for ApplyDirichletToSystem
+      RCP<Epetra_Vector> invtoggle,       ///< Vector to blank residuals of Dirichlet DOFs
+      ParameterList param                 ///< parameterlist containing solver parameters
     );
 
     /*!
@@ -61,6 +74,17 @@ namespace UTILS
     {
         return;
     };
+
+    /*!
+      \brief Set it up
+     */
+    void Setup
+    (
+      RCP<DRT::Discretization> discr,
+      LINALG::Solver& solver,
+      RCP<LINALG::MapExtractor> dbcmaps,
+      ParameterList params
+    );
 
     /*!
       \brief Solve constraint linear system
@@ -142,8 +166,8 @@ private:
     double uzawatol_;  ///< tolerance
     double tolres_;  ///< tolerance for residual
     double tolconstr_;  ///< tolerance for constraint
-    RCP<Epetra_Vector>    dirichtoggle_;  ///< dirichlet toggle
-    RCP<Epetra_Vector>    invtoggle_; ///< inverse dirichlet toggle
+    RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
+    RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     RCP<Epetra_Vector>    firstdispinc_; ///< history variable holding displacement increment for first NRI
     RCP<Epetra_Vector>    firstlagrinc_; ///< history variable holding multiplier increment for first NRI
     bool isadapttol_;  ///< adaptive tolerance for solver?

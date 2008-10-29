@@ -537,11 +537,34 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RCP<SparseOperator>              A,
+  void ApplyDirichlettoSystem(RCP<SparseOperator>      A,
                               RCP<Epetra_Vector>&      x,
                               RCP<Epetra_Vector>&      b,
                               const RCP<Epetra_Vector> dbcval,
                               const RCP<Epetra_Vector> dbctoggle);
+
+  /*!
+  \brief Apply dirichlet boundary condition to a linear system of equations
+
+  This is a flexible routine. The vectors x and dbcval might have different
+  maps. The map does not need to contain all Dirichlet dofs.
+
+  The purpose is to set Dirichlet values at a subset of all Dirichlet
+  boundaries.
+
+  \param A (in/out)         : Matrix of Ax=b
+  \param x (in/out)         : vector x of Ax=b
+  \param b (in/out)         : vector b of Ax=b
+  \param dbcval (in)        : vector holding values that are supposed to be prescribed
+  \param dbctoggle (in)     : unique map of all dofs that should be constrained
+
+  \pre The map dbctoggle must be subset of the maps of the vectors.
+  */
+  void ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+                              RCP<Epetra_Vector>&         x,
+                              RCP<Epetra_Vector>&         b,
+                              const RCP<Epetra_Vector>&   dbcval,
+                              const Epetra_Map&           dbcmap);
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
@@ -571,16 +594,33 @@ namespace LINALG
   \param x (in/out)         : vector x of Ax=b
   \param b (in/out)         : vector b of Ax=b
   \param dbcval (in)        : vector holding values that are supposed to be prescribed
-  \param dbctoggle (in)     : unique map of all dofs that should be
-  constrained
+  \param dbctoggle (in)     : unique map of all dofs that should be constrained
 
   \pre The map dbctoggle must be subset of the maps of the vectors.
   */
   void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
                               RCP<Epetra_Vector>&      b,
                               RCP<const Epetra_Vector> dbcval,
-                              const Epetra_Map& dbctoggle);
+                              const Epetra_Map&        dbcmap);
 
+
+  /*!
+  \brief Convert a Dirichlet toggle vector in a Dirichlet map
+
+  The purpose of the routine is a smooth transition from Dirichlet toggle vectors
+  to Dirichlet condition maps. Eventually, this method should be removed.
+
+  A Dirichlet toogle vector is a real vector which holds a 1.0 at DOF subjected
+  to Dirichlet boundary conditions and a 0.0 at every remaining/free DOF.
+
+  \param dbctoggle (in)     : the Dirichlet toggle vector
+  \return MapExtractor object which stores the Dirichlet condition and remaining (other) DOF map
+
+  \author bborn
+  \date 10/08
+  */
+  Teuchos::RCP<LINALG::MapExtractor> ConvertDirichletToggleVectorToMaps(
+    const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
 
   /*!
   \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given

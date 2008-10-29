@@ -230,8 +230,13 @@ namespace STR
                                         //!< (may be Teuchos::null)
       Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
                                         //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> acc  //!< accelerations
+      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
                                        //!< (may be Teuchos::null)
+      bool recreatemap  //!< recreate mapextractor/toggle-vector 
+                        //!< which stores the DOF IDs subjected
+                        //!< to Dirichlet BCs
+                        //!< This needs to be true if the bounded DOFs
+                        //!< have been changed.
     );
 
     //! Do time integration of multiple steps
@@ -524,6 +529,10 @@ namespace STR
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adpated ????
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object 
+                                                  //!< containing non-overlapping 
+                                                  //!< map of global DOFs on Dirichlet 
+                                                  //!< boundary conditions
     //@}
 
     //! @name Printing and output
@@ -582,17 +591,6 @@ namespace STR
 
     //! @name Global vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this
-                                                //!< vector holds a 0;
-                                                //!< at a supported DOF
-                                                //!< it is a 1.
-    Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of
-                                             //!< #dirichtoggle_ vector:
-                                             //!< i.e.\ for each component
-                                             //!< a 0 indicates a supported
-                                             //!< corresponding DOF;
-                                             //!< a 1 indicates
-                                             //!< a free/unsupported DOF.
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     //@}
 

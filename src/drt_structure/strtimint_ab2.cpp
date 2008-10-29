@@ -104,7 +104,7 @@ void STR::TimIntAB2::IntegrateStep()
                 1.0);
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null);
+  ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
 
   // build new external forces
   fextn_->PutScalar(0.0);
@@ -150,8 +150,7 @@ void STR::TimIntAB2::IntegrateStep()
   {
     dsassert(mass_->Filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
-    Epetra_Vector rhscopy = Epetra_Vector(*frimpn_);
-    frimpn_->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), frimpn_);
     // get accelerations 
     accn_->PutScalar(0.0);
     // refactor==false: This is not necessary, because we always
@@ -161,7 +160,7 @@ void STR::TimIntAB2::IntegrateStep()
   }
 
   // apply Dirichlet BCs on accelerations
-  ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_);
+  ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // wassup?
   return;

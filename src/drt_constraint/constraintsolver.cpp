@@ -29,14 +29,47 @@ UTILS::ConstraintSolver::ConstraintSolver
 (
   RCP<DRT::Discretization> discr,
   LINALG::Solver& solver,
-  RCP<Epetra_Vector>    dirichtoggle,
-  RCP<Epetra_Vector>    invtoggle,
+  RCP<Epetra_Vector> dirichtoggle,
+  RCP<Epetra_Vector> invtoggle,
   ParameterList params
 ):
 actdisc_(discr),
 maxIter_(params.get<int>   ("UZAWAMAXITER", 50)),
-dirichtoggle_(&(*dirichtoggle),false),
-invtoggle_(&(*invtoggle),false)
+dirichtoggle_(dirichtoggle),
+dbcmaps_(Teuchos::null)
+{
+  dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle);
+  Setup(discr,solver,dbcmaps_,params);
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                               tk 11/07|
+ *----------------------------------------------------------------------*/
+UTILS::ConstraintSolver::ConstraintSolver
+(
+  RCP<DRT::Discretization> discr,
+  LINALG::Solver& solver,
+  RCP<LINALG::MapExtractor> dbcmaps,
+  ParameterList params
+):
+actdisc_(discr),
+maxIter_(params.get<int>   ("UZAWAMAXITER", 50)),
+dirichtoggle_(Teuchos::null),
+dbcmaps_(dbcmaps)
+{
+  Setup(discr,solver,dbcmaps,params);
+}
+
+/*----------------------------------------------------------------------*
+ |  set-up (public)                                             tk 11/07|
+ *----------------------------------------------------------------------*/
+void UTILS::ConstraintSolver::Setup
+(
+  RCP<DRT::Discretization> discr,
+  LINALG::Solver& solver,
+  RCP<LINALG::MapExtractor> dbcmaps,
+  ParameterList params
+)
 {
   solver_ = rcp(&solver,false);
   // this exception handler is not the nicest thing, 
@@ -86,6 +119,8 @@ invtoggle_(&(*invtoggle),false)
   counter_ = 0;
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
 |(public)                                                               |
@@ -146,8 +181,14 @@ void UTILS::ConstraintSolver::SolveIterative
   
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
-  
+
+  // ONLY compatability
+  // dirichtoggle_ changed and we need to rebuild associated DBC maps
+  if (dirichtoggle_ != Teuchos::null)
+    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+
   RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
+  RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
   
   // Compute residual of the uzawa algorithm
   RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*rhsstand));
@@ -156,8 +197,7 @@ void UTILS::ConstraintSolver::SolveIterative
   uzawa_res.Update(1.0,*fresmcopy,-1.0);
   
   // blank residual DOFs which are on Dirichlet BC 
-  Epetra_Vector rescopy(uzawa_res);
-  uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+  dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res,false));
   
   uzawa_res.Norm2(&norm_uzawa);
   Epetra_Vector constr_res(lagrinc->Map());
@@ -170,7 +210,7 @@ void UTILS::ConstraintSolver::SolveIterative
   while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_) and numiter_uzawa < maxIter_) 
       or numiter_uzawa < minstep)
   {
-    LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && counter_ && numiter_uzawa)
@@ -195,8 +235,7 @@ void UTILS::ConstraintSolver::SolveIterative
     (*stiff).Multiply(false,*dispinc,uzawa_res);
     uzawa_res.Update(1.0,*fresmcopy,-1.0);
     // blank residual DOFs which are on Dirichlet BC
-    Epetra_Vector rescopy(uzawa_res);
-    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+    dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res,false));
     norm_uzawa_old=norm_uzawa;
     uzawa_res.Norm2(&norm_uzawa);
     Epetra_Vector constr_res(lagrinc->Map());
@@ -287,8 +326,12 @@ void UTILS::ConstraintSolver::SolveDirect
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,mergedmap->NumMyElements()));
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
   RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedmap));
-  RCP<Epetra_Vector> mergeddtog = rcp(new Epetra_Vector(*mergedmap));
   RCP<Epetra_Vector> mergedzeros = rcp(new Epetra_Vector(*mergedmap));
+
+  // ONLY compatability
+  // dirichtoggle_ changed and we need to rebuild associated DBC maps
+  if (dirichtoggle_ != Teuchos::null)
+    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
   
   // fill merged matrix using Add
   mergedmatrix -> Add(*stiff,false,1.0,1.0);
@@ -300,10 +343,9 @@ void UTILS::ConstraintSolver::SolveDirect
   LINALG::Export(*rhsconstr,*mergedrhs);
   mergedrhs -> Scale(-1.0);
   LINALG::Export(*rhsstand,*mergedrhs);
-  LINALG::Export(*dirichtoggle_,*mergeddtog);
 
   // apply dirichlet boundary conditions
-  LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,mergeddtog);
+  LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,*(dbcmaps_->CondMap()));
   
   // solve
   solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);

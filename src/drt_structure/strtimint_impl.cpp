@@ -244,7 +244,7 @@ void STR::TimIntImpl::Predict()
   }
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, accn_);
+  ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
 
   // possibly initialise Lagrange multiplicators to zero
   //  if ( (conman_->HaveConstraint())
@@ -258,8 +258,9 @@ void STR::TimIntImpl::Predict()
 
   // blank residual at DOFs on Dirichlet BC
   {
-    Epetra_Vector frescopy(*fres_);
-    fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
+    //Epetra_Vector frescopy(*fres_);
+    //fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
   }
 
   // determine residual norm of predictor
@@ -479,8 +480,10 @@ void STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    //LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+    //                               zeros_, dirichtoggle_);
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   zeros_, dirichtoggle_);
+                                   zeros_, *(dbcmaps_->CondMap()));
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -500,10 +503,7 @@ void STR::TimIntImpl::NewtonFull()
     EvaluateForceStiffResidual();
 
     // blank residual at DOFs on Dirichlet BC
-    {
-      Epetra_Vector frescopy(*fres_);
-      fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
     // build residual force norm
     normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
@@ -637,7 +637,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   zeros_, dirichtoggle_);
+                                   zeros_, *(dbcmaps_->CondMap()));
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
     // Call constraint solver to solve system with zeros on diagonal
@@ -659,10 +659,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
     // blank residual at DOFs on Dirichlet BC
-    {
-      Epetra_Vector frescopy(*fres_);
-      fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
     // build residual force norm
     normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
@@ -1001,7 +998,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                 zeros_, dirichtoggle_);
+                                 zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);

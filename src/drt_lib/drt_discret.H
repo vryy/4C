@@ -974,12 +974,15 @@ public:
   \param systemvectord (out): Vector holding 1st time derivative of prescribed Dirichlet values
   \param systemvectordd (out): Vector holding 2nd time derivative prescribed Dirichlet values
   \param toggle (out): Vector containing 1.0 for each Dirichlet dof and 0 for everything else
+  \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to 
+                                Dirichlet boundary conditions and the remaining/free DOFs
   */
   virtual void EvaluateDirichlet(ParameterList& params,
                                  Teuchos::RCP<Epetra_Vector> systemvector,
                                  Teuchos::RCP<Epetra_Vector> systemvectord,
                                  Teuchos::RCP<Epetra_Vector> systemvectordd,
-                                 Teuchos::RCP<Epetra_Vector> toggle);
+                                 Teuchos::RCP<Epetra_Vector> toggle,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*!
   \brief Evaluate a specified condition

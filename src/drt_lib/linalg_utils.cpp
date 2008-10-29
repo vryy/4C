@@ -655,9 +655,9 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
 void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
                                     RCP<Epetra_Vector>&      b,
                                     RCP<const Epetra_Vector> dbcval,
-                                    const Epetra_Map& dbctoggle)
+                                    const Epetra_Map&        dbcmap)
 {
-  if (not dbctoggle.UniqueGIDs())
+  if (not dbcmap.UniqueGIDs())
     dserror("unique map required");
 
   if (x != null and b != null)
@@ -671,8 +671,8 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
     const Epetra_BlockMap& xmap = X.Map();
     const Epetra_BlockMap& dbcvmap = dbcv.Map();
 
-    const int mylength = dbctoggle.NumMyElements();
-    const int* mygids  = dbctoggle.MyGlobalElements();
+    const int mylength = dbcmap.NumMyElements();
+    const int* mygids  = dbcmap.MyGlobalElements();
     for (int i=0; i<mylength; ++i)
     {
       int gid = mygids[i];
@@ -702,6 +702,67 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 {
   A->ApplyDirichlet(dbctoggle);
   ApplyDirichlettoSystem(x,b,dbcval,dbctoggle);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+                                    RCP<Epetra_Vector>&         x,
+                                    RCP<Epetra_Vector>&         b,
+                                    const RCP<Epetra_Vector>&   dbcval,
+                                    const Epetra_Map&           dbcmap)
+{
+  A->ApplyDirichlet(dbcmap);
+  ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
+  const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
+{
+  const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
+  const Epetra_Map fullmap = Epetra_Map(fullblockmap.NumGlobalElements(), 
+                                        fullblockmap.NumMyElements(),
+                                        fullblockmap.MyGlobalElements(),
+                                        fullblockmap.IndexBase(),
+                                        fullblockmap.Comm());
+  const int mylength = dbctoggle->MyLength();
+  const int* fullgid = fullmap.MyGlobalElements();
+  // build sets containing the DBC or free global IDs, respectively
+  std::set<int> dbcgids;
+  std::set<int> freegids;
+  for (int i=0; i<mylength; ++i)
+  {
+    const int gid = fullgid[i];
+    if ((int) round((*dbctoggle)[i]) == 1)
+      dbcgids.insert(gid);
+    else
+      freegids.insert(gid);
+  }
+  // build map of Dirichlet DOFs
+  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
+  if (dbcgids.size() > 0)
+  {
+    std::vector<int> dbcgidsv(dbcgids.size());
+    int lgid = 0;
+    for (std::set<int>::iterator gid=dbcgids.begin(); gid!=dbcgids.end(); ++gid)
+      dbcgidsv[lgid++] = *gid;
+    *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), 0, fullmap.Comm());
+  }
+  // build map of free DOFs
+  Teuchos::RCP<Epetra_Map> freemap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
+  if (freegids.size() > 0)
+  {
+    std::vector<int> freegidsv(freegids.size());
+    int lgid = 0;
+    for (std::set<int>::iterator gid=freegids.begin(); gid!=freegids.end(); ++gid)
+      freegidsv[lgid++] = *gid;
+    *freemap = Epetra_Map(-1, freegidsv.size(), &(freegidsv[0]), 0, fullmap.Comm());
+  }
+
+  // build and return the map extractor of Dirichlet-conditioned and free DOFs
+  return Teuchos::rcp(new LINALG::MapExtractor(fullmap, dbcmap, freemap));
 }
 
 #if 0 // old version

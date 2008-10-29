@@ -167,6 +167,7 @@ STR::TimInt::TimInt
   solver_(solver),
   solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
+  dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   output_(output),
   printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
   printscreen_(true),  // ADD INPUT PARAMETER
@@ -195,8 +196,6 @@ STR::TimInt::TimInt
   stepmax_(sdynparams.get<int>("NUMSTEP")),
   step_(Teuchos::null),
   stepn_(0),
-  dirichtoggle_(Teuchos::null),
-  invtoggle_(Teuchos::null),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
   vel_(Teuchos::null),
@@ -235,28 +234,15 @@ STR::TimInt::TimInt
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*dofrowmap_, true);
 
-  // Dirichlet vector
-  // vector of full length; for each component
-  //                /  1   i-th DOF is supported, ie Dirichlet BC
-  //    vector_i =  <
-  //                \  0   i-th DOF is free
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap_, true);
-  // set Dirichlet toggle vector
+  // Map containing Dirichlet DOFs
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, dirichtoggle_);
+    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
-  // opposite of dirichtoggle vector, ie for each component
-  //                /  0   i-th DOF is supported, ie Dirichlet BC
-  //    vector_i =  <
-  //                \  1   i-th DOF is free
-  invtoggle_ = LINALG::CreateVector(*dofrowmap_, false);
-  // compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
-
+  
   // displacements D_{n}
   // cout << "we are here" << endl;
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
@@ -273,34 +259,23 @@ STR::TimInt::TimInt
   accn_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create empty matrices
-  stiff_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
-  );
-  mass_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
-  );
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
   if (damping_ == damp_rayleigh)
-  {
-    damp_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*dofrowmap_, 81, true, true)
-    );
-  }
+    damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
   // initialize constraint manager
   conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_,
                                                   (*dis_)(0),
                                                   sdynparams));
-  
   // initialize constraint solver iff constraints are defined
   if (conman_->HaveConstraint())
   {
     consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
                                                         *solver_,
-                                                        dirichtoggle_,
-                                                        invtoggle_,
+                                                        dbcmaps_,
                                                         sdynparams)); 
   }
-  
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
@@ -341,7 +316,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     = LINALG::CreateVector(*dofrowmap_, true); // internal force
 
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0));
+  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
 
   // get external force
   ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
@@ -394,8 +369,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
       damp_->Multiply(false, (*vel_)[0], *rhs);
     }
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
-    Epetra_Vector rhscopy = Epetra_Vector(*rhs);
-    rhs->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
+    // blank RHS on DBC DOFs
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
     solver_->Solve(mass_->EpetraMatrix(), (*acc_)(0), rhs, true, true);
   }
 
@@ -415,7 +390,8 @@ void STR::TimInt::ApplyDirichletBC
   const double time,
   Teuchos::RCP<Epetra_Vector> dis,
   Teuchos::RCP<Epetra_Vector> vel,
-  Teuchos::RCP<Epetra_Vector> acc
+  Teuchos::RCP<Epetra_Vector> acc,
+  bool recreatemap
 )
 {
   // apply DBCs
@@ -426,12 +402,17 @@ void STR::TimInt::ApplyDirichletBC
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
   discret_->ClearState();
-  discret_->EvaluateDirichlet(p, dis, vel, acc, dirichtoggle_);
+  if (recreatemap)
+  {
+    discret_->EvaluateDirichlet(p, dis, vel, acc,
+                                Teuchos::null, dbcmaps_);
+  }
+  else
+  {
+    discret_->EvaluateDirichlet(p, dis, vel, acc,
+                                Teuchos::null, Teuchos::null);
+  }
   discret_->ClearState();
-
-  // compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
 
   // ciao
   return;
