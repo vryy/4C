@@ -132,6 +132,28 @@ public:
                                    const double ScalarThis);
 
   /*!
+  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+   compute the "elasticity tensor product" (A x B + B x A) of
+   two 2nd order tensors (in matrix notation) and add the result to
+   a 4th order tensor (in Voigt matrix notation!) using the
+   symmetry-conditions inherent to elasticity tensors
+   This is another version of this function using the fixed size matrix.
+
+  \param C (in/out)     : Material tangent matrix to be modified
+  \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
+  \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
+  */
+  void ElastSymTensorMultiplyAddSym(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+          const double ScalarAB,
+          const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+          const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+          const double ScalarThis);
+  
+  /*!
   \brief Multiply two 2nd order tensors A o B and add the result to a
    4th order symmetric material tensor in matrix notation
 

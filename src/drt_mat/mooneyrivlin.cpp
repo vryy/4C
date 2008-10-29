@@ -108,17 +108,11 @@ to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
 Mind that it is not stress-free in reference configuration!
 */
 
-void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                                       Epetra_SerialDenseMatrix* cmat_e,
-                                       Epetra_SerialDenseVector* stress_e)
-
+void MAT::MooneyRivlin::Evaluate(
+        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress)
 {
-  // this is temporary as long as the material does not have a 
-  // FixedSizeSerialDenseMatrix-type interface
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> glstrain(glstrain_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> cmat(cmat_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> stress(stress_e->A(),true);
-
         // get material parameters
   const double m1  = matdata_->m.mooneyrivlin->mu1;
   const double m2  = matdata_->m.mooneyrivlin->mu2;
@@ -130,7 +124,7 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   // build identity tensor I
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(glstrain);
+  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
   for (int i = 0; i < 3; i++) C(i) = 2.*C(i);  // respect factor 2 in shear terms of glstrain
   C += Id;
 
@@ -165,14 +159,14 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   // ******* evaluate 2nd PK stress ********************
   double scalar1 = -2.0 * c2;     // -2 dW/dI2
-  stress.Update(scalar1,C);       // S = -2 dW/dI2 C
+  (*stress).Update(scalar1,C);       // S = -2 dW/dI2 C
   
   // S += 2 (dW/dI1 + I1 dW/dI2) times Identity
   double scalar2 = 2.0 * (c1 + I1*c2);
-  stress.Update(scalar2,Id,1.0);
+  (*stress).Update(scalar2,Id,1.0);
 
   double scalar3 = - m1 - m2 + 0.5*I3*pen - 0.5*pen;   // 2 I3 dW/dI3
-  stress.Update(scalar3,Cinv,1.0);    // S += 2 I3 dW/dI3 Cinv
+  (*stress).Update(scalar3,Cinv,1.0);    // S += 2 I3 dW/dI3 Cinv
   // end of ******* evaluate 2nd PK stress ********************
 
   // ********** evaluate C-Matrix *****************************
@@ -183,13 +177,13 @@ void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   for (unsigned int i = 0; i < NUM_STRESS_3D; ++i) {
     for (unsigned int j = 0; j < NUM_STRESS_3D; ++j) {
-      cmat(i,j) += delta1 * Id(i)*Id(j)         // add d1 I x I
+      (*cmat)(i,j) += delta1 * Id(i)*Id(j)         // add d1 I x I
                  + delta6 * Cinv(i)*Cinv(j);    // add d6 Cinv x Cinv
     }
   }
 
-  AddtoCmatHolzapfelProduct(cmat,Cinv,delta7);  // add d7 Cinv o Cinv
-  AddtoCmatHolzapfelProduct(cmat,Id,delta8);    // add d8 I o I
+  AddtoCmatHolzapfelProduct((*cmat),Cinv,delta7);  // add d7 Cinv o Cinv
+  AddtoCmatHolzapfelProduct((*cmat),Id,delta8);    // add d8 I o I
   
   // end of ********** evaluate C-Matrix *****************************
 

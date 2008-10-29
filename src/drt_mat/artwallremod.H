@@ -81,12 +81,14 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_artwallremod; }
 
     /// evaluate stress and elasticity matrix
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  const Epetra_SerialDenseMatrix& defgrd,
-                  const int gp,
-                  Teuchos::ParameterList& params,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress,const int eleid=0);
+    void Evaluate(
+            const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+            const int gp,
+            Teuchos::ParameterList& params,
+            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress,
+            const int eleid=0);
+
 
     /// return density
     double Density() {return matdata_->m.artwallremod->density;}

@@ -458,16 +458,16 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else {
       RCP<vector<vector<double> > > gplis = chain->Getli();
       RCP<vector<vector<double> > > gpli0s = chain->Getli0();
-      RCP<vector<Epetra_SerialDenseMatrix> > gpnis = chain->Getni();
+      RCP<vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > > gpnis = chain->Getni();
 
       vector<double> centerli (3,0.0);
       vector<double> centerli_0 (3,0.0);
-      Epetra_DataAccess CV = Copy;
       for (int i = 0; i < (int)gplis->size(); ++i) {
-        Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
-        Epetra_SerialDenseVector glo(3);
+        LINALG::FixedSizeSerialDenseMatrix<3,1> loc(&(gplis->at(i)[0]));
+        //Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
+        LINALG::FixedSizeSerialDenseMatrix<3,1> glo;
         //glo.Multiply('N','N',1.0,gpnis->at(i),loc,0.0);
-        LINALG::DENSEFUNCTIONS::multiply<3,3,1>(glo, gpnis->at(i), loc);
+        glo.Multiply(gpnis->at(i),loc);
         // Unfortunately gpnis is a vector of Epetras, to change this
         // I must begin at a deeper level...
         centerli[0] += glo(0);

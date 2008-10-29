@@ -499,6 +499,46 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | compute the "elasticity tensor product" (A x B + B x A) of           |
+ | two 2nd order tensors (in matrix notation) and add the result to     |
+ | a 4th order tensor (in Voigt matrix notation!) using the             |
+ | symmetry-conditions inherent to elasticity tensors                   |
+ | The implementation is based on the Epetra-Method Matrix.Multiply.    |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+// This is a copy of the above function, using the fixed size matrix.
+void MAT::ElastSymTensorMultiplyAddSym(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+        const double ScalarAB,
+        const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
+        const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+        const double ScalarThis)
+{
+#ifdef DEBUG
+  // check sizes
+  if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
+    dserror("2nd order tensors must be 3 by 3");
+  }
+  if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+#endif
+
+  // everything in Voigt-Notation
+  LINALG::FixedSizeSerialDenseMatrix<6,1> AVoigt;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> BVoigt;
+
+  AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
+  /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
+   * however, this is not the case here to arrive at the consistent elasticity */
+  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+
+  BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
+  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+
+  C.MultiplyNT(ScalarAB,AVoigt,BVoigt,ScalarThis);
+  C.MultiplyNT(ScalarAB,BVoigt,AVoigt,1.0);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | compute the "material tensor product" A o B (also known as           |

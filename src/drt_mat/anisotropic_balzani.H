@@ -74,17 +74,13 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_anisotropic_balzani; }
 
-    /// evaluate stress and elasticity matrix
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress) {return;}
 
     /// evaluate stress and elasticity matrix
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  const Epetra_SerialDenseMatrix* defgrd,
-                  const int gp,  const int ele_ID, const double time,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+    void Evaluate(
+            const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+            const int gp, const int ele_ID, const double time,
+            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
     double Density();

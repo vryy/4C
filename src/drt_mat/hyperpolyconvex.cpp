@@ -106,12 +106,15 @@ Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
   Adjustment to Experimental Data, Report-Preprint No. 22, 2005.
 */
 
-void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                    const Epetra_SerialDenseMatrix* defgrd,
-                                    const int gp, const int ele_ID, const double time,
-                                      Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+void MAT::HyperPolyconvex::Evaluate(
+        const LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+        LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+        LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
 {
+  // wrapper for FixedSizeMatrix
+  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+  // stress and glstrain are copied value by value and are thus not necessary
+
   // get material parameters
   double c = matdata_->m.hyper_polyconvex->c;             //parameter for ground substance
   double k1 = matdata_->m.hyper_polyconvex->k1;           //parameter for fiber potential
@@ -240,15 +243,15 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   delta(6) += -4.0 * epsilon * gamma * (pow(Inv(2),gamma) - pow(Inv(2),-gamma));
 
   // *** new "faster" evaluate of C-Matrix
-  hyper_ElastSymTensorMultiply((*cmat),delta(0),I,I,1.0);           // I x I
-  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(1),I,C,1.0);     // I x C + C x I
-  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(2),I,Cinv,1.0);  // I x Cinv + Cinv x I
-  hyper_ElastSymTensorMultiply((*cmat),delta(3),C,C,1.0);           // C x C
-  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(4),C,Cinv,1.0);  // C x Cinv + Cinv x C
-  hyper_ElastSymTensorMultiply((*cmat),delta(5),Cinv,Cinv,1.0);     // Cinv x Cinv
-  hyper_ElastSymTensor_o_Multiply((*cmat),delta(6),Cinv,Cinv,1.0);  // Cinv o Cinv
+  hyper_ElastSymTensorMultiply(cmat_e,delta(0),I,I,1.0);           // I x I
+  hyper_ElastSymTensorMultiplyAddSym(cmat_e,delta(1),I,C,1.0);     // I x C + C x I
+  hyper_ElastSymTensorMultiplyAddSym(cmat_e,delta(2),I,Cinv,1.0);  // I x Cinv + Cinv x I
+  hyper_ElastSymTensorMultiply(cmat_e,delta(3),C,C,1.0);           // C x C
+  hyper_ElastSymTensorMultiplyAddSym(cmat_e,delta(4),C,Cinv,1.0);  // C x Cinv + Cinv x C
+  hyper_ElastSymTensorMultiply(cmat_e,delta(5),Cinv,Cinv,1.0);     // Cinv x Cinv
+  hyper_ElastSymTensor_o_Multiply(cmat_e,delta(6),Cinv,Cinv,1.0);  // Cinv o Cinv
   // fiber part
-  hyper_ElastSymTensorMultiply((*cmat),(deltafib*kappa*kappa),I,I,1.0);
+  hyper_ElastSymTensorMultiply(cmat_e,(deltafib*kappa*kappa),I,I,1.0);
 
 
 //  // ************* evaluate C-matrix ***************************

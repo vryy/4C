@@ -301,21 +301,15 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
 
 */
 
-void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                                 const Epetra_SerialDenseMatrix& defgrd_e,
-                                  const int gp,
-                                  Teuchos::ParameterList& params,
-                                  Epetra_SerialDenseMatrix* cmat_e,
-                                  Epetra_SerialDenseVector* stress_e,
-                                  const int eleid)
+void MAT::ArtWallRemod::Evaluate(
+        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+        const int gp,
+        Teuchos::ParameterList& params,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress,
+        const int eleid)
 
 {
-  // this is temporary as long as the material does not have a 
-  // FixedSizeSerialDenseMatrix-type interface
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> glstrain(glstrain_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> cmat(cmat_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> stress(stress_e->A(),true);
-
   const double mue = matdata_->m.artwallremod->mue;
   const double kappa = matdata_->m.artwallremod->kappa;
   const double k1 = matdata_->m.artwallremod->k1;
@@ -326,7 +320,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   // build identity tensor I
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(glstrain);
+  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -363,7 +357,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   const double third = 1./3.;
   const double p = kappa*(J-1);
   for (int i = 0; i < 6; ++i) {
-    stress(i) = J*p * Cinv(i)  + incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
+    (*stress)(i) = J*p * Cinv(i)  + incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
   }
 
   // Elasticity = Cvol + Ciso, via projection see Holzapfel p. 255
@@ -371,7 +365,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   // Cvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
   // Ciso = 0 + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
 
-  AddtoCmatHolzapfelProduct(cmat,Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
+  AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
 
   const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
@@ -385,7 +379,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
     for (int j = 0; j < 6; ++j) {
       double Siso_i = incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
       double Siso_j = incJ* (mue*Id(j) - third*mue*I1*Cinv(j));
-      cmat(i,j) += J*(p+J*kappa) * Cinv(i) * Cinv(j)  // J(p + J dp/dJ) Cinv x Cinv
+      (*cmat)(i,j) += J*(p+J*kappa) * Cinv(i) * Cinv(j)  // J(p + J dp/dJ) Cinv x Cinv
              + fac * Psl(i,j)                            // fac Cinv o Cinv
              - fac*third * Cinv(i) * Cinv(j)             // - fac/3 Cinv x Cinv
              - 2*third * Cinv(i) * Siso_j                // -2/3 Cinv x Siso
@@ -445,7 +439,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   for (int i = 0; i < 6; ++i) {
     Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
   }
-  stress += Sfiso;
+  (*stress) += Sfiso;
 
   // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
   const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
@@ -457,7 +451,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
       double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);
       double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
       double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
-      cmat(i,j)    += delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
+      (*cmat)(i,j)    += delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
                     + delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
                     + 2.*third*incJ*traceCSfbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar C) Psl
                     - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
@@ -466,10 +460,10 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   // store current stress in case of remodeling
   if (remtime_->at(gp) != -1.){
-    for (int i = 0; i < 3; ++i) stresses_->at(gp)(i,i) = stress(i);
-    stresses_->at(gp)(0,1) = stress(3); stresses_->at(gp)(1,0) = stress(3);
-    stresses_->at(gp)(1,2) = stress(4); stresses_->at(gp)(2,1) = stress(4);
-    stresses_->at(gp)(0,2) = stress(5); stresses_->at(gp)(2,0) = stress(5);
+    for (int i = 0; i < 3; ++i) stresses_->at(gp)(i,i) = (*stress)(i);
+    stresses_->at(gp)(0,1) = (*stress)(3); stresses_->at(gp)(1,0) = (*stress)(3);
+    stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
+    stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
 
 //    // store Cauchy stresses and use those for remodeling driver
 //    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +

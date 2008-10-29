@@ -115,6 +115,14 @@ void MAT::AnisotropicBalzani::Setup()
       a1_.at(i) = cos(gamma1)*locsys(i,2) + sin(gamma1)*locsys(i,1);
       a2_.at(i) = cos(gamma2)*locsys(i,2) - sin(gamma2)*locsys(i,1);
     }
+  } else if (matdata_->m.anisotropic_balzani->aloc == 0){
+    a1_.resize(3);
+    a2_.resize(3);
+    for (int i = 0; i < 3; ++i) {
+      a1_.at(i) = matdata_->m.anisotropic_balzani->a1[i];
+      a2_.at(i) = matdata_->m.anisotropic_balzani->a2[i];
+    }
+    
   }
 }
 
@@ -141,12 +149,16 @@ anisotropy where fiber angles need to be specified
 Based on Dissertation of Daniel Balzani
 */
 
-void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                    const Epetra_SerialDenseMatrix* defgrd,
-                                    const int gp, const int ele_ID, const double time,
-                                      Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+void MAT::AnisotropicBalzani::Evaluate(
+        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * glstrain,
+        const int gp, const int ele_ID, const double time,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress)
 {
+  // wrapper for FixedSizeMatrix
+  Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+  // stress and glstrain are copied value by value and are thus not necessary
+
   // get material parameters
   double c1 = matdata_->m.anisotropic_balzani->c1;          //parameter for ground substance
   double eps1 = matdata_->m.anisotropic_balzani->eps1;      //parameter for incomp. penalty
@@ -361,10 +373,10 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double dW_dI3     = -1.0/3.0 * c1 * I1 * pow(I3,-4.0/3.0)
                       + eps1 * (pow(I3,eps2-1.0)*eps2 - eps2 * pow(I3,-eps2-1.0));
 
-  ElastSymTensorMultiply((*cmat),d2W_dI3dI3,CofC,CofC,1.0);     // CofC x CofC
-  ElastSymTensorMultiplyAddSym((*cmat),d2W_dI3dI1,I,CofC,1.0);  // I x CofC + CofC x I
-  ElastSymTensorMultiply((*cmat),I3 * dW_dI3,Cinv,Cinv,1.0);    // Cinv x Cinv
-  ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
+  ElastSymTensorMultiply(cmat_e,d2W_dI3dI3,CofC,CofC,1.0);     // CofC x CofC
+  ElastSymTensorMultiplyAddSym(cmat_e,d2W_dI3dI1,I,CofC,1.0);  // I x CofC + CofC x I
+  ElastSymTensorMultiply(cmat_e,I3 * dW_dI3,Cinv,Cinv,1.0);    // Cinv x Cinv
+  ElastSymTensor_o_Multiply(cmat_e,-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
 
   // fiber part
   // 1st fiber active
@@ -398,14 +410,14 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
 //    double dW_dI1dI1 = alpha1*alpha2*(alpha2-1) * pow(K3-2.0,alpha2-2.0) * J4*J4;
 
     // multiply these with corresponding tensor products
-    ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
-    ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M,M,1.0);         // M x M
-    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC,CMMC,1.0);   // (CM+MC) x (CM+MC)
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ4,I,M,1.0);   // I x M + M x I
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ5,CMMC,I,1.0);// (CM+MC) x I + I x (CM+MC)
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dJ4dJ5,CMMC,M,1.0);// (CM+MC) x M + M x (CM+MC)
-    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M,1.0);          // I o M
-    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M,I,1.0);          // M o I
+    ElastSymTensorMultiply(cmat_e,d2W_dI1dI1,I,I,1.0);         // I x I
+    ElastSymTensorMultiply(cmat_e,d2W_dJ4dJ4,M,M,1.0);         // M x M
+    ElastSymTensorMultiply(cmat_e,d2W_dJ5dJ5,CMMC,CMMC,1.0);   // (CM+MC) x (CM+MC)
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dI1dJ4,I,M,1.0);   // I x M + M x I
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dI1dJ5,CMMC,I,1.0);// (CM+MC) x I + I x (CM+MC)
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dJ4dJ5,CMMC,M,1.0);// (CM+MC) x M + M x (CM+MC)
+    ElastSymTensor_o_Multiply(cmat_e,dW_dJ5,I,M,1.0);          // I o M
+    ElastSymTensor_o_Multiply(cmat_e,dW_dJ5,M,I,1.0);          // M o I
   }
   //2nd fiber active
   if ( (K3_2 - 2.0) > 1.0E-15) {
@@ -422,17 +434,17 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     double d2W_dI1dI1 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * J4_2*J4_2 * K3fac;
 
     // multiply these with corresponding tensor products
-    ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
-    ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M_2,M_2,1.0);         // M x M
-    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC_2,CMMC_2,1.0);   // (CM+MC) x (CM+MC)
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ4,I,M_2,1.0);   // I x M + M x I
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ5,CMMC_2,I,1.0);// (CM+MC) x I + I x (CM+MC)
-    ElastSymTensorMultiplyAddSym((*cmat),d2W_dJ4dJ5,CMMC_2,M_2,1.0);// (CM+MC) x M + M x (CM+MC)
-    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M_2,1.0);          // I o M
-    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M_2,I,1.0);          // M o I
+    ElastSymTensorMultiply(cmat_e,d2W_dI1dI1,I,I,1.0);         // I x I
+    ElastSymTensorMultiply(cmat_e,d2W_dJ4dJ4,M_2,M_2,1.0);         // M x M
+    ElastSymTensorMultiply(cmat_e,d2W_dJ5dJ5,CMMC_2,CMMC_2,1.0);   // (CM+MC) x (CM+MC)
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dI1dJ4,I,M_2,1.0);   // I x M + M x I
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dI1dJ5,CMMC_2,I,1.0);// (CM+MC) x I + I x (CM+MC)
+    ElastSymTensorMultiplyAddSym(cmat_e,d2W_dJ4dJ5,CMMC_2,M_2,1.0);// (CM+MC) x M + M x (CM+MC)
+    ElastSymTensor_o_Multiply(cmat_e,dW_dJ5,I,M_2,1.0);          // I o M
+    ElastSymTensor_o_Multiply(cmat_e,dW_dJ5,M_2,I,1.0);          // M o I
   }
 
-  (*cmat).Scale(4.0);
+  cmat_e.Scale(4.0);
 
 //  cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************

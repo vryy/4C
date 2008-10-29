@@ -75,50 +75,10 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_hyper_polyconvex; }
 
     // wrapper for less intensive error output information
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress)
-    {
-      Epetra_SerialDenseMatrix defgrd(3,3);
-      Evaluate(glstrain,&defgrd,-1,-1,-1.0,cmat,stress);
-      return;
-    }
-
-    // wrapper for less intensive error output information
-    void Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+    void Evaluate(const LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
                   LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
-    {
-      Epetra_SerialDenseMatrix defgrd(3,3);
-      Epetra_SerialDenseVector glstrain_e(Copy,glstrain->A(),glstrain->Rows());
-      Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
-      Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
+                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress);
 
-      Evaluate(&glstrain_e,&defgrd,-1,-1,-1.0,&cmat_e,&stress_e);
-      return;
-    }
-
-    // there are a lot of parameters just for error output,
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  const Epetra_SerialDenseMatrix* defgrd,
-                  const int gp,  const int ele_ID, const double time,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
-
-    // there are a lot of parameters just for error output,
-    void Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-                  LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
-                  const int gp,  const int ele_ID, const double time,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
-    {
-      Epetra_SerialDenseVector glstrain_e(Copy,glstrain->A(),glstrain->Rows());
-      Epetra_SerialDenseVector stress_e(View,stress->A(),stress->Rows());
-      Epetra_SerialDenseMatrix defgrd_e(Copy,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-      Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());
-
-      Evaluate(&glstrain_e, &defgrd_e, gp, ele_ID, time, &cmat_e, &stress_e);
-    }
 
     double Density();
 

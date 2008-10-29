@@ -75,9 +75,9 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_biocell; }
     
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+    void Evaluate(const LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
+            LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+            LINALG::FixedSizeSerialDenseMatrix<6,1>* stress);
     
 
     inline double Density() { return matdata_->m.biocell->density; }

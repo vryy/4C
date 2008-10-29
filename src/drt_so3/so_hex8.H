@@ -508,19 +508,7 @@ protected:
    * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
    * \param gp (in): current gp
    * \param params (in): parameterlist to access time, etc. in materials
-   * \param action (in): action, multiscale-related
-   * \param ele_ID (in): current element Id
-   * \param time (in): current algorithmic time
-   * \param dt (in): current algorithmic timestepsize
-   * \param action (in): action for material law (default empty)
    * */
-  void soh8_mat_sel(Epetra_SerialDenseVector* stress,
-                    Epetra_SerialDenseMatrix* cmat,
-                    double* density,
-                    const Epetra_SerialDenseVector* glstrain,
-                    Epetra_SerialDenseMatrix* defgrd,
-                    const int gp,
-                    ParameterList&  params);
 
   void soh8_mat_sel(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
                     LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,

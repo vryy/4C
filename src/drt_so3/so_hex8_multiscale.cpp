@@ -87,25 +87,21 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     // (material) deformation gradient F (=I in reference configuration)
-    Epetra_SerialDenseMatrix defgrd_epetra(NUMDIM_SOH8,NUMDIM_SOH8);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(defgrd_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
     for (unsigned int i = 0;i<3; ++i) defgrd(i,i) = 1.;
 
     // Green-Lagrange strains matrix (=0 in reference configuration)
-    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOH8);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> glstrain(true);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOH8);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(true);
     double density;
-    soh8_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&defgrd_epetra,gp,params);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double integrationfactor = detJ * (*weights)(gp);
