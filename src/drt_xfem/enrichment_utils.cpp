@@ -754,14 +754,17 @@ double BoundaryCoverageRatioT(
       //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
       
       const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
-      if (detmetric <= 0.0)
+      if (detmetric < 0.0)
       {
+        cout << "detmetric = " << detmetric << endl;
         dserror("negative detmetric! should be a bug!");
       }
       
       const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
-      if (fac <= 0.0)
+      if (fac < 0.0)
       {
+        cout << "detmetric = " << detmetric << endl;
+        cout << "fac       = " << fac << endl;
         dserror("negative fac! should be a bug!");
       }
       
@@ -775,8 +778,8 @@ double BoundaryCoverageRatioT(
 }
 
 double XFEM::BoundaryCoverageRatio(
-        const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
-        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        const DRT::Element&           ele,
+        const XFEM::InterfaceHandle&  ih
         )
 {
   switch (ele.Shape())
