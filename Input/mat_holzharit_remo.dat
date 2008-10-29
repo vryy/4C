@@ -108,7 +108,7 @@ RESTARTEVRY  20
 -----------------------------------------------------THERMAL SOLVER
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_ARTWALLREMOD MUE 35.74 K1 13.9 K2 13.2 KAPPA 1000. DENS 1.0E-6 REMBEGT 0.01 INIT 1 GAMMA 39.
+MAT 1 MAT_ARTWALLREMOD MUE 35.74 K1 13.9 K2 13.2 KAPPA 1000. DENS 1.0E-6 REMBEGT 0.01 INIT 1 GAMMA 39. TENSION_ONLY 1
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1 FACTOR 0.0 1
