@@ -597,6 +597,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("BETA_ANISO", &(localmat.m.viscoanisotropic->beta[1]),&ierr);
       frdouble("RELAX_ISO", &(localmat.m.viscoanisotropic->relax[0]),&ierr);
       frdouble("RELAX_ANISO", &(localmat.m.viscoanisotropic->relax[1]),&ierr);
+      frint ("TENSION_ONLY", &(localmat.m.viscoanisotropic->tensonly),&ierr);
+      if (ierr==0)
+        dserror("Material parameter 'TENSION_ONLY' not defined!");
       localmat.m.viscoanisotropic->numstresstypes = 3;
    }
    // Continuum Chain Network material law
@@ -633,6 +636,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frdouble("GAMMA"  ,&(localmat.m.artwallremod->gamma)      ,&ierr);
      frint   ("INIT"   ,&(localmat.m.artwallremod->init)       ,&ierr);
      frdouble("REMBEGT",&(localmat.m.artwallremod->rembegt)    ,&ierr);
+     frint ("TENSION_ONLY", &(localmat.m.artwallremod->tensonly),&ierr);
+     if (ierr==0)
+       dserror("Material parameter 'TENSION_ONLY' not defined!");
    }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);

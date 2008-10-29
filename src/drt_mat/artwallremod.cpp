@@ -320,6 +320,7 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   const double kappa = matdata_->m.artwallremod->kappa;
   const double k1 = matdata_->m.artwallremod->k1;
   const double k2 = matdata_->m.artwallremod->k2;
+  const int tensonly = matdata_->m.artwallremod->tensonly;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -422,11 +423,14 @@ void MAT::ArtWallRemod::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
 
-  // fibers take compression only
+  // 'tensonly' determines if fibers can only take tension or not
   double fib1_tension = 1.;
   double fib2_tension = 1.;
-  if (J4 < 1.0) fib1_tension = 0.;
-  if (J6 < 1.0) fib2_tension = 0.;
+  if (tensonly==1)
+  { 
+    if (J4 < 1.0) fib1_tension = 0.;
+    if (J6 < 1.0) fib2_tension = 0.;
+  }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2

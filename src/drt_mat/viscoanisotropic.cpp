@@ -254,7 +254,8 @@ void MAT::ViscoAnisotropic::Evaluate
   const double kappa = matdata_->m.viscoanisotropic->kappa;
   const double k1 = matdata_->m.viscoanisotropic->k1;
   const double k2 = matdata_->m.viscoanisotropic->k2;
-
+  const int    tensonly = matdata_->m.viscoanisotropic->tensonly;
+  
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
@@ -352,11 +353,14 @@ void MAT::ViscoAnisotropic::Evaluate
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
 
-  // fibers take compression only
+  // 'tensonly' determines if fibers can only take tension or not
   double fib1_tension = 1.;
   double fib2_tension = 1.;
-  if (J4 < 1.0) fib1_tension = 0.;
-  if (J6 < 1.0) fib2_tension = 0.;
+  if (tensonly==1)
+  { 
+    if (J4 < 1.0) fib1_tension = 0.;
+    if (J6 < 1.0) fib2_tension = 0.;
+  }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1

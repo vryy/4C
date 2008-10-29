@@ -703,6 +703,7 @@ typedef struct _VISCOANISOTROPIC
      INT                       numstresstypes;
      DOUBLE                    beta[2];
      DOUBLE                    relax[2];
+     INT                       tensonly;
 } VISCOANISOTROPIC;
 /*----------------------------------------------------------------------*
  | Continuum Chain Network Material Law                       maf 06/08 |
@@ -736,6 +737,7 @@ typedef struct _ARTWALLREMOD
      DOUBLE                    gamma;
      INT                       init;
      DOUBLE                    rembegt;
+     INT                       tensonly;
 } ARTWALLREMOD;
 /*----------------------------------------------------------------------*
  | Biological Cell model                                       rm 08/08 |
