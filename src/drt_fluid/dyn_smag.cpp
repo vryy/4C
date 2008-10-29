@@ -14,6 +14,8 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
 #include "dyn_smag.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -616,3 +618,5 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   return;
 } // end FLD::DynSmagFilter::DynSmagComputeCs
+
+#endif
