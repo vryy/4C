@@ -253,7 +253,7 @@ void DRT::ELEMENTS::So_hex8::soh8_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGP
   }
   else
   {
-    double sq3=sqrt(3);
+    double sq3=sqrt(3.0);
     expol(0,0)=1.25+0.75*sq3;
     expol(0,1)=-0.25-0.25*sq3;
     expol(0,2)=-0.25+0.25*sq3;

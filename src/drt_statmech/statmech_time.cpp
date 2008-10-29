@@ -32,25 +32,25 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_,damp_));
-  
-  
+
+
   //if according to input file also Rayleigh damping is present exit the program (not allowed in Brownian dynamics)
-  if (params_.get<double>("damping factor K",0.0) != 0.0 || params_.get<double>("damping factor M",0.0) != 0.0) 
+  if (params_.get<double>("damping factor K",0.0) != 0.0 || params_.get<double>("damping factor M",0.0) != 0.0)
     dserror("No Rayleigh damping allowed in problem type STATISTICAL MECHANICS");
-  
+
   //if damping has not yet been activated activate it's always present in Brownian dynamics
   if (!params_.get<bool>("damping",true))
     params_.set("damping",true);
-  
+
   /*initialize damping matrix: the number 81 indicates the number of entries per row (which is not necessarily the
    * bandwidth especially if some entries are far from the diagonal); the position of these entries is store in a
    * graph; if the number passed to the algorithm is surpassed later in use new memory is allocated (but yet this
-   * slows down the process so that this situation should be avoided); if the number is too large more memory than 
+   * slows down the process so that this situation should be avoided); if the number is too large more memory than
    * actually needed is allocated and the computation time is non-optimal; yet if no more information about the
    * problem is known at the moment 81 is a reasonable guess*/
   damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81,true,true));
-    
- 
+
+
   return;
 } // StatMechTime::StatMechTime
 
@@ -77,7 +77,7 @@ void StatMechTime::Integrate()
   {
 
   double dt = params_.get<double>("delta time" ,0.01);
-  
+
   int num_dof = (*fext_).GlobalLength();
 
 
@@ -101,39 +101,39 @@ void StatMechTime::Integrate()
   Delta_v.Size(num_dof);
   int kd = 0;
   double gamma = 0.125663706 / ((num_dof/6) - 1);
-  
+
   {
     //random generator for seeding only (necessary for thermal noise)
     ranlib::Normal<double> seedgenerator(0,1);
     /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
      * note that each processor will set up its own random generator and they all have to be pairwise independent*/
-    int seedvariable = std::time(0); 
+    int seedvariable = time(0);
     seedvariable = 4; //4
     seedgenerator.seed((unsigned int)seedvariable);
   }
-  
+
   #ifdef D_BEAM3
-  
-  /*before starting statistical calculations certain elements have to be initialized in order to make them know viscosity of 
-   * their surrounding thermal bath*/ 
+
+  /*before starting statistical calculations certain elements have to be initialized in order to make them know viscosity of
+   * their surrounding thermal bath*/
   //parameters with respect to statistical mechanics into special variable for later acceess
   Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
-  
+
   for (int num=0; num<  discret_.NumMyColElements(); ++num)
-  {    
+  {
     //in case that current element is not a beam3 or beam 2element there is nothing to do and we go back
     //to the head of the loop
     if (discret_.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
-    
+
     DRT::ELEMENTS::Beam3 *currele = dynamic_cast< DRT::ELEMENTS::Beam3* >(discret_.lColElement(num));
     if (!currele) dserror("cast to Beam3 failed");
 
     //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
-    currele->zeta_ = 4*PI*currele->lrefe_*( statmechmanager_->statmechparams_.get<double>("ETA",0.0) ); 
+    currele->zeta_ = 4*PI*currele->lrefe_*( statmechmanager_->statmechparams_.get<double>("ETA",0.0) );
   }
-  
+
   #endif  // #ifdef D_BEAM3
-  
+
 
   for (int i=step; i<nstep; ++i)
   {
@@ -147,17 +147,17 @@ void StatMechTime::Integrate()
       ConsistentPredictor();
     //else
      // BrownianPredictor3D();
-      
+
 
 
     FullNewton();
     //PTC();
     UpdateandOutput();
-    
+
     //special update and output for statistical mechanics
     statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
     statmechmanager_->StatMechUpdate(dt);
-    
+
     std::cout<<"\n\nAnzahl der Elemente = "<<discret_.NumGlobalElements()<<"\n\n";
 
     /*
@@ -379,12 +379,12 @@ void StatMechTime::ConsistentPredictor()
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
-    
-    
+
+
     //adding thermal forces and related damping matrix according to fluctuation dissipation theorem
     statmechmanager_->StatMechForceDamp(params_,dis_,fextn_,damp_);
-       
-    
+
+
   }
 
   //cout << *disn_ << endl;
@@ -645,8 +645,8 @@ void StatMechTime::FullNewton()
   // check whether damping is present
   // note: the stiffness matrix might be filled already
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
-  
-  
+
+
 #ifndef STRUGENALPHA_BE
   double delta = beta;
 #endif
@@ -758,7 +758,7 @@ void StatMechTime::FullNewton()
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
-    
+
     fresm_->Update(1.0,*fvisc_,0.0);
 
 
@@ -777,8 +777,8 @@ void StatMechTime::FullNewton()
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
-    
-    
+
+
     //exclude rotational DOF from computation of displacement norm
     RCP<Epetra_Vector> disi_mod(disi_);
     //std::cout<<"\ndisi_\n"<<*disi_;
@@ -795,14 +795,14 @@ void StatMechTime::FullNewton()
       {
         if(lm[jd] % 6 == 3 || lm[jd] % 6 == 4 || lm[jd] % 6 == 5 )
         (*disi_mod)[lm[jd]] = (*disi_)[lm[jd]] * 0.01;
-      }    
+      }
     }
     //std::cout<<"\ndisi_mod\n"<<*disi_mod;
     //compute displacmenet norm over the vector cleaned from rotational displacements:
     //disi_mod->Norm2(&disinorm);
     //std::cout<<"\ndisi_mod\n"<<*disi_mod;
     */
-    
+
     //std::cout<<"\nfres"<<*fresm_;
 
     fresm_->Norm2(&fresmnorm);
@@ -920,17 +920,17 @@ void StatMechTime::PTC()
       stiff_->ReplaceDiagonalValues(*diag);
     }
     */
-    
-    
+
+
     //___________________________________________________________________________
     {
       vector<int> lm;
-      
+
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
       tmp->PutScalar(dti);
       RCP<Epetra_Vector> diag = LINALG::CreateVector(stiff_->RowMap(),false);
       stiff_->ExtractDiagonalCopy(*diag);
-              
+
       //loop through all nodes
       for(int id = 0; id < discret_.NumMyRowNodes(); id++)
       {
@@ -941,7 +941,7 @@ void StatMechTime::PTC()
         {
           if(lm[jd] % 6 == 0 || lm[jd] % 6 == 1 || lm[jd] % 6 == 2 )
           (*tmp)[lm[jd]] = 0;
-        }    
+        }
       }
 
 
@@ -949,8 +949,8 @@ void StatMechTime::PTC()
       stiff_->ReplaceDiagonalValues(*diag);
     }
     //_____________________________________________________________________________
-    
-    
+
+
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1057,7 +1057,7 @@ void StatMechTime::PTC()
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
-    
+
     //std::cout<<"\ndisi_\n"<<*disi_;
 
     fresm_->Norm2(&fresmnorm);

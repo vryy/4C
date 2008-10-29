@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #endif
 
 #include <string>
+#include <functional>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -70,7 +71,7 @@ void SCATRA::CreateScaTraDiscretization(
   set<int> colnodeset;
   const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
 
-  // Loop all fluid elements. Here we do ugly castings. 
+  // Loop all fluid elements. Here we do ugly castings.
   // Please do not take this for an example of how to code in baci!
 
   // We need to test for all elements (including ghosted ones) to
@@ -156,7 +157,7 @@ void SCATRA::CreateScaTraDiscretization(
   }
   if (matnr == -1) // if there is no material list, search for a single condif material
   {
-    for (int i=0; i<nummat; ++i) 
+    for (int i=0; i<nummat; ++i)
     {
       if (DRT::Problem::Instance()->Material(i).mattyp==m_condif)
       {

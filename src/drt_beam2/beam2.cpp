@@ -305,42 +305,42 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
-{	
+{
   LINALG::SerialDenseMatrix xrefe;
   xrefe.Shape(2,2);
-  
+
   //storing locally input parameters with respect to statistical mechanics for later easy access
   Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
-	
+
   //random generator for seeding only (necessary for thermal noise)
   ranlib::Normal<double> seedgenerator(0,1);
-  seedgenerator.seed((unsigned int)std::time(0));
-  
+  seedgenerator.seed((unsigned int)time(0));
+
   //setting beam reference director correctly
   for (int i=0; i<dis.NumMyColElements(); ++i)
     {
       //in case that current element is not a beam2 element there is nothing to do and we go back
       //to the head of the loop
       if (dis.lColElement(i)->Type() != DRT::Element::element_beam2) continue;
-      
+
       //if we get so far current element is a beam2 element and  we get a pointer at it
       DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i));
       if (!currele) dserror("cast to Beam2* failed");
-      
-      //getting element's reference coordinates     
+
+      //getting element's reference coordinates
       for (int k=0; k<2; ++k) //element has two nodes
         {
           xrefe(0,k) = currele->Nodes()[k]->X()[0];
           xrefe(1,k) = currele->Nodes()[k]->X()[1];
         }
-      
+
       //length in reference configuration
       currele->lrefe_  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
-      
+
       // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
       double cos_beta0 = (xrefe(0,1)-xrefe(0,0))/currele->lrefe_;
       double sin_beta0 = (xrefe(1,1)-xrefe(1,0))/currele->lrefe_;
-     
+
       //we calculate beta in a range between -pi < beta <= pi
       if (cos_beta0 >= 0)
       	currele->beta0_ = asin(sin_beta0);
@@ -350,7 +350,7 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
         else
           currele->beta0_ = -acos(cos_beta0);
        }
-      
+
       //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
       //system right from the beginning (see also beam2_evaluate.cpp for further explanation)
       if (currele->beta0_ > PI/2)
@@ -364,11 +364,11 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
         currele->hrold_ = -1;
         currele->hrnew_ = -1;
         currele->hrconv_ = -1;
-      }    
-      
+      }
+
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
-   
-  
+
+
   return 0;
 }
 

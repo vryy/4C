@@ -42,13 +42,13 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   ActionType act = none;
-  
+
   // get the required action and distinguish between 2d and 3d MPC's
   string action = params.get<string>("action","none");
   if (action == "none") return 0;
-  else if (action=="calc_MPC3D_stiff")       
+  else if (action=="calc_MPC3D_stiff")
   {
-    act=calc_MPC3D_stiff;  
+    act=calc_MPC3D_stiff;
   }
   else if (action=="calc_MPC3D_state")
   {
@@ -56,14 +56,14 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
   }
   else if (action=="calc_MPC2D_stiff")
   {
-    
+
     RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
     const string* type = condition->Get<string>("control value");
 
     if (*type == "dist") act = calc_MPC2D_dist_stiff;
     else if (*type == "angle") act = calc_MPC2D_angle_stiff;
     else dserror("No constraint type in 2d MPC specified. Value to control should by either be 'dist' or 'angle'!");
-    
+
   }
   else
     dserror("Unknown type of action for ConstraintElement");
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       const int numdim = 3;
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp,numdim);
-      
+
       LINALG::SerialDenseVector elementnormal(numdim);
       ComputeNormal3D(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
@@ -93,9 +93,9 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
         dserror("Bad plane, points almost on a line!");
       }
       double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
-      
+
       //update corresponding column in "constraint" matrix
-      elevec3[0]=normaldistance;      
+      elevec3[0]=normaldistance;
     }
     break;
     case calc_MPC3D_stiff:
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       const int numdim = 3;
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp,numdim);
-      
+
       LINALG::SerialDenseVector elementnormal(numdim);
       ComputeNormal3D(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
@@ -116,10 +116,10 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
         dserror("Bad plane, points almost on a line!");
       }
       double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
-      
+
       ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
       ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
-      
+
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec3[0]=normaldistance;
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec3[0]=normaldistance;
-    }    
+    }
     break;
     case calc_MPC2D_angle_stiff:
     {
@@ -155,17 +155,17 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       const int numdim = 2;
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp,numdim);
-      
+
       double angle=ComputeAngle2D(xscurr);
-      
+
       ComputeFirstDerivAngle2D(xscurr,elevec1);
       ComputeSecondDerivAngle2D(xscurr,elemat1);
-      
+
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
       elevec3[0]=angle;
-      
-    }  
+
+    }
     break;
     default:
       dserror("Unimplemented type of action");
@@ -242,8 +242,8 @@ double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist2D
 double DRT::ELEMENTS::ConstraintElement::ComputeAngle2D(const LINALG::SerialDenseMatrix& xc)
 {
   return (acos((xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))/
-       sqrt((pow(xc(0,0) - xc(1,0),2) + pow(xc(0,1) - xc(1,1),2))*(pow(xc(1,0) - xc(2,0),2) + pow(xc(1,1) - xc(2,1),2))))+acos(0));
-   
+       sqrt((pow(xc(0,0) - xc(1,0),2) + pow(xc(0,1) - xc(1,1),2))*(pow(xc(1,0) - xc(2,0),2) + pow(xc(1,1) - xc(2,1),2))))+acos(0.0));
+
 }
 
 /*----------------------------------------------------------------------*
@@ -254,11 +254,11 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D
   Epetra_SerialDenseVector& elevector,
   const LINALG::SerialDenseVector& normal
 )
-{ 
-  
+{
+
   double normsquare=pow(normal.Norm2(),2);
   double normcube=pow(normal.Norm2(),3);
-  
+
   elevector[0]=
     (-((-2*normal[2]*(-xc(1,1) + xc(2,1)) + 2*normal[1]*(-xc(1,2) +
     xc(2,2)))*(-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) -
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D
   elevector[11]=
     (-(xc(1,1)*xc(2,0)) + xc(0,1)*(-xc(1,0) + xc(2,0)) + xc(0,0)*(xc(1,1) - xc(2,1))
     + xc(1,0)*xc(2,1))/normal.Norm2();
-  
+
   return;
 }
 
@@ -339,9 +339,9 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D
   const LINALG::SerialDenseMatrix& xc,
   Epetra_SerialDenseVector& elevector, const LINALG::SerialDenseVector& normal
 )
-{ 
+{
   double normcube=pow(normal.Norm2(),3);
-  
+
   elevector[0]=(normal[0]*(-pow(xc(1,0),2) + xc(0,0)*(xc(1,0) - xc(2,0)) +
       xc(1,0)*xc(2,0) + normal[0]*(xc(1,1) - xc(2,1))))/normcube;
 
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D
 /*----------------------------------------------------------------------*
  * first derivatives */
 void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
-( 
+(
   const LINALG::SerialDenseMatrix& xc,
   Epetra_SerialDenseVector& elevector
 )
@@ -377,13 +377,13 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D
   LINALG::SerialDenseVector vec1(2);
   vec1[1]=xc(0,0) - xc(1,0);
   vec1[0]=-(xc(0,1) - xc(1,1));
-  
+
   LINALG::SerialDenseVector vec2(2);
   vec2[0]=-xc(1,0) + xc(2,0);
   vec2[1]=-xc(1,1) + xc(2,1);
-  
+
   const double vec1normsquare=pow(vec1.Norm2(),2);
-  const double vec2normsquare=pow(vec2.Norm2(),2);  
+  const double vec2normsquare=pow(vec2.Norm2(),2);
 
   elevector[0]
   =
@@ -446,12 +446,12 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D
   const LINALG::SerialDenseVector& normal
 )
 {
-  
+
   double normsquare=pow(normal.Norm2(),2);
   double normcube=pow(normal.Norm2(),3);
   double normpowfour=pow(normal.Norm2(),4);
   double normpowfive=pow(normal.Norm2(),5);
-  
+
   elematrix(0,0)=
     (-4*normsquare*(pow(xc(1,1) - xc(2,1),2) + pow(xc(1,2) -
     xc(2,2),2))*(-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) -
@@ -690,7 +690,7 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D
     2*normsquare*(-2*normal[2]*(-xc(0,1) + xc(1,1)) + 2*normal[1]*(-xc(0,2) +
     xc(1,2)))*(-(xc(2,2)*xc(3,0)) + xc(1,2)*(-xc(2,0) + xc(3,0)) + xc(1,0)*(xc(2,2)
     - xc(3,2)) + xc(2,0)*xc(3,2)))/(4.*normpowfive);
-  
+
   elematrix(1,7)=
     (-2*normsquare*(2*(xc(0,0) - xc(1,0))*(xc(1,0) - xc(2,0)) + 2*(xc(0,2) -
     xc(1,2))*(xc(1,2) - xc(2,2)))*(-(normal[0]*(xc(0,0) - xc(3,0))) +
@@ -1984,12 +1984,12 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::Se
     Epetra_SerialDenseMatrix& elematrix,
     const LINALG::SerialDenseVector& normal)
 {
-  
+
   double normsquare=pow(normal.Norm2(),2);
   double normcube=pow(normal.Norm2(),3);
   double normpowfour=pow(normal.Norm2(),4);
   double normpowfive=pow(normal.Norm2(),5);
-  
+
   elematrix(0,0)=
   (normal[0]*(-2*pow(xc(1,0),3) - 2*xc(1,0)*pow(xc(1,1),2) -
   2*pow(xc(0,0),2)*(xc(1,0) - xc(2,0)) + pow(xc(0,1),2)*(xc(1,0) - xc(2,0)) +
@@ -2140,9 +2140,9 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::Se
 
   elematrix(5,5)=0;
   return;
-  
+
   elematrix.Scale(-1.0);
-  
+
 }
 
 /*----------------------------------------------------------------------*
@@ -2153,14 +2153,14 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivAngle2D(const LINALG::S
   LINALG::SerialDenseVector vec1(2);
   vec1[1]=xc(0,0) - xc(1,0);
   vec1[0]=-(xc(0,1) - xc(1,1));
-  
+
   LINALG::SerialDenseVector vec2(2);
   vec2[0]=-xc(1,0) + xc(2,0);
   vec2[1]=-xc(1,1) + xc(2,1);
-  
+
   const double vec1sq=pow(vec1.Norm2(),2);
-  const double vec2sq=pow(vec2.Norm2(),2);  
-  
+  const double vec2sq=pow(vec2.Norm2(),2);
+
   elematrix(0,0)
   =
   -(((-2*vec2sq*vec1[1]*vec2[1])/pow(vec1sq*vec2sq,1.5)

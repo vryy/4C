@@ -949,7 +949,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
  | All results are communicated via the parameter list!
  |
  *---------------------------------------------------------------------*/
-template<int iel> 
+template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
   DRT::Discretization&      discretization,
   vector<double>&           solution      ,
@@ -958,7 +958,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 {
   // get view of solution vector
   LINALG::FixedSizeSerialDenseMatrix<iel,1> sol(&(solution[0]),true);
-  
+
   // set element data
   const DiscretizationType distype = this->Shape();
 
@@ -1420,7 +1420,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
-template<int iel> 
+template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     vector<double>&           myvel,
     double*                   bvel_hat,
@@ -1442,7 +1442,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   for (int i=0;i<iel;++i)
   {
     int fi =4*i;
-    
+
     evelaf(0,i) = myvelvec(fi++);
     evelaf(1,i) = myvelvec(fi++);
     evelaf(2,i) = myvelvec(fi  );
@@ -1693,7 +1693,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
 // of the modeled and resolved stress tensor --- from this relation, Cs
 // will be computed
 //----------------------------------------------------------------------
-template<int iel> 
+template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   RCP<Epetra_MultiVector>& filtered_vel                       ,
   RCP<Epetra_MultiVector>& col_filtered_reynoldsstress        ,
@@ -1706,7 +1706,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   LINALG::FixedSizeSerialDenseMatrix<3,iel> evel_hat                            ;
   LINALG::FixedSizeSerialDenseMatrix<9,iel> ereynoldsstress_hat                 ;
   LINALG::FixedSizeSerialDenseMatrix<9,iel> efiltered_modeled_subgrid_stress_hat;
-  
+
   for (int nn=0;nn<iel;++nn)
   {
     int lid = (Nodes()[nn])->LID();
@@ -1714,7 +1714,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
     for (int dimi=0;dimi<3;++dimi)
     {
       evel_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[lid];
-      
+
       for (int dimj=0;dimj<3;++dimj)
       {
         int index=3*dimi+dimj;
@@ -1727,7 +1727,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
       }
     }
   }
-  
+
   // set element data
   const DiscretizationType distype = this->Shape();
 
@@ -1917,7 +1917,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //                        node k
   //
   LINALG::FixedSizeSerialDenseMatrix<3,3> restress_hat;
-  
+
   for (int nn=0;nn<3;++nn)
   {
     for (int rr=0;rr<3;++rr)
@@ -2012,7 +2012,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 
   LINALG::FixedSizeSerialDenseMatrix<3,3> L_ij;
   LINALG::FixedSizeSerialDenseMatrix<3,3> M_ij;
-  
+
   for(int rr=0;rr<3;rr++)
   {
     for(int mm=0;mm<3;mm++)
@@ -2097,7 +2097,7 @@ void DRT::ELEMENTS::Fluid3::ConvStresses(
 
   static Epetra_SerialDenseMatrix expol(8,8);
   {
-    double sq3=sqrt(3);
+    double sq3=sqrt(3.0);
     expol(0,0)=1.25+0.75*sq3;
     expol(0,1)=-0.25-0.25*sq3;
     expol(0,2)=-0.25+0.25*sq3;

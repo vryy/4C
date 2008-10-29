@@ -150,7 +150,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<
   }
   else
   {
-    double sq5=sqrt(5);
+    double sq5=sqrt(5.0);
     expol(0,0)= (0.75+0.05*sq5)*sq5;
     expol(0,1)=-(0.25-0.05*sq5)*sq5;
     expol(0,2)=-(0.25-0.05*sq5)*sq5;
