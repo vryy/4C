@@ -1430,7 +1430,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     )
 {
   // alloc a fixed size array for nodal velocities
-  LINALG::FixedSizeSerialDenseMatrix<3,iel>   evelaf;
+  LINALG::FixedSizeSerialDenseMatrix<3,iel>   evel;
 
   // wrap matrix objects in fixed-size arrays
   LINALG::FixedSizeSerialDenseMatrix<4*iel,1> myvelvec                     (&(myvel[0])                   ,true);
@@ -1443,9 +1443,9 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   {
     int fi =4*i;
 
-    evelaf(0,i) = myvelvec(fi++);
-    evelaf(1,i) = myvelvec(fi++);
-    evelaf(2,i) = myvelvec(fi  );
+    evel(0,i) = myvelvec(fi++);
+    evel(1,i) = myvelvec(fi++);
+    evel(2,i) = myvelvec(fi  );
   }
 
    // number of spatial dimensions is always 3
@@ -1567,55 +1567,55 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     }
   }
 
-  // get velocities (n+alpha_F,i) at integration point
+  // get velocities (n+alpha_F/1,i) at integration point
   //
-  //                 +-----
-  //       n+af       \                  n+af
-  //    vel    (x) =   +      N (x) * vel
-  //                  /        j         j
-  //                 +-----
-  //                 node j
+  //                   +-----
+  //       n+af/1       \                  n+af/1
+  //    vel      (x) =   +      N (x) * vel
+  //                    /        j         j
+  //                   +-----
+  //                   node j
   //
-  LINALG::FixedSizeSerialDenseMatrix<NSD,1> velintaf;
+  LINALG::FixedSizeSerialDenseMatrix<NSD,1> velint;
   for (int rr=0;rr<NSD;++rr)
   {
-    velintaf(rr)=funct(0)*evelaf(rr,0);
+    velint(rr)=funct(0)*evel(rr,0);
     for (int mm=1;mm<iel;++mm)
     {
-      velintaf(rr)+=funct(mm)*evelaf(rr,mm);
+      velint(rr)+=funct(mm)*evel(rr,mm);
     }
   }
 
-  // get velocity (n+alpha_F,i) derivatives at integration point
+  // get velocity (n+alpha_F/1,i) derivatives at integration point
   //
-  //       n+af      +-----  dN (x)
-  //   dvel    (x)    \        k         n+af
-  //   ----------- =   +     ------ * vel
-  //       dx         /        dx        k
-  //         j       +-----      j
-  //                 node k
+  //       n+af/1      +-----  dN (x)
+  //   dvel      (x)    \        k         n+af/1
+  //   ------------- =   +     ------ * vel
+  //        dx          /        dx        k
+  //          j        +-----      j
+  //                   node k
   //
   // j : direction of derivative x/y/z
   //
-  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD> vderxyaf;
+  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD> vderxy;
   for (int nn=0;nn<NSD;++nn)
   {
     for (int rr=0;rr<NSD;++rr)
     {
-      vderxyaf(nn,rr)=derxy(rr,0)*evelaf(nn,0);
+      vderxy(nn,rr)=derxy(rr,0)*evel(nn,0);
       for (int mm=1;mm<iel;++mm)
       {
-        vderxyaf(nn,rr)+=derxy(rr,mm)*evelaf(nn,mm);
+        vderxy(nn,rr)+=derxy(rr,mm)*evel(nn,mm);
       }
     }
   }
 
   /*
-                            +-     n+af          n+af    -+
-          / h \       1.0   |  dvel_i  (x)   dvel_j  (x)  |
-     eps | u   |    = --- * |  ----------- + -----------  |
-          \   / ij    2.0   |      dx            dx       |
-                            +-       j             i     -+
+                            +-     n+af/1          n+af/1    -+
+          / h \       1.0   |  dvel_i    (x)   dvel_j    (x)  |
+     eps | u   |    = --- * |  ------------- + -------------  |
+          \   / ij    2.0   |       dx              dx        |
+                            +-        j               i      -+
   */
   LINALG::FixedSizeSerialDenseMatrix<NSD,NSD> epsilon;
 
@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   {
     for (int rr=0;rr<NSD;++rr)
     {
-      epsilon(nn,rr)=0.5*(vderxyaf(nn,rr)+vderxyaf(rr,nn));
+      epsilon(nn,rr)=0.5*(vderxy(nn,rr)+vderxy(rr,nn));
     }
   }
 
@@ -1662,7 +1662,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
 
   for (int rr=0;rr<NSD;++rr)
   {
-    double temp=velintaf(rr)*volume;
+    double temp=velint(rr)*volume;
 
     // add contribution to integral over velocities
     vel_hat(rr) += temp;
@@ -1670,7 +1670,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     // add contribution to integral over reynolds stresses
     for (int nn=0;nn<NSD;++nn)
     {
-      reystr_hat(rr,nn) += temp*velintaf(nn);
+      reystr_hat(rr,nn) += temp*velint(nn);
     }
   }
 
