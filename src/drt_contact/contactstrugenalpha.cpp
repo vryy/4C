@@ -1443,11 +1443,9 @@ void CONTACT::ContactStruGenAlpha::Update()
   contactmanager_->StoreDM("old");
 
   // friction
-  // reset displacement jumps (slave dofs)
-  //RCP<Epetra_Vector> jump = contactmanager_->Jump();
-  //jump->Scale(0.0);
-  //contactmanager_->StoreNodalQuantities(Manager::jump);
-
+  // store the displacements to contact nodes 
+  contactmanager_->SetState("olddisplacement",dis_);
+  contactmanager_->SetState("oldvelocity",vel_);
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material

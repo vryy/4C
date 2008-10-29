@@ -550,9 +550,9 @@ protected:
   RCP<Epetra_Map>                    zigzagsliptwo_;   // slip node set of second-last slip set try
   RCP<Epetra_Map>                    zigzagslipthree_; // slip node set of third-last slip set try
     
-  RCP<LINALG::SparseMatrix>          lmatrix_;         // global matrix L for Tresca friction slip nodes
-  RCP<Epetra_Vector>                 r_;               // r.h.s vector for Tresca friction slip nodes
-
+  RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
+  RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
+  RCP<Epetra_Vector>                 rstick_;         // r.h.s vector for fricton stick nodes                                                        
 }; // class Manager
 } // namespace CONTACT
 

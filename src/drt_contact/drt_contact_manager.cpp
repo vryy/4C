@@ -437,7 +437,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   bool fulllin   = scontact_.get<bool>("full linearization",false);
-  bool semism    = scontact_.get<bool>("semismooth newton",false);
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   
   // invalid parameter combinations
@@ -453,7 +452,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Full linearization not yet implemented for friction");
   if (btrafo && fulllin)
     dserror("Full linearization not yet implemented for basis trafo case");
-  if (semism && ctype=="frictional" && ct == 0)
+  if (ctype=="frictional" && ct == 0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   
   // overrule input in certain cases
@@ -1497,12 +1496,30 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   if(gslipdofs_->NumGlobalElements())
   {
   temp->Multiply(false,*fsl,*fslmod);
-    // friction
+
+  // friction
   // add r to fslmod
   fslmod->Update(1.0,*r_,1.0);
   }  
   // gactive: nothing to do
   
+  // add jump from stick nodes to r.h.s.
+  // mostly nonzero, not when changing a slip node to a stick one within
+  // a time step in the semi-smooth Newton
+  
+  // temporary RCPs
+  RCP<Epetra_Map> tmap1;
+  
+  // temporary vector
+  RCP<Epetra_Vector> restjump;
+  
+  RCP<Epetra_Vector> stjump = rcp(new Epetra_Vector(*gstdofs));
+  if (gstdofs->NumGlobalElements()) LINALG::Export(*jump_,*stjump);
+  
+  RCP<Epetra_Vector> tstjump = rcp(new Epetra_Vector(*gstickt));
+  
+  tstmatrix->Multiply(false,*stjump,*tstjump);
+      
  #ifdef CONTACTFDGAP
   // FD check of weighted gap g derivatives
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1597,6 +1614,14 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   RCP<Epetra_Vector> fslmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*fslmod,*fslmodexp);
   if (gslipnodes_->NumGlobalElements())feffnew->Update(1.0,*fslmodexp,1.0);
+  
+  //stick nodes: add tstjump to r.h.s
+  if(gstdofs->NumGlobalElements())
+  {	
+  RCP<Epetra_Vector> tstjumpexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*tstjump,*tstjumpexp);
+  feffnew->Update(-1.0,*tstjumpexp,+1.0);
+  }
   
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
@@ -2642,7 +2667,7 @@ void CONTACT::Manager::UpdateActiveSet()
         
         // compute tangential part of Lagrange multiplier
         tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
-      }  
+      }
       
       // check nodes of inactive set *************************************
       // (by definition they fulfill the condition z_j = 0)
@@ -2697,7 +2722,7 @@ void CONTACT::Manager::UpdateActiveSet()
         // friction
         else
         {
-          if(ftype=="tresca")
+        	if(ftype=="tresca")
         	{
           	double frbound = scontact_.get<double>("friction bound",0.0);
           	double ct = scontact_.get<double>("semismooth ct",0.0);
@@ -2797,38 +2822,40 @@ void CONTACT::Manager::UpdateActiveSet()
   // This very simple approach helps stabilizing the contact algorithm!
   // *********************************************************************
   bool zigzagging = false;
-  
-  if (ActiveSetSteps()>2)
+
+  if(ftype!="tresca") // FIXGIT: For tresca friction zig-zagging is not eliminated 
   {
-    if (zigzagtwo_!=null)
+    if (ActiveSetSteps()>2)
     {
-      if (zigzagtwo_->SameAs(*gactivenodes_) and zigzagsliptwo_->SameAs(*gslipnodes_)) 
+      if (zigzagtwo_!=null)
       {
-        // set active set converged
-        activesetconv_ = true;
-        zigzagging = true;
+        if (zigzagtwo_->SameAs(*gactivenodes_) and zigzagsliptwo_->SameAs(*gslipnodes_)) 
+        {
+          // set active set converged
+          activesetconv_ = true;
+          zigzagging = true;
         
-        // output to screen
-        if (Comm().MyPID()==0)
-          cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+          // output to screen
+          if (Comm().MyPID()==0)
+            cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+        }
+      }
+      
+      if (zigzagthree_!=null)
+      {
+        if (zigzagthree_->SameAs(*gactivenodes_) and zigzagslipthree_->SameAs(*gslipnodes_))
+        {
+          // set active set converged
+          activesetconv_ = true;
+          zigzagging = true;
+        
+          // output to screen
+          if (Comm().MyPID()==0)
+            cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
+        }
       }
     }
-    
-    if (zigzagthree_!=null)
-    {
-      if (zigzagthree_->SameAs(*gactivenodes_) and zigzagslipthree_->SameAs(*gslipnodes_))
-      {
-        // set active set converged
-        activesetconv_ = true;
-        zigzagging = true;
-        
-        // output to screen
-        if (Comm().MyPID()==0)
-          cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
-      }
-    }
-  }
-  
+  } // if (ftype!="tresca")
   // reset zig-zagging history
   if (activesetconv_==true)
   {
@@ -2931,6 +2958,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
+//          cnode->Slip() = true;
           activesetconv_ = false;
         }
       }

@@ -518,7 +518,7 @@ void CONTACT::Interface::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- |  set current deformation state                             popp 12/07|
+ |  set current and old deformation state                      popp 12/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
@@ -575,6 +575,97 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
     }
   }
 
+  if (statename=="olddisplacement")
+  {
+    // set displacements in interface discretization
+    idiscret_->SetState(statename, vec);
+
+    // Get vec to full overlap
+    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+
+    // alternative method to get vec to full overlap
+    Epetra_Vector global(*idiscret_->DofColMap(),false);
+    LINALG::Export(*vec,global);
+    
+    // loop over all nodes to set current displacement
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+      const int numdof = node->NumDof();
+      vector<double> myolddisp(numdof);
+      vector<int> lm(numdof);
+
+      for (int j=0;j<numdof;++j)
+        lm[j]=node->Dofs()[j];
+
+      DRT::UTILS::ExtractMyValues(global,myolddisp,lm);
+
+      // add mydisp[2]=0 for 2D problems
+      if (myolddisp.size()<3)
+        myolddisp.resize(3);
+
+      // set current configuration and displacement
+      for (int j=0;j<3;++j)
+      {
+        node->uold()[j]=myolddisp[j];
+      }
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->Area()=element->ComputeArea();
+    }
+  }
+
+  if (statename=="oldvelocity")
+  {
+    // set displacements in interface discretization
+    idiscret_->SetState(statename, vec);
+
+    // Get vec to full overlap
+    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+
+    // alternative method to get vec to full overlap
+    Epetra_Vector global(*idiscret_->DofColMap(),false);
+    LINALG::Export(*vec,global);
+    
+    // loop over all nodes to set current displacement
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+      const int numdof = node->NumDof();
+      vector<double> myoldvel(numdof);
+      vector<int> lm(numdof);
+
+      for (int j=0;j<numdof;++j)
+        lm[j]=node->Dofs()[j];
+
+      DRT::UTILS::ExtractMyValues(global,myoldvel,lm);
+
+      // add mydisp[2]=0 for 2D problems
+      if (myoldvel.size()<3)
+        myoldvel.resize(3);
+
+      // set current configuration and displacement
+      for (int j=0;j<3;++j)
+      {
+        node->vold()[j]=myoldvel[j];
+      }
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->Area()=element->ComputeArea();
+    }
+  }
   return;
 }
 
@@ -1777,11 +1868,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
   if (!lComm())
     return;
     
-  // nothing to do if no active nodes
-  if (slipnodes_==null)
-    return;
-  
-  // loop over all active slave nodes of the interface
+  // loop over all active slip nodes of the interface
   for (int i=0;i<slipnodes_->NumMyElements();++i)
   {
     int gid = slipnodes_->GID(i);
@@ -1834,9 +1921,9 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     if(abs(ztan) < 0.001)
     {
-      ztan = +20;
+      ztan = +100.0;
  	  	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
-    	" twenty (hard coded)" << endl;
+    	" 100 (hard coded)" << endl;
     }
     
     // epk = gp/(abs(ztan + ct*utan))

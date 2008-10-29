@@ -69,6 +69,8 @@ grow_(1.0e12)
     txi()[i]=0.0;
     teta()[i]=0.0;
     u()[i]=0.0;
+    uold()[i]=0.0;
+    vold()[i]=0.0;
     xspatial()[i]=X()[i];
     lm()[i]=0.0;
     lmold()[i]=0.0;
@@ -104,6 +106,8 @@ grow_(old.grow_)
     txi()[i]=old.txi_[i];
     teta()[i]=old.teta_[i];
     u()[i]=old.u_[i];
+    uold()[i]=old.uold_[i];
+    vold()[i]=old.vold_[i];
     xspatial()[i]=old.xspatial_[i];
     lm()[i]=old.lm_[i];
     lmold()[i]=old.lmold_[i];
@@ -189,6 +193,10 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,teta_,3);
   // add u_
   AddtoPack(data,u_,3);
+  // add uold_
+  AddtoPack(data,uold_,3);
+  // add vold_
+  AddtoPack(data,vold_,3);
   // add lm_
   AddtoPack(data,lm_,3);
   // add lmold_
@@ -244,6 +252,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,teta_,3);
   // u_
   ExtractfromPack(position,data,u_,3);
+  // uold_
+  ExtractfromPack(position,data,uold_,3);
+  // vold_
+  ExtractfromPack(position,data,vold_,3);
   // lm_
   ExtractfromPack(position,data,lm_,3);
   // lmold_
