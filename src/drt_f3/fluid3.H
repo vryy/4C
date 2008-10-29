@@ -23,11 +23,6 @@ Maintainer: Georg Bauer
 #ifndef DRT_FLUID3_H
 #define DRT_FLUID3_H
 
-
-#ifdef PERF
-#include <Teuchos_TimeMonitor.hpp>
-#endif
-
 #include <blitz/array.h>
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "Teuchos_RefCountPtr.hpp"

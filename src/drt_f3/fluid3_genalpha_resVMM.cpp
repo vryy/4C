@@ -339,19 +339,25 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
     string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
 
-    if (physical_turbulence_model == "Dynamic_Smagorinsky"
-        ||
-        physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
-      )
+    // this output is only interesting for a plane channel flow
+    if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+        ==
+        "channel_flow_of_height_2")
     {
-      // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
-      // Smagorinsky Cs
-
-      if(ele->Owner() == discretization.Comm().MyPID())
+      if (physical_turbulence_model == "Dynamic_Smagorinsky"
+          ||
+          physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
+        )
       {
-        (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
-        (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-        (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
+        // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
+        // Smagorinsky Cs
+
+        if(ele->Owner() == discretization.Comm().MyPID())
+        {
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
+        }
       }
     }
   }

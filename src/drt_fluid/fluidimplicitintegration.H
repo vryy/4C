@@ -29,6 +29,8 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistics_ldc.H"
 #include "turbulence_statistics_sqc.H"
 
+#include "../drt_fluid/dyn_smag.H"
+
 #include "fluidimpedancecondition.H"
 
 #ifdef PARALLEL
@@ -444,18 +446,11 @@ protected:
   /// turbulence statistics, square cylinder
   RCP<TurbulenceStatisticsSqc>    turbulencestatistics_sqc_;
 
-  //! @name Vectors used for filtering (for dynamic Smagorinsky model)
+  //! @name Dynamic Smagorinsky model: methods and variables 
+  //        -------------------------
 
-  RCP<Epetra_MultiVector>  filtered_vel_;
-  RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
-  RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
-  RCP<Epetra_MultiVector>  col_filtered_vel_;
-  RCP<Epetra_MultiVector>  col_filtered_reynoldsstress_;
-  RCP<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
-
-  RCP<vector<double> >     averaged_LijMij_;
-  RCP<vector<double> >     averaged_MijMij_;
-  RCP<vector<double> >     planecoords_;
+  //! one instance of the filter object
+  RCP<DynSmagFilter> DynSmag_;
 
   //@}
 
@@ -472,7 +467,7 @@ protected:
   RCP<PeriodicBoundaryConditions> pbc_;
 
   /// connection between master and slave nodes on this proc
-  map<int,vector<int> >     pbcmapmastertoslave_;
+  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
 
   /// bio related special (outflow) boudaries
   RCP<UTILS::FluidImpedanceWrapper> impedancebc_;

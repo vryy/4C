@@ -58,6 +58,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/turbulence_statistics_ldc.H"
 #include "../drt_fluid/turbulence_statistics_sqc.H"
 
+#include "../drt_fluid/dyn_smag.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -821,31 +822,15 @@ private:
   //         --------------------------------------------------------
   //
   //! the connection between master and slave nodes on this proc
-  map<int,vector<int> >     pbcmapmastertoslave_;
+  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
   //@}
 
-  //! @name vectors used for filtering (for dynamic Smagorinsky model)
-  //        --------------------------
+  //! @name Dynamic Smagorinsky model: methods and variables 
+  //        -------------------------
 
-  //! the box filtered velocities in nodes (3 vectors)
-  RCP<Epetra_MultiVector>   filtered_vel_;
-  //! the box filtered reynoldsstresses in nodes (9 vectors)
-  RCP<Epetra_MultiVector>   filtered_reynoldsstress_;
-  //! the modeled subgrid stress in nodes (9 vectors)
-  RCP<Epetra_MultiVector>   filtered_modeled_subgrid_stress_;
-  //! the filtered vel exported to column map
-  RCP<Epetra_MultiVector>   col_filtered_vel_;
-  //! the filtered reystress exported to column map
-  RCP<Epetra_MultiVector>   col_filtered_reynoldsstress_;
-  //! the modeled subgrid stresses exported to column map
-  RCP<Epetra_MultiVector>   col_filtered_modeled_subgrid_stress_;
+  //! one instance of the filter object
+  RCP<DynSmagFilter> DynSmag_;
 
-  //! for turbulent channel flow, LijMij in averaged in each hom. plane
-  RCP<vector<double> >      averaged_LijMij_;
-  //! for turbulent channel flow, MijMij in averaged in each hom. plane
-  RCP<vector<double> >      averaged_MijMij_;
-  //! the plane coordinates for the above mentioned averaging procedure
-  RCP<vector<double> >      planecoords_;
   //@}
 
   //! @name time measurement
@@ -897,37 +882,12 @@ private:
   //! used to add time to timenonlinup
   RCP<Teuchos::TimeMonitor>          tm9_ref_ ;
 
-#ifdef PERF
-  // very detailed time measurement
-  RefCountPtr<Teuchos::Time>         timeeleassemble_      ;
-  RefCountPtr<Teuchos::Time>         timeelegetdoflocation_;
-
-  RefCountPtr<Teuchos::Time>         timeelederxy2_    ;
-  RefCountPtr<Teuchos::Time>         timeelederxy_     ;
-  RefCountPtr<Teuchos::Time>         timeeletau_       ;
-  RefCountPtr<Teuchos::Time>         timeelegalerkin_  ;
-  RefCountPtr<Teuchos::Time>         timeelepspg_      ;
-  RefCountPtr<Teuchos::Time>         timeelesupg_      ;
-  RefCountPtr<Teuchos::Time>         timeelecstab_     ;
-  RefCountPtr<Teuchos::Time>         timeelevstab_     ;
-  RefCountPtr<Teuchos::Time>         timeelecrossrey_  ;
-  RefCountPtr<Teuchos::Time>         timeeleintertogp_ ;
-  RefCountPtr<Teuchos::Time>         timeeleseteledata_;
-  RefCountPtr<Teuchos::Time>         timeeletdextras_  ;
-
-  RefCountPtr<Teuchos::Time>         timeelegetvelnp_  ;
-  RefCountPtr<Teuchos::Time>         timeeleinitsmag_  ;
-  RefCountPtr<Teuchos::Time>         timeeleinitstab_  ;
-  RefCountPtr<Teuchos::Time>         timeelesysmat_    ;
-#endif
-
   //! count cpu time for element call on proc
   double                    dtele_;
   //! count cpu time for solver call on proc
   double                    dtsolve_;
   //! count cpu time for filtering (in case of a dynamic Smagorinsky model) on proc
   double                    dtfilter_;
-
   //@}
 
 };

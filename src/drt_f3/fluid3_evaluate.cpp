@@ -1433,9 +1433,9 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   LINALG::FixedSizeSerialDenseMatrix<3,iel>   evelaf;
 
   // wrap matrix objects in fixed-size arrays
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,1> myvelvec(&(myvel[0]),true);
-  LINALG::FixedSizeSerialDenseMatrix<3,1>     vel_hat                      (bvel_hat,true);
-  LINALG::FixedSizeSerialDenseMatrix<3,3>     reystr_hat                   (breystr_hat,true);
+  LINALG::FixedSizeSerialDenseMatrix<4*iel,1> myvelvec                     (&(myvel[0])                   ,true);
+  LINALG::FixedSizeSerialDenseMatrix<3,1>     vel_hat                      (bvel_hat                      ,true);
+  LINALG::FixedSizeSerialDenseMatrix<3,3>     reystr_hat                   (breystr_hat                   ,true);
   LINALG::FixedSizeSerialDenseMatrix<3,3>     modeled_stress_grid_scale_hat(bmodeled_stress_grid_scale_hat,true);
 
   // split velocity and throw away  pressure, insert into element array
