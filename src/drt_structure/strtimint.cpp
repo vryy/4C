@@ -290,12 +290,17 @@ STR::TimInt::TimInt
   conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_,
                                                   (*dis_)(0),
                                                   sdynparams));
-  // initialize Uzawa solver
-  consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
-                                                      *solver_,
-                                                      dirichtoggle_,
-                                                      invtoggle_,
-                                                      sdynparams));
+  
+  // initialize constraint solver iff constraints are defined
+  if (conman_->HaveConstraint())
+  {
+    consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
+                                                        *solver_,
+                                                        dirichtoggle_,
+                                                        invtoggle_,
+                                                        sdynparams)); 
+  }
+  
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
