@@ -484,7 +484,7 @@ namespace FLD
       }
       case lid_driven_cavity:
       {
-        if(statistics_sqc_==null)
+        if(statistics_ldc_==null)
         {
           dserror("need statistics_ldc_ to do a time sample for a cavity flow");
         }
