@@ -305,6 +305,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
 \param systemvectord   First time derivative of DBCs
 \param systemvectordd  Second time derivative of DBCs
 \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+\param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
 \date 02/08
 */
 static void DoDirichletCondition(DRT::Condition&             cond,
@@ -315,8 +316,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
                                  Teuchos::RCP<Epetra_Vector> systemvectord,
                                  Teuchos::RCP<Epetra_Vector> systemvectordd,
                                  Teuchos::RCP<Epetra_Vector> toggle,
-                                 Teuchos::RCP<std::set<int> > dbcgids,
-                                 Teuchos::RCP<std::set<int> > freegids);
+                                 Teuchos::RCP<std::set<int> > dbcgids);
 
 
 //--------------------------------------------------------------------
@@ -352,9 +352,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   // vector of DOF-IDs which are Dirichlet BCs
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
-  Teuchos::RCP<std::set<int> > freegids = Teuchos::null;
-  if (dbcmapextractor != Teuchos::null) freegids = Teuchos::rcp(new std::set<int>());
-  //
+
   multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
@@ -377,7 +375,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
-                         toggle, dbcgids,freegids);
+                         toggle,dbcgids);
   }
   // Do SurfaceDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
@@ -386,7 +384,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
-                         toggle, dbcgids,freegids);
+                         toggle,dbcgids);
   }
   // Do LineDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
@@ -395,7 +393,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
-                         toggle, dbcgids,freegids);
+                         toggle,dbcgids);
   }
   // Do PointDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
@@ -404,34 +402,23 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
-                         toggle, dbcgids,freegids);
+                         toggle,dbcgids);
   }
 
   // create DBC and free map and build their common extractor
   if (dbcmapextractor != Teuchos::null)
   {
     // build map of Dirichlet DOFs
-    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, DofRowMap()->IndexBase(), Comm()));
     if (dbcgids->size() > 0)
     {
-      std::vector<int> dbcgidsv(dbcgids->size());
-      int lgid = 0;
+      std::vector<int> dbcgidsv;
       for (std::set<int>::iterator gid=(*dbcgids).begin(); gid!=(*dbcgids).end(); ++gid)
-        dbcgidsv[lgid++] = *gid;
-      *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), 0, Comm());
-    }
-    // build map of free DOFs
-    Teuchos::RCP<Epetra_Map> freemap = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
-    if (freegids->size() > 0)
-    {
-      std::vector<int> freegidsv(freegids->size());
-      int lgid = 0;
-      for (std::set<int>::iterator gid=(*freegids).begin(); gid!=(*freegids).end(); ++gid)
-        freegidsv[lgid++] = *gid;
-      *freemap = Epetra_Map(-1, freegidsv.size(), &(freegidsv[0]), 0, Comm());
+        dbcgidsv.push_back(*gid);
+      *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), DofRowMap()->IndexBase(), Comm());
     }
     // build the map extractor of Dirichlet-conditioned and free DOFs
-    *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap, freemap);
+    *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
   }
 
   return;
@@ -449,8 +436,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
                           Teuchos::RCP<Epetra_Vector> systemvectord,
                           Teuchos::RCP<Epetra_Vector> systemvectordd,
                           Teuchos::RCP<Epetra_Vector> toggle,
-                          Teuchos::RCP<std::set<int> > dbcgids,
-                          Teuchos::RCP<std::set<int> > freegids)
+                          Teuchos::RCP<std::set<int> > dbcgids)
 {
   const vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
@@ -501,12 +487,9 @@ void DoDirichletCondition(DRT::Condition&             cond,
         if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
         if (toggle!=Teuchos::null)
           (*toggle)[lid] = 0.0;
-        // amend vector of free DOFs
-        if (freegids != Teuchos::null)
-        {
-          (*freegids).insert(dofs[j]);
+        // get rid of entry in DBC map - if it exists
+        if (dbcgids != Teuchos::null)
           (*dbcgids).erase(dofs[j]);
-        }
         continue;
       }
       const int gid = dofs[j];
@@ -554,10 +537,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
         (*toggle)[lid] = 1.0;
       // amend vector of DOF-IDs which are Dirichlet BCs
       if (dbcgids != Teuchos::null)
-      {
-        (*dbcgids).insert(dofs[j]);
-        (*freegids).erase(dofs[j]);
-      }
+        (*dbcgids).insert(gid);
     }  // loop over nodal DOFs
   }  // loop over nodes
   return;

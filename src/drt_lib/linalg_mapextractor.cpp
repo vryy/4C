@@ -205,6 +205,41 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
   Setup(fullmap, condmap, othermap);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap)
+{
+  // initialise other DOFs by inserting all DOFs of full map
+  std::set<int> othergids;
+  const int* fullgids = fullmap.MyGlobalElements();
+  for (int lid=0; lid<fullmap.NumMyElements(); ++lid)
+    othergids.insert(fullgids[lid]);
+  // throw away all DOFs which are in condmap
+  const int* condgids = (*condmap).MyGlobalElements();
+  for (int lid=0; lid<(*condmap).NumMyElements(); ++lid)
+    othergids.erase(condgids[lid]);
+  // create (non-overlapping) othermap for non-condmap DOFs
+  Teuchos::RCP<Epetra_Map> othermap = Teuchos::null;
+  if (othergids.size() > 0)
+  {
+    int* othergidsv = new int[othergids.size()];
+    int lid = 0;
+    for (std::set<int>::iterator gid=othergids.begin(); gid!=othergids.end(); ++gid)
+    {
+      othergidsv[lid] = *gid;
+      lid += 1;
+    }
+    othermap = Teuchos::rcp(new Epetra_Map(-1, othergids.size(), othergidsv, fullmap.IndexBase(), fullmap.Comm()));
+    delete [] othergidsv;
+  }
+  else
+  {
+    othermap = Teuchos::rcp(new Epetra_Map(0, fullmap.IndexBase(), fullmap.Comm()));
+  }
+  // create the extractor
+  Setup(fullmap, condmap, othermap);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

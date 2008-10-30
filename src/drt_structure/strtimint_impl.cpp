@@ -257,11 +257,7 @@ void STR::TimIntImpl::Predict()
   EvaluateForceStiffResidual();
 
   // blank residual at DOFs on Dirichlet BC
-  {
-    //Epetra_Vector frescopy(*fres_);
-    //fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-  }
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
   // determine residual norm of predictor
   normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);

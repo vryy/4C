@@ -333,6 +333,11 @@ namespace LINALG
 
     MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap);
 
+    /// constructor builds non-overlapping othermap which is complementary to condmap with respect to fullmap
+    /// \author bborn
+    /// \date 10/08
+    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap);
+
     /** \name Setup */
     //@{
 

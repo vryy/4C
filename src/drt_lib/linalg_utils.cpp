@@ -722,42 +722,45 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
+  // this copy is needed because the constructor of LINALG::MapExtractor
+  // accepts only Epetra_Map and not Epetra_BlockMap
   const Epetra_Map fullmap = Epetra_Map(fullblockmap.NumGlobalElements(), 
                                         fullblockmap.NumMyElements(),
                                         fullblockmap.MyGlobalElements(),
                                         fullblockmap.IndexBase(),
                                         fullblockmap.Comm());
   const int mylength = dbctoggle->MyLength();
-  const int* fullgid = fullmap.MyGlobalElements();
+  const int* fullgids = fullmap.MyGlobalElements();
   // build sets containing the DBC or free global IDs, respectively
   std::set<int> dbcgids;
   std::set<int> freegids;
   for (int i=0; i<mylength; ++i)
   {
-    const int gid = fullgid[i];
-    if ((int) round((*dbctoggle)[i]) == 1)
+    const int gid = fullgids[i];
+    const int compo = (int) round((*dbctoggle)[i]);
+    if (compo == 0)
+      freegids.insert(gid);
+    else if (compo == 1)
       dbcgids.insert(gid);
     else
-      freegids.insert(gid);
+      dserror("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
   if (dbcgids.size() > 0)
   {
-    std::vector<int> dbcgidsv(dbcgids.size());
-    int lgid = 0;
+    std::vector<int> dbcgidsv;
     for (std::set<int>::iterator gid=dbcgids.begin(); gid!=dbcgids.end(); ++gid)
-      dbcgidsv[lgid++] = *gid;
+      dbcgidsv.push_back(*gid);
     *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), 0, fullmap.Comm());
   }
   // build map of free DOFs
   Teuchos::RCP<Epetra_Map> freemap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
   if (freegids.size() > 0)
   {
-    std::vector<int> freegidsv(freegids.size());
-    int lgid = 0;
+    std::vector<int> freegidsv;
     for (std::set<int>::iterator gid=freegids.begin(); gid!=freegids.end(); ++gid)
-      freegidsv[lgid++] = *gid;
+      freegidsv.push_back(*gid);
     *freemap = Epetra_Map(-1, freegidsv.size(), &(freegidsv[0]), 0, fullmap.Comm());
   }
 
