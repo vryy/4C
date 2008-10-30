@@ -313,8 +313,11 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
                   ::NOX::Utils::Warning |
                   ::NOX::Utils::OuterIteration |
                   ::NOX::Utils::OuterIterationStatusTest
+                  // ::NOX::Utils::Parameters
     );
 
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  solverOptions.set<std::string>("Status Test Check Type","Complete");
 }
 
 
@@ -322,9 +325,6 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
-  // not such a smart idea?!
-  bool secondsolver = false;
-
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // Get the top level parameter list
@@ -410,74 +410,12 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // Create the solver
     Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
 
-#if 0
-    if ((step_ % 10) == 0)
-    {
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      double alpha = fdParams.get("alpha", 1.0e-6);
-      double beta  = fdParams.get("beta",  1.0e-4);
-
-      ostringstream filename;
-      filename << allfiles.outputfile_kenner << "_1_" << step_ << ".dump";
-      FSI::UTILS::DumpJacobian(*this, alpha, beta, soln, filename.str());
-    }
-#endif
-
     // solve the whole thing
     NOX::StatusTest::StatusType status = solver->solve();
-
-    // sometimes we might want to do it again
-    if (status != NOX::StatusTest::Converged and secondsolver)
-    {
-      if (Comm().MyPID()==0)
-        utils_->out() << YELLOW "second solver" END_COLOR << endl;
-
-      // Get the Epetra_Vector with the final solution from the solver
-      const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
-      const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
-
-      // Start the second solver from the final solution of the first
-      // one. Remember that noxSoln is just a view to soln.
-      *soln = finalSolution;
-
-      // Create the linear system
-      linSys = CreateLinearSystem(nlParams.sublist("Second"), interface, noxSoln, utils_);
-
-      // Create the Group
-      grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
-
-      // Convergence Tests
-      combo = CreateStatusTest(nlParams.sublist("Second"), grp);
-
-      // Create the solver
-      solver = NOX::Solver::buildSolver(grp, combo, RCP<ParameterList>(&nlParams.sublist("Second"),false));
-
-      // solve the whole thing again
-      status = solver->solve();
-    }
 
     if (status != NOX::StatusTest::Converged)
       if (Comm().MyPID()==0)
         utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
-
-    // Get the Epetra_Vector with the final solution from the solver
-    //const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
-    //const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
-    //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
-
-#if 0
-    if ((step_ % 10) == 0)
-    {
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      double alpha = fdParams.get("alpha", 1.0e-6);
-      double beta  = fdParams.get("beta",  1.0e-4);
-
-      ostringstream filename;
-      filename << allfiles.outputfile_kenner << "_2_" << step_ << ".dump";
-      *soln = finalSolution;
-      FSI::UTILS::DumpJacobian(*this, alpha, beta, soln, filename.str());
-    }
-#endif
 
     // End Nonlinear Solver **************************************
 
