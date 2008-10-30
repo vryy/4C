@@ -355,15 +355,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
-  // coarse- and fine-scale solution vectors + respective ouptput
+  // fine-scale solution vector + respective ouptput
   // -------------------------------------------------------------------
   if (fssgv_ != "No")
   {
-    csvelnp_  = LINALG::CreateVector(*dofrowmap,true);
     fsvelnp_  = LINALG::CreateVector(*dofrowmap,true);
-    convnp_   = LINALG::CreateVector(*dofrowmap,true);
-    csconvnp_ = LINALG::CreateVector(*dofrowmap,true);
-    fsconvnp_ = LINALG::CreateVector(*dofrowmap,true);
 
     if (myrank_ == 0)
     {
@@ -371,13 +367,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
       cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
       cout << &endl << &endl;
       cout << params_.get<string>("fs subgrid viscosity");
-
-      if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
-          fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
-      {
-        cout << " with Smagorinsky constant Cs= ";
-        cout << modelparams->get<double>("C_SMAGORINSKY") ;
-      }
+      cout << " with Smagorinsky constant Cs= ";
+      cout << modelparams->get<double>("C_SMAGORINSKY") ;
       cout << &endl << &endl << &endl;
     }
   }
@@ -636,10 +627,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   time_ += dta_;
 
   // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
-  if (timealgo_==timeint_bdf2)
-  {
-    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-  }
+  if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
@@ -736,6 +724,11 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+
+  // -------------------------------------------------------------------
+  //           preparation of AVM3-based scale separation
+  // -------------------------------------------------------------------
+  if (step_==1 and fssgv_ != "No") AVM3Preparation();
 }
 
 
@@ -852,24 +845,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         }
       }
 
-      // compute convective stresses when scale-similarity models are used
-      if (fssgv_ == "scale_similarity" ||
-          fssgv_ == "mixed_Smagorinsky_all" ||
-          fssgv_ == "mixed_Smagorinsky_small")
-      {
-        // action for elements
-        eleparams.set("action","calc_convective_stresses");
-
-        // set vector values needed by elements
-        discret_->ClearState();
-        discret_->SetState("velnp",velnp_);
-        discret_->SetState("vedenp",vedenp_);
-
-        // element evaluation for getting convective stresses at nodes
-        discret_->Evaluate(eleparams,null,convnp_);
-        discret_->ClearState();
-      }
-
       // action for elements
       if (timealgo_==timeint_stationary)
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
@@ -903,66 +878,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       //----------------------------------------------------------------------
-      // decide whether VM3-based solution approach or standard approach
+      // decide whether AVM3-based solution approach or standard approach
       //----------------------------------------------------------------------
-      if (fssgv_ != "No")
-      {
-        // time measurement: avm3
-        TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
-
-        // call the VM3 constructor (only in the first time step)
-        if (step_ == 1)
-        {
-          // zero fine-scale vector
-          fsvelnp_->PutScalar(0.0);
-
-          // set coarse- and fine-scale vectors
-          discret_->SetState("fsvelnp",fsvelnp_);
-          discret_->SetState("csvelnp",csvelnp_);
-          discret_->SetState("csconvnp",csconvnp_);
-
-          // element evaluation for getting system matrix
-          discret_->Evaluate(eleparams,sysmat_,residual_);
-
-
-	  // complete system matrix
-          sysmat_->Complete();
-
-          // apply DBC to system matrix
-          LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
-
-          // call VM3 constructor with system matrix
-          // extract the ML parameters
-          ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-          vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true) );
-
-          // zero system matrix again
-          sysmat_->Zero();
-
-          // add Neumann loads and potential Neumann-type outflow stabilization again
-          residual_->Update(1.0,*neumann_loads_,0.0);
-          if(outflow_stab_ == "yes_outstab")
-            residual_->Update(1.0,*outflow_stabil_,1.0);
-        }
-
-        // check whether VM3 solver exists
-        if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-        // call VM3 scale separation to get coarse- and fine-scale part of solution
-        vm3_solver_->Separate(csvelnp_,fsvelnp_,velnp_);
-
-        // call VM3 scale separation to get coarse-scale part of convective stresses
-        if (fssgv_ == "scale_similarity" ||
-            fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
-        {
-          vm3_solver_->Separate(csconvnp_,fsconvnp_,convnp_);
-          discret_->SetState("csvelnp",csvelnp_);
-          discret_->SetState("csconvnp",csconvnp_);
-        }
-
-        // set coarse- and fine-scale vectors
-        discret_->SetState("fsvelnp",fsvelnp_);
-      }
+      if (fssgv_ != "No") AVM3Separation();
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1789,6 +1707,107 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 }
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | prepare AVM3-based scale separation                         vg 10/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::AVM3Preparation()
+{
+  {// time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
+
+  // zero matrix
+  sysmat_->Zero();
+
+  // add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  if (timealgo_==timeint_stationary)
+    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+  else
+    eleparams.set("action","calc_fluid_systemmat_and_residual");
+
+  // other parameters that might be needed by the elements
+  eleparams.set("total time",time_);
+  eleparams.set("thsl",theta_*dta_);
+  eleparams.set("dt",dta_);
+  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("Linearisation",newton_);
+  eleparams.set("low-Mach-number solver",loma_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameters for stabilization
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("vedenp",vedenp_);
+  discret_->SetState("hist"  ,hist_ );
+
+  // zero and set fine-scale vector required by element routines
+  fsvelnp_->PutScalar(0.0);
+  discret_->SetState("fsvelnp",fsvelnp_);
+
+  // element evaluation for getting system matrix
+  // -> we merely need matrix "structure" below, not the actual contents
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  // complete system matrix
+  sysmat_->Complete();
+
+  // apply DBC to system matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+
+  // extract ML parameters
+  ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+  // call VM3 constructor with system matrix for generating scale-separating matrix
+  vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true));
+  }// time measurement: avm3
+
+  return;
+}// FluidImplicitTimeInt::AVM3Preparation
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | AVM3-based scale separation                                 vg 10/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::AVM3Separation()
+{
+  {// time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
+
+  // check whether VM3 solver exists
+  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
+
+  // call VM3 scale separation to get fine-scale part of solution
+  vm3_solver_->Separate(fsvelnp_,velnp_);
+
+  // set fine-scale vector
+  discret_->SetState("fsvelnp",fsvelnp_);
+  }// time measurement: avm3
+
+  return;
+}// FluidImplicitTimeInt::AVM3Separation
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2258,6 +2277,11 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
    invtoggle_->PutScalar(1.0);
    invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
+
+    // -------------------------------------------------------------------
+    //           preparation of AVM3-based scale separation
+    // -------------------------------------------------------------------
+    if (step_==1 and fssgv_ != "No") AVM3Preparation();
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system

@@ -559,6 +559,18 @@ public:
   void UpdateGridv();
 
   /*!
+  \brief prepare AVM3-based scale separation
+
+  */
+  void AVM3Preparation();
+
+  /*!
+  \brief AVM3-based scale separation
+
+  */
+  void AVM3Separation();
+
+  /*!
   \brief calculate lift&drag forces and angular momenta
 
   */
@@ -796,14 +808,8 @@ private:
   //! vm3 solver
   RCP<VM3_Solver>           vm3_solver_;
 
-  //! coarse- and fine-scale solution vector
-  RCP<Epetra_Vector>        csvelaf_;
+  //! fine-scale solution vector
   RCP<Epetra_Vector>        fsvelaf_;
-
-  /// convective stresses and their coarse- and fine-scale part
-  RCP<Epetra_Vector>        convaf_;
-  RCP<Epetra_Vector>        csconvaf_;
-  RCP<Epetra_Vector>        fsconvaf_;
 
   //! fine-scale subgrid-viscosity flag
   string                    fssgv_;

@@ -135,9 +135,8 @@ public:
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens, ///< density
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp, ///< el. potential at element nodes
         Epetra_SerialDenseMatrix&       sys_mat,///< element matrix to calculate
-        Epetra_SerialDenseMatrix&       sys_mat_sd, ///< subgrid-diff. matrix
         Epetra_SerialDenseVector&       residual, ///< element rhs to calculate
-        Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
+        Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
         const double                    timefac, ///< time discretization factor
@@ -156,7 +155,7 @@ public:
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,  ///< el. potential at element nodes
         Epetra_SerialDenseMatrix&       massmat, ///< mass matrix to calculate
         Epetra_SerialDenseVector&       rhs, ///< element rhs to calculate
-        Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
+        Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
         const double                    timefac, ///< time discretization factor
@@ -164,6 +163,14 @@ public:
         const bool                      temperature, ///< temperature flag
         const string                    fssgd, ///< subgrid-diff. flag
         const double                    frt ///< factor F/RT needed for ELCH calculations
+    );
+
+    //! calculate normalized subgrid-diffusivity matrix
+    virtual void CalcSubgridDiffMatrix(
+        const DRT::ELEMENTS::Condif3*   ele,
+        Epetra_SerialDenseMatrix&       sys_mat_sd,
+        const double                    timefac,
+        const bool                      is_stationary
     );
 
     //! get the body force
@@ -181,12 +188,13 @@ public:
     //! calculate stabilization parameter
     virtual void CalTau(
         const DRT::ELEMENTS::Condif3*&          ele, ///< the element
-        Epetra_SerialDenseVector&               sugrvisc, ///< subgrid-diff. vector
+        Epetra_SerialDenseVector&               subgrdiff, ///< subgrid-diff.-scaling vector
         const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities at t_{n+1}
         const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot,  ///< el. potential at element nodes
         const double&                           timefac, ///< time discretization factor
         string                                  fssgd, ///< subgrid-diff. flag
         const bool&                             is_stationary, ///< flag indicating stationary formulation
+        const bool                              initial, ///< flag for intitial calculation
         const double&                           frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -208,10 +216,8 @@ public:
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
     virtual void CalMat(
         Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseMatrix& esd,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
-        string                    fssgd,
         const double&             timefac,
         const int&                dofindex
     );
@@ -219,10 +225,8 @@ public:
     //! calculate element matrix and rhs vector (Stationary problem formulation)
     virtual void CalMatStationary(
         Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseMatrix& esd,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
-        string                    fssgd,
         const int&                dofindex
     );
 

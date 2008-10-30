@@ -246,17 +246,10 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach:
-  // coarse- and fine-scale solution vectors + respective ouptput
+  // necessary only for the VM3 approach: fine-scale solution vector
   // -------------------------------------------------------------------
-  if (fssgv_ != "No")
-  {
-    csvelaf_  = LINALG::CreateVector(*dofrowmap,true);
-    fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
-    convaf_   = LINALG::CreateVector(*dofrowmap,true);
-    csconvaf_ = LINALG::CreateVector(*dofrowmap,true);
-    fsconvaf_ = LINALG::CreateVector(*dofrowmap,true);
-  }
+  if (fssgv_ != "No") fsvelaf_ = LINALG::CreateVector(*dofrowmap,true);
+
   // -------------------------------------------------------------------
   // initialise the dynamic Smagorinsky model (the smoothed quantities)
   // -------------------------------------------------------------------
@@ -274,9 +267,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
                                      pbcmapmastertoslave_,
                                      params_             ));
     }
-    
+
     if (model=="Dynamic_Smagorinsky"
-        || 
+        ||
         model=="Smagorinsky_with_van_Driest_damping"
         ||
         model=="Smagorinsky")
@@ -359,6 +352,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
 
     // end time measurement for application of dirichlet conditions
     tm1_ref_=null;
+
+    // -------------------------------------------------------------------
+    //           preparation of AVM3-based scale separation
+    // -------------------------------------------------------------------
+    if (step_==1 and fssgv_ != "No") this->AVM3Preparation();
 
     // -------------------------------------------------------------------
     //      calculate initial acceleration according to predicted
@@ -941,23 +939,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     residual_->Update(1.0,*outflow_stabil_,1.0);
   }
 
-  // compute convective stresses when scale-similarity models are used
-  if (fssgv_ == "scale_similarity" ||
-      fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
-  {
-    // action for elements
-    eleparams.set("action","calc_convective_stresses");
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("velaf",velaf_);
-    discret_->SetState("vedeaf",vedeaf_);
-
-    // element evaluation for getting convective stresses at nodes
-    discret_->Evaluate(eleparams,null,convaf_);
-    discret_->ClearState();
-  }
-
   // action for elements
   eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
   // choose what to assemble
@@ -1028,61 +1009,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   // decide whether VM3-based solution approach or standard approach
   //----------------------------------------------------------------------
-  if (fssgv_ != "No")
-  {
-    // extract the ML parameters
-    ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-
-    if (step_ == 1)
-    {
-      // zero fine-scale vector
-      fsvelaf_->PutScalar(0.0);
-
-      // set coarse- and fine-scale vectors
-      discret_->SetState("fsvelaf",fsvelaf_);
-      discret_->SetState("csvelaf",csvelaf_);
-      discret_->SetState("csconvaf",csconvaf_);
-
-      // element evaluation for getting system matrix
-      discret_->Evaluate(eleparams,sysmat_,residual_);
-
-      // complete system matrix
-      sysmat_->Complete();
-
-      // apply DBC to system matrix
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
-
-      // call VM3 constructor with system matrix
-      vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true) );
-
-      // zero system matrix again
-      sysmat_->Zero();
-
-      // add Neumann loads and potential Neumann-type outflow stabilization again
-      residual_->Update(1.0,*neumann_loads_,0.0);
-      if(outflow_stab_ == "yes_outstab")
-        residual_->Update(1.0,*outflow_stabil_,1.0);
-    }
-
-    // check whether VM3 solver exists
-    if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-    // call VM3 scale separation to get coarse- and fine-scale part of solution
-    vm3_solver_->Separate(csvelaf_,fsvelaf_,velaf_);
-
-    // call VM3 scale separation to get coarse-scale part of convective stresses
-    if (fssgv_ == "scale_similarity" ||
-        fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
-    {
-      vm3_solver_->Separate(csconvaf_,fsconvaf_,convaf_);
-      discret_->SetState("csconvaf",csconvaf_);
-      discret_->SetState("csvelaf",csvelaf_);
-    }
-
-    // set fine-scale vector
-    discret_->SetState("fsvelaf",fsvelaf_);
-
-  }
+  if (fssgv_ != "No") AVM3Separation();
 
   //----------------------------------------------------------------------
   // call loop over elements
@@ -1419,6 +1346,118 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 
   return;
 }
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | prepare AVM3-based scale separation                         vg 10/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidGenAlphaIntegration::AVM3Preparation()
+{
+  // zero matrix
+  sysmat_->Zero();
+
+  // add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
+  eleparams.set("assemble matrix 1",true);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",true);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+  eleparams.set("compute element matrix",true);
+
+  // other parameters that might be needed by the elements
+  {
+    ParameterList& timelist = eleparams.sublist("time integration parameters");
+
+    timelist.set("alpha_M",alphaM_);
+    timelist.set("alpha_F",alphaF_);
+    timelist.set("gamma"  ,gamma_ );
+    timelist.set("time"   ,time_  );
+    timelist.set("dt"     ,dt_    );
+  }
+
+  // parameters for nonlinear treatment (linearisation)
+  eleparams.set("Linearisation",newton_);
+
+  // parameters for stabilisation
+  {
+    eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
+  }
+
+  // parameters for a turbulence model
+  {
+    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  }
+
+  // (fine-scale) subgrid viscosity flag
+  eleparams.set("fs subgrid viscosity",fssgv_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p (n+1      ,trial)",velnp_ );
+  discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
+  discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
+  discret_->SetState("vedeaf"                   ,vedeaf_);
+
+  // zero and set fine-scale vector required by element routines
+  fsvelaf_->PutScalar(0.0);
+  discret_->SetState("fsvelaf",fsvelaf_);
+
+  // element evaluation for getting system matrix
+  // -> we merely need matrix "structure" below, not the actual contents
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  // complete system matrix
+  sysmat_->Complete();
+
+  // apply DBC to system matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
+
+  // extract ML parameters
+  ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+  // call VM3 constructor with system matrix for generating scale-separating matrix
+  vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true));
+
+  return;
+}// FluidGenAlphaIntegration::AVM3Preparation
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | AVM3-based scale separation                                 vg 10/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidGenAlphaIntegration::AVM3Separation()
+{
+  // check whether VM3 solver exists
+  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
+
+  // call VM3 scale separation to get coarse- and fine-scale part of solution
+  vm3_solver_->Separate(fsvelaf_,velaf_);
+
+  // set fine-scale vector
+  discret_->SetState("fsvelaf",fsvelaf_);
+
+  return;
+}// FluidGenAlphaIntegration::AVM3Separation
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1975,13 +2014,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
           cout << endl << endl;
           cout << params_.get<string>("fs subgrid viscosity");
-
-          if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
-              fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
-          {
-            cout << " with Smagorinsky constant Cs= ";
-            cout << modelparams->get<double>("C_SMAGORINSKY") ;
-          }
+          cout << " with Smagorinsky constant Cs= ";
+          cout << modelparams->get<double>("C_SMAGORINSKY") ;
           cout << endl << endl;
         }
 

@@ -131,9 +131,7 @@ namespace ELEMENTS
 
       \param ele     		  (i) the element those matrix is calculated
       \param evelnp  		  (i) nodal velocities at n+1
-      \param csevelnp         (i) coarse-scale nodal velocities at n+1
       \param fsevelnp         (i) fine-scale nodal velocities at n+1
-      \param cseconvnp        (i) coarse-scale nodal convective stresses at n+1
       \param eprenp  		  (i) nodal pressure
       \param edensnp          (i) nodal density
       \param estif   		  (o) element matrix to calculate
@@ -154,9 +152,7 @@ namespace ELEMENTS
      */
     void Sysmat(Fluid3*                                          ele,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelnp,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvnp,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
                 LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& estif,
@@ -213,7 +209,6 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;       /// inverse of the jacobian matrix
     LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;    /// velocity vector derivative
     LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;    /// momentum vector derivative
-    LINALG::FixedSizeSerialDenseMatrix<3,3> csvderxy_;  /// coarse-scale velocity vector derivative
     LINALG::FixedSizeSerialDenseMatrix<3,3> fsvderxy_;  /// fine-scale velocity vector derivative
     LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;     /// shape derivative with respect to x
     LINALG::FixedSizeSerialDenseMatrix<3,iel> densderxy_; /// density-weighted shape derivative w.r.t. x
@@ -221,9 +216,7 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_; /// volumetric load at gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> velint_;    /// velocity
-    LINALG::FixedSizeSerialDenseMatrix<3,1> csvelint_;  /// coarse-scale velocity
     LINALG::FixedSizeSerialDenseMatrix<3,1> fsvelint_;  /// fine-scale velocity
-    LINALG::FixedSizeSerialDenseMatrix<3,1> csconvint_; /// coarse-scale convective stresses
     LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;     /// pressure gradient
     LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;       /// tau_Mu, tau_Mp, tau_C
     LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_;    /// viscous term including 2nd derivatives
@@ -232,7 +225,6 @@ namespace ELEMENTS
     double vdiv_;                      /// velocity divergence
     LINALG::FixedSizeSerialDenseMatrix<3,1> rhsmom_;    /// momentum equation right hand side
     LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> conv_s_;    /// convective part of scale-similarity term
     LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old_;
     LINALG::FixedSizeSerialDenseMatrix<3,1> res_old_;
     LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;

@@ -348,6 +348,11 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
+  // -------------------------------------------------------------------
+  //           preparation of AVM3-based scale separation
+  // -------------------------------------------------------------------
+  if (step_==1 and fssgd_ != "No") AVM3Preparation();
+
   return;
 
 } // ScaTraTimIntImpl::PrepareTimeStep
@@ -748,7 +753,6 @@ void SCATRA::ScaTraTimIntImpl::Solve()
   PrintTimeStepInfo();
 
   double tcpu;
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -795,84 +799,8 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     discret_->SetState("densnp",densnp_);
     discret_->SetState("hist" ,hist_ );
 
-#if 0
-    // AVMS solver: VM3 solution approach with extended matrix system
-    // (may replace direct algebraic VM3 solution approach)
-    // begin first encapsulation of AVMS solution approach
-    if (fssgd_ != "No")
-    {
-      // create all-scale subgrid-diffusivity matrix
-      sysmat_sd_->Zero();
-
-      // call loop over elements (two matrices)
-      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
-      discret_->ClearState();
-    }
-    // end first encapsulation of AVMS solution approach
-#endif
-    // direct algebraic VM3 solution approach
-    // begin encapsulation of direct algebraic VM3 solution approach
-    if (fssgd_ != "No")
-    {
-      {// time measurement: avm3
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-      // subgrid-viscosity-scaling vector
-      sugrvisc_ = LINALG::CreateVector(*dofrowmap,true);
-
-      }// time measurement: avm3
-
-      if (step_ == 1)
-      {
-        {// time measurement: avm3
-        TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-        // create normalized all-scale subgrid-diffusivity matrix
-        sysmat_sd_->Zero();
-
-        }// time measurement: avm3
-
-        // call loop over elements (two matrices + subgr.-visc.-scal. vector)
-        discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
-        discret_->ClearState();
-
-        {// time measurement: avm3
-        TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-        // finalize the normalized all-scale subgrid-diffusivity matrix
-        sysmat_sd_->Complete();
-
-        // apply DBC to normalized all-scale subgrid-diffusivity matrix
-        LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
-
-        // extract the ML parameters
-        ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
-
-        // call the VM3 constructor
-        vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
-
-        }// time measurement: avm3
-      }
-      else
-      {
-        // call loop over elements (one matrix + subgr.-visc.-scal. vector)
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
-        discret_->ClearState();
-      }
-
-      // time measurement: avm3
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-      // check whether VM3 solver exists
-      if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-      // call the VM3 scaling:
-      // scale precomputed matrix product by subgrid-viscosity-scaling vector
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
-      vm3_solver_->Scale(sysmat_sd_,sysmat,zeros_,zeros_,sugrvisc_,zeros_,false );
-
-    }
-    // end encapsulation of direct algebraic VM3 solution approach
+    // decide whether AVM3-based solution approach or standard approach
+    if (fssgd_ != "No") AVM3Scaling(eleparams);
     else
     {
       // call standard loop over elements
@@ -901,34 +829,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // get cpu time
     tcpu=ds_cputime();
 
-#if 0
-    // AVMS solver: VM3 solution approach with extended matrix system
-    // (may replace direct algebraic VM3 solution approach)
-    // begin second encapsulation of AVMS solution approach
-    if (fssgd_ != "No")
-    {
-      // add standard matrix to subgrid-diffusivity matrix: fine-scale matrix
-      sysmat_sd_->Add(*sysmat_,false,1.0,1.0);
-
-      // finalize fine-scale matrix
-      sysmat_sd_->Complete();
-
-      // apply DBC to fine-scale matrix
-      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
-
-      // extract the ML parameters
-      ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-
-      // call the AVMS constructor
-      avms_solver_ = rcp(new AVMS_Solver(sysmat_sd_,sysmat_,dirichtoggle_,mllist) );
-
-      // Apply the AVMS solver
-      avms_solver_->Solve(*residual_,*phinp_,solver_.Params());
-    }
-    else
-    // end second encapsulation of AVMS solution approach
-#endif
-      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
+    solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
     // end time measurement for solver
     dtsolve_=ds_cputime()-tcpu;
@@ -985,6 +886,84 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->NewStep    (step_,time_);
   output_->WriteVector("phinp", phinp_);
   output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  prepare AVM3-based scale separation                        vg 10/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
+{
+  {// time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
+  // create normalized all-scale subgrid-diffusivity matrix
+  sysmat_sd_->Zero();
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements, time factor and stationary flag
+  eleparams.set("action","calc_subgrid_diffusivity_matrix");
+  eleparams.set("thsl",theta_*dta_);
+  if (MethodName()==INPUTPARAMS::timeint_stationary)
+    eleparams.set("using stationary formulation",true);
+  else
+    eleparams.set("using stationary formulation",false);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,sysmat_sd_,residual_);
+  discret_->ClearState();
+
+  // finalize the normalized all-scale subgrid-diffusivity matrix
+  sysmat_sd_->Complete();
+
+  // apply DBC to normalized all-scale subgrid-diffusivity matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+
+  // extract the ML parameters
+  ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
+
+  // call the VM3 constructor
+  vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
+  }// time measurement: avm3
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
+{
+
+  {// time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // subgrid-diffusivity-scaling vector
+  subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
+  }// time measurement: avm3
+
+  // call loop over elements (one matrix + subgr.-visc.-scal. vector)
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
+  discret_->ClearState();
+
+  {// time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
+  // check whether VM3 solver exists
+  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
+
+  // call the VM3 scaling:
+  // scale precomputed matrix product by subgrid-viscosity-scaling vector
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
+  vm3_solver_->Scale(sysmat_sd_,sysmat,zeros_,zeros_,subgrdiff_,zeros_,false );
+  }// time measurement: avm3
 
   return;
 }

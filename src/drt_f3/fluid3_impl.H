@@ -135,9 +135,7 @@ namespace ELEMENTS
 
       \param ele              (i) the element those matrix is calculated
       \param evelnp           (i) nodal velocities at n+1
-      \param csevelnp         (i) coarse-scale nodal velocities at n+1
       \param fsevelnp         (i) fine-scale nodal velocities at n+1
-      \param cseconvnp        (i) coarse-scale nodal convective stresses at n+1
       \param eprenp           (i) nodal pressure
       \param edensnp          (i) nodal density
       \param emhist           (i) time rhs for momentum equation
@@ -174,9 +172,7 @@ namespace ELEMENTS
       */
     void Sysmat(Fluid3*                                  ele,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            evelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            csevelnp_epetra,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            fsevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            cseconvnp_epetra,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp_epetra,
                 const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp_epetra,
                 const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            emhist_epetra,
@@ -308,8 +304,6 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
     //! global momentum derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;
-    //! coarse-scale global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,3> csvderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::FixedSizeSerialDenseMatrix<3,3> fsvderxy_;
     //! global derivatives of shape functions w.r.t x,y,z
@@ -328,12 +322,8 @@ namespace ELEMENTS
     LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
     //! velocity vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> velint_;
-    //! coarse-scale velocity vector in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> csvelint_;
     //! fine-scale velocity vector in gausspoint
     LINALG::FixedSizeSerialDenseMatrix<3,1> fsvelint_;
-    //! fine-scale convective-stress vector in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> csconvint_;
     //! ale convective velocity in gausspoint, c=u-u_G
     LINALG::FixedSizeSerialDenseMatrix<3,1> convvelint_;
     //! pressure gradient in gausspoint
@@ -356,8 +346,6 @@ namespace ELEMENTS
     double rhscon_;
     //! (u_old*nabla)u_old
     LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old_;
-    //! convective part of scale-similarity term
-    LINALG::FixedSizeSerialDenseMatrix<3,1> conv_s_;
     //! div epsilon(u_old)
     LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old_;
     //! the old residual

@@ -261,7 +261,6 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         edensnp,
         epotnp,
         elemat1_epetra,
-        elemat2_epetra,
         elevec1_epetra,
         elevec2_epetra,
         actmat,
@@ -364,6 +363,28 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         fssgd,
         frt);
   }
+  else if (action =="calc_subgrid_diffusivity_matrix")
+  // calculate normalized subgrid-diffusivity matrix
+  {
+    // get control parameter
+    const bool is_stationary = params.get<bool>("using stationary formulation");
+
+    // One-step-Theta: timefac = theta*dt
+    // BDF2:           timefac = 2/3 * dt
+    double timefac = 0.0;
+    if (not is_stationary)
+    {
+      timefac = params.get<double>("thsl");
+      if (timefac < 0.0) dserror("No thsl supplied");
+    }
+
+    // calculate mass matrix and rhs
+    CalcSubgridDiffMatrix(
+        ele,
+        elemat1_epetra,
+        timefac,
+        is_stationary);
+  }
   else if (action=="calc_elch_kwok_error")
   {
     // need current solution
@@ -417,9 +438,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens, ///< density*shc
     const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp, ///< el. potential at element nodes
     Epetra_SerialDenseMatrix&       sys_mat,///< element matrix to calculate
-    Epetra_SerialDenseMatrix&       sys_mat_sd, ///< subgrid-diff. matrix
     Epetra_SerialDenseVector&       residual, ///< element rhs to calculate
-    Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
+    Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
     const struct _MATERIAL*         material, ///< material pointer
     const double                    time, ///< current simulation time
     const double                    timefac, ///< time discretization factor
@@ -447,7 +467,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
   /*----------------------------------------------------------------------*/
-  CalTau(ele,sugrvisc,evelnp,epotnp,timefac,fssgd,is_stationary,frt);
+  CalTau(ele,subgrdiff,evelnp,epotnp,timefac,fssgd,is_stationary,false,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -485,10 +505,10 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     {
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
-        if(is_stationary==false)
-          CalMat(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,timefac,k);
+        if (not is_stationary)
+          CalMat(sys_mat,residual,higher_order_ele,timefac,k);
         else
-          CalMatStationary(sys_mat,sys_mat_sd,residual,higher_order_ele,fssgd,k);
+          CalMatStationary(sys_mat,residual,higher_order_ele,k);
       } // loop over each scalar
     }
     else  // ELCH problems
@@ -636,12 +656,13 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     const DRT::ELEMENTS::Condif3*&          ele,
-    Epetra_SerialDenseVector&               sugrvisc,
+    Epetra_SerialDenseVector&               subgrdiff,
     const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
     const LINALG::FixedSizeSerialDenseMatrix<iel,1>&         epot,
     const double&                           timefac,
     string                                  fssgd,
     const bool&                             is_stationary,
+    const bool                              initial,
     const double&                           frt
   )
 {
@@ -772,7 +793,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   }
 
   // compute artificial diffusivity kappa_art_[k]
-  if (fssgd == "artificial_all")
+  if (fssgd == "artificial_all" and (not initial))
   {
       if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
       /* parameter relating convective : diffusive forces */
@@ -783,12 +804,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
 
       for (int vi=0; vi<iel; ++vi)
       {
-        sugrvisc(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
       }
   }
   else if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" ||
-           fssgd == "Smagorinsky_small" || fssgd == "scale_similarity" ||
-           fssgd == "mixed_Smagorinsky_all" || fssgd == "mixed_Smagorinsky_small")
+           fssgd == "Smagorinsky_small")
     dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
   } // loop over scalars
@@ -1253,10 +1273,8 @@ for further comments see comment lines within code.
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMat(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
     const bool                higher_order_ele,
-    string                    fssgd,
     const double&             timefac,
     const int&                dofindex
     )
@@ -1364,26 +1382,6 @@ for (int vi=0; vi<iel; ++vi)
   if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
 }
 
-// ---------------------------------------artifical-diffusivity matrix
-if (fssgd != "No")
-{
-  // parameter for artificial diffusivity (scaled to one currently)
-  const double kartfac = timefacfac;
-  //const double kartfac = kart_[dofindex]*timefacfac;
-
-  for (int vi=0; vi<iel; ++vi)
-  {
-    for (int ui=0; ui<iel; ++ui)
-    {
-      /* artificial diffusivity term */
-      esd(vi*numdof+dofindex, ui*numdof+dofindex) += kartfac*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui)) ;
-
-      /*subtract SUPG term */
-      //esd(vi*numdof+dofindex, ui*numdof+dofindex) -= taufac*conv(vi)*conv[ui] ;
-    }
-  }
-}
-
 return;
 } //Condif3Impl::Condif3CalMat
 
@@ -1428,10 +1426,8 @@ for further comments see comment lines within code.
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatStationary(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
     const bool                higher_order_ele,
-    string                    fssgd,
     const int&                dofindex
     )
 {
@@ -1514,26 +1510,6 @@ for (int vi=0; vi<iel; ++vi)
   if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
 }
 
-// ---------------------------------------artifical-diffusivity matrix
-if (fssgd != "No")
-{
-  // parameter for artificial diffusivity (scaled to one currently)
-  const double kartfac = fac_;
-  //const double kartfac = kart_[dofindex]*fac_;
-
-  for (int vi=0; vi<iel; ++vi)
-  {
-    for (int ui=0; ui<iel; ++ui)
-    {
-      /* artificial diffusivity term */
-      esd(vi*numdof+dofindex, ui*numdof+dofindex) += kartfac*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui)) ;
-
-      /*subtract SUPG term */
-      //esd(vi*numdof+dofindex, ui*numdof+dofindex) -= taufac*conv(vi)*conv[ui] ;
-    }
-  }
-}
-
 return;
 } //Condif3Impl::Condif3CalMatStationary
 
@@ -1549,7 +1525,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
     const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,
     Epetra_SerialDenseMatrix&       massmat,
     Epetra_SerialDenseVector&       rhs,
-    Epetra_SerialDenseVector&       sugrvisc,
+    Epetra_SerialDenseVector&       subgrdiff,
     const struct _MATERIAL*         material,
     const double                    time,
     const double                    timefac,
@@ -1576,7 +1552,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
   /*----------------------------------------------------------------------*/
-  CalTau(ele,sugrvisc,evel,epot0,timefac,fssgd,false,frt);
+  CalTau(ele,subgrdiff,evel,epot0,timefac,fssgd,false,true,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -1734,27 +1710,6 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
         }
 
       }
-
-      // ------------------------------artifical-diffusivity matrix
-      if (fssgd != "No")
-      {
-        // parameter for artificial diffusivity (scaled to one currently)
-        const double kartfac = fac_;
-        //const double kartfac = kart_[k]*fac_;
-
-        for (int vi=0; vi<iel; ++vi)
-        {
-          for (int ui=0; ui<iel; ++ui)
-          {
-            /* artificial diffusivity term */
-            rhs[vi*numdofpernode_+k] += -(kartfac*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui))) ;
-
-            /*subtract SUPG term */
-            //rhs[vi*numdofpernode_+k] -= -(taufac*conv(vi)*conv(ui)) ;
-          }
-        }
-      }
-
     } // loop over each scalar
 
     if (numdofpernode_-numscal_== 1) // ELCH
@@ -1770,6 +1725,59 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
 
   return;
 } // Condif3Impl::InitializeOST
+
+
+/*----------------------------------------------------------------------*
+ | calculate normalized subgrid-diffusivity matrix              vg 10/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalcSubgridDiffMatrix(
+    const DRT::ELEMENTS::Condif3*   ele,
+    Epetra_SerialDenseMatrix&       sys_mat_sd,
+    const double                    timefac,
+    const bool                      is_stationary
+    )
+{
+// get node coordinates
+for (int i=0;i<iel;i++)
+{
+  xyze_(0,i)=ele->Nodes()[i]->X()[0];
+  xyze_(1,i)=ele->Nodes()[i]->X()[1];
+  xyze_(2,i)=ele->Nodes()[i]->X()[2];
+}
+
+/*----------------------------------------------------------------------*/
+// integration loop for one condif2 element
+/*----------------------------------------------------------------------*/
+// gaussian points
+const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
+
+// integration loop
+for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+{
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
+
+  for (int k=0;k<numscal_;++k)
+  {
+    // parameter for artificial diffusivity (scaled to one here)
+    double kartfac = fac_;
+    if (not is_stationary) kartfac *= timefac;
+
+    for (int vi=0; vi<iel; ++vi)
+    {
+      for (int ui=0; ui<iel; ++ui)
+      {
+        sys_mat_sd(vi*numdofpernode_+k,ui*numdofpernode_+k) += kartfac*(derxy_(0,vi)*derxy_(0,ui)+derxy_(1,vi)*derxy_(1,ui));
+
+        /*subtract SUPG term */
+        //sys_mat_sd(vi*numdofpernode_+k,ui*numdofpernode_+k) -= taufac*conv[vi]*conv[ui] ;
+      }
+    }
+  }
+} // integration loop
+
+return;
+} // Condif3Impl::CalcSubgridDiffMatrix
 
 
 /*----------------------------------------------------------------------*

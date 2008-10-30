@@ -254,6 +254,12 @@ public:
   /// determine grid velocity
   void UpdateGridv();
 
+  /// prepare AVM3-based scale separation
+  void AVM3Preparation();
+
+  /// AVM3-based scale separation
+  void AVM3Separation();
+
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
 
@@ -422,15 +428,8 @@ protected:
   /// vm3 solver
   RCP<VM3_Solver>       vm3_solver_;
 
-  //! @name only necessary for vm3 solver: coarse- and fine-scale solution vectors
-  RCP<Epetra_Vector>    csvelnp_;
+  //! @name only necessary for vm3 solver: fine-scale solution vector
   RCP<Epetra_Vector>    fsvelnp_;
-  //@}
-
-  //! @name only necessary for vm3 solver: convective stresses + coarse- and fine-scale part
-  RCP<Epetra_Vector>    convnp_;
-  RCP<Epetra_Vector>    csconvnp_;
-  RCP<Epetra_Vector>    fsconvnp_;
   //@}
 
 

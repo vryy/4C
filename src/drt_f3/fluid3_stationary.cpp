@@ -139,7 +139,6 @@ DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Fluid3StationaryImpl()
     xji_(),
     vderxy_(),
     mderxy_(),
-    csvderxy_(),
     fsvderxy_(),
     derxy_(),
     densderxy_(),
@@ -147,9 +146,7 @@ DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Fluid3StationaryImpl()
     bodyforce_(),
     velino_(),
     velint_(),
-    csvelint_(),
     fsvelint_(),
-    csconvint_(),
     gradp_(),
     tau_(),
     viscs2_(),
@@ -158,7 +155,6 @@ DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Fluid3StationaryImpl()
     vdiv_(),
     rhsmom_(),
     conv_old_(),
-    conv_s_(),
     visc_old_(),
     res_old_(),
     conv_resM_(),
@@ -275,36 +271,6 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
       fsevelnp(1,i) = myfsvelnp[1+(i*4)];
       fsevelnp(2,i) = myfsvelnp[2+(i*4)];
     }
-    if (fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-        fssgv == Fluid3::fssgv_mixed_Smagorinsky_small ||
-        fssgv == Fluid3::fssgv_scale_similarity)
-    {
-      csvelnp = discretization.GetState("csvelnp");
-      if (csvelnp==null) dserror("Cannot get state vector 'csvelnp'");
-      vector<double> mycsvelnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*csvelnp,mycsvelnp,lm);
-
-      // get coarse-scale velocity and insert into element arrays
-      for (int i=0;i<numnode;++i)
-      {
-        csevelnp(0,i) = mycsvelnp[0+(i*4)];
-        csevelnp(1,i) = mycsvelnp[1+(i*4)];
-        csevelnp(2,i) = mycsvelnp[2+(i*4)];
-      }
-
-      csconvnp = discretization.GetState("csconvnp");
-      if (csconvnp==null) dserror("Cannot get state vector 'csconvnp'");
-      vector<double> mycsconvnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*csconvnp,mycsconvnp,lm);
-
-      // get coarse-scale velocity and insert into element arrays
-      for (int i=0;i<numnode;++i)
-      {
-        cseconvnp(0,i) = mycsconvnp[0+(i*4)];
-        cseconvnp(1,i) = mycsconvnp[1+(i*4)];
-        cseconvnp(2,i) = mycsconvnp[2+(i*4)];
-      }
-    }
   }
   else
   {
@@ -323,9 +289,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   // calculate element coefficient matrix and rhs
   Sysmat(ele,
          evelnp,
-         csevelnp,
          fsevelnp,
-         cseconvnp,
          eprenp,
          edensnp,
          elemat1,
@@ -373,9 +337,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   Fluid3*                                          ele,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelnp,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvnp,
   const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
   const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
   LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& estif,
@@ -512,7 +474,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
     mderxy_.MultiplyNT(evelnp,densderxy_);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity)
+    if (fssgv != Fluid3::fssgv_no)
       //fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
       fsvderxy_.MultiplyNT(fsevelnp,derxy_);
     else fsvderxy_ = 0.;
@@ -521,34 +483,6 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
     writeArray(vderxy_,"vderxy");
     writeArray(fsvderxy_,"fsvderxy");
 #endif
-
-    // get values at integration point required for scale-similarity model
-    if(fssgv == Fluid3::fssgv_scale_similarity ||
-       fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-       fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
-    {
-      // get coarse-scale velocities at integration point
-      //csvelint_ = blitz::sum(funct_(j)*csevelnp(i,j),j);
-      csvelint_.Multiply(csevelnp,funct_);
-
-      // get coarse-scale velocity (np,i) derivatives at integration point
-      //csvderxy_ = blitz::sum(derxy_(j,k)*csevelnp(i,k),k);
-      csvderxy_.MultiplyNT(csevelnp,derxy_);
-
-      // PR(u) * grad PR(u): */
-      //conv_s_ = blitz::sum(csvderxy_(j,i)*csvelint_(j), j);
-      conv_s_.MultiplyTN(csvderxy_,csvelint_);
-
-      // get coarse-scale convective stresses at integration point
-      //csconvint_ = blitz::sum(funct_(j)*cseconvnp(i,j),j);
-      csconvint_.Multiply(cseconvnp,funct_);
-#ifdef PRINTDEBUG
-      writeArray(csvelint_,"csvelint");
-      writeArray(csvderxy_,"csvderxy");
-      writeArray(conv_s_,"conv_s");
-      writeArray(csconvint_,"csconvint");
-#endif
-    }
 
     // get pressure gradients
     //gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
@@ -1603,25 +1537,9 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
       } // end Reynolds-stress part on right hand side
 
       //----------------------------------------------------------------------
-      //     SCALE-SIMILARITY TERM (ON RIGHT HAND SIDE)
-
-      if(fssgv == Fluid3::fssgv_scale_similarity ||
-         fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-         fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
-      {
-        for (int vi=0; vi<iel; ++vi)
-        {
-          double v=fac*funct_(vi);
-          eforce(vi*4    ) -= v*(csconvint_(0) - conv_s_(0));
-          eforce(vi*4 + 1) -= v*(csconvint_(1) - conv_s_(1));
-          eforce(vi*4 + 2) -= v*(csconvint_(2) - conv_s_(2));
-        }
-      }
-
-      //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
 
-      if(fssgv != Fluid3::fssgv_no && fssgv != Fluid3::fssgv_scale_similarity)
+      if(fssgv != Fluid3::fssgv_no)
       {
         for (int vi=0; vi<iel; ++vi)
         {
@@ -1810,7 +1728,8 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c/dens;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == Fluid3::fssgv_artificial_all || fssgv == Fluid3::fssgv_artificial_small)
+  if (fssgv == Fluid3::fssgv_artificial_all or
+      fssgv == Fluid3::fssgv_artificial_small)
   {
     double fsvel_norm = 0.0;
     if (fssgv == Fluid3::fssgv_artificial_small)
@@ -1837,9 +1756,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
 
   }
   else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_Smagorinsky_small or
-           fssgv == Fluid3::fssgv_mixed_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+           fssgv == Fluid3::fssgv_Smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL
@@ -1857,7 +1774,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity derivatives at element center
-      if (fssgv == Fluid3::fssgv_Smagorinsky_small || fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+      if (fssgv == Fluid3::fssgv_Smagorinsky_small)
         //fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
         fsvderxy_.MultiplyNT(fsevelnp,derxy_);
       else  //fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);

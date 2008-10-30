@@ -50,6 +50,8 @@ DRT::ELEMENTS::Condif3::ActionType DRT::ELEMENTS::Condif3::convertStringToAction
     act = Condif3::calc_condif_systemmat_and_residual;
   else if (action == "initialize_one_step_theta")
     act = Condif3::initialize_one_step_theta;
+  else if (action == "calc_subgrid_diffusivity_matrix")
+    act = Condif3::calc_subgrid_diffusivity_matrix;
   else if (action == "calc_condif_flux")
     act = Condif3::calc_condif_flux;
   else if (action == "calc_temp_and_dens")
@@ -124,6 +126,24 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
              mat,
              actmat);
   }
+  break;
+    // calculate normalized subgrid-diffusivity matrix
+  case DRT::ELEMENTS::Condif3::calc_subgrid_diffusivity_matrix:
+  {
+    return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
+             this,
+             params,
+             discretization,
+             lm,
+             elemat1,
+             elemat2,
+             elevec1,
+             elevec2,
+             elevec3,
+             mat,
+             actmat);
+  }
+  break;
   // calculate flux
   case calc_condif_flux:
   {

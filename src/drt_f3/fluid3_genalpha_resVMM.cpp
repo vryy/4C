@@ -144,10 +144,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   LINALG::FixedSizeSerialDenseMatrix<3,iel> eaccam    ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
-
   LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> csevelaf  ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> cseconvaf ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -271,9 +268,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         eaccam        ,
         edispnp       ,
         egridvelaf    ,
-        fsevelaf      ,
-        csevelaf      ,
-        cseconvaf
+        fsevelaf
     );
 
   // --------------------------------------------------
@@ -306,9 +301,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     eprenp,
     eaccam,
     evelaf,
-    csevelaf,
     fsevelaf,
-    cseconvaf,
     actmat,
     alphaM,
     alphaF,
@@ -397,9 +390,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp          ,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam          ,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf          ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf        ,
   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf        ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf       ,
   const struct _MATERIAL*                          material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
@@ -1588,9 +1579,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
   }
   else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_Smagorinsky_small or
-           fssgv == Fluid3::fssgv_mixed_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+           fssgv == Fluid3::fssgv_Smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL
@@ -1608,7 +1597,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity (np,i) derivatives at element center
-      if (fssgv == Fluid3::fssgv_Smagorinsky_small or fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+      if (fssgv == Fluid3::fssgv_Smagorinsky_small)
       {
         fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
       }
@@ -2499,32 +2488,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     // j : direction of derivative x/y/z
     //
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity)
-    {
-      fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
-    }
-    else 
-    {
-      fsvderxyaf_.Clear();
-    }
-
-    // get values at integration point required for scale-similarity model
-    if(fssgv == Fluid3::fssgv_scale_similarity ||
-       fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-       fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
-    {
-      // get coarse-scale velocities at integration point
-      csvelintaf_.Multiply(csevelaf,funct_);
-
-      // get coarse-scale velocity (np,i) derivatives at integration point
-      csvderxyaf_.MultiplyNT(csevelaf,derxy_);
-
-      // PR(u) * grad PR(u): */
-      convaf_s_.MultiplyTN(csvderxyaf_,csvelintaf_);
-
-      // get coarse-scale convective stresses at integration point
-      csconvintaf_.Multiply(cseconvaf,funct_);
-    }
+    if (fssgv != Fluid3::fssgv_no) fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
+    else fsvderxyaf_.Clear();
 
     if (higher_order_ele)
     {
@@ -6144,22 +6109,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
         } // endif (a)gls
       }
 
-      if(fssgv == Fluid3::fssgv_scale_similarity ||
-         fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-         fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
-      {
-        //----------------------------------------------------------------------
-        //     SCALE-SIMILARITY TERM (ON RIGHT HAND SIDE)
-
-        for (int ui=0; ui<iel; ++ui)
-        {
-          elevec(ui*4    ) -= fac*(csconvintaf_(0) - convaf_s_(0))*funct_(ui);
-          elevec(ui*4 + 1) -= fac*(csconvintaf_(1) - convaf_s_(1))*funct_(ui);
-          elevec(ui*4 + 2) -= fac*(csconvintaf_(2) - convaf_s_(2))*funct_(ui);
-        }
-      }
-
-      if(fssgv != Fluid3::fssgv_no && fssgv != Fluid3::fssgv_scale_similarity)
+      if(fssgv != Fluid3::fssgv_no)
       {
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -6190,7 +6140,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                                       +    derxy_(1, ui)*fsvderxyaf_(2, 1)
                                       +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2)) ;
         } // end loop ui
-      } // end not fssgv_no and not fssgv_scale_similarity
+      } // end not fssgv_no
     }
   } // end loop iquad
   return;
@@ -6219,10 +6169,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   LINALG::FixedSizeSerialDenseMatrix<3,iel> eaccam    ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
   LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
-
   LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> csevelaf  ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> cseconvaf ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -6322,9 +6269,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         eaccam        ,
         edispnp       ,
         egridvelaf    ,
-        fsevelaf      ,
-        csevelaf      ,
-        cseconvaf
+        fsevelaf
     );
 
   // --------------------------------------------------
@@ -8488,9 +8433,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam        ,
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp       ,
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvelaf    ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf      ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf      ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf
         )
 {
     // velocity and pressure values (current iterate, n+1)
@@ -8577,56 +8520,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
       }
     }
 
-    // get coarse- and fine-scale velocity as well as coarse-scale convective stress
+    // get fine-scale velocity
     if (fssgv != Fluid3::fssgv_no)
     {
-      RCP<const Epetra_Vector> csvelaf;
       RCP<const Epetra_Vector> fsvelaf;
-      RCP<const Epetra_Vector> csconvaf;
 
       fsvelaf = discretization.GetState("fsvelaf");
       if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
       vector<double> myfsvelaf(lm.size());
       DRT::UTILS::ExtractMyValues(*fsvelaf,myfsvelaf,lm);
-      
+
       // get fine-scale velocity and insert into element arrays
       for (int i=0;i<iel;++i)
       {
         fsevelaf(0,i) = myfsvelaf[0+(i*4)];
         fsevelaf(1,i) = myfsvelaf[1+(i*4)];
         fsevelaf(2,i) = myfsvelaf[2+(i*4)];
-      }
-      if (fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
-          fssgv == Fluid3::fssgv_mixed_Smagorinsky_small ||
-          fssgv == Fluid3::fssgv_scale_similarity)
-      {
-        csvelaf = discretization.GetState("csvelaf");
-        if (csvelaf==null) dserror("Cannot get state vector 'csvelaf'");
-        vector<double> mycsvelaf(lm.size());
-        DRT::UTILS::ExtractMyValues(*csvelaf,mycsvelaf,lm);
-        
-        // get coarse-scale velocity and insert into element arrays
-        for (int i=0;i<iel;++i)
-        {
-          csevelaf(0,i) = mycsvelaf[0+(i*4)];
-          csevelaf(1,i) = mycsvelaf[1+(i*4)];
-          csevelaf(2,i) = mycsvelaf[2+(i*4)];
-        }
-        
-        csconvaf = discretization.GetState("csconvaf");
-        if (csconvaf==null) dserror("Cannot get state vector 'csconvaf'");
-        vector<double> mycsconvaf(lm.size());
-        DRT::UTILS::ExtractMyValues(*csconvaf,mycsconvaf,lm);
-        
-        // get coarse-scale velocity and insert into element arrays
-        for (int i=0;i<iel;++i)
-        {
-          int fi =4*i;
-          
-          cseconvaf(0,i) = mycsconvaf[fi  ];
-          cseconvaf(1,i) = mycsconvaf[fi+1];
-          cseconvaf(2,i) = mycsconvaf[fi+2];
-        }
       }
     }
     else

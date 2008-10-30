@@ -812,12 +812,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "artificial_all",
                                  "artificial_small",
                                  "Smagorinsky_all",
-                                 "Smagorinsky_small",
-                                 "scale_similarity",
-                                 "mixed_Smagorinsky_all",
-                                 "mixed_Smagorinsky_small"
+                                 "Smagorinsky_small"
                                  ),
-                               tuple<int>(0,1,2,3,4,5,6,7),
+                               tuple<int>(0,1,2,3,4),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",

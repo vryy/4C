@@ -338,9 +338,7 @@ namespace DRT
         \param eprenp             (i) nodal pressure, time n+1
         \param eaccam             (i) nodal accelerations at n+alphaM
         \param evelaf             (i) nodal velocities at n+alphaF
-        \param csevelaf           (i) nodal coarse-scale velocity, time n+af
         \param fsevelaf           (i) nodal fine-scale velocity, time n+af
-        \param cseconvaf          (i) nodal coarse-scale convective stresses, time n+af
         \param material           (i) fluid material
         \param alphaM             (i) evaluate accelerations at this intermediate level
         \param alphaF             (i) evaluate velocities at this intermediate level
@@ -379,9 +377,7 @@ namespace DRT
                   const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
                   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam,
                   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf,
                   const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf,
                   const struct _MATERIAL*                          material,
                   const double                                     alphaM,
                   const double                                     alphaF,
@@ -451,8 +447,6 @@ namespace DRT
       //  \param edispnp        (o) nodal mesh displacements, t_{n+1} (for ALE)
       //  \param egridvelaf     (o) nodal mesh velocities, t_{n+alpha_F} (for ALE)
       //  \param fsevelaf       (o) fine-scale velocity
-      //  \param csevelaf       (o) coarse-scale velocity
-      //  \param cseconvaf      (o) coarse-scale convective stresses
 
       void ExtractValuesFromGlobalVectors(
         const Fluid3::StabilisationAction          fssgv         ,
@@ -465,9 +459,7 @@ namespace DRT
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam        ,
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp       ,
         LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvelaf    ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf      ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& csevelaf      ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& cseconvaf     
+        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf
         );
 
 
@@ -538,12 +530,8 @@ namespace DRT
       LINALG::FixedSizeSerialDenseMatrix<3,1>   velintnp_;
       //! velocity in gausspoint, time n+af
       LINALG::FixedSizeSerialDenseMatrix<3,1>   velintaf_;
-      //! coarse-scale velocity in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   csvelintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       LINALG::FixedSizeSerialDenseMatrix<3,1>   fsvelintaf_;
-      //! coarse-scale convective stresses in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   csconvintaf_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
       LINALG::FixedSizeSerialDenseMatrix<3,1>   aleconvintaf_;
@@ -553,8 +541,6 @@ namespace DRT
       LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
       LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxyaf_;
-      //! coarse-scale velocity derivatives in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   csvderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
       LINALG::FixedSizeSerialDenseMatrix<3,3>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af

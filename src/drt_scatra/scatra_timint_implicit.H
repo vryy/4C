@@ -124,6 +124,12 @@ public:
   //! read restart data
   virtual void ReadRestart(int step)=0;
 
+  //! prepare AVM3-based scale separation
+  void AVM3Preparation();
+
+  //! scaling of AVM3-based subgrid-diffusivity matrix
+  void AVM3Scaling(ParameterList& eleparams);
+
   //! set the velocity field
   void SetVelocityField(int veltype, int velfuncno);
 
@@ -333,8 +339,8 @@ protected:
   /// only necessary for vm3 solver: fine-scale subgrid-diffusivity matrix
   RCP<LINALG::SparseMatrix> sysmat_sd_;
 
-  /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
-  RCP<Epetra_Vector>    sugrvisc_;
+  /// only necessary for vm3 solver: subgrid-diffusivity-scaling vector
+  RCP<Epetra_Vector>    subgrdiff_;
 
   //! Extractor used for convergence check of nonlinear iteration
   LINALG::MapExtractor      conpotsplitter_;

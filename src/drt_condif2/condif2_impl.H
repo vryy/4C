@@ -76,9 +76,8 @@ namespace ELEMENTS
         const vector<double>&           ehist, ///< rhs from beginning of time step
         const vector<double>&           edens, ///< density
         Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
-        Epetra_SerialDenseMatrix*       sys_mat_sd, ///< subgrid-diff. matrix
         Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
-        Epetra_SerialDenseVector&       sugrvisc, ///< subgrid-diff. vector
+        Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
         const double                    timefac, ///< time discretization factor
@@ -90,18 +89,26 @@ namespace ELEMENTS
 
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
     void InitializeOST(
-        const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
+        const DRT::ELEMENTS::Condif2*   ele,
         const vector<double>&           ephi0,
         const vector<double>&           edens,
         Epetra_SerialDenseMatrix&       massmat,
         Epetra_SerialDenseVector&       rhs,
-        Epetra_SerialDenseVector&       sugrvisc,
+        Epetra_SerialDenseVector&       subgrdiff,
         const struct _MATERIAL*         material,
         const double                    time,
         const double                    timefac,
         const Epetra_SerialDenseVector& evel,
         bool                            temperature,
         string                          fssgd
+    );
+
+    //! calculate normalized subgrid-diffusivity matrix
+    void CalcSubgridDiffMatrix(
+        const DRT::ELEMENTS::Condif2*   ele,
+        Epetra_SerialDenseMatrix&       sys_mat_sd,
+        const double                    timefac,
+        const bool                      is_stationary
     );
 
 
@@ -116,12 +123,13 @@ namespace ELEMENTS
     //! calculate stabilization parameter
     void CalTau(
         const DRT::ELEMENTS::Condif2*&          ele,
-        Epetra_SerialDenseVector&               sugrvisc,
+        Epetra_SerialDenseVector&               subgrdiff,
         const Epetra_SerialDenseVector&         evel,
         const DRT::Element::DiscretizationType& distype,
         const double&                           timefac,
         string                                  fssgd,
-        const bool&                             is_stationary
+        const bool&                             is_stationary,
+        const bool                              initial
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -143,10 +151,8 @@ namespace ELEMENTS
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
     void CalMat(
         Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseMatrix& esd,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
-        string                    fssgd,
         const double&             timefac,
         const int&                dofindex
     );
@@ -154,10 +160,8 @@ namespace ELEMENTS
     //! calculate element matrix and rhs vector (Stationary problem formulation)
     void CalMatStationary(
         Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseMatrix& esd,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
-        string                    fssgd,
         const int&                dofindex
     );
 

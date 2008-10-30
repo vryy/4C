@@ -108,24 +108,22 @@ bool FLD::VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
 }
 
 /*----------------------------------------------------------------------*
- |  scale separation routine                                    vg 02/08|
- |  get coarse- and fine-scale part from a vector                       |
+ |  scale separation routine                                   vg 02/08 |
+ |  get fine-scale part from a vector                                   |
  |  (called in every timestep for incremental formulation)              |
  *----------------------------------------------------------------------*/
-void FLD::VM3_Solver::Separate(RCP<Epetra_Vector>& csvec,
-                          RCP<Epetra_Vector>& fsvec,
-                          RCP<Epetra_Vector>& vec)
+void FLD::VM3_Solver::Separate(RCP<Epetra_Vector>& fsvec,
+                               RCP<Epetra_Vector>& vec)
 {
   Sep_->Multiply(false,*vec,*fsvec);
-  csvec->Update(1.0,*vec,-1.0,*fsvec,0.0);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  scaling routine                                             vg 02/08|
+ |  scaling routine                                            vg 02/08 |
  |  scale precomput. matrix product by subgrid-viscosity-scaling vector |
- |  (called in every timestep)                                          |
+ |  (called in every timestep for non-incremental formulation)          |
  *----------------------------------------------------------------------*/
 void FLD::VM3_Solver::Scale(RCP<LINALG::SparseMatrix>& Msv,
                        RCP<LINALG::SparseMatrix>& K,
@@ -158,7 +156,7 @@ void FLD::VM3_Solver::Scale(RCP<LINALG::SparseMatrix>& Msv,
   if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d",ierr);
 
   // compute the additional rhs and add it to existing rhs for incremental formul.
-  if (increm)
+  /*if (increm)
   {
     // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
     //LINALG::Add(Msv_,false,1.0,K,1.0);
@@ -168,8 +166,10 @@ void FLD::VM3_Solver::Scale(RCP<LINALG::SparseMatrix>& Msv,
     r->Update(-1.0,*rplus,1.0);
   }
   else
+  {*/
     // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
     K->Add(*Msv,false,1.0,1.0);
+  //}
 
   return;
 }
