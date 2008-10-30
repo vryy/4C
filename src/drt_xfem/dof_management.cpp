@@ -384,6 +384,10 @@ void XFEM::DofManager::fillDofDistributionMaps(
     }
     const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
     const std::set<FieldEnr> dofset = entry->second;
+    if (gdofs.size() != dofset.size())
+    {
+      dserror("Bug!!! Information about dofs in DofManager and Discretization does not fit together!");
+    }
     
     int dofcount = 0;
     std::set<FieldEnr>::const_iterator fieldenr;
@@ -408,6 +412,10 @@ void XFEM::DofManager::fillDofDistributionMaps(
     }
     const std::vector<int> gdofs(ih_->xfemdis()->Dof(actele));
     const std::set<FieldEnr> dofset = entry->second;
+    if (gdofs.size() != dofset.size())
+    {
+      dserror("Bug!!! Information about dofs in DofManager and Discretization does not fit together!");
+    }
     
     int dofcount = 0;
     std::set<FieldEnr>::const_iterator fieldenr;
