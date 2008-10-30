@@ -260,7 +260,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
           
-          if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+          if (not params.get<bool>("DLM_condensation") or
+              not ih_->ElementIntersected(Id()) or
+              eleDofManager_->NumElemDof() == 0) // integrate and assemble all unknowns
           {
             const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                     *eleDofManager_, NumNode(), NodeIds());
@@ -276,8 +278,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // sanity checks
             if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
               dserror("NumNodeDof mismatch");
-            if (eleDofManager_->NumElemDof() != 0)
-              dserror("NumElemDof not 0");
+            if (eleDofManager_->NumElemDof() == 0)
+              dserror("NumElemDof == 0");
             
             // stress update
             UpdateOldDLMAndDLMRHS(discretization, lm);
