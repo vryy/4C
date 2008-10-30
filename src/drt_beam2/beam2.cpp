@@ -21,9 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
-//enabling initialization of random generator
-#include <random/normal.h>
-#include <time.h>
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
@@ -311,10 +309,6 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 
   //storing locally input parameters with respect to statistical mechanics for later easy access
   Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
-
-  //random generator for seeding only (necessary for thermal noise)
-  ranlib::Normal<double> seedgenerator(0,1);
-  seedgenerator.seed((unsigned int)time(0));
 
   //setting beam reference director correctly
   for (int i=0; i<dis.NumMyColElements(); ++i)
