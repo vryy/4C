@@ -377,7 +377,7 @@ private:
   void triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q);
   
   //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
-  BlitzMat3x3 Hinv(const BlitzVec3& theta);
+  BlitzMat3x3 Hinv(BlitzVec3 theta);
 
   
   //@}

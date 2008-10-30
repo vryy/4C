@@ -130,7 +130,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
 
     }
     break;
-
+    
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case Beam3::calc_struct_nlnstiffmass:
     case Beam3::calc_struct_nlnstifflmass:
@@ -258,8 +258,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       } 
       //end of section in which numerical approximation for stiffness matrix is computed
      */
+
       
-    
     }
     break;
     case calc_struct_update_istep:
@@ -421,6 +421,7 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(7,7) += zeta/2.0;
     elemat1(8,8) += zeta/2.0;
     
+    
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
     double stand_dev_trans = pow(2 * kT * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
 
@@ -455,14 +456,6 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(2,8) += zeta/6.0;
     elemat1(8,2) += zeta/6.0;
     
-    /*
-    elemat1(3,3) += zeta/60000.0;
-    elemat1(4,4) += zeta/60000.0;
-    elemat1(5,5) += zeta/60000.0;
-    elemat1(9,9) += zeta/60000.0;
-    elemat1(10,10) += zeta/60000.0;
-    elemat1(11,11) += zeta/60000.0;
-    */
     
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
     double stand_dev_trans = pow(2 * kT * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
@@ -582,16 +575,28 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const BlitzMat3x3& Tnew, con
  *----------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const BlitzVec4& q, BlitzVec3& theta)
 {
+  /*for the angle theta we assume the domain [0; 2*PI[; hence the halfangle sine is always
+   * positive and if it is zero the only solution is theta = 0; the halfangle theta/2 has
+   * the domain [0; PI[*/
+  
   double sin_thetahalf = pow( q(0)*q(0) + q(1)*q(1) + q(2)*q(2) , 0.5);
-  double theta_abs = 2*asin( sin_thetahalf );
+  double thetahalf_abs = asin( sin_thetahalf );
   
-  /*if cos(theta/2), i.e. q(3) is negative the true value is not theta_abs, but
-   * (PI - theta_abs)*/ 
+  /*if cos(theta/2), i.e. q(3) is negative the true value is not thetahalf_abs, but
+   * (PI - thetahalf_abs)*/ 
   if(q(3) < 0)
-    theta_abs = PI - theta_abs;
+    thetahalf_abs = PI - thetahalf_abs;
   
-  for(int i = 0; i<3; i++)
-    theta(i) = theta_abs * q(i) / sin_thetahalf;
+  double theta_abs = thetahalf_abs * 2;
+  
+  if(sin_thetahalf > 0)
+  {
+    for(int i = 0; i<3; i++)
+      theta(i) = theta_abs * q(i) / sin_thetahalf;
+  }
+  else
+    for(int i = 0; i<3; i++)
+      theta(i) = 0;
    
   return;
 } //DRT::ELEMENTS::Beam3::quaterniontoangle()
@@ -678,6 +683,41 @@ void DRT::ELEMENTS::Beam3::triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q)
    }
   return;
 }// DRT::ELEMENTS::Beam3::TriadToQuaternion
+
+
+/*matrix H^(-1) which turns non-additive spin variables into additive ones according to Crisfield, Vol. 2, equation (16.93)*/
+BlitzMat3x3 DRT::ELEMENTS::Beam3::Hinv(BlitzVec3 theta)
+{
+  BlitzMat3x3 result;
+  double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+  
+  //in case of theta_abs == 0 the following computation has problems with singularities
+  if(theta_abs > 0)
+  { 
+    computespin(result, theta, -0.5);
+    
+    for(int i = 0; i<3; i++)
+      result(i,i) += theta_abs/( 2*tan(theta_abs/2) );
+    
+    for(int i = 0; i<3; i++)
+    {
+      for(int j=0; j<3; j++)
+      {
+        result(i,j) += theta(i) * theta(j) * (1 - theta_abs/(2*tan(theta_abs/2)) )/pow(theta_abs,2);
+      }
+    }
+  }
+  //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
+  else
+  {
+    BLITZTINY::PutScalar<3,3>(result,0);
+    for(int j=0; j<3; j++)
+      result(j,j) = 1; 
+  }
+ 
+  return result;
+}// DRT::ELEMENTS::Beam3::Hinv
+
 
 
 /*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
@@ -946,17 +986,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
   BLITZTINY::MV_product<3,3>(Tnew,epsilonm,stressm); 
-  
-  //matrix Theta can filter out of a vector the component parallel to beam axis (used for artificial torsional damping):
-  BlitzMat3x3 Theta;
-  for(int i = 0; i<3; i++)
-  {
-    for(int j = 0; j<3; j++)
-    {
-      Theta(i,j) = Tnew(i,0)*Tnew(0,j);
-    }
-  }
-  
+ 
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -976,22 +1006,106 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+9) -= stressn(j)*spinx21(i,j);    
       }
     }
-      
+    
     /*
-    //adding artificial torsional damping in order to stabilize numerically free fluctuations
+    //adding isotropic torsional curvature damping
     double torsdamp = 0.01;
     for(int i = 0; i<3; i++)
     {
       //damping moment
-      BlitzMat3x3 Told;
-      quaterniontotriad(Qold_,Told);
-      double Mg = Told(i,0)*lrefe_*(curvnew_(0) - curvold_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
       //node 1
       (*force)[3+i] += Mg;
       //node 2
       (*force)[9+i] += Mg;
     }
     */
+      
+    /*
+    //adding anisotropic torsional curvature damping
+    double torsdamp = 0.01;
+    for(int i = 0; i<3; i++)
+    {
+      //damping moment
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
+      //node 1
+      (*force)[3+i] += Mg;
+      //node 2
+      (*force)[9+i] += Mg;
+    }
+    */
+    
+    
+    
+    //artificial isotropic rotational damping
+    {
+      double torsdamp = 0.005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      BlitzVec3 newangle;
+      BlitzVec3 convangle;
+      quaterniontoangle(Qnew_, newangle);
+      quaterniontoangle(Qconv_, convangle);
+  
+      BlitzVec3 omega = newangle;
+      omega -= convangle;
+      BLITZTINY::V_scale<3>(omega, 1.0 / params.get<double>("delta time",0.01) );
+      for(int i = 0; i<3; i++)
+      {
+        //node 1
+        (*force)[3+i] += omega(i)*torsdamp*zeta_;
+        //node 2
+        (*force)[9+i] += omega(i)*torsdamp*zeta_;
+      }
+    }
+    
+    
+    /*
+    //artificial anisotropic rotational damping
+    {
+      double torsdamp = 10;
+      BlitzVec3 newangle;
+      BlitzVec3 convangle;
+      BlitzVec3 artforce;
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      quaterniontoangle(Qnew_, newangle);
+      quaterniontoangle(Qconv_, convangle);
+  
+      BlitzVec3 omega = newangle;
+      omega -= convangle;
+      BLITZTINY::V_scale<3>(omega, 1.0 / params.get<double>("delta time",0.01) );
+      
+      BlitzMat3x3 Theta;
+      for(int i = 0; i<3 ; i++)
+      {
+        for(int j = 0; j<3; j++)
+        {
+          Theta(i,j) = Tconv(i,0)*Tconv(0,j);
+        }
+      }
+  
+      BLITZTINY::MV_product<3,3>(Theta,omega,artforce);
+      BLITZTINY::V_scale<3>(artforce , zeta_*torsdamp);
+         
+      for(int i = 0; i<3; i++)
+      {
+        //node 1
+        (*force)[3+i] += artforce(i);
+        //node 2
+        (*force)[9+i] += artforce(i);
+      }
+    }
+    */
+
+    //std::cout<<"\ncurvnew_\n"<<curvnew_;
+
+    
+    
+    
+    
     
   } 
 
@@ -1018,41 +1132,121 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig2;
 
     
-    //std::cout<<"\ncurvnew\n"<<curvnew_<<"\n";
-    //std::cout<<"\nstiff\n"<<*stiffmatrix<<"\n";
-    //std::cout<<"\nforce\n"<<*force<<"\n";
-    //std::cout<<"\nxcurr\n"<<xcurr<<"\n";
-    //std::cout<<"\nepsilonn\n"<<epsilonn<<"\n";
-    //std::cout<<"\nepsilonm\n"<<epsilonm<<"\n";
+    /*
+    //adding isotropic torsional curvature damping
+    {
+      double torsdamp = 0.01;
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      
+      BlitzMat3x3 aux;
+      
+      for(int i= 0; i<3; i++)
+      {
+        for(int j=0;j<3;j++)
+        {
+          aux(i,j) = Tconv(i,0)*Tnew(0,j)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
+          
+          (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
+          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
+          (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
+          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
+        }
+      } 
+    }
+    */
     
     
     /*
-    //adding artifical torsional damping
-    double torsdamp = 0.01;
-    BlitzMat3x3 Told;
-    quaterniontotriad(Qold_,Told);
-    
-    BlitzMat3x3 aux;
-    
-    for(int i= 0; i<3; i++)
+    //adding anisotropic torsional curvature damping
     {
-      for(int j=0;j<3;j++)
+      double torsdamp = 0.01;
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      
+      BlitzMat3x3 aux;
+      
+      for(int i= 0; i<3; i++)
       {
-        aux(i,j) = Told(i,0)*Tnew(j,0)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
-        
-        (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
-        (*stiffmatrix)(3+i, 9+j) += aux(i,j);
-        (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
-        (*stiffmatrix)(3+i, 9+j) += aux(i,j);
-      }
-    } 
-    
-    std::cout<<"\naux = "<<aux;
+        for(int j=0;j<3;j++)
+        {
+          aux(i,j) = Tconv(i,0)*Tnew(0,j)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
+          
+          (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
+          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
+          (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
+          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
+        }
+      } 
+    }
     */
+    
+    
+    
+    //artificial isotropic rotational damping stiffness
+    {
+      double torsdamp = 0.005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      BlitzVec3 newangle;
+      quaterniontoangle(Qnew_, newangle);
+      BlitzMat3x3 Hinverse = Hinv(newangle);
+
+      
+      BLITZTINY::M_scale<3,3>(Hinverse , zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
+     
+      for(int i= 0; i<3; i++)
+      {
+        for(int j=0;j<3;j++)
+        {
+          (*stiffmatrix)(3+i, 3+j) += Hinverse(i,j);
+          (*stiffmatrix)(9+i, 9+j) += Hinverse(i,j);
+          (*stiffmatrix)(9+i, 3+j) += Hinverse(i,j);
+          (*stiffmatrix)(3+i, 9+j) += Hinverse(i,j);
+        }
+      } 
+    }
+    
+    
+    /*
+    //artificial anisotropic rotational damping stiffness
+    {
+      double torsdamp = 10;
+      BlitzVec3 newangle;
+      quaterniontoangle(Qnew_, newangle);
+      BlitzMat3x3 Hinverse = Hinv(newangle);
+      BlitzMat3x3 aux;
+      BlitzMat3x3 Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      
+      BlitzMat3x3 Theta;
+      for(int i = 0; i<3 ; i++)
+      {
+        for(int j = 0; j<3; j++)
+        {
+          Theta(i,j) = Tconv(i,0)*Tconv(0,j);
+        }
+      }
+      
+      BLITZTINY::MM_product<3,3,3>(Theta,Hinverse,aux);
+      
+      BLITZTINY::M_scale<3,3>(aux , zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
+     
+      for(int i= 0; i<3; i++)
+      {
+        for(int j=0;j<3;j++)
+        {
+          (*stiffmatrix)(3+i, 3+j) += aux(i,j);
+          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
+          (*stiffmatrix)(9+i, 3+j) += aux(i,j);
+          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
+        }
+      } 
+    }
+    */
+
+
           
     
     
-
    
   }
   

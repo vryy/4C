@@ -256,7 +256,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
   if (Nodes()[0] == NULL || Nodes()[1] == NULL)
     dserror("Cannot get nodes in order to compute reference configuration'");
   else
-  {
+  {   
     for (int k=0; k<2; ++k) //element has two nodes
     {
       xrefe(0,k) = Nodes()[k]->X()[0];
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
   {    
     Tref(1,1) = 1;
     Tref(2,1) = 0;
-  }
+  } 
   //otherwise t2 is calculated from the scalar product with t1
   else
   { 
