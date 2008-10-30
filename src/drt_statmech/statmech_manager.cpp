@@ -96,9 +96,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         if(nodenumber > -1)
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
-    }
-
-   
+    }  
   }
 
   return;
