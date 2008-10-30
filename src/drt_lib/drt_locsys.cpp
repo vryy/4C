@@ -33,7 +33,7 @@ discret_(discret)
   // combination with Dirichlet boundary conditions. This means that
   // in order to define a symmetry boundary condition, both locsys
   // AND Dirichlet condition have to formulated for the same entity
-  // (i.e. point, line, surface). Due to the coordinate transformation
+  // (i.e. point, line, surface, volume). Due to the coordinate trafo
   // the Dirichlet DOFs in the input file transform: x->n, y->t1, z->t2
   
   // STILL MISSING:
@@ -65,23 +65,23 @@ discret_(discret)
   thirddir_.Reshape(numlocsys_,3);
   
   // As for Dirichlet conditions, we keep to a very strict hierarchy
-  // for evaluation of the Locsys conditions: Surface locsys conditions
-  // are evaluated first, followed by Line locsys conditions and finally
-  // Point locsys conditions. This means that nodes carrying different
-  // types of locsys conditions are dominated by the rule "Point above
-  // Line above Surface". When two locsys condtions of the same type are
-  // defined for one node, then ordering in the input file matters!
+  // for evaluation of the Locsys conditions: Volume locsys conditions
+  // are evaluated first, followed by Surface and Line locsys conditions
+  // and finally Point locsys conditions. This means that nodes carrying
+  // different types of locsys conditions are dominated by the rule "Point
+  // above Line above Surface above Volume". When two locsys condtions of
+  // the same type are defined for one node, ordering in the input file matters!
   
   //**********************************************************************
-  // read surface locsys conditions
+  // read volume locsys conditions
   //**************************+*******************************************
   for (int i=0; i<NumLocsys(); ++i)
   {
     DRT::Condition* currlocsys = locsysconds_[i];
     
-    if (currlocsys->Type() == DRT::Condition::SurfaceLocsys)
+    if (currlocsys->Type() == DRT::Condition::VolumeLocsys)
     {
-      typelocsys_[i] = DRT::Condition::SurfaceLocsys;
+      typelocsys_[i] = DRT::Condition::VolumeLocsys;
       
       const vector<double>* n = currlocsys->Get<vector<double> >("normal");
       const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
@@ -92,8 +92,8 @@ discret_(discret)
       // check for sanity of input data
       if (Dim()==2)
       {
-        // surface locsys makes no sense for 2D
-        dserror("ERROR: Surface locsys definition for 2D problem");
+        // volume locsys makes no sense for 2D
+        dserror("ERROR: Volume locsys definition for 2D problem");
       }
       else
       {
@@ -134,7 +134,97 @@ discret_(discret)
         locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
-    else if (currlocsys->Type() == DRT::Condition::LineLocsys ||
+    else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
+             currlocsys->Type() == DRT::Condition::LineLocsys ||
+             currlocsys->Type() == DRT::Condition::PointLocsys)
+    {
+      // do nothing yet
+    }
+    else
+      dserror("ERROR: Unknown type of locsys condition!");
+  }
+    
+  //**********************************************************************
+  // read surface locsys conditions
+  //**************************+*******************************************
+  for (int i=0; i<NumLocsys(); ++i)
+  {
+    DRT::Condition* currlocsys = locsysconds_[i];
+    
+    if (currlocsys->Type() == DRT::Condition::SurfaceLocsys)
+    {
+      typelocsys_[i] = DRT::Condition::SurfaceLocsys;
+      
+      const vector<double>* n = currlocsys->Get<vector<double> >("normal");
+      const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
+      double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
+      double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
+      const vector<int>* nodes = currlocsys->Nodes();
+      
+      // check for sanity of input data
+      if (Dim()==2)
+      {
+        // normal has to be provided
+        if (ln==0.0)
+          dserror("ERROR: No normal provided for 2D locsys definition");
+                
+        // normal must lie in x1x2-plane
+        if ((*n)[2]!=0.0)
+          dserror("ERROR: Invalid normal provided for 2D locsys definition");
+        
+        // tangent must not be provided
+        if (lt!=0.0)
+          dserror("ERROR: Tangent provided for 2D locsys definition");
+        
+        // build unit normal and tangent
+        normals_(i,0)  = (*n)[0]/ln;
+        normals_(i,1)  = (*n)[1]/ln;
+        
+        // build unit tangent from 2D orthogonality
+        tangents_(i,0)  = -(*n)[1]/ln;
+        tangents_(i,1)  =  (*n)[0]/ln;
+      }
+      else
+      {
+        // normal has to be provided
+        if (ln==0.0)
+          dserror("ERROR: No normal provided for 3D locsys definition");
+        
+        // tangent has to be provided
+        if (lt==0.0)
+          dserror("ERROR: No tangent provided for 3D locsys definition");
+        
+        // tangent has to be orthogonal
+        double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
+        if (abs(ndott)>1.0e-8)
+          dserror("ERROR: Locsys normal and tangent not orthogonal");
+           
+        // build unit normal and tangent
+        for (int k=0;k<3;++k)
+        {
+          normals_(i,k)  = (*n)[k]/ln;
+          tangents_(i,k) = (*t)[k]/lt;
+        }
+      }
+      
+      // build third direction (corkscrew rule)
+      thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
+      thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
+      thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
+      
+      // build locsystoggle vector with locsys IDs
+      for (int k=0;k<(int)nodes->size();++k)
+      {
+        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+        if (!havenode) continue;
+        
+        int indices = (*nodes)[k];
+        double values  = i;
+        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+      }
+    }
+    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
+             currlocsys->Type() == DRT::Condition::LineLocsys ||
              currlocsys->Type() == DRT::Condition::PointLocsys)
     {
       // do nothing yet
@@ -222,7 +312,8 @@ discret_(discret)
         locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
-    else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
+    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
+             currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
              currlocsys->Type() == DRT::Condition::PointLocsys)
     {
       // already done or do nothing yet
@@ -310,8 +401,9 @@ discret_(discret)
         locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
-    else if (currlocsys->Type() == DRT::Condition::LineLocsys ||
-             currlocsys->Type() == DRT::Condition::SurfaceLocsys)
+    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
+             currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
+             currlocsys->Type() == DRT::Condition::LineLocsys)
     {
       // already done
     }
@@ -419,8 +511,10 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
     for (int i=0;i<NumLocsys();++i)
     {
       os << "Locsys ID: " << i << "\t";
-      if (TypeLocsys(i)==DRT::Condition::LineLocsys) os << "Line\t";
+      if (TypeLocsys(i)==DRT::Condition::PointLocsys) os << "Point\t";
+      else if (TypeLocsys(i)==DRT::Condition::LineLocsys) os << "Line\t";
       else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) os << "Surface\t";
+      else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys) os << "Volume\t";
       else dserror("ERROR: Unknown type of locsys condition!");
       os << "Normal:  " << normals_(i,0) << " " << normals_(i,1) << " " << normals_(i,2) << "\t";
       os << "Tangent: " << tangents_(i,0) << " " << tangents_(i,1) << " " << tangents_(i,2) << "\n";

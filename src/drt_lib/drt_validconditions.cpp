@@ -346,17 +346,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::SurfaceLocsys,
                                          true,
                                          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> vollocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL LOCSYS CONDITIONS",
+                                         "Locsys",
+                                         "Volume local coordinate system",
+                                         DRT::Condition::VolumeLocsys,
+                                         true,
+                                         DRT::Condition::Volume));
 
   for (unsigned i=0; i<locsyscomponents.size(); ++i)
   {
     pointlocsys->AddComponent(locsyscomponents[i]);
     linelocsys->AddComponent(locsyscomponents[i]);
     surflocsys->AddComponent(locsyscomponents[i]);
+    vollocsys->AddComponent(locsyscomponents[i]);
   }
 
   condlist.push_back(pointlocsys);
   condlist.push_back(linelocsys);
   condlist.push_back(surflocsys);
+  condlist.push_back(vollocsys);
 
   /*--------------------------------------------------------------------*/
   // periodic boundary

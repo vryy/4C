@@ -108,6 +108,7 @@ public:
     PointLocsys,
     LineLocsys,
     SurfaceLocsys,
+    VolumeLocsys,
     LinePeriodic,
     SurfacePeriodic,
     LineWeakDirichlet,
