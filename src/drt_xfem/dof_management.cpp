@@ -386,7 +386,9 @@ void XFEM::DofManager::fillDofDistributionMaps(
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
-      dserror("Bug!!! Information about dofs in DofManager and Discretization does not fit together!");
+      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
+      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+      dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
     }
     
     int dofcount = 0;
@@ -414,7 +416,11 @@ void XFEM::DofManager::fillDofDistributionMaps(
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
-      dserror("Bug!!! Information about dofs in DofManager and Discretization does not fit together!");
+//      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
+//      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+//      dserror("Bug!!! Information about element dofs in DofManager and Discretization does not fit together!");
+      // TODO: this mismatch is known and a better structure for element dofs should be found,
+      //       e.g. DofKey(gid,fieldenr,dofperfieldenr), the latter being the number of dofs per fieldenr in the element
     }
     
     int dofcount = 0;
