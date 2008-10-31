@@ -271,7 +271,8 @@ private:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
-    postprocess_stress
+    postprocess_stress,
+    calc_struct_ptcstiff 
   };
   
   //! container containing all kind of Truss3 thisandthat

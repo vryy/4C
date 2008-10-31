@@ -59,6 +59,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Truss3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
+  else if (action=="calc_struct_ptcstiff") act = Truss3::calc_struct_ptcstiff;
   else 
     {
       cout<<action<<endl;
@@ -67,6 +68,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
 
   switch(act)
   {
+    case Truss3::calc_struct_ptcstiff:
+    {   
+      //Truss3 element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size
+    }
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
      residual values*/
     case Truss3::calc_struct_linstiff:

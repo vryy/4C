@@ -60,10 +60,16 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Beam2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2::calc_struct_reset_istep;
   else if (action=="calc_stat_force_damp")      act = Beam2::calc_stat_force_damp;
+  else if (action=="calc_struct_ptcstiff")        act = Beam2::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam2");
    
   switch(act)
   {
+    case Beam2::calc_struct_ptcstiff:
+    {   
+      //Beam2 element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size
+    }
+    break;
     //action type for evaluating statistical forces
     case Beam2::calc_stat_force_damp:
     {   
