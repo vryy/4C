@@ -166,6 +166,7 @@ public:
      *number of DOF to this node requested by any element connected to this node*/
     return 3;
   }
+  
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -309,7 +310,8 @@ private:
   void t3_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force);
+                       Epetra_SerialDenseVector* force,
+                       int& ActNumDof0);
   
   /*! 
    * \brief calculate force, nonlinear stiffness and mass matrix using a linear strain measure.
@@ -321,7 +323,8 @@ private:
   void t3_nlnstiffmass2( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
+      Epetra_SerialDenseVector* force,
+      int& ActNumDof0);
   
   //! lump mass matrix
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
