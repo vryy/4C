@@ -71,8 +71,8 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 #endif
 
   // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
-  // interface go to the material law here, all others go through to
-  // the old interface
+  // interface go to the material law here.
+  // the old interface does not exist anymore...
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
@@ -266,6 +266,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       break;
     }
     default:
+      dserror("Unknown type of material");
     break;
   } // switch (mat->MaterialType())
 
@@ -294,8 +295,8 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
 #endif
 
   // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
-  // interface go to the material law here, all others go through to
-  // the old interface
+  // interface go to the material law here.
+  // the old interface does not exist anymore....
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
@@ -350,6 +351,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       break;
     }
     default:
+      dserror("Unknown type of material");
     break;
   } // switch (mat->MaterialType())
 
@@ -374,8 +376,8 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
 #endif
 
   // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
-  // interface go to the material law here, all others go through to
-  // the old interface
+  // interface go to the material law here
+  // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
@@ -450,8 +452,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
 #endif
 
   // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
-  // interface go to the material law here, all others go through to
-  // the old interface
+  // interface go to the material law here
+  // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
@@ -552,7 +554,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       break;
     }
     default:
-      dserror("Unknown material to tet4 element");
+      dserror("Unknown material to tet10 element");
     break;
   } // switch (mat->MaterialType())
 
