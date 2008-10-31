@@ -158,7 +158,13 @@ public:
   /*!
   \brief Get number of degrees of freedom of a certain node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const { return 3;}
+  virtual int NumDofPerNode(const DRT::Node& node) const 
+  { 
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+    *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
+    *number of DOF to this node requested by any element connected to this node*/
+    return 3;
+  }
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom

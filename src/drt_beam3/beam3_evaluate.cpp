@@ -61,10 +61,16 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
   else if (action=="calc_stat_force_damp")        act = Beam3::calc_stat_force_damp;
+  else if (action=="calc_struct_ptcstiff")        act = Beam3::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam3");
 
   switch(act)
   {
+    case Beam3::calc_struct_ptcstiff:
+    {
+      EvaluatePTC(params, elemat1); 
+    }
+    break;
     //action type for evaluating statistical forces
     case Beam3::calc_stat_force_damp:
     {   
@@ -486,6 +492,36 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
 
   return 0;
 } //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
+
+
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate PTC damping (public)                                                                  cyron 10/08|
+ *----------------------------------------------------------------------------------------------------------*/
+
+int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
+                                      Epetra_SerialDenseMatrix& elemat1)
+{
+  BlitzVec3 newangle;
+  quaterniontoangle(Qnew_, newangle);
+  BlitzMat3x3 Hinverse = Hinv(newangle);
+
+  
+  BLITZTINY::M_scale<3,3>(Hinverse , params.get<double>("dti",0.0));
+ 
+  for(int i= 0; i<3; i++)
+  {
+    for(int j=0;j<3;j++)
+    {
+      elemat1(3+i, 3+j) += Hinverse(i,j);
+      elemat1(9+i, 9+j) += Hinverse(i,j);
+      elemat1(9+i, 3+j) += Hinverse(i,j);
+      elemat1(3+i, 9+j) += Hinverse(i,j);
+    }
+  } 
+
+  return 0;
+} //DRT::ELEMENTS::Beam3::EvaluatePTC
 
 /*-----------------------------------------------------------------------------------------------------------*
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
@@ -992,7 +1028,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
   if (force != NULL)
   {
-    (*force).Size(12);
     for (int i=0; i<3; ++i)
     {
       (*force)(i)   -= stressn(i);
@@ -1043,7 +1078,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     
     //artificial isotropic rotational damping
     {
-      double torsdamp = 0.005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       BlitzVec3 newangle;
       BlitzVec3 convangle;
       quaterniontoangle(Qnew_, newangle);
@@ -1063,9 +1098,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     
     
     /*
-    //artificial anisotropic rotational damping
+    //artificial explicit anisotropic rotational damping
     {
-      double torsdamp = 10;
+      double torsdamp = 0.01;
       BlitzVec3 newangle;
       BlitzVec3 convangle;
       BlitzVec3 artforce;
@@ -1083,7 +1118,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         for(int j = 0; j<3; j++)
         {
-          Theta(i,j) = Tconv(i,0)*Tconv(0,j);
+          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
         }
       }
   
@@ -1092,28 +1127,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
          
       for(int i = 0; i<3; i++)
       {
-        //node 1
         (*force)[3+i] += artforce(i);
-        //node 2
         (*force)[9+i] += artforce(i);
       }
     }
     */
-
-    //std::cout<<"\ncurvnew_\n"<<curvnew_;
-
-    
-    
-    
+  
     
     
   } 
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
-  {
-    (*stiffmatrix).Shape(12,12);    
-    
+  {    
     //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
     Cm(0) = ym*crosssec_/lrefe_;
     Cm(1) = sm*crosssecshear_/lrefe_;
@@ -1160,7 +1186,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     /*
     //adding anisotropic torsional curvature damping
     {
-      double torsdamp = 0.01;
+      double torsdamp = 0.005;
       BlitzMat3x3 Tconv;
       quaterniontotriad(Qconv_,Tconv);
       
@@ -1181,11 +1207,13 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     }
     */
     
+    std::cout<<"\ncurvnew_\n"<<curvnew_;
+    
     
     
     //artificial isotropic rotational damping stiffness
     {
-      double torsdamp = 0.005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       BlitzVec3 newangle;
       quaterniontoangle(Qnew_, newangle);
       BlitzMat3x3 Hinverse = Hinv(newangle);
@@ -1207,9 +1235,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     
     
     /*
-    //artificial anisotropic rotational damping stiffness
+    //artificial explicit anisotropic rotational damping stiffness
     {
-      double torsdamp = 10;
+      double torsdamp = 0.01;
       BlitzVec3 newangle;
       quaterniontoangle(Qnew_, newangle);
       BlitzMat3x3 Hinverse = Hinv(newangle);
@@ -1222,7 +1250,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         for(int j = 0; j<3; j++)
         {
-          Theta(i,j) = Tconv(i,0)*Tconv(0,j);
+          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
         }
       }
       
@@ -1259,7 +1287,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    * reasons */
   if (massmatrix != NULL)
   {
-    (*massmatrix).Shape(12,12);
     for (int i=0; i<3; ++i)
     {
       (*massmatrix)(i  ,i  ) = 0.5*density*lrefe_*crosssec_;

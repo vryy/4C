@@ -657,9 +657,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   
   //calculating mass matrix (local version = global version) 
   if (massmatrix != NULL)
-  {
-      (*massmatrix).Shape(6,6);
-      
+  {     
       //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
       if (lumpedmass == 0)
       {
@@ -678,7 +676,6 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       
       else if (lumpedmass == 1)
       {
-        (*massmatrix).Shape(6,6);
         //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
         //to a diagonal mass matrix with constant diagonal entries
         (*massmatrix)(0,0) = density*lrefe_*crosssec_/2.0;

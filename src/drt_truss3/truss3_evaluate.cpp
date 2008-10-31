@@ -176,13 +176,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-  // get element velocities (UNCOMMENT IF NEEDED)
-  /*
-  RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==null) dserror("Cannot get state vectors 'velocity'");
-  vector<double> myvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-  */
+
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -261,7 +255,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
-{
+{ 
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   BlitzVec6 xcurr;
   
@@ -327,7 +321,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
   //computing global internal forces
   if (force != NULL)
   {
-    (*force).Size(6);
     for (int i=0; i<6; ++i)
     {
       (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
@@ -336,10 +329,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
-  {   
-    //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)   
-    (*stiffmatrix).Shape(6,6); 
-    
+  {      
     for (int i=0; i<3; ++i)
     {
         (*stiffmatrix)(i,i)   =  (ym*crosssec_*epsilon/lrefe_);
@@ -363,7 +353,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
-    (*massmatrix).Shape(6,6);
     for (int i=0; i<3; ++i)
     {
       (*massmatrix)(i  ,i  ) = density*lrefe_*crosssec_ / 3;
@@ -444,9 +433,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
 
   //computing global internal forces
   if (force != NULL)
-  {
-    (*force).Size(6);
-    
+  {  
     double forcescalar=(ym*crosssec_*epsilon)/lcurr;
     for (int i=0; i<6; ++i)
     {
