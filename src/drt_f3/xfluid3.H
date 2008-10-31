@@ -277,7 +277,8 @@ namespace DRT
         //! compute stresses from previous newton iteration and store them in dlm_info_
         void UpdateOldDLMAndDLMRHS(
             const DRT::Discretization&      discretization,
-            const std::vector<int>&         lm
+            const std::vector<int>&         lm,
+            MyState&                        mystate
             ) const;
         
         //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
