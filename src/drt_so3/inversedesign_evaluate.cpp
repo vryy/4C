@@ -669,8 +669,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     f.MultiplyTT(xrefe,n_xyz);
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::SerialDenseMatrix F_epetra(NUMDIM_SOH8,NUMDIM_SOH8);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> F(F_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
@@ -760,12 +759,10 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOH8);
-    double density;
-    ele->soh8_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&F_epetra,gp,params);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(stress_epetra.A(),true);
+    double density = 0.0;
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(true);
+    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
     LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> cstress;
@@ -1018,8 +1015,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     f.MultiplyTT(xrefe,n_xyz);
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::SerialDenseMatrix F_epetra(3,3);
-    LINALG::FixedSizeSerialDenseMatrix<3,3> F(F_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
@@ -1109,15 +1105,13 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_WEG6,NUMSTR_WEG6);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_WEG6);
-    double density;
-    ele->sow6_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra,&F_epetra,gp,params);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,          1> stress(stress_epetra.A(),true);
+    double density = 0.0;
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    ele->sow6_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,          1> cstress;
+    LINALG::FixedSizeSerialDenseMatrix<6,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
@@ -1337,7 +1331,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
   const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
   const static vector<double> gpweights = ele->so_tet4_1gp_weights();
-  double density;
+  double density =  0.0;
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
@@ -1367,8 +1361,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     f(2,2)+=1;
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::SerialDenseMatrix F_epetra(NUMDIM_SOTET4,NUMDIM_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> F(F_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
@@ -1458,14 +1451,12 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    Epetra_SerialDenseMatrix cmat_epetra(NUMSTR_SOTET4,NUMSTR_SOTET4);
-    Epetra_SerialDenseVector stress_epetra(NUMSTR_SOTET4);
-    ele->so_tet4_mat_sel(&stress_epetra,&cmat_epetra,&density,&glstrain_epetra, &F_epetra, gp);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(cmat_epetra.A(),true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,            1> stress(stress_epetra.A(),true);
+    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
+    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F,gp);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,            1> cstress;
+    LINALG::FixedSizeSerialDenseMatrix<6,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
