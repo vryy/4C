@@ -34,6 +34,8 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_statmech/statmech_manager.H"
+#include "../drt_statmech/statmech_time.H"
 
 #include <blitz/array.h>
 #include "../drt_geometry/blitz_tiny_operation.H"
@@ -62,6 +64,9 @@ public:
 
   //! @name Friends
   friend class Truss3Register;
+  friend class StatMechManager;
+  friend void StatMechManager::StatMechUpdate(double dt);
+  friend void StatMechTime::Integrate();
 
 
   //! @name Constructors and destructors and related methods
