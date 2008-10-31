@@ -46,7 +46,6 @@ Maintainer: Michael Gee
 #include "drt_cnode.H"
 #include "drt_celement.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
 #include "contactdefines.H"
 
 /*----------------------------------------------------------------------*
