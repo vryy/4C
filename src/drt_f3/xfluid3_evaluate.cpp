@@ -159,21 +159,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             dserror("uncondensed NumElemDof == 0");
           
           // stress update
-          UpdateOldDLMAndDLMRHS(discretization, lm);
-          
-          const int nd = eleDofManager_uncondensed_->NumNodeDof();
-          const int na = eleDofManager_uncondensed_->NumElemDof();
-          const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-          
-          // increase size of element vector (old values stay and zeros are added)
-          mystate.velnp.resize(numdof_uncond,0.0);
-          mystate.veln .resize(numdof_uncond,0.0);
-          mystate.velnm.resize(numdof_uncond,0.0);
-          mystate.accn .resize(numdof_uncond,0.0);
-          for (int i=0;i<na;i++)
-            mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+          UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
           
           // create uncondensed element matrix and vector
+          const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
           Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
           Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
           
@@ -279,21 +268,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             if (eleDofManager_->NumElemDof() != 0)
               dserror("NumElemDof not 0");
             if (eleDofManager_uncondensed_->NumElemDof() == 0)
-              dserror("NumElemDof uncondensed == 0");
+            {
+              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
+              cout << "boundarysize = " << boundarysize << endl;
+//              dserror("NumElemDof uncondensed == 0");
+            }
             
             // stress update
-            UpdateOldDLMAndDLMRHS(discretization, lm);
-            
-            const int nd = eleDofManager_uncondensed_->NumNodeDof();
-            const int na = eleDofManager_uncondensed_->NumElemDof();
-            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-            
-            // increase size of element vector (old values stay and zeros are added)
-            mystate.velnp.resize(numdof_uncond,0.0);
-            for (int i=0;i<na;i++)
-              mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+            UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
             
             // create uncondensed element matrix and vector
+            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
             Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
             Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
             
@@ -672,11 +657,13 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     const DRT::Discretization&      discretization,
-    const std::vector<int>&         lm
+    const std::vector<int>&         lm,
+    MyState&                        mystate
     ) const
 {
   const int nd = eleDofManager_uncondensed_->NumNodeDof();
   const int na = eleDofManager_uncondensed_->NumElemDof();
+  const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
   
   // add Kda . res_d to feas
   // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
@@ -693,6 +680,14 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
   for (int i=0;i<na;i++)
     for (int j=0;j<na;j++)
       DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+  
+  // increase size of element vector (old values stay and zeros are added)
+  mystate.velnp.resize(numdof_uncond,0.0);
+  mystate.veln .resize(numdof_uncond,0.0);
+  mystate.velnm.resize(numdof_uncond,0.0);
+  mystate.accn .resize(numdof_uncond,0.0);
+  for (int i=0;i<na;i++)
+    mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
 }
 
 /*---------------------------------------------------------------------*
@@ -718,6 +713,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     }
   }
   
+  if (na > 0)
   {
     // note: the full (u,p,sigma) matrix is unsymmetric, hence we need both, rectangular matrizes Kda and Kad
     Epetra_SerialDenseMatrix Kda(nd,na);
