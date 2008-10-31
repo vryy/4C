@@ -24,6 +24,9 @@ Maintainer: Christian Cyron
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
+#ifdef D_TRUSS3
+#include "../drt_truss3/truss3.H"
+#endif  // #ifdef D_TRUSS3
 
 #include <iostream>
 #include <iomanip>
@@ -278,6 +281,7 @@ void StatMechManager::StatMechUpdate(const double dt)
        
     /*in order not to have to set all the parameters for each single crosslinker element a dummy crosslinker element 
      * is set up before setting and deleting crosslinkers*/
+    /*
     RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
     crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
     
@@ -286,6 +290,12 @@ void StatMechManager::StatMechUpdate(const double dt)
     crosslinkerdummy->Iyy_ = 28.74e-12;
     crosslinkerdummy->Izz_ = 28.74e-12;
     crosslinkerdummy->Irr_ = 28.74e-8;
+    crosslinkerdummy->material_ = 1;
+    */
+    RCP<DRT::ELEMENTS::Truss3> crosslinkerdummy;   
+    crosslinkerdummy = rcp(new DRT::ELEMENTS::Truss3(-1,discret_.Comm().MyPID()) );
+    
+    crosslinkerdummy->crosssec_ = 19e-6;
     crosslinkerdummy->material_ = 1;
     
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
@@ -363,7 +373,9 @@ void StatMechManager::StatMechUpdate(const double dt)
         {
           /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
-          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
+          //RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
+          
+          RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(*crosslinkerdummy) );
           
           
           /*assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
@@ -379,7 +391,11 @@ void StatMechManager::StatMechUpdate(const double dt)
           newcrosslinker->BuildNodalPointers(&nodes[0]);
                        
           //correct reference configuration data is computed for the new crosslinker element
-          newcrosslinker->SetUpReferenceGeometry();
+          //newcrosslinker->SetUpReferenceGeometry();
+                   
+          //length in reference configuration
+          newcrosslinker->lrefe_ = pow( pow( newcrosslinker->Nodes()[1]->X()[0] - newcrosslinker->Nodes()[0]->X()[0],2 ) + pow( newcrosslinker->Nodes()[1]->X()[1] - newcrosslinker->Nodes()[0]->X()[1],2 ) + pow( newcrosslinker->Nodes()[1]->X()[2] - newcrosslinker->Nodes()[0]->X()[2],2 ) , 0.5 );        
+
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  

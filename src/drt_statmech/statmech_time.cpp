@@ -108,7 +108,7 @@ void StatMechTime::Integrate()
     /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
      * note that each processor will set up its own random generator and they all have to be pairwise independent*/
     int seedvariable = time(0);
-    seedvariable = 2; //2
+    //seedvariable = 2; //2
     seedgenerator.seed((unsigned int)seedvariable);
   }
 
@@ -139,6 +139,9 @@ void StatMechTime::Integrate()
   {
     double time = params_.get<double>("total time",0.0);
 
+    //pay attention: for a constant predictor an incremental velocity update is necessary, which has
+    //been deleted out of the code in oder to simplify it
+    
     /*
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
@@ -150,15 +153,13 @@ void StatMechTime::Integrate()
 
 
 
-    FullNewton();
-    //PTC();
+    //FullNewton();
+    PTC();
     UpdateandOutput();
 
     //special update and output for statistical mechanics
     statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
     statmechmanager_->StatMechUpdate(dt);
-
-    std::cout<<"\n\nAnzahl der Elemente = "<<discret_.NumGlobalElements()<<"\n\n";
 
     /*
     //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
@@ -218,18 +219,6 @@ void StatMechTime::Integrate()
     }
 
 
-    //std::cout<<"\nfext nach update and output"<<*fext_;
-    //std::cout<<"\nvelm nach update and output"<<*velm_;
-    //std::cout<<"\nfint nach update and output"<<*fint_;
-    //std::cout<<"\ndis nach update and output"<< d0;
-
-    //std::cout<<"\n*dis_ nach update and output"<<d0;
-
-    //std::cout<<"\n\nrelerr_d \n" << relerr_d;
-    //std::cout<<"\n\nrelerr_v \n" << relerr_v;
-    //std::cout<<"\n\nDelta_d \n" << Delta_d;
-    //std::cout<<"\n\nDelta_v \n" << Delta_v;
-
   */
 
     if (time>=maxtime) break;
@@ -274,18 +263,6 @@ void StatMechTime::Integrate()
       printf("\n");
     }
 #endif
-  }
-  else if (equil=="modified newton")
-  {
-    for (int i=step; i<nstep; ++i)
-    {
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-      ModifiedNewton();
-      UpdateandOutput();
-      double time = params_.get<double>("total time",0.0);
-      if (time>=maxtime) break;
-    }
   }
   else if (equil=="nonlinear cg")
   {
@@ -425,18 +402,6 @@ void StatMechTime::ConsistentPredictor()
   }
 #endif
 
-  // predicting accelerations A_{n+1} (accn)
-  // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
-  //          - 1./(beta*dt) * V_n
-  //          + (2.*beta-1.)/(2.*beta) * A_n
-  accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-#ifdef STRUGENALPHA_BE
-  accn_->Update(-1./(delta*dt),*vel_,
-                (2.*beta-1.)/(2.*delta),*acc_,1./(delta*dt*dt));
-#else
-  accn_->Update(-1./(beta*dt),*vel_,
-                (2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
-#endif
 
 #ifdef STRUGENALPHA_STRONGDBC
   // apply new accelerations at DBCs
@@ -467,19 +432,14 @@ void StatMechTime::ConsistentPredictor()
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
   velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
-  // mid-accelerations A_{n+1-alpha_m} (accm)
-  //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
+
 
   // zerofy velocity and acceleration in case of statics
   if (dynkindstat)
   {
     velm_->PutScalar(0.0);
-    accm_->PutScalar(0.0);
     veln_->PutScalar(0.0);
-    accn_->PutScalar(0.0);
     vel_->PutScalar(0.0);
-    acc_->PutScalar(0.0);
   }
 
   //------------------------------- compute interpolated external forces
@@ -504,46 +464,18 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
     disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
-#ifdef STRUGENALPHA_FINTLIKETR
-    discret_.SetState("displacement",disn_);
-    discret_.SetState("velocity",veln_);
-#else
+
     discret_.SetState("displacement",dism_);
     discret_.SetState("velocity",velm_);
-#endif
+
     //discret_.SetState("velocity",velm_); // not used at the moment
-#ifdef STRUGENALPHA_FINTLIKETR
-    fintn_->PutScalar(0.0);  // initialise internal force vector
-    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-#else
+
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
-#endif
+
     discret_.ClearState();
 
-    if (surf_stress_man_!=null)
-    {
-      p.set("surfstr_man", surf_stress_man_);
-      p.set("newstep", true);
 
-#ifdef STRUGENALPHA_FINTLIKETR
-      p.set("fintliketr", true);
-#endif
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
-    }
-
-    if (pot_man_!=null)
-    {
-      p.set("pot_man", pot_man_);
-      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
-    }
-
-    if (constrMan_->HaveConstraint())
-    {
-      ParameterList pcon;
-      pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
-      constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
-    }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -564,23 +496,16 @@ void StatMechTime::ConsistentPredictor()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add mid-inertial force
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add mid-viscous damping force
-    if (damping)
-    {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
-    }
+
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,1.0);
+
   }
   // add static mid-balance
-#ifdef STRUGENALPHA_FINTLIKETR
-  fresm_->Update(1.0,*fextm_,-1.0);
-  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
-#else
+
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-#endif
+
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -685,26 +610,17 @@ void StatMechTime::FullNewton()
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-#ifdef STRUGENALPHA_FINTLIKETR
-    disn_->Update(1.0,*disi_,1.0);
-    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-#else
+
     dism_->Update(1.-alphaf,*disi_,1.0);
     disn_->Update(1.0,*disi_,1.0);
-#endif
+
     // velocities
-#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-#else
+
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
 
     velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
 
-#endif
 
 
     //---------------------------- compute internal forces and stiffness
@@ -721,27 +637,20 @@ void StatMechTime::FullNewton()
       p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
-#ifdef STRUGENALPHA_FINTLIKETR
-#else
+
       // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
       disi_->Scale(1.-alphaf);
-#endif
+
       discret_.SetState("residual displacement",disi_);
-#ifdef STRUGENALPHA_FINTLIKETR
-      discret_.SetState("displacement",disn_);
-      discret_.SetState("velocity",veln_);
-#else
+
       discret_.SetState("displacement",dism_);
       discret_.SetState("velocity",velm_);
-#endif
+
       //discret_.SetState("velocity",velm_); // not used at the moment
-#ifdef STRUGENALPHA_FINTLIKETR
-      fintn_->PutScalar(0.0);  // initialise internal force vector
-      discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-#else
+
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
-#endif
+
       discret_.ClearState();
 
       // do NOT finalize the stiffness matrix to add masses to it later
@@ -758,17 +667,9 @@ void StatMechTime::FullNewton()
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
-
     fresm_->Update(1.0,*fvisc_,0.0);
-
-
-    // add static mid-balance
-#ifdef STRUGENALPHA_FINTLIKETR
-    fresm_->Update(1.0,*fextm_,-1.0);
-    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
-#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-#endif
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -777,34 +678,6 @@ void StatMechTime::FullNewton()
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
-
-
-    //exclude rotational DOF from computation of displacement norm
-    RCP<Epetra_Vector> disi_mod(disi_);
-    //std::cout<<"\ndisi_\n"<<*disi_;
-
-    /*
-    vector<int> lm;
-    //loop through all nodes
-    for(int id = 0; id < discret_.NumMyRowNodes(); id++)
-    {
-      //get global Ids of the DOFs of each node
-      discret_.Dof(discret_.lRowNode(id),lm);
-      //loop through all DOFs of the node and set respective displacemnet to zero
-      for(int jd = 0; jd < lm.size(); jd++)
-      {
-        if(lm[jd] % 6 == 3 || lm[jd] % 6 == 4 || lm[jd] % 6 == 5 )
-        (*disi_mod)[lm[jd]] = (*disi_)[lm[jd]] * 0.01;
-      }
-    }
-    //std::cout<<"\ndisi_mod\n"<<*disi_mod;
-    //compute displacmenet norm over the vector cleaned from rotational displacements:
-    //disi_mod->Norm2(&disinorm);
-    //std::cout<<"\ndisi_mod\n"<<*disi_mod;
-    */
-
-    //std::cout<<"\nfres"<<*fresm_;
-
     fresm_->Norm2(&fresmnorm);
 
     // a short message
@@ -850,10 +723,8 @@ void StatMechTime::PTC()
   double dt        = params_.get<double>("delta time"             ,0.01);
   double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
   double gamma     = params_.get<double>("gamma"                  ,0.581);
-  double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
@@ -861,6 +732,11 @@ void StatMechTime::PTC()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  
+  #ifndef STRUGENALPHA_BE
+    double delta = beta;
+  #endif
+  
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
@@ -869,14 +745,12 @@ void StatMechTime::PTC()
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
 
-  // check whether mass and damping are present
-  // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
-  if (damping)
-    if (!damp_->Filled()) dserror("damping matrix must be filled here");
+  // check whether damping is present
+
+  if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 1.0e+00;
+  double ptcdt = 1.3e+01; //1.3e+01 scheint eine gute Wahl zu sein
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
@@ -894,62 +768,26 @@ void StatMechTime::PTC()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
-#if 1 // SER
-#else // TTI
-    double dtim = dti0;
-#endif
     dti0 = dti;
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
-    //------------------------------------------- effective rhs is fresm
-    //---------------------------------------------- build effective lhs
-    // (using matrix stiff_ as effective matrix)
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-    if (damping)
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+
+
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     stiff_->Complete();
 
-    /*
-    //------------------------------- do ptc modification to effective LHS
+
     {
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
-      tmp->PutScalar(dti);
-      RCP<Epetra_Vector> diag = LINALG::CreateVector(stiff_->RowMap(),false);
-      stiff_->ExtractDiagonalCopy(*diag);
-      diag->Update(1.0,*tmp,1.0);
-      stiff_->ReplaceDiagonalValues(*diag);
+      // create the parameters for the discretization
+      ParameterList p;
+
+      p.set("action","calc_struct_ptcstiff");
+      p.set("delta time",dt);
+      p.set("dti",dti);
+
+      //evaluate ptc stiffness contribution in all the elements
+      discret_.Evaluate(p,stiff_,null,null,null,null);
     }
-    */
-
-
-    //___________________________________________________________________________
-    {
-      vector<int> lm;
-
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
-      tmp->PutScalar(dti);
-      RCP<Epetra_Vector> diag = LINALG::CreateVector(stiff_->RowMap(),false);
-      stiff_->ExtractDiagonalCopy(*diag);
-
-      //loop through all nodes
-      for(int id = 0; id < discret_.NumMyRowNodes(); id++)
-      {
-        //get global Ids of the DOFs of each node
-        discret_.Dof(discret_.lRowNode(id),lm);
-        //loop through all DOFs of the node and set translation DOF damping to zero
-        for(int jd = 0; jd < lm.size(); jd++)
-        {
-          if(lm[jd] % 6 == 0 || lm[jd] % 6 == 1 || lm[jd] % 6 == 2 )
-          (*tmp)[lm[jd]] = 0;
-        }
-      }
-
-
-      diag->Update(1.0,*tmp,1.0);
-      stiff_->ReplaceDiagonalValues(*diag);
-    }
-    //_____________________________________________________________________________
-
 
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -970,33 +808,17 @@ void StatMechTime::PTC()
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+
     dism_->Update(1.-alphaf,*disi_,1.0);
+    disn_->Update(1.0,*disi_,1.0);
+
     // velocities
-#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-#else
+
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-                  gamma/(beta*dt));
-#endif
-    // accelerations
-#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-#else
-    // incremental (required for constant predictor)
-    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
-                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-#endif
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
+
+
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -1012,39 +834,39 @@ void StatMechTime::PTC()
       p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
-#ifdef STRUGENALPHA_FINTLIKETR
-#else
+
       // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
       disi_->Scale(1.-alphaf);
-#endif
+
       discret_.SetState("residual displacement",disi_);
+
       discret_.SetState("displacement",dism_);
       discret_.SetState("velocity",velm_);
+
+      //discret_.SetState("velocity",velm_); // not used at the moment
+
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
-      discret_.ClearState();
-      // do NOT finalize the stiffness matrix to add masses to it later
-    }
 
-    if (surf_stress_man_!=null) dserror("No surface stresses in case of PTC");
+      discret_.ClearState();
+
+      // do NOT finalize the stiffness matrix to add damping to it later
+    }
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
-    {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
-    }
-    // add static mid-balance
+
+    // dynamic residual
+    // Res =  C . V_{n+1-alpha_f}
+    //        + F_int(D_{n+1-alpha_f})
+    //        - F_{ext;n+1-alpha_f}
+    // add mid-inertial force
+
+
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,0.0);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -1069,34 +891,11 @@ void StatMechTime::PTC()
     }
 
     //------------------------------------ PTC update of artificial time
-#if 1
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
     nc = np;
-#else
-    {
-      // TTI step size control
-      double ttau=0.75;
-      RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
-      d1->Update(1.0,*disi_,-1.0,*x0,0.0);
-      d1->Scale(dti0);
-      RCP<Epetra_Vector> d0 = LINALG::CreateVector(stiff_->RowMap(),false);
-      d0->Update(1.0,*x0,-1.0,*xm,0.0);
-      d0->Scale(dtim);
-      double dt0 = 1/dti0;
-      double dtm = 1/dtim;
-      RCP<Epetra_Vector> xpp = LINALG::CreateVector(stiff_->RowMap(),false);
-      xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
-      RCP<Epetra_Vector> xtt = LINALG::CreateVector(stiff_->RowMap(),false);
-      for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
-      double ett;
-      xtt->MaxValue(&ett);
-      ett = ett / (2.*ttau);
-      dti = sqrt(ett);
-      nc = np;
-    }
-#endif
+
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
@@ -1122,7 +921,7 @@ void StatMechTime::PTC()
   params_.set<int>("num iterations",numiter);
 
   return;
-} // StruGenAlpha::PTC()
+} // StatMechTime::PTC()
 
 
 
