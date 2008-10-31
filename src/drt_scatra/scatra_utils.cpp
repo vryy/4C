@@ -231,6 +231,7 @@ void SCATRA::CreateScaTraDiscretization(
       // The map gives the new condition names (e.g. renaming from TransportDirichlet to Dirichlet)
       scatradis->SetCondition((*conditername).second, rcp(new DRT::Condition(*conds[i])));
     }
+    conds.clear();
   }
 
   // redistribute nodes to column (ghost) map
