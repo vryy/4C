@@ -57,9 +57,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sow6Register;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 class InvDesign;
-#endif
 
 /*!
 \brief A C++ version of the 6-node wedge solid element
@@ -383,8 +381,8 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                    invdesign_;
 #endif
 

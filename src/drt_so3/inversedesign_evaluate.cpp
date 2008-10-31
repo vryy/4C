@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 
 #include "inversedesign.H"
 #include "../drt_mat/material.H"
@@ -1675,5 +1674,4 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
 }
 
 
-#endif  // #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #endif  // #ifdef CCADISCRET

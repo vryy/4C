@@ -59,9 +59,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sotet4Register;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 class InvDesign;
-#endif
 
 /*!
 \brief A C++ version of the 4-node tet solid element
@@ -360,8 +358,8 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                                            invdesign_;
 #endif
 

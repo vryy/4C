@@ -58,9 +58,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class Soh8Register;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 class InvDesign;
-#endif
 
 /*!
 \brief A C++ version of the 8-node hex solid element
@@ -442,8 +440,8 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 #endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
+#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
 #endif
 

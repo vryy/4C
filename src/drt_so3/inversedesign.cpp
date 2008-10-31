@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 
 #include "inversedesign.H"
 #include "../drt_lib/drt_dserror.H"
@@ -131,5 +130,4 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
 
 
 
-#endif  // #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 
 #include "inversedesign.H"
 #include "so_hex8.H"
@@ -1020,5 +1019,4 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
 
 
 
-#endif  // #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #endif  // #ifdef CCADISCRET

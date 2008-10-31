@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #ifndef INVERSEDESIGN_H
 #define INVERSEDESIGN_H
 
@@ -247,5 +246,4 @@ private:
 
 
 #endif  // #ifndef INVERSEDESIGN_H
-#endif  // #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #endif  // #ifdef CCADISCRET
