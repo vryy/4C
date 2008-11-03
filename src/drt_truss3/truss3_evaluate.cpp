@@ -281,7 +281,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
   for (int j=0; j<3; ++j) 
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
   }
   
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
@@ -402,7 +402,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
   for (int j=0; j<3; ++j) 
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
   }
   
   //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
