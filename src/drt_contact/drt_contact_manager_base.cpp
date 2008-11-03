@@ -40,7 +40,7 @@ Maintainer: Alexander Popp
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialComm.h"
-#include "drt_contact_manager.H"
+#include "drt_contact_manager_base.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
 #include "contactdefines.H"
