@@ -292,11 +292,13 @@ void StatMechManager::StatMechUpdate(const double dt)
     crosslinkerdummy->Irr_ = 28.74e-8;
     crosslinkerdummy->material_ = 1;
     */
+#ifdef D_TRUSS3
     RCP<DRT::ELEMENTS::Truss3> crosslinkerdummy;   
     crosslinkerdummy = rcp(new DRT::ELEMENTS::Truss3(-1,discret_.Comm().MyPID()) );
     
     crosslinkerdummy->crosssec_ = 19e-6;
     crosslinkerdummy->material_ = 1;
+#endif
     
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
@@ -374,7 +376,7 @@ void StatMechManager::StatMechUpdate(const double dt)
           /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
           //RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
-          
+#ifdef D_TRUSS3
           RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(*crosslinkerdummy) );
           
           
@@ -395,7 +397,7 @@ void StatMechManager::StatMechUpdate(const double dt)
                    
           //length in reference configuration
           newcrosslinker->lrefe_ = pow( pow( newcrosslinker->Nodes()[1]->X()[0] - newcrosslinker->Nodes()[0]->X()[0],2 ) + pow( newcrosslinker->Nodes()[1]->X()[1] - newcrosslinker->Nodes()[0]->X()[1],2 ) + pow( newcrosslinker->Nodes()[1]->X()[2] - newcrosslinker->Nodes()[0]->X()[2],2 ) , 0.5 );        
-
+#endif
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  
