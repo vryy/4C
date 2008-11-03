@@ -337,7 +337,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
      (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
     
     for (int i=0; i<3; ++i)
-     (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
+     (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+3);
   }
 
   //computing linear stiffness matrix
@@ -346,11 +346,11 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
     for (int i=0; i<3; ++i)
     { 
         //stiffness entries for first node
-        (*stiffmatrix)(i ,i             )   =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i ,ActNumDof0 + i) = -(ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i              ,i             )   =  (ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i              ,ActNumDof0 + i)   = -(ym*crosssec_*epsilon/lrefe_);
         //stiffness entries for second node
         (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i + ActNumDof0 ,i             ) = -(ym*crosssec_*epsilon/lrefe_);
+        (*stiffmatrix)(i + ActNumDof0 ,i             )   = -(ym*crosssec_*epsilon/lrefe_);
     }
 
     for (int i=0; i<3; ++i)
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
         //node 1
         (*stiffmatrix)(i              ,j            ) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j); 
         //node 2
-        (*stiffmatrix)(i + ActNumDof0 ,j +ActNumDof0) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+        (*stiffmatrix)(i + ActNumDof0 ,j +ActNumDof0) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i+3)*aux(j+3);
       }
   }
   
@@ -451,7 +451,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
      (*force)(i) = forcescalar * aux(i);
     //node 2
     for (int i=0; i<3; ++i)
-     (*force)(ActNumDof0 + i) = forcescalar * aux(i);
+     (*force)(ActNumDof0 + i) = forcescalar * aux(i+3);
   }
   
   //computing linear stiffness matrix
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
         //node 1
         (*stiffmatrix)(i              ,j            ) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j); 
         //node 2
-        (*stiffmatrix)(i + ActNumDof0 ,j +ActNumDof0) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
+        (*stiffmatrix)(i + ActNumDof0 ,j +ActNumDof0) += (ym*crosssec_/pow(lcurr,3))*aux(i+3)*aux(j+3);
       }
   }
   
