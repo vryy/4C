@@ -119,6 +119,8 @@ void DRT::ELEMENTS::Truss3::Pack(vector<char>& data) const
   AddtoPack(data,crosssec_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  //kinematic type
+  AddtoPack(data,kintype_);  
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -152,6 +154,8 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
+  // kinematic type
+  ExtractfromPack(position,data,kintype_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
