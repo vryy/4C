@@ -732,16 +732,16 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   const int mylength = dbctoggle->MyLength();
   const int* fullgids = fullmap.MyGlobalElements();
   // build sets containing the DBC or free global IDs, respectively
-  std::set<int> dbcgids;
-  std::set<int> freegids;
+  std::vector<int> dbcgids;
+  std::vector<int> freegids;
   for (int i=0; i<mylength; ++i)
   {
     const int gid = fullgids[i];
     const int compo = (int) round((*dbctoggle)[i]);
     if (compo == 0)
-      freegids.insert(gid);
+      freegids.push_back(gid);
     else if (compo == 1)
-      dbcgids.insert(gid);
+      dbcgids.push_back(gid);
     else
       dserror("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
   }
@@ -750,14 +750,10 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   {
     int nummyelements = 0;
     int* myglobalelements = NULL;
-    std::vector<int> dbcgidsv;
     if (dbcgids.size() > 0)
     {
-      dbcgidsv.reserve(dbcgids.size());
-      for (std::set<int>::iterator gid=dbcgids.begin(); gid!=dbcgids.end(); ++gid)
-        dbcgidsv.push_back(*gid);
-      nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
+      nummyelements = dbcgids.size();
+      myglobalelements = &(dbcgids[0]);
     }
     dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
@@ -766,14 +762,10 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   {
     int nummyelements = 0;
     int* myglobalelements = NULL;
-    std::vector<int> freegidsv;
     if (freegids.size() > 0)
     {
-      freegidsv.reserve(freegids.size());
-      for (std::set<int>::iterator gid=freegids.begin(); gid!=freegids.end(); ++gid)
-        freegidsv.push_back(*gid);
-      nummyelements = freegidsv.size();
-      myglobalelements = &(freegidsv[0]);
+      nummyelements = freegids.size();
+      myglobalelements = &(freegids[0]);
     }
     freemap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
