@@ -91,6 +91,12 @@ namespace ADAPTER
     /// current velocity from fluid solver
     RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_; }
 
+    /// get current velocity+pressure from fluid solver
+    void GetCurrentFluidVelPress(){ velpressnp_=FluidField().Velnp(); }
+
+    /// current velocity from fluid solver
+    RCP<const Epetra_Vector> VelocityPressure(){ return velpressnp_; }
+
     /// get current density from scalar transport solver
     void GetCurrentDensity(){ densnp_=ScaTraField().Densnp(); }
 
@@ -123,6 +129,9 @@ namespace ADAPTER
 
     /// current velocity field at time n+1
     RCP<const Epetra_Vector>    velocitynp_;
+
+    /// current velocity and pressure field at time n+1
+    RCP<const Epetra_Vector>    velpressnp_;
 
     /// density fields at times n+1, n and n-1
     RCP<const Epetra_Vector>    densnp_;

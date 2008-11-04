@@ -21,9 +21,11 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(
     Epetra_Comm& comm,
+    RCP<DRT::Discretization>      fluiddis,
     const Teuchos::ParameterList& prbdyn
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn),
+   fluiddiscret_(fluiddis)
 {
   // maximum number of iterations and tolerance for outer iteration
   itmax_ = prbdyn.get<int>   ("ITEMAX");
@@ -104,12 +106,12 @@ void LOMA::Algorithm::InitialCalculations()
   // initially set density at 0 and -1
   ScaTraField().UpdateDensity();
 
-  // get initial velocity field
-  GetCurrentFluidVelocity();
+  // get initial velocity (and pressure) field
+  GetCurrentFluidVelPress();
 
-  // compute initial convective density-weighted velocity field for scalar 
-  // transport solver using initial fluid velocity field
-  ScaTraField().SetLomaVelocity(ConvectiveVelocity());
+  // compute initial convective density-weighted velocity field for scalar
+  // transport solver using initial fluid velocity (and pressure) field
+  ScaTraField().SetLomaVelocity(VelocityPressure(),fluiddiscret_);
 
   // write initial fields
   Output();
@@ -157,11 +159,11 @@ void LOMA::Algorithm::OuterLoop()
   {
     itnum++;
 
-    // get new velocity field
-    GetCurrentFluidVelocity();
+    // get new velocity (and pressure) field
+    GetCurrentFluidVelPress();
 
     // set field vectors: density-weighted convective velocity + density
-    ScaTraField().SetLomaVelocity(ConvectiveVelocity());
+    ScaTraField().SetLomaVelocity(VelocityPressure(),fluiddiscret_);
 
     // solve transport equation for temperature
     if (Comm().MyPID()==0)

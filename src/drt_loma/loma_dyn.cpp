@@ -67,6 +67,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
     conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
     conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+    conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
     conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
     SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,false);
     if (comm.MyPID()==0)
@@ -80,7 +81,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
   const Teuchos::ParameterList& lomacontrol = DRT::Problem::Instance()->LOMAControlParams();
 
   // create a LOMA::Algorithm instance
-  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
+  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,fluiddis,lomacontrol));
 
   // read the restart information, set vectors and variables
   if (restart) loma->ReadRestart(restart);

@@ -69,8 +69,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
-  pbc.UpdateDofsForPeriodicBoundaryConditions();
+  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
+  pbc_->UpdateDofsForPeriodicBoundaryConditions();
+
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -1127,37 +1129,111 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
 
 /*----------------------------------------------------------------------*
- | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
+ | set velocity field for low-Mach-number flow                 vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel)
+void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+    RCP<DRT::Discretization> fluiddis)
 {
   // check vector compatibility and determine space dimension
   int numdim =-1;
-  if (extvel->MyLength()== (2* convel_->MyLength()))
-    numdim = 2;
-  else if (extvel->MyLength()== (3* convel_->MyLength()))
+  if (extvel->MyLength()<= (4* convel_->MyLength()) and
+      extvel->MyLength() > (3* convel_->MyLength()))
     numdim = 3;
+  else if (extvel->MyLength()<= (3* convel_->MyLength()))
+    numdim = 2;
   else
-    dserror("velocity vectors do not match in size");
+    dserror("fluid velocity vector too large");
 
-  // set node-based convective velocity vector weighted by density
-  if ((numdim == 3) or (numdim == 2))
+  // get noderowmap of scatra discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // get dofrowmap of fluid discretization
+  const Epetra_Map* dofrowmap = fluiddis->DofRowMap();
+
+  // loop over local nodes of scatra discretization
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    // first of all, assume the present node is not a slavenode
+    bool slavenode=false;
+
+    // get the processor-local scatra node
+    DRT::Node*  scatralnode = discret_->lRowNode(lnodeid);
+
+    // get the processor-local fluid node
+    DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the fluid node
+    vector<int> nodedofset = fluiddis->Dof(fluidlnode);
+
+    // check whether we have a pbc condition on this scatra node
+    vector<DRT::Condition*> mypbc;
+    scatralnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // yes, we have a periodic boundary condition on this scatra node
+    if (mypbc.size()>0)
     {
-      double dens  = (*densnp_)[lnodeid];
-      // get the processor local node
+      // get master and list of all his slavenodes
+      map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(scatralnode->Id());
+
+      // check whether this is a slavenode
+      if (master == pbcmapmastertoslave_->end())
+      {
+        // indeed a slavenode
+        slavenode = true;
+      }
+      else
+      {
+        // we have a masternode: set values for all slavenodes
+        vector<int>::iterator i;
+        for(i=(master->second).begin();i!=(master->second).end();++i)
+        {
+          // global and processor-local scatra node ID for slavenode
+          int globalslaveid = *i;
+          int localslaveid  = noderowmap->LID(globalslaveid);
+
+          // get the processor-local fluid slavenode
+          DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
+
+          // the set of degrees of freedom associated with the node
+          vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
+
+          for(int index=0;index<numdim;++index)
+          {
+            // global and processor-local fluid dof ID
+            int gid = slavenodedofset[index];
+            int lid = dofrowmap->LID(gid);
+
+            // get density for this processor-local scatra node
+            double dens  = (*densnp_)[localslaveid];
+            // get velocity for this processor-local fluid dof
+            double velocity =(*extvel)[lid];
+            // insert velocity*density-value in vector
+            convel_->ReplaceMyValue(localslaveid, index, velocity*dens);
+          }
+        }
+      }
+    }
+
+    // do this for all nodes other than slavenodes
+    if (slavenode == false)
+    {
       for(int index=0;index<numdim;++index)
       {
-        double velocity = (*extvel)[lnodeid*numdim + index];
+        // global and processor-local fluid dof ID
+        int gid = nodedofset[index];
+        int lid = dofrowmap->LID(gid);
+
+        // get density for this processor-local scatra node
+        double dens  = (*densnp_)[lnodeid];
+        // get velocity for this processor-local fluid dof
+        double velocity = (*extvel)[lid];
+        // insert velocity*density-value in vector
         convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
       }
     }
   }
 
   return;
-
 } // ScaTraTimIntImpl::SetLomaVelocity
 
 

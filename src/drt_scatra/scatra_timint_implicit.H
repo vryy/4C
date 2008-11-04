@@ -49,6 +49,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_fluid/avms_solver.H"
+#include "../drt_fluid/drt_periodicbc.H"
 
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -140,7 +141,8 @@ public:
   void SetInitialField(int init,int startfuncno);
 
   //! set velocity field for low-Mach-number flow
-  void SetLomaVelocity(RCP<const Epetra_Vector> extvel);
+  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<DRT::Discretization> fluiddis);
 
   //! predict density field for low-Mach-number flow
   void PredictDensity();
@@ -344,6 +346,12 @@ protected:
 
   //! Extractor used for convergence check of nonlinear iteration
   LINALG::MapExtractor      conpotsplitter_;
+
+  /// Periodic Boundary Conditions. Guess what.
+  RCP<PeriodicBoundaryConditions> pbc_;
+
+  /// connection between master and slave nodes on this proc
+  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
 
   // time measurement
   // ----------------

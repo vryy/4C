@@ -47,6 +47,7 @@ namespace LOMA
     /// constructor
     explicit Algorithm(
         Epetra_Comm& comm,                   ///< communicator
+        RCP<DRT::Discretization>  fluiddis,
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 
@@ -75,6 +76,9 @@ namespace LOMA
 
     /// write output
     void Output();
+
+    /// fluid discretization
+    RCP<DRT::Discretization> fluiddiscret_;
 
     /// maximum number of iterations and tolerance for outer iteration
     int     itmax_;
