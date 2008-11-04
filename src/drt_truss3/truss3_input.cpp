@@ -62,7 +62,22 @@ bool DRT::ELEMENTS::Truss3::ReadElement()
   crosssec_ = 0;
   frdouble("CROSS",&crosssec_,&ierr);
   if (ierr!=1) dserror("Reading of Truss3 element failed");
+  
+  // we expect kintype to be total lagrangian
+  kintype_ = tr3_totlag;
+
+  // read kinematic type
+  char buffer[50];
+  frchar("KINEM",buffer,&ierr);
+  if (ierr)
+  {
+   // geometrically non-linear with Total Lagrangean approach
+   if (strncmp(buffer,"totlag",6)==0)    kintype_ = tr3_totlag;
+   // geometrically non-linear approach with engineering strains
+   else if (strncmp(buffer,"engstr",6)==0)   kintype_ = tr3_engstrain;
    
+   else dserror("Reading of Truss3 element failed because of unknown kinematic type!");
+  }  
   return true;
 } // Truss3::ReadElement()
 

@@ -288,6 +288,13 @@ private:
     calc_struct_ptcstiff 
   };
   
+  //! possible kinematic types
+  enum KinematicType
+  {
+    tr3_totlag,
+    tr3_engstrain
+  };
+  
   //! container containing all kind of Truss3 thisandthat
   DRT::Container data_;  
   
@@ -300,27 +307,37 @@ private:
   //! cross section area
   double crosssec_;
   
-
+  //! Kinematic type
+  KinematicType kintype_;
+  
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
 
   //! @name Internal calculation methods
               
-  //!calculation of nonlinear stiffness and mass matrix
+  //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
   void t3_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
                        int& ActNumDof0);
   
+  
+  //!calculation of nonlinear stiffness and mass matrix
+  void t3_nlnstiffmass_totlag( vector<double>& disp,
+      Epetra_SerialDenseMatrix* stiffmatrix,
+      Epetra_SerialDenseMatrix* massmatrix,
+      Epetra_SerialDenseVector* force,
+      int& ActNumDof0);
+  
   /*! 
-   * \brief calculate force, nonlinear stiffness and mass matrix using a linear strain measure.
+   * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
    * 
-   * Unlike the fully nonlinear implementation of #t3_nlnstiffmass, this function uses \f$\varepsilon=\Delta d / d\f$
+   * Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
    * as strain measure. 
    *  
   */ 
-  void t3_nlnstiffmass2( vector<double>& disp,
+  void t3_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force,

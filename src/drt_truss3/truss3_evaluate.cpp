@@ -122,18 +122,18 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
-      t3_nlnstiffmass2(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
       else if (act == Truss3::calc_struct_nlnstifflmass)
       {
-        t3_nlnstiffmass2(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
         // lump mass matrix (bborn 07/08)
         // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
         //b3_lumpmass(&elemat2);
       }
       else if (act == Truss3::calc_struct_nlnstiff)
-      t3_nlnstiffmass2(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
       else if (act == Truss3::calc_struct_internalforce)
-      t3_nlnstiffmass2(mydisp,NULL,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1,ActNumDof0);
     
     }
     break;
@@ -259,10 +259,31 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
+/*--------------------------------------------------------------------------------------*
+ | switch between kintypes                                                      tk 11/08|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
+    Epetra_SerialDenseMatrix* stiffmatrix,
+    Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector* force,
+    int& ActNumDof0)
+{
+  switch(kintype_)
+  {
+  case tr3_totlag:
+    t3_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force,ActNumDof0);
+    return;
+  case tr3_engstrain:
+    t3_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force,ActNumDof0);
+    return;
+  }
+}
+
+
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force,
@@ -397,7 +418,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
  | nonlinear stiffness and mass matrix (private)                                                      tk 10/08|
  | engineering strain measure, large displacements and rotations                                                |
   *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force,
@@ -455,11 +476,13 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }
-
+  
+  // resulting force scaled by current length
+  double forcescalar=(ym*crosssec_*epsilon)/lcurr;
+  
   //computing global internal forces
   if (force != NULL)
   {  
-    double forcescalar=(ym*crosssec_*epsilon)/lcurr;
     //node 1
     for (int i=0; i<3; ++i)
      (*force)(i) = forcescalar * aux(i);
@@ -475,11 +498,11 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
     for (int i=0; i<3; ++i)
     { 
         //stiffness entries for first node
-        (*stiffmatrix)(i              ,i             )   =  (ym*crosssec_*epsilon/lcurr);
-        (*stiffmatrix)(i              ,ActNumDof0 + i)   = -(ym*crosssec_*epsilon/lcurr);
+        (*stiffmatrix)(i              ,i             )   =  forcescalar;
+        (*stiffmatrix)(i              ,ActNumDof0 + i)   = -forcescalar;
         //stiffness entries for second node
-        (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  (ym*crosssec_*epsilon/lcurr);
-        (*stiffmatrix)(i + ActNumDof0 ,i             )   = -(ym*crosssec_*epsilon/lcurr);
+        (*stiffmatrix)(i + ActNumDof0 ,i + ActNumDof0)   =  forcescalar;
+        (*stiffmatrix)(i + ActNumDof0 ,i             )   = -forcescalar;
     }
     
     //auxiliary variables for handling indices:
