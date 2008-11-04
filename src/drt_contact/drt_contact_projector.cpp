@@ -351,7 +351,7 @@ double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
        xim coords of element nodes (master side)
        xs  coords of node to be projected (slave side)
        ns   outward normal of node to be projected (slave side)          */
-  double fval;
+  double fval = 0.0;
   
   if (Dim()==2)
   {
@@ -404,7 +404,7 @@ double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
        xim, yim  coords of element nodes (master side)
        nxs, nys   outward normal of node to be projected (slave side)   */
   
-  double fgrad;
+  double fgrad = 0.0;
     
   if (Dim()==2)
   {
@@ -449,7 +449,7 @@ double CONTACT::Projector::EvaluateFElementNormal(CONTACT::CNode& node,
        xm  coords of node to be projected (master side)
        nis outward normals of element nodes (slave side)                */
   
-  double fval;
+  double fval = 0.0;
     
   if (Dim()==2)
   {
@@ -524,7 +524,7 @@ double CONTACT::Projector::EvaluateGradFElementNormal(CONTACT::CNode& node,
        xm, ym     coords of node to be projected (master side)
        nxjs, nyjs outward normals of element nodes (slave side)         */
   
-  double fgrad;
+  double fgrad = 0.0;
       
   if (Dim()==2)
   {
@@ -603,7 +603,7 @@ double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
        gpx coords of GP to be projected (slave side)
        gpn outward normal of GP to be projected (slave side)          */
   
-  double fval;
+  double fval = 0.0;
       
   if (Dim()==2)
   {
@@ -657,7 +657,7 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
        xim, yim   coords of element nodes (master side)
        gpnx, gpny outward normal of GP to be projected (slave side)   */
   
-  double fgrad;
+  double fgrad = 0.0;
         
   if (Dim()==2)
   {

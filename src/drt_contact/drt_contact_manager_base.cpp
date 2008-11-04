@@ -2200,8 +2200,8 @@ void CONTACT::ManagerBase::UpdateActiveSet()
       }
       
       // friction
-      double tz;
-      double tjump;
+      double tz = 0.0;
+      double tjump = 0.0;
       
       if(ftype=="tresca")
       { 
