@@ -128,6 +128,8 @@ class BlockSparseMatrixBase : public SparseOperator
 
   void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
+  void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true);
+
   //@}
 
   /** \name Matrix Properties Query Methods */

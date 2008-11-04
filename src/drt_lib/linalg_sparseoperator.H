@@ -176,6 +176,9 @@ class SparseOperator : public Epetra_Operator
     /// Apply dirichlet boundary condition to a matrix
     virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true) = 0;
 
+    /// Apply dirichlet boundary condition to a matrix
+    virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true) = 0;
+
 };
 
 

@@ -67,7 +67,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   fsisurface_(NULL),
   inrelaxation_(false)
 {
-
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -194,13 +193,19 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
-  // toggle vector indicating which dofs have Dirichlet BCs
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  // opposite of dirichtoggle vector, ie for each component
-  invtoggle_    = LINALG::CreateVector(*dofrowmap,false);
-
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
+
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  {
+    ParameterList eleparams;
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -706,8 +711,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->SetState("velnp",velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
+    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -720,10 +724,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
-
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -993,10 +993,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
-    {
-      Epetra_Vector residual(*residual_);
-      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     double incvelnorm_L2;
     double incprenorm_L2;
@@ -1135,7 +1132,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     {
       // time measurement: application of dbc
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
     //-------solve for residual displacements to correct incremental displacements
@@ -1355,7 +1352,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     // time measurement: application of dbc
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
-    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,*(dbcmaps_->CondMap()));
   }
 
   //-------solve for total new velocities and pressures
@@ -1397,25 +1394,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    const int len = vel->MyLength();
-
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    //
-    // There is no epetra operation for this! Maybe we could have such a beast
-    // in ANA?
-
-    double* veln  = &(*veln_)[0];
-    double* velnp = &(*velnp_)[0];
-    double* dt    = &(*dirichtoggle_)[0];
-    double* idv   = &(*invtoggle_)[0];
-    const double* incvel = &(*vel)[0];
-
-    //------------------------------------------------ update (u,p) trial
-    for (int i=0; i<len; ++i)
-    {
-      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
-    }
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    aux->Update(1.0, *veln_, 1.0, *vel, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
   }
 
   // add Neumann loads
@@ -1471,7 +1454,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     meshmovematrix_->Complete();
     // apply Dirichlet conditions to a non-diagonal matrix
     // (The Dirichlet rows will become all zero, no diagonal one.)
-    meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
+    meshmovematrix_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
   }
 
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
@@ -1480,7 +1463,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // residual displacements are supposed to be zero at boundary
   // conditions
   incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
 }
 
 
@@ -1769,13 +1752,16 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   sysmat_->Complete();
 
   // apply DBC to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
   // extract ML parameters
   ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
   // call VM3 constructor with system matrix for generating scale-separating matrix
-  vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true));
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
+    vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle,mllist,true,true));
+  }
   }// time measurement: avm3
 
   return;
@@ -2246,37 +2232,31 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
-   {
-     ParameterList eleparams;
-
-     // other parameters needed by the elements
-     eleparams.set("total time",time_);
-     eleparams.set("delta time",origdta);
-     eleparams.set("thsl",1.0); // no timefac in stationary case
-     eleparams.set("fs subgrid viscosity",fssgv_);
-
-     // set vector values needed by elements
-     discret_->ClearState();
-     discret_->SetState("velnp",velnp_);
-     // predicted dirichlet values
-     // velnp then also holds prescribed new dirichlet values
-     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
-     discret_->ClearState();
-
-     // evaluate Neumann b.c.
-     //eleparams.set("inc_density",density_);
-
-     discret_->SetState("vedenp",vedenp_);
-     neumann_loads_->PutScalar(0.0);
-     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-     discret_->ClearState();
-   }
-
-   // compute an inverse of the dirichtoggle vector
-   invtoggle_->PutScalar(1.0);
-   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
-
+    {
+      ParameterList eleparams;
+      
+      // other parameters needed by the elements
+      eleparams.set("total time",time_);
+      eleparams.set("delta time",origdta);
+      eleparams.set("thsl",1.0); // no timefac in stationary case
+      eleparams.set("fs subgrid viscosity",fssgv_);
+      
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("velnp",velnp_);
+      // predicted dirichlet values
+      // velnp then also holds prescribed new dirichlet values
+      discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+      discret_->ClearState();
+      
+      // evaluate Neumann b.c.
+      //eleparams.set("inc_density",density_);
+      
+      discret_->SetState("vedenp",vedenp_);
+      neumann_loads_->PutScalar(0.0);
+      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+      discret_->ClearState();
+    }
 
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
@@ -2387,7 +2367,10 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
 void FLD::FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 {
   // perform filtering and computation of Cs
-  DynSmag_->ApplyFilterForDynamicComputationOfCs(velnp_,dirichtoggle_);
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
+    DynSmag_->ApplyFilterForDynamicComputationOfCs(velnp_,dirichtoggle);
+  }
 
   return;
 }
@@ -2543,8 +2526,8 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     //--------- Apply dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
-    dirichletlines_ = SystemMatrix()->ExtractDirichletLines(dirichtoggle_);
-    sysmat_->ApplyDirichlet(dirichtoggle_);
+    dirichletlines_ = SystemMatrix()->ExtractDirichletLines(*(dbcmaps_->CondMap()));
+    sysmat_->ApplyDirichlet(*(dbcmaps_->CondMap()));
   }
 
   // No, we do not want to have any rhs. There cannot be any.
@@ -2562,7 +2545,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   //          residual displacements are supposed to be zero at
   //          boundary conditions
   incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(dbcmaps_->CondMap()));
 
   //-------solve for residual displacements to correct incremental displacements
   solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,not inrelaxation_,not inrelaxation_);
@@ -2584,6 +2567,45 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
   if (not inrelaxation_)
     inrelaxation_ = true;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(dbcmaps_->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
+{ 
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
+  dirichones->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  return dirichtoggle;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
+{ 
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichzeros = LINALG::CreateVector(*(dbcmaps_->CondMap()),true);
+  Teuchos::RCP<Epetra_Vector> invtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),false);
+  invtoggle->PutScalar(1.0);
+  dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
+  return invtoggle;
 }
 
 

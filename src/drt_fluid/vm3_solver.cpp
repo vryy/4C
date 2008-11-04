@@ -35,7 +35,7 @@ Maintainer: Volker Gravemeier
  |  ctor (public)                                               vg 02/08|
  *----------------------------------------------------------------------*/
 FLD::VM3_Solver::VM3_Solver(RCP<LINALG::SparseMatrix> A,
-                       const RCP<Epetra_Vector> dbctoggle,
+                       const RCP<const Epetra_Vector> dbctoggle,
                        ParameterList& mlparams,
                        bool compute,
                        bool increm) :

@@ -110,8 +110,8 @@ FLD::DynSmagFilter::~DynSmagFilter()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
-  Teuchos::RCP<Epetra_Vector>           velocity    ,
-  Teuchos::RCP<Epetra_Vector>           dirichtoggle
+  Teuchos::RCP<Epetra_Vector>             velocity    ,
+  const Teuchos::RCP<const Epetra_Vector> dirichtoggle
   )
 {
 
@@ -136,8 +136,8 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::DynSmagFilter::DynSmagBoxFilter(
-  Teuchos::RCP<Epetra_Vector>           velocity           ,
-  Teuchos::RCP<Epetra_Vector>           dirichtoggle
+  Teuchos::RCP<Epetra_Vector>             velocity           ,
+  const Teuchos::RCP<const Epetra_Vector> dirichtoggle
   )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs");

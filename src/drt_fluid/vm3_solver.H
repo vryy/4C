@@ -85,7 +85,7 @@ public:
 
   */
   explicit VM3_Solver(RCP<LINALG::SparseMatrix> A,
-                      const RCP<Epetra_Vector> dbctoggle,
+                      const RCP<const Epetra_Vector> dbctoggle,
                       ParameterList& mlparams,
                       bool compute,
                       bool increm);
@@ -157,7 +157,7 @@ private:
   RCP<LINALG::SparseMatrix> Sep_; // scale-separation matrix
   RCP<LINALG::SparseMatrix> Mnsv_; // normalized fine-scale subgrid-viscosity matrix
 
-  const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
+  const RCP<const Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 
 }; // VM3_Solver
 

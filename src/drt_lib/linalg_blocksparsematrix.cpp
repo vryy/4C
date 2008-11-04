@@ -220,6 +220,22 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<Epetra_Vec
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock)
+{
+  const int rows = Rows();
+  const int cols = Cols();
+  for (int rblock=0; rblock<rows; ++rblock)
+  {
+    for (int cblock=0; cblock<cols; ++cblock)
+    {
+      LINALG::SparseMatrix& bmat = Matrix(rblock,cblock);
+      bmat.ApplyDirichlet(dbcmap,diagonalblock and rblock==cblock);
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -39,24 +39,11 @@ ADAPTER::FluidImpl::FluidImpl(
   // build inner velocity map
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
-
-  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap();
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
-
-  const int numvelids = velmap->NumMyElements();
-  std::vector<int> velids;
-  velids.reserve(numvelids);
-  for (int i=0; i<numvelids; ++i)
-  {
-    int gid = velmap->GID(i);
-    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
-    {
-      velids.push_back(gid);
-    }
-  }
-
-  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
+  const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = fluid_.DirichMaps();
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back(interface_.OtherMap());
+  maps.push_back(dbcmaps->OtherMap());
+  innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
 }
 
 
@@ -341,13 +328,8 @@ void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> iv
   // mark all interface velocities as dirichlet values
   // this is very easy, but there are two dangers:
   // - We change ivel here. It must not be used afterwards.
-  // - The algorithm must support the sudden change of dirichtoggle_
-  ivel->PutScalar(1.0);
-  interface_.InsertCondVector(ivel,fluid_.Dirichlet());
-
-  //----------------------- compute an inverse of the dirichtoggle vector
-  fluid_.InvDirichlet()->PutScalar(1.0);
-  fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
+  // - The algorithm must support the change of Dirichlet DOFs
+  fluid_.AddDirichCond(interface_.CondMap());
 }
 
 

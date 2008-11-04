@@ -706,7 +706,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
                                     RCP<Epetra_Vector>&         x,
                                     RCP<Epetra_Vector>&         b,
                                     const RCP<Epetra_Vector>&   dbcval,
@@ -746,22 +746,37 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
       dserror("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
-  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
-  if (dbcgids.size() > 0)
+  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;
   {
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
     std::vector<int> dbcgidsv;
-    for (std::set<int>::iterator gid=dbcgids.begin(); gid!=dbcgids.end(); ++gid)
-      dbcgidsv.push_back(*gid);
-    *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), 0, fullmap.Comm());
+    if (dbcgids.size() > 0)
+    {
+      dbcgidsv.reserve(dbcgids.size());
+      for (std::set<int>::iterator gid=dbcgids.begin(); gid!=dbcgids.end(); ++gid)
+        dbcgidsv.push_back(*gid);
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
+    }
+    Teuchos::RCP<Epetra_Map> dbcmap 
+      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
   // build map of free DOFs
-  Teuchos::RCP<Epetra_Map> freemap = Teuchos::rcp(new Epetra_Map(0, 0, fullmap.Comm()));
-  if (freegids.size() > 0)
+  Teuchos::RCP<Epetra_Map> freemap = Teuchos::null;
   {
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
     std::vector<int> freegidsv;
-    for (std::set<int>::iterator gid=freegids.begin(); gid!=freegids.end(); ++gid)
-      freegidsv.push_back(*gid);
-    *freemap = Epetra_Map(-1, freegidsv.size(), &(freegidsv[0]), 0, fullmap.Comm());
+    if (freegids.size() > 0)
+    {
+      freegidsv.reserve(freegids.size());
+      for (std::set<int>::iterator gid=freegids.begin(); gid!=freegids.end(); ++gid)
+        freegidsv.push_back(*gid);
+      nummyelements = freegidsv.size();
+      myglobalelements = &(freegidsv[0]);
+    }
+    freemap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs

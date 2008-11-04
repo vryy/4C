@@ -94,8 +94,8 @@ public:
 
   */
   void ApplyFilterForDynamicComputationOfCs(
-    Teuchos::RCP<Epetra_Vector>           solution    ,
-    Teuchos::RCP<Epetra_Vector>           dirichtoggle
+    Teuchos::RCP<Epetra_Vector>             solution    ,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
 private:
@@ -120,8 +120,8 @@ private:
 
   */
   void DynSmagBoxFilter(
-    Teuchos::RCP<Epetra_Vector>           velocity    ,
-    Teuchos::RCP<Epetra_Vector>           dirichtoggle
+    Teuchos::RCP<Epetra_Vector>             velocity    ,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
   /*!

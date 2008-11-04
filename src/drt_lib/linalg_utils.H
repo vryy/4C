@@ -560,7 +560,7 @@ namespace LINALG
 
   \pre The map dbctoggle must be subset of the maps of the vectors.
   */
-  void ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+  void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
                               RCP<Epetra_Vector>&         x,
                               RCP<Epetra_Vector>&         b,
                               const RCP<Epetra_Vector>&   dbcval,

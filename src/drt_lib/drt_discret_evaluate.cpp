@@ -409,14 +409,19 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   if (dbcmapextractor != Teuchos::null)
   {
     // build map of Dirichlet DOFs
-    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(0, DofRowMap()->IndexBase(), Comm()));
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
+    std::vector<int> dbcgidsv;
     if (dbcgids->size() > 0)
     {
-      std::vector<int> dbcgidsv;
+      dbcgidsv.reserve(dbcgids->size());
       for (std::set<int>::iterator gid=(*dbcgids).begin(); gid!=(*dbcgids).end(); ++gid)
         dbcgidsv.push_back(*gid);
-      *dbcmap = Epetra_Map(-1, dbcgidsv.size(), &(dbcgidsv[0]), DofRowMap()->IndexBase(), Comm());
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
     }
+    Teuchos::RCP<Epetra_Map> dbcmap 
+      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
     *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
   }

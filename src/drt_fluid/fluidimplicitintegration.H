@@ -194,8 +194,32 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
-  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
-  Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
+
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
+  /// Expand the Dirichlet DOF set
+  ///
+  /// The method expands the DOF set (map) which contains the DOFs
+  /// subjected to Dirichlet boundary conditions. For instance, the method is 
+  /// called by the staggered FSI in which the velocities on the FSI
+  /// interface are prescribed by the other fields.
+  void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
+  ///
+  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+  const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+
+  /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
+  ///
+  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+  const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
@@ -366,10 +390,8 @@ protected:
   /// linearization with respect to mesh motion
   RCP<LINALG::BlockSparseMatrixBase> meshmovematrix_;
 
-  /// toggle vector indicating which dofs have Dirichlet BCs
-  RCP<Epetra_Vector>    dirichtoggle_;
-
-  RCP<Epetra_Vector>    invtoggle_;
+  // maps for extracting Dirichlet and free DOF sets
+  RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>    zeros_;
