@@ -759,8 +759,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
       nummyelements = dbcgidsv.size();
       myglobalelements = &(dbcgidsv[0]);
     }
-    Teuchos::RCP<Epetra_Map> dbcmap 
-      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
+    dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
   // build map of free DOFs
   Teuchos::RCP<Epetra_Map> freemap = Teuchos::null;
