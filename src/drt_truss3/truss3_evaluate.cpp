@@ -122,18 +122,18 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
-      t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+      t3_nlnstiffmass2(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
       else if (act == Truss3::calc_struct_nlnstifflmass)
       {
-        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
+        t3_nlnstiffmass2(mydisp,&elemat1,&elemat2,&elevec1,ActNumDof0);
         // lump mass matrix (bborn 07/08)
         // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
         //b3_lumpmass(&elemat2);
       }
       else if (act == Truss3::calc_struct_nlnstiff)
-      t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass2(mydisp,&elemat1,NULL,&elevec1,ActNumDof0);
       else if (act == Truss3::calc_struct_internalforce)
-      t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1,ActNumDof0);
+      t3_nlnstiffmass2(mydisp,NULL,NULL,&elevec1,ActNumDof0);
     
     }
     break;
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass( vector<double>& disp,
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                      tk 10/08|
- | linear(!) strain measure, large displacements and rotations                                                |
+ | engineering strain measure, large displacements and rotations                                                |
   *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
@@ -499,7 +499,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass2( vector<double>& disp,
         else
           jd = j + ActNumDof0 - 3;
         
-        (*stiffmatrix)(id,jd) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+        (*stiffmatrix)(id,jd) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
       }     
     }  
  
