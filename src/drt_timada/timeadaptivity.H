@@ -56,7 +56,7 @@ public:
   enum TAErrNorm
   {
     norm_vague = 0,  //!< undetermined norm
-    norm_l1,  //!< L1/linear/average norm
+    norm_l1,  //!< L1/linear norm
     norm_l2,   //!< L2/Euclidean norm
     norm_rms,  //!< root mean square (RMS) norm
     norm_inf   //!< Maximum/infinity norm

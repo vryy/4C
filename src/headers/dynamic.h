@@ -47,7 +47,7 @@ typedef struct _TIMADA_DYNAMIC
                                  * new step size */
   enum {
     timada_err_norm_vague = 0,  /* undetermined norm */
-    timada_err_norm_l1,         /* L1/linear/average norm */
+    timada_err_norm_l1,         /* L1/linear norm */
     timada_err_norm_l2,         /* L2/Euclidean norm */
     timada_err_norm_rms,        /* root mean square (RMS) norm */
     timada_err_norm_inf         /* Maximum/infinity norm */

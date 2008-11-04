@@ -45,7 +45,7 @@ namespace STR
     enum NormEnum
     {
       norm_vague,  //!< undetermined
-      norm_l1,  //!< L1/linear/average norm
+      norm_l1,  //!< L1/linear norm
       norm_l2,  //!< L2/Euclidean norm
       norm_rms,  //!< RMS/weighted-L2 norm
       norm_inf  //!< Maximum/infinity norm
