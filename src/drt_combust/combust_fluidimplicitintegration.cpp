@@ -17,6 +17,8 @@ Maintainer: Axel Gerstenberger
 #include "combust_fluidimplicitintegration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
@@ -36,7 +38,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
 }
-extern struct _FILES  allfiles;
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
@@ -601,10 +602,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 //    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
 //    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifacevelnp.txt";
     if (step_ <= 1)
-      f.open("outifacevelnp.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
     else
-      f.open("outifacevelnp.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     f << time_ << " " << (*ivelcolnp)[0] << "  " << endl;
 
@@ -617,10 +620,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 //    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
 //    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceveln.txt";
     if (step_ <= 1)
-      f.open("outifaceveln.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
     else
-      f.open("outifaceveln.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     f << time_ << " " << (*ivelcoln)[0] << "  " << endl;
 
@@ -630,10 +635,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceanalytischvel.txt";
     if (step_ <= 1)
-      f.open("outifaceanalytischvel.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
     else
-      f.open("outifaceanalytischvel.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     const double periodendauer = 10.0;
     f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << endl;
@@ -979,14 +986,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       << right << std::setw(16) << scientific << c(2);
 
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".liftdrag.txt";
     if (step_ <= 1)
     {
-      f.open("liftdrag.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
       //f << header.str() << endl;
     }
     else
     {
-      f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
     }
     f << s.str() << endl;
     f.close();
@@ -997,10 +1006,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
   if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
   {
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceforce.txt";
     if (step_ <= 1)
-      f.open("outifaceforce.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
     else
-      f.open("outifaceforce.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     f << time_ << " " << (*iforcecolnp)[0] << "  " << endl;
 
@@ -1219,8 +1230,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
 
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamedel << filebase << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1276,10 +1288,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         {
           //std::cout << elementvalues << std::endl;
           std::ofstream f;
+          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                  + ".outflowpres.txt";
           if (step_ <= 1)
-            f.open("outflowpres.txt",std::fstream::trunc);
+            f.open(fname.c_str(),std::fstream::trunc);
           else
-            f.open("outflowpres.txt",std::fstream::ate | std::fstream::app);
+            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time_ << "  " << elementvalues(0) << endl;
@@ -1298,9 +1312,10 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
     << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamedel << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1388,18 +1403,19 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
     std::stringstream filenamexzdel;
     std::stringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexx << allfiles.outputfile_kenner << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyy << allfiles.outputfile_kenner << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamezz << allfiles.outputfile_kenner << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexy << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexz << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyz << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexxdel << allfiles.outputfile_kenner << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyydel << allfiles.outputfile_kenner << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamezzdel << allfiles.outputfile_kenner << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexydel << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexzdel << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyzdel << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filenamexx << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyy << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamezz << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexy << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexz << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyz << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexxdel << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyydel << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamezzdel << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexydel << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexzdel << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyzdel << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamexxdel.str().c_str());
     std::remove(filenameyydel.str().c_str());
     std::remove(filenamezzdel.str().c_str());
@@ -1576,8 +1592,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     bool ele_to_textfile = false;
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
-    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
+    filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1679,10 +1696,12 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
           std::ofstream f;
+          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                  + ".outflowvel.txt";
           if (step_ <= 1)
-            f.open("outflowvel.txt",std::fstream::trunc);
+            f.open(fname.c_str(),std::fstream::trunc);
           else
-            f.open("outflowvel.txt",std::fstream::ate | std::fstream::app);
+            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
           f << time_ << "  " << elementvalues(0,0) << endl;
