@@ -42,15 +42,28 @@ ADAPTER::Coupling::Coupling()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
-                                           const LINALG::MapExtractor& master,
-                                           const DRT::Discretization& slavedis,
-                                           const LINALG::MapExtractor& slave,
-                                           const std::string& condname)
+                                               const LINALG::MapExtractor& master,
+                                               const DRT::Discretization& slavedis,
+                                               const LINALG::MapExtractor& slave,
+                                               const std::string& condname)
 {
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
   std::vector<int> slavenodes;
   DRT::UTILS::FindConditionedNodes(slavedis,condname,slavenodes);
+
+  int localmastercount = static_cast<int>(masternodes.size());
+  int mastercount;
+  int localslavecount = static_cast<int>(slavenodes.size());
+  int slavecount;
+
+  masterdis.Comm().SumAll(&localmastercount,&mastercount,1);
+  slavedis.Comm().SumAll(&localslavecount,&slavecount,1);
+
+  if (mastercount != slavecount)
+    dserror("got %d master nodes but %d slave nodes for coupling",
+            mastercount,slavecount);
+
   SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
 
   // test for completeness
@@ -84,9 +97,9 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
-                                  const DRT::Discretization& slavedis,
-                                  const std::vector<int>& masternodes,
-                                  const std::vector<int>& slavenodes)
+                                      const DRT::Discretization& slavedis,
+                                      const std::vector<int>& masternodes,
+                                      const std::vector<int>& slavenodes)
 {
   std::vector<int> patchedmasternodes(masternodes);
   std::vector<int> permslavenodes;
@@ -110,10 +123,15 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
-                                  const DRT::Discretization& slavedis,
-                                  const Epetra_Map& masternodes,
-                                  const Epetra_Map& slavenodes)
+                                      const DRT::Discretization& slavedis,
+                                      const Epetra_Map& masternodes,
+                                      const Epetra_Map& slavenodes)
 {
+  if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements())
+    dserror("got %d master nodes but %d slave nodes for coupling",
+            masternodes.NumGlobalElements(),
+            slavenodes.NumGlobalElements());
+
   vector<int> mastervect(masternodes.MyGlobalElements(),
                          masternodes.MyGlobalElements() + masternodes.NumMyElements());
   vector<int> slavevect(slavenodes.MyGlobalElements(),
@@ -140,10 +158,10 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
-                               const DRT::Discretization& slavedis,
-                               std::vector<int>& masternodes,
-                               std::vector<int>& permslavenodes,
-                               const std::vector<int>& slavenodes)
+                                   const DRT::Discretization& slavedis,
+                                   std::vector<int>& masternodes,
+                                   std::vector<int>& permslavenodes,
+                                   const std::vector<int>& slavenodes)
 {
   // match master and slave nodes using Peter's octtree
 
@@ -155,7 +173,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   map<int,pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
 
-#if 0
+#if 1
   if (masternodes.size() != coupling.size())
     dserror("Did not get 1:1 correspondence. masternodes.size()=%d, coupling.size()=%d",
             masternodes.size(), coupling.size());
