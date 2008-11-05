@@ -19,8 +19,6 @@ Maintainer: Georg Bauer
 #ifndef ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H
 #define ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H
 
-#include <Epetra_Comm.h>
-
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 

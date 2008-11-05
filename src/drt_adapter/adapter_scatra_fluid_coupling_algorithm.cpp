@@ -17,7 +17,6 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

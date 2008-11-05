@@ -13,10 +13,6 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//#include <ctime>
-//#include <cstdlib>
-//#include <iostream>
-
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

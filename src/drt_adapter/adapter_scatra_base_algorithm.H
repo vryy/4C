@@ -19,8 +19,6 @@ Maintainer: Georg Bauer
 #define ADAPTER_SCATRA_BASE_ALGORITHM_H
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include <Teuchos_RefCountPtr.hpp>
-#include "../drt_lib/drt_resulttest.H"
 #include "../drt_scatra/scatra_resulttest.H"
 
 /// Algorithm adapter classes for use in multi-field problems

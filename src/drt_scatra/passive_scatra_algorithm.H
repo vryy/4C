@@ -19,7 +19,6 @@ Maintainer: Georg Bauer
 #ifndef PASSIVE_SCATRA_ALGORITHM_H
 #define PASSIVE_SCATRA_ALGORITHM_H
 
-#include <Epetra_Comm.h>
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
 namespace SCATRA{

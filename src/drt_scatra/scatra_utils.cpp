@@ -22,12 +22,9 @@ Maintainer: Georg Bauer
 #include <Epetra_SerialComm.h>
 #endif
 
-#include <string>
-#include <functional>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "scatra_utils.H"
 
 // we need to know all necessary element types for the mesh creation
