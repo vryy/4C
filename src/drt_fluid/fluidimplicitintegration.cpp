@@ -2468,7 +2468,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // interface
     griddisp->Update(1., *dispnp_, -1., *dispn_, 0.);
 
-    // dirichtoggle_ has already been set up
+    // dbcmaps_ has already been set up
 
     // zero out the stiffness matrix
     sysmat_->Zero();

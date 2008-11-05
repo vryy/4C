@@ -390,7 +390,7 @@ protected:
   /// linearization with respect to mesh motion
   RCP<LINALG::BlockSparseMatrixBase> meshmovematrix_;
 
-  // maps for extracting Dirichlet and free DOF sets
+  /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
