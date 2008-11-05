@@ -200,7 +200,13 @@ STR::TimIntImpl::TimIntImpl
     dserror("Chosen solution technique %s does not work constrained.",
             MapSolTechEnumToString(itertype_).c_str());
   }
-
+  else if ( (itertype_ == soltech_uzawalinnewton)
+    or (itertype_ == soltech_uzawanonlinnewton) )
+  {
+      dserror("Chosen solution technique %s does only work constrained.",
+              MapSolTechEnumToString(itertype_).c_str());
+  }
+  
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
 
