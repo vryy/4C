@@ -165,7 +165,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatrix()
 {
   dserror("no block matrix here");
-  return Teuchos::null;
+  return fluid_.BlockSystemMatrix();
 }
 
 
@@ -173,6 +173,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatr
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::MeshMoveMatrix()
 {
+  dserror("nope");
   return Teuchos::null;
 }
 
@@ -651,7 +652,7 @@ void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
-  // Delta d(n+1,i+1) = ( Delta u(n+1,i+1) + u(n) ) * dt
+  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   //
   fcx->Update(-1.,*veln,TimeScaling());
 }
