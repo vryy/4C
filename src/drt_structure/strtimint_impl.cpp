@@ -193,12 +193,14 @@ STR::TimIntImpl::TimIntImpl
   fifc_(Teuchos::null)
 {
   // verify: if system has constraints, then Uzawa-type solver is used
-  if ( conman_->HaveConstraint()
-       and ( (itertype_ != soltech_uzawalinnewton)
-             and (itertype_ != soltech_uzawanonlinnewton) ) )
+  if ( conman_->HaveConstraint())
   {
-    dserror("Chosen solution technique %s does not work constrained.",
-            MapSolTechEnumToString(itertype_).c_str());
+    if ( (itertype_ != soltech_uzawalinnewton)
+               and (itertype_ != soltech_uzawanonlinnewton) ) 
+    {
+      dserror("Chosen solution technique %s does not work constrained.",
+                MapSolTechEnumToString(itertype_).c_str());
+    }
   }
   else if ( (itertype_ == soltech_uzawalinnewton)
     or (itertype_ == soltech_uzawanonlinnewton) )
