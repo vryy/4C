@@ -41,6 +41,8 @@ Maintainer: Ursula Mayer
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1688,8 +1690,17 @@ void GEO::Intersection::computeCDT(
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
 
-  in.save_nodes("tetin");
-  in.save_poly("tetin");
+  {
+    const std::string fbase = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".tetin";
+    const int fbaselen = fbase.length();
+    char* fbasech = new char[fbaselen+1];
+    fbase.copy(fbasech, fbaselen, 0);
+    fbasech[fbaselen] = '\0';
+    in.save_nodes(fbasech);
+    in.save_poly(fbasech);
+    delete [] fbasech;
+  }
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
