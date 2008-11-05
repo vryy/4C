@@ -163,12 +163,19 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
-  // toggle vector indicating which dofs have Dirichlet BCs
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  invdirtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
+
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  {
+    ParameterList eleparams;
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -636,8 +643,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->SetState("velnp",velnp_);
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
-  // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-  discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
   discret_->ClearState();
 
   // --------------------------------------------------
@@ -1090,7 +1096,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   zeros_->PutScalar(0.0);
   {
     LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
-                                   zeros_,dirichtoggle_);
+                                   zeros_,*(dbcmaps_->CondMap()));
   }
 
   // end time measurement for application of dirichlet conditions
@@ -1424,13 +1430,16 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   sysmat_->Complete();
 
   // apply DBC to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
   // extract ML parameters
   ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
   // call VM3 constructor with system matrix for generating scale-separating matrix
-  vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true));
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
+    vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle,mllist,true,true));
+  }
 
   return;
 }// FluidGenAlphaIntegration::AVM3Preparation
@@ -1788,7 +1797,10 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   double tcpu=ds_cputime();
 
   // perform filtering and computation of Cs
-  DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,dirichtoggle_);
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
+    DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,dirichtoggle);
+  }
 
   dtfilter_=ds_cputime()-tcpu;
 
@@ -2324,6 +2336,47 @@ void FLD::FluidGenAlphaIntegration::LinearRelaxationSolve(
   dserror("No steepest descent for genalpha fluid\n");
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::FluidGenAlphaIntegration::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(dbcmaps_->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::Dirichlet()
+{ 
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
+  dirichones->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  return dirichtoggle;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::InvDirichlet()
+{ 
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichzeros = LINALG::CreateVector(*(dbcmaps_->CondMap()),true);
+  Teuchos::RCP<Epetra_Vector> invtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),false);
+  invtoggle->PutScalar(1.0);
+  dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
+  return invtoggle;
 }
 
 

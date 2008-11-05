@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file fluid_genalpha_integration.H
 
 \brief Generalised alpha time integration scheme for incompressible flow
@@ -19,7 +20,7 @@ The idea for the implicit treatment of the pressure is taken from:
 
 <pre>
   |    "Stabilized finite element methods for fluid dynamics using a
-  |     hirarchical basis"
+  |     hierarchical basis"
   |
   |    Christian H. Whiting
   |
@@ -44,8 +45,8 @@ Maintainer: Peter Gamnitzer
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef FLUID_GENALPHA_INTEGRATION_H
 #define FLUID_GENALPHA_INTEGRATION_H
@@ -410,16 +411,41 @@ public:
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridvelaf_; }
 
   /*!
-  \brief Allow access to the vector marking the Dirichlet dofs
+  \brief provide access to the Dirichlet map
 
   */
-  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
   /*!
-  \brief the inverse Dirich toggle vector for the FSI method
+  \brief Expand the Dirichlet DOF set
+
+  The method expands the DOF set (map) which contains the DOFs
+  subjected to Dirichlet boundary conditions. For instance, the method is 
+  called by the staggered FSI in which the velocities on the FSI
+  interface are prescribed by the other fields.
 
   */
-  Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invdirtoggle_; }
+  void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+  /*!
+  \brief Extract the Dirichlet toggle vector based on Dirichlet BC maps
+  
+  This method provides backward compatability only. Formerly, the Dirichlet conditions
+  were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  with maps, ie #dbcmaps_. Eventually, this method will be removed.
+
+  */
+  const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+
+  /*!
+  \brief Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
+  
+  This method provides backward compatability only. Formerly, the Dirichlet conditions
+  were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  with maps, ie #dbcmaps_. Eventually, this method will be removed.
+
+  */
+  const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
   /*!
   \brief Allow access to current grid displacements
@@ -494,20 +520,7 @@ public:
       // problems of one time step.
 
       // Do not destroy Dirichlet values!
-      //
-      // There is no epetra operation for this! Maybe we could have such a beast
-      // in ANA?
-
-      int len = dacc->MyLength();
-
-      double* veln  = &(*veln_)[0];
-      double* velnp = &(*velnp_)[0];
-      double* dt    = &(*dirichtoggle_)[0];
-
-      for (int i=0; i<len; ++i)
-      {
-        velnp[i] = velnp[i]*dt[i] + veln[i]*(1-dt[i]);
-      }
+      dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(veln_), velnp_);
 
       GenAlphaCalcInitialAccelerations();
 
@@ -689,7 +702,7 @@ private:
 
   //! write restart every uprestart_ steps
   int                       uprestart_;
- //! write result every upres_ steps
+  //! write result every upres_ steps
   int                       upres_;
   //! compute and write traction vector
   int                       writestresses_;
@@ -721,11 +734,8 @@ private:
   //! (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>        residual_;
 
-  //! toggle vector indicating which dofs have Dirichlet BCs
-  RCP<Epetra_Vector>        dirichtoggle_;
-
-  //! and its inverse
-  RCP<Epetra_Vector>        invdirtoggle_;
+  //! maps for extracting Dirichlet and free DOF sets
+  RCP<LINALG::MapExtractor> dbcmaps_;
 
   //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>        zeros_;
