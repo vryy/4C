@@ -476,8 +476,6 @@ void STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    //LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-    //                               zeros_, dirichtoggle_);
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                    zeros_, *(dbcmaps_->CondMap()));
 
