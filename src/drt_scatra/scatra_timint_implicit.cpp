@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file scatra_timint_implicit.cpp
 \brief Control routine for convection-diffusion (in)stationary solvers,
 
@@ -7,7 +8,6 @@
      o one-step-theta time-integration scheme
 
      o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
 
      and stationary solver.
 
@@ -17,8 +17,8 @@ Maintainer: Georg Bauer
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
@@ -173,13 +173,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
-  // toggle vector indicating which dofs have Dirichlet BCs
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  // opposite of dirichtoggle vector, ie for each component
-  invtoggle_    = LINALG::CreateVector(*dofrowmap,false);
-
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
+
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  {
+    ParameterList eleparams;
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -380,14 +386,9 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values
-  //     dirichtoggle_ is 1 for dirichlet dofs, 0 elsewhere
   discret_->ClearState();
-  discret_->EvaluateDirichlet(p,phinp,phidt,Teuchos::null,dirichtoggle_);
+  discret_->EvaluateDirichlet(p,phinp,phidt,Teuchos::null,Teuchos::null,dbcmaps_);
   discret_->ClearState();
-
-  // compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
   return;
 }
@@ -554,10 +555,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
-    {
-      Epetra_Vector residual(*residual_);
-      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     stopnonliniter = AbortNonlinIter(itnum,itemax,ittol,actresidual);
     if (stopnonliniter == true) break;
@@ -571,7 +569,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
     //------------------------------------------------solve
@@ -822,7 +820,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
   }
 
   //-------solve
@@ -923,13 +921,16 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   sysmat_sd_->Complete();
 
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
 
   // extract the ML parameters
   ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
 
   // call the VM3 constructor
-  vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle,mllist,true,false) );
+  }
   }// time measurement: avm3
 
   return;
@@ -1570,6 +1571,21 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   }
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
+
+
+/*----------------------------------------------------------------------*
+ | construct toggle vector for Dirichlet dofs                  gjb 11/08|
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
+{ 
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
+  dirichones->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  return dirichtoggle;
+}
 
 
 /*----------------------------------------------------------------------*

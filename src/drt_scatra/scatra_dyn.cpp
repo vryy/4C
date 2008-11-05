@@ -1,4 +1,5 @@
- /*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file scatra_dyn.cpp
 \brief entry point for (passive) scalar transport problems
 
@@ -8,13 +9,13 @@ Maintainer: Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
+//#include <ctime>
+//#include <cstdlib>
+//#include <iostream>
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -29,7 +30,6 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-#include "../drt_lib/drt_resulttest.H"
 #include "scatra_resulttest.H"
 
 /*----------------------------------------------------------------------*

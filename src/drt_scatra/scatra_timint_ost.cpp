@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file scatra_timint_ost.cpp
 \brief One-Step-Theta time integration scheme
 
@@ -8,8 +9,9 @@ Maintainer: Georg Bauer
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
+*/
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "scatra_timint_ost.H"
@@ -183,7 +185,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
   }
 
   // apply Dirichlet boundary conditions to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
 
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);

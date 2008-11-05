@@ -125,6 +125,17 @@ public:
   //! read restart data
   virtual void ReadRestart(int step)=0;
 
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
+  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
+  ///
+  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+  /// note: VM3 solver still needs an explicit toggle vector for construction
+  const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+
   //! prepare AVM3-based scale separation
   void AVM3Preparation();
 
@@ -298,13 +309,11 @@ protected:
   /// system matrix (either sparse matrix or block sparse matrix)
   RCP<LINALG::SparseOperator> sysmat_;
 
-  /// toggle vector indicating which dofs have Dirichlet BCs
-  RCP<Epetra_Vector>    dirichtoggle_;
-
-  RCP<Epetra_Vector>    invtoggle_;
-
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>    zeros_;
+
+  // maps for extracting Dirichlet and free DOF sets
+  RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// the vector containing body and surface forces
   RCP<Epetra_Vector>    neumann_loads_;
