@@ -118,6 +118,7 @@ Input/fsi_ow32x32_drt.dat                               x        x        x     
 Input/fsi_ow32x32_drt_ca.dat                            x        x        x        -        -        -
 Input/fsi_ow32x32_drt_force.dat                         x        x        x        -        -        -
 Input/fsi_ow32x32_sd_drt.dat                            x        x        x        -        x        x
+Input/fsi_ow32x32_sd_sti_drt.dat                        x        x        x        -        x        x
 Input/fsi_ow32x32_drt_mfsi.dat                          x        x        x        -        -        -
 Input/fsi_ow32x32_drt_gena.dat                          x        x        x        -        -        -
 Input/fsi_ow32x32_drt_ga_mfsi.dat                       x        x        x        -        -        -
