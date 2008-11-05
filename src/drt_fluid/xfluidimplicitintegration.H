@@ -229,8 +229,10 @@ public:
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return state_.velnp_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return state_.veln_; }
-  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
-  Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
+
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
@@ -367,11 +369,8 @@ protected:
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
-  /// toggle vector indicating which dofs have Dirichlet BCs
-  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
-
-  /// toggle vector indicating which dofs DON'T have Dirichlet BCs
-  Teuchos::RCP<Epetra_Vector>    invtoggle_;
+  /// maps for extracting Dirichlet and free DOF sets
+  RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   Teuchos::RCP<Epetra_Vector>    zeros_;

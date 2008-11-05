@@ -432,26 +432,13 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::InnerVelocityRowMap()
   // build inner velocity map
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
+  const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = fluid_.DirichMaps();
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back(interface_.OtherMap());
+  maps.push_back(dbcmaps->OtherMap());
+  innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
 
-  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
-
-  const int numvelids = velmap->NumMyElements();
-  std::vector<int> velids;
-  velids.reserve(numvelids);
-  for (int i=0; i<numvelids; ++i)
-  {
-    int gid = velmap->GID(i);
-    // NOTE: in xfem, there are no interface dofs in the fluid field
-    if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
-    {
-      velids.push_back(gid);
-    }
-  }
-
-  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
-
+  // deliver pizza
   return innervelmap_;
 }
 

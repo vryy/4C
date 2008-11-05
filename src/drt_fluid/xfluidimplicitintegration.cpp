@@ -396,7 +396,7 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,dirichtoggle_);
+    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -408,9 +408,6 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->ClearState();
   }
 
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 }
 
 
@@ -502,10 +499,18 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
 //  gridv_        = LINALG::CreateVector(newdofrowmap,true);
 
-  dirichtoggle_ = LINALG::CreateVector(newdofrowmap,true);
-  invtoggle_    = LINALG::CreateVector(newdofrowmap,true);
-
   zeros_        = LINALG::CreateVector(newdofrowmap,true);
+
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  {
+    ParameterList eleparams;
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
 
   neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
 
@@ -751,10 +756,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
-    {
-      Epetra_Vector residual(*residual_);
-      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     double incvelnorm_L2;
     double velnorm_L2;
@@ -932,7 +934,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       // time measurement: application of dbc
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
     //-------solve for residual displacements to correct incremental displacements
@@ -998,25 +1000,11 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    const int len = vel->MyLength();
-
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    //
-    // There is no epetra operation for this! Maybe we could have such a beast
-    // in ANA?
-
-    double* veln  = &(*state_.veln_)[0];
-    double* velnp = &(*state_.velnp_)[0];
-    double* dt    = &(*dirichtoggle_)[0];
-    double* idv   = &(*invtoggle_)[0];
-    const double* incvel = &(*vel)[0];
-
-    //------------------------------------------------ update (u,p) trial
-    for (int i=0; i<len; ++i)
-    {
-      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
-    }
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    aux->Update(1.0, *state_.veln_, 1.0, *vel, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
   }
 
   // add Neumann loads
@@ -1057,7 +1045,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // residual displacements are supposed to be zero at boundary
   // conditions
   incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
 }
 
 
@@ -1964,8 +1952,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
      discret_->SetState("velnp",state_.velnp_);
      // predicted dirichlet values
      // velnp then also holds prescribed new dirichlet values
-     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-     discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,dirichtoggle_);
+     discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
      discret_->ClearState();
 
      // evaluate Neumann b.c.
@@ -1973,11 +1960,6 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
      discret_->ClearState();
    }
-
-   // compute an inverse of the dirichtoggle vector
-   invtoggle_->PutScalar(1.0);
-   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
-
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
