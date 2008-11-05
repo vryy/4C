@@ -222,19 +222,32 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET> gpstress(((*gpstressmap)[gid])->A(),true);
+
+      // make sure that nodal values are not summed up -> divide by
+      // number of adjacent elements
+      vector<int> numadjele(NUMNOD_PTET);
+
+      DRT::Node** nodes = Nodes();
+      for (int i=0;i<NUMNOD_PTET;++i)
+      {
+        DRT::Node* node = nodes[i];
+        numadjele[i]=node->NumElement();
+      }
+
+
       if (stresstype=="ndxyz")
       {
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          elevec1(3*i)=gpstress(i,0);
-          elevec1(3*i+1)=gpstress(i,1);
-          elevec1(3*i+2)=gpstress(i,2);
+          elevec1(3*i)=gpstress(i,0)/numadjele[i];
+          elevec1(3*i+1)=gpstress(i,1)/numadjele[i];
+          elevec1(3*i+2)=gpstress(i,2)/numadjele[i];
         }
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          elevec2(3*i)=gpstress(i,3);
-          elevec2(3*i+1)=gpstress(i,4);
-          elevec2(3*i+2)=gpstress(i,5);
+          elevec2(3*i)=gpstress(i,3)/numadjele[i];
+          elevec2(3*i+1)=gpstress(i,4)/numadjele[i];
+          elevec2(3*i+2)=gpstress(i,5)/numadjele[i];
         }
       }
       else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")
@@ -553,7 +566,7 @@ void DRT::ELEMENTS::Ptet::SelectMaterial(
   Epetra_SerialDenseMatrix cmat_e(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
   const Epetra_SerialDenseVector glstrain_e(View,glstrain.A(),glstrain.Rows());
   //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
-  
+
 
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
