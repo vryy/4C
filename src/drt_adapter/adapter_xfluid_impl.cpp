@@ -21,13 +21,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Export.h>
 
-extern struct _FILES  allfiles;
-extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
@@ -326,8 +325,9 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+    filenamedel << filebase << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -557,14 +557,16 @@ void ADAPTER::XFluidImpl::LiftDrag()
       << right << std::setw(16) << scientific << c(2);
 
     std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".liftdrag.txt";
     if (Step() <= 1)
     {
-      f.open("liftdrag.txt",std::fstream::trunc);
+      f.open(fname.c_str(),std::fstream::trunc);
       //f << header.str() << endl;
     }
     else
     {
-      f.open("liftdrag.txt",std::fstream::ate | std::fstream::app);
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
     }
     f << s.str() << "\n";
     f.close();
