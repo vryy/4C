@@ -157,15 +157,13 @@ void XFEM::DofManager::toGmsh(
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = ih_->xfemdis()->lColElement(i);
-        const int ele_gid = actele->Id();
-        double val = 0.0;
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
+        const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter = elementalDofs_.find(actele->Id());
         
-        if (blub != elementalDofs_.end())
+        if (iter != elementalDofs_.end())
         {
-          const std::set<XFEM::FieldEnr> schnapp = blub->second;
-          val = schnapp.size();
+          const std::set<XFEM::FieldEnr> fieldenrset = iter->second;
+          const double val = fieldenrset.size();
           gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
         }
         
@@ -356,7 +354,7 @@ int XFEM::DofManager::NumNodalDof() const
   }
 
   // collect number of nodal dofs from all procs
-  int numnodaldof = 0.0;
+  int numnodaldof = 0;
   ih_->xfemdis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
   
   return numnodaldof;
