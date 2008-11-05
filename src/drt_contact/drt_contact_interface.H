@@ -494,51 +494,11 @@ public:
   virtual bool IntegrateSlave(CONTACT::CElement& sele);
   
   /*!
-  \brief Projection of slave / master pair (2D)
-  
-  This method projects the nodes of the slave CElement sele onto
-  the master CElement mele and vice versa. The parameter hasproj
-  stores a boolean variable for each of the 4 end nodes, indicating
-  whether a feasible projection was found or not. The local element
-  coordinates of the 4 projection points are stored in xiproj.
-  
+  \brief Integrate Mortar matrix M and gap g on slave/master overlap
+          
   */
-  virtual bool Project2D(CONTACT::CElement& sele,
-                         CONTACT::CElement& mele,
-                         vector<bool>& hasproj,
-                         vector<double>& xiproj);
-  
-  /*!
-  \brief Detect overlap of slave / master pair (2D)
-  
-  This method evaluates the overlap of the current CElement pair
-  sele / mele based on the projection status of the 4 end nodes
-  (hasproj) and the coordinates of the projection points (xiproj).
-  According to the detected overlap case, the integration limits
-  are determined and written into xiproj and the overlap status
-  is returned by a boolean variable.
-  
-  */
-  virtual bool DetectOverlap2D(CONTACT::CElement& sele,
-                               CONTACT::CElement& mele,
-                               vector<bool>& hasproj,
-                               vector<double>& xiproj);
-  
-  /*!
-  \brief Integrate overlap of slave / master pair (2D)
-  
-  This method integrates the overlap of the current CElement
-  pair sele / mele based on the integration limits (xiproj). The
-  integration always includes the Mortar matrix M and the gap g.
-  In some cases it also includes the Mortar matrix D (if the
-  flag CONTACTONEMORTARLOOP is chosen) and the Mortar matrix
-  Mmod (if the respective conditions are fulfilled).
-        
-  */
-  virtual bool IntegrateOverlap2D(CONTACT::CElement& sele,
-                                  CONTACT::CElement& mele,
-                                  vector<double>& xiproj);
-  
+  virtual bool IntegrateCoupling(CONTACT::CElement& sele);
+    
   /*!
   \brief Assemble Mortar matrices and weighted gap
         

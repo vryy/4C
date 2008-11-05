@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "drt_cdofset.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
-#include "drt_contact_projector.H"
+#include "drt_contact_coupling.H"
 #include "drt_contact_integrator.H"
 #include "contactdefines.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1012,29 +1012,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     IntegrateSlave(*selement);
 #endif // #ifndef CONTACTONEMORTARLOOP
 
-    // loop over the contact candidate master elements
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      // prepare overlap integration
-      vector<bool> hasproj(4);
-      vector<double> xiproj(4);
-      bool overlap = false;
-
-      // project the element pair
-      Project2D(*selement,*melement,hasproj,xiproj);
-
-      // check for element overlap
-      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-      // integrate the element overlap
-      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-    }
+    // do interface coupling
+    // (projection slave and master, overlap detection, integration and
+    // linearization of the Mortar matrix M)
+    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
   }
   // *******************************************************************
   
@@ -1225,29 +1206,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
     }
     // *******************************************************************
     
@@ -1439,29 +1401,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
     }
     // *******************************************************************
     
@@ -1625,33 +1568,13 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
-    // loop over the contact candidate master elements
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      // prepare overlap integration
-      vector<bool> hasproj(4);
-      vector<double> xiproj(4);
-      bool overlap = false;
-
-      // project the element pair
-      Project2D(*selement,*melement,hasproj,xiproj);
-
-      // check for element overlap
-      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-      // integrate the element overlap
-      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-    }
+    // do interface coupling
+    // (projection slave and master, overlap detection, integration and
+    // linearization of the Mortar matrix M)
+    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
   }
   // *******************************************************************
   
-  //exit(0);
   return;
 }
 
@@ -1862,31 +1785,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
     }
-    
     // *******************************************************************
     
     // compute finite difference derivative
@@ -2103,29 +2006,10 @@ void CONTACT::Interface::FDCheckGapDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
     }
     // *******************************************************************
     
@@ -2316,33 +2200,13 @@ void CONTACT::Interface::FDCheckGapDeriv()
     cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
-    // loop over the contact candidate master elements
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      // prepare overlap integration
-      vector<bool> hasproj(4);
-      vector<double> xiproj(4);
-      bool overlap = false;
-
-      // project the element pair
-      Project2D(*selement,*melement,hasproj,xiproj);
-
-      // check for element overlap
-      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-      // integrate the element overlap
-      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-    }
+    // do interface coupling
+    // (projection slave and master, overlap detection, integration and
+    // linearization of the Mortar matrix M)
+    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
   }
   // *******************************************************************
   
-  //exit(0);
   return;
 }
 
@@ -2514,31 +2378,11 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
-    }
-    
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }   
     // *******************************************************************
     
     // compute finite difference derivative
@@ -2716,29 +2560,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
-      // loop over the contact candidate master elements
-      // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
-      {
-        int gid2 = selement->SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        CElement* melement = static_cast<CElement*>(ele2);
-
-        // prepare overlap integration
-        vector<bool> hasproj(4);
-        vector<double> xiproj(4);
-        bool overlap = false;
-
-        // project the element pair
-        Project2D(*selement,*melement,hasproj,xiproj);
-
-        // check for element overlap
-        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-        // integrate the element overlap
-        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-      }
+      // do interface coupling
+      // (projection slave and master, overlap detection, integration and
+      // linearization of the Mortar matrix M)
+      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
     }
     // *******************************************************************
     
@@ -2890,33 +2715,13 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
-    // loop over the contact candidate master elements
-    // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
-    {
-      int gid2 = selement->SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      CElement* melement = static_cast<CElement*>(ele2);
-
-      // prepare overlap integration
-      vector<bool> hasproj(4);
-      vector<double> xiproj(4);
-      bool overlap = false;
-
-      // project the element pair
-      Project2D(*selement,*melement,hasproj,xiproj);
-
-      // check for element overlap
-      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
-
-      // integrate the element overlap
-      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
-    }
+    // do interface coupling
+    // (projection slave and master, overlap detection, integration and
+    // linearization of the Mortar matrix M)
+    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
   }
   // *******************************************************************
   
-  //exit(0);
   return;
 }
 

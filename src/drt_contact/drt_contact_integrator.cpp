@@ -1502,7 +1502,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
  |  This method assembles the contrubution of a 1D/2D slave             |
  |  element to the D map of the adjacent slave nodes.                   |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
                                     CONTACT::CElement& sele,
                                     Epetra_SerialDenseMatrix& dseg)
 {
@@ -1518,7 +1518,7 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != inter.Comm().MyPID())
+    if (snode->Owner() != comm.MyPID())
       continue;
     
     // do not process slave side boundary nodes
@@ -1590,7 +1590,7 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
  |  the contribution of a 1D slave element part to the D map of the     |
  |  adjacent slave nodes via the connection D = sum (M)                 |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
                                     CONTACT::CElement& sele,
                                     CONTACT::CElement& mele,
                                     Epetra_SerialDenseMatrix& mseg)
@@ -1614,7 +1614,7 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != inter.Comm().MyPID())
+    if (snode->Owner() != comm.MyPID())
       continue;
     
     // do not process slave side boundary nodes
@@ -1679,7 +1679,7 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
  |  This method assembles the contribution of a 1D slave / master        |
  |  overlap pair to the Mmod map of the adjacent slave nodes.            |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleMmod(const Epetra_Comm& comm,
                                        CONTACT::CElement& sele,
                                        CONTACT::CElement& mele,
                                        Epetra_SerialDenseMatrix& mmodseg)
@@ -1700,7 +1700,7 @@ bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != inter.Comm().MyPID())
+    if (snode->Owner() != comm.MyPID())
       continue;
     
     // do not process slave side boundary nodes
@@ -1753,7 +1753,7 @@ bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
  |  This method assembles the contribution of a 1D slave / master        |
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleG(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleG(const Epetra_Comm& comm,
                                     CONTACT::CElement& sele,
                                     Epetra_SerialDenseVector& gseg)
 {
@@ -1768,7 +1768,7 @@ bool CONTACT::Integrator::AssembleG(CONTACT::Interface& inter,
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
     
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != inter.Comm().MyPID())
+    if (snode->Owner() != comm.MyPID())
       continue;
     
     // do not process slave side boundary nodes

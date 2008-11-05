@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #ifndef DRT_CONTACT_INTEGRATOR_H
 #define DRT_CONTACT_INTEGRATOR_H
 
+#include "Epetra_Comm.h"
 #include "drt_celement.H"
 #include "drt_contact_interface.H"
 
@@ -208,14 +209,16 @@ public:
   is done there too.
   
   */
-  bool AssembleD(CONTACT::Interface& inter, CONTACT::CElement& sele,
+  bool AssembleD(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
   
   /*!
   \brief Assemble M contribution of current overlap into slave nodes
     
   */
-  bool AssembleM(CONTACT::Interface& inter, CONTACT::CElement& sele,
+  bool AssembleM(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
                  CONTACT::CElement& mele,
                  Epetra_SerialDenseMatrix& M_seg);
   
@@ -223,7 +226,8 @@ public:
   \brief Assemble Mmod contribution of current overlap into slave nodes
       
   */
-  bool AssembleMmod(CONTACT::Interface& inter, CONTACT::CElement& sele,
+  bool AssembleMmod(const Epetra_Comm& comm,
+                    CONTACT::CElement& sele,
                     CONTACT::CElement& mele,
                     Epetra_SerialDenseMatrix& Mmod_seg);
   
@@ -231,7 +235,8 @@ public:
   \brief Assemble g~ contribution of current overlap into slave nodes
       
   */
-  bool AssembleG(CONTACT::Interface& inter, CONTACT::CElement& sele,
+  bool AssembleG(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
                  Epetra_SerialDenseVector& g_seg);
        
   //@}
