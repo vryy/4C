@@ -70,7 +70,7 @@ public:
   //! @name Friends
   friend class Beam3Register;
   friend class StatMechManager;
-  friend void StatMechManager::StatMechUpdate(double dt);
+  friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
   friend void StatMechTime::Integrate();
 
   //! @name Constructors and destructors and related methods
