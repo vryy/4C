@@ -121,7 +121,9 @@ private:
 
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
-  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
+  //! maps for extracting Dirichlet and free DOF sets
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+
   //Teuchos::RCP<Epetra_Vector>    zeros_;
 
   Teuchos::RCP<Epetra_Vector>    dispnp_;

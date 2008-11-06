@@ -74,7 +74,6 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   dispn_          = LINALG::CreateVector(*dofrowmap,true);
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
   residual_       = LINALG::CreateVector(*dofrowmap,true);
-  dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
   DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
@@ -83,24 +82,27 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,null,dbcmaps_);
 
   if (dirichletcond)
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
-
-    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondMap(),false);
-    idisp->PutScalar(1.0);
-    interface_.InsertCondVector(idisp,dirichtoggle_);
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(interface_.CondMap());
+    condmaps.push_back(dbcmaps_->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
   if (dirichletcond and freesurface_.Relevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
-
-    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*freesurface_.CondMap(),false);
-    idisp->PutScalar(1.0);
-    freesurface_.InsertCondVector(idisp,dirichtoggle_);
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(freesurface_.CondMap());
+    condmaps.push_back(dbcmaps_->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 }
 
@@ -123,7 +125,7 @@ void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
   if (not incremental_)
   {
     EvaluateElements();
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 
     // prepare constant preconditioner on constant matrix
 
@@ -198,7 +200,7 @@ void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   {
     EvaluateElements();
     // dispn_ has zeros at the Dirichlet-entries, so we maintain zeros there
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,*(dbcmaps_->CondMap()));
   }
 }
 
@@ -213,7 +215,7 @@ void ADAPTER::AleLinear::Solve()
   eleparams.set("delta time", dt_);
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }

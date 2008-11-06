@@ -43,7 +43,6 @@ ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   dispn_          = LINALG::CreateVector(*dofrowmap,true);
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
   residual_       = LINALG::CreateVector(*dofrowmap,true);
-  dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
   incr_           = LINALG::CreateVector(*dofrowmap,true);
 
   DRT::UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
@@ -53,24 +52,27 @@ ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,null,dbcmaps_);
 
   if (dirichletcond)
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
-
-    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondMap(),false);
-    idisp->PutScalar(1.0);
-    interface_.InsertCondVector(idisp,dirichtoggle_);
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(interface_.CondMap());
+    condmaps.push_back(dbcmaps_->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
   if (dirichletcond and freesurface_.Relevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
-
-    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*freesurface_.CondMap(),false);
-    idisp->PutScalar(1.0);
-    freesurface_.InsertCondVector(idisp,dirichtoggle_);
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(freesurface_.CondMap());
+    condmaps.push_back(dbcmaps_->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 }
 
@@ -119,7 +121,7 @@ void ADAPTER::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   }
 
   EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 }
 
 
@@ -137,7 +139,7 @@ void ADAPTER::AleSprings::Solve()
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
 
   solver_->Solve(sysmat_->EpetraOperator(),incr_,residual_,true);
 
