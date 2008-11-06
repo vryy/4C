@@ -9,6 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "inversedesign.H"
@@ -131,3 +132,4 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
 
 
 #endif  // #ifdef CCADISCRET
+#endif  // #ifdef D_SOLID3

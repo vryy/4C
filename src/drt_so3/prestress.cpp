@@ -9,6 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 #if defined(PRESTRESS) || defined(POSTSTRESS)
 

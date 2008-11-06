@@ -9,6 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef INVERSEDESIGN_H
 #define INVERSEDESIGN_H
@@ -247,3 +248,4 @@ private:
 
 #endif  // #ifndef INVERSEDESIGN_H
 #endif  // #ifdef CCADISCRET
+#endif  // #ifdef D_SOLID3

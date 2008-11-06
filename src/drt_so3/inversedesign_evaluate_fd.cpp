@@ -9,6 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "inversedesign.H"
@@ -1020,3 +1021,4 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
 
 
 #endif  // #ifdef CCADISCRET
+#endif  // #ifdef D_SOLID3
