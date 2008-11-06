@@ -131,19 +131,23 @@ void IO::DiscretizationReader::ReadMesh(int step)
     meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
   Teuchos::RCP<vector<char> > elementdata =
-   meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Teuchos::RCP<Epetra_Map> noderowmap = rcp(new Epetra_Map(*dis_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
 
   // unpack nodes and elements and redistirbuted to current layout
+  
+  // take care --- we are just adding elements to the discretisation
+  // that means depending on the current distribution and the 
+  // distribution of the data read we might increase the 
+  // number of elements in dis_
+  // the call to redistribute deletes the unnecessary elements,
+  // so everything should be OK
   dis_->UnPackMyNodes(nodedata);
   dis_->UnPackMyElements(elementdata);
   dis_->Redistribute(*noderowmap,*nodecolmap);
-  int err = dis_->FillComplete();
-  if (err) dserror("FillComplete() returned %d",err);
-
 #endif
   return;
 }
@@ -440,7 +444,7 @@ void IO::DiscretizationWriter::Check()
   // restrict the names that can be given to a discretization.
   //
   // If you want to create a dummy discretization choose the name 'none'.
-  char* names[] = FIELDNAMES;
+  const char* names[] = FIELDNAMES;
   for (int i=0; names[i]!=NULL; ++i)
     if (dis_->Name()==names[i])
       return;
