@@ -40,8 +40,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
-{
-  
+{ 
   DRT::ELEMENTS::Truss3::ActionType act = Truss3::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");

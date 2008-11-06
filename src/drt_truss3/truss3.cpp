@@ -28,6 +28,7 @@ data_(),
 material_(0),
 lrefe_(0),
 crosssec_(0),
+kintype_(tr3_totlag),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -44,6 +45,7 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  material_(old.material_),
  lrefe_(old.lrefe_),
  crosssec_(old.crosssec_),
+ kintype_(old. kintype_),
  gaussrule_(old.gaussrule_)
 {
   return;
