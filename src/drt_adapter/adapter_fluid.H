@@ -134,6 +134,10 @@ namespace ADAPTER {
     /// update at time step end
     virtual void Update() = 0;
 
+    /// lift'n'drag forces, statistics time sample and
+    /// output of solution and statistics
+    virtual void StatisticsAndOutput() = 0;
+
     /// output results
     virtual void Output() = 0;
 

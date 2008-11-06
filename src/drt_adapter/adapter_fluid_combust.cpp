@@ -444,23 +444,4 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidCombust::CreateFieldTest()
 //  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 //}
 
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 ist die Funktion hier nötig? |
- *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm)
-{
-   dserror("not implemented!");
-   return;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 ist die Funktion hier nötig? |
- *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
-{
-   dserror("not implemented!");
-   return;
-}
-
-
 #endif  // #ifdef CCADISCRET

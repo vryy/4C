@@ -162,9 +162,11 @@ private:
   enum SpecialFlow
   { no_special_flow          ,
     channel_flow_of_height_2 ,
+    loma_channel_flow_of_height_2 ,
     lid_driven_cavity        ,
+    loma_lid_driven_cavity        ,
     square_cylinder          } flow_;
-    
+
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with 
   //! wall damping quantities
   bool                         smagorinsky_;

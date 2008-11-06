@@ -170,6 +170,14 @@ void ADAPTER::FluidGenAlpha::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::StatisticsAndOutput()
+{
+  fluid_.GenAlphaStatisticsAndOutput();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidGenAlpha::Output()
 {
   fluid_.GenAlphaOutput();

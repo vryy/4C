@@ -382,26 +382,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
     this->GenAlphaTimeUpdate();
 
     // -------------------------------------------------------------------
+    //  statistics time sample and output of solution and statistics
+    // -------------------------------------------------------------------
+    this->GenAlphaStatisticsAndOutput();
+
+    // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     this->EvaluateErrorComparedToAnalyticalSol();
-
-
-    // time measurement --- start TimeMonitor tm8
-    tm8_ref_        = rcp(new TimeMonitor(*timeout_ ));
-
-    // -------------------------------------------------------------------
-    // add calculated velocity to mean value calculation (statistics)
-    // -------------------------------------------------------------------
-    statisticsmanager_->DoTimeSample(step_,time_);
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    this->GenAlphaOutput();
-
-    // time measurement --- stop TimeMonitor tm8
-    tm8_ref_        = null;
 
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
@@ -777,6 +765,41 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | statistics time sample and output of solution and statistics         |
+ |                                                             vg 11/08 |
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
+{
+  // time measurement --- start TimeMonitor tm8
+  tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
+
+  // -------------------------------------------------------------------
+  //   add calculated velocity to mean value calculation (statistics)
+  // -------------------------------------------------------------------
+  statisticsmanager_->DoTimeSample(step_,time_);
+
+  // -------------------------------------------------------------------
+  //                         output of solution
+  // -------------------------------------------------------------------
+  this->GenAlphaOutput();
+
+  // dumping of turbulence statistics if required
+  statisticsmanager_->DoOutput(step_);
+
+  // time measurement --- stop TimeMonitor tm8
+  tm8_ref_        = null;
+
+  return;
+} // FluidGenAlphaIntegration::StatisticsAndOutput
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

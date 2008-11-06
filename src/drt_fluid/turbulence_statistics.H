@@ -133,6 +133,16 @@ public:
 
 
   /*!
+  \brief The values of velocity, pressure, temperature and its squared
+  values are added to global vectors. This method allows to do the time
+  average of the nodal values after a certain amount of timesteps.
+  */
+  void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+                        Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+                        Epetra_Vector & force);
+
+
+  /*!
   \brief Compute in plane means of u,u^2 etc.
 
   The averages here are calculated by integration.
@@ -170,6 +180,11 @@ public:
   */
   void EvaluatePointwiseMeanValuesInPlanes();
 
+  /*!
+  \brief The same as above for low-Mach-number flows
+  */
+  void EvaluateLomaPointwiseMeanValuesInPlanes();
+
   //@}
 
   //! @name Miscellaneous
@@ -192,6 +207,15 @@ public:
   */
 
   void DumpStatistics(int step);
+
+  /*!
+  \brief Compute a time average of the mean values for low-Mach-number
+  flow over all steps of the sampling period so far. Dump the result to 
+  file.
+
+  */
+
+  void DumpLomaStatistics(int step);
 
   /*!
   \brief Reset sums and number of samples to 0
@@ -318,14 +342,18 @@ private:
   //! number of records written
   int                              countrecord_;
 
+  //! flag for low-Mach-number flow
+  string                           loma_;
+
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
 
   //! contains plane normal direction etc
   ParameterList&                   params_;
 
-   //! pointer to mean vel/pres field
+   //! pointer to mean vel/pres and vel/dens field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
+  RefCountPtr<Epetra_Vector>       meanvedenp_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RefCountPtr<Epetra_Vector>       squaredvelnp_;
@@ -382,11 +410,11 @@ private:
   //!       the pointwise averaged stuff
   //!--------------------------------------------------
   //
-  //! vector of squared velocities (pointwise)
+  //! vector of squared velocities, pressures and densities (pointwise)
   RefCountPtr<Epetra_Vector>       pointsquaredvelnp_;
+  RefCountPtr<Epetra_Vector>       pointsquaredvedenp_;
 
-
-//! sum over u (over one plane in each component)
+  //! sum over u (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumv_;
@@ -394,6 +422,8 @@ private:
   RefCountPtr<vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
   RefCountPtr<vector<double> >     pointsump_;
+  //! sum over p (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumT_;
 
   //! sum over u^2 (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumsqu_;
@@ -403,6 +433,8 @@ private:
   RefCountPtr<vector<double> >     pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumsqp_;
+  //! sum over p^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------
   //!               averaged forces

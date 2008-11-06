@@ -225,8 +225,8 @@ void LOMA::Algorithm::Output()
   // written, defining the order in which the filters handle the
   // discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  FluidField().Output();
-  //FluidField().LiftDrag();
+  FluidField().StatisticsAndOutput();
+
   ScaTraField().Output();
   if (outmean_=="Yes") ScaTraField().OutputMeanTempAndDens();
 

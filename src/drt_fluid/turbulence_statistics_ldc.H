@@ -87,20 +87,37 @@ public:
   //! @name functions for averaging
 
   /*!
-  \brief The values of velocity and its squared velues are added to
-  global vectors. This method allows to do the time average of the
-  nodal values after a certain amount of timesteps.
+  \brief The values of velocity, pressure and its squared values are
+  added to global vectors. This method allows to do the time average
+  of the nodal values after a certain amount of timesteps.
   */
   void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp);
 
   /*!
-  \brief Dump the result to file.
+  \brief The values of velocity, pressure, temperature and its squared
+  values are added to global vectors. This method allows to do the time
+  average of the nodal values after a certain amount of timesteps.
+  */
+  void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+                        Teuchos::RefCountPtr<Epetra_Vector> vedenp);
+
+  /*!
+  \brief Dump the result to file for incompressible flow.
 
   step on input is used to print the timesteps which belong to the
   statistic to the file
   */
 
   void DumpStatistics(int step);
+
+  /*!
+  \brief Dump the result to file for low-Mach-number flow.
+
+  step on input is used to print the timesteps which belong to the
+  statistic to the file
+  */
+
+  void DumpLomaStatistics(int step);
 
   /*!
   \brief Reset sums and number of samples to 0
@@ -146,9 +163,6 @@ private:
   //! parameter list
   ParameterList&                   params_;
 
-   //! pointer to vel/pres^2 field (space allocated in constructor)
-  RefCountPtr<Epetra_Vector>       squaredvelnp_;
-
   //! toogle vectors: sums are computed by scalarproducts
   RefCountPtr<Epetra_Vector>       toggleu_;
   RefCountPtr<Epetra_Vector>       togglev_;
@@ -176,6 +190,10 @@ private:
   RefCountPtr<vector<double> >     x1sump_;
   RefCountPtr<vector<double> >     x2sump_;
   RefCountPtr<vector<double> >     x3sump_;
+  //! sum over T (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumT_;
+  RefCountPtr<vector<double> >     x2sumT_;
+  RefCountPtr<vector<double> >     x3sumT_;
 
   //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqu_;
@@ -189,6 +207,15 @@ private:
   RefCountPtr<vector<double> >     x1sumsqw_;
   RefCountPtr<vector<double> >     x2sumsqw_;
   RefCountPtr<vector<double> >     x3sumsqw_;
+  //! sum over p^2 (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumsqp_;
+  RefCountPtr<vector<double> >     x2sumsqp_;
+  RefCountPtr<vector<double> >     x3sumsqp_;
+  //! sum over T^2 (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumsqT_;
+  RefCountPtr<vector<double> >     x2sumsqT_;
+  RefCountPtr<vector<double> >     x3sumsqT_;
+
   //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumuv_;
   RefCountPtr<vector<double> >     x2sumuv_;
@@ -201,11 +228,6 @@ private:
   RefCountPtr<vector<double> >     x1sumvw_;
   RefCountPtr<vector<double> >     x2sumvw_;
   RefCountPtr<vector<double> >     x3sumvw_;
-  //! sum over p^2 (over the centerlines in x1-, x2- and x3-direction)
-  RefCountPtr<vector<double> >     x1sumsqp_;
-  RefCountPtr<vector<double> >     x2sumsqp_;
-  RefCountPtr<vector<double> >     x3sumsqp_;
-
 };
 
 }

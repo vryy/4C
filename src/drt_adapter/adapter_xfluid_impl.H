@@ -87,6 +87,7 @@ namespace ADAPTER {
     virtual void PrepareTimeStep();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void Update();
+    virtual void StatisticsAndOutput();
     virtual void Output();
 
     virtual void NonlinearSolve();

@@ -305,7 +305,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         cout << &endl;
       }
 
-      if (special_flow_ == "channel_flow_of_height_2")
+      if (special_flow_ == "channel_flow_of_height_2" or
+          special_flow_ == "loma_channel_flow_of_height_2")
       {
         cout << "                             " ;
         cout << "Turbulence statistics are evaluated ";
@@ -487,7 +488,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
   // how do we want to solve or fluid equations?
-  const int dyntype    =params_.get<int>   ("type of nonlinear solve");
+  const int dyntype = params_.get<int>("type of nonlinear solve");
 
   if (dyntype==1)
   {
@@ -543,64 +544,19 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
-    //
-    // One-step-Theta: (step>1)
-    //
-    //  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_
-    //  "(n+1)"
-    //
-    //  velnm_ =veln_
-    //  veln_  =velnp_
-    //
-    // BDF2:           (step>1)
-    //
-    //               2*dt(n)+dt(n-1)		  dt(n)+dt(n-1)
-    //  accn_   = --------------------- velnp_ - --------------- veln_
-    //             dt(n)*[dt(n)+dt(n-1)]	  dt(n)*dt(n-1)
-    //
-    //                     dt(n)
-    //           + ----------------------- velnm_
-    //             dt(n-1)*[dt(n)+dt(n-1)]
-    //
-    //
-    //  velnm_ =veln_
-    //  veln_  =velnp_
-    //
-    // BDF2 and  One-step-Theta: (step==1)
-    //
-    // The given formulas are only valid from the second timestep. In the
-    // first step, the acceleration is calculated simply by
-    //
-    //  accn_  = (velnp_-veln_) / (dt)
-    //
-    // For low-Mach-number flow, the same is done for density values,
-    // which are located at the "pressure dofs" of "vede"-vectors.
     // -------------------------------------------------------------------
-
     TimeUpdate();
 
-    // time measurement: output and statistics
-    TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
-
     // -------------------------------------------------------------------
-    //          calculate lift'n'drag forces from the residual
+    //  lift'n'drag forces, statistics time sample and output of solution
+    //  and statistics
     // -------------------------------------------------------------------
-    LiftDrag();
-
-    // -------------------------------------------------------------------
-    // add calculated velocity to mean value calculation (statistics)
-    // -------------------------------------------------------------------
-    statisticsmanager_->DoTimeSample(step_,time_);
+    StatisticsAndOutput();
 
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     EvaluateErrorComparedToAnalyticalSol();
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    Output();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -1472,6 +1428,37 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
+ |                                                                      |
+ | One-step-Theta: (step>1)                                             |
+ |                                                                      |
+ |  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_"(n+1) |
+ |                                                                      |
+ |  velnm_ =veln_                                                       |
+ |  veln_  =velnp_                                                      |
+ |                                                                      |
+ |  BDF2:           (step>1)                                            |
+ |                                                                      |
+ |               2*dt(n)+dt(n-1)              dt(n)+dt(n-1)             |
+ |  accn_   = --------------------- velnp_ - --------------- veln_      |
+ |            dt(n)*[dt(n)+dt(n-1)]           dt(n)*dt(n-1)             |
+ |                                                                      |
+ |                     dt(n)                                            |
+ |           + ----------------------- velnm_                           |
+ |             dt(n-1)*[dt(n)+dt(n-1)]                                  |
+ |                                                                      |
+ |  velnm_ =veln_                                                       |
+ |  veln_  =velnp_                                                      |
+ |                                                                      |
+ |  BDF2 and  One-step-Theta: (step==1)                                 |
+ |                                                                      |
+ |  The given formulas are only valid from the second timestep. In the  |
+ |  first step, the acceleration is calculated simply by                |
+ |                                                                      |
+ |  accn_  = (velnp_-veln_) / (dt)                                      |
+ |                                                                      |
+ |  For low-Mach-number flow, the same is done for density values,      |
+ |  which are located at the "pressure dofs" of "vede"-vectors.         |
+ |                                                                      |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1525,6 +1512,45 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | lift'n'drag forces, statistics time sample and output of solution    |
+ | and statistics                                              vg 11/08 |
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
+{
+  // time measurement: output and statistics
+  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
+
+  // -------------------------------------------------------------------
+  //          calculate lift'n'drag forces from the residual
+  // -------------------------------------------------------------------
+  LiftDrag();
+
+  // -------------------------------------------------------------------
+  //   add calculated velocity to mean value calculation (statistics)
+  // -------------------------------------------------------------------
+  statisticsmanager_->DoTimeSample(step_,time_);
+
+  // -------------------------------------------------------------------
+  //                         output of solution
+  // -------------------------------------------------------------------
+  Output();
+
+  // -------------------------------------------------------------------
+  //          dumping of turbulence statistics if required
+  // -------------------------------------------------------------------
+  statisticsmanager_->DoOutput(step_);
+
+  return;
+} // FluidImplicitTimeInt::StatisticsAndOutput
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1610,9 +1636,6 @@ void FLD::FluidImplicitTimeInt::Output()
     // Note: this method acts only if there is an impedance BC
     impedancebc_->WriteRestart(output_);
   }
-
-  // dumping of turbulence statistics if required
-  statisticsmanager_->DoOutput(step_);
 
   return;
 } // FluidImplicitTimeInt::Output

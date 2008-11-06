@@ -152,6 +152,13 @@ public:
   void TimeUpdate();
 
   /*!
+  \brief lift'n'drag forces, statistics time sample and
+         output of solution and statistics
+
+  */
+  void StatisticsAndOutput();
+
+  /*!
   \brief update configuration and output to file/screen
 
   */

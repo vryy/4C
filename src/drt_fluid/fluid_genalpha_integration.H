@@ -222,6 +222,13 @@ public:
 
 
   /*!
+  \brief statistics time sample and output of solution and statistics
+
+  */
+  void GenAlphaStatisticsAndOutput();
+
+
+  /*!
   \brief Write solution to file for IO and restart if we have a
   restart step.
 

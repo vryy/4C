@@ -49,13 +49,13 @@ namespace FLD
     mygridvelaf_(fluid.gridvelaf_),
     myforce_    (fluid.force_    )
   {
-    // the flow parameter will control for which geometry the 
+    // the flow parameter will control for which geometry the
     // sampling is done
     if(fluid.special_flow_=="channel_flow_of_height_2")
     {
       flow_=channel_flow_of_height_2;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
 
@@ -131,11 +131,27 @@ namespace FLD
         }
       }
     }
+    else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
+    {
+      flow_=loma_channel_flow_of_height_2;
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
+    }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
       flow_=lid_driven_cavity;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    }
+    else if(fluid.special_flow_=="loma_lid_driven_cavity")
+    {
+      flow_=loma_lid_driven_cavity;
+
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
     }
@@ -143,7 +159,7 @@ namespace FLD
     {
       flow_=square_cylinder;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
     }
@@ -189,17 +205,25 @@ namespace FLD
     myforce_    (fluid.trueresidual_)
   {
 
-    // no subgrid dissipation computation is available for the 
+    // no subgrid dissipation computation is available for the
     // one-steo-theta implementation
     subgrid_dissipation_=false;
 
-    // the flow parameter will control for which geometry the 
+    // the flow parameter will control for which geometry the
     // sampling is done
     if(fluid.special_flow_=="channel_flow_of_height_2")
     {
       flow_=channel_flow_of_height_2;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
+    }
+    else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
+    {
+      flow_=loma_channel_flow_of_height_2;
+
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
     }
@@ -207,7 +231,15 @@ namespace FLD
     {
       flow_=lid_driven_cavity;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    }
+    else if(fluid.special_flow_=="loma_lid_driven_cavity")
+    {
+      flow_=loma_lid_driven_cavity;
+
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
     }
@@ -215,7 +247,7 @@ namespace FLD
     {
       flow_=square_cylinder;
 
-      // allocate one instance of the averaging procedure for 
+      // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
     }
@@ -247,7 +279,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::Setup()
   {
-    
+
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
     // check if we want to compute averages of Smagorinsky
@@ -266,10 +298,10 @@ namespace FLD
          "Smagorinsky_with_van_Driest_damping"
         )
       {
-        smagorinsky_=true;    
+        smagorinsky_=true;
       }
     }
-    
+
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
     {
@@ -291,7 +323,8 @@ namespace FLD
         =
         modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
 
-      if (flow_ == channel_flow_of_height_2)
+      if (flow_ == channel_flow_of_height_2 or
+          flow_ == loma_channel_flow_of_height_2)
       {
         cout << "Additional output          : " ;
         cout << "Turbulence statistics are evaluated ";
@@ -304,7 +337,7 @@ namespace FLD
         cout << "                             " ;
         cout << "Sampling period: steps " << samstart_ << " to ";
         cout << modelparams->get<int>("SAMPLING_STOP",1000000000) << ".\n";
-        
+
         int dumperiod = modelparams->get<int>("DUMPING_PERIOD",1);
 
 
@@ -362,7 +395,7 @@ namespace FLD
       break;
     }
     }
-    
+
     return;
   }
 
@@ -382,7 +415,7 @@ namespace FLD
       {
       case channel_flow_of_height_2:
       {
- 
+
         // add computed dynamic Smagorinsky quantities 
         // (effective viscosity etc. used during the computation)
 
@@ -442,7 +475,7 @@ namespace FLD
           modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
           modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
       }
-    
+
       break;
     }
     default:
@@ -467,7 +500,6 @@ namespace FLD
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
-
       //--------------------------------------------------
       // calculate means, fluctuations etc of velocity, 
       // pressure, boundary forces etc.
@@ -476,32 +508,43 @@ namespace FLD
       case channel_flow_of_height_2:
       {
         if(statistics_channel_==null)
-        {
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
-        }
+
         statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+        break;
+      }
+      case loma_channel_flow_of_height_2:
+      {
+        if(statistics_channel_==null)
+          dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
+
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myvedenp_,*myforce_);
         break;
       }
       case lid_driven_cavity:
       {
         if(statistics_ldc_==null)
-        {
           dserror("need statistics_ldc_ to do a time sample for a cavity flow");
-        }
-        statistics_ldc_->DoTimeSample(myvelnp_);
 
+        statistics_ldc_->DoTimeSample(myvelnp_);
+        break;
+      }
+      case loma_lid_driven_cavity:
+      {
+        if(statistics_ldc_==null)
+          dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
+
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_);
         break;
       }
       case square_cylinder:
       {
         if(statistics_sqc_==null)
-        {
           dserror("need statistics_sqc_ to do a time sample for a flow around a square cylinder");
-        }
-        statistics_sqc_->DoTimeSample(myvelnp_);
- 
-        // computation of Lift&Drag statistics
 
+        statistics_sqc_->DoTimeSample(myvelnp_);
+
+        // computation of Lift&Drag statistics
         {
           RCP<map<int,vector<double> > > liftdragvals;
 
@@ -516,7 +559,6 @@ namespace FLD
           statistics_sqc_->DoLiftDragTimeSample(((*theonlyldval).second)[0],
                                                 ((*theonlyldval).second)[1]);
         }
-        
         break;
       }
       default:
@@ -730,7 +772,7 @@ namespace FLD
 
     return;
   }
-  
+
   /*----------------------------------------------------------------------
 
     Write (dump) the statistics to a file
@@ -745,87 +787,86 @@ namespace FLD
       enum format {write_single_record   ,
                    write_multiple_records,
                    do_not_write          } outputformat=do_not_write;
-    
 
-      // sampling a la Volker --- single record is 
-      // constantly updated
+
+      // sampling a la Volker --- single record is constantly updated
       if(dumperiod_!=0)
       {
-        
         int samstep = step-samstart_+1;
         double dsamstep=samstep;
         double ddumperiod=dumperiod_;
 
         // dump every dumperiod steps
         if (fmod(dsamstep,ddumperiod)==0)
-        {
           outputformat=write_single_record;
-        }
       }
 
       // sampling a la Peter --- for each sampling period a
-      // new record is written; they can be combined by a 
+      // new record is written; they can be combined by a
       // postprocessing script to a single long term sample
       // (allows restarts during sampling)
       if(dumperiod_==0)
       {
-
         int upres    =params_.get("write solution every", -1);
         int uprestart=params_.get("write restart every" , -1);
-        
+
         // dump in combination with a restart/output
         if(step%upres == 0 || step%uprestart == 0)
-        {
           outputformat=write_multiple_records;
-        }
       }
-      
-      // do actual output (an time averaging)
+
+      // do actual output (time averaging)
       switch(flow_)
       {
       case channel_flow_of_height_2:
       {
         if(statistics_channel_==null)
-        {
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
-        }
 
         if(outputformat == write_multiple_records)
         {
           statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
           statistics_channel_->ClearStatistics();
         }
+
         if(outputformat == write_single_record)
-        {
           statistics_channel_->DumpStatistics(step);
-        }
+        break;
+      }
+      case loma_channel_flow_of_height_2:
+      {
+        if(statistics_channel_==null)
+          dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
+
+        if(outputformat == write_single_record)
+          statistics_channel_->DumpLomaStatistics(step);
         break;
       }
       case lid_driven_cavity:
       {
         if(statistics_ldc_==null)
-        {
           dserror("need statistics_ldc_ to do a time sample for a lid driven cavity");
-        }
 
         if(outputformat == write_single_record)
-        {
           statistics_ldc_->DumpStatistics(step);
-        }        
+        break;
+      }
+      case loma_lid_driven_cavity:
+      {
+        if(statistics_ldc_==null)
+          dserror("need statistics_ldc_ to do a time sample for a lid driven cavity at low Mach number");
+
+        if(outputformat == write_single_record)
+          statistics_ldc_->DumpLomaStatistics(step);
         break;
       }
       case square_cylinder:
       {
         if(statistics_sqc_==null)
-        {
-          dserror("need statistics_ldc_ to do a time sample for a square cylinder flow");
-        }
+          dserror("need statistics_sqc_ to do a time sample for a square cylinder flow");
 
-        if(outputformat == write_single_record)
-        {
+        if (outputformat == write_single_record)
           statistics_sqc_->DumpStatistics(step);
-        }        
-        
         break;
       }
       default:
@@ -837,9 +878,9 @@ namespace FLD
 
     return;
   }
-  
+
   /*----------------------------------------------------------------------
-  
+
   Clear all statistics collected up to now
 
   ----------------------------------------------------------------------*/
@@ -848,20 +889,15 @@ namespace FLD
     switch(flow_)
     {
     case channel_flow_of_height_2:
+    case loma_channel_flow_of_height_2:
     {
-      if(statistics_channel_==null)
-      {
+      if (statistics_channel_==null)
         dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
-      }
       statistics_channel_->ClearStatistics();
-
       break;
     }
     case lid_driven_cavity:
-    {
-      // nothing to do here
-      break;
-    }
+    case loma_lid_driven_cavity:
     case square_cylinder:
     {
       // nothing to do here

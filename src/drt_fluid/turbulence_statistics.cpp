@@ -38,6 +38,9 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
     dserror("Evaluation of turbulence statistics only for 3d channel flow!");
   }
 
+  // type of solver: low-Mach-number or incompressible solver
+  loma_ = params_.get<string>("low-Mach-number solver","No");
+
   // up to now, there are no records written
   countrecord_ = 0;
 
@@ -68,6 +71,8 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
+  // this vector is only necessary for low-Mach-number flow
+  if (loma_ != "No") meanvedenp_   = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -597,7 +602,6 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
   sumsqp_->resize(size,0.0);
 
 
-
   //----------------------------------------------------------------------
   // arrays for point based averaging
 
@@ -628,6 +632,18 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
 
   pointsumsqp_ =  rcp(new vector<double> );
   pointsumsqp_->resize(size,0.0);
+
+  // these vector are only necessary for low-Mach-number flow
+  if (loma_ != "No")
+  {
+    pointsquaredvedenp_  = LINALG::CreateVector(*dofrowmap,true);
+
+    pointsumT_ =  rcp(new vector<double> );
+    pointsumT_->resize(size,0.0);
+
+    pointsumsqT_ =  rcp(new vector<double> );
+    pointsumsqT_->resize(size,0.0);
+  }
 
   //----------------------------------------------------------------------
   // arrays for averaging of Smagorinsky constant etc.
@@ -751,6 +767,9 @@ FLD::TurbulenceStatistics::~TurbulenceStatistics()
   return;
 }// TurbulenceStatistics::~TurbulenceStatistics()
 
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatistics::DoTimeSample(
   Teuchos::RefCountPtr<Epetra_Vector> velnp,
   Epetra_Vector & force
@@ -884,6 +903,96 @@ void FLD::TurbulenceStatistics::DoTimeSample(
 
   return;
 }// TurbulenceStatistics::DoTimeSample
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatistics::DoLomaTimeSample(
+  Teuchos::RefCountPtr<Epetra_Vector> velnp,
+  Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+  Epetra_Vector & force
+  )
+{
+  //----------------------------------------------------------------------
+  // we have an additional sample
+  //----------------------------------------------------------------------
+  numsamp_++;
+
+  //----------------------------------------------------------------------
+  // meanvelnp and meanvedenp are refcount copies of velnp and vedenp
+  //----------------------------------------------------------------------
+  meanvelnp_->Update(1.0,*velnp,0.0);
+  meanvedenp_->Update(1.0,*vedenp,0.0);
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // loop planes and calculate pointwise means in each plane
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  this->EvaluateLomaPointwiseMeanValuesInPlanes();
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // compute forces on top and bottom plate for normalization purposes
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  for(vector<double>::iterator plane=planecoordinates_->begin();
+      plane!=planecoordinates_->end();
+      ++plane)
+  {
+    //----------------------------------------------------------------------
+    // only true for top and bottom plane
+    //----------------------------------------------------------------------
+    if ((*plane-2e-9 < (*planecoordinates_)[0]
+         &&
+         *plane+2e-9 > (*planecoordinates_)[0])
+        ||
+        (*plane-2e-9 < (*planecoordinates_)[planecoordinates_->size()-1]
+         &&
+         *plane+2e-9 > (*planecoordinates_)[planecoordinates_->size()-1])
+      )
+    {
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
+
+      //----------------------------------------------------------------------
+      // activate toggles for in plane dofs
+      //----------------------------------------------------------------------
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // this node belongs to the plane under consideration
+        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+        }
+      }
+
+      double inc;
+      force.Dot(*toggleu_,&inc);
+      sumforceu_+=inc;
+      force.Dot(*togglev_,&inc);
+      sumforcev_+=inc;
+      force.Dot(*togglew_,&inc);
+      sumforcew_+=inc;
+    }
+  }
+
+  return;
+}// TurbulenceStatistics::DoLomaTimeSample
 
 /*----------------------------------------------------------------------*
  *
@@ -1192,6 +1301,132 @@ void FLD::TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
 
   return;
 }// TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
+
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatistics::EvaluateLomaPointwiseMeanValuesInPlanes()
+{
+  int planenum = 0;
+
+  //----------------------------------------------------------------------
+  // pointwise multiplication to get squared values
+  //----------------------------------------------------------------------
+  pointsquaredvelnp_->Multiply(1.0,*meanvelnp_,*meanvelnp_,0.0);
+  pointsquaredvedenp_->Multiply(1.0,*meanvedenp_,*meanvedenp_,0.0);
+
+  //----------------------------------------------------------------------
+  // loop planes and calculate pointwise means in each plane
+  //----------------------------------------------------------------------
+  for(vector<double>::iterator plane=planecoordinates_->begin();
+      plane!=planecoordinates_->end();
+      ++plane)
+  {
+
+    // toggle vectors are one in the position of a dof in this plane,
+    // else 0
+    toggleu_->PutScalar(0.0);
+    togglev_->PutScalar(0.0);
+    togglew_->PutScalar(0.0);
+    togglep_->PutScalar(0.0);
+
+    // count the number of nodes in plane (required to calc. in plane mean)
+    int countnodesinplane=0;
+
+    //----------------------------------------------------------------------
+    // activate toggles for in plane dofs
+    //----------------------------------------------------------------------
+    for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+    {
+      DRT::Node* node = discret_->lRowNode(nn);
+
+      // this node belongs to the plane under consideration
+      if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+      {
+        vector<int> dof = discret_->Dof(node);
+        double      one = 1.0;
+
+        toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+        togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+        togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+        togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+        // now check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
+
+        node->GetCondition("SurfacePeriodic",mypbc);
+
+        // yes, we have a pbc
+        if (mypbc.size()>0)
+        {
+          // loop them and check, whether this is a pbc pure master node
+          // for all previous conditions
+          unsigned ntimesmaster = 0;
+          for (unsigned numcond=0;numcond<mypbc.size();++numcond)
+          {
+            const string* mymasterslavetoggle
+              = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+
+            if(*mymasterslavetoggle=="Master")
+            {
+              ++ntimesmaster;
+            } // end is slave?
+          } // end loop this conditions
+
+          if(ntimesmaster!=mypbc.size())
+          {
+            continue;
+          }
+          // we have a master. Remember this cause we have to extend the patch
+          // to the other side...
+        }
+        countnodesinplane++;
+      }
+    }
+
+    int countnodesinplaneonallprocs=0;
+
+    discret_->Comm().SumAll(&countnodesinplane,&countnodesinplaneonallprocs,1);
+
+    if (countnodesinplaneonallprocs)
+    {
+      //----------------------------------------------------------------------
+      // compute scalar products from velnp and toggle vec to sum up
+      // values in this plane
+      //----------------------------------------------------------------------
+      double inc;
+      meanvelnp_->Dot(*toggleu_,&inc);
+      (*pointsumu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      meanvelnp_->Dot(*togglev_,&inc);
+      (*pointsumv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      meanvelnp_->Dot(*togglew_,&inc);
+      (*pointsumw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      meanvelnp_->Dot(*togglep_,&inc);
+      (*pointsump_)[planenum]+=inc/countnodesinplaneonallprocs;
+      meanvedenp_->Dot(*togglep_,&inc);
+      (*pointsumT_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+      //----------------------------------------------------------------------
+      // compute scalar products from squaredvelnp and toggle vec to
+      // sum up values for second order moments in this plane
+      //----------------------------------------------------------------------
+      pointsquaredvelnp_->Dot(*toggleu_,&inc);
+      (*pointsumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      pointsquaredvelnp_->Dot(*togglev_,&inc);
+      (*pointsumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      pointsquaredvelnp_->Dot(*togglew_,&inc);
+      (*pointsumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      pointsquaredvelnp_->Dot(*togglep_,&inc);
+      (*pointsumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
+      pointsquaredvedenp_->Dot(*togglep_,&inc);
+      (*pointsumsqT_)[planenum]+=inc/countnodesinplaneonallprocs;
+    }
+    planenum++;
+  }
+
+  return;
+}// TurbulenceStatistics::EvaluateLomaPointwiseMeanValuesInPlanes()
 
 
 /*----------------------------------------------------------------------*
@@ -1715,6 +1950,111 @@ void FLD::TurbulenceStatistics::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatistics::DumpLomaStatistics(int step)
+{
+  if (numsamp_ == 0) dserror("No samples to do time average");
+
+  //----------------------------------------------------------------------
+  // the sums are divided by the number of samples to get the time average
+  int aux = numele_*numsamp_;
+
+  //----------------------------------------------------------------------
+  // evaluate area to calculate u_tau, l_tau (and tau_W)
+  double area = 1.0;
+  for (int i=0;i<3;i++)
+  {
+    if(i!=dim_) area*=((*boundingbox_)(1,i)-(*boundingbox_)(0,i));
+  }
+  // there are two Dirichlet boundaries
+  area*=2;
+
+  //----------------------------------------------------------------------
+  // we expect nonzero forces (tractions) only in flow direction
+  int flowdirection =0;
+
+  // ltau is used to compute y+
+  double ltau = 0;
+  if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
+  {
+    flowdirection=0;
+    ltau = visc_/sqrt(sumforceu_/(area*numsamp_));
+  }
+  else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
+  {
+    flowdirection=1;
+    ltau = visc_/sqrt(sumforcev_/(area*numsamp_));
+  }
+  else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
+  {
+    flowdirection=2;
+    ltau = visc_/sqrt(sumforcew_/(area*numsamp_));
+  }
+  else
+    dserror("Cannot determine flow direction by traction (seems to be not unique)");
+
+  //----------------------------------------------------------------------
+  // output to log-file
+  Teuchos::RefCountPtr<std::ofstream> log;
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".loma_statistic");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Flow statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)";
+    (*log) << "\n\n\n";
+    (*log) << "# Statistics record ";
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+    (*log) << "# (u_tau)^2 = tau_W/rho : ";
+    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/(area*numsamp_);
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/(area*numsamp_);
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/(area*numsamp_);
+    (*log) << &endl;
+
+    (*log) << "#     y            y+";
+    (*log) << "           umean         vmean         wmean         pmean         Tmean";
+    (*log) << "        mean u^2      mean v^2      mean w^2";
+    (*log) << "      mean u*v      mean u*w      mean v*w        Varp   \n";
+
+    (*log) << scientific;
+    for(unsigned i=0; i<planecoordinates_->size(); ++i)
+    {
+      (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumT_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqu_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqv_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqw_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqp_)[i]/numsamp_;
+      (*log) << "   \n";
+    }
+    log->flush();
+  }
+
+  return;
+
+}// TurbulenceStatistics::DumpLomaStatistics
+
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatistics::ClearStatistics()
 {
   // reset the number of samples
@@ -1745,15 +2085,18 @@ void FLD::TurbulenceStatistics::ClearStatistics()
     (*pointsumv_)[i]  =0;
     (*pointsumw_)[i]  =0;
     (*pointsump_)[i]  =0;
+    (*pointsumT_)[i]  =0;
 
     (*pointsumsqu_)[i]=0;
     (*pointsumsqv_)[i]=0;
     (*pointsumsqw_)[i]=0;
     (*pointsumsqp_)[i]=0;
+    (*pointsumsqT_)[i]=0;
 
   }
 
   meanvelnp_->PutScalar(0.0);
+  if (loma_ != "No") meanvedenp_->PutScalar(0.0);
 
   // reset smapling for dynamic Smagorinsky model
   if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")

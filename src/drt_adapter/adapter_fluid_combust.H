@@ -130,7 +130,11 @@ namespace ADAPTER
             interface_.InsertCondVector(ivel,relax);
             //fluid_.LinearRelaxationSolve(relax);
             return ExtractInterfaceForces(); };
-            
+
+    ///  lift'n'drag forces, statistics time sample and output of solution and statistics
+    virtual void StatisticsAndOutput(){ dserror("not implemented!");
+                                        return; };
+
     /// set initial flow field
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno){ dserror("not implemented!");
                                                                              return; };
@@ -138,10 +142,13 @@ namespace ADAPTER
     ///  set time-step-related fields for low-Mach-number flow
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
                                    RCP<const Epetra_Vector> densn,
-                                   RCP<const Epetra_Vector> densnm);
+                                   RCP<const Epetra_Vector> densnm){ dserror("not implemented!");
+                                                                     return; };
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp);
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp){ dserror("not implemented!");
+                                                                     return; };
+
 
     /*--------------------------------------------------------------------------------------------* 
      * group member functions which are implemented and used
