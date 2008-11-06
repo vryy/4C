@@ -378,7 +378,7 @@ protected:
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
-  /// (standard) residual vector (rhs for the incremental form),
+  /// rhs: right hand side vector for linearised flow solution
   Teuchos::RCP<Epetra_Vector>    residual_;
 
   /// robinrhs_: additional rhs when using robin-BC
