@@ -14,7 +14,7 @@ numproc=2  # number of processing elements (CPUs)
 function helpmessage
 {
   echo "usage: $0 [option] type config-file-name [input-file]"
-  echo "       type = all, rel, reldrt, restart, single"
+  echo "       type = all, rel, reldrt, restart, single, singlerestart"
   echo "options"
   echo "       -j <number> = number of processors (default $numproc)"
 }
@@ -193,6 +193,24 @@ elif [ "x$1" = "xsingle" ]; then
   # create the list
   liste=$3
 
+elif [ "x$1" = "xsinglerestart" ]; then
+
+  # test only one file and its restart
+
+  # check whether the name of the input file was given
+  if [ "x$3" = "x" ]; then
+    echo "usage: $0 singlerestart config-file-name input-file"
+    exit 1
+  fi
+  # check whether the input file exists
+  if [ ! -s "$3" ]; then
+    echo $0: file not found: $3
+    exit 1
+  fi
+
+  # create the list
+  liste=$3
+
 else
   # unknown test typ
   echo "ERROR: Unknown type of testing!!"
@@ -243,6 +261,11 @@ elif [ "x$1" = "xsingle" ]; then
 
   # test only one file
   . $SRC/testing/loop_all.sh
+
+elif [ "x$1" = "xsinglerestart" ]; then
+
+  # test only one file with restart
+  . $SRC/testing/loop_restart.sh
 
 else
 

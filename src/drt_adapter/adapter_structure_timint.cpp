@@ -309,10 +309,7 @@ const Epetra_Map& ADAPTER::StructureTimInt::DomainMap()
 /* read restart */
 void ADAPTER::StructureTimInt::ReadRestart(int step)
 {
-  dserror("Not impl.");
-/*
   structure_->ReadRestart(step);
-*/
 }
 
 
