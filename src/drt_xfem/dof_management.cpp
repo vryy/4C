@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dofset.H"
@@ -26,8 +27,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-extern struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*
@@ -133,8 +132,8 @@ void XFEM::DofManager::toGmsh(
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
     std::ofstream f_system(filename.str().c_str());

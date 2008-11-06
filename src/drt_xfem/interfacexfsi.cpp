@@ -21,13 +21,13 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 
 #include "xfem_condition.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
 #include "coordinate_transformation.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -56,8 +56,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -190,8 +190,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -205,8 +205,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
@@ -244,8 +244,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << allfiles.outputfile_kenner << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
@@ -276,8 +276,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     // debug: write information about which structure we are in
     std::stringstream filenameP;
     std::stringstream filenamePdel;
-    filenameP    << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamePdel << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filenameP    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_points_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamePdel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_points_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamePdel.str().c_str());
 
     std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
@@ -315,7 +315,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     f_systemP.close();
     cout << " done" << endl;
     
-    octTreenp_->printTree(allfiles.outputfile_kenner, step);
+    octTreenp_->printTree(DRT::Problem::Instance()->OutputControlFile()->FileName(), step);
     octTreenp_->evaluateTreeMetrics(step);
   }
   

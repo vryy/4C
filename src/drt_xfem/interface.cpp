@@ -25,8 +25,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/integrationcell.H"
 
-//extern struct _FILES  allfiles;
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
