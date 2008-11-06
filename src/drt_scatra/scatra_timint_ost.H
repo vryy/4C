@@ -57,6 +57,9 @@ protected:
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
 
+  /// do explicit predictor step (-> better starting value for nonlinear solver)
+  void ExplicitPredictor();
+
   /// write additional data required for restart
   void OutputRestart();
 

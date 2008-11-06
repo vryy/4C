@@ -107,6 +107,9 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  /// do explicit predictor step (-> better starting value for nonlinear solver)
+  virtual void ExplicitPredictor() = 0;
+
   //! contains the nonlinear iteration loop
   void NonlinearSolve();
 

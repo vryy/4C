@@ -67,6 +67,16 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 
 
 /*----------------------------------------------------------------------*
+ | perform an explicit predictor step                         gjb 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
+{
+  phinp_->Update(dta_, *phidtn_,1.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/

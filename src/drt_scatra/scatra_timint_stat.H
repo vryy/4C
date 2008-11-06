@@ -57,6 +57,9 @@ protected:
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
 
+  /// do explicit predictor step (nothing to predict for stationary problems!)
+  void ExplicitPredictor(){return;};
+
   /// write additional data required for restart
   void OutputRestart();
 

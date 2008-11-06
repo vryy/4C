@@ -452,6 +452,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
   bool  stopnonliniter = false;
 
+  // perform explicit predictor step (-> better starting point for nonlinear solver)
+  //if (step_>1) ExplicitPredictor();
+
   while (stopnonliniter==false)
   {
     itnum++;
