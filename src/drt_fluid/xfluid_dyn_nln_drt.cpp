@@ -64,12 +64,10 @@ void xdyn_fluid_drt()
   std::cout << "SolidProc: " << smyrank << endl;
 
   // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
+  // set degrees of freedom in the discretizations
   // -------------------------------------------------------------------
-  cout << "fillcomplete ..." << flush;
   if (!soliddis->Filled()) soliddis->FillComplete();
   if (!fluiddis->Filled()) fluiddis->FillComplete();
-  cout << " done" << endl;
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -190,7 +188,27 @@ void xdyn_fluid_drt()
   }
 
   // ----------------------------------------------- XFEM related stuff
-  fluidtimeparams.set<bool>("DLM_condensation",true);
+  //  cout << solveparams->get<string>("solver") << endl;
+  //  cout << solveparams->isSublist("ML Parameters") << endl;
+  if (solveparams->get<string>("solver") == "aztec" and solveparams->isSublist("ML Parameters"))
+  {
+    fluidtimeparams.set<bool>("DLM_condensation",true);
+  }
+  else
+  {
+    fluidtimeparams.set<bool>("DLM_condensation",false);
+  }
+    
+  if (fluiddis->Comm().MyPID()==0 and fluidtimeparams.get<bool>("DLM_condensation") == true)
+  {
+    std::cout << "DLM_condensation turned on!" << endl;    
+  }
+
+//  if (Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR") != timeint_stationary 
+//      and fluidtimeparams->get<bool>("DLM_condensation") == true)
+//  {
+//    dserror("condensation does not work for transient problems at the moment! (it's a known bug and it should work in the near future)");
+//  }
   
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
