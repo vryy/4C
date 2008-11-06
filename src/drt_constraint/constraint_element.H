@@ -370,6 +370,19 @@ private:
     Epetra_SerialDenseMatrix& elematrix  ///< matrix to store results into
   );
 
+  /// Compute difference of nodal displacement to masternode in given direction
+  double ComputeWeightedDistance
+  (
+    const vector<double> disp,    ///< displacement vector of current node and masternode
+    const vector<double> direct   ///< direction to weight with
+  );
+  
+  /// Compute first derivatives nodal displacement to masternode in given direction
+  void ComputeFirstDerivWeightedDistance
+  (
+    Epetra_SerialDenseVector& elevector,  ///< vector to store results into
+    const vector<double> direct   ///< direction to weight with
+  );
 
 }; // class ConstraintElement
 

@@ -53,6 +53,7 @@ namespace UTILS
       areaconstr3d,
       areaconstr2d,
       mpcnodeonplane3d,
+      mpcnormalcomp3d,
       mpcnodeonline2d
     };
     

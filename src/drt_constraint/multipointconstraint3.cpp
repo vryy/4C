@@ -50,16 +50,21 @@ MPConstraint
     {
       const int condID = (*(*conditer)->Get<vector<int> >("ConditionID"))[0];
       if (offsetID>maxID) offsetID=maxID;
-      const string* type = (*conditer)-> Get<string>("control");
-      if (*type == "abs")  
+      if (Type()==mpcnormalcomp3d)
         absconstraint_[condID]=true;
-      else 
-        absconstraint_[condID]=false;
+      else
+      {
+        const string* type = (*conditer)-> Get<string>("control");
+        if (*type == "abs")  
+          absconstraint_[condID]=true;
+        else 
+          absconstraint_[condID]=false;
+      }
     }
     
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE",maxID);
+    
     map<int, RCP<DRT::Discretization> > ::iterator discriter;
-   
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
       ReplaceNumDof(actdisc_,discriter->second);
@@ -131,9 +136,15 @@ void UTILS::MPConstraint3::Initialize(
     {
       if (absconstraint_.find(condID)->second)
       {
-        const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
         const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
-        amplit[i]=(*MPCampl)[0];
+        //in case of a mpcnormalcomp3d-condition amplitude is always 0
+        if (Type()==mpcnormalcomp3d)
+          amplit[i]=0.0;
+        else
+        {
+          const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
+          amplit[i]=(*MPCampl)[0];
+        }
         const int mid=params.get("OffsetID",0);
         IDs[i]=(*MPCcondID)[0]-mid;
       } 
@@ -142,6 +153,7 @@ void UTILS::MPConstraint3::Initialize(
         switch (Type())
         {
           case mpcnodeonplane3d: 
+          case mpcnormalcomp3d:
             params.set("action","calc_MPC3D_state");
           break;
           case none:
@@ -180,6 +192,7 @@ void UTILS::MPConstraint3::Evaluate(
   switch (Type())
   {
     case mpcnodeonplane3d: 
+    case mpcnormalcomp3d:
       params.set("action","calc_MPC3D_stiff");
     break;
     case none:
@@ -234,9 +247,26 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
     //get node IDs, this vector will only contain FREE nodes in the end
     vector<int> ngid=*((*conditer)->Nodes());
-    // take three nodes defining plane as specified by user and put them into a set
-    const vector<int>*  defnv = (*conditer)->Get<vector<int> > ("planeNodes");
-    set<int> defns (defnv->begin(),defnv->end());
+    vector<int> defnv;
+    switch (Type())
+    {
+    case mpcnodeonplane3d:
+    {
+      // take three nodes defining plane as specified by user and put them into a set
+      const vector<int>*  defnvp = (*conditer)->Get<vector<int> > ("planeNodes");
+      defnv = *defnvp;
+    }
+    break;
+    case mpcnormalcomp3d:
+    { 
+      // take master node
+      const int defn = (*conditer)->Getint ("masterNode");
+      defnv.push_back(defn);
+    }
+    break;
+    default: dserror ("not good!");
+    }
+    set<int> defns (defnv.begin(),defnv.end());
     set<int>::iterator nsit;
     // safe gids of definition nodes in a vector
     vector<int> defnodeIDs;
@@ -326,6 +356,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
   startID--; // set counter back to ID of the last element
   return newdiscmap;
 }
+
+
 
 /*-----------------------------------------------------------------------*
  |(private)                                                     tk 07/08 |
@@ -425,7 +457,6 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       }
       if (assemblemat2)
       {
-        int offsetID=params.get<int>("OffsetID");
         vector<int> colvec(1);
         colvec[0]=gindex;
         elevector2.Scale(scConMat);

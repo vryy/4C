@@ -112,7 +112,8 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& nam
     return mpcnodeonplane3d;
   else if (name=="MPC_NodeOnLine_2D")
     return mpcnodeonline2d;
-  
+  else if (name=="MPC_NormalComponent_3D")
+    return mpcnormalcomp3d;
   return none;
 }
 

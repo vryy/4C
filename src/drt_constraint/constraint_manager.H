@@ -281,6 +281,7 @@ namespace UTILS
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
     RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
     RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
+    RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
     RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
   
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces

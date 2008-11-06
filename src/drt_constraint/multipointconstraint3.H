@@ -105,7 +105,7 @@ namespace UTILS
       const string&             element_name, ///< name of element type to create
       int& startID  ///<ID to start with
     );
-     
+
     // projected attributes
     map<int,bool> absconstraint_;///<maps condition ID to indicator if absolute values are to use for controlling
     map<int,int> eletocondID_;///<maps element ID to condition ID, to allow use of other maps

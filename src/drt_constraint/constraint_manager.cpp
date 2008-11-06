@@ -49,14 +49,19 @@ actdisc_(discr)
   areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",offsetID_,maxConstrID));
   mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
   mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
-
+  mpcnormcomp3d_=rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
+  
   numConstrID_=max(maxConstrID-offsetID_+1,0);
   offsetID_-=offset;
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
-  haveconstraint_= (areaconstr3d_->HaveConstraint())||(volconstr3d_->HaveConstraint())||
-        (areaconstr2d_->HaveConstraint())||(mpconplane3d_->HaveConstraint())||(mpconline2d_->HaveConstraint());
+  haveconstraint_= (areaconstr3d_->HaveConstraint())
+    or (volconstr3d_->HaveConstraint())
+    or (areaconstr2d_->HaveConstraint())
+    or (mpconplane3d_->HaveConstraint())
+    or (mpcnormcomp3d_->HaveConstraint())
+    or (mpconline2d_->HaveConstraint());
   if (haveconstraint_)
   {
     ParameterList p;
@@ -88,6 +93,8 @@ actdisc_(discr)
     mpconline2d_->Initialize(p,refbaseredundant);
     mpconplane3d_->SetConstrState("displacement",disp);
     mpconplane3d_->Initialize(p,refbaseredundant);
+    mpcnormcomp3d_->SetConstrState("displacement",disp);
+    mpcnormcomp3d_->Initialize(p,refbaseredundant);
     
     // Export redundant vector into distributed one
     refbasevalues_ -> Export(*refbaseredundant,*conimpo_,Add);
@@ -195,6 +202,8 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   
   mpconplane3d_->SetConstrState("displacement",disp);
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
+  mpcnormcomp3d_->SetConstrState("displacement",disp);
+  mpcnormcomp3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   // Export redundant vectors into distributed ones
@@ -240,6 +249,9 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
     mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
     
+    mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
+    mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
+    
     // Export redundant vectors into distributed ones
     actvalues_->Scale(0.0);
     actvalues_->Export(*actredundant,*conimpo_,Add);
@@ -258,6 +270,7 @@ void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const d
   areaconstr3d_->Initialize(time);
   areaconstr2d_->Initialize(time);
   mpconplane3d_->Initialize(time);
+  mpcnormcomp3d_->Initialize(time);
   mpconline2d_->Initialize(time);
 
   refbasevalues_->Update(1.0, *newrefval,0.0);

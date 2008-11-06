@@ -83,19 +83,30 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
-      SpatialConfiguration(xscurr,mydisp,numdim);
+ 
 
-      LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeNormal3D(xscurr,elementnormal);
-      if(abs(elementnormal.Norm2())<1E-6)
+      if (numnod == 4)
       {
-        dserror("Bad plane, points almost on a line!");
-      }
-      double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
+        LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
+        SpatialConfiguration(xscurr,mydisp,numdim);
+        LINALG::SerialDenseVector elementnormal(numdim);
 
-      //update corresponding column in "constraint" matrix
-      elevec3[0]=normaldistance;
+        ComputeNormal3D(xscurr,elementnormal);
+        if(abs(elementnormal.Norm2())<1E-6)
+        {
+          dserror("Bad plane, points almost on a line!");
+        }
+ 
+        elevec3[0] =ComputeNormalDist3D(xscurr,elementnormal);
+      }
+      else if (numnod == 2)
+      {
+        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+        const vector<double>*  direct = condition->Get<vector<double> > ("direction");
+               
+        // compute difference
+        elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
+      }
     }
     break;
     case calc_MPC3D_stiff:
@@ -106,23 +117,38 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
-      SpatialConfiguration(xscurr,mydisp,numdim);
-
-      LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeNormal3D(xscurr,elementnormal);
-      if(abs(elementnormal.Norm2())<1E-6)
+      
+      if (numnod==4)
       {
-        dserror("Bad plane, points almost on a line!");
+        LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
+        SpatialConfiguration(xscurr,mydisp,numdim);
+  
+        LINALG::SerialDenseVector elementnormal(numdim);
+        ComputeNormal3D(xscurr,elementnormal);
+        if(abs(elementnormal.Norm2())<1E-6)
+        {
+          dserror("Bad plane, points almost on a line!");
+        }
+        double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
+  
+        ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
+        ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
+  
+        //update corresponding column in "constraint" matrix
+        elevec2=elevec1;
+        elevec3[0]=normaldistance;
       }
-      double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
-
-      ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
-      ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
-
-      //update corresponding column in "constraint" matrix
-      elevec2=elevec1;
-      elevec3[0]=normaldistance;
+      else if (numnod == 2)
+      {
+        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+        const vector<double>*  direct = condition->Get<vector<double> > ("direction");  
+        
+        //Compute weighted difference between masternode and other node and it's derivative
+        ComputeFirstDerivWeightedDistance(elevec1,*direct);
+        elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
+        elevec2=elevec1;
+      }
+      
     }
     break;
     case calc_MPC2D_dist_stiff:
@@ -3002,6 +3028,43 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivAngle2D(const LINALG::S
   ;
 
   elematrix.Scale(-1.0);
+}
+
+double DRT::ELEMENTS::ConstraintElement::ComputeWeightedDistance
+(
+  const vector<double> disp,
+  const vector<double> direct
+)
+{
+
+  // norm of direct
+  double norm = sqrt(pow(direct.at(0),2)+pow(direct.at(1),2)+pow(direct.at(2),2));
+  double result=0.0;
+  
+  for(int i = 0;i<3;i++)
+  {
+    result += (disp.at(i)-disp.at(i+3))*direct.at(i);
+  }
+  result/=norm;
+  return result;
+}
+
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivWeightedDistance
+ (
+   Epetra_SerialDenseVector& elevector,
+   const vector<double> direct  
+ )
+{
+  // norm of direct
+  double norm = sqrt(pow(direct.at(0),2)+pow(direct.at(1),2)+pow(direct.at(2),2));
+  
+  for(int i = 0;i<3;i++)
+  {
+    elevector(i)=-direct.at(i)/norm;
+    elevector(3+i)=direct.at(i)/norm;
+  }
+  
+  return;
 }
 
 //=======================================================================
