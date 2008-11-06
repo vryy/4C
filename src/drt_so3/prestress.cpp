@@ -120,3 +120,4 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
 
 #endif  // #if defined(PRESTRESS) || defined(POSTSTRESS)
 #endif  // #ifdef CCADISCRET
+#endif  // #ifdef D_SOLID3
