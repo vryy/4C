@@ -43,6 +43,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
 DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  DRT::Element(old),
  data_(old.data_),
+ X_(old.X_),
  material_(old.material_),
  lrefe_(old.lrefe_),
  crosssec_(old.crosssec_),
@@ -114,6 +115,8 @@ void DRT::ELEMENTS::Truss3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  //nodal reference coordinates
+  AddtoPack(data,X_);
   //material type
   AddtoPack(data,material_);
   //reference length
@@ -147,6 +150,8 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  //nodal reference coordinates
+  ExtractfromPack(position,data,X_);
   //material type
   ExtractfromPack(position,data,material_);
   //reference length
