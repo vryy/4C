@@ -203,10 +203,9 @@ namespace UTILS
    */
   void FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition);
 
-  //! flag, whether volumes, surfaces or lines have to be created in the ElementBoundaryFactory
+  //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {
-    buildVolumes ,  ///< build volume(s)
     buildSurfaces,  ///< build surfaces
     buildLines      ///< build lines
   };
@@ -222,7 +221,7 @@ namespace UTILS
    * this templated function creates all volume / surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements
    * This method is a very powerful helper function for implementing the necessary
-   * Volumes(), Surfaces() and Lines() methods for every element class (especially in 3D)
+   * Surfaces() and Lines() methods for every element class (especially in 3D)
    * using the BACI conventions for element connectivity
    *
    * \return boundaryeles   vector filled with RCPs of allocated boundary elements
@@ -243,11 +242,6 @@ namespace UTILS
     vector< vector<int> > connectivity;
     switch (buildtype)
     {
-      case buildVolumes:
-      {
-        nele =  ele->NumVolume();
-        connectivity = DRT::UTILS::getEleNodeNumberingVolumes(distype);
-      }
       case buildSurfaces:
       {
         nele = ele->NumSurface();
@@ -264,8 +258,7 @@ namespace UTILS
     // create vectors that will contain the volume, surface or line elements
     vector<RCP<DRT::Element> > boundaryeles(nele);
 
-    // does DRT::UTILS convention match your implementation of NumVolume(), 
-    // NumSurface() or NumLine()?
+    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
 
     // now, build the new surface/line elements
