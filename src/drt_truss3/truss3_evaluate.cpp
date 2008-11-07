@@ -25,6 +25,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 //externally defined structure for material data
 extern struct _MATERIAL *mat;
@@ -289,38 +290,50 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     int& ActNumDof0)
 {     
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  BlitzVec6 xcurr;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> xcurr;
+  
+  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
+   * to reference configuration; note: in general this is not equal to the values in disp since the 
+   * latter one referes to a nodal displacement compared to a reference configuration before the first
+   * time step whereas the following variable referes to the displacement with respect to a reference
+   * configuration which may have been set up at any point of time during the simulation (usually this
+   * is only important if an element has been added to the discretization after the start of the simulation)*/
+  LINALG::FixedSizeSerialDenseMatrix<6,1> ucurr; 
   
   //Green-Lagrange strain
   double epsilon;
   
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  BlitzVec6 aux;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> aux;
 
-  //current nodal position (first
+  //current nodal position
   for (int j=0; j<3; ++j) 
   {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
     xcurr(j+3)   = Nodes()[1]->X()[j] + disp[ActNumDof0 + j]; //second node
   }
   
+  //current displacement = current position - reference position
+  ucurr  = xcurr;
+  ucurr -= X_;
+  
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = 0.25 * (xcurr[0] - xcurr[3]);
-  aux(1) = 0.25 * (xcurr[1] - xcurr[4]);
-  aux(2) = 0.25 * (xcurr[2] - xcurr[5]);
-  aux(3) = 0.25 * (xcurr[3] - xcurr[0]);
-  aux(4) = 0.25 * (xcurr[4] - xcurr[1]);
-  aux(5) = 0.25 * (xcurr[5] - xcurr[2]);
+  aux(0) = 0.25 * (xcurr(0) - xcurr(3));
+  aux(1) = 0.25 * (xcurr(1) - xcurr(4));
+  aux(2) = 0.25 * (xcurr(2) - xcurr(5));
+  aux(3) = 0.25 * (xcurr(3) - xcurr(0));
+  aux(4) = 0.25 * (xcurr(4) - xcurr(1));
+  aux(5) = 0.25 * (xcurr(5) - xcurr(2));
   
   //calculating strain epsilon from node position by scalar product:
-  //epsilon = (xrefe + 0.5*disp)^T * N_{,s}^T * N_{,s} * d
+  //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
   epsilon = 0;
-  epsilon += (Nodes()[0]->X()[0] + 0.5*disp[0]) * (disp[0] - disp[3]);
-  epsilon += (Nodes()[0]->X()[1] + 0.5*disp[1]) * (disp[1] - disp[4]);
-  epsilon += (Nodes()[0]->X()[2] + 0.5*disp[2]) * (disp[2] - disp[5]);
-  epsilon += (Nodes()[1]->X()[0] + 0.5*disp[3]) * (disp[3] - disp[0]);
-  epsilon += (Nodes()[1]->X()[1] + 0.5*disp[4]) * (disp[4] - disp[1]);
-  epsilon += (Nodes()[1]->X()[2] + 0.5*disp[5]) * (disp[5] - disp[2]);
+  epsilon += (X_(0) + 0.5*ucurr(0)) * (ucurr(0) - ucurr(3));
+  epsilon += (X_(1) + 0.5*ucurr(1)) * (ucurr(1) - ucurr(4));
+  epsilon += (X_(2) + 0.5*ucurr(2)) * (ucurr(2) - ucurr(5));
+  epsilon += (X_(3) + 0.5*ucurr(3)) * (ucurr(3) - ucurr(0));
+  epsilon += (X_(4) + 0.5*ucurr(4)) * (ucurr(4) - ucurr(1));
+  epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
   epsilon /= lrefe_*lrefe_;
 
 
@@ -349,6 +362,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     default:
     dserror("unknown or improper type of material law");
   }
+  
 
   //computing global internal forces
   if (force != NULL)
@@ -358,7 +372,12 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     
     for (int i=0; i<3; ++i)
      (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+3);
+    
+    std::cout<<"\nforce\n"<<*force;
+    std::cout<<"\nepsilon\n"<<epsilon;
+    
   }
+  
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
@@ -424,13 +443,13 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
     int& ActNumDof0)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  BlitzVec6 xcurr;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> xcurr;
   
   //Green-Lagrange strain
   double epsilon;
   
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  BlitzVec6 aux;
+  LINALG::FixedSizeSerialDenseMatrix<6,1> aux;
 
   //current nodal position (first
   for (int j=0; j<3; ++j) 
@@ -440,12 +459,12 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
   }
   
   //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = (xcurr[0] - xcurr[3]);
-  aux(1) = (xcurr[1] - xcurr[4]);
-  aux(2) = (xcurr[2] - xcurr[5]);
-  aux(3) = (xcurr[3] - xcurr[0]);
-  aux(4) = (xcurr[4] - xcurr[1]);
-  aux(5) = (xcurr[5] - xcurr[2]);
+  aux(0) = (xcurr(0) - xcurr(3));
+  aux(1) = (xcurr(1) - xcurr(4));
+  aux(2) = (xcurr(2) - xcurr(5));
+  aux(3) = (xcurr(3) - xcurr(0));
+  aux(4) = (xcurr(4) - xcurr(1));
+  aux(5) = (xcurr(5) - xcurr(2));
   
   double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
   

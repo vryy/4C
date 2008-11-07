@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 08/08|
@@ -177,6 +178,17 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
   return lines;
 }
 
+void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
+{   
+  //setting reference coordinates
+  X_ = xrefe;
+  
+  //length in reference configuration
+  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);  
+ 
+  return;
+}
+
 
 
 
@@ -272,10 +284,7 @@ void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
-{		
-  //variable for nodal point coordinates in reference configuration
-  BlitzVec6 xrefe;
-  
+{		  
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
     {    
@@ -290,13 +299,13 @@ int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
       //getting element's reference coordinates     
       for (int k=0; k<2; ++k) //element has two nodes
         {
-          xrefe(3*k + 0) = currele->Nodes()[k]->X()[0];
-          xrefe(3*k + 1) = currele->Nodes()[k]->X()[1];
-          xrefe(3*k + 2) = currele->Nodes()[k]->X()[2];
+          currele->X_(3*k + 0) = currele->Nodes()[k]->X()[0];
+          currele->X_(3*k + 1) = currele->Nodes()[k]->X()[1];
+          currele->X_(3*k + 2) = currele->Nodes()[k]->X()[2];
         }
       
       //length in reference configuration
-      currele->lrefe_ = pow(pow(xrefe(3)-xrefe(0),2)+pow(xrefe(4)-xrefe(1),2)+pow(xrefe(5)-xrefe(2),2),0.5);  
+      currele->lrefe_ = pow(pow(currele->X_(3) - currele->X_(0),2)+pow(currele->X_(4) - currele->X_(1),2)+pow(currele->X_(5) - currele->X_(2),2),0.5);  
           
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 	

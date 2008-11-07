@@ -36,12 +36,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
-
-#include <blitz/array.h>
-#include "../drt_geometry/blitz_tiny_operation.H"
-
-//! generally usefull typedefs, when working with Blitz arrays
-typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 /*!
@@ -65,7 +60,7 @@ public:
   //! @name Friends
   friend class Truss3Register;
   friend class StatMechManager;
-  friend void StatMechManager::StatMechUpdate(double dt);
+  friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
   friend void StatMechTime::Integrate();
 
 
@@ -296,7 +291,10 @@ private:
   };
   
   //! container containing all kind of Truss3 thisandthat
-  DRT::Container data_;  
+  DRT::Container data_; 
+  
+  //!reference node position
+  LINALG::FixedSizeSerialDenseMatrix<6,1> X_;
   
   //! material type
   int material_;
@@ -312,6 +310,13 @@ private:
   
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
+  
+  //! @name methods for initilization of the element
+  
+  //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
+  void SetUpReferenceGeometry(LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe);
+  
+  //@}
 
   //! @name Internal calculation methods
               

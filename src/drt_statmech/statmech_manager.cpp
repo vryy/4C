@@ -347,10 +347,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
         //fixed size variable for storing positions of the two nodes to be crosslinked
         LINALG::FixedSizeSerialDenseMatrix<6,1> xrefe;
        
-        //current position of node with LID i   
-        double xcurri = (discret_.lRowNode(i))->X()[0] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),0) )];
-        double ycurri = (discret_.lRowNode(i))->X()[1] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),1) )];
-        double zcurri = (discret_.lRowNode(i))->X()[2] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),2) )];
+        //current position of node with LID i  
+        for(int k = 0; k<3; k++)
+          xrefe(k) = (discret_.lRowNode(i))->X()[k] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),k) )];
        
        //searching nearest neighbour of the current node (with global Id "neighbour"):
         int neighbour = -1;
@@ -366,11 +365,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
            if( (*filamentnumber_)[i] != (*filamentnumber_)[j] || (*filamentnumber_)[i] == -1)
            {
               //current position of node with LID j  
-             double xcurrj = (discret_.lRowNode(j))->X()[0] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),0) )];
-             double ycurrj = (discret_.lRowNode(j))->X()[1] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),1) )];
-             double zcurrj = (discret_.lRowNode(j))->X()[2] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),2) )];
+             for(int k = 0; k<3; k++)
+               xrefe(k+3) = (discret_.lRowNode(j))->X()[k] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),k) )];
              
-              double rcurrent = pow(pow(xcurri - xcurrj,2) + pow(ycurri - ycurrj,2) + pow(zcurri - zcurrj,2), 0.5);
+              double rcurrent = pow(pow(xrefe(3) - xrefe(0),2)+pow(xrefe(4) - xrefe(1),2)+pow(xrefe(5) - xrefe(2),2),0.5);
               
               if(rcurrent < rneighbour)
               {
@@ -395,15 +393,13 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
            * only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
            * before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved*/     
           newcrosslinker->SetId( basiselements_ + discret_.NodeRowMap()->GID(i) );
-          
-          
+                   
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
           int globalnodeids[] = {discret_.NodeRowMap()->GID(i), neighbour};      
           newcrosslinker->SetNodeIds(2, globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
-          
-                 
+                        
           //correct reference configuration data is computed for the new crosslinker element
           newcrosslinker->SetUpReferenceGeometry(xrefe); 
           

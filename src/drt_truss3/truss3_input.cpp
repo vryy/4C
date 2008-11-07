@@ -15,6 +15,7 @@ Maintainer: Christian Cyron
 
 #include "truss3.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 /*----------------------------------------------------------------------*
 | vector of material laws defined in global_control.c        cyron 08/08|
 *----------------------------------------------------------------------*/
