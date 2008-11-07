@@ -203,26 +203,27 @@ namespace UTILS
    */
   void FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition);
 
-  //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
+  //! flag, whether volumes, surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {
+    buildVolumes ,  ///< build volume(s)
     buildSurfaces,  ///< build surfaces
     buildLines      ///< build lines
   };
 
   /*!
-   * create new instances of surface / line elements for a given parent element
+   * create new instances of volume / surface / line elements for a given parent element
    *
    * template version
    *
-   * \tparam BoundaryEle class name of desired surface/line element, e.g. Fluid3Surface
+   * \tparam BoundaryEle class name of desired volume/surface/line element, e.g. Fluid3Surface
    * \tparam ParentEle   class name of parent element, e.g. Fluid3
    *
-   * this templated function creates all surface / line elements for a given element
+   * this templated function creates all volume / surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements
    * This method is a very powerful helper function for implementing the necessary
-   * Surfaces() and Lines() methods for every element class (especially in 3D) using
-   * the BACI conventions for element connectivity
+   * Volumes(), Surfaces() and Lines() methods for every element class (especially in 3D)
+   * using the BACI conventions for element connectivity
    *
    * \return boundaryeles   vector filled with RCPs of allocated boundary elements
    *
@@ -231,17 +232,22 @@ namespace UTILS
    */
   template <class BoundaryEle, class ParentEle>
   vector<RCP<DRT::Element> > ElementBoundaryFactory(
-      const BoundaryBuildType  buildtype,  ///< flag, whether surfaces or lines have to be created
+      const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle*               ele         ///< pointer on the parent element
       )
   {
-    // do we have to build surface or line elements?
+    // do we have to build volume, surface or line elements?
     // get node connectivity for specific distype of parent element
     unsigned int nele=0;
     const DRT::Element::DiscretizationType distype = ele->Shape();
     vector< vector<int> > connectivity;
     switch (buildtype)
     {
+      case buildVolumes:
+      {
+        nele =  ele->NumVolume();
+        connectivity = DRT::UTILS::getEleNodeNumberingVolumes(distype);
+      }
       case buildSurfaces:
       {
         nele = ele->NumSurface();
@@ -255,10 +261,11 @@ namespace UTILS
         break;
       }
     }
-    // create vectors that will contain the surface or line elements
+    // create vectors that will contain the volume, surface or line elements
     vector<RCP<DRT::Element> > boundaryeles(nele);
 
-    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
+    // does DRT::UTILS convention match your implementation of NumVolume(), 
+    // NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
 
     // now, build the new surface/line elements
@@ -273,11 +280,17 @@ namespace UTILS
       for (unsigned int inode=0;inode<nnode;inode++)
       {
         nodeids[inode] = ele->NodeIds()[connectivity[iele][inode]];
-        nodes[inode]   = ele->Nodes()[connectivity[iele][inode]];
+        nodes  [inode] = ele->Nodes  ()[connectivity[iele][inode]];
       }
 
       // allocate a new boundary element
-      boundaryeles[iele] = rcp(new BoundaryEle(iele,ele->Owner(),nodeids.size(),&nodeids[0],&nodes[0],ele,iele));
+      boundaryeles[iele] = rcp(new BoundaryEle(iele          ,
+                                               ele->Owner()  ,
+                                               nodeids.size(),
+                                               &nodeids[0]   ,
+                                               &nodes[0]     ,
+                                               ele           ,
+                                               iele          ));
 
     }
 

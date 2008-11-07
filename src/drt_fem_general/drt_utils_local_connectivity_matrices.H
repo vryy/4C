@@ -391,6 +391,21 @@ namespace UTILS
 
 
   /*!
+  \brief Fills a vector< vector<int> > with all nodes for every volume
+         for each discretization type.
+
+         At the moment we normally have one volume per element, and we
+         use the identical node numbering for volume element and element
+         (basically, the volume is designed as a copy of the geometry 
+         of the element)
+
+  \return map with all nodes for each volume
+  */
+  vector< vector<int> > getEleNodeNumberingVolumes(
+    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    );
+
+  /*!
   \brief Fills a vector< vector<int> > with all nodes for every surface
          for each discretization type
 
