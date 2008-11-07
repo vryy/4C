@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 <\pre>
@@ -47,6 +47,7 @@ Maintainer: Michael Gee
 #include "drt_parobject.H"
 
 #include "drt_utils.H"
+#include "drt_condition_utils.H"
 #include "linalg_utils.H"
 
 #include <numeric>
@@ -113,37 +114,40 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     else if (fool->second->GType()==DRT::Condition::Volume)
       BuildVolumesinCondition(fool->first,fool->second);
 
-    // determine the local number of created elements associated with
-    // the active condition
-    int localcount=0;
-    for (map<int,RefCountPtr<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
-         iter!=fool->second->Geometry().end();
-         ++iter)
+    if (fool->second->GType()!=DRT::Condition::Volume)
     {
-      // do not count ghosted elements
-      if (iter->second->Owner()==Comm().MyPID())
+      // determine the local number of created elements associated with
+      // the active condition
+      int localcount=0;
+      for (map<int,RefCountPtr<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
+           iter!=fool->second->Geometry().end();
+           ++iter)
       {
-        localcount += 1;
+        // do not count ghosted elements
+        if (iter->second->Owner()==Comm().MyPID())
+        {
+          localcount += 1;
+        }
       }
+
+      // determine the global number of created elements associated with
+      // the active condition
+      int count;
+      Comm().SumAll(&localcount, &count, 1);
+
+      if (numele.find(fool->first)==numele.end())
+      {
+        numele[fool->first] = 0;
+      }
+
+      // adjust the IDs of the elements associated with the active
+      // condition in order to obtain unique IDs within one condition type
+      fool->second->AdjustId(numele[fool->first]);
+
+      // adjust the number of elements associated with the current
+      // condition type
+      numele[fool->first]+=count;
     }
-
-    // determine the global number of created elements associated with
-    // the active condition
-    int count;
-    Comm().SumAll(&localcount, &count, 1);
-
-    if (numele.find(fool->first)==numele.end())
-    {
-      numele[fool->first] = 0;
-    }
-
-    // adjust the IDs of the elements associated with the active
-    // condition in order to obtain unique IDs within one condition type
-    fool->second->AdjustId(numele[fool->first]);
-
-    // adjust the number of elements associated with the current
-    // condition type
-    numele[fool->first]+=count;
   }
   return;
 }
@@ -633,281 +637,27 @@ void DRT::Discretization::BuildVolumesinCondition(
   const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
-  // number of global nodes in this cloud
-  const int ngnode = nodeids->size();
+  const Epetra_Map* colmap = NodeColMap();
+  std::set<int> mynodes;
 
-  // ptrs to my row/column nodes of those
-  map<int,DRT::Node*> rownodes;
-  map<int,DRT::Node*> colnodes;
-  for (int i=0; i<ngnode; ++i)
+  std::remove_copy_if(nodeids->begin(), nodeids->end(),
+                      std::inserter(mynodes, mynodes.begin()),
+                      std::not1(DRT::UTILS::MyGID(colmap)));
+
+  std::map<int,RCP<DRT::Element> > geom;
+
+  for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
+       actele!=element_.end();
+       ++actele)
   {
-    if (NodeColMap()->MyGID((*nodeids)[i]))
+    std::set<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
+    if (std::includes(mynodes.begin(),mynodes.end(),myelenodes.begin(),myelenodes.end()))
     {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      colnodes[actnode->Id()] = actnode;
-    }
-    if (NodeRowMap()->MyGID((*nodeids)[i]))
-    {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      rownodes[actnode->Id()] = actnode;
+      geom[actele->first] = actele->second;
     }
   }
-    
-  // construct multimap of volume identifiers in our cloud
-    
-  //
-  //    node GID -> (element GID,volume id in element)
-  //                  ^
-  //                  =  maxnumvol*GID+volumeid
-  //                                      ^
-  //                                      |
-  //                           this should be always zero
-  //                       as long as we do not have more than
-  //                             one volume per element
-  //
-  // using (element GID,volume id in element) we are able to 
-  // clone the specific volume element in the end
-  multimap<int,int>           volmap;
-  // an iterator for volmap
-  multimap<int,int>::iterator volcurr;
 
-  // upper bound for the number of volumes attached to one element
-  int maxnumvol=0;
-  {
-    // loop all elements to determine maximum number of volumes
-    // per element
-    map<int,DRT::Node*>::iterator fool;
-
-    for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
-    {
-      // currently looking at actnode
-      DRT::Node*     actnode  = fool->second;
-      // loop all elements attached to actnode
-      DRT::Element** elements = actnode->Elements();
-      for (int i=0; i<actnode->NumElement(); ++i)
-      {
-        const int numvols = elements[i]->NumVolume();
-        
-        if(numvols>maxnumvol)
-        {
-          maxnumvol=numvols;
-        }
-      }
-    }
-
-    // loop rownodes in condition and build a list of all volumes attached to them
-    for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
-    {
-      // currently looking at actnode
-      DRT::Node*     actnode  = fool->second;
-
-      // pointer to elements connected with actnode
-      DRT::Element** elements = actnode->Elements();
-
-      // loop all elements attached to actnode
-      for (int i=0; i<actnode->NumElement(); ++i)
-      {
-        // loop all volumes of all elements attached to actnode
-        const int numvols = elements[i]->NumVolume();
-        if (!numvols) continue;
-        vector<RCP<DRT::Element> > volumes = elements[i]->Volumes();
-        if (volumes.size()==0) dserror("Element returned no volumes");
-        for (int j=0; j<numvols; ++j)
-        {
-          // mind that actvol is not necessarily an element of
-          // the same type as element[i]. It's just a volume element
-          // returned from the actual element
-          RCP<DRT::Element> actvol = volumes[j];
-          
-          // find volumes that are attached to actnode
-          const int nnodepervol   = actvol->NumNode();
-          DRT::Node** nodespervol = actvol->Nodes();
-          if (!nodespervol) dserror("Volume returned no nodes");
-          
-          for (int k=0; k<nnodepervol; ++k)
-          {
-            if (nodespervol[k] == actnode)
-            {
-              // volume is attached to actnode
-              // see whether all nodes on the volume are in our nodal cloud
-              bool allin = true;
-              for (int l=0; l<nnodepervol; ++l)
-              {
-                map<int,DRT::Node*>::iterator test = colnodes.find(nodespervol[l]->Id());
-                if (test==colnodes.end())
-                {
-                  allin = false;
-                  break;
-                }
-              } // for (int l=0; l<nnodepervol; ++l)
-              // if all nodes on volume are in our cloud, add volume
-              if (allin)
-              {
-                int volid=((elements[i])->Id())*maxnumvol+j;
-                
-                // do not clone in this place --- you would generate
-                // a lot of unnecessary elements (for example for a
-                // structured hex8 mesh approximately 8 times the 
-                // number of elements which are in the discretisation)
-                //
-                // Althought theoretically the memory would be freed
-                // at the end of the method, the memory structure
-                // would be completely messed up and the actual memory
-                // consumption measured in top is higher
-                
-                volmap.insert(pair<int,int>(actnode->Id(),volid));
-              } // end allin
-              break;
-            } // if (nodespervol[k] == actnode)
-          }// loop nodespervol
-        } // for (int j=0; j<numvols; ++j)
-      } // for (int i=0; i<actnode->NumElement(); ++i)
-    } // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
-  }
-
-  {
-    // several iterators needed later on
-    multimap<int,int>::iterator startit;
-    multimap<int,int>::iterator endit  ;
-    multimap<int,int>::iterator curr   ;
-
-    // rcps needed during loop
-    RCP<DRT::Element> actvol;
-    RCP<DRT::Element> innervol;
-
-    // volmap contains a lot of duplicated element identifiers which 
-    // need to be detected and deleted
-
-    for (volcurr=volmap.begin(); volcurr!=volmap.end(); ++volcurr)
-    {
-      // split volume identifier into generating element and volume 
-      // associated with this node of GID volcurr->first
-      const int volcurrele=(volcurr->second)/maxnumvol;
-      const int volcurrvol=(volcurr->second)-volcurrele;
-
-      // get the volume
-      actvol =((element_[volcurrele])->Volumes())[volcurrvol];
-    
-      // get all nodal ids on this volume
-      const int  nnode   = actvol->NumNode();
-      const int* nodeids = actvol->NodeIds();
-
-      // loop all volumes associated with entries of nodeids
-      for(int nid=0;nid<nnode;nid++)
-      {
-        {
-          startit = volmap.lower_bound(nodeids[nid]);
-          endit   = volmap.upper_bound(nodeids[nid]);
-        }
-
-        for (curr=startit; curr!=endit;)
-        {
-          // this volume identifier is the same as the one
-          // from the volmap --- do not delete
-          if(curr == volcurr)
-          {
-            ++curr;
-            continue;
-          }
-          
-          // split volume identifier associated with entry of nodeids
-          // into generating element and volume associated with this 
-          // node of GID curr->first
-          const int ncurrele=(curr->second)/maxnumvol;
-          const int ncurrvol=(curr->second)-ncurrele;
-
-          // get the associated volume
-          innervol =((element_[ncurrele])->Volumes())[ncurrvol];
-                    
-          // get this volumes nodes
-          const int nn    = innervol->NumNode();
-          if (nn != nnode) continue;
-          const int* nids = innervol->NodeIds();
-
-          // nids must contain same ids as nodeids,
-          // where ordering is arbitrary
-          bool ident = true;
-          {
-            for (int i=0; i<nnode; ++i)
-            {
-              bool foundit = false;
-              for (int j=0; j<nnode; ++j)
-                if (nodeids[i]==nids[j])
-                {
-                  foundit = true;
-                  break;
-                }
-              if (!foundit)
-              {
-                ident = false;
-                break;
-              }
-            }
-          }
-
-          // current volume with identifier curr->second has the same nodes
-          // as actvol with identifier volcurr->second. Delete it.
-          if (ident)
-          {
-            // curr becomess invalid, so it's increased and a copy is passed
-            // to erase the element
-            volmap.erase(curr++);
-          }
-          else
-          {
-            ++curr;
-            continue;
-          }
-        } // iterate curr
-      } // end loop all volumes associated with entries of nodeids
-    } // iterate over volmap
-  }
-  
-  // Build a global numbering for these elements
-  // the elements are in a column map state but the numbering is unique anyway
-  // and does NOT reflect the overlap!
-  // This is somehow dirty but works for the moment (gee)
-  vector<int> snelements(Comm().NumProc());
-  vector<int> rnelements(Comm().NumProc());
-  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
-  snelements[Comm().MyPID()] = volmap.size();
-  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
-  int sum=0;
-  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
-  map<int,RefCountPtr<DRT::Element> > finalfinalvols;
-  int count=0;
-  for (volcurr=volmap.begin(); volcurr!=volmap.end(); ++volcurr)
-  {
-    // volume identifier associated with this node of GID volcurr->first
-
-    // split volume identifier associated with entry of nodeids
-    // into generating element and volume associated with this 
-    // node of GID curr->first
-    const int nvolcurrele=(volcurr->second)/maxnumvol;
-    const int nvolcurrvol=(volcurr->second)-nvolcurrele;
-
-    // clone the volume
-    {
-      RefCountPtr<DRT::Element> actvol;
-      {
-        // get the element generating the volumes
-        RefCountPtr<DRT::Element> actele = element_[nvolcurrele];
-        
-        // get volume from list using the second index
-        actvol = (actele->Volumes())[nvolcurrvol];
-      }
-      actvol->SetId(count+sum);
-
-      // add to list
-      finalfinalvols[count+sum] = actvol;
-    }
-    ++count;
-  }
-
-  // add geometry to condition
-  cond->AddGeometry(finalfinalvols);
+  cond->AddGeometry(geom);
 
   return;
 } // DRT::Discretization::BuildVolumesinCondition
