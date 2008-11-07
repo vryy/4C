@@ -19,6 +19,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 #ifdef D_BEAM3
@@ -250,7 +251,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const double dt)
+void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
 {  
   #ifdef D_BEAM3
   
@@ -342,7 +343,14 @@ void StatMechManager::StatMechUpdate(const double dt)
        * yet one, i.e. (*crosslinkerpartner_)[i] == -1.0 and if the node has passed a random test by which it's figured
        * out whether it can get a new crosslinker in this time step, i.e. (*setcrosslinker)[i] <  -1.0 + 2*plink*/
      if( (*crosslinkerpartner_)[i] == -1.0 && (*setcrosslinker)[i] <  -1.0 + 2*plink  )
-     {     
+     {    
+        //fixed size variable for storing positions of the two nodes to be crosslinked
+        LINALG::FixedSizeSerialDenseMatrix<6,1> xrefe;
+       
+        //current position of node with LID i   
+        double xcurri = (discret_.lRowNode(i))->X()[0] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),0) )];
+        double ycurri = (discret_.lRowNode(i))->X()[1] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),1) )];
+        double zcurri = (discret_.lRowNode(i))->X()[2] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),2) )];
        
        //searching nearest neighbour of the current node (with global Id "neighbour"):
         int neighbour = -1;
@@ -357,10 +365,12 @@ void StatMechManager::StatMechUpdate(const double dt)
            * nodes with lower global Ids whether they are close to a certain node */
            if( (*filamentnumber_)[i] != (*filamentnumber_)[j] || (*filamentnumber_)[i] == -1)
            {
-              double dx = (discret_.lRowNode(j))->X()[0] - (discret_.lRowNode(i))->X()[0];
-              double dy = (discret_.lRowNode(j))->X()[1] - (discret_.lRowNode(i))->X()[1];
-              double dz = (discret_.lRowNode(j))->X()[2] - (discret_.lRowNode(i))->X()[2];
-              double rcurrent = pow(dx*dx + dy*dy + dz*dz, 0.5);
+              //current position of node with LID j  
+             double xcurrj = (discret_.lRowNode(j))->X()[0] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),0) )];
+             double ycurrj = (discret_.lRowNode(j))->X()[1] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),1) )];
+             double zcurrj = (discret_.lRowNode(j))->X()[2] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),2) )];
+             
+              double rcurrent = pow(pow(xcurri - xcurrj,2) + pow(ycurri - ycurrj,2) + pow(zcurri - zcurrj,2), 0.5);
               
               if(rcurrent < rneighbour)
               {
@@ -392,20 +402,20 @@ void StatMechManager::StatMechUpdate(const double dt)
           newcrosslinker->SetNodeIds(2, globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
-                       
+          
+                 
           //correct reference configuration data is computed for the new crosslinker element
-          //newcrosslinker->SetUpReferenceGeometry();
-                   
-          //length in reference configuration
-          newcrosslinker->lrefe_ = pow( pow( newcrosslinker->Nodes()[1]->X()[0] - newcrosslinker->Nodes()[0]->X()[0],2 ) + pow( newcrosslinker->Nodes()[1]->X()[1] - newcrosslinker->Nodes()[0]->X()[1],2 ) + pow( newcrosslinker->Nodes()[1]->X()[2] - newcrosslinker->Nodes()[0]->X()[2],2 ) , 0.5 );        
-       
+          newcrosslinker->SetUpReferenceGeometry(xrefe); 
+          
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  
+          
+          std::cout<<"\ncrosslinker added\n";
           
 #endif
           
           //noting that local node i has now a crosslinkerelement and noting global Id of this element
-          (*crosslinkerpartner_)[neighbour] = -1;
+          (*crosslinkerpartner_)[i] = neighbour;
 
         }
       }

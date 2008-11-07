@@ -36,7 +36,7 @@ public:
   void StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis);
   
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(const double dt);
+  void StatMechUpdate(const double dt, const Epetra_Vector& dis);
   
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
   void StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);

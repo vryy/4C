@@ -157,10 +157,12 @@ void StatMechTime::Integrate()
     PTC();
     UpdateandOutput();
 
+
     //special update and output for statistical mechanics
     statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
-    statmechmanager_->StatMechUpdate(dt);
+    statmechmanager_->StatMechUpdate(dt,*dis_);
 
+    
     /*
     //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
     //dass alle Freiheitsgrade in Längsrichtung dieselbe Bewegung Delta_x ausführen, die approximiert werden kann durch:
