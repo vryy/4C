@@ -638,11 +638,13 @@ void DRT::Discretization::BuildVolumesinCondition(
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   const Epetra_Map* colmap = NodeColMap();
-  std::set<int> mynodes;
+  std::vector<int> mynodes;
+  mynodes.reserve(nodeids->size());
 
   std::remove_copy_if(nodeids->begin(), nodeids->end(),
-                      std::inserter(mynodes, mynodes.begin()),
+                      std::back_inserter(mynodes),
                       std::not1(DRT::UTILS::MyGID(colmap)));
+  std::sort(mynodes.begin(),mynodes.end());
 
   std::map<int,RCP<DRT::Element> > geom;
 
@@ -650,7 +652,8 @@ void DRT::Discretization::BuildVolumesinCondition(
        actele!=element_.end();
        ++actele)
   {
-    std::set<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
+    std::vector<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
+    std::sort(myelenodes.begin(),myelenodes.end());
     if (std::includes(mynodes.begin(),mynodes.end(),myelenodes.begin(),myelenodes.end()))
     {
       geom[actele->first] = actele->second;
