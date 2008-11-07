@@ -896,9 +896,11 @@ void DRT::Discretization::BuildVolumesinCondition(
         RefCountPtr<DRT::Element> actele = element_[nvolcurrele];
         
         // get volume from list using the second index
-        actvol = rcp(((actele->Volumes())[nvolcurrvol])->Clone());
+        actvol = (actele->Volumes())[nvolcurrvol];
       }
       actvol->SetId(count+sum);
+
+      // add to list
       finalfinalvols[count+sum] = actvol;
     }
     ++count;
