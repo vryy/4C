@@ -178,13 +178,13 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
   return lines;
 }
 
-void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
+void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
 {   
   //setting reference coordinates
   X_ = xrefe;
   
   //length in reference configuration
-  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);  
+  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5); 
  
   return;
 }

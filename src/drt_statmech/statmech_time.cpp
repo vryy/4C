@@ -105,8 +105,7 @@ void StatMechTime::Integrate()
   {
     //random generator for seeding only (necessary for thermal noise)
     ranlib::Normal<double> seedgenerator(0,1);
-    /*by seeding with both current time and processor Id a different random initilization on each processor is made sure;
-     * note that each processor will set up its own random generator and they all have to be pairwise independent*/
+    //seeding random generator
     int seedvariable = time(0);
     //seedvariable = 2; //2
     seedgenerator.seed((unsigned int)seedvariable);

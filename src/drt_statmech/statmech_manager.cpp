@@ -364,19 +364,24 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
            * nodes with lower global Ids whether they are close to a certain node */
            if( (*filamentnumber_)[i] != (*filamentnumber_)[j] || (*filamentnumber_)[i] == -1)
            {
+             //variable for convenient storage of coordinates of node j
+             LINALG::FixedSizeSerialDenseMatrix<3,1> xloop;
+             
               //current position of node with LID j  
              for(int k = 0; k<3; k++)
-               xrefe(k+3) = (discret_.lRowNode(j))->X()[k] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),k) )];
-             
-              double rcurrent = pow(pow(xrefe(3) - xrefe(0),2)+pow(xrefe(4) - xrefe(1),2)+pow(xrefe(5) - xrefe(2),2),0.5);
-              
+               xloop(k) = (discret_.lRowNode(j))->X()[k] + dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(j),k) )];
+     
+              double rcurrent = pow(pow(xrefe(0) - xloop(0),2)+pow(xrefe(1) - xloop(1),2)+pow(xrefe(2) - xloop(2),2),0.5);
+            
               if(rcurrent < rneighbour)
               {
                   neighbour = j;
                   rneighbour = rcurrent;
+                  for(int k = 0; k<3; k++)
+                    xrefe(k+3) = xloop(k);
               } 
-           }
-        }
+            }
+          }
         
         //if a neighbour within the prescribed maximal distance has been found a crosslinker is established
         if(neighbour > -1)
@@ -399,9 +404,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
           newcrosslinker->SetNodeIds(2, globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
-                        
+          
           //correct reference configuration data is computed for the new crosslinker element
-          newcrosslinker->SetUpReferenceGeometry(xrefe); 
+          newcrosslinker->SetUpReferenceGeometry(xrefe);          
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  

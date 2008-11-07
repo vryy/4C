@@ -314,7 +314,7 @@ private:
   //! @name methods for initilization of the element
   
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe);
+  void SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe);
   
   //@}
 

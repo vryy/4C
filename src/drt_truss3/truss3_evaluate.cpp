@@ -373,9 +373,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     for (int i=0; i<3; ++i)
      (*force)(ActNumDof0 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+3);
     
-    std::cout<<"\nforce\n"<<*force;
-    std::cout<<"\nepsilon\n"<<epsilon;
-    
   }
   
 
