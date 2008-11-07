@@ -1,8 +1,14 @@
-==================================================================
-        General Data File CCARAT
-==================================================================
+//
+// Maintainer: Thomas Kloeppel
+//             kloeppel@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-25257
+//
+// necessary defines: CCADISCRET D_SOLID3 BINIO
+//
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+Neumann load applied to a clamped hollow cube. One row of elements 
+has a MPC to restrict normal direction defined. 
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	488
 NODES    	988
