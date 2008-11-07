@@ -20,6 +20,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
@@ -47,6 +48,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  data_(old.data_),
+ X_(old.X_),
  material_(old.material_),
  lrefe_(old.lrefe_),
  Qconv_(old.Qconv_),
@@ -135,6 +137,8 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  //reference coordinates
+  AddtoPack(data,X_);
   //material type
   AddtoPack(data,material_);
   //reference length
@@ -187,6 +191,8 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  //reference coordinates
+  ExtractfromPack(position,data,X_);
   //material type
   ExtractfromPack(position,data,material_);
   //reference length
@@ -245,34 +251,22 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known (public)                   cyron 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
 {
-  //variable for nodal point coordinates in reference configuration
-  BlitzMat3x2 xrefe;
-  //center triad in reference configuration
-  BlitzMat3x3 Tref;
-  
-  //getting element's nodal coordinates and treating them as reference configuration
-  if (Nodes()[0] == NULL || Nodes()[1] == NULL)
-    dserror("Cannot get nodes in order to compute reference configuration'");
-  else
-  {   
-    for (int k=0; k<2; ++k) //element has two nodes
-    {
-      xrefe(0,k) = Nodes()[k]->X()[0];
-      xrefe(1,k) = Nodes()[k]->X()[1];
-      xrefe(2,k) = Nodes()[k]->X()[2];
-    }
-  }
+  //setting reference coordinates
+  X_ = xrefe;
 
+  //center triad in reference configuration
+  LINALG::FixedSizeSerialDenseMatrix<3,3> Tref;
+  
   //length in reference configuration
-  lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
+  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);   
   
   /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
    * of area tensor */
   for (int k=0; k<3; k++) 
   {
-    Tref(k,0) = ( xrefe(k,1)-xrefe(k,0) )/lrefe_;        
+    Tref(k,0) = ( X_(k + 3)-X_(k) )/lrefe_;        
   }
   
   /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
@@ -423,6 +417,9 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
+  //reference node position
+  LINALG::FixedSizeSerialDenseMatrix<6,1> xrefe;
+  
   //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
   {    
@@ -434,7 +431,17 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam3* failed");
     
-    currele->SetUpReferenceGeometry();
+    //getting element's nodal coordinates and treating them as reference configuration
+    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {   
+      for (int k=0; k<2; k++) //element has two nodes
+        for(int l= 0; l < 3; l++)
+          xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
+    }
+ 
+    currele->SetUpReferenceGeometry(xrefe);
        
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 

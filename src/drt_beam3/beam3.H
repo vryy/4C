@@ -36,14 +36,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
-#include <blitz/array.h>
-
-
-//! generally usefull typedefs, when working with Blitz arrays
-typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
-typedef blitz::TinyVector<double,4> BlitzVec4; ///< a short-cut for a one-dimensional BLITZ vector of length 4
-typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
-typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 
@@ -325,7 +318,10 @@ private:
   };
   
   //! container containing all kind of Beam3 thisandthat
-  DRT::Container data_;  
+  DRT::Container data_; 
+  
+  //!reference node position (not needed explicitly, but stored for the seek of completeness)
+  LINALG::FixedSizeSerialDenseMatrix<6,1> X_;
   
   //! material type
   int material_;
@@ -334,30 +330,30 @@ private:
   double lrefe_;
   
   //! quaternion of central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzVec4 Qconv_;
+  LINALG::FixedSizeSerialDenseMatrix<4,1> Qconv_;
   //! quaternion of central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzVec4 Qold_;
+  LINALG::FixedSizeSerialDenseMatrix<4,1> Qold_;
   //! quaternion of central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
-  BlitzVec4 Qnew_;
+  LINALG::FixedSizeSerialDenseMatrix<4,1> Qnew_;
   //!curvature at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
-  BlitzVec3 curvconv_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> curvconv_;
   //!curvature at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
-  BlitzVec3 curvold_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> curvold_;
   //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
-  BlitzVec3 curvnew_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> curvnew_;
   
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding time step
-  BlitzVec3 betaplusalphaconv_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphaconv_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding iteration step
-  BlitzVec3 betaplusalphaold_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) during current iteration step
-  BlitzVec3 betaplusalphanew_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphanew_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding time step
-  BlitzVec3 betaminusalphaconv_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphaconv_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding iteration step
-  BlitzVec3 betaminusalphaold_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) during current iteration step
-  BlitzVec3 betaminusalphanew_;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphanew_;
   
   //! cross section area
   double crosssec_;
@@ -382,26 +378,26 @@ private:
   //! @name methods for initilization of the element
   
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry();
+  void SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe);
   
   //@}
   
   //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
-  void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
+  void computespin(LINALG::FixedSizeSerialDenseMatrix<3,3>& spin, LINALG::FixedSizeSerialDenseMatrix<3,1> rotationangle, const double& spinscale);
   
   //!computing a rotation matrix R from a quaternion q
-  void quaterniontotriad(const BlitzVec4& q, BlitzMat3x3& R);
+  void quaterniontotriad(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,3>& R);
   
   //!computing an angle vector from a quaternion q
-  void quaterniontoangle(const BlitzVec4& q, BlitzVec3& theta);
+  void quaterniontoangle(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,1>& theta);
   
   //!computing a quaternion q from a rotation matrix R
-  void triadtoquaternion(const BlitzMat3x3& R, BlitzVec4& q);
+  void triadtoquaternion(const LINALG::FixedSizeSerialDenseMatrix<3,3>& R, LINALG::FixedSizeSerialDenseMatrix<4,1>& q);
   
   //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
-  BlitzMat3x3 Hinv(BlitzVec3 theta);
+  LINALG::FixedSizeSerialDenseMatrix<3,3> Hinv(LINALG::FixedSizeSerialDenseMatrix<3,1> theta);
 
   
   //@}
@@ -410,19 +406,19 @@ private:
   
   /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
    * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
-  void updatetriad(BlitzVec3 deltabetaplusalpha, BlitzMat3x3& Tnew);
+  void updatetriad(LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha, LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew);
   
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-  void updatecurvature(const BlitzMat3x3& Tnew, BlitzVec3 deltabetaplusalpha,BlitzVec3 deltabetaminusalpha);
+  void updatecurvature(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha,LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm);
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressm);
   
   //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& x21);
+  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& x21);
   
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
-  void computestiffbasis(const BlitzMat3x3& Tnew, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
+  void computestiffbasis(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cm, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cb, const LINALG::FixedSizeSerialDenseMatrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass( ParameterList& params,
