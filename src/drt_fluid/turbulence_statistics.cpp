@@ -72,7 +72,7 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
 
   meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
   // this vector is only necessary for low-Mach-number flow
-  if (loma_ != "No") meanvedenp_   = LINALG::CreateVector(*dofrowmap,true);
+  if (loma_ != "No") meanvedenp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -607,6 +607,9 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
 
   pointsquaredvelnp_  = LINALG::CreateVector(*dofrowmap,true);
 
+  // this vector is only necessary for low-Mach-number flow
+  if (loma_ != "No") pointsquaredvedenp_  = LINALG::CreateVector(*dofrowmap,true);
+
   // first order moments
   pointsumu_ =  rcp(new vector<double> );
   pointsumu_->resize(size,0.0);
@@ -619,6 +622,9 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
 
   pointsump_ =  rcp(new vector<double> );
   pointsump_->resize(size,0.0);
+
+  pointsumT_ =  rcp(new vector<double> );
+  pointsumT_->resize(size,0.0);
 
   // now the second order moments
   pointsumsqu_ =  rcp(new vector<double> );
@@ -633,17 +639,8 @@ FLD::TurbulenceStatistics::TurbulenceStatistics(
   pointsumsqp_ =  rcp(new vector<double> );
   pointsumsqp_->resize(size,0.0);
 
-  // these vector are only necessary for low-Mach-number flow
-  if (loma_ != "No")
-  {
-    pointsquaredvedenp_  = LINALG::CreateVector(*dofrowmap,true);
-
-    pointsumT_ =  rcp(new vector<double> );
-    pointsumT_->resize(size,0.0);
-
-    pointsumsqT_ =  rcp(new vector<double> );
-    pointsumsqT_->resize(size,0.0);
-  }
+  pointsumsqT_ =  rcp(new vector<double> );
+  pointsumsqT_->resize(size,0.0);
 
   //----------------------------------------------------------------------
   // arrays for averaging of Smagorinsky constant etc.
