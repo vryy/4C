@@ -637,15 +637,15 @@ void DRT::Discretization::BuildVolumesinCondition(
   const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
+  // extract colnodes on this proc from condition
   const Epetra_Map* colmap = NodeColMap();
-  std::vector<int> mynodes;
-  mynodes.reserve(nodeids->size());
+  std::set<int> mynodes;
 
   std::remove_copy_if(nodeids->begin(), nodeids->end(),
-                      std::back_inserter(mynodes),
+                      std::inserter(mynodes, mynodes.begin()),
                       std::not1(DRT::UTILS::MyGID(colmap)));
-  std::sort(mynodes.begin(),mynodes.end());
 
+  // this is the map we want to construct
   std::map<int,RCP<DRT::Element> > geom;
 
   for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
@@ -653,8 +653,21 @@ void DRT::Discretization::BuildVolumesinCondition(
        ++actele)
   {
     std::vector<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
-    std::sort(myelenodes.begin(),myelenodes.end());
-    if (std::includes(mynodes.begin(),mynodes.end(),myelenodes.begin(),myelenodes.end()))
+    
+    // check whether all node ids of the element are nodes belonging 
+    // to the condition and stored on this proc
+    bool allin=true;
+    for(std::vector<int>::iterator myid=myelenodes.begin();myid!=myelenodes.end();++myid)
+    {
+      if(mynodes.find(*myid)==mynodes.end())
+      {
+        // myid is not in the condition
+        allin=false;
+        break;
+      }
+    }
+
+    if(allin)
     {
       geom[actele->first] = actele->second;
     }
