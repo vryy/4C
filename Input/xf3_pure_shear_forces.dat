@@ -15,7 +15,7 @@ DIM                3
 MATERIALS          2
 NUMDF        6
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid_XFEM
+PROBLEMTYP   Fluid_Structure_Interaction_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
@@ -44,7 +44,7 @@ FILESTEPS              1000
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   Statics
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -68,15 +68,6 @@ TOLCONSTR    1.0E-06
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
-UZAWAPARAM   1.0
-UZAWAMAXITER 20
-UZAWAALGO    iterative
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT          None
-BASISTRAFO       No
-FRICTION         None
-FRBOUND          0.0
-FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
@@ -108,32 +99,10 @@ FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
----------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE              residual_based
-DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall
-TDS                   quasistatic
-TRANSIENT             no_transient
-PSPG                  yes_pspg
-SUPG                  yes_supg
-VSTAB                 no_vstab
-CSTAB                 cstab_qs
-CROSS-STRESS          no_cross
-REYNOLDS-STRESS       no_reynolds
-------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
-PHYSICAL_MODEL        no_model
-C_SMAGORINSKY         0.17
-CHANNEL_L_TAU         0.0
-CANONICAL_FLOW        no
-CHAN_AMPL_INIT_DIST   0.1
-CHANNEL_HOMPLANE      xz
-SAMPLING_START        0
-SAMPLING_STOP         0
-DUMPING_PERIOD        0
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
-NUMSTEP      200
+NUMSTEP      1
 UPPSS        1
 UPRES        1
 RESTARTEVRY  20
@@ -144,52 +113,17 @@ CONVCRIT     ||g(i)||:sqrt(neq)
 ENERGYCHECK  no
 TOLENCHECK   1.0E-6
 RELAX        1.0
-ITEMAX       100
-CONVTOL      1.0E-6
-ISDMAX       0
-COUPMETHOD   conforming
-COUPFORCE    nodeforce
--------------------------------------------------------SSI DYNAMIC
-MAXTIME      1000.0
-TIMESTEP     0.05
-NUMSTEP      200
-UPPSS        1
-IALE         Pseudo_Structure
-COUPALGO     basic_sequ_stagg
-CONVCRIT     ||g(i)||:sqrt(neq)
-ENERGYCHECK  yes
-TOLENCHECK   1.0E-6
-RELAX        1.0
 ITEMAX       1
 CONVTOL      1.0E-6
 ISDMAX       0
 COUPMETHOD   conforming
--------------------------------------------------------ALE DYNAMIC
-TIMESTEP     0.1
-NUMSTEP      200
-MAXTIME      5.0
-NUM_INITSTEP 0
-ALE_TYPE     classic_lin
-RESEVRYDISP  1
-QUALITY      none
--------------------------------------------------------TSI DYNAMIC
-KIND         thermal_static_structure_genalpha
-NUMSTEP      200
-MAXTIME      5.0
-TIMESTEP     0.1
-RESEVRY      1
-STDEVRY      1
-TH_GAMMA     0.5
-ST_BETA      0.25
-ST_GAMMA     0.5
-ST_ALPHA_M   0.5
-ST_ALPHA_F   0.5
-TH_INITMPR   0.0
+COUPFORCE    nodeforce
+COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ILU           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC         MLFLUID2           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 AZFILL         1.0                // fill-in for ILUT
@@ -218,39 +152,6 @@ ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       2 0 0 0 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       0.67            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
-ML_DAMPCOARSE     1.0             // damping coarse grid
-PARTITION         Cut_Elements
----------------------------------------------FLUID PRESSURE SOLVER
-SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0                  // output every so often, 0 no output
-AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ML                 // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0                  // how often to recompute some preconditioners
-AZDROP         0.0                // drop tolerance for ILUT
-AZFILL         1.0                // fill-in for ILUT
-AZGFILL        0                  // graph fill for ILU
-AZTOL          1.0E-8             // tolerance in unscaled residual
-AZITER         2500               // max iterations
-AZSUB          50                 // size of krylov space for gmres
-AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1                  // unused
-AZPOLY         5                  // polynomial order for Neumann
-AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL         none               // none sym infnorm scaling of the system
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT          0               // ML print-out level (0-10)
-ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       5               // ML max number of levels
-ML_COARSEN        UC              // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       1 2 2 2 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       0.89            // damping fine grid
-ML_DAMPMED        0.67            // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
@@ -287,42 +188,6 @@ ML_DAMPFINE       1.0       // damping fine grid
 ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
---------------------------------------------------------ALE SOLVER
-SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0            // output every so often, 0 no output
-AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0            // how often to recompute some preconditioners
-AZDROP         0.0          // drop tolerance for ILUT
-AZFILL         1.0          // fill-in for ILUT
-AZGFILL        0            // graph fill for ILU
-AZTOL          1.0E-8       // tolerance in unscaled residual
-AZCONV         AZ_noscaled  // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         1000         // max iterations
-AZSUB          40           // size of krylov space for gmres
-AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1            // unused
-AZPOLY         5            // polynomial order for Neumann
-AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL         infnorm      // none sym infnorm scaling of the system
-ML_PRINT          0         // ML print-out level (0-10)
-ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       5         // ML max number of levels
-ML_COARSEN        UC        // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       1.0       // damping fine grid
-ML_DAMPMED        1.0       // damping med grids
-ML_DAMPCOARSE     1.0       // damping coarse grid
-PARTITION         Cut_Elements
-----------------------------------------------------THERMAL SOLVER
-SOLVER         UMFPACK
-PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 16
 NDLINE  24
@@ -2030,14 +1895,14 @@ NODE          226     COORD 0.000000000000000e+00     1.000000000000000e+00     
 NODE          227     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-     82 SOLID3 HEX8      60    203    206     65     43    196    199     50 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     83 SOLID3 HEX8       7     60     65     13      2     43     50      4 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     84 SOLID3 HEX8      55    202    203     60     38    193    196     43 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     85 SOLID3 HEX8       6     55     60      7      1     38     43      2 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     86 SOLID3 HEX8      97    220    221    108     60    203    206     65 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     87 SOLID3 HEX8      44     97    108     51      7     60     65     13 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     88 SOLID3 HEX8      94    219    220     97     55    202    203     60 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
-     89 SOLID3 HEX8      37     94     97     44      6     55     60      7 MAT       2 GP 2 0 0 KINEM Totlag STRESS None TSI_COUPTYP None 
+     82 SOLIDH8 HEX8      60    203    206     65     43    196    199     50 MAT       2 EAS mild 
+     83 SOLIDH8 HEX8       7     60     65     13      2     43     50      4 MAT       2 EAS mild 
+     84 SOLIDH8 HEX8      55    202    203     60     38    193    196     43 MAT       2 EAS mild 
+     85 SOLIDH8 HEX8       6     55     60      7      1     38     43      2 MAT       2 EAS mild 
+     86 SOLIDH8 HEX8      97    220    221    108     60    203    206     65 MAT       2 EAS mild 
+     87 SOLIDH8 HEX8      44     97    108     51      7     60     65     13 MAT       2 EAS mild 
+     88 SOLIDH8 HEX8      94    219    220     97     55    202    203     60 MAT       2 EAS mild 
+     89 SOLIDH8 HEX8      37     94     97     44      6     55     60      7 MAT       2 EAS mild 
 ----------------------------------------------------FLUID ELEMENTS
       1 XFLUID3 HEX8     131    160    164    133    124    150    154    127 MAT       1 NA Euler GP 2 2 2 CA No 
       2 XFLUID3 HEX8     106    131    133    111     98    124    127    102 MAT       1 NA Euler GP 2 2 2 CA No 
@@ -2124,10 +1989,8 @@ NODE          227     COORD 0.000000000000000e+00     1.000000000000000e+00     
 --------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
-// MAT_fluid
 MAT       1 MAT_fluid  VISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
-// MAT_Struct_StVenantKirchhoff
-MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
+MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 100000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
