@@ -109,7 +109,33 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   discret_->FillComplete();
 
   //output_.WriteMesh(0,0.0);
-
+  
+//  cout << solver.Params().get<string>("solver") << endl;
+//  cout << solver.Params().isSublist("ML Parameters") << endl;
+  // sanity check
+  if (  solver.Params().get<string>("solver") == "aztec" 
+    and solver.Params().isSublist("ML Parameters")
+    and not params.get<bool>("DLM_condensation")
+    )
+  {
+    dserror("for MLFLUID2, you need to set \"DLM_CONDENSATION  yes\" ");
+  }
+  
+  if (actdis->Comm().MyPID()==0 and params.get<bool>("DLM_condensation"))
+  {
+    std::cout << RED_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
+  }
+  else
+  {
+    std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl << endl;
+  }
+  
+//  if (Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR") != timeint_stationary 
+//      and fluidtimeparams->get<bool>("DLM_condensation") == true)
+//  {
+//    dserror("condensation does not work for transient problems at the moment! (it's a known bug and it should work in the near future)");
+//  }
+  
   // store a dofset with the complete fluid unknowns
   dofset_out_.Reset();
   dofset_out_.AssignDegreesOfFreedom(*discret_,0);

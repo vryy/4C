@@ -1509,6 +1509,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("DLM_CONDENSATION","No","Do you want to condense the distributed Lagrange multiplier?",
+                                 yesnotuple,yesnovalue,&xfem_general);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");

@@ -206,27 +206,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   
   // ----------------------------------------------- XFEM related stuff
-//  cout << solveparams->get<string>("solver") << endl;
-//  cout << solveparams->isSublist("ML Parameters") << endl;
-  if (solveparams->get<string>("solver") == "aztec" and solveparams->isSublist("ML Parameters"))
   {
-    fluidtimeparams->set<bool>("DLM_condensation",true);
+    const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+    fluidtimeparams->set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
   }
-  else
-  {
-    fluidtimeparams->set<bool>("DLM_condensation",false);
-  }
-    
-  if (actdis->Comm().MyPID()==0 and fluidtimeparams->get<bool>("DLM_condensation") == true)
-  {
-    std::cout << "DLM_condensation turned on!" << endl;    
-  }
-
-//  if (Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR") != timeint_stationary 
-//      and fluidtimeparams->get<bool>("DLM_condensation") == true)
-//  {
-//    dserror("condensation does not work for transient problems at the moment! (it's a known bug and it should work in the near future)");
-//  }
 
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field
