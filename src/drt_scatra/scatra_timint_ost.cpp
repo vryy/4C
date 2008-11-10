@@ -72,6 +72,11 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
 {
   phinp_->Update(dta_, *phidtn_,1.0);
+
+  // for the electric potential we just use the 'old' value of last time step
+  Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(phin_);
+  conpotsplitter_.InsertCondVector(onlypot, phinp_);
+
   return;
 }
 

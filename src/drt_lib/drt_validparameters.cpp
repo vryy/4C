@@ -1201,6 +1201,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
+  setStringToIntegralParameter<int>("EXPLPREDICT","yes",
+                               "do an explicit predictor step before starting nonlinear iteration",
+                               yesnotuple,yesnovalue,&scatra_nonlin);
   // convergence criteria adaptivity
   setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",

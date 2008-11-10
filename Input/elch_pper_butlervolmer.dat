@@ -121,6 +121,7 @@ BLOCKPRECOND                    Yes
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          15
+EXPLPREDICT                     yes
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ------------------------------------------------------ELCH CONTROL

@@ -453,7 +453,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   bool  stopnonliniter = false;
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
-  if (step_>1) ExplicitPredictor();
+  const bool explpredictor = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
+  if ((step_>1) && explpredictor) 
+    ExplicitPredictor();
 
   while (stopnonliniter==false)
   {
