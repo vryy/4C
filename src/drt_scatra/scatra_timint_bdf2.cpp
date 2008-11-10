@@ -94,7 +94,11 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ExplicitPredictor()
 {
-  phinp_->Update(-1.0, *phinm_,2.0);
+  if (step_>1)
+    phinp_->Update(-1.0, *phinm_,2.0);
+  // for step == 1 phinp_ is already correctly initialized with the
+  // initial field phin_
+
   return;
 }
 
