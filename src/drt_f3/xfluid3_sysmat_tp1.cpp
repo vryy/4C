@@ -1711,13 +1711,14 @@ static void SysmatBoundaryTP1(
             //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
             const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
-            if (detmetric <= 0.0)
+            if (detmetric < 0.0)
             {
+              cout << "detmetric = " << detmetric << endl;
               dserror("negative detmetric! should be a bug!");
             }
             
             const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
-            if (fac <= 0.0)
+            if (fac < 0.0)
             {
               dserror("negative fac! should be a bug!");
             }
@@ -1805,8 +1806,8 @@ static void SysmatBoundaryTP1(
             BlitzVec3 normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
-            BlitzVec3 normalvec_fluid;
-            normalvec_fluid = -normalvec_solid;
+            BlitzVec3 normalvec_fluid = 0.0;
+            normalvec_fluid -= normalvec_solid;
 //            cout << "normalvec : ";
 //            cout << normalvec_fluid << endl;
       

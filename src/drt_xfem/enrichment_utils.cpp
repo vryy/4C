@@ -756,13 +756,14 @@ double BoundaryCoverageRatioT(
       const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
       if (detmetric < 0.0)
       {
-        cout << "detmetric = " << detmetric << endl;
+        cout << endl << "detmetric = " << detmetric << endl;
         dserror("negative detmetric! should be a bug!");
       }
       
       const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
       if (fac < 0.0)
       {
+        cout << endl;
         cout << "detmetric = " << detmetric << endl;
         cout << "fac       = " << fac << endl;
         dserror("negative fac! should be a bug!");
