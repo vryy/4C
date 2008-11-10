@@ -106,7 +106,7 @@ CALCERROR                       Kwok_Wu
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL          1e-6
 ITEMAX           50
-EXPLPREDICT      No
+EXPLPREDICT      Yes
 ------------------------------------------------------ELCH CONTROL
 ITEMAX                          10
 MAXTIME                         0.1
