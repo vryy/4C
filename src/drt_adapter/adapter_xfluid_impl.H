@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 
 
 
+/// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
   /// adapter to normal fluid algorithm
@@ -133,7 +134,10 @@ namespace ADAPTER {
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 
-    //! return type of time integration scheme
+    /*!
+    \brief return type of time integration scheme
+
+    */
     const FLUID_TIMEINTTYPE TimIntScheme() const {return fluid_.TimIntScheme();}
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();

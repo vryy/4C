@@ -134,7 +134,6 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 {
   dserror("not implemented");
-//  return fluid_.Dispnp();
   return null;
 }
 
@@ -154,7 +153,6 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap()
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 {
   dserror("not implemented");
-  // if anything (e.g. monolithic FSI) we give fluid coupling and interface DOF combined back
   return fluid_.SystemMatrix();
 }
 
@@ -276,8 +274,7 @@ void ADAPTER::XFluidImpl::Update()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::StatisticsAndOutput()
 {
-  dserror("not implemented!");
-  return;
+  fluid_.StatisticsAndOutput();
 }
 
 
@@ -316,6 +313,21 @@ void ADAPTER::XFluidImpl::Output()
     PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
 //    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
 //    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  }
+  
+  if (boundarydis_->Comm().MyPID() == 0 && itruerescol->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".outifaceforce.txt";
+    if (Step() <= 1)
+      f.open(fname.c_str(),std::fstream::trunc);
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Time() << " " << (*itruerescol)[0] << "  " << "\n";
+
+    f.close();
   }
 
 }
@@ -665,7 +677,8 @@ void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx
   //
   // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   //
-  fcx->Update(-1.,*veln,TimeScaling());
+  double timescale = TimeScaling();
+  fcx->Update(-timescale*fluid_.Dt(),*veln,timescale);
 }
 
 
