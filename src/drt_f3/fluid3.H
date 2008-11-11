@@ -405,7 +405,6 @@ private:
     viscous_stab_usfem_only_rhs,
     continuity_stab_none,
     continuity_stab_yes,
-    continuity_stab_td,
     cross_stress_stab_none,
     cross_stress_stab,
     cross_stress_stab_only_rhs,
@@ -458,20 +457,14 @@ private:
 
 private:
   //! factor including Smagorinsky's constant
-  double                                        Cs_delta_sq_;
+  double                                          Cs_delta_sq_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
-  blitz::Array<double,2>                     sub_acc_old_;
-
+  blitz::Array<double,2>                          sub_acc_old_;
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  blitz::Array<double,2>                    sub_vel_;
+  blitz::Array<double,2>                          sub_vel_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  blitz::Array<double,2>                    sub_vel_old_;
-
-  //! vector of subscale pressure values, current iteration value, in gausspoints
-  blitz::Array<double,1>                    sub_pre_;
-  //! vector of subscale pressure values (history values) in gausspoints
-  blitz::Array<double,1>                    sub_pre_old_;
+  blitz::Array<double,2>                          sub_vel_old_;
 
   // internal calculation methods
 

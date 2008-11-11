@@ -838,7 +838,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     if (step_%uprestart_ == 0)
     {
       output_.WriteVector("veln",  veln_ );
-      output_.WriteVector("accnp", accnp_);
       output_.WriteVector("accn",  accn_ );
 
       if (alefluid_)
@@ -859,7 +858,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
     output_.WriteVector("velnp", velnp_);
     output_.WriteVector("veln" , veln_ );
-    output_.WriteVector("accnp", accnp_);
     output_.WriteVector("accn" , accn_ );
 
     if (alefluid_)
@@ -1356,7 +1354,6 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_ ,"veln" );
-  reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn" );
 
   if (alefluid_)

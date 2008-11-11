@@ -1676,14 +1676,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       ele->sub_vel_.resize(3,intpoints.nquad);
       ele->sub_vel_ = 0.;
     }
-    if(ele->sub_pre_old_ .extent(blitz::firstDim) != intpoints.nquad)
-    {
-      ele->sub_pre_old_ .resize(intpoints.nquad);
-      ele->sub_pre_old_ = 0.;
-
-      ele->sub_pre_.resize(intpoints.nquad);
-      ele->sub_pre_ = 0.;
-    }
   }
 
   // get subscale information from element --- this is just a reference
@@ -1691,8 +1683,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   blitz::Array<double,2> saccn (ele->sub_acc_old_);
   blitz::Array<double,2> sveln (ele->sub_vel_old_);
   blitz::Array<double,2> svelnp(ele->sub_vel_    );
-  blitz::Array<double,1> spren (ele->sub_pre_old_);
-  blitz::Array<double,1> sprenp(ele->sub_pre_    );
 
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
@@ -2634,24 +2624,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
       // update estimates for the subscale quantities
 
-      const double factauC = tauC/(tauC+dt);
       const double facMtau = 1./(alphaM*tauM+afgdt);
-
-      if (cstab == Fluid3::continuity_stab_td)
-      {
-	/*-------------------------------------------------------------------*
-	 *                                                                   *
-	 *                  update of SUBSCALE PRESSURE                      *
-	 *                                                                   *
-	 *-------------------------------------------------------------------*/
-	
-	/*
-          ~n+1      tauC     ~n   tauC * dt            n+1
-          p    = --------- * p  - --------- * nabla o u
-           (i)   tauC + dt        tauC + dt            (i)
-	*/
-	sprenp(iquad)=(spren(iquad)-dt*divunp)*factauC;
-      }
 
       /*-------------------------------------------------------------------*
        *                                                                   *
@@ -2784,10 +2757,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	{ // cstab Codina style
 	  cstabfac=fac*gamma*dt*tauC;
 	} // cstab Codina style
-	else if(cstab == Fluid3::continuity_stab_td)
-	{ // time dependent version
-	  cstabfac=fac*gamma*dt*dt*factauC;
-	} // time dependent version
 	else
 	{ // no cstab
 	  cstabfac=0;
@@ -4504,35 +4473,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
           elevec(fui+2) -= fac_tauC_divunp*derxy_(2,ui) ;
         } // end loop rows
       } // cstab_qs
-      else if (cstab == Fluid3::continuity_stab_td)
-      {
-        //---------------------------------------------------------------
-        //
-        //           TIME DEPENDENT VERSION OF RESIDUAL BASED
-        //                  CONTINUITY STABILISATION
-        //
-        //---------------------------------------------------------------
-
-        const double fac_sprenp = fac*sprenp(iquad);
-
-        for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
-        {
-	  const int fui=4*ui;
-
-          /* factor: -1
-
-                       /                  \
-                      |  ~n+1              |
-                      |  p    , nabla o v  |
-                      |   (i)              |
-                       \                  /
-          */
-          elevec(fui  ) += fac_sprenp*derxy_(0,ui);
-          elevec(fui+1) += fac_sprenp*derxy_(1,ui);
-          elevec(fui+2) += fac_sprenp*derxy_(2,ui);
-        } // ui
-      } // cstab_td
-
 
       //---------------------------------------------------------------
       //
@@ -6309,9 +6249,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   double mean_resC       = 0.0;
   double mean_resC_sq    = 0.0;
-  double mean_spreacc    = 0.0;
   double mean_sprenp     = 0.0;
-  double mean_spreacc_sq = 0.0;
   double mean_sprenp_sq  = 0.0;
 
   double eps_sacc        = 0.0;
@@ -7457,8 +7395,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   blitz::Array<double,2> saccn (ele->sub_acc_old_);
   blitz::Array<double,2> sveln (ele->sub_vel_old_);
   blitz::Array<double,2> svelnp(ele->sub_vel_    );
-  blitz::Array<double,1> spren (ele->sub_pre_old_);
-  blitz::Array<double,1> sprenp(ele->sub_pre_    );
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
@@ -8266,8 +8202,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     // Element volume
     vol               += fac;
 
-
-
     // ------------------------------------------------------
     // Element average:
     //     o residuals
@@ -8313,18 +8247,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(tds == Fluid3::subscales_time_dependent)
-    {
-      const double preaccinc=(sprenp(iquad)-spren(iquad))/dt;
-
-      mean_spreacc   += preaccinc*fac;
-      mean_spreacc_sq+= preaccinc*preaccinc*fac;
-
-      mean_sprenp    += sprenp(iquad)*fac;
-
-      mean_sprenp_sq += sprenp(iquad)*sprenp(iquad)*fac;
-    }
-    else
     {
       const double aux = tau_(2)*divunp;
 
@@ -8680,34 +8602,55 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   }
   mean_resC       /= vol;
   mean_resC_sq    /= vol;
-  mean_spreacc    /= vol;
-  mean_spreacc_sq /= vol;
   mean_sprenp     /= vol;
   mean_sprenp_sq  /= vol;
 
-  averaged_tauC   /=vol;
-  averaged_tauM   /=vol;
+  averaged_tauC   /= vol;
+  averaged_tauM   /= vol;
+
+  eps_sacc        /= vol;
+  eps_pspg        /= vol;
+  eps_supg        /= vol;
+  eps_cross       /= vol;
+  eps_rey         /= vol;
+  eps_cstab       /= vol;
+  eps_vstab       /= vol;
+  eps_eddyvisc    /= vol;
+  eps_visc        /= vol;
+  eps_conv        /= vol;
 
   // ---------------------------------------------------
-  // the vectors containing the global sums over layers
+  // the vectors containing the local sums over layers
 
-  RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
-  RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
-  RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
-  RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
-  RefCountPtr<vector<double> > incrsvelaf   = params.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
-  RefCountPtr<vector<double> > incrsvelaf_sq= params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
-  
-  RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
-  RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
-  RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
-  RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
-  RefCountPtr<vector<double> > spressnp     = params.get<RefCountPtr<vector<double> > >("incrspressnp"    );
-  RefCountPtr<vector<double> > spressnp_sq  = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
+  RefCountPtr<vector<double> > incrvol           = params.get<RefCountPtr<vector<double> > >("incrvol"          );
 
-  RefCountPtr<vector<double> > incrtauC     = params.get<RefCountPtr<vector<double> > >("incrtauC"        );
-  RefCountPtr<vector<double> > incrtauM     = params.get<RefCountPtr<vector<double> > >("incrtauM"        );
+  RefCountPtr<vector<double> > incrres           = params.get<RefCountPtr<vector<double> > >("incrres"          );
+  RefCountPtr<vector<double> > incrres_sq        = params.get<RefCountPtr<vector<double> > >("incrres_sq"       );
+  RefCountPtr<vector<double> > incrsacc          = params.get<RefCountPtr<vector<double> > >("incrsacc"         );
+  RefCountPtr<vector<double> > incrsacc_sq       = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"      );
+  RefCountPtr<vector<double> > incrsvelaf        = params.get<RefCountPtr<vector<double> > >("incrsvelaf"       );
+  RefCountPtr<vector<double> > incrsvelaf_sq     = params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"    );
   
+  RefCountPtr<vector<double> > incrresC          = params.get<RefCountPtr<vector<double> > >("incrresC"         );
+  RefCountPtr<vector<double> > incrresC_sq       = params.get<RefCountPtr<vector<double> > >("incrresC_sq"      );
+  RefCountPtr<vector<double> > spressnp          = params.get<RefCountPtr<vector<double> > >("incrspressnp"     );
+  RefCountPtr<vector<double> > spressnp_sq       = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq"  );
+
+  RefCountPtr<vector<double> > incrtauC          = params.get<RefCountPtr<vector<double> > >("incrtauC"         );
+  RefCountPtr<vector<double> > incrtauM          = params.get<RefCountPtr<vector<double> > >("incrtauM"         );
+
+  RefCountPtr<vector<double> > incr_eps_sacc     = params.get<RefCountPtr<vector<double> > >("incr_eps_sacc"    );
+  RefCountPtr<vector<double> > incr_eps_pspg     = params.get<RefCountPtr<vector<double> > >("incr_eps_pspg"    );
+  RefCountPtr<vector<double> > incr_eps_supg     = params.get<RefCountPtr<vector<double> > >("incr_eps_supg"    );
+  RefCountPtr<vector<double> > incr_eps_cross    = params.get<RefCountPtr<vector<double> > >("incr_eps_cross"   );
+  RefCountPtr<vector<double> > incr_eps_rey      = params.get<RefCountPtr<vector<double> > >("incr_eps_rey"     );
+  RefCountPtr<vector<double> > incr_eps_cstab    = params.get<RefCountPtr<vector<double> > >("incr_eps_cstab"   );
+  RefCountPtr<vector<double> > incr_eps_vstab    = params.get<RefCountPtr<vector<double> > >("incr_eps_vstab"   );
+  RefCountPtr<vector<double> > incr_eps_eddyvisc = params.get<RefCountPtr<vector<double> > >("incr_eps_eddyvisc");
+  RefCountPtr<vector<double> > incr_eps_visc     = params.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
+  RefCountPtr<vector<double> > incr_eps_conv     = params.get<RefCountPtr<vector<double> > >("incr_eps_conv"    );
+
+
   //this will be the y-coordinate of a point in the element interior
   double center = 0;
 
@@ -8739,6 +8682,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     dserror("could not determine element layer");
   }
 
+  // collect layer volume
+  (*incrvol  )[nlayer] += vol;
+
   // averages of stabilisation parameters
   (*incrtauC )[nlayer] += averaged_tauC;
   (*incrtauM )[nlayer] += averaged_tauM;
@@ -8756,12 +8702,22 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   }
 
   // averages of subscale pressure and continuity residuals
-  (*incrresC    )[nlayer] += mean_resC      ;
-  (*incrresC_sq )[nlayer] += mean_resC_sq   ;
-  (*spressacc   )[nlayer] += mean_spreacc   ;
-  (*spressacc_sq)[nlayer] += mean_spreacc_sq;
-  (*spressnp    )[nlayer] += mean_sprenp    ;
-  (*spressnp_sq )[nlayer] += mean_sprenp_sq ;
+  (*incrresC         )[nlayer] += mean_resC      ;
+  (*incrresC_sq      )[nlayer] += mean_resC_sq   ;
+
+  (*spressnp         )[nlayer] += mean_sprenp    ;
+  (*spressnp_sq      )[nlayer] += mean_sprenp_sq ;
+
+  (*incr_eps_sacc    )[nlayer] += eps_sacc       ;
+  (*incr_eps_pspg    )[nlayer] += eps_pspg       ;
+  (*incr_eps_supg    )[nlayer] += eps_supg       ;
+  (*incr_eps_cross   )[nlayer] += eps_cross      ;
+  (*incr_eps_rey     )[nlayer] += eps_rey        ;
+  (*incr_eps_cstab   )[nlayer] += eps_cstab      ;
+  (*incr_eps_vstab   )[nlayer] += eps_vstab      ;
+  (*incr_eps_eddyvisc)[nlayer] += eps_eddyvisc   ;
+  (*incr_eps_visc    )[nlayer] += eps_visc       ;
+  (*incr_eps_conv    )[nlayer] += eps_conv       ;
 
   return(0);
 }

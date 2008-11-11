@@ -261,49 +261,6 @@ public:
       return(*nodeplanes_);
     };
 
-  /*!
-  \brief Add computed sums to compute average of residuals
-
-  the increments are computed during time integration
-  by a call to the elements
-
-  */
-   void AddToResAverage(
-     RefCountPtr<vector<double> > incrres        ,
-     RefCountPtr<vector<double> > incrres_sq     ,
-     RefCountPtr<vector<double> > incrsacc       ,
-     RefCountPtr<vector<double> > incrsacc_sq    ,
-     RefCountPtr<vector<double> > incrsvelaf     ,
-     RefCountPtr<vector<double> > incrsvelaf_sq  ,
-     RefCountPtr<vector<double> > incrresC       ,
-     RefCountPtr<vector<double> > incrresC_sq    ,
-     RefCountPtr<vector<double> > incrspresacc   ,
-     RefCountPtr<vector<double> > incrspresacc_sq,
-     RefCountPtr<vector<double> > incrspressnp   ,
-     RefCountPtr<vector<double> > incrspressnp_sq
-    )
-    {
-      for (unsigned rr=0;rr<incrres->size();++rr)
-      {
-          (*sumres_        )[rr]+=(*incrres        )[rr];
-          (*sumres_sq_     )[rr]+=(*incrres_sq     )[rr];
-          (*sumsacc_       )[rr]+=(*incrsacc       )[rr];
-          (*sumsacc_sq_    )[rr]+=(*incrsacc_sq    )[rr];
-          (*sumsvelaf_     )[rr]+=(*incrsvelaf     )[rr];
-          (*sumsvelaf_sq_  )[rr]+=(*incrsvelaf_sq  )[rr];
-      }
-      for (unsigned rr=0;rr<incrresC->size();++rr)
-      {
-          (*sumresC_       )[rr]+=(*incrresC       )[rr];
-          (*sumresC_sq_    )[rr]+=(*incrresC_sq    )[rr];
-          (*sumspresacc_   )[rr]+=(*incrspresacc   )[rr];
-          (*sumspresacc_sq_)[rr]+=(*incrspresacc_sq)[rr];
-          (*sumspressnp_   )[rr]+=(*incrspressnp   )[rr];
-          (*sumspressnp_sq_)[rr]+=(*incrspressnp_sq)[rr];
-      }
-      return;
-    };
-
   //@}
 
 
@@ -482,6 +439,11 @@ private:
   //!--------------------------------------------------
 
   //! sum over all in plane residuals
+  RefCountPtr<vector<double> >     sumtauM_;
+  //! sum over all in plane squared residuals
+  RefCountPtr<vector<double> >     sumtauC_;
+
+  //! sum over all in plane residuals
   RefCountPtr<vector<double> >     sumres_;
   //! sum over all in plane squared residuals
   RefCountPtr<vector<double> >     sumres_sq_;
@@ -498,14 +460,31 @@ private:
   RefCountPtr<vector<double> >     sumresC_;
   //! sum over all in plane squared residuals of the continuity equation
   RefCountPtr<vector<double> >     sumresC_sq_;
-  //! sum over all in plane subscale pressure accelerations (backward euler)
-  RefCountPtr<vector<double> >     sumspresacc_;
-  //! sum over all in plane squared subscale pressure accelerations (backward euler)
-  RefCountPtr<vector<double> >     sumspresacc_sq_;
   //! sum over all in plane subscale pressure values at current timestep
   RefCountPtr<vector<double> >     sumspressnp_   ;
   //! sum over all in plane squared subscale pressure values at current timestep
   RefCountPtr<vector<double> >     sumspressnp_sq_;
+
+  //! sum over all in plane averaged dissipation rates from subscale acceleration
+  RefCountPtr<vector<double> >     sum_eps_sacc_;
+  //! sum over all in plane averaged dissipation rates from pspg stabilisation
+  RefCountPtr<vector<double> >     sum_eps_pspg_;
+  //! sum over all in plane averaged dissipation rates from supg stabilisation
+  RefCountPtr<vector<double> >     sum_eps_supg_;
+  //! sum over all in plane averaged dissipation rates from cross term
+  RefCountPtr<vector<double> >     sum_eps_cross_;
+  //! sum over all in plane averaged dissipation rates from reynolds term
+  RefCountPtr<vector<double> >     sum_eps_rey_;
+  //! sum over all in plane averaged dissipation rates from least squares continuity term
+  RefCountPtr<vector<double> >     sum_eps_cstab_;
+  //! sum over all in plane averaged dissipation rates from viscous stabilisation
+  RefCountPtr<vector<double> >     sum_eps_vstab_;
+  //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
+  RefCountPtr<vector<double> >     sum_eps_eddyvisc_;
+  //! sum over all in plane averaged dissipation rates from Galerkin viscous term
+  RefCountPtr<vector<double> >     sum_eps_visc_;
+  //! sum over all in plane averaged dissipation rates from Galerkin convective term
+  RefCountPtr<vector<double> >     sum_eps_conv_;
 
 };
 

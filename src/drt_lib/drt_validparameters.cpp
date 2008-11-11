@@ -941,13 +941,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Flag to (de)activate least-squares stabilization of continuity equation.",
                                tuple<std::string>(
                                  "no_cstab",
-                                 "cstab_qs",
-                                 "cstab_td"),
+                                 "cstab_qs"),
                                tuple<std::string>(
                                  "No continuity stabilization",
-                                 "Quasistatic continuity stabilization",
-                                 "Time-dependent generalization of continuity stabilization"),
-                               tuple<int>(0,1,2),
+                                 "Quasistatic continuity stabilization"),
+                               tuple<int>(0,1),
                                &fdyn_stab);
 
   setStringToIntegralParameter<int>("CROSS-STRESS",

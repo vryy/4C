@@ -41,8 +41,6 @@ data_()
     sub_acc_old_.resize(0,0);
     sub_vel_.resize(0,0);
     sub_vel_old_.resize(0,0);
-    sub_pre_.resize(0);
-    sub_pre_old_.resize(0);
 
     return;
 }
@@ -125,10 +123,6 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,sub_vel_.data()    ,size);
   AddtoPack(data,sub_vel_old_.data(),size);
 
-  size = sub_acc_old_.extent(blitz::secondDim)*sizeof(double);
-  AddtoPack(data,sub_pre_.data()    ,size);
-  AddtoPack(data,sub_pre_old_.data(),size);
-
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -178,16 +172,8 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
     int size = firstdim*secondim*sizeof(double);
 
     ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);
+    ExtractfromPack(position,data,&(sub_vel_    .data()[0]),size);
     ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
-
-    sub_pre_    .resize(secondim);
-    sub_pre_old_.resize(secondim);
-
-    ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
-    ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
-
-
   }
 
   vector<char> tmp(0);

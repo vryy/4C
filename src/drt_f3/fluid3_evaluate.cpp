@@ -260,7 +260,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
           stabstrtoact_["no_cstab"               ]=continuity_stab_none;
           stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
-          stabstrtoact_["cstab_td"               ]=continuity_stab_td;
           stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
           stabstrtoact_["cross_complete"         ]=cross_stress_stab;
           stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
@@ -512,14 +511,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_genalpha_update_for_subscales:
       {
-        // most recent subscale pressure becomes the old subscale pressure
-        // for the next timestep
-        //
-        //  ~n   ~n+1
-        //  p <- p
-        //
-        sub_pre_old_ = sub_pre_;
-
         // the old subscale acceleration for the next timestep is calculated
         // on the fly, not stored on the element
         /*
