@@ -91,6 +91,7 @@ namespace LINALG
 
 // forward declarations
 class SparseMatrix;
+class SparseOperator;
 class DownwindMatrix;
 
 /*!
@@ -260,6 +261,12 @@ public:
 
   */
   inline bool IsFactored() const { return factored_; }
+  
+  /*!
+  \brief //! Returns the condition number estimate for the current preconditioner, if one exists, returns -1.0 if no estimate.
+
+  */
+  inline double Condest() const { return aztec_->Condest(); }
 
   //@}
 
@@ -439,7 +446,18 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                              const SparseMatrix& B,
                              bool complete);
 
+/*!
+  \brief Compute a condition number estimate of given matrix A
 
+  copied and adapted from 
+  Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
+*/
+double Condest(
+    SparseMatrix&                            A,  ///< sparse matrix
+    const Ifpack_CondestType CT = Ifpack_Cheap,  ///< select approach for computing condition number estimate
+    const int MaxIters = 1550,                   ///< maximum number of linear iterations 
+    const double Tol = 1e-9                      ///< tolerance
+    );
 
 } // namespace LINALG
 
