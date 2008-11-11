@@ -474,9 +474,9 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   {
     // get planeccordinates
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-    planecoords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_");
+    planecoords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
 
-    if(planecoords_==null)
+    if(planecoords_==Teuchos::null)
     {
       dserror("need the coordinates of planes for in plane averaging");
     }
@@ -591,6 +591,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   if(channel_flow_)
   {
+    //    cout << discret_->Comm().MyPID() << "global in plane averaging " << "\n";
     // now add all the stuff from the different processors
 
     for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
@@ -615,6 +616,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
       modelparams->set<RefCountPtr<vector<double> > >("planecoords_"    ,planecoords_   );
     }
   } // end if turbulent channel flow
+
 
   return;
 } // end FLD::DynSmagFilter::DynSmagComputeCs

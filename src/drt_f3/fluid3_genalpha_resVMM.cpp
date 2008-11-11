@@ -6290,9 +6290,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   double visceff       = 0.0;
 
   // the coordinates of the element layers in the channel
-  RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_");
+  RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
   
-  if(planecoords==null)
+  if(planecoords==Teuchos::null)
     dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
   // ---------------------------------------------------
@@ -8939,7 +8939,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
     }
     else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
     {
-      RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+      RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
+
+      if(planecoords==Teuchos::null)
+        dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
       // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
       // the y+ (heigth in wall units)

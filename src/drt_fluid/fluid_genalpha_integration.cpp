@@ -792,9 +792,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   // -------------------------------------------------------------------
   this->GenAlphaOutput();
 
-  // dumping of turbulence statistics if required
-  statisticsmanager_->DoOutput(step_);
-
   // time measurement --- stop TimeMonitor tm8
   tm8_ref_        = null;
 
@@ -1127,7 +1124,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // end measurement element call
   dtele_=ds_cputime()-tcpu;
-
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix

@@ -659,6 +659,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // store them in parameterlist for access on the element
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
+
+    modelparams->set<RefCountPtr<vector<double> > >("planecoords_"         ,nodeplanes_          );
     modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
     modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
     modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
@@ -1342,20 +1344,24 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   RefCountPtr<vector<double> > global_incr_Cs_sum;
   RefCountPtr<vector<double> > local_Cs_sum;
   global_incr_Cs_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"         );
-  
+  local_Cs_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"         ,Teuchos::null);
+  if(local_Cs_sum==Teuchos::null)
+    dserror("local_Cs_sum==null from parameterlist");
         
   RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
   RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
   global_incr_Cs_delta_sq_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum");
-  
+  local_Cs_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",Teuchos::null);
+  if(local_Cs_delta_sq_sum==Teuchos::null)
+    dserror("local_Cs_delta_sq_sum==null from parameterlist");
   
   RefCountPtr<vector<double> > global_incr_visceff_sum;
   RefCountPtr<vector<double> > local_visceff_sum;
   global_incr_visceff_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_visceff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_visceff_sum"    );
-  
+  local_visceff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_visceff_sum"    ,Teuchos::null);
+  if(local_visceff_sum==Teuchos::null)
+      dserror("local_visceff_sum==null from parameterlist");
+
   // now add all the stuff from the different processors
   discret_->Comm().SumAll(&((*local_Cs_sum               )[0]),
                           &((*global_incr_Cs_sum         )[0]),
@@ -1415,6 +1421,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       timelist.set("alpha_F",params_.get<double>("alpha_F"       ));
       timelist.set("gamma"  ,params_.get<double>("gamma"         ));
       timelist.set("dt"     ,params_.get<double>("time step size"));
+      timelist.set("time"   ,time                                 );
     }
   
     // parameters for stabilisation

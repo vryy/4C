@@ -49,9 +49,6 @@ namespace FLD
     mygridvelaf_(fluid.gridvelaf_),
     myforce_    (fluid.force_    )
   {
-    // do the time integration independent setup
-    Setup();
-    
     // activate the computation of subgrid dissipation, 
     // residuals etc
     subgrid_dissipation_=true;
@@ -62,6 +59,9 @@ namespace FLD
     {
       flow_=channel_flow_of_height_2;
 
+      // do the time integration independent setup
+      Setup();
+    
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
@@ -72,6 +72,9 @@ namespace FLD
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
       flow_=loma_channel_flow_of_height_2;
+
+      // do the time integration independent setup
+      Setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -84,6 +87,9 @@ namespace FLD
     {
       flow_=lid_driven_cavity;
 
+      // do the time integration independent setup
+      Setup();
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
@@ -91,6 +97,9 @@ namespace FLD
     else if(fluid.special_flow_=="loma_lid_driven_cavity")
     {
       flow_=loma_lid_driven_cavity;
+
+      // do the time integration independent setup
+      Setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -100,6 +109,9 @@ namespace FLD
     {
       flow_=square_cylinder;
 
+      // do the time integration independent setup
+      Setup();
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
@@ -107,6 +119,9 @@ namespace FLD
     else
     {
       flow_=no_special_flow;
+
+      // do the time integration independent setup
+      Setup();
     }
 
     return;
@@ -142,9 +157,6 @@ namespace FLD
     mygridvelaf_(null               ),
     myforce_    (fluid.trueresidual_)
   {
-    // do the time integration independent setup
-    Setup();
-
     // no subgrid dissipation computation is available for the
     // one-steo-theta implementation
     subgrid_dissipation_=false;
@@ -154,6 +166,9 @@ namespace FLD
     if(fluid.special_flow_=="channel_flow_of_height_2")
     {
       flow_=channel_flow_of_height_2;
+
+      // do the time integration independent setup
+      Setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -165,6 +180,9 @@ namespace FLD
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
       flow_=loma_channel_flow_of_height_2;
+
+      // do the time integration independent setup
+      Setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -185,6 +203,9 @@ namespace FLD
     {
       flow_=loma_lid_driven_cavity;
 
+      // do the time integration independent setup
+      Setup();
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
@@ -193,6 +214,9 @@ namespace FLD
     {
       flow_=square_cylinder;
 
+      // do the time integration independent setup
+      Setup();
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
@@ -200,6 +224,9 @@ namespace FLD
     else
     {
       flow_=no_special_flow;
+
+      // do the time integration independent setup
+      Setup();
     }
 
     return;
@@ -350,9 +377,12 @@ namespace FLD
   void TurbulenceStatisticManager::DoTimeSample(int step, double time)
   {
 
+
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
+      double tcpu=ds_cputime();
+
       //--------------------------------------------------
       // calculate means, fluctuations etc of velocity, 
       // pressure, boundary forces etc.
@@ -420,11 +450,21 @@ namespace FLD
       }
       }
 
+      if(discret_->Comm().MyPID()==0)
+      {
+        cout << "Computing statistics: mean values, fluctuations, ";
+        cout << "boundary forces etc.             (";
+        printf("%10.4E",ds_cputime()-tcpu);
+        cout << ")\n";
+      }
+
       //--------------------------------------------------
       // do averaging of residuals, dissipation rates etc 
       // (all gausspoint-quantities)
       if(subgrid_dissipation_)
       {
+        tcpu=ds_cputime();
+
         switch(flow_)
         {
         case channel_flow_of_height_2:
@@ -456,7 +496,20 @@ namespace FLD
           break;
         }
         }
+
+        if(discret_->Comm().MyPID()==0)
+        {
+          cout << "                      residuals, dissipation rates etc, ";
+          cout << "all gausspoint-quantities (";
+          printf("%10.4E",ds_cputime()-tcpu);
+          cout << ")\n";
+        }
       }
+      if(discret_->Comm().MyPID()==0)
+      {
+        cout << "\n";
+      }
+
     } // end step in sampling period
 
     return;
@@ -476,7 +529,6 @@ namespace FLD
       enum format {write_single_record   ,
                    write_multiple_records,
                    do_not_write          } outputformat=do_not_write;
-
 
       // sampling a la Volker --- single record is constantly updated
       if(dumperiod_!=0)
@@ -562,6 +614,15 @@ namespace FLD
       {
         break;
       }
+      }
+
+
+      if(discret_->Comm().MyPID()==0 && outputformat != do_not_write)
+      {
+        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        cout << "wrote statistics record            ";
+        cout << "XXXXXXXXXXXXXXXXXXXXX";
+        cout << "\n\n";
       }
     } // end step is in sampling period
 
