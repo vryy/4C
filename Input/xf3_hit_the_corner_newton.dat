@@ -155,6 +155,9 @@ PARTITION                       Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 PARTITION         Cut_Elements
+-------------------------------------------------------XFEM GENERAL
+DLM_CONDENSATION                Yes
+GMSH_DEBUG_OUT                  Yes
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 26
 NDLINE  45
