@@ -267,12 +267,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               dserror("NumNodeDof mismatch");
             if (eleDofManager_->NumElemDof() != 0)
               dserror("NumElemDof not 0");
-            if (eleDofManager_uncondensed_->NumElemDof() == 0)
-            {
-              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
-              cout << "boundarysize = " << boundarysize << endl;
-//              dserror("NumElemDof uncondensed == 0");
-            }
+//            if (eleDofManager_uncondensed_->NumElemDof() == 0)
+//            {
+//              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
+//              cout << "boundarysize = " << boundarysize << endl;
+////              dserror("NumElemDof uncondensed == 0");
+//            }
             
             // stress update
             UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
