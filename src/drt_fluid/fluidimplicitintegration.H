@@ -25,9 +25,6 @@ Maintainer: Peter Gamnitzer
 #define FLUIDIMPLICITINTEGRATION_H
 
 #include "turbulence_statistic_manager.H"
-#include "turbulence_statistics.H"
-#include "turbulence_statistics_ldc.H"
-#include "turbulence_statistics_sqc.H"
 
 #include "../drt_fluid/dyn_smag.H"
 
@@ -464,15 +461,6 @@ protected:
 
   //! manager for turbulence statistics 
   RCP<TurbulenceStatisticManager> statisticsmanager_;
-
-  /// turbulence statistics, channel flow
-  RCP<TurbulenceStatistics>       turbulencestatistics_;
-
-  /// turbulence statistics, lid driven cavity
-  RCP<TurbulenceStatisticsLdc>    turbulencestatistics_ldc_;
-
-  /// turbulence statistics, square cylinder
-  RCP<TurbulenceStatisticsSqc>    turbulencestatistics_sqc_;
 
   //! @name Dynamic Smagorinsky model: methods and variables 
   //        -------------------------
