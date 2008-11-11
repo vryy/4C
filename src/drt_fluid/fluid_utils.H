@@ -268,6 +268,25 @@ void LiftDrag(
   RCP<map<int,vector<double> > > liftdragvals  //! computed ld values
   );
 
+/*!
+  \brief integrate mass flow over surfaces
+
+  for each condition Id, compute the flow through the surface
+
+
+  \return a map, where for each condition Id, we get the flowrate.
+          positive and negative signs indicate net inflow and outflow
+
+
+  \author Axel Gerstenberger
+  \date 10/08
+ */
+std::map<int,double> ComputeSurfaceFlowrates(
+    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
+    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure 
+                                           ///< (only velocities are used)
+    );
+
 } // namespace UTILS
 } // namespace FLD
 

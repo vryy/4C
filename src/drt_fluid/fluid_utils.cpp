@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "fluid_utils.H"
+#include "../drt_lib/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -355,5 +356,58 @@ void FLD::UTILS::LiftDrag(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<int,double> FLD::UTILS::ComputeSurfaceFlowrates(
+    DRT::Discretization&           dis  ,      
+    const RCP<Epetra_Vector>       velnp
+    )
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","calc_flux");
+  
+  std::map<int,double> volumeflowratepersurface;
+  
+  // get condition
+  std::vector< DRT::Condition * >      conds;
+  dis.GetCondition ("SurfFlowRate", conds);
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  {
+    const DRT::Condition* cond = *conditer;
+    
+    const int condID = cond->Getint("ConditionID");
+    
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices
+    //                 local <-> global dof numbering
+    const Epetra_Map* dofrowmap = dis.DofRowMap();
+
+    // create vector (+ initialization with zeros)
+    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
+    // call loop over elements
+    dis.ClearState();
+    dis.SetState("velnp",velnp);
+    dis.EvaluateCondition(eleparams,flowrates,"SurfFlowRate",condID);
+    dis.ClearState();
+    
+    double locflowrate = 0.0;
+    for (int i=0; i < dofrowmap->NumMyElements(); i++)
+    {
+      locflowrate += (*flowrates)[i];
+    }
+    
+    double flowrate = 0.0;
+    dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
+    
+    volumeflowratepersurface[condID] += flowrate;
+  }
+
+  return volumeflowratepersurface;
+}
 
 #endif /* CCADISCRET       */
