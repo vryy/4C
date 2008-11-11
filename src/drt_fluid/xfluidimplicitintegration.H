@@ -30,14 +30,14 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 
-
+/// fluid algorithms
 namespace FLD
 {
 
 /*!
 \brief time integration for fluid problems
 
-\author axelchen (gerstenberger@lnm.mw.tum.de)
+\author (gerstenberger@lnm.mw.tum.de)
 */
 class XFluidImplicitTimeInt
 {
@@ -166,6 +166,13 @@ public:
   void TimeUpdate();
 
   /*!
+  \brief lift'n'drag forces, statistics time sample and
+         output of solution and statistics
+
+  */
+  void StatisticsAndOutput();
+
+  /*!
   \brief update configuration and output to file/screen
 
   */
@@ -271,25 +278,7 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /// calculate lift&drag forces and angular moments
-  /*!
-  Lift and drag forces are based upon the right hand side true-residual entities
-  of the corresponding nodes. The contribution of the end node of a line is entirely
-  added to a present L&D force.
-
-  Idea of this routine:
-
-  create
-
-  map< label, std::set<DRT::Node*> >
-
-  which is a set of nodes to each L&D Id
-  nodal forces of all the nodes within one set are added to one L&D force
-
-  Notice: Angular moments obtained from lift&drag forces currently refer to the
-          initial configuration, i.e. are built with the coordinates X of a particular
-          node irrespective of its current position.
-  */
+  /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
 
   /// integrate shape functions at nodes marked by condition
@@ -370,7 +359,7 @@ protected:
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   Teuchos::RCP<Epetra_Vector>    zeros_;
@@ -378,7 +367,10 @@ protected:
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
-  /// rhs: right hand side vector for linearised flow solution
+  /// the vector containing potential Neumann-type outflow stabilization
+  Teuchos::RCP<Epetra_Vector>    outflow_stabil_;
+
+  /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
 
   /// robinrhs_: additional rhs when using robin-BC
