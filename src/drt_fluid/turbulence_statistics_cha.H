@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics.H
+\file turbulence_statistics_cha.H
 
 \brief Compute (time and space) averaged values for turbulent channel
        flows and write them to files.

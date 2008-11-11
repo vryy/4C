@@ -55,10 +55,6 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "turbulence_statistic_manager.H"
 
-#include "../drt_fluid/turbulence_statistics.H"
-#include "../drt_fluid/turbulence_statistics_ldc.H"
-#include "../drt_fluid/turbulence_statistics_sqc.H"
-
 #include "../drt_fluid/dyn_smag.H"
 
 #ifdef PARALLEL

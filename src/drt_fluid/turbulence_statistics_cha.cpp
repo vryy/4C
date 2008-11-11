@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics.cpp
+\file turbulence_statistics_cha.cpp
 
 \brief calculate mean values and fluctuations for turbulent channel
 flows.
@@ -8,7 +8,7 @@ flows.
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "turbulence_statistics.H"
+#include "turbulence_statistics_cha.H"
 
 /*----------------------------------------------------------------------
 

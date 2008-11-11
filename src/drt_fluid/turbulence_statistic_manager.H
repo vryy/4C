@@ -25,7 +25,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 
-#include "../drt_fluid/turbulence_statistics.H"
+#include "../drt_fluid/turbulence_statistics_cha.H"
 #include "../drt_fluid/turbulence_statistics_ldc.H"
 #include "../drt_fluid/turbulence_statistics_sqc.H"
 
