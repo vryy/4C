@@ -6304,12 +6304,29 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_sacc_sq  ;
   LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_svelaf_sq;
 
-  double mean_resC       = 0;
-  double mean_resC_sq    = 0;
-  double mean_spreacc    = 0;
-  double mean_sprenp     = 0;
-  double mean_spreacc_sq = 0;
-  double mean_sprenp_sq  = 0;
+  double vol             = 0.0;
+
+  double averaged_tauC   = 0.0;
+  double averaged_tauM   = 0.0;
+
+  double mean_resC       = 0.0;
+  double mean_resC_sq    = 0.0;
+  double mean_spreacc    = 0.0;
+  double mean_sprenp     = 0.0;
+  double mean_spreacc_sq = 0.0;
+  double mean_sprenp_sq  = 0.0;
+
+  double eps_sacc        = 0.0;
+  double eps_pspg        = 0.0;
+  double eps_supg        = 0.0;
+  double eps_cross       = 0.0;
+  double eps_rey         = 0.0;
+  double eps_cstab       = 0.0;
+  double eps_vstab       = 0.0;
+  double eps_eddyvisc    = 0.0;
+  double eps_visc        = 0.0;
+  double eps_conv        = 0.0;
+
   
   mean_res       .Clear();
   mean_sacc      .Clear();
@@ -7554,6 +7571,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
     }
 
+    // set total integration factor
+    double fac = intpoints.qwgt[iquad]*det;
+
+
     //--------------------------------------------------------------
     //             compute global first derivates
     //--------------------------------------------------------------
@@ -8243,40 +8264,23 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
+    // -----------------------------------------------------
+    // Element volume
+    vol               += fac;
+
+
+
+    // ------------------------------------------------------
+    // Element average:
+    //     o residuals
+    //     o subscale acceleration
+    //     o subscale velocity
+    //     o subscale pressure
+
     for(int rr=0;rr<3;++rr)
     {
-      mean_res    (rr) += resM_(rr);
-      mean_res_sq (rr) += resM_(rr)*resM_(rr);
-    }
-
-    if(pspg     == Fluid3::pstab_use_pspg)
-    {
-
-    }
-
-    if(supg     == Fluid3::convective_stab_supg)
-    {
-
-    }
-
-    if(vstab    != Fluid3::viscous_stab_none)
-    {
-
-    }
-
-    if(cstab    != Fluid3::continuity_stab_none)
-    {
-
-    }
-
-    if(cross    != Fluid3::cross_stress_stab_none)
-    {
-
-    }
-
-    if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
-    {
-
+      mean_res    (rr) += resM_(rr)*fac;
+      mean_res_sq (rr) += resM_(rr)*resM_(rr)*fac;
     }
 
     if(tds == Fluid3::subscales_time_dependent
@@ -8287,8 +8291,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       {
         const double aux = -1.0/tau_(0)*svelaf_(rr) -resM_(rr);
 
-        mean_sacc   (rr) += aux;
-        mean_sacc_sq(rr) += aux*aux;
+        mean_sacc   (rr) += aux*fac;
+        mean_sacc_sq(rr) += aux*aux*fac;
       }
     }
 
@@ -8296,8 +8300,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       for(int rr=0;rr<3;++rr)
       {
-        mean_svelaf   (rr) += svelaf_(rr);
-        mean_svelaf_sq(rr) += svelaf_(rr)*svelaf_(rr);
+        mean_svelaf   (rr) += svelaf_(rr)*fac;
+        mean_svelaf_sq(rr) += svelaf_(rr)*svelaf_(rr)*fac;
       }
     }
     else
@@ -8306,52 +8310,389 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       {
         const double aux = tau_(0)*resM_(rr);
 
-        mean_svelaf   (rr) -= aux;
-        mean_svelaf_sq(rr) += aux*aux;
+        mean_svelaf   (rr) -= aux*fac;
+        mean_svelaf_sq(rr) += aux*aux*fac;
       }
     }
-
-    mean_resC    += divunp;
-    mean_resC_sq += divunp*divunp;
 
     if(tds == Fluid3::subscales_time_dependent)
     {
       const double preaccinc=(sprenp(iquad)-spren(iquad))/dt;
 
-      mean_spreacc   += preaccinc;
-      mean_spreacc_sq+= preaccinc*preaccinc;
+      mean_spreacc   += preaccinc*fac;
+      mean_spreacc_sq+= preaccinc*preaccinc*fac;
 
-      mean_sprenp    += sprenp(iquad);
+      mean_sprenp    += sprenp(iquad)*fac;
 
-      mean_sprenp_sq += sprenp(iquad)*sprenp(iquad);
+      mean_sprenp_sq += sprenp(iquad)*sprenp(iquad)*fac;
     }
     else
     {
       const double aux = tau_(2)*divunp;
 
-      mean_sprenp     -= aux;
-      mean_sprenp_sq  += aux*aux;
+      mean_sprenp     -= aux*fac;
+      mean_sprenp_sq  += aux*aux*fac;
     }
-  }
+
+    // ------------------------------------------------------
+    // Element average:
+    //      o tauM
+    //      o tauC
+
+    averaged_tauM+=tau_(0)*fac;
+    averaged_tauC+=tau_(2)*fac;
+
+    mean_resC    += divunp*fac;
+    mean_resC_sq += divunp*divunp*fac;
+
+    // ------------------------------------------------------
+    // Element average dissipation/production rates:
+    //      o inertia
+    //      o pspg
+    //      o supg
+    //      o viscous
+    //      o cross
+    //      o reynolds
+    //      o cstab
+    //      o Smagorinsky
+    //      o Galerkin visc
+    //      o Galerkin convection
+
+    if(tds      == Fluid3::subscales_time_dependent
+       &&
+       inertia  == Fluid3::inertia_stab_keep       )
+    {
+      double sacc[3];
+      sacc[0]= -1.0/tau_(0)*svelaf_(0) -resM_(0);
+      sacc[1]= -1.0/tau_(0)*svelaf_(1) -resM_(1);
+      sacc[2]= -1.0/tau_(0)*svelaf_(2) -resM_(2);
+        
+      /*
+
+               /                 \  
+              |   ~ n+am    n+af  | 
+              |  acc     , u      | 
+              |     (i)     (i)   | 
+               \                 /  
+
+      */
+      eps_sacc+=(sacc[0]*velintaf_(0)+sacc[1]*velintaf_(1)+sacc[2]*velintaf_(2))*fac;
+    }
+
+    if(pspg     == Fluid3::pstab_use_pspg)
+    {
+      // contribution of this gausspoint to energy dissipated by pspg
+      /*
+                        /                  \
+                       |  ^ n+1        n+1  |
+                     - |  u   , nabla p     |
+                       |                    |
+                        \                  /
+      */
+      if(tds == Fluid3::subscales_time_dependent)
+      {
+        eps_pspg-=
+          (svelnp(0,iquad)*pderxynp_(0)
+           +
+           svelnp(1,iquad)*pderxynp_(1)
+           +
+           svelnp(2,iquad)*pderxynp_(2))*fac;
+      }
+      else
+      {
+        eps_pspg+=tau_(0)*fac*
+          (resM_(0)*pderxynp_(0)
+           +
+           resM_(1)*pderxynp_(1)
+           +
+           resM_(2)*pderxynp_(2));
+      }
+    }
+
+    if(supg     == Fluid3::convective_stab_supg)
+    {
+      // contribution of this gausspoint to energy dissipated by supg
+      /*
+
+                   /                                      \
+                  |  ~n+af    / n+af \           / n+af\   |
+          - rho * |  u     , | u      | o nabla | u     |  |
+                  |           \      /           \     /   |
+                   \                                      /
+      */
+      if(tds == Fluid3::subscales_time_dependent)
+      {
+        eps_supg-=fac*
+          (svelaf_(0)*convaf_old_(0)
+           +
+           svelaf_(1)*convaf_old_(1)
+           +
+           svelaf_(2)*convaf_old_(2));
+      }
+      else
+      {
+        eps_supg+=tau_(0)*fac*
+          (resM_(0)*convaf_old_(0)
+           +
+           resM_(1)*convaf_old_(1)
+           +
+           resM_(2)*convaf_old_(2));
+      }
+    }
+
+    if(cross    != Fluid3::cross_stress_stab_none)
+    {
+      /*
+               /                                       \
+              |    n+af    /~n+af \           / n+af\   |
+              |   u     , | u      | o nabla | u     |  |
+              |            \      /           \     /   |
+               \                                       /
+        
+      */
+      if(tds == Fluid3::subscales_time_dependent)
+      {
+        eps_cross+=fac*(velintaf_(0)*(svelaf_(0)*vderxyaf_(0,0)+
+                                      svelaf_(1)*vderxyaf_(0,1)+
+                                      svelaf_(2)*vderxyaf_(0,2))
+                        +
+                        velintaf_(1)*(svelaf_(0)*vderxyaf_(1,0)+
+                                      svelaf_(1)*vderxyaf_(1,1)+
+                                      svelaf_(2)*vderxyaf_(1,2))
+                        +
+                        velintaf_(2)*(svelaf_(0)*vderxyaf_(2,0)+
+                                      svelaf_(1)*vderxyaf_(2,1)+
+                                      svelaf_(2)*vderxyaf_(2,2)));
+      }
+      else
+      {
+        eps_cross-=
+          tau_(0)*fac*(velintaf_(0)*(resM_(0)*vderxyaf_(0,0)+
+                                     resM_(1)*vderxyaf_(0,1)+
+                                     resM_(2)*vderxyaf_(0,2))
+                       +
+                       velintaf_(1)*(resM_(0)*vderxyaf_(1,0)+
+                                     resM_(1)*vderxyaf_(1,1)+
+                                     resM_(2)*vderxyaf_(1,2))
+                       +
+                       velintaf_(2)*(resM_(0)*vderxyaf_(2,0)+
+                                     resM_(1)*vderxyaf_(2,1)+
+                                     resM_(2)*vderxyaf_(2,2)));
+      }
+    }
+
+    if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+    {
+      // contribution of this gausspoint to energy
+      // dissipated/produced by reynolds 
+      /*
+
+                 /                                 \
+                |  ~n+af    /~n+af        \   n+af  |
+        - rho * |  u     , | u     o nabla | u      |
+                |           \             /         |
+                 \                                 /
+      */
+      if(tds == Fluid3::subscales_time_dependent)
+      {
+        eps_rey-=fac*
+          (svelaf_(0)*(svelaf_(0)*vderxyaf_(0,0)+
+                       svelaf_(1)*vderxyaf_(0,1)+
+                       svelaf_(2)*vderxyaf_(0,2))
+           +
+           svelaf_(1)*(svelaf_(0)*vderxyaf_(1,0)+
+                       svelaf_(1)*vderxyaf_(1,1)+
+                       svelaf_(2)*vderxyaf_(1,2))
+           +
+           svelaf_(2)*(svelaf_(0)*vderxyaf_(2,0)+
+                       svelaf_(1)*vderxyaf_(2,1)+
+                       svelaf_(2)*vderxyaf_(2,2)));
+      }
+      else
+      {
+        eps_rey-=
+          tau_(0)*tau_(0)*fac*
+          (resM_(0)*(resM_(0)*vderxyaf_(0,0)+
+                     resM_(1)*vderxyaf_(0,1)+
+                     resM_(2)*vderxyaf_(0,2))
+           +
+           resM_(1)*(resM_(0)*vderxyaf_(1,0)+
+                     resM_(1)*vderxyaf_(1,1)+
+                     resM_(2)*vderxyaf_(1,2))
+           +
+           resM_(2)*(resM_(0)*vderxyaf_(2,0)+
+                     resM_(1)*vderxyaf_(2,1)+
+                     resM_(2)*vderxyaf_(2,2)));
+      }
+    }
+
+    if(vstab    != Fluid3::viscous_stab_none)
+    {
+
+      // in case of viscous stabilization decide whether to use GLS or USFEM
+      double vstabfac= 0.0;
+      if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+      {
+        vstabfac =  1.0;
+      }
+      else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+      {
+        vstabfac = -1.0;
+      }
+
+      /*
+         /                        \
+        |  ~n+af                   |
+        |  u      , 2*div eps (v)  |
+        |                          |
+         \                        /
+        
+      */
+      if(tds == Fluid3::subscales_time_dependent)
+      {
+        eps_vstab-=
+          vstabfac*fac*
+          (svelaf_(0)*visceff*viscaf_old_(0)
+           +
+           svelaf_(1)*visceff*viscaf_old_(1)
+           +
+           svelaf_(2)*visceff*viscaf_old_(2));
+      }
+      else
+      {
+        eps_vstab+=
+          vstabfac*tau_(0)*fac*
+          (resM_(0)*visceff*viscaf_old_(0)
+           +
+           resM_(1)*visceff*viscaf_old_(1)
+           +
+           resM_(2)*visceff*viscaf_old_(2));
+      }
+    }
+
+    if(cstab    != Fluid3::continuity_stab_none)
+    {
+      // contribution of this gausspoint to energy dissipated/produced by pprime
+      /*
+                        /                             \
+                       |           n+1            n+1  |
+                 +tauC |  nabla o u    , nabla o u     |
+                       |                               |
+                        \                             /
+      */
+      eps_cstab+=tau_(2)*fac*divunp*divunp;
+    }
+    
+    {
+      // contribution of this gausspoint to convective
+      // dissipation/production (Galerkin)  
+      /*
+                   /                                \
+                  |   n+af   / n+af \     /  n+af\   |
+                  |  u    , | u      | o | u      |  |
+                  |          \      /     \      /   |
+                   \                                /
+      */
+        eps_conv+=fac*
+          (velintaf_(0)*(velintaf_(0)*vderxyaf_(0,0)+
+                         velintaf_(1)*vderxyaf_(0,1)+
+                         velintaf_(2)*vderxyaf_(0,2))
+           +
+           velintaf_(1)*(velintaf_(0)*vderxyaf_(1,0)+
+                         velintaf_(1)*vderxyaf_(1,1)+
+                         velintaf_(2)*vderxyaf_(1,2))
+           +
+           velintaf_(2)*(velintaf_(0)*vderxyaf_(2,0)+
+                         velintaf_(1)*vderxyaf_(2,1)+
+                         velintaf_(2)*vderxyaf_(2,2)));
+           
+    }
+
+    {
+      // contribution of this gausspoint to viscous energy
+      // dissipation (Galerkin)  
+      /*
+                   /                                \
+                  |       / n+af \         / n+af\   |
+        2* visc * |  eps | u      | , eps | u     |  |
+                  |       \      /         \     /   |
+                   \                                /
+      */
+	
+      double two_eps_uaf[9];
+      two_eps_uaf[0]=(vderxyaf_(0,0))*2.0;
+      two_eps_uaf[1]=(vderxyaf_(0,1)+vderxyaf_(1,0));
+      two_eps_uaf[2]=(vderxyaf_(0,2)+vderxyaf_(2,0));
+      two_eps_uaf[3]=(vderxyaf_(0,1)+vderxyaf_(1,0));
+      two_eps_uaf[4]=(vderxyaf_(1,1))*2.0;
+      two_eps_uaf[5]=(vderxyaf_(1,2)+vderxyaf_(2,1));
+      two_eps_uaf[6]=(vderxyaf_(0,2)+vderxyaf_(2,0));
+      two_eps_uaf[7]=(vderxyaf_(1,2)+vderxyaf_(2,1));
+      two_eps_uaf[8]=(vderxyaf_(2,2))*2.0;
+
+      eps_visc+=
+        0.5*visceff*fac*(two_eps_uaf[0]*two_eps_uaf[0]+
+                         two_eps_uaf[1]*two_eps_uaf[1]+
+                         two_eps_uaf[2]*two_eps_uaf[2]+
+                         two_eps_uaf[3]*two_eps_uaf[3]+
+                         two_eps_uaf[4]*two_eps_uaf[4]+
+                         two_eps_uaf[5]*two_eps_uaf[5]+
+                         two_eps_uaf[6]*two_eps_uaf[6]+
+                         two_eps_uaf[7]*two_eps_uaf[7]+
+                         two_eps_uaf[8]*two_eps_uaf[8]);
+
+      // contribution of this gausspoint to viscous energy
+      // dissipation (Smagorinsky)  
+      /*
+                      /                                \
+                     |       / n+af \         / n+af\   |
+        2* visc    * |  eps | u      | , eps | u     |  |
+               art   |       \      /         \     /   |
+                      \                                /
+      */
+      if(turb_mod_action == Fluid3::dynamic_smagorinsky
+         ||
+         turb_mod_action == Fluid3::smagorinsky_with_wall_damping
+         ||
+         turb_mod_action == Fluid3::smagorinsky)
+      {
+        eps_eddyvisc+=
+          0.5*(visceff-visc)*fac*(two_eps_uaf[0]*two_eps_uaf[0]+
+                                  two_eps_uaf[1]*two_eps_uaf[1]+
+                                  two_eps_uaf[2]*two_eps_uaf[2]+
+                                  two_eps_uaf[3]*two_eps_uaf[3]+
+                                  two_eps_uaf[4]*two_eps_uaf[4]+
+                                  two_eps_uaf[5]*two_eps_uaf[5]+
+                                  two_eps_uaf[6]*two_eps_uaf[6]+
+                                  two_eps_uaf[7]*two_eps_uaf[7]+
+                                  two_eps_uaf[8]*two_eps_uaf[8]);
+      }
+    }
+  } // end integration loop
+
 
   for(int rr=0;rr<3;++rr)
   {
-    mean_res        (rr)/= intpoints.nquad;
-    mean_res_sq     (rr)/= intpoints.nquad;
-    mean_sacc       (rr)/= intpoints.nquad;
-    mean_sacc_sq    (rr)/= intpoints.nquad;
-    mean_svelaf     (rr)/= intpoints.nquad;
-    mean_svelaf_sq  (rr)/= intpoints.nquad;
+    mean_res        (rr)/= vol;
+    mean_res_sq     (rr)/= vol;
+    mean_sacc       (rr)/= vol;
+    mean_sacc_sq    (rr)/= vol;
+    mean_svelaf     (rr)/= vol;
+    mean_svelaf_sq  (rr)/= vol;
   }
-  mean_resC       /= intpoints.nquad;
-  mean_resC_sq    /= intpoints.nquad;
-  mean_spreacc    /= intpoints.nquad;
-  mean_spreacc_sq /= intpoints.nquad;
-  mean_sprenp     /= intpoints.nquad;
-  mean_sprenp_sq  /= intpoints.nquad;
+  mean_resC       /= vol;
+  mean_resC_sq    /= vol;
+  mean_spreacc    /= vol;
+  mean_spreacc_sq /= vol;
+  mean_sprenp     /= vol;
+  mean_sprenp_sq  /= vol;
+
+  averaged_tauC   /=vol;
+  averaged_tauM   /=vol;
 
   // ---------------------------------------------------
   // the vectors containing the global sums over layers
+
   RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
   RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
   RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
@@ -8365,6 +8706,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
   RefCountPtr<vector<double> > spressnp     = params.get<RefCountPtr<vector<double> > >("incrspressnp"    );
   RefCountPtr<vector<double> > spressnp_sq  = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
+
+  RefCountPtr<vector<double> > incrtauC     = params.get<RefCountPtr<vector<double> > >("incrtauC"        );
+  RefCountPtr<vector<double> > incrtauM     = params.get<RefCountPtr<vector<double> > >("incrtauM"        );
   
   //this will be the y-coordinate of a point in the element interior
   double center = 0;
@@ -8396,7 +8740,12 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   {
     dserror("could not determine element layer");
   }
+
+  // averages of stabilisation parameters
+  (*incrtauC )[nlayer] += averaged_tauC;
+  (*incrtauM )[nlayer] += averaged_tauM;
   
+  // averages of momentum residuals, subscale velocity and accelerations
   for(int mm=0;mm<3;++mm)
   {
     (*incrres      )[3*nlayer+mm] += mean_res      (mm);
@@ -8407,6 +8756,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
     (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
   }
+
+  // averages of subscale pressure and continuity residuals
   (*incrresC    )[nlayer] += mean_resC      ;
   (*incrresC_sq )[nlayer] += mean_resC_sq   ;
   (*spressacc   )[nlayer] += mean_spreacc   ;
