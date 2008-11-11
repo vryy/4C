@@ -591,7 +591,6 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   if(channel_flow_)
   {
-    //    cout << discret_->Comm().MyPID() << "global in plane averaging " << "\n";
     // now add all the stuff from the different processors
 
     for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)

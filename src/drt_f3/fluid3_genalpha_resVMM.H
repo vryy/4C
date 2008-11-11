@@ -483,6 +483,9 @@ namespace DRT
       //! fine-scale subgrid viscosity
       double vart_;
 
+      //! constant body force
+      bool   constant_bodyforce_;
+
       // nodal arrays
       // ------------
       //! node coordinates

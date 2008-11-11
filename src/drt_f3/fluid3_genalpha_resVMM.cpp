@@ -2263,42 +2263,40 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       }
     }
 
-    // get velocities (n+1,i)  at integration point
-    //
-    //                +-----
-    //       n+1       \                  n+1
-    //    vel   (x) =   +      N (x) * vel
-    //                 /        j         j
-    //                +-----
-    //                node j
-    //
-    for(int rr=0;rr<3;++rr)
+    if(!constant_bodyforce_)
     {
-      velintnp_(rr)=funct_(0)*evelnp(rr,0);
-      for(int nn=1;nn<iel;++nn)
+      // get bodyforce in gausspoint, time (n+alpha_F)
+      //
+      //                 +-----
+      //       n+af       \                n+af
+      //      f    (x) =   +      N (x) * f
+      //                  /        j       j
+      //                 +-----
+      //                 node j
+      //
+      for(int rr=0;rr<3;++rr)
       {
-        velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
+        bodyforceaf_(rr)=funct_(0)*edeadaf_(rr,0);
+        for(int nn=1;nn<iel;++nn)
+        {
+          bodyforceaf_(rr)+=funct_(nn)*edeadaf_(rr,nn);
+        }
       }
     }
-
-    // get bodyforce in gausspoint, time (n+alpha_F)
-    //
-    //                 +-----
-    //       n+af       \                n+af
-    //      f    (x) =   +      N (x) * f
-    //                  /        j       j
-    //                 +-----
-    //                 node j
-    //
-    for(int rr=0;rr<3;++rr)
+    else
     {
-      bodyforceaf_(rr)=funct_(0)*edeadaf_(rr,0);
-      for(int nn=1;nn<iel;++nn)
+      // a constant bodyforce doesn't require 
+      // interpolation to gausspoint
+      //
+      //                         
+      //       n+af       n+af   
+      //      f    (x) = f     = onst.
+      //                         
+      for(int rr=0;rr<3;++rr)
       {
-        bodyforceaf_(rr)+=funct_(nn)*edeadaf_(rr,nn);
+        bodyforceaf_(rr)=edeadaf_(rr,0);
       }
     }
-
     // get pressure (n+1,i) at integration point
     //
     //                +-----
@@ -9046,6 +9044,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(Fluid3* ele, const double time)
 {
+  constant_bodyforce_=false;
+
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
@@ -9101,12 +9101,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(Fluid3* ele
         edeadaf_(isd,jnode) = value;
       }
     }
+
+    // this is a constant bodyforce
+    constant_bodyforce_=true;
   }
   else
   {
     // we have no dead load
     edeadaf_ = 0.;
+    
+    // this is a constant bodyforce
+    constant_bodyforce_=true;
   }
+
+
+
+  return;
 }
 
 
