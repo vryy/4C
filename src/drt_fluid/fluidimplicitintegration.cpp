@@ -1081,8 +1081,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       break;
     }
 
-    //--------- Apply dirichlet boundary conditions to system of equations
-    //          residual discplacements are supposed to be zero at
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    //          residual displacements are supposed to be zero at
     //          boundary conditions
     incvel_->PutScalar(0.0);
     {
