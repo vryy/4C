@@ -49,6 +49,13 @@ namespace FLD
     mygridvelaf_(fluid.gridvelaf_),
     myforce_    (fluid.force_    )
   {
+    // do the time integration independent setup
+    Setup();
+    
+    // activate the computation of subgrid dissipation, 
+    // residuals etc
+    subgrid_dissipation_=true;
+
     // the flow parameter will control for which geometry the
     // sampling is done
     if(fluid.special_flow_=="channel_flow_of_height_2")
@@ -57,79 +64,10 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
-
-      // prepare time averaging for subscales and residual 
-      {
-        // activate the computation of subgrid dissipation, 
-        // residuals etc
-        subgrid_dissipation_=true;
-
-        // get ordered layers of elements to average
-        RefCountPtr<vector<double> > planecoords;
-      
-        if (planecoords == null)
-        {
-          int size=(statistics_channel_->ReturnNodePlaneCoords()).size();
-        
-          planecoords    = rcp( new vector<double>(size));
-          (*planecoords) = statistics_channel_->ReturnNodePlaneCoords();
-        }
-
-        //--------------------------------------------------
-        // local_incrres(_sq)        (in plane) averaged values of resM (^2)
-        // local_incrsacc(_sq)       (in plane) averaged values of sacc (^2)
-        // local_incrsvelaf(_sq)     (in plane) averaged values of svelaf (^2)
-        // local_incrresC(_sq)       (in plane) averaged values of resC (^2)
-        // local_incrspressacc(_sq)  (in plane) averaged values of spressacc (^2)
-        // local_incrspressnp(_sq)   (in plane) averaged values of spressnp (^2)
-        //--------------------------------------------------
-        RefCountPtr<vector<double> > local_incrres          = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrres_sq       = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrsacc         = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrsacc_sq      = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrsvelaf       = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrsvelaf_sq    = rcp(new vector<double> (3*(planecoords->size()-1),0.0));
-        RefCountPtr<vector<double> > local_incrresC         = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-        RefCountPtr<vector<double> > local_incrresC_sq      = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-        RefCountPtr<vector<double> > local_incrspressacc    = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-        RefCountPtr<vector<double> > local_incrspressacc_sq = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-        RefCountPtr<vector<double> > local_incrspressnp     = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-        RefCountPtr<vector<double> > local_incrspressnp_sq  = rcp(new vector<double> ((planecoords->size()-1)  ,0.0));
-
-        // pass pointers to local sum vectors to the element
-        eleparams_.set<RefCountPtr<vector<double> > >("planecoords_"    ,planecoords           );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrres"         ,local_incrres         );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrres_sq"      ,local_incrres_sq      );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrsacc"        ,local_incrsacc        );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrsacc_sq"     ,local_incrsacc_sq     );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf"      ,local_incrsvelaf      );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"   ,local_incrsvelaf_sq   );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrresC"        ,local_incrresC        );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrresC_sq"     ,local_incrresC_sq     );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrspressacc"   ,local_incrspressacc   );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrspressacc_sq",local_incrspressacc_sq);
-        eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp"    ,local_incrspressnp    );
-        eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp_sq" ,local_incrspressnp_sq );
-
-        // action for elements
-        eleparams_.set("action","time average for subscales and residual");
-
-        // other parameters that might be needed by the elements
-        {
-          ParameterList& timelist = eleparams_.sublist("time integration parameters");
-        
-          timelist.set("alpha_M",alphaM_);
-          timelist.set("alpha_F",alphaF_);
-          timelist.set("gamma"  ,gamma_ );
-          timelist.set("dt"     ,dt_    );
-        }
-      
-        // parameters for stabilisation
-        {
-          eleparams_.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
-        }
-      }
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          params_             ,
+                                                          smagorinsky_        ,
+                                                          subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
@@ -137,7 +75,10 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          params_             ,
+                                                          smagorinsky_        ,
+                                                          subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
@@ -167,9 +108,6 @@ namespace FLD
     {
       flow_=no_special_flow;
     }
-
-    // do the time integration independent setup
-    Setup();
 
     return;
     
@@ -204,6 +142,8 @@ namespace FLD
     mygridvelaf_(null               ),
     myforce_    (fluid.trueresidual_)
   {
+    // do the time integration independent setup
+    Setup();
 
     // no subgrid dissipation computation is available for the
     // one-steo-theta implementation
@@ -217,7 +157,10 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          params_             ,
+                                                          smagorinsky_        ,
+                                                          subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
@@ -225,7 +168,10 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatistics(discret_,params_));
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          params_             ,
+                                                          smagorinsky_        ,
+                                                          subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
@@ -255,9 +201,6 @@ namespace FLD
     {
       flow_=no_special_flow;
     }
-
-    // do the time integration independent setup
-    Setup();
 
     return;
     
@@ -358,44 +301,6 @@ namespace FLD
       }
     }
 
-    // allocate one instance of the averaging procedure for 
-    // each special flow under consideration
-    switch(flow_)
-    {
-    case channel_flow_of_height_2:
-    {
-      if(smagorinsky_)
-      {
-        // get ordered layers of elements to average
-        RefCountPtr<vector<double> > planecoords;
-
-        if (planecoords == null)
-        {
-          int size=(statistics_channel_->ReturnNodePlaneCoords()).size();
-
-          planecoords    = rcp( new vector<double>(size));
-          (*planecoords) = statistics_channel_->ReturnNodePlaneCoords();
-        }
-        modelparams->set<RefCountPtr<vector<double> > >("planecoords_"         ,planecoords          );
-
-        // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
-        // for dynamic Smagorinsky model
-        RefCountPtr<vector<double> > local_Cs_sum          =  rcp(new vector<double> (planecoords->size()-1,0.0));
-        RefCountPtr<vector<double> > local_Cs_delta_sq_sum =  rcp(new vector<double> (planecoords->size()-1,0.0));
-        RefCountPtr<vector<double> > local_visceff_sum     =  rcp(new vector<double> (planecoords->size()-1,0.0));
-          
-        modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
-        modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
-        modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
-      }
-      break;
-    }
-    default:
-    {
-      break;
-    }
-    }
-
     return;
   }
 
@@ -421,60 +326,8 @@ namespace FLD
 
         if(smagorinsky_)
         {
-          ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-
-          // get ordered layers of elements to average
-          RefCountPtr<vector<double> > planecoords;
-
-          if (planecoords == null)
-          {
-            int size=(statistics_channel_->ReturnNodePlaneCoords()).size();
-
-            planecoords    = rcp( new vector<double>(size));
-            (*planecoords) = statistics_channel_->ReturnNodePlaneCoords();
-          }
-
-          RefCountPtr<vector<double> > global_incr_Cs_sum;
-          RefCountPtr<vector<double> > local_Cs_sum;
-          global_incr_Cs_sum          = rcp(new vector<double> (planecoords->size()-1,0.0));
-          local_Cs_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"         );
-
-        
-          RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
-          RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
-          global_incr_Cs_delta_sq_sum = rcp(new vector<double> (planecoords->size()-1,0.0));
-          local_Cs_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum");
-        
-        
-          RefCountPtr<vector<double> > global_incr_visceff_sum;
-          RefCountPtr<vector<double> > local_visceff_sum;
-          global_incr_visceff_sum     = rcp(new vector<double> (planecoords->size()-1,0.0));
-          local_visceff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_visceff_sum"    );
-
-          // now add all the stuff from the different processors
-          discret_->Comm().SumAll(&((*local_Cs_sum               )[0]),
-                                  &((*global_incr_Cs_sum         )[0]),
-                                  local_Cs_sum->size());
-          discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum      )[0]),
-                                  &((*global_incr_Cs_delta_sq_sum)[0]),
-                                  local_Cs_delta_sq_sum->size());
-          discret_->Comm().SumAll(&((*local_visceff_sum          )[0]),
-                                  &((*global_incr_visceff_sum    )[0]),
-                                  local_visceff_sum->size());
-        
-          statistics_channel_->ReplaceCsIncrement(global_incr_Cs_sum,
-                                                  global_incr_Cs_delta_sq_sum,
-                                                  global_incr_visceff_sum);
-        
-          // reinitialise to zero for next element call
-          local_Cs_sum          =  rcp(new vector<double> (planecoords->size()-1,0.0));
-          local_Cs_delta_sq_sum =  rcp(new vector<double> (planecoords->size()-1,0.0));
-          local_visceff_sum     =  rcp(new vector<double> (planecoords->size()-1,0.0));
-          
-          modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
-          modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
-          modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
-      }
+          statistics_channel_->AddDynamicSmagorinskyQuantities();
+        }
 
       break;
     }
@@ -582,183 +435,19 @@ namespace FLD
           }
 
           // set vector values needed by elements
-          discret_->ClearState();
-          discret_->SetState("u and p (n+1      ,trial)",myvelnp_);
-          discret_->SetState("u and p (n+alpha_F,trial)",myvelaf_);
-          discret_->SetState("acc     (n+alpha_M,trial)",myaccam_);
+          map<string,RCP<Epetra_Vector> > statevecs;
 
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc     (n+alpha_M,trial)",myaccam_));
+                           
           if (alefluid_)
           {
-            discret_->SetState("dispnp"    , mydispnp_   );
-            discret_->SetState("gridvelaf" , mygridvelaf_);
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp"    , mydispnp_   ));
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridvelaf" , mygridvelaf_));
           }
 
-          {
-            ParameterList& timelist = eleparams_.sublist("time integration parameters");
-            timelist.set("time"   ,time);
-          }
-
-          // call loop over elements to compute means
-          {
-            discret_->Evaluate(eleparams_,null,null,null,null,null);
-            discret_->ClearState();
-          }
-
-          RefCountPtr<vector<double> > local_incrres         =eleparams_.get<RefCountPtr<vector<double> > >("incrres"         );
-          RefCountPtr<vector<double> > local_incrres_sq      =eleparams_.get<RefCountPtr<vector<double> > >("incrres_sq"      );
-          RefCountPtr<vector<double> > local_incrsacc        =eleparams_.get<RefCountPtr<vector<double> > >("incrsacc"        );
-          RefCountPtr<vector<double> > local_incrsacc_sq     =eleparams_.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
-          RefCountPtr<vector<double> > local_incrsvelaf      =eleparams_.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
-          RefCountPtr<vector<double> > local_incrsvelaf_sq   =eleparams_.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
-          RefCountPtr<vector<double> > local_incrresC        =eleparams_.get<RefCountPtr<vector<double> > >("incrresC"        );
-          RefCountPtr<vector<double> > local_incrresC_sq     =eleparams_.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
-          RefCountPtr<vector<double> > local_incrspressacc   =eleparams_.get<RefCountPtr<vector<double> > >("incrspressacc"   );
-          RefCountPtr<vector<double> > local_incrspressacc_sq=eleparams_.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
-          RefCountPtr<vector<double> > local_incrspressnp    =eleparams_.get<RefCountPtr<vector<double> > >("incrspressnp"    );
-          RefCountPtr<vector<double> > local_incrspressnp_sq =eleparams_.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
-
-          int presize = local_incrresC->size();
-          int velsize = local_incrres ->size();
-
-
-          //--------------------------------------------------
-          // (in plane) averaged values of resM (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrres;
-          global_incrres=  rcp(new vector<double> (velsize,0.0));
-      
-          RefCountPtr<vector<double> > global_incrres_sq;
-          global_incrres_sq=  rcp(new vector<double> (velsize,0.0));
-      
-          //--------------------------------------------------
-          // (in plane) averaged values of sacc (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrsacc;
-          global_incrsacc=  rcp(new vector<double> (velsize,0.0));
-      
-          RefCountPtr<vector<double> > global_incrsacc_sq;
-          global_incrsacc_sq=  rcp(new vector<double> (velsize,0.0));
-      
-          //--------------------------------------------------
-          // (in plane) averaged values of svelaf (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrsvelaf;
-          global_incrsvelaf=  rcp(new vector<double> (velsize,0.0));
-
-          RefCountPtr<vector<double> > global_incrsvelaf_sq;
-          global_incrsvelaf_sq=  rcp(new vector<double> (velsize,0.0));
-
-          //--------------------------------------------------
-          // (in plane) averaged values of resC (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrresC;
-          global_incrresC=  rcp(new vector<double> (presize,0.0));
-
-          RefCountPtr<vector<double> > global_incrresC_sq;
-          global_incrresC_sq=  rcp(new vector<double> (presize,0.0));
-      
-          //--------------------------------------------------
-          // (in plane) averaged values of spressacc (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrspressacc;
-          global_incrspressacc=  rcp(new vector<double> (presize,0.0));
-
-          RefCountPtr<vector<double> > global_incrspressacc_sq;
-          global_incrspressacc_sq=  rcp(new vector<double> (presize,0.0));
-
-          //--------------------------------------------------
-          // (in plane) averaged values of spressnp (^2)
-          //--------------------------------------------------
-          RefCountPtr<vector<double> > global_incrspressnp;
-          global_incrspressnp=  rcp(new vector<double> (presize,0.0));
-
-          RefCountPtr<vector<double> > global_incrspressnp_sq;
-          global_incrspressnp_sq=  rcp(new vector<double> (presize,0.0));
-
-
-          // compute global sums, momentum equation residuals
-          discret_->Comm().SumAll(&((*local_incrres       )[0]),
-                                  &((*global_incrres      )[0]),
-                                  velsize);
-          discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
-                                  &((*global_incrres_sq   )[0]),
-                                  velsize);
-      
-          discret_->Comm().SumAll(&((*local_incrsacc      )[0]),
-                                  &((*global_incrsacc     )[0]),
-                                  velsize);
-          discret_->Comm().SumAll(&((*local_incrsacc_sq   )[0]),
-                                  &((*global_incrsacc_sq  )[0]),
-                                  velsize);
-      
-          discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
-                                  &((*global_incrsvelaf   )[0]),
-                                  velsize);
-          discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
-                                  &((*global_incrsvelaf_sq)[0]),
-                                  velsize);
-      
-          // compute global sums, incompressibility residuals
-          discret_->Comm().SumAll(&((*local_incrresC      )[0]),
-                                  &((*global_incrresC     )[0]),
-                                  presize);
-          discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
-                                  &((*global_incrresC_sq  )[0]),
-                                  presize);
-      
-          discret_->Comm().SumAll(&((*local_incrspressacc    )[0]),
-                                  &((*global_incrspressacc   )[0]),
-                                  presize);
-          discret_->Comm().SumAll(&((*local_incrspressacc_sq )[0]),
-                                  &((*global_incrspressacc_sq)[0]),
-                                  presize);
-      
-          discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
-                                  &((*global_incrspressnp    )[0]),
-                                  presize);
-          discret_->Comm().SumAll(&((*local_incrspressnp_sq  )[0]),
-                                  &((*global_incrspressnp_sq )[0]),
-                                  presize);
-
-          statistics_channel_->AddToResAverage(global_incrres         ,
-                                               global_incrres_sq      ,
-                                               global_incrsacc        ,
-                                               global_incrsacc_sq     ,
-                                               global_incrsvelaf      ,
-                                               global_incrsvelaf_sq   ,
-                                               global_incrresC        ,
-                                               global_incrresC_sq     ,
-                                               global_incrspressacc   ,
-                                               global_incrspressacc_sq,
-                                               global_incrspressnp    ,
-                                               global_incrspressnp_sq);
-      
-          // reset working arrays
-          local_incrres         =  rcp(new vector<double> (velsize,0.0));
-          local_incrres_sq      =  rcp(new vector<double> (velsize,0.0));
-          local_incrsacc        =  rcp(new vector<double> (velsize,0.0));
-          local_incrsacc_sq     =  rcp(new vector<double> (velsize,0.0));
-          local_incrsvelaf      =  rcp(new vector<double> (velsize,0.0));
-          local_incrsvelaf_sq   =  rcp(new vector<double> (velsize,0.0));
-          local_incrresC        =  rcp(new vector<double> (presize,0.0));
-          local_incrresC_sq     =  rcp(new vector<double> (presize,0.0));
-          local_incrspressacc   =  rcp(new vector<double> (presize,0.0));
-          local_incrspressacc_sq=  rcp(new vector<double> (presize,0.0));
-          local_incrspressnp    =  rcp(new vector<double> (presize,0.0));
-          local_incrspressnp_sq =  rcp(new vector<double> (presize,0.0));
-
-          eleparams_.set<RefCountPtr<vector<double> > >("incrres"         ,local_incrres         );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrres_sq"      ,local_incrres_sq      );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrsacc"        ,local_incrsacc        );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrsacc_sq"     ,local_incrsacc_sq     );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf"      ,local_incrsvelaf      );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"   ,local_incrsvelaf_sq   );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrresC"        ,local_incrresC        );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrresC_sq"     ,local_incrresC_sq     );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrspressacc"   ,local_incrspressacc   );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrspressacc_sq",local_incrspressacc_sq);
-          eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp"    ,local_incrspressnp    );
-          eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp_sq" ,local_incrspressnp_sq );
+          statistics_channel_->EvaluateResiduals(statevecs,time);
       
           break;
         }

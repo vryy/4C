@@ -115,12 +115,12 @@ private:
 
   //! parameters for sampling/dumping period
   //! start of sampling at step samstart
-  int samstart_;
+  int                          samstart_;
   //! stop sampling at step samstop
-  int samstop_;
+  int                          samstop_;
   //! incremental dump every dumperiod steps or standalone 
   //! records (0)
-  int dumperiod_;
+  int                          dumperiod_;
 
   //! the discretization
   RCP<DRT::Discretization>     discret_    ;
@@ -177,7 +177,7 @@ private:
   bool                         subgrid_dissipation_;
 
   //! turbulence statistics for turbulent channel flow
-  RCP<TurbulenceStatistics>    statistics_channel_;
+  RCP<TurbulenceStatisticsCha> statistics_channel_;
 
   //! turbulence statistics for lid-driven cavity
   RCP<TurbulenceStatisticsLdc> statistics_ldc_;

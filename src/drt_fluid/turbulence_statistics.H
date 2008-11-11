@@ -89,7 +89,7 @@ using namespace Teuchos;
 namespace FLD
 {
 
-class TurbulenceStatistics
+class TurbulenceStatisticsCha
 {
 
 public:
@@ -100,7 +100,7 @@ public:
   o Create vector of homogeneous plane coordinates
 
   o Allocate 4 distributed toggle vectors and one distributed vector
-    for squares
+    for squares, both for integral and pointwise means
 
   o allocate all sum_something vectors
 
@@ -109,14 +109,16 @@ public:
   </pre>
 
   */
-  TurbulenceStatistics(RefCountPtr<DRT::Discretization> actdis,
-                       ParameterList&                   params);
+  TurbulenceStatisticsCha(RefCountPtr<DRT::Discretization> actdis             ,
+                          ParameterList&                   params             ,
+                          bool                             smagorinsky        ,
+                          bool                             subgrid_dissipation);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~TurbulenceStatistics();
+  virtual ~TurbulenceStatisticsCha();
 
 
   //! @name functions for (spatial) averaging
@@ -143,7 +145,7 @@ public:
 
 
   /*!
-  \brief Compute in plane means of u,u^2 etc.
+  \brief Compute in plane means of u,u^2 etc. (integral version)
 
   The averages here are calculated by integration.
 
@@ -179,6 +181,31 @@ public:
   algorithm
   */
   void EvaluatePointwiseMeanValuesInPlanes();
+
+  /*!
+    \brief Add computed dynamic Smagorinsky quantities (Smagorinsky 
+           constant, effective viscosity and (Cs_delta)^2 used 
+           during the computation)
+
+    The increment is computed during the computation of Cs
+    (in the filtering part of time integration, i.e. during
+    an element call in the nonlinear iteration)
+
+    We just store it here and add it to the sum as soon as we do
+    the time sample.
+  */
+
+  void AddDynamicSmagorinskyQuantities();
+
+
+  /*!
+    \brief do averaging of residuals, dissipation rates etc 
+           (all gausspoint-quantities)
+
+  */
+  void EvaluateResiduals(map<string,RCP<Epetra_Vector> > statevecs,
+                         double                          time     );
+
 
   /*!
   \brief The same as above for low-Mach-number flows
@@ -232,33 +259,6 @@ public:
   vector<double> ReturnNodePlaneCoords()
     {
       return(*nodeplanes_);
-    };
-
-  /*!
-  \brief Replace increment to compute average of Smagorinsky Constant, effective
-  viscosity and (Cs_delta)^2
-
-  The increment is computed during the computation of Cs
-  (in the filtering part of time integration, i.e. during
-  an element call in the nonlinear iteration)
-
-  We just store it here and add it to the sum as soon as we do
-  the time sample.
-
-  */
-   void ReplaceCsIncrement(
-     RefCountPtr<vector<double> > incrsumCs,
-     RefCountPtr<vector<double> > incr_Cs_delta_sq_sum,
-     RefCountPtr<vector<double> > incr_visceff_sum
-    )
-    {
-      for (unsigned rr=0;rr<incrsumCs->size();++rr)
-      {
-        (*incrsumCs_         )[rr] =(*incrsumCs           )[rr];
-        (*incrsumCs_delta_sq_)[rr] =(*incr_Cs_delta_sq_sum)[rr];
-        (*incrsumvisceff_    )[rr] =(*incr_visceff_sum    )[rr];
-      }
-      return;
     };
 
   /*!
@@ -348,10 +348,23 @@ private:
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
 
-  //! contains plane normal direction etc
+  //! contains plane normal direction etc --- this is the original 
+  //! fluid dynamic parameterlist
   ParameterList&                   params_;
 
-   //! pointer to mean vel/pres and vel/dens field
+  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with 
+  //! wall damping quantities
+  bool                             smagorinsky_;
+
+  //! toggle whether to evaluate residuals, taus, dissipation rates etc
+  bool                             subgrid_dissipation_;
+
+  //! parameterlist for the element call when averages of residuals 
+  //! are calculated --- used for communication between element
+  //! and averaging methods
+  ParameterList                    eleparams_;
+
+  //! pointer to mean vel/pres and vel/dens field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
   RefCountPtr<Epetra_Vector>       meanvedenp_;
 
