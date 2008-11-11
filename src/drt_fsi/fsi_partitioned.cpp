@@ -242,7 +242,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
     exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
     exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 10);
+    exParams.set("kmax", 25);
     exParams.set("Method", "MPE");
 
     //lsParams.set("Preconditioner","None");
@@ -266,7 +266,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
     exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
     exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 10);
+    exParams.set("kmax", 25);
     exParams.set("Method", "RRE");
 
     //lsParams.set("Preconditioner","None");

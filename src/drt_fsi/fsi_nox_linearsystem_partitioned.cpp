@@ -439,6 +439,9 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
   nlParams.set("Norm abs F", tol);
   nlParams.set("Max Iterations", maxit);
 
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  solverOptions.set<std::string>("Status Test Check Type","Complete");
+
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   ///////////////////////////////////////////////////////////////////
@@ -477,9 +480,10 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     dirParams.set("User Defined Direction Factory",factory);
 
     Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+    //exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+    exParams.set("Tolerance", tol);
     exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 10);
+    exParams.set("kmax", 25);
     exParams.set("Method", "RRE");
 
     lineSearchParams.set("Method", "Full Step");
