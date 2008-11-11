@@ -268,7 +268,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (i_layer==layers-1){
         vector<int> ss(3);  // third pos for later eblockid
         ss.at(0) = newele;  // first entry is element id
-        if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
+        if (newelenodes.size()==8) ss.at(1) = 6 ; // hexcase: top face id = 6 // bottom face ID = 5
         else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
         else dserror("wrong number of elenodes!");
         newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -507,7 +507,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (i_layer==layers-1){
               vector<int> ss(3);  // third pos for later eblockid
               ss.at(0) = newele;  // first entry is element id
-              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id
+              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id = 6, bottom = 5
               else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
               else dserror("wrong number of elenodes!");
               newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -735,25 +735,28 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     bool toextrude = CheckExtrusion(i_nss->second);
     if (toextrude){
       set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
-      set<int> nodes_extrusion_base;
-      set<int> nodes_extrusion_roof;
-      set<int>::iterator it;
-      for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){
-        nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
-        nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
+      if (node_pair.find(*(nodes_from_nodeset.begin())) != node_pair.end())  
+      {
+        set<int> nodes_extrusion_base;
+        set<int> nodes_extrusion_roof;
+        set<int>::iterator it;
+        for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){
+          nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
+          nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
+        }
+        std::ostringstream nodesetname;
+        string propname = "";
+        nodesetname << "base_" << (i_nss->second).GetName();
+        EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
+        newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
+        highestns ++;
+    
+        std::ostringstream nodesetnamer;
+        nodesetnamer << "roof_" << (i_nss->second).GetName();
+        EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
+        newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
+        highestns ++;
       }
-      std::ostringstream nodesetname;
-      string propname = "";
-      nodesetname << "base_" << (i_nss->second).GetName();
-      EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
-      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
-      highestns ++;
-
-      std::ostringstream nodesetnamer;
-      nodesetnamer << "roof_" << (i_nss->second).GetName();
-      EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
-      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
-      highestns ++;
     }
   }
 
