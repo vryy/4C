@@ -28,7 +28,7 @@ void XFEM::ApplyNodalEnrichments(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
 ) 
 {
-  const double volumeratiolimit = 1.0e-4;
+  const double volumeratiolimit = 1.0e-2;
   
   const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
   const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
@@ -67,7 +67,7 @@ void XFEM::ApplyNodalEnrichments(
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
       }
     };
-    cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs ( 1.0 - " << std::scientific << volumeratio << " )" << endl;
+    cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs (" << std::scientific << (1.0 - volumeratio) << " )" << endl;
   }
 }
 
