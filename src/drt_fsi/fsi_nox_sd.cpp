@@ -25,7 +25,8 @@
 
 #include "../drt_lib/standardtypes_cpp.H"
 
-extern struct _FILES  allfiles;
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #endif
 
 
@@ -97,7 +98,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
     static std::ofstream* out;
     if (out==NULL)
     {
-      std::string s = allfiles.outputfile_kenner;
+      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }

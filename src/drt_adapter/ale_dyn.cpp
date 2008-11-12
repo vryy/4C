@@ -14,6 +14,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_io/io_control.H"
 #include "ale_dyn.H"
 #include "../drt_adapter/adapter_ale.H"
 #include "../drt_adapter/adapter_ale_lin.H"
@@ -53,16 +54,6 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 
 using namespace std;
@@ -103,7 +94,8 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 

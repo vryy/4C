@@ -15,16 +15,7 @@ Maintainer: Michael Gee
 
 #include "shell8.H"
 #include "../drt_lib/standardtypes_cpp.H"
-/*!----------------------------------------------------------------------
-  \brief file pointers
 
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|
@@ -107,7 +98,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   
   // read EAS parameters
   for (int i=0; i<5; ++i) eas_[i] = 0;
-  char* colpointer = strstr(allfiles.actplace,"EAS");
+  char* colpointer = strstr(fractplace(),"EAS");
   colpointer+=3;
   colpointer = strpbrk(colpointer,"Nn");
   ierr = sscanf(colpointer," %s ",buffer);  

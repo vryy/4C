@@ -23,6 +23,10 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
+#if 0
+#include "../drt_io/io_control.H"
+#endif
+
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
@@ -339,14 +343,14 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
     p.Update(xyze_dyn_tria(1,2), local_y, 1, qp);
 #if 0
     {
-      extern struct _FILES  allfiles;
+      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
 
-      fprintf(allfiles.out_err,"\n");
-      fprintf(allfiles.out_err,"rp=matrix([% e,% e,% e]).transpose()\n",rp(0),rp(1),rp(2));
-      fprintf(allfiles.out_err,"pq=matrix([% e,% e,% e]).transpose()\n",pq(0),pq(1),pq(2));
-      fprintf(allfiles.out_err,"sq=matrix([% e,% e,% e]).transpose()\n",sq(0),sq(1),sq(2));
-      fprintf(allfiles.out_err,"p=matrix([% e,% e,% e]).transpose()\n",p(0),p(1),p(2));
-      fflush(allfiles.out_err);
+      fprintf(errfile,"\n");
+      fprintf(errfile,"rp=matrix([% e,% e,% e]).transpose()\n",rp(0),rp(1),rp(2));
+      fprintf(errfile,"pq=matrix([% e,% e,% e]).transpose()\n",pq(0),pq(1),pq(2));
+      fprintf(errfile,"sq=matrix([% e,% e,% e]).transpose()\n",sq(0),sq(1),sq(2));
+      fprintf(errfile,"p=matrix([% e,% e,% e]).transpose()\n",p(0),p(1),p(2));
+      fflush(errfile);
     }
 #endif
 

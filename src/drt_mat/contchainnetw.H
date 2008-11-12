@@ -22,8 +22,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
-extern struct _FILES  allfiles;
-
 
 namespace MAT
 {

@@ -20,7 +20,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "contchainnetw.H" // for debug plotting
-
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 extern struct _MATERIAL *mat; ///< C-style material struct
 
@@ -544,7 +545,8 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const int iter)
 {
     std::stringstream filename;
-    filename << allfiles.outputfile_kenner << "_rem" << ".txt";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_rem" << ".txt";
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     int nele = dis->NumMyColElements();
@@ -595,7 +597,8 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
                                       const int iter)
 {
   std::stringstream filename;
-  filename << allfiles.outputfile_kenner << "_rem" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << filebase << "_rem" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
 
   stringstream gmshfilecontent;

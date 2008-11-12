@@ -46,17 +46,8 @@ Maintainer: Alexander Popp
 #include "drt_contact_integrator.H"
 #include "contactdefines.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  |  Visualize contact stuff with gmsh                         popp 08/08|
@@ -72,7 +63,8 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
-  filename << "o/gmsh_output/" << allfiles.outputfile_kenner << "_";
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << "o/gmsh_output/" << filebase << "_";
   if (step<10)
     filename << 0 << 0 << 0 << 0;
   else if (step<100)
@@ -306,7 +298,8 @@ void CONTACT::Interface::VisualizeGmshLight()
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
-  filename << "o/gmsh_output/" << "normals_" << allfiles.outputfile_kenner;
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << "o/gmsh_output/" << "normals_" << filebase;
   filename << ".pos";
 
   // do output to file in c-style

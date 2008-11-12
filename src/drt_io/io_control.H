@@ -83,9 +83,9 @@ namespace IO
 
   private:
     std::string problemtype_;
-    std::string inputfile_;
+    std::string inputfile_;  ///< input file name (identical to allfiles.inputfile_name)
     int ndim_;
-    std::string filename_;
+    std::string filename_;  ///< prefix of outputfiles (might contain path)
     std::string restartname_;
     std::fstream controlfile_;
     int filesteps_;
@@ -110,6 +110,46 @@ namespace IO
 
     std::string filename_;
     MAP table_;
+  };
+
+  
+  /// Controller for error files
+  ///
+  /// This object determines the names of error files #errname_, e.g. 'xxx2.err',
+  /// and attaches file handles #errfile_ to them. It also attaches this file
+  /// handle to the global variable allfiles.out_err
+  ///
+  /// \author bborn
+  /// \date 11/08
+  class ErrorFileControl
+  {
+  public:
+
+    /// constructor
+    ErrorFileControl(
+      const Epetra_Comm& comm,  ///< communicator
+      const std::string filename  ///< output file name prefix
+    );
+
+    /// destructor
+    ~ErrorFileControl();
+
+    /// the error file name
+    std::string Name() { return errname_; }
+
+    /// the error file handle
+    FILE* Handle() { return errfile_; }
+
+  private:
+
+    /// output file name prefix
+    std::string filename_;
+
+    /// name of error file on processor
+    std::string errname_;
+
+    /// file handle to error file
+    FILE* errfile_;
   };
 
 }

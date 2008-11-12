@@ -307,4 +307,43 @@ IO::InputControl::~InputControl()
   destroy_map(&table_);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
+                                       const std::string outputname)
+  : filename_(outputname),
+    errfile_(NULL)
+{
+  // create error file name
+  {
+    std::ostringstream mypid;
+    mypid << comm.MyPID();
+    errname_ = filename_ + mypid.str() + ".err";
+  }
+
+  // open error files (one per processor)
+  errfile_ = fopen(errname_.c_str(), "w");
+  if (errfile_ == NULL)
+    dserror("Opening of output file %s failed\n", errname_.c_str());
+
+  // EVENTUALLY THIS SHOULD BE REMOVED
+  // these have to be set, because at a certain point in ReadConditions()
+  // the underlying methods try to access the error files via the
+  // global variable allfiles
+  extern struct _FILES allfiles;
+  strcpy(allfiles.outputfile_name,errname_.c_str());
+  allfiles.out_err = errfile_;
+
+  // inform user
+  if (comm.MyPID() == 0)
+    printf("errors are reported to     %s\n", errname_.c_str());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::ErrorFileControl::~ErrorFileControl()
+{
+  if (errfile_ != NULL) fclose(errfile_);
+}
+
 #endif

@@ -71,17 +71,6 @@ using namespace std;
 using namespace Teuchos;
 
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 
 /*----------------------------------------------------------------------*/
 // the static instance
@@ -134,11 +123,11 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
         frchk("Polygonal",&ierr);
         if (ierr==1)
         {
-          char* colpointer = strstr(allfiles.actplace,"BYABSTIME");
+          char* colpointer = strstr(fractplace(),"BYABSTIME");
           colpointer += 13;
           double begin = strtod(colpointer,&colpointer);
           double end = strtod(colpointer,&colpointer);
-          colpointer = strstr(allfiles.actplace,"FACTOR");
+          colpointer = strstr(fractplace(),"FACTOR");
           colpointer += 6;
           double vbegin = strtod(colpointer,&colpointer);
           double vend = strtod(colpointer,&colpointer);

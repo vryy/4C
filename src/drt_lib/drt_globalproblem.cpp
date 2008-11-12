@@ -78,6 +78,7 @@ extern struct _PAR   par;
 extern struct _MATERIAL *mat;
 
 
+
 /*----------------------------------------------------------------------*/
 // Lena said: do it the easy way.
 /*----------------------------------------------------------------------*/
@@ -803,6 +804,14 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
                                                       genprob.ndim,
                                                       genprob.restart,
                                                       IOParams().get<int>("FILESTEPS")));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix)
+{
+  errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix));
 }
 
 

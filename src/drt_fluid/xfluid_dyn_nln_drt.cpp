@@ -33,13 +33,13 @@ Maintainer: Axel Gerstenberger
 #include "xfluidimplicitintegration.H"
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
 
 
 extern struct _GENPROB  genprob;
-extern struct _FILES    allfiles;
 extern struct _SOLVAR  *solv;
 
 
@@ -107,7 +107,7 @@ void xdyn_fluid_drt()
   // create a solver
   // -------------------------------------------------------------------
   Teuchos::RCP<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,fluiddis->Comm(),allfiles.out_err);
+  LINALG::Solver solver(solveparams,fluiddis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
   solver.TranslateSolverParameters(*solveparams,fluidsolv);
   fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
 
@@ -118,7 +118,7 @@ void xdyn_fluid_drt()
   {
     ParameterList& p = solveparams->sublist("SIMPLER");
     Teuchos::RCP<ParameterList> params = rcp(&p,false);
-    LINALG::Solver s(params,fluiddis->Comm(),allfiles.out_err);
+    LINALG::Solver s(params,fluiddis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
     s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
   }
 
@@ -184,7 +184,7 @@ void xdyn_fluid_drt()
   {
     fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
-    fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+    fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
 
   // ----------------------------------------------- XFEM related stuff
@@ -273,7 +273,7 @@ void xdyn_fluid_drt()
       }
     }
 
-    fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
+    fluidtimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
     // call time-integration (or stationary) scheme
     fluidimplicit.Integrate(boundarydis);

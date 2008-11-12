@@ -18,6 +18,8 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 using namespace std;
 
@@ -132,7 +134,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   int step = 0;
   
   
-  filename << allfiles.outputfile_kenner << "_xaabbs" << std::setw(5) << setfill('0') << step << ".pos";
+  filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_xaabbs" << std::setw(5) << setfill('0') << step << ".pos";
   cout << endl << "writing... "<<filename.str()<<" ...";
   fc << "View \" " << "XAABB of Elements \" {" << endl;
   flush(cout);

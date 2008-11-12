@@ -21,17 +21,6 @@ Maintainer: Lena Wiechert
 #endif
 
 /*----------------------------------------------------------------------*
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
  | input of materials                                     m.gee 4/01    |
  *----------------------------------------------------------------------*/
 void DRT::Problem::ReadMaterial()
@@ -47,7 +36,7 @@ DOUBLE    mlay_sum;                  /*hight of a kinematic layer*/
 if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
 i=0;
-while(strncmp(allfiles.actplace,"------",6)!=0)
+while(strncmp(fractplace(),"------",6)!=0)
 {
   localmat.m.fluid = NULL;
 

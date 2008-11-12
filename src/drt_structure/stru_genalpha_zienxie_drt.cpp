@@ -50,17 +50,6 @@ extern FIELD* field;
 */
 extern GENPROB genprob;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern FILES allfiles;
-
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
@@ -256,7 +245,7 @@ void stru_genalpha_zienxie_drt()
   // --------------------------------------------------------------------
   // create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
+  LINALG::Solver solver(solveparams,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
@@ -330,7 +319,7 @@ void stru_genalpha_zienxie_drt()
     sdyn.get<int>("RESTARTEVRY"),
     true,
     true,
-    allfiles.out_err,
+    DRT::Problem::Instance()->ErrorFile()->Handle(),
     (STRUCT_DYNAMIC::_nlnSolvTyp) Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"),
     (STRUCT_DYNAMIC::_PredType) Teuchos::getIntegralValue<int>(sdyn,"PREDICT")
   );

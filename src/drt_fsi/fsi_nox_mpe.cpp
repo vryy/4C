@@ -21,8 +21,9 @@
 #include <Epetra_Comm.h>
 
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
-extern struct _FILES  allfiles;
 #endif
 
 
@@ -221,7 +222,8 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   {
     static int step;
     ostringstream filename;
-    filename << allfiles.outputfile_kenner << "_" << step << ".mpe";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_" << step << ".mpe";
     cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
     step += 1;
 

@@ -553,6 +553,15 @@ INT frcheckyes(CHAR* p);
 INT frcheckno(CHAR* p);
 INT frreadyes(CHAR* key, INT* flag);
 
+/*----------------------------------------------------------------------*
+ | return rowpointer used by fr                           bborn 11/08   |
+ *----------------------------------------------------------------------*/
+INT fractrow();
+
+/*----------------------------------------------------------------------*
+ | return pointer to actual place in input-file           bborn 11/08   |
+ *----------------------------------------------------------------------*/
+char* fractplace();
 
 
 

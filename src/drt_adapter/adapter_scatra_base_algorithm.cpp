@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_io/io_control.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -28,17 +29,6 @@ Maintainer: Georg Bauer
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -91,7 +81,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
   RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
@@ -164,7 +155,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       // switch to the SIMPLE(R) algorithms
       ParameterList& p = solveparams->sublist("SIMPLER");
       RCP<ParameterList> params = rcp(&p,false);
-      LINALG::Solver s(params,actdis->Comm(),allfiles.out_err);
+      LINALG::Solver s(params,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
       s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
     }
   }

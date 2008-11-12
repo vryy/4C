@@ -65,6 +65,13 @@ void ntainp_ccadiscret()
 
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
+  // create error files
+  // call this one rather early, since ReadConditions etc
+  // underlying methods may try to write to allfiles.out_err
+  // this old-style global variable is set as well
+  problem->OpenErrorFile(*comm,
+                         allfiles.outputfile_kenner);
+
   // and now the actual reading
   DRT::INPUT::DatFileReader reader(allfiles.inputfile_name, comm);
   reader.Activate();

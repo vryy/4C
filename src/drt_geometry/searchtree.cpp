@@ -17,8 +17,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
 
-extern struct _FILES  allfiles;
-
 
 
 /*----------------------------------------------------------------------*

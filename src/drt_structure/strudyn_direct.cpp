@@ -62,14 +62,6 @@ Maintainer: Burkhard Bornemann
 extern GENPROB genprob;
 
 /*----------------------------------------------------------------------*/
-//! File pointers
-//!
-//! This structure struct _FILES allfiles is defined in input_control_global.c
-//! and the type is in standardtypes.h
-//! It holds all file pointers and some variables needed for the FRSYSTEM
-extern FILES allfiles;
-
-/*----------------------------------------------------------------------*/
 //! global variable *solv, vector of lenght numfld of structures SOLVAR
 //! defined in solver_control.c
 //!
@@ -113,7 +105,7 @@ void STR::strudyn_direct()
 
   // add extra parameters (a kind of work-around)
   Teuchos::ParameterList xparams;
-  xparams.set<FILE*>("err file", allfiles.out_err);
+  xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // create a solver
   Teuchos::RCP<ParameterList> solveparams
@@ -121,7 +113,7 @@ void STR::strudyn_direct()
   Teuchos::RCP<LINALG::Solver> solver 
     = Teuchos::rcp(new LINALG::Solver(solveparams, 
                                       actdis->Comm(),
-                                      allfiles.out_err));
+                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams, actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 

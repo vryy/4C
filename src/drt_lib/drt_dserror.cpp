@@ -47,17 +47,6 @@ Maintainer: Michael Gee
 
 #ifdef THROWELEMENTERRORS
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 
 static bool elementcall = false;
 static int elementerrorcount = 0;
@@ -90,8 +79,8 @@ void ElementError(int ele, const std::string& err)
   if (not elementcall)
     dserror("element error outside of element loop");
   elementerrorcount += 1;
-  fprintf(allfiles.out_err,"element %d error: %s\n",ele,err.c_str());
-  fflush(allfiles.out_err);
+  fprintf(DRT::Problem::Instance()->ErrorFile()->Handle(),"element %d error: %s\n",ele,err.c_str());
+  fflush(DRT::Problem::Instance()->ErrorFile()->Handle());
 }
 
 

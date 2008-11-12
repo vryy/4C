@@ -314,8 +314,9 @@ void XFEM::DofManager::toGmsh(
       // debug info: print ele dofmanager information
       std::stringstream filename;
       std::stringstream filenamedel;
-      filename    << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-      filenamedel << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      filename    << filebase << "_eledofman_check_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+      filenamedel << filebase << "_eledofman_check_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
       std::remove(filenamedel.str().c_str());
       if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
       std::ofstream f_system(filename.str().c_str());

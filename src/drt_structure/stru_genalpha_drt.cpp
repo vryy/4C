@@ -33,17 +33,6 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -87,7 +76,7 @@ void stru_genalpha_drt()
   const int myrank = Comm.MyPID();
 
   //----------------------------------------------------- get error file
-  FILE* errfile = allfiles.out_err;
+  FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -101,7 +90,7 @@ void stru_genalpha_drt()
 
   //-----------------------------------------------------create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
+  LINALG::Solver solver(solveparams,actdis->Comm(),errfile);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 

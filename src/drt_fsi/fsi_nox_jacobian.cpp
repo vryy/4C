@@ -21,7 +21,7 @@
 
 #include "../drt_lib/standardtypes_cpp.H"
 
-extern struct _FILES  allfiles;
+#include "../drt_io/io_control.H"
 #endif
 
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
@@ -133,7 +133,8 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   {
     static int step;
     ostringstream filename;
-    filename << allfiles.outputfile_kenner << "_" << step << ".fsi";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_" << step << ".fsi";
     cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
     step += 1;
 

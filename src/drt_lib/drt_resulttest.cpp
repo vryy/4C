@@ -17,6 +17,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -28,16 +30,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*!
  * \brief An array that contains the expected results.
@@ -95,7 +87,7 @@ void ResultTest::TestSpecial(const RESULTDESCR* res, int& nerr, int& test_count)
 /*----------------------------------------------------------------------*/
 int ResultTest::CompareValues(double actresult, const RESULTDESCR *res)
 {
-  FILE *err = allfiles.out_err;
+  FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   int ret = 0;
   double givenresult = res->value;
 
@@ -137,7 +129,7 @@ void ResultTestManager::AddFieldTest(Teuchos::RefCountPtr<ResultTest> test)
 
 void ResultTestManager::TestAll()
 {
-  FILE *err = allfiles.out_err;
+  FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   INT nerr = 0;
   INT test_count = 0;
 

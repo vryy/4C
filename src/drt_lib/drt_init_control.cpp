@@ -97,9 +97,9 @@ void ntaini_ccadiscret(int argc, char** argv)
   }
 
   allfiles.inputfile_name = argv[1];
-
   sprintf(allfiles.outputfile_name, "%s%d.err",
           allfiles.outputfile_kenner, myrank);
+/*//b//
   if ((allfiles.out_err = fopen(allfiles.outputfile_name,"w"))==NULL)
   {
     printf("Opening of output file .err failed\n");
@@ -108,6 +108,7 @@ void ntaini_ccadiscret(int argc, char** argv)
 #endif
     exit(1);
   }
+*/
   if (myrank==0)
   {
     printf("input is read from         %s\n", allfiles.inputfile_name);

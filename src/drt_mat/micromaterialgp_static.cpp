@@ -47,17 +47,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 extern struct _MATERIAL    *mat;
 
 
@@ -261,13 +250,15 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
 //   solveparams->set("solver","umfpack");
 //   solveparams->set("symmetric",false);
 //   RefCountPtr<LINALG::Solver> solver =
-//     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+//     rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+//                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 //   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   DRT::Problem::Instance(microdisnum_)->ActivateSolver();
   SOLVAR*         actsolv  = &solv[0];
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(solveparams,actdis->Comm(),
+                                                               DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
   DRT::Problem::Instance()->ActivateSolver();

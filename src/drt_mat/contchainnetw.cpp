@@ -21,6 +21,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 extern struct _MATERIAL *mat;   ///< C-style material struct
 
@@ -721,7 +723,8 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const int iter)
 {
     std::stringstream filename;
-    filename << allfiles.outputfile_kenner << "_rem" << ".txt";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_rem" << ".txt";
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     //int nele = dis->NumMyColElements();
@@ -770,7 +773,8 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
                                       const int iter)
 {
   std::stringstream filename;
-  filename << allfiles.outputfile_kenner << "_ContChainMat" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << filebase << "_ContChainMat" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
 
   stringstream gmshfilecontent;

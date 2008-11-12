@@ -15,6 +15,12 @@
 #include <vector>
 #include <blitz/array.h>
 
+// debug output
+#if 0
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+#endif
+
 using namespace Teuchos;
 
 
@@ -147,7 +153,8 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
   {
     static int step;
     ostringstream filename;
-    filename << allfiles.outputfile_kenner << "_" << step << ".epsilon";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << "_" << step << ".epsilon";
     cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
     step += 1;
 

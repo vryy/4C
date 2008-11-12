@@ -20,14 +20,13 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Export.h>
 
-extern struct _FILES  allfiles;
-extern struct _GENPROB     genprob;
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -205,8 +204,9 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+    filenamedel << filebase << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());

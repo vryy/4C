@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -43,17 +44,6 @@ extern struct _GENPROB     genprob;
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -109,7 +99,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // -------------------------------------------------------------------
   RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 

@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_base_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -33,17 +34,6 @@ Maintainer: Ulrich Kuettler
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -110,7 +100,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
@@ -121,7 +112,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     ParameterList& p = solveparams->sublist("SIMPLER");
     RCP<ParameterList> params = rcp(&p,false);
-    LINALG::Solver s(params,actdis->Comm(),allfiles.out_err);
+    LINALG::Solver s(params,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
     s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
   }
 
@@ -202,7 +193,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
-    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
   
   // ----------------------------------------------- XFEM related stuff
@@ -284,7 +275,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // parameter for grid velocity interpolation
     fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
 
-    fluidtimeparams->set<FILE*>("err file",allfiles.out_err);
+    fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time

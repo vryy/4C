@@ -42,17 +42,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure()
@@ -150,7 +139,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // -------------------------------------------------------------------
   RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
@@ -205,7 +195,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   genalphaparams->set<bool>  ("print to screen",true);
   genalphaparams->set<bool>  ("print to err",true);
-  genalphaparams->set<FILE*> ("err file",allfiles.out_err);
+  genalphaparams->set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
   {
@@ -355,7 +345,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams 
     = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", allfiles.out_err);
+  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // overrule certain parameters
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
@@ -400,7 +390,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   Teuchos::RCP<LINALG::Solver> solver
     = Teuchos::rcp(new LINALG::Solver(solveparams,
                                       actdis->Comm(),
-                                      allfiles.out_err));
+                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
   solver->TranslateSolverParameters(*solveparams, actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 

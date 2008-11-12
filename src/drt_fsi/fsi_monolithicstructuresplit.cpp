@@ -8,7 +8,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
-extern struct _FILES  allfiles;
+#include "../drt_io/io_control.H"
 
 
 #define scaling_infnorm true
@@ -106,7 +106,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
                                                           fsidyn.get<int>("STRUCTPCITER"),
                                                           fsidyn.get<double>("FLUIDPCOMEGA"),
                                                           fsidyn.get<int>("FLUIDPCITER"),
-                                                          allfiles.out_err));
+                                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 }
 
 

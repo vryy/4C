@@ -22,18 +22,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "pre_exodus_soshextrusion.H" //just temporarly for gmsh-plot
 
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles; // this CCARAT struct is needed by ReadConditions()
-
-
 using namespace std;
 using namespace Teuchos;
 using namespace EXODUS;
@@ -43,16 +31,6 @@ void EXODUS::ValidateInputFile(const string datfile)
 {
   // read and check the provided header file
   //cout << "checking BACI input file       --> "<<datfile<< endl;
-
-  // do some dirty tricks in order to keep ReadConditions() running
-  // (compare with ntainp_ccadiscret() )
-  char* datfilename = (char*) datfile.c_str();
-  allfiles.inputfile_name = datfilename;
-  sprintf(allfiles.outputfile_name, "%s.err",datfile.c_str());
-  if ((allfiles.out_err = fopen(allfiles.outputfile_name,"w"))==NULL)
-  {
-    printf("Opening of output file .err failed\n");
-  }
 
   // communication
 #ifdef PARALLEL
@@ -66,8 +44,16 @@ void EXODUS::ValidateInputFile(const string datfile)
   RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
 #endif
 
-  //create a problem instance and a DatFileReader
+  // create a problem instance
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // create error files
+  // call this one rather early, since ReadConditions etc
+  // underlying methods may try to write to allfiles.out_err
+  // this (old-style) global variable is (indirectly) set as well
+  problem->OpenErrorFile(comm, datfile);
+
+  // create a DatFileReader
   DRT::INPUT::DatFileReader reader(datfile, comm, 0,false);
   reader.Activate();
 

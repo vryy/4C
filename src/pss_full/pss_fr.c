@@ -996,4 +996,49 @@ INT frreadyes(CHAR* key, INT* flag)
   return ierr;
 }
 
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Return current row in input to which is pointed
+ *
+ * \return rowpointer used by fr 
+ *
+ * \author bborn
+ * \date 11/08
+ */
+/*----------------------------------------------------------------------*/
+INT fractrow()
+{
+#ifdef DEBUG
+  dstrc_enter("fractrow");
+#endif
+  /* haven't did anything */
+#ifdef DEBUG
+  dstrc_enter("fractrow");
+#endif
+  return allfiles.actrow;
+}
+
+/*----------------------------------------------------------------------*/
+/*!
+ * \brief Return current position in current line in input 
+ *        to which is pointed
+ *
+ * \return pointer to actual place in input-file
+ *
+ * \author bborn
+ * \date 11/08
+ */
+/*----------------------------------------------------------------------*/
+char* fractplace()
+{
+#ifdef DEBUG
+  dstrc_enter("fractplace");
+#endif
+  /* haven't did anything */
+#ifdef DEBUG
+  dstrc_enter("fractplace");
+#endif
+  return allfiles.actplace;
+}
+
 /*! @} (documentation module close)*/

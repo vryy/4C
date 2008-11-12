@@ -35,6 +35,7 @@ namespace IO
 {
   class OutputControl;
   class InputControl;
+  class ErrorFileControl;
 }
 
 namespace DRT
@@ -185,11 +186,17 @@ public:
   /// create control file for output and read restart data if required
   void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix);
 
+  /// error files
+  void OpenErrorFile(const Epetra_Comm& comm, std::string prefix);
+
   /// control file for restart read
   Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }
 
   /// control file for normal output
   Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
+
+  /// control error files
+  Teuchos::RCP<IO::ErrorFileControl> ErrorFile() { return errorfilecontrol_; }
 
   //@}
 
@@ -313,6 +320,7 @@ private:
 
   Teuchos::RCP<IO::InputControl>  inputcontrol_;
   Teuchos::RCP<IO::OutputControl> outputcontrol_;
+  Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
 };
 
 }
