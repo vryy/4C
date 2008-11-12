@@ -335,8 +335,8 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
   allfiles.out_err = errfile_;
 
   // inform user
-  if (comm.MyPID() == 0)
-    printf("errors are reported to     %s\n", errname_.c_str());
+  //if (comm.MyPID() == 0)
+  //  printf("errors are reported to     %s\n", errname_.c_str());
 }
 
 /*----------------------------------------------------------------------*/
