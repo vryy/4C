@@ -72,10 +72,11 @@ namespace ADAPTER {
   {
   public:
     FluidImpl(Teuchos::RCP<DRT::Discretization> dis,
-                 Teuchos::RCP<LINALG::Solver> solver,
-                 Teuchos::RCP<ParameterList> params,
-                 Teuchos::RCP<IO::DiscretizationWriter> output,
-                 bool isale);
+              Teuchos::RCP<LINALG::Solver> solver,
+              Teuchos::RCP<ParameterList> params,
+              Teuchos::RCP<IO::DiscretizationWriter> output,
+              bool isale,
+              bool dirichletcond);
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();

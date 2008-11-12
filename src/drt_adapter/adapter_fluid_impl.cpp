@@ -23,7 +23,8 @@ ADAPTER::FluidImpl::FluidImpl(
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale)
+        bool isale,
+        bool dirichletcond)
   : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
     solver_(solver),
@@ -44,6 +45,12 @@ ADAPTER::FluidImpl::FluidImpl(
   maps.push_back(interface_.OtherMap());
   maps.push_back(dbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+
+  if (dirichletcond)
+  {
+    // mark all interface velocities as dirichlet values
+    fluid_.AddDirichCond(interface_.CondMap());
+  }
 }
 
 
@@ -332,12 +339,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceVeln()
 void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   interface_.InsertCondVector(ivel,fluid_.Velnp());
-
-  // mark all interface velocities as dirichlet values
-  // this is very easy, but there are two dangers:
-  // - We change ivel here. It must not be used afterwards.
-  // - The algorithm must support the change of Dirichlet DOFs
-  fluid_.AddDirichCond(interface_.CondMap());
 }
 
 

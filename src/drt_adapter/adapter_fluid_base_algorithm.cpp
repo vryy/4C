@@ -195,7 +195,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
-  
+
   // ----------------------------------------------- XFEM related stuff
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -277,6 +277,36 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
+    bool dirichletcond = true;
+    if (genprob.probtyp == prb_fsi)
+    {
+      // FSI input parameters
+      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+      if (coupling == fsi_iter_monolithic or
+          coupling == fsi_iter_monolithiclagrange or
+          coupling == fsi_iter_monolithicstructuresplit)
+      {
+        // partitioned MFSI solvers require Dirichlet conditions
+        INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy =
+          Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+        if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
+            linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
+            linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
+          dirichletcond = true;
+        else
+          dirichletcond = false;
+      }
+      else
+      {
+        INPUTPARAMS::FSIPartitionedCouplingMethod method =
+          Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+        if (method==INPUTPARAMS::fsi_RobinNeumann or
+            method==INPUTPARAMS::fsi_RobinRobin)
+          dirichletcond = false;
+      }
+    }
+
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor);
@@ -301,7 +331,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     else
     {
-      fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
+      fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
     }
   }
   else if (iop == timeint_gen_alpha)
