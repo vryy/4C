@@ -448,6 +448,11 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
 
 /*!
   \brief Compute a condition number estimate of given matrix A
+  
+  condition number kappa of a matrix A is defined as kappa(A) = ||A|| * ||A^-1||
+  for A = singulaer, kappa = infinity
+  
+  \return kappa
 
   copied and adapted from 
   Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
@@ -455,7 +460,7 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
 double Condest(
     SparseMatrix&                            A,  ///< sparse matrix
     const Ifpack_CondestType CT = Ifpack_Cheap,  ///< select approach for computing condition number estimate
-    const int MaxIters = 1550,                   ///< maximum number of linear iterations 
+    const int MaxIters = 1000,                   ///< maximum number of linear iterations 
     const double Tol = 1e-9                      ///< tolerance
     );
 

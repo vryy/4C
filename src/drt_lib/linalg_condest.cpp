@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 double LINALG::Condest(
@@ -27,6 +28,7 @@ double LINALG::Condest(
     )
 {
 
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Condest");
   
   double ConditionNumberEstimate = -1.0;
 
@@ -59,8 +61,7 @@ double LINALG::Condest(
     AztecOO Solver(Problem);
     Solver.SetAztecOption(AZ_solver,AZ_cg_condnum);
     Solver.SetAztecOption(AZ_output,AZ_none);
-//    Solver.SetAztecOption(AZ_output,10);
-    Solver.SetAztecOption(AZ_precond,AZ_none);
+    //Solver.SetAztecOption(AZ_output,10);
     Solver.Iterate(MaxIters,Tol);
 
     const double* status = Solver.GetAztecStatus();
@@ -80,7 +81,7 @@ double LINALG::Condest(
     AztecOO Solver(Problem);
     Solver.SetAztecOption(AZ_solver,AZ_gmres_condnum);
     Solver.SetAztecOption(AZ_output,AZ_none);
-//    Solver.SetAztecOption(AZ_output,10);
+    //Solver.SetAztecOption(AZ_output,10);
     
     // the following can be problematic for large problems,
     // but any restart would destroy useful information about
@@ -94,11 +95,7 @@ double LINALG::Condest(
       cout << "Warning! Large MaxIters means a large Krylov subspace for GMRES -> you might run out of memory." << endl;
       cout << "Continuing with MaxIters = " << MaxIters_mod << endl;
     }
-    Solver.SetAztecOption(AZ_kspace,MaxIters_mod);
-//    Solver.SetAztecOption(AZ_precond,AZ_none);
-    Solver.SetAztecOption(AZ_precond,AZ_dom_decomp);
-    Solver.SetAztecOption(AZ_subdomain_solve,AZ_ilu);
-    
+    Solver.SetAztecOption(AZ_kspace,MaxIters_mod); // Krylov space is set to iteration number !!!
     Solver.Iterate(MaxIters_mod,Tol);
 
     const double* status = Solver.GetAztecStatus();
