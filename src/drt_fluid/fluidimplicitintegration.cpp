@@ -202,7 +202,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -667,7 +667,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->SetState("velnp",velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -2257,24 +2257,24 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     {
       ParameterList eleparams;
-      
+
       // other parameters needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("delta time",origdta);
       eleparams.set("thsl",1.0); // no timefac in stationary case
       eleparams.set("fs subgrid viscosity",fssgv_);
-      
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
       // predicted dirichlet values
       // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+      discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
       discret_->ClearState();
-      
+
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
-      
+
       discret_->SetState("vedenp",vedenp_);
       neumann_loads_->PutScalar(0.0);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -2549,6 +2549,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     //--------- Apply dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
+    dirichletlines_ = Teuchos::null;
     dirichletlines_ = SystemMatrix()->ExtractDirichletLines(*(dbcmaps_->CondMap()));
     sysmat_->ApplyDirichlet(*(dbcmaps_->CondMap()));
   }
@@ -2608,7 +2609,7 @@ void FLD::FluidImplicitTimeInt::AddDirichCond(const Teuchos::RCP<const Epetra_Ma
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
-{ 
+{
   if (dbcmaps_ == Teuchos::null)
     dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
@@ -2621,7 +2622,7 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
-{ 
+{
   if (dbcmaps_ == Teuchos::null)
     dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros = LINALG::CreateVector(*(dbcmaps_->CondMap()),true);
