@@ -287,15 +287,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit)
       {
-        // partitioned MFSI solvers require Dirichlet conditions
-        INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy =
-          Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-        if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
-            linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
-            linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
-          dirichletcond = true;
-        else
-          dirichletcond = false;
+        dirichletcond = false;
       }
       else
       {
