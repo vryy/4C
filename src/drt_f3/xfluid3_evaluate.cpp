@@ -26,7 +26,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 
 
-// converts a string into an Action for this element
+/*---------------------------------------------------------------------*
+|  converts a string into an Action for this element                   |
+*----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToActionType(
               const string& action) const
 {
@@ -192,8 +194,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           // need current velocity and history vector
           RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null)
-              dserror("Cannot get state vectors 'velnp'");
+          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
 
           // extract local values from the global vectors
           vector<double> my_vel_pre_np(lm.size());
@@ -426,8 +427,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
  |  do nothing (public)                                      gammi 04/07|
  |                                                                      |
  |  The function is just a dummy. For the fluid elements, the           |
- |  integration of the volume neumann loads takes place in the element. |
- |  We need it there for the stabilisation terms!                       |
+ |  integration of the volume neumann (body forces) loads takes place   |
+ |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -462,7 +463,6 @@ DRT::UTILS::GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const Discre
   return rule;
 }
 
-
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
@@ -484,6 +484,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  xjm(3,3);
   Epetra_SerialDenseMatrix  deriv(3,iel);
 
   // get node coordinates of element
@@ -547,7 +548,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
       |     +-            -+        +-            -+
       |
       *----------------------------------------------------------------------*/
-    Epetra_SerialDenseMatrix    xjm(NSD,NSD);
+    LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>    xjm;
 
     for (int isd=0; isd<NSD; isd++)
     {
@@ -563,12 +564,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
     }
 
     // determinant of jacobian matrix
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double det = xjm.Determinant();
 
     if(det < 0.0)
     {
@@ -651,7 +647,6 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
 
   return;
 }
-
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/

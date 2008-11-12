@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file xfluid3_input.cpp
+\file fluid3_input.cpp
 \brief
 
 <pre>
@@ -15,33 +15,43 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/standardtypes_cpp.H"
+
+extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::XFluid3::ReadElement()
 {
+  if (genprob.ndim!=3)
+    dserror("Not a 3d problem. Panic.");
+
     typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;
-    gid2distype["HEX8"]  = hex8;
-    gid2distype["HEX20"] = hex20;
-    gid2distype["HEX27"] = hex27;
-    gid2distype["TET4"]  = tet4;
-    gid2distype["TET10"] = tet10;
-    gid2distype["WEDGE6"] = wedge6;
-    gid2distype["WEDGE15"] = wedge15;
+    gid2distype["HEX8"]     = hex8;
+    gid2distype["HEX20"]    = hex20;
+    gid2distype["HEX27"]    = hex27;
+    gid2distype["TET4"]     = tet4;
+    gid2distype["TET10"]    = tet10;
+    gid2distype["WEDGE6"]   = wedge6;
+    gid2distype["WEDGE15"]  = wedge15;
     gid2distype["PYRAMID5"] = pyramid5;
+    gid2distype["NURBS8"]   = nurbs8;
+    gid2distype["NURBS27"]  = nurbs27;
 
     typedef map<DiscretizationType, int> DisType2NumNodes;
     DisType2NumNodes distype2NumNodes;
-    distype2NumNodes[hex8]  = 8;
-    distype2NumNodes[hex20] = 20;
-    distype2NumNodes[hex27] = 27;
-    distype2NumNodes[tet4]  = 4;
-    distype2NumNodes[tet10] = 10;
-    distype2NumNodes[wedge6] = 6;
-    distype2NumNodes[wedge15] = 15;
+    distype2NumNodes[hex8]     = 8;
+    distype2NumNodes[hex20]    = 20;
+    distype2NumNodes[hex27]    = 27;
+    distype2NumNodes[tet4]     = 4;
+    distype2NumNodes[tet10]    = 10;
+    distype2NumNodes[wedge6]   = 6;
+    distype2NumNodes[wedge15]  = 15;
     distype2NumNodes[pyramid5] = 5;
+    distype2NumNodes[nurbs8]   = 8;
+    distype2NumNodes[nurbs27]  = 27;
 
     // read element's nodes
     int   ierr = 0;
@@ -75,9 +85,13 @@ bool DRT::ELEMENTS::XFluid3::ReadElement()
     dsassert(ierr==1, "Reading of material for FLUID3 element failed\n");
     dsassert(material!=0, "No material defined for FLUID3 element\n");
     SetMaterial(material);
+
+
+    // read gaussian points and set gaussrule
+    // removed
+    char  buffer[50];
     
     // read net algo
-    char  buffer[50];
     frchar("NA",buffer,&ierr);
     if (ierr==1)
     {
@@ -96,6 +110,12 @@ bool DRT::ELEMENTS::XFluid3::ReadElement()
     }
     else
         dserror("Reading of FLUID3 element net algorithm failed: NA\n");
+
+
+  // input of ale and free surface related stuff is not supported
+  // at the moment. TO DO!
+  // see src/fluid3/f3_inpele.c for missing details
+
 
   return true;
 

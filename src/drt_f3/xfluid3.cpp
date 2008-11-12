@@ -38,7 +38,6 @@ eleDofManager_(rcp(new XFEM::ElementDofManager()))
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       gammi 02/08|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
@@ -152,8 +151,8 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 {
   os << "XFluid3 ";
   Element::Print(os);
-  std::cout << endl;
-  std::cout << data_;
+  cout << endl;
+  cout << data_;
   return;
 }
 
@@ -317,6 +316,7 @@ DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nd, const int na)
   for (int i = 0; i< na; ++i) oldfa_(i)=0.0;
   for (int i = 0; i< na; ++i) stressdofs_(i)=0.0;
 }
+
 
 
 #endif  // #ifdef CCADISCRET

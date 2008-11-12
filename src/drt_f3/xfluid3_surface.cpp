@@ -29,8 +29,9 @@ DRT::ELEMENTS::XFluid3Surface::XFluid3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::XFluid3* parent,
     const int lsurface) :
-  DRT::Element(id, element_xfluid3surface, owner), parent_(parent),
-      lsurface_(lsurface)
+DRT::Element(id,element_xfluid3surface,owner),
+parent_(parent),
+lsurface_(lsurface)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -107,6 +108,17 @@ DRT::ELEMENTS::XFluid3Surface::~XFluid3Surface()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  print this element (public)                              mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::XFluid3Surface::Print(ostream& os) const
+{
+  os << "XFluid3Surface ";
+  Element::Print(os);
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -121,18 +133,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3Surface::Lines()
   // so we have to allocate new line elements:
   return DRT::UTILS::ElementBoundaryFactory<XFluid3Line,XFluid3Surface>(DRT::UTILS::buildLines,this);
 }
-  
-
-/*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 01/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Surface::Print(ostream& os) const
-{
-  os << "XFluid3Surface ";
-  Element::Print(os);
-  return;
-}
-
 
 
 #endif  // #ifdef CCADISCRET
