@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 <\pre>
@@ -64,7 +64,7 @@ void DRT::Discretization::Evaluate(
                         Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
-  
+
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -121,7 +121,7 @@ void DRT::Discretization::Evaluate(
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    if (assemblemat1) 
+    if (assemblemat1)
     {
       if (elematrix1.M()!=eledim or elematrix1.N()!=eledim)
         elematrix1.Shape(eledim,eledim);
@@ -135,7 +135,7 @@ void DRT::Discretization::Evaluate(
       else
         memset(elematrix2.A(),0,eledim*eledim*sizeof(double));
     }
-    if (assemblevec1) 
+    if (assemblevec1)
     {
       if (elevector1.Length()!=eledim)
         elevector1.Size(eledim);
@@ -340,7 +340,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvectordd,
                                             Teuchos::RCP<Epetra_Vector> toggle,
                                             Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
-{ 
+{
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -415,12 +415,11 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (dbcgids->size() > 0)
     {
       dbcgidsv.reserve(dbcgids->size());
-      for (std::set<int>::iterator gid=(*dbcgids).begin(); gid!=(*dbcgids).end(); ++gid)
-        dbcgidsv.push_back(*gid);
+      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
       nummyelements = dbcgidsv.size();
       myglobalelements = &(dbcgidsv[0]);
     }
-    Teuchos::RCP<Epetra_Map> dbcmap 
+    Teuchos::RCP<Epetra_Map> dbcmap
       = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
     *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
