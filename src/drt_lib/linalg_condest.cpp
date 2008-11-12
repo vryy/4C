@@ -96,6 +96,8 @@ double LINALG::Condest(
       cout << "Continuing with MaxIters = " << MaxIters_mod << endl;
     }
     Solver.SetAztecOption(AZ_kspace,MaxIters_mod); // Krylov space is set to iteration number !!!
+    Solver.SetAztecOption(AZ_precond,AZ_dom_decomp);
+    Solver.SetAztecOption(AZ_subdomain_solve,AZ_ilu);
     Solver.Iterate(MaxIters_mod,Tol);
 
     const double* status = Solver.GetAztecStatus();
