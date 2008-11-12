@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 <\pre>
@@ -100,16 +100,18 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
       dserror("map %d not unique", i);
     maplength += maps[i]->NumMyElements();
   }
-  std::vector<int> mapentries;
-  mapentries.reserve(maplength);
+  std::set<int> mapentries;
   for (unsigned i=0; i<maps.size(); ++i)
   {
     const Epetra_Map& map = *maps[i];
     std::copy(map.MyGlobalElements(),
               map.MyGlobalElements()+map.NumMyElements(),
-              std::back_inserter(mapentries));
+              std::inserter(mapentries,mapentries.begin()));
   }
-  return Teuchos::rcp(new Epetra_Map(-1,mapentries.size(),&mapentries[0],0,maps[0]->Comm()));
+  std::vector<int> mapvector;
+  mapvector.reserve(mapentries.size());
+  mapvector.assign(mapentries.begin(),mapentries.end());
+  return Teuchos::rcp(new Epetra_Map(-1,mapvector.size(),&mapvector[0],0,maps[0]->Comm()));
 }
 
 
@@ -224,7 +226,7 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
   // create (non-overlapping) othermap for non-condmap DOFs
   int nummyelements = 0;
   int* myglobalelements = NULL;
-  std::vector<int> othergidsv; 
+  std::vector<int> othergidsv;
   if (othergids.size() > 0)
   {
     othergidsv.reserve(othergids.size());
@@ -233,7 +235,7 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
     nummyelements = othergidsv.size();
     myglobalelements = &(othergidsv[0]);
   }
-  Teuchos::RCP<Epetra_Map> othermap 
+  Teuchos::RCP<Epetra_Map> othermap
     = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   // create the extractor
   Setup(fullmap, condmap, othermap);
