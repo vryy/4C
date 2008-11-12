@@ -97,18 +97,14 @@ void ntaini_ccadiscret(int argc, char** argv)
   }
 
   allfiles.inputfile_name = argv[1];
+  // set error file names
   sprintf(allfiles.outputfile_name, "%s%d.err",
           allfiles.outputfile_kenner, myrank);
-/*//b//
-  if ((allfiles.out_err = fopen(allfiles.outputfile_name,"w"))==NULL)
-  {
-    printf("Opening of output file .err failed\n");
-#ifdef PARALLEL
-    MPI_Finalize();
-#endif
-    exit(1);
-  }
-*/
+  // REMARK:
+  // error files are opened by OpenErrorFile()
+  // called in ntainp_ccadiscret()
+
+  // inform user
   if (myrank==0)
   {
     printf("input is read from         %s\n", allfiles.inputfile_name);
