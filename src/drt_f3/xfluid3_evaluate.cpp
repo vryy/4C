@@ -665,16 +665,16 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
   const int na = eleDofManager_uncondensed_->NumElemDof();
   const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
   
-  // add Kda . res_d to feas
+  // add Kda . inc_velnp to feas
   // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
   
-  vector<double> res_d(lm.size());
-  DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal residual"),res_d,lm);
+  vector<double> inc_velnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
   
-  //update old iteration residuum of the stresses
+  //update old iteration residual of the stresses
   for (int i=0;i<na;i++)
     for (int j=0;j<nd;j++)
-      DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*res_d[j];
+      DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
   
   // compute element stresses
   for (int i=0;i<na;i++)

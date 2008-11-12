@@ -677,12 +677,14 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-  // residual of the old iteration step - used for update of condensed element stresses
-  Teuchos::RCP<Epetra_Vector> oldresidual = rcp(new Epetra_Vector(residual_->Map()));
-  oldresidual->PutScalar(0.0);
-  
+  // increment of the old iteration step - used for update of condensed element stresses
+  Teuchos::RCP<Epetra_Vector> oldinc = rcp(new Epetra_Vector(state_.velnp_->Map()));
+  oldinc->PutScalar(0.0);
+
   double oldresnorm = 1.0e12;
   double resnorm = 1.0e11;
+  double oldincnorm = 1.0e12;
+  double incnorm = 1.0e11;
   
   while (stopnonliniter==false)
   {
@@ -733,7 +735,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
       
-      discret_->SetState("nodal residual",oldresidual);
+      discret_->SetState("nodal increment",oldinc);
 
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
@@ -840,6 +842,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     if (itnum > 1)
     {
       resnorm = fullresnorm;
+      incnorm = incfullnorm_L2;
     }
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
@@ -852,7 +855,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E",dtele);
-        printf(")\n");
+        printf(")");
       }
     }
     /* ordinary case later iteration steps:
@@ -863,8 +866,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
+      if (vresnorm <= ittol and 
+          presnorm <= ittol and
+          incvelnorm_L2/velnorm_L2 <= ittol and
+          incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (myrank_ == 0)
@@ -893,13 +898,16 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")\n");
+          printf(")");
         }
     }
 
-    if (resnorm > oldresnorm and itnum > 2)
+    if (resnorm > oldresnorm and
+        incnorm > oldincnorm and
+        itnum > 2)
     {
-      cout << resnorm << endl << oldresnorm << endl;
+      cout << endl << "resnorms: " << resnorm << endl <<  "          " << oldresnorm << endl;
+      cout << endl << "incnorms: " << incnorm << endl <<  "          " << oldincnorm << endl;
       stopnonliniter=true;
       if (myrank_ == 0)
       {
@@ -917,7 +925,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
       break;
     }
-    oldresnorm = resnorm;
+    oldincnorm = incnorm;
     
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
@@ -955,8 +963,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
-    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 60);
-    cout << "Condition number estimate: " << scientific << cond_number << endl;
+    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
+    // computation of significant digits might be completely bogus, so don't take it serious
+    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+    const int sign_digits = (int)floor(tmp);
+    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -984,8 +995,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
     
-    //----------------------------------------------- store nodal residual
-    oldresidual->Update(1.0,*residual_,0.0);
+    //------------------- store nodal increment for element stress update
+    oldinc->Update(1.0,*incvel_,0.0);
   }
 
   // macht der FSI algorithmus
@@ -2114,14 +2125,9 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
     NonlinearSolve(cutterdiscret);
 
     // -------------------------------------------------------------------
-    //         calculate lift'n'drag forces from the residual
-    // -------------------------------------------------------------------
-    LiftDrag();
-
-    // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    StatisticsAndOutput();
 
   } // end of time loop
 
