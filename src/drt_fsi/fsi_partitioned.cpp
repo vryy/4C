@@ -31,7 +31,6 @@ Maintainer: Ulrich Kuettler
 #include "fsi_nox_sd.H"
 #include "fsi_nox_linearsystem_gcr.H"
 #include "fsi_nox_mpe.H"
-#include "fsi_nox_epsilon.H"
 
 #include <string>
 #include <Epetra_Time.h>

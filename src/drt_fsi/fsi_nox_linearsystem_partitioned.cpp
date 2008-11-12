@@ -8,6 +8,7 @@
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_mpe.H"
 
+#include "fsi_nox_linearsystem_gcr.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -491,8 +492,20 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     break;
   }
   case INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov:
-    dserror("todo!");
+  {
+    nlParams.set("Jacobian", "FSI Matrix Free");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+
+    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+
     break;
+  }
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
   }
@@ -506,6 +519,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
 //     structurefield_.Interface().ExtractCondVector(disp);
 
   Teuchos::RCP<Epetra_Vector> idisp = Teuchos::rcp(new Epetra_Vector(*structurefield_.Interface().CondMap()));
+  NOX::Epetra::Vector noxSoln(*idisp);
 
   Teuchos::RCP<LinearPartitioned> partitionedInterface =
     Teuchos::rcp(new LinearPartitioned(algorithm_,structurefield_,fluidfield_,alefield_));
@@ -516,9 +530,26 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
   // actually, we do not need any
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
+  const std::string jacobian = nlParams.get("Jacobian", "None");
+  if (jacobian=="FSI Matrix Free")
+  {
+    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+    Teuchos::RCP<NOX::FSI::FSIMatrixFree> FSIMF;
+    Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJac;
+    Teuchos::RCP<Epetra_Operator> J;
+
+    FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, partitioned, noxSoln));
+    iJac = FSIMF;
+    J = FSIMF;
+
+    linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, partitioned, iJac, J, noxSoln));
+  }
+
   // Create the Group
   Teuchos::RCP<NOX::Epetra::Group> grp =
-    Teuchos::rcp(new NOX::Epetra::Group(printParams, partitioned, NOX::Epetra::Vector(*idisp), linSys));
+    Teuchos::rcp(new NOX::Epetra::Group(printParams, partitioned, noxSoln, linSys));
 
   // Convergence Tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
