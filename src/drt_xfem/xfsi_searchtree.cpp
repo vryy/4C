@@ -13,11 +13,11 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 #include "xfsi_searchtree.H"
 #include "../drt_geometry/intersection_service.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
-
-extern struct _FILES  allfiles;
 
 using namespace std;
 
@@ -697,7 +697,7 @@ void XFEM::XSearchTree::printTreeMetricsFile(const int step) const
      return;
    }
   std::stringstream filename;
-  filename << allfiles.outputfile_kenner << "_treeMetrics_" << std::setw(5) << setfill('0') << step << ".txt";
+  filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_treeMetrics_" << std::setw(5) << setfill('0') << step << ".txt";
   bool fileExists = false;
   std::fstream fin(filename.str().c_str(),ios::in);
   if( fin.is_open() )
