@@ -512,9 +512,9 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
       dserror("shape type unknown!\n");
   }
 
-    // allocate vector for shape functions and matrix for derivatives
+  // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector      funct       (iel);
-  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+  Epetra_SerialDenseMatrix      deriv       (2,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix      xyze        (3,iel);
