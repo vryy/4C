@@ -502,7 +502,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
     Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+    lsParams.set("Tolerance", 0.1*tol);
 
     break;
   }
