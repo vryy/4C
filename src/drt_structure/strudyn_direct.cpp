@@ -108,14 +108,13 @@ void STR::strudyn_direct()
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // create a solver
-  Teuchos::RCP<ParameterList> solveparams
-    = Teuchos::rcp(new ParameterList());
   Teuchos::RCP<LINALG::Solver> solver 
-    = Teuchos::rcp(new LINALG::Solver(solveparams, 
-                                      actdis->Comm(),
+    = Teuchos::rcp(new LINALG::Solver(actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams, actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  cout << ParameterList(DRT::Problem::Instance()->StructSolverParams()) << endl;
+  solver->TranslateSolverParameters(solver->Params(),
+                                    actsolv);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> sti 
