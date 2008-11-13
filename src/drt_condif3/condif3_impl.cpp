@@ -1815,7 +1815,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
 
     if (numdofpernode_-numscal_== 1) // ELCH
     {
-      // dof for el. potential have no 'acceleration'
+      // dof for el. potential have no 'acceleration' -> rhs is zero
       for (int vi=0; vi<iel; ++vi)
       {
         massmat(vi*numdofpernode_+numscal_, vi*numdofpernode_+numscal_) += 1.0;
@@ -2163,7 +2163,6 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   // get material constants
   GetMaterialParams(material,false);
 
-
   // working arrays
   double                                  potint;
   LINALG::FixedSizeSerialDenseMatrix<2,1> conint;
@@ -2190,19 +2189,20 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
     // get global coordinate of integration point
     xint.Multiply(xyze_,funct_);
 
-    // compute varous constants
-    const double d= (frt*(diffus_[0]*valence_[0]-diffus_[1]*valence_[1]));
+    // compute various constants
+    const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
     if (abs(d) == 0.0) dserror("division by zero");
-    const double D = frt*(valence_[0]*diffus_[0]*diffus_[1] - valence_[1]*diffus_[1]*diffus_[0])/d;
+    const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
 
-    // compute analytical concentrations for the problem of Kwok(1995)
+    // compute analytical solution for cation and anion concentrations
     const double A0 = 5.0;
     const double m = 2.0;
     const double n = 2.0;
-    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1)))*exp((-D)*(m*m + n*n)*t*PI*PI));
+    const double k = 2.0;
+    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
     c(1) = (-valence_[0]/valence_[1])* c(0);
 
-    // compute analytical el. potential
+    // compute analytical solution for el. potential
     const double c_0_0_t = A0 + exp((-D)*(m*m + n*n)*t*PI*PI);
     const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_t);
 
@@ -2213,9 +2213,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
     deltacon -= c;
 
     // add square to L2 error
-    errors[0] += deltacon(0)*deltacon(0)*fac_;
-    errors[1] += deltacon(1)*deltacon(1)*fac_;
-    errors[2] += deltapot*deltapot*fac_;
+    errors[0] += deltacon(0)*deltacon(0)*fac_; // cation concentration
+    errors[1] += deltacon(1)*deltacon(1)*fac_; // anion concentration
+    errors[2] += deltapot*deltapot*fac_; // electric potential in electrolyte solution
 
   } // end of loop over integration points
 
