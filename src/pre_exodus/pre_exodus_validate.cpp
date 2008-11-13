@@ -51,7 +51,7 @@ void EXODUS::ValidateInputFile(const string datfile)
   // call this one rather early, since ReadConditions etc
   // underlying methods may try to write to allfiles.out_err
   // this (old-style) global variable is (indirectly) set as well
-  problem->OpenErrorFile(comm, datfile);
+  problem->OpenErrorFile(*comm, datfile);
 
   // create a DatFileReader
   DRT::INPUT::DatFileReader reader(datfile, comm, 0,false);
