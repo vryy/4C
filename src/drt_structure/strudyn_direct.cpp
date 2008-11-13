@@ -111,7 +111,6 @@ void STR::strudyn_direct()
   Teuchos::RCP<LINALG::Solver> solver 
     = Teuchos::rcp(new LINALG::Solver(actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
-  cout << ParameterList(DRT::Problem::Instance()->StructSolverParams()) << endl;
   solver->TranslateSolverParameters(solver->Params(),
                                     actsolv);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
