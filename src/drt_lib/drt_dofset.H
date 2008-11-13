@@ -53,6 +53,7 @@ Maintainer: Ulrich Kuettler
 
 using namespace std;
 
+#include "drt_dofset_base.H"
 #include "drt_dserror.H"
 #include "drt_element.H"
 #include "drt_node.H"
@@ -130,7 +131,7 @@ reason to deep copy any of the local map and vector variables.
 
 \author u.kue
 */
-class DofSet
+class DofSet: public DofSetBase
 {
 public:
 
@@ -235,12 +236,6 @@ public:
         lm.push_back(dofcolmap_->GID(idx+i));
     }
 
-  /// Get degree of freedom row map
-  virtual const Epetra_Map* DofRowMap() const { return dofrowmap_.get(); }
-
-  /// Get degree of freedom column map
-  virtual const Epetra_Map* DofColMap() const { return dofcolmap_.get(); }
-
   /*!
   \brief Print this class
   */
@@ -260,12 +255,6 @@ public:
 
 protected:
 
-  /// unique row map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofrowmap_;
-
-  /// unique column map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofcolmap_;
-
   /// number of dofs for each node
   RefCountPtr<Epetra_IntVector>                 numdfcolnodes_;
 
@@ -277,14 +266,6 @@ protected:
 
   /// column map lid of first dof for each element
   RefCountPtr<Epetra_IntVector>                 idxcolelements_;
-
-  /// store all dofset ever created
-  /*!
-    This is hack to get unique dof numbers on all dof sets. With this in place
-    we can combine the maps from any dof sets to form block systems and the
-    like.
-   */
-  static std::list<DofSet*>                     dofsets_;
 
 }; // class DofSet
 } // namespace DRT

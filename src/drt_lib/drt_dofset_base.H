@@ -1,0 +1,147 @@
+/*!----------------------------------------------------------------------
+\file drt_dofset_base.H
+
+\brief A set of degrees of freedom
+
+<pre>
+-------------------------------------------------------------------------
+                 BACI finite element library subsystem
+            Copyright (2008) Technical University of Munich
+              
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is proprietary software. It must not be published, distributed, 
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library may solemnly used in conjunction with the BACI contact library
+for purposes described in the above mentioned contract.
+
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
+
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de                   
+
+-------------------------------------------------------------------------
+<\pre>
+
+<pre>
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef DOFSETBASE_H
+#define DOFSETBASE_H
+
+#include <vector>
+#include <list>
+
+#include <Epetra_IntVector.h>
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+
+using namespace std;
+
+#include "drt_dserror.H"
+#include "drt_element.H"
+#include "drt_node.H"
+
+namespace DRT
+{
+
+class Discretization;
+
+
+/*!
+\brief Base class set of degrees of freedom
+
+\note This is a pure virtual class all classes managing sets of degrees of freedom 
+should inherit from. This base class only manages the static list, all DofSets are 
+written into.
+
+\author tk
+*/
+class DofSetBase
+{
+public:
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  DofSetBase();
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~DofSetBase();
+
+
+  //! @name Access methods
+
+  ///Get Number of Global Elements of degree of freedom row map
+  virtual const int NumGlobalElements() const { return dofrowmap_->NumGlobalElements(); }
+  
+  virtual const int MaxAllGID() const { return dofrowmap_->MaxAllGID(); }
+  
+  /// Get degree of freedom row map
+  virtual const Epetra_Map* DofRowMap() const { return dofrowmap_.get(); }
+
+  /// Get degree of freedom column map
+  virtual const Epetra_Map* DofColMap() const { return dofcolmap_.get(); }
+
+  /// Add Dof Set to list #dofsets_ 
+  virtual void AddDofSettoList() 
+  { 
+    if (std::find(dofsets_.begin(),dofsets_.end(),this)==dofsets_.end())
+    {
+      dofsets_.push_back(this);      
+    }
+    return;
+  } 
+  
+  /// Get Max of all GID assigned in the DofSets in front of current one in the list #dofsets_  
+  virtual int MaxGIDinList();
+  
+  //@}
+
+  //! @name Construction
+
+  /// reset all internal variables
+  virtual void Reset()=0;
+
+  //@}
+
+protected:
+
+  /// unique row map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       dofrowmap_;
+
+  /// unique column map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       dofcolmap_;
+
+  /// store all dofset ever created
+  /*!
+    This is hack to get unique dof numbers on all dof sets. With this in place
+    we can combine the maps from any dof sets to form block systems and the
+    like.
+   */
+  static std::list<DofSetBase*>                     dofsets_;
+
+}; // class DofSetBase
+} // namespace DRT
+
+#endif  // #ifndef DofSetBase_H
+#endif  // #ifdef CCADISCRET

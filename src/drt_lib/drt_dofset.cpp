@@ -53,8 +53,6 @@ Maintainer: Ulrrich Kuettler
 
 #include "../headers/define_sizes.h"
 
-// list of all dof sets
-std::list<DRT::DofSet*> DRT::DofSet::dofsets_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -160,10 +158,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.
-  if (std::find(dofsets_.begin(),dofsets_.end(),this)==dofsets_.end())
-    dofsets_.push_back(this);
-
-  int count=0;
+  AddDofSettoList();
 
   // We assume that all dof sets before this one have been set up. Otherwise
   // we'd have to reorder the list.
@@ -177,22 +172,12 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   // However if you rely on non-overlapping dof sets, you have to
   // FillComplete() your discretizations in the order of their creation. This
   // is guaranteed for all discretizations read from the input file since the
-  // input reader calls FillComplete(). It you create your own discretizations
+  // input reader calls FillComplete(). If you create your own discretizations
   // try to understand what you do.
-  for (std::list<DofSet*>::const_iterator i=dofsets_.begin();
-       i!=dofsets_.end();
-       ++i)
-  {
-    if (*i==this)
-      break;
-
-    // ignore empty (no yet initialized) dof row maps
-    if ((*i)->dofrowmap_->NumGlobalElements()>0)
-    {
-      count = max((*i)->dofrowmap_->MaxAllGID() + 1,count);
-    }
-  }
-
+  
+  // Get highest GID used so far
+  int count = MaxGIDinList();
+  
   // Now this is tricky. We have to care for nodes and elements, both
   // row and column maps. In general both nodes and elements can have
   // dofs. In both cases these dofs might be shared with other nodes
