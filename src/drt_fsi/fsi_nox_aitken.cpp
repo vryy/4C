@@ -91,7 +91,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 #ifdef CCADISCRET
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
 #else
-    const std::string filebase = allfiles.outputfile_kenner
+    const std::string filebase = allfiles.outputfile_kenner;
 #endif
     filename << filebase << "_" << step << ".aitken.QR";
     step += 1;
