@@ -44,9 +44,9 @@ Maintainer: Axel Gerstenberger
 #define VECTOR_DEFINITIONS_H
 
 #include <blitz/array.h>
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
-//! generally useful typedefs, when working with Blitz arrays
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
@@ -58,6 +58,16 @@ typedef blitz::TinyMatrix<double,2,2> BlitzMat2x2; ///< a short-cut for a two-di
 typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
 typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
 
+namespace LINALG
+{
+  typedef LINALG::FixedSizeSerialDenseMatrix<3,1> Vec3; ///< a short-cut for a one-dimensional fixed-size vector of length 3
+  typedef LINALG::FixedSizeSerialDenseMatrix<2,1> Vec2; ///< a short-cut for a one-dimensional fixed-size vector of length 2
+  typedef LINALG::FixedSizeSerialDenseMatrix<1,1> Vec1; ///< a short-cut for a one-dimensional fixed-size vector of length 1
+  
+  typedef LINALG::FixedSizeSerialDenseMatrix<2,2> Mat2x2; ///< a short-cut for a two-dimensional fixed-size matrix of size 2x2
+  typedef LINALG::FixedSizeSerialDenseMatrix<3,2> Mat3x2; ///< a short-cut for a two-dimensional fixed-size matrix of size 3x2
+  typedef LINALG::FixedSizeSerialDenseMatrix<3,3> Mat3x3; ///< a short-cut for a two-dimensional fixed-size matrix of size 3x3
+}
 //! take a double C array of (hopefully) length 3 and convert it to a blitz TinyVector of length 3
 inline BlitzVec3 toBlitzArray(const double* x)
 {
