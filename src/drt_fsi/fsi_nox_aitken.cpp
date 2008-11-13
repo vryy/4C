@@ -20,8 +20,12 @@
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
 #include "../drt_lib/standardtypes_cpp.H"
+#ifdef CCADISCRET
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#else
+extern struct _FILES  allfiles;
+#endif
 #endif
 
 
@@ -84,7 +88,11 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   {
     static int step;
     ostringstream filename;
+#ifdef CCADISCRET
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+#else
+    const std::string filebase = allfiles.outputfile_kenner
+#endif
     filename << filebase << "_" << step << ".aitken.QR";
     step += 1;
 
@@ -146,7 +154,11 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     static std::ofstream* out;
     if (out==NULL)
     {
+#ifdef CCADISCRET
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+#else
+      std::string s = allfiles.outputfile_kenner;
+#endif
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }
@@ -164,7 +176,11 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   {
     static int step;
     ostringstream filename;
+#ifdef CCADISCRET
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+#else
+    const std::string filebase = allfiles.outputfile_kenner;
+#endif
     filename << filebase << "_" << step << ".aitken.X";
     step += 1;
 
