@@ -552,7 +552,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
     // compute force components
     const int nsd = 3;
     const Epetra_Map* dofcolmap = boundarydis_->DofColMap();
-    BlitzVec3 c = 0.0;
+    LINALG::Vec3 c = 0.0;
     for (int inode = 0; inode < boundarydis_->NumMyColNodes(); ++inode)
     {
       const DRT::Node* node = boundarydis_->lColNode(inode);
