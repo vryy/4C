@@ -331,7 +331,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
 void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,                 // element internal force vector

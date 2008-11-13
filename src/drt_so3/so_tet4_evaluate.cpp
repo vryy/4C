@@ -583,7 +583,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    // element stiffness matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     // element mass matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>* force,          // element internal force vector

@@ -184,7 +184,7 @@ int DRT::ELEMENTS::SoDisp::EvaluateNeumann(ParameterList& params,
 void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector

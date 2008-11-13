@@ -399,7 +399,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
 void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    // element stiffness matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     // element mass matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>* force,          // element internal force vector

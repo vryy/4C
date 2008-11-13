@@ -447,7 +447,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,1>* force,                 // element internal force vector

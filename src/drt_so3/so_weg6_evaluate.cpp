@@ -442,7 +442,7 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
 void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residuum
+      vector<double>&           residual,       // current residual displ
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    // element stiffness matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     // element mass matrix
       LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,          // element internal force vector
