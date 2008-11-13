@@ -958,7 +958,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   const int nsd = 3;
   const Epetra_Map* dofcolmap = cutterdiscret->DofColMap();
-  BlitzVec3 c;
+  LINALG::Vec3 c;
   c = 0.0;
   for (int inode = 0; inode < cutterdiscret->NumMyColNodes(); ++inode)
   {

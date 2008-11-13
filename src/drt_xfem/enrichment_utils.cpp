@@ -50,127 +50,6 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedNodalShapefunction(
-    const DRT::Element&                        ele,
-    const RCP<XFEM::InterfaceHandle>       ih,
-    const XFEM::ElementDofManager&             dofman,
-    const XFEM::PHYSICS::Field                 field,
-    const std::map<XFEM::Enrichment, double>&  enrvals,
-    const BlitzVec&                            funct,
-    BlitzVec&                                  enr_funct
-    )
-{
-    const int* nodeids = ele.NodeIds();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
-    {
-        const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                dofcounter += 1;
-            }
-        }
-    }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-//
-// For a given situation compute the enriched shape functions
-// 
-void XFEM::ComputeEnrichedNodalShapefunction(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager&        dofman,
-        const XFEM::PHYSICS::Field            field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec&                       funct,
-        const BlitzMat&                       derxy,
-        BlitzVec&                             enr_funct,
-        BlitzMat&                             enr_derxy
-        )
-{
-    const int* nodeids = ele.NodeIds();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
-    {
-        const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                for (int isd = 0; isd < 3; ++isd)
-                {
-                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-                }
-                dofcounter += 1;
-            }
-        }
-    }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-//
-// For a given situation compute the enriched shape functions
-// 
-void XFEM::ComputeEnrichedNodalShapefunction(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager&        dofman,
-        const XFEM::PHYSICS::Field            field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec&                       funct,
-        const BlitzMat&                       derxy,
-        const BlitzMat&                       derxy2,
-        BlitzVec&                             enr_funct,
-        BlitzMat&                             enr_derxy,
-        BlitzMat&                             enr_derxy2
-        )
-{
-    const int* nodeids = ele.NodeIds();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
-    {
-        const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                for (int isd = 0; isd < 3; ++isd)
-                {
-                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-                }
-                for (int isd = 0; isd < 6; ++isd)
-                {
-                  enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
-                }
-                dofcounter += 1;
-            }
-        }
-    }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-
-//
-// For a given situation compute the enriched shape functions
-// 
 void XFEM::ComputeEnrichedElementShapefunction(
         const DRT::Element&                   ele,
         const RCP<XFEM::InterfaceHandle>  ih,
@@ -530,7 +409,7 @@ double DomainCoverageRatioT(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    static blitz::TinyMatrix<double,nsd,numnode> xyze;
+    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
     
     //double 
@@ -582,7 +461,7 @@ double DomainCoverageRatioT(
             
             // shape functions and their first derivatives
             static blitz::TinyVector<double,numnode> funct;
-            static blitz::TinyMatrix<double,nsd,numnode> deriv;
+            static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
@@ -591,17 +470,11 @@ double DomainCoverageRatioT(
             BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
-            //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static BlitzMat3x3 xjm;
+            static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
-            const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                               xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                               xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                               xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                               xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                               xjm(0,1)*xjm(1,0)*xjm(2,2);
+            const double det = xjm.Determinant();
             const double fac = intpoints.qwgt[iquad]*det*detcell;
 
             if (det < 0.0)
@@ -733,7 +606,7 @@ double BoundaryCoverageRatioT(
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       // get jacobian matrix d x / d \xi  (3x2)
-      static BlitzMat3x2 dxyzdrs;
+      static LINALG::Mat3x2 dxyzdrs;
       //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
       for (int isd = 0; isd < 3; ++isd)
       {
@@ -748,12 +621,12 @@ double BoundaryCoverageRatioT(
       }
       
       // compute covariant metric tensor G for surface element (2x2)
-      static BlitzMat2x2 metric;
+      static LINALG::Mat2x2 metric;
       //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-      BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+      metric.MultiplyTN(dxyzdrs,dxyzdrs);
       //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
       
-      const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
+      const double detmetric = sqrt(metric.Determinant());
       if (detmetric < 0.0)
       {
         cout << endl << "detmetric = " << detmetric << endl;

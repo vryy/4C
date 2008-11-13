@@ -95,25 +95,20 @@ namespace XFLUID
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
-    BlitzVec3 e;
+    LINALG::Vec3 e;
     e(0) = intpoints.qxg[0][0];
     e(1) = intpoints.qxg[0][1];
     e(2) = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
     
-    blitz::TinyMatrix<double,3,numnode> deriv_;
+    LINALG::FixedSizeSerialDenseMatrix<3,numnode> deriv_;
     DRT::UTILS::shape_function_3D_deriv1(deriv_, e(0), e(1), e(2), DISTYPE);
     
     // get Jacobian matrix and determinant
     //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
-    BlitzMat3x3 xjm_;
+    LINALG::Mat3x3 xjm_;
     BLITZTINY::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
-    const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-    xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-    xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-    xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-    xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-    xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+    const double det = xjm_.Determinant();
     const double vol = wquad*det;
     
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
@@ -122,10 +117,10 @@ namespace XFLUID
     return hk;
   }
   
-  template <class V>
+  template <class V, class V3>
   void computeStabilization(
       const V&       derxy,
-      const BlitzVec3& gpvelnp,
+      const V3&      gpvelnp,
       const int   numparamvelx,
       const bool instationary,
       const double visc,
@@ -143,7 +138,7 @@ namespace XFLUID
     const double vel_norm = sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
     // normed velocity at element centre
-    BlitzVec3 velino;
+    LINALG::Vec3 velino;
     if (vel_norm>=1e-6)
     {
         for (int isd = 0; isd < nsd; ++isd)

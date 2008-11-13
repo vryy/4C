@@ -25,16 +25,16 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BlitzVec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-    const BlitzVec3&                    veln,
-    const BlitzVec3&                    velnm,
-    const BlitzVec3&                    accn,
+LINALG::Vec3 FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+    const LINALG::Vec3&                 veln,
+    const LINALG::Vec3&                 velnm,
+    const LINALG::Vec3&                 accn,
     const FLUID_TIMEINTTYPE             timealgo,
     const double                        dta,
     const double                        theta
 )
 {
-  BlitzVec3 hist;
+  LINALG::Vec3 hist;
   switch (timealgo)
   {
   case timeint_stationary:

@@ -30,6 +30,25 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 
+/// hold arrays for all - potentially enriched - shape functions and their derivatives
+/// with respect to the physical coordinates
+template <int shpVecSize>
+struct Shp
+{
+  blitz::TinyVector<double,shpVecSize>  d0;
+  blitz::TinyVector<double,shpVecSize>  dx;
+  blitz::TinyVector<double,shpVecSize>  dy;
+  blitz::TinyVector<double,shpVecSize>  dz;
+  blitz::TinyVector<double,shpVecSize>  dxdx;
+  blitz::TinyVector<double,shpVecSize>  dxdy;
+  blitz::TinyVector<double,shpVecSize>  dxdz;
+  blitz::TinyVector<double,shpVecSize>  dydx;
+  blitz::TinyVector<double,shpVecSize>  dydy;
+  blitz::TinyVector<double,shpVecSize>  dydz;
+  blitz::TinyVector<double,shpVecSize>  dzdx;
+  blitz::TinyVector<double,shpVecSize>  dzdy;
+  blitz::TinyVector<double,shpVecSize>  dzdz;
+};
 
   using namespace XFEM::PHYSICS;
 
@@ -44,26 +63,7 @@ Maintainer: Axel Gerstenberger
   /// specialization of SizeFac for XFEM::xfem_assembly
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const int fac = 3;};
 
-
-  //! interpolate from nodal vector array to integration point vector using the shape function
-  template <class M, class MS>
-  static BlitzVec3 interpolateVectorFieldToIntPoint(
-      const M&  eleVectorField,       ///< array with nodal vector values
-      const MS& shp,                  ///< array with nodal shape function
-      const int numparam              ///< number of parameters
-      )
-  {
-    BlitzVec3 v;
-    const int nsd = 3;
-    for (int isd = 0; isd < nsd; ++isd)
-    {
-        v(isd) = 0.0;
-        for (int iparam = 0; iparam < numparam; ++iparam)
-            v(isd) += eleVectorField(isd,iparam)*shp(iparam);
-    }
-    return v;
-  }
-  
+  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
   static bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
@@ -72,9 +72,11 @@ Maintainer: Axel Gerstenberger
       const BlitzVec3&                           posXiDomain,
       const int                                  labelnp,
       const Epetra_Vector&                       ivelcoln,
+      const Epetra_Vector&                       ivelcolnm,
       const Epetra_Vector&                       iacccoln,
-      BlitzVec3&                                 gpveln,
-      BlitzVec3&                                 gpaccn
+      LINALG::Vec3&                              gpveln,
+      LINALG::Vec3&                              gpvelnm,
+      LINALG::Vec3&                              gpaccn
       )
   {
     GEO::PosX posx_gp;
@@ -115,14 +117,16 @@ Maintainer: Axel Gerstenberger
         DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const int numnode_boundary = boundaryele->NumNode();
         
-        BlitzVec3 iveln;
-        BlitzVec3 iaccn;
+        LINALG::Vec3 iveln;
+        LINALG::Vec3 ivelnm;
+        LINALG::Vec3 iaccn;
         
         if (ivelcoln.GlobalLength() > 3)
         {
           // get interface velocities at the boundary element nodes
-          BlitzMat veln_boundary(3,numnode_boundary*2);
-          BlitzMat accn_boundary(3,numnode_boundary*2);
+          BlitzMat veln_boundary( 3,numnode_boundary*2);
+          BlitzMat velnm_boundary(3,numnode_boundary*2);
+          BlitzMat accn_boundary( 3,numnode_boundary*2);
           if (numnode_boundary != 4)
             dserror("needs more generalizashun!");
           const DRT::Node*const* nodes = boundaryele->Nodes();
@@ -141,6 +145,16 @@ Maintainer: Axel Gerstenberger
             veln_boundary(1,inode+4) = myvel[1];
             veln_boundary(2,inode+4) = myvel[2];
             
+            std::vector<double> myvelnm(3);
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
+            velnm_boundary(0,inode) = myvelnm[0];
+            velnm_boundary(1,inode) = myvelnm[1];
+            velnm_boundary(2,inode) = myvelnm[2];
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
+            velnm_boundary(0,inode+4) = myvelnm[0];
+            velnm_boundary(1,inode+4) = myvelnm[1];
+            velnm_boundary(2,inode+4) = myvelnm[2];
+            
             std::vector<double> myacc(3);
             DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
             accn_boundary(0,inode) = myacc[0];
@@ -156,14 +170,16 @@ Maintainer: Axel Gerstenberger
           
           BlitzVec funct_ST(numnode_boundary*2);
           DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+          iveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          ivelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
+          iaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
   //                cout << "iveln " << iveln << endl;
   //                cout << "iaccn " << iaccn << endl;
         }
         else
         {
           iveln = 0.0;
+          ivelnm = 0.0;
           iaccn = 0.0;
         }
       
@@ -171,6 +187,10 @@ Maintainer: Axel Gerstenberger
         gpveln(0) = iveln(0);
         gpveln(1) = iveln(1);
         gpveln(2) = iveln(2);
+        
+        gpvelnm(0) = ivelnm(0);
+        gpvelnm(1) = ivelnm(1);
+        gpvelnm(2) = ivelnm(2);
         
         gpaccn(0) = iaccn(0);
         gpaccn(1) = iaccn(1);
@@ -319,12 +339,12 @@ static void SysmatDomainTP1(
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
     
     // get node coordinates of the current element
-    static blitz::TinyMatrix<double,nsd,numnode> xyze;
+    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
-//    const Epetra_Vector& ivelcolnp = *ih->cutterdis()->GetState("ivelcolnp");
+    // get older interface velocities and accelerations
     const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
@@ -404,7 +424,7 @@ static void SysmatDomainTP1(
           }
           if (not compute)
           {
-            continue;
+            continue; // next integration cell
           }
         }
             
@@ -434,8 +454,8 @@ static void SysmatDomainTP1(
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
-            static BlitzVec funct(numnode);
-            static BlitzMat deriv(3, numnode, blitz::ColumnMajorArray<2>());
+            static LINALG::FixedSizeSerialDenseMatrix<numnode,1> funct;
+            static LINALG::FixedSizeSerialDenseMatrix<3,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
@@ -473,20 +493,15 @@ static void SysmatDomainTP1(
             }
 
             // position of the gausspoint in physical coordinates
-            BlitzVec3 gauss_pos_xyz;
-            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+//            BlitzVec3 gauss_pos_xyz;
+//            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static BlitzMat3x3 xjm;
+            static LINALG::Mat3x3 xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
-            const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                               xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                               xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                               xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                               xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                               xjm(0,1)*xjm(1,0)*xjm(2,2);
+            const double det = xjm.Determinant();
             const double fac = intpoints.qwgt[iquad]*det*detcell;
 
             if (det < 0.0)
@@ -495,11 +510,11 @@ static void SysmatDomainTP1(
             }
 
             // inverse of jacobian
-            static BlitzMat3x3 xji;
+            static LINALG::Mat3x3 xji;
             GEO::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
-            static BlitzMat derxy(3, numnode);
+            static LINALG::FixedSizeSerialDenseMatrix<3,numnode> derxy;
             //static BlitzMat derxy_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //static BlitzMat derxy_discpres(3, DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
@@ -527,10 +542,10 @@ static void SysmatDomainTP1(
 //            }
 
             // compute second global derivative
-            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
+            static LINALG::FixedSizeSerialDenseMatrix<6,numnode> derxy2;
             if (higher_order_ele)
             {
-                static BlitzMat deriv2(6,numnode,blitz::ColumnMajorArray<2>());
+                static LINALG::FixedSizeSerialDenseMatrix<6,numnode> deriv2;
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
                 XFEM::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
@@ -683,15 +698,15 @@ static void SysmatDomainTP1(
             }
             
             // get velocities and accelerations at integration point
-            const BlitzVec3 gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
-            BlitzVec3 gpveln  = interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
-            const BlitzVec3 gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp, numparamvelx);
-            BlitzVec3 gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
+            const LINALG::Vec3 gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp, numparamvelx);
+            LINALG::Vec3 gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp, numparamvelx);
+            LINALG::Vec3 gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp, numparamvelx);
+            LINALG::Vec3 gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp, numparamvelx);
             
             
-            if (ASSTYPE == XFEM::xfem_assembly)
+            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, iacccoln, gpveln, gpaccn);
+              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
               if (not valid_spacetime_cell_found)
                 continue;
             }
@@ -700,7 +715,7 @@ static void SysmatDomainTP1(
 //            cout << shp << endl;
 
             // get history data (n) at integration point
-//            BlitzVec3 histvec;
+//            LINALG::Vec3 histvec;
 //            //histvec = blitz::sum(enr_funct(j)*evelnp_hist(i,j),j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
@@ -708,11 +723,11 @@ static void SysmatDomainTP1(
 //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp(iparam);
 //            }
-            const BlitzVec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+            const LINALG::Vec3 histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
-            BlitzMat3x3 vderxy;
+            LINALG::Mat3x3 vderxy;
             //vderxy = blitz::sum(enr_derxy(j,k)*evelnp(i,k),k);
             vderxy = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
@@ -728,7 +743,7 @@ static void SysmatDomainTP1(
             //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
       
             // calculate 2nd velocity derivatives at integration point
-            static blitz::TinyMatrix<double,3,6> vderxy2;
+            static LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2;
             if (higher_order_ele)
             {
               //vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
@@ -752,7 +767,7 @@ static void SysmatDomainTP1(
             }
 
             // get pressure gradients
-            BlitzVec3 gradp;
+            LINALG::Vec3 gradp;
             //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
             gradp = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
@@ -763,7 +778,7 @@ static void SysmatDomainTP1(
             }
     
 //            // get discont. pressure gradients
-//            static BlitzVec3 graddiscp;
+//            static LINALG::Vec3 graddiscp;
 //            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
@@ -785,7 +800,7 @@ static void SysmatDomainTP1(
               discpres += shp_discpres(iparam)*ediscpres(iparam);
     
             // get viscous stress unknowns
-            BlitzMat3x3 tau;
+            LINALG::Mat3x3 tau;
             if (tauele_unknowns_present)
             {
               XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -795,7 +810,7 @@ static void SysmatDomainTP1(
               tau = 0.0;
             }
           
-//            BlitzVec3 nabla_dot_tau;
+//            LINALG::Vec3 nabla_dot_tau;
 //            if (stress_unknowns_present)
 //            {
 //                nabla_dot_tau(0) = blitz::sum(shp_tau_dx(_)*etau(0,_)) + blitz::sum(shp_tau_dy(_)*etau(3,_)) + blitz::sum(shp_tau_dz(_)*etau(4,_));
@@ -819,7 +834,7 @@ static void SysmatDomainTP1(
 
             
             // get bodyforce in gausspoint
-//            BlitzVec3 bodyforce;
+//            LINALG::Vec3 bodyforce;
 //            bodyforce = 0.0;
 //            cout << bodyforce << endl;
             //////////////////////////////////////////BlitzVec bodyforce_(blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j));
@@ -837,8 +852,8 @@ static void SysmatDomainTP1(
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            BlitzVec3 rhsint;
-            BlitzVec3 bodyforce;
+            LINALG::Vec3 rhsint;
+            LINALG::Vec3 bodyforce;
             bodyforce = 0.0;
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
@@ -847,18 +862,18 @@ static void SysmatDomainTP1(
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            BlitzVec3 conv_old;
+            LINALG::Vec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*gpvelnp(j), j);
             BLITZTINY::MV_product<3,3>(vderxy,gpvelnp,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
-            BlitzVec3 visc_old;
+            LINALG::Vec3 visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            BlitzVec3 res_old;
+            LINALG::Vec3 res_old;
             //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
@@ -1686,7 +1701,7 @@ static void SysmatBoundaryTP1(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static BlitzMat3x2 dxyzdrs;
+            static LINALG::Mat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1701,16 +1716,15 @@ static void SysmatBoundaryTP1(
             }
             
             // compute covariant metric tensor G for surface element (2x2)
-            static BlitzMat2x2 metric;
+            static LINALG::Mat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
-            //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
+            metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
             //const BlitzMat derxy(blitz::sum(dxyzdrs(i,k)*deriv_boundary(k,j),k));
             //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
-            const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
+            const double detmetric = sqrt(metric.Determinant());
             if (detmetric < 0.0)
             {
               cout << "detmetric = " << detmetric << endl;
@@ -1813,7 +1827,7 @@ static void SysmatBoundaryTP1(
       
             // get velocities (n+g,i) at integration point
 //            gpvelnp = blitz::sum(evelnp(i,j)*shp(j),j);
-            BlitzVec3 gpvelnp;
+            LINALG::Vec3 gpvelnp;
             //gpvelnp = blitz::sum(enr_funct(j)*evelnp(i,j),j);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -1823,7 +1837,7 @@ static void SysmatBoundaryTP1(
             }
             
             // get interface velocity
-            BlitzVec3 interface_gpvelnp;
+            LINALG::Vec3 interface_gpvelnp;
             if (timealgo == timeint_stationary)
             {
               interface_gpvelnp = 0.0;
@@ -1850,7 +1864,7 @@ static void SysmatBoundaryTP1(
             //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
-            static BlitzMat3x3 tau;
+            static LINALG::Mat3x3 tau;
             XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
@@ -1938,7 +1952,7 @@ static void SysmatBoundaryTP1(
             assembler.template Matrix<Velz,Tauzy>(shp, -vtaun_fac*timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Tauzz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
             
-            BlitzVec3 disctau_times_n;
+            LINALG::Vec3 disctau_times_n;
             BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
             assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));

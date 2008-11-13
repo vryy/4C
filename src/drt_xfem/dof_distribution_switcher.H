@@ -70,7 +70,7 @@ public:
             RCP<Epetra_Vector>&     vector
             ) const
     {
-      BlitzVec3 dummy;
+      LINALG::Vec3 dummy;
       dummy(0) = 0.0;
       dummy(1) = 0.0;
       dummy(2) = 0.0;
@@ -80,7 +80,7 @@ public:
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
             RCP<Epetra_Vector>&     vector,
-            BlitzVec3               ivelnrigid_body
+            LINALG::Vec3            ivelnrigid_body
             ) const;
     
     //! switch from old to new dof distribution

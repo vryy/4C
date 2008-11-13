@@ -46,15 +46,37 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
+template<class V1>
 void ComputeEnrichedNodalShapefunction(
     const DRT::Element&                        ele,
-    const RCP<XFEM::InterfaceHandle>       ih,
+    const RCP<XFEM::InterfaceHandle>           ih,
     const XFEM::ElementDofManager&             dofman,
     const XFEM::PHYSICS::Field                 field,
     const std::map<XFEM::Enrichment, double>&  enrvals,
-    const BlitzVec&                            funct,
+    const V1&                                  funct,
     BlitzVec&                                  enr_funct
-    );
+    )
+{
+    const int* nodeids = ele.NodeIds();
+    
+    int dofcounter = 0;
+    for (int inode=0; inode < ele.NumNode(); ++inode)
+    {
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            if (enrfield->getField() == field)
+            {
+                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+                enr_funct(dofcounter) = funct(inode) * enrval;
+                dofcounter += 1;
+            }
+        }
+    }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+}
 
 /*!
  * \brief For a given situation compute the enriched shape functions
@@ -63,17 +85,43 @@ void ComputeEnrichedNodalShapefunction(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
+template<class V1, class M2>
 void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec& funct,
-        const BlitzMat& derxy,
+        const V1& funct,
+        const M2& derxy,
         BlitzVec& enr_funct,
         BlitzMat& enr_derxy
-        );
+        )
+{
+    const int* nodeids = ele.NodeIds();
+    
+    int dofcounter = 0;
+    for (int inode=0; inode < ele.NumNode(); ++inode)
+    {
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            if (enrfield->getField() == field)
+            {
+                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+                enr_funct(dofcounter) = funct(inode) * enrval;
+                for (int isd = 0; isd < 3; ++isd)
+                {
+                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+                }
+                dofcounter += 1;
+            }
+        }
+    }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+}
 
 /*!
  * \brief For a given situation compute the enriched shape functions
@@ -82,19 +130,49 @@ void ComputeEnrichedNodalShapefunction(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
+template<class V1, class M2, class M3>
 void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec& funct,
-        const BlitzMat& derxy,
-        const BlitzMat& derxy2,
+        const V1& funct,
+        const M2& derxy,
+        const M3& derxy2,
         BlitzVec& enr_funct,
         BlitzMat& enr_derxy,
         BlitzMat& enr_derxy2
-        );
+        )
+{
+    const int* nodeids = ele.NodeIds();
+    
+    int dofcounter = 0;
+    for (int inode=0; inode < ele.NumNode(); ++inode)
+    {
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            if (enrfield->getField() == field)
+            {
+                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+                enr_funct(dofcounter) = funct(inode) * enrval;
+                for (int isd = 0; isd < 3; ++isd)
+                {
+                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+                }
+                for (int isd = 0; isd < 6; ++isd)
+                {
+                  enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
+                }
+                dofcounter += 1;
+            }
+        }
+    }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+}
 
 /*!
  * \brief For a given situation compute the enriched shape functions

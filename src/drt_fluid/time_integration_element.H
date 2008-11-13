@@ -53,10 +53,10 @@ namespace TIMEINT_THETA_BDF2
    * \return hist          linear combination of old values
    * 
    */
-  BlitzVec3 GetOldPartOfRighthandside(
-      const BlitzVec3&           veln,       ///< velocity      n
-      const BlitzVec3&           velnm,      ///< velocity      n-1
-      const BlitzVec3&           accn,       ///< acceleration  n
+  LINALG::Vec3 GetOldPartOfRighthandside(
+      const LINALG::Vec3&        veln,       ///< velocity      n
+      const LINALG::Vec3&        velnm,      ///< velocity      n-1
+      const LINALG::Vec3&        accn,       ///< acceleration  n
       const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
       const double               dta,        ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme

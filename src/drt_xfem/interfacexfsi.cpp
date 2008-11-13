@@ -507,7 +507,7 @@ double ElementVolumeT(
   const int nsd = 3;
   
   // get node coordinates of the current element
-  static blitz::TinyMatrix<double,nsd,numnode> xyze;
+  static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
   
   // physical element volume 
@@ -547,20 +547,15 @@ double ElementVolumeT(
     
     // shape functions and their first derivatives
     static blitz::TinyVector<double,numnode> funct;
-    static blitz::TinyMatrix<double,nsd,numnode> deriv;
+    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> deriv;
     DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
     DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
     // get transposed of the jacobian matrix d x / d \xi
-    static BlitzMat3x3 xjm;
+    static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
     BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double det = xjm.Determinant();
     const double fac = intpoints.qwgt[iquad]*det;
 
     if (det <= 0.0)

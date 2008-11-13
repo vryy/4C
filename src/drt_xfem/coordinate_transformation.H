@@ -89,7 +89,7 @@ namespace GEO
     static BlitzMat deriv(3,27);
     DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
     // get jacobian matrix ...
-    BlitzMat3x3 xjm;
+    LINALG::Mat3x3 xjm;
     for (int i = 0; i < 3; ++i)
     {
       for (int j = 0; j < 3; ++j)
@@ -101,15 +101,9 @@ namespace GEO
         }
       }
     }
-    // ...and its determinante
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-    xjm(0,1)*xjm(1,2)*xjm(2,0)+
-    xjm(0,2)*xjm(1,0)*xjm(2,1)-
-    xjm(0,2)*xjm(1,1)*xjm(2,0)-
-    xjm(0,0)*xjm(1,2)*xjm(2,1)-
-    xjm(0,1)*xjm(1,0)*xjm(2,2);
-    
-    return det;
+
+    // ...and return its determinante
+    return xjm.Determinant();
   }
   //! get determinante between eta and xi space
   template<>
@@ -189,7 +183,7 @@ namespace GEO
     DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta(0), pos_eta(1), cell.Shape());
     
     // get jacobian matrix ...
-    BlitzMat2x2 xjm;
+    LINALG::Mat2x2 xjm;
     for (int i = 0; i < 2; ++i)
     {
       for (int j = 0; j < 2; ++j)
@@ -202,10 +196,8 @@ namespace GEO
       }
     }
     
-    // ...and its determinante
-    const double det = xjm(0, 0)*xjm(1, 1) - xjm(0, 1)*xjm(1, 0);
-    
-    return det;
+    // ...and return its determinante
+    return xjm.Determinant();
   }
   
   //! Calculate inverse of a 3x3 matrix

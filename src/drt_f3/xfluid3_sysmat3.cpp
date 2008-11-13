@@ -12,7 +12,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
+#if 0
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
@@ -149,7 +149,7 @@ static void Sysmat3(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    static blitz::TinyMatrix<double,nsd,numnode> xyze;
+    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
@@ -273,8 +273,8 @@ static void Sysmat3(
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
-            static BlitzVec funct(numnode);
-            static BlitzMat deriv(3, numnode, blitz::ColumnMajorArray<2>());
+            static LINALG::FixedSizeSerialDenseMatrix<numnode,1> funct;
+            static LINALG::FixedSizeSerialDenseMatrix<3,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
@@ -317,15 +317,10 @@ static void Sysmat3(
       
             // get transposed of the jacobian matrix d x / d \xi
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static BlitzMat3x3 xjm;
+            static LINALG::Mat3x3 xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
-            const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                               xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                               xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                               xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                               xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                               xjm(0,1)*xjm(1,0)*xjm(2,2);
+            const double det = xjm.Determinant();
             const double fac = intpoints.qwgt[iquad]*det*detcell;
 
             if (det < 0.0)
@@ -334,11 +329,11 @@ static void Sysmat3(
             }
 
             // inverse of jacobian
-            static BlitzMat3x3 xji;
+            static LINALG::Mat3x3 xji;
             GEO::Inverse3x3(xjm, det, xji);
 
             // compute global derivates
-            static BlitzMat derxy(3, numnode);
+            static LINALG::FixedSizeSerialDenseMatrix<3,numnode> derxy;
             //static BlitzMat derxy_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //static BlitzMat derxy_discpres(3, DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
@@ -366,10 +361,10 @@ static void Sysmat3(
 //            }
 
             // compute second global derivative
-            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
+            static LINALG::FixedSizeSerialDenseMatrix<6,numnode> derxy2;
             if (higher_order_ele)
             {
-                static BlitzMat deriv2(6,numnode,blitz::ColumnMajorArray<2>());
+                static LINALG::FixedSizeSerialDenseMatrix<6,numnode> deriv2;
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
                 XFEM::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
@@ -514,7 +509,7 @@ static void Sysmat3(
             }
             
             // get velocity (np,i) derivatives at integration point
-            static BlitzMat3x3 vderxy;
+            static LINALG::Mat3x3 vderxy;
             //vderxy = blitz::sum(enr_derxy(j,k)*evelnp(i,k),k);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -585,7 +580,7 @@ static void Sysmat3(
               discpres += shp_discpres(iparam)*ediscprenp(iparam);
     
             // get viscous stress unknowns
-            static BlitzMat3x3 tau;
+            static LINALG::Mat3x3 tau;
             if (tauele_unknowns_present)
             {
               XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -1536,7 +1531,7 @@ static void Sysmat3(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static BlitzMat3x2 dxyzdrs;
+            static LINALG::Mat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1551,16 +1546,15 @@ static void Sysmat3(
             }
             
             // compute covariant metric tensor G for surface element (2x2)
-            static BlitzMat2x2 metric;
+            static LINALG::Mat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
-            //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
+            metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
             //const BlitzMat derxy(blitz::sum(dxyzdrs(i,k)*deriv_boundary(k,j),k));
             //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
-            const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
+            const double detmetric = sqrt(metric.Determinant());
             if (detmetric < 0.0)
             {
               cout << "detmetric = " << detmetric << endl;
@@ -1695,7 +1689,7 @@ static void Sysmat3(
             //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
-            static BlitzMat3x3 tau;
+            static LINALG::Mat3x3 tau;
             XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
@@ -1917,5 +1911,5 @@ void XFLUID::callSysmat3(
 
 
 #endif
-
+#endif
 #endif
