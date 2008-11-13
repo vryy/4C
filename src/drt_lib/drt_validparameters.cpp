@@ -611,8 +611,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
-  
-  
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");
   setStringToIntegralParameter<int>("BROWNIAN_MOTION","No",
@@ -666,7 +666,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
   //order of interpolation for stochastical fields
   IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
@@ -1457,7 +1457,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&fsidyn);
 
   IntParameter("PRECONDREUSE",
-               1,
+               10,
                "Number of preconditioner reused in monolithic FSI",
                &fsidyn);
 
@@ -1510,8 +1510,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "to the nonlinear convergance test.",
                   &fsidyn);
 
-  DoubleParameter("ADAPTIVEDIST",0.1,
-                  "Required distance for adaptive convergence check in monolithic FSI.\n"
+  DoubleParameter("ADAPTIVEDIST",0.0,
+                  "Required distance for adaptive convergence check in Newton-type FSI.\n"
                   "This is the improvement we want to achieve in the linear extrapolation of the\n"
                   "adaptive convergence check. Set to zero to avoid the adaptive check altogether.",
                   &fsidyn);
@@ -1609,11 +1609,11 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     );
 
   {
-    // this one is longer than 15 and the tuple<> function does not support this, 
+    // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
     Teuchos::Tuple<std::string,17> name;
     Teuchos::Tuple<_AZPRECTYP,17>  number;
-    
+
     name[0] = "none";                         number[0] = azprec_none;
     name[1] = "ILU";                          number[1] = azprec_ILU;
     name[2] = "ILUT";                         number[2] = azprec_ILUT;
@@ -1631,7 +1631,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[14] = "MLAPI";                       number[14] = azprec_MLAPI;
     name[15] = "GaussSeidel";                 number[15] = azprec_GaussSeidel;
     name[16] = "DownwindGaussSeidel";         number[16] = azprec_DownwindGaussSeidel;
-    
+
     setStringToIntegralParameter<_AZPRECTYP>(
       "AZPREC", "ILU",
       "Type of internal preconditioner to use.\n"
