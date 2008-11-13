@@ -322,6 +322,14 @@ private:
     calc_elch_kwok_error
   };
 
+  //! possible options for the stabilization parameter
+  enum TauType
+  {
+    franca_valentin,
+    bazilevs,
+    tau_not_defined
+  };
+
   //! flux parameters recognized by condif3
   enum FluxType
   {

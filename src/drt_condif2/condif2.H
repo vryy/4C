@@ -292,6 +292,15 @@ public:
   //@}
 
 
+  //! possible options for the stabilization parameter
+  enum TauType
+  {
+    franca_valentin,
+    bazilevs,
+    tau_not_defined
+  };
+
+
 private:
 
   //! action parameters recognized by condif2

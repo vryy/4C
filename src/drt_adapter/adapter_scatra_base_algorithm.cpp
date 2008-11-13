@@ -67,7 +67,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // set some pointers and variables
   // -------------------------------------------------------------------
 
-  const Teuchos::ParameterList& scatradyn = 
+  const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // print out default parameters of scalar tranport parameter list
@@ -119,7 +119,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // ---------------------------------------------------- initial field
   scatratimeparams->set<int>("scalar initial field" ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
   scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
-  
+
   // ----------------------------------------------------velocity field
   scatratimeparams->set<int>("velocity field" ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
   scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
@@ -133,6 +133,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------- block preconditioning (only supported by ELCH)
   scatratimeparams->set<int>("BLOCKPRECOND",Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"));
 
+  // -----------------------sublist containing stabilization parameters
+  scatratimeparams->sublist("STABILIZATION")=scatradyn.sublist("STABILIZATION");
+
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
@@ -140,7 +143,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   {
     scatratimeparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
   }
-  
+
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
@@ -161,7 +164,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   }
 
   // -------------------------------------------------------------------
-  // additional parameters and algorithm construction depending on 
+  // additional parameters and algorithm construction depending on
   // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   if(timintscheme == INPUTPARAMS::timeint_stationary)

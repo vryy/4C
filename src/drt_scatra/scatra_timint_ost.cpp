@@ -170,6 +170,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     eleparams.set("action","initialize_one_step_theta");
     // other parameters that are needed by the elements
     eleparams.set("total time",time_);
+    eleparams.set("time-step length",dta_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
@@ -186,6 +187,9 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
     LINALG::Export(*convel_,*tmp);
     eleparams.set("velocity field",tmp);
+
+    // parameters for stabilization
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
     // set vector values needed by elements
     discret_->ClearState();

@@ -2715,12 +2715,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     velino_(0,0) = 1;
   }
 
-  // get streamlength
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
-  tmp.MultiplyTN(derxy_,velino_);
-  const double val = tmp.Norm1();
-  const double strle = 2.0/val;
-
   /*------------------------------------------------------------------*/
   /*                                                                  */
   /*                 GET EFFECTIVE VISCOSITY IN GAUSSPOINT            */
@@ -2926,6 +2920,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     http://www.lncc.br/~valentin/publication.htm                   */
 
 
+    // get streamlength
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+    tmp.MultiplyTN(derxy_,velino_);
+    const double val = tmp.Norm1();
+    const double strle = 2.0/val;
+
     /* viscous : reactive forces */
     const double re1 = 4.0 * timefac * visceff / (mk * dens * DSQR(strle));
 
@@ -3125,6 +3125,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
+
+    // get streamlength
+    LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+    tmp.MultiplyTN(derxy_,velino_);
+    const double val = tmp.Norm1();
+    const double strle = 2.0/val;
 
     /* viscous : reactive forces */
     const double re1 = 4.0 * timefac * visceff / (mk * dens * DSQR(strle));

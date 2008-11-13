@@ -182,7 +182,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -269,7 +269,7 @@ void SCATRA::ScaTraTimIntImpl::Integrate()
 {
   // solve the problem
   TimeLoop();
-  
+
   // just beauty
   cout<<endl<<endl;
 
@@ -454,7 +454,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
   const bool explpredictor = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
-  if (explpredictor) 
+  if (explpredictor)
     ExplicitPredictor();
 
   while (stopnonliniter==false)
@@ -473,7 +473,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // zero out matrix entries
       sysmat_->Zero();
 
-      // reset the residual vector and add actual Neumann loads 
+      // reset the residual vector and add actual Neumann loads
       // scaled with a factor resulting from time discretization
       residual_->Update(theta_*dta_,*neumann_loads_,0.0);
 
@@ -517,6 +517,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
+      eleparams.set("time-step length",dta_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
@@ -532,6 +533,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
       LINALG::Export(*convel_,*tmp);
       eleparams.set("velocity field",tmp);
+
+      // parameters for stabilization
+      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -771,7 +775,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // zero out matrix entries
     sysmat_->Zero();
 
-    // reset the residual vector and add actual Neumann loads 
+    // reset the residual vector and add actual Neumann loads
     // scaled with a factor resulting from time discretization
     residual_->Update(theta_*dta_,*neumann_loads_,0.0);
 
@@ -783,6 +787,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
+    eleparams.set("time-step length",dta_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
@@ -797,6 +802,9 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
     LINALG::Export(*convel_,*tmp);
     eleparams.set("velocity field",tmp);
+
+    // parameters for stabilization
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -855,18 +863,18 @@ void SCATRA::ScaTraTimIntImpl::Output()
   if (step_%upres_==0)  //yes, output is desired
   {
     // write state vectors
-    OutputState(); 
+    OutputState();
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_)
       output_->WriteElementData();
 
     //add restart data
-    if (step_%uprestart_==0) 
+    if (step_%uprestart_==0)
       OutputRestart();
 
     // write flux vector field
-    if (writeflux_!="No") 
+    if (writeflux_!="No")
       OutputFlux();
   }
 
@@ -1501,7 +1509,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
 
     // print out integral of normal fluxes over indicated boundary
-    if (myrank_ == 0) 
+    if (myrank_ == 0)
       cout << "Integral of normal flux at indicated boundary: " << parnormfluxintegral << endl;
   }
 
@@ -1582,7 +1590,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
-{ 
+{
   if (dbcmaps_ == Teuchos::null)
     dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);

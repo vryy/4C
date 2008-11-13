@@ -74,15 +74,17 @@ namespace ELEMENTS
     void Sysmat(
         const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
         const vector<double>&           ehist, ///< rhs from beginning of time step
-        const vector<double>&           edens, ///< density
+        const vector<double>&           edensnp, ///< density field at n+1
         Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
         const struct _MATERIAL*         material, ///< material pointer
         const double                    time, ///< current simulation time
+        const double                    dt, ///< current time-step length
         const double                    timefac, ///< time discretization factor
-        const Epetra_SerialDenseVector& evel, ///< nodal velocities at n+1
+        const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
         bool                            temperature, ///< temperature flag
+        const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
         string                          fssgd, ///< subgrid-diff. flag
         const bool                      is_stationary ///< flag indicating stationary formulation
     );
@@ -91,24 +93,26 @@ namespace ELEMENTS
     void InitializeOST(
         const DRT::ELEMENTS::Condif2*   ele,
         const vector<double>&           ephi0,
-        const vector<double>&           edens,
+        const vector<double>&           edens0,
         Epetra_SerialDenseMatrix&       massmat,
         Epetra_SerialDenseVector&       rhs,
         Epetra_SerialDenseVector&       subgrdiff,
         const struct _MATERIAL*         material,
         const double                    time,
+        const double                    dt,
         const double                    timefac,
-        const Epetra_SerialDenseVector& evel,
+        const Epetra_SerialDenseVector& evel0,
         bool                            temperature,
+        const enum Condif2::TauType     whichtau,
         string                          fssgd
     );
 
     //! calculate normalized subgrid-diffusivity matrix
     void CalcSubgridDiffMatrix(
-        const DRT::ELEMENTS::Condif2*   ele,
-        Epetra_SerialDenseMatrix&       sys_mat_sd,
-        const double                    timefac,
-        const bool                      is_stationary
+        const DRT::ELEMENTS::Condif2* ele,
+        Epetra_SerialDenseMatrix&     sys_mat_sd,
+        const double                  timefac,
+        const bool                    is_stationary
     );
 
 
@@ -117,7 +121,7 @@ namespace ELEMENTS
     //! get the body force
     void BodyForce(
         const DRT::ELEMENTS::Condif2* ele, ///< the element we are dealing with
-        const double time                  ///< current simulation time
+        const double                  time ///< current simulation time
     );
 
     //! calculate stabilization parameter
@@ -125,8 +129,11 @@ namespace ELEMENTS
         const DRT::ELEMENTS::Condif2*&          ele,
         Epetra_SerialDenseVector&               subgrdiff,
         const Epetra_SerialDenseVector&         evel,
+        const vector<double>&                   edens,
         const DRT::Element::DiscretizationType& distype,
+        const double                            dt,
         const double&                           timefac,
+        const enum Condif2::TauType             whichtau,
         string                                  fssgd,
         const bool&                             is_stationary,
         const bool                              initial
@@ -134,18 +141,18 @@ namespace ELEMENTS
 
     //! evaluate shape functions and their derivatives at current integration point
     void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntegrationPoints2D& intpoints, ///< integration points
-        const int& iquad,                                 ///< id of current Gauss point
-        const DRT::Element::DiscretizationType& distype,  ///< distinguish between DiscretizationType
-        const bool& higher_order_ele,                     ///< are second derivatives needed?
-        const DRT::ELEMENTS::Condif2*   ele               ///< the element
+        const DRT::UTILS::IntegrationPoints2D&  intpoints, ///< integration points
+        const int&                              iquad, ///< id of current Gauss point
+        const DRT::Element::DiscretizationType& distype, ///< distinguish between DiscretizationType
+        const bool&                             higher_order_ele, ///< are second derivatives needed?
+        const DRT::ELEMENTS::Condif2*           ele ///< the element
     );
 
     //! calculate 2nd derivatives of shape functions (local and global)
     void CalSecondDeriv(
-        const double&                            e1,      ///< first coordinate of GP
-        const double&                            e2,      ///< second coordinate of GP
-        const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
+        const double&                           e1,      ///< first coordinate of GP
+        const double&                           e2,      ///< second coordinate of GP
+        const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     );
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)

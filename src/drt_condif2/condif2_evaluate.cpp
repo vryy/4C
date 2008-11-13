@@ -111,6 +111,9 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       const bool is_stationary = params.get<bool>("using stationary formulation");
       const double time = params.get<double>("total time");
 
+      // get time-step length
+      const double dt = params.get<double>("time-step length");
+
       // One-step-Theta: timefac = theta*dt
       // BDF2:           timefac = 2/3 * dt
       double timefac = 0.0;
@@ -120,16 +123,32 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
         if (timefac < 0.0) dserror("No thsl supplied");
       }
 
+      // set parameters for stabilization
+      ParameterList& stablist = params.sublist("STABILIZATION");
+
+      // select tau definition
+      Condif2::TauType whichtau = Condif2::tau_not_defined;
+      {
+        const string taudef = stablist.get<string>("DEFINITION_TAU");
+
+        if(taudef == "Franca_Valentin") whichtau = Condif2::franca_valentin;
+        else if(taudef == "Bazilevs")   whichtau = Condif2::bazilevs;
+      }
+
       // get (weighted) velocity values at the nodes (3rd component of velocity field is ignored!)
       // compare also with DRT::UTILS::ExtractMyValues()
       const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
       const int iel = NumNode();
       const int nsd=2;
-      Epetra_SerialDenseVector evel(nsd*iel);
-      DRT::UTILS::ExtractMyNodeBasedValues2D(this,evel,velocity);
+      Epetra_SerialDenseVector evelnp(nsd*iel);
+      DRT::UTILS::ExtractMyNodeBasedValues2D(this,evelnp,velocity);
 
       // get flag for fine-scale subgrid diffusivity
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+      // check for non-existing subgrid-diffusivity models
+      if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" || fssgd == "Smagorinsky_small")
+        dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
       // set flag for type of scalar whether it is temperature or not
       string scaltypestr=params.get<string>("problem type");
@@ -146,9 +165,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
           elevec2,
           actmat,
           time,
+          dt,
           timefac,
-          evel,
+          evelnp,
           temperature,
+          whichtau,
           fssgd,
           is_stationary);
     }
@@ -156,7 +177,8 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
     // calculate time derivative for time value t_0
     case initialize_one_step_theta:
     {
-      const double time = params.get<double>("total time");
+      const double time    = params.get<double>("total time");
+      const double dt      = params.get<double>("time-step length");
       const double timefac = params.get<double>("thsl");
 
       // need initial field
@@ -171,16 +193,32 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
       DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
 
+      // set parameters for stabilization
+      ParameterList& stablist = params.sublist("STABILIZATION");
+
+      // select tau definition
+      Condif2::TauType whichtau = Condif2::tau_not_defined;
+      {
+        const string taudef = stablist.get<string>("DEFINITION_TAU");
+
+        if(taudef == "Franca_Valentin") whichtau = Condif2::franca_valentin;
+        else if(taudef == "Bazilevs")   whichtau = Condif2::bazilevs;
+      }
+
       // get initial velocity values at the nodes
       // compare also with DRT::UTILS::ExtractMyValues()
       const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
       const int iel = NumNode();
       const int nsd=2;
-      Epetra_SerialDenseVector evel(nsd*iel);
-      DRT::UTILS::ExtractMyNodeBasedValues2D(this,evel,velocity);
+      Epetra_SerialDenseVector evel0(nsd*iel);
+      DRT::UTILS::ExtractMyNodeBasedValues2D(this,evel0,velocity);
 
       // get flag for fine-scale subgrid diffusivity
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+      // check for non-existing subgrid-diffusivity models
+      if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" || fssgd == "Smagorinsky_small")
+        dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
       // set flag for type of scalar whether it is temperature or not
       string scaltypestr=params.get<string>("problem type");
@@ -197,9 +235,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
            elevec2,
            actmat,
            time,
+           dt,
            timefac,
-           evel,
+           evel0,
            temperature,
+           whichtau,
            fssgd);
     }
     break;

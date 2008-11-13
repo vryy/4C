@@ -176,6 +176,9 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     const bool is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
 
+    // get time-step length
+    const double dt = params.get<double>("time-step length");
+
     // One-step-Theta: timefac = theta*dt
     // BDF2:           timefac = 2/3 * dt
     double timefac = 0.0;
@@ -183,6 +186,18 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     {
       timefac = params.get<double>("thsl");
       if (timefac < 0.0) dserror("thsl is negative.");
+    }
+
+    // set parameters for stabilization
+    ParameterList& stablist = params.sublist("STABILIZATION");
+
+    // select tau definition
+    Condif3::TauType whichtau = Condif3::tau_not_defined;
+    {
+      const string taudef = stablist.get<string>("DEFINITION_TAU");
+
+      if(taudef == "Franca_Valentin") whichtau = Condif3::franca_valentin;
+      else if(taudef == "Bazilevs")   whichtau = Condif3::bazilevs;
     }
 
     // get (weighted) velocity at the nodes
@@ -195,6 +210,10 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
 
     // get flag for fine-scale subgrid diffusivity
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+    // check for non-existing subgrid-diffusivity models
+    if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" || fssgd == "Smagorinsky_small")
+      dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
@@ -240,7 +259,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
       evelnp(1,i) = evel[1+(i*3)];
       evelnp(2,i) = evel[2+(i*3)];
 
-      // insert density vector into element array 
+      // insert density vector into element array
       // (only take values belonging to the first transported scalar!)
       edensnp(i,0) = mydensnp[0+(i*numdofpernode_)];
 
@@ -265,9 +284,11 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         elevec2_epetra,
         actmat,
         time,
+        dt,
         timefac,
         evelnp,
         temperature,
+        whichtau,
         fssgd,
         is_stationary,
         frt);
@@ -276,7 +297,20 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // calculate time derivative for time value t_0
   {
     const double time = params.get<double>("total time");
+    const double dt = params.get<double>("time-step length");
     const double timefac = params.get<double>("thsl");
+
+    // set parameters for stabilization
+    ParameterList& stablist = params.sublist("STABILIZATION");
+
+    // select tau definition
+    Condif3::TauType whichtau = Condif3::tau_not_defined;
+    {
+      const string taudef = stablist.get<string>("DEFINITION_TAU");
+
+      if(taudef == "Franca_Valentin") whichtau = Condif3::franca_valentin;
+      else if(taudef == "Bazilevs")   whichtau = Condif3::bazilevs;
+    }
 
     // need initial field
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
@@ -299,6 +333,10 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
 
     // get flag for fine-scale subgrid diffusivity
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
+
+    // check for non-existing subgrid-diffusivity models
+    if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" || fssgd == "Smagorinsky_small")
+      dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
@@ -326,7 +364,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
       evel0(1,i) = evel[1+(i*3)];
       evel0(2,i) = evel[2+(i*3)];
 
-      // insert density vector into element array 
+      // insert density vector into element array
       // (only take values belonging to the first transported scalar!)
       edens0(i,0) = mydens0[0+(i*numdofpernode_)];
 
@@ -357,9 +395,11 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         elevec2_epetra,
         actmat,
         time,
+        dt,
         timefac,
         evel0,
         temperature,
+        whichtau,
         fssgd,
         frt);
   }
@@ -432,22 +472,24 @@ return 0;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
-    const DRT::ELEMENTS::Condif3*   ele, ///< the element those matrix is calculated
+    const DRT::ELEMENTS::Condif3*                             ele, ///< the element those matrix is calculated
     const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,///< current scalar field
     const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ehist, ///< rhs from beginning of time step
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens, ///< density*shc
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp, ///< el. potential at element nodes
-    Epetra_SerialDenseMatrix&       sys_mat,///< element matrix to calculate
-    Epetra_SerialDenseVector&       residual, ///< element rhs to calculate
-    Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
-    const struct _MATERIAL*         material, ///< material pointer
-    const double                    time, ///< current simulation time
-    const double                    timefac, ///< time discretization factor
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,///< nodal velocities at t_{n+1}
-    const bool                      temperature, ///< temperature flag
-    const string                    fssgd, ///< subgrid-diff. flag
-    const bool                      is_stationary, ///< flag indicating stationary formulation
-    const double                    frt ///< factor F/RT needed for ELCH calculations
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          edensnp, ///< current density field
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epotnp, ///< el. potential at element nodes
+    Epetra_SerialDenseMatrix&                                 sys_mat,///< element matrix to calculate
+    Epetra_SerialDenseVector&                                 residual, ///< element rhs to calculate
+    Epetra_SerialDenseVector&                                 subgrdiff, ///< subgrid-diff.-scaling vector
+    const struct _MATERIAL*                                   material, ///< material pointer
+    const double                                              time, ///< current simulation time
+    const double                                              dt, ///< current time-step length
+    const double                                              timefac, ///< time discretization factor
+    const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
+    const bool                                                temperature, ///< temperature flag
+    const enum Condif3::TauType                               whichtau, ///< stabilization parameter definition
+    const string                                              fssgd, ///< subgrid-diff. flag
+    const bool                                                is_stationary, ///< stationary flag
+    const double                                              frt ///< factor F/RT needed for ELCH calculations
 )
 {
   // get node coordinates
@@ -467,7 +509,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
   /*----------------------------------------------------------------------*/
-  CalTau(ele,subgrdiff,evelnp,epotnp,timefac,fssgd,is_stationary,false,frt);
+  CalTau(ele,subgrdiff,evelnp,edensnp,epotnp,dt,timefac,whichtau,fssgd,is_stationary,false,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -484,10 +526,10 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,higher_order_ele,ele);
 
-    // density*specific heat capacity-weighted shape functions
-    densfunct_.EMultiply(funct_,edens);
+    // density-weighted shape functions
+    densfunct_.EMultiply(funct_,edensnp);
 
-    // get (density*specific heat capacity-weighted) velocity at integration point
+    // get (density-weighted) velocity at integration point
     velint_.Multiply(evelnp,funct_);
 
     //------------ get values of variables at integration point
@@ -525,8 +567,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
-    const DRT::ELEMENTS::Condif3* ele, 
-    const double time
+    const DRT::ELEMENTS::Condif3* ele,
+    const double                  time
 )
 {
   vector<DRT::Condition*> myneumcond;
@@ -600,7 +642,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::GetMaterialParams
 (
     const struct _MATERIAL*   material,
-    const bool&               temperature  
+    const bool&               temperature
 )
 {
 // get diffusivity / diffusivities
@@ -655,27 +697,28 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
-    const DRT::ELEMENTS::Condif3*&          ele,
-    Epetra_SerialDenseVector&               subgrdiff,
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&         epot,
-    const double&                           timefac,
-    string                                  fssgd,
-    const bool&                             is_stationary,
-    const bool                              initial,
-    const double&                           frt
+    const DRT::ELEMENTS::Condif3*&                   ele,
+    Epetra_SerialDenseVector&                        subgrdiff,
+    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evel,
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot,
+    const double                                     dt,
+    const double&                                    timefac,
+    const enum Condif3::TauType                      whichtau,
+    string                                           fssgd,
+    const bool&                                      is_stationary,
+    const bool                                       initial,
+    const double&                                    frt
   )
 {
-  /*------------------------------------------------------- initialize ---*/
-  // use one point gauss rule to calculate tau at element center
+  // get element-type constant for tau
+  const double mk = SCATRA::MK<distype>();
+
+  // use one-point Gauss rule to calculate tau at element center
   DRT::UTILS::GaussRule3D intrule_stabili = SCATRA::getIntegrationRuleForStabilization<distype>();
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(intrule_stabili);
-
-  // prepare the standard FE stuff for this single integration point
-  // we do not need second derivatives for the calculation of tau
-  // EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,distype,false,ele);
 
   // shape functions and derivs at element center
   const double e1    = intpoints_tau.qxg[0][0];
@@ -696,130 +739,186 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   if (abs(det) < 1E-16)
     dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
-  const double vol = wquad*det;
+  // get (density-weighted) velocity at element center
+  velint_.Multiply(evel,funct_);
 
-  // There exist different definitions for 'the' characteristic element length hk:
-  // 1) get element length for tau_Mp/tau_C: volume-equival. diameter
-  // const double hk = pow((6.*vol/PI),(1.0/3.0));
-
-  // 2) streamlength (based on velocity vector at element centre)
+  // get "migration velocity" divided by D_k*z_k at element center
   if (numdofpernode_-numscal_== 1) // ELCH
   {
     // compute global derivatives
     derxy_.Multiply(xij_,deriv_);
 
-    // get "migration velocity" divided by D_k*z_k at element center
     migvelint_.Multiply(-frt,derxy_,epot);
-    
   } // if ELCH
 
-  
-/*  double strle = 0.0;
-  if (vel_norm>1e-6)
+  // stabilization parameter definition according to Bazilevs et al. (2007)
+  if(whichtau == Condif3::bazilevs)
   {
-    double val = 0;
-    for (int i=0;i<iel;++i)
+    for(int k = 0;k<numscal_;++k) // loop over all transported scalars
     {
-      double sum = 0;
-      for (int j=0;j<3;++j)
-      {
-        sum += velint_[j]*derxy_(j,i);
-      }
-      val+= abs(sum);
-    }
-    strle = 2.0*vel_norm/val; //this formula is not working in 3D in case of HEX8 elements!!
-  }
-  else
-  //case: 'zero' velocity vector => tau will be very small in diffusion-dominated regions
-  // => usage of arbitrary vector velint = (1 0 0)^T in above formula possible
-  {
-     double val = 0;
-     for (int i=0;i<iel;++i)
-     {
-       val+=abs(derxy_(0,i));
-     }
-     strle = 2.0/val;
-   }
-   //const double hk = strle;*/
-
-  // 3) use cubic root of the element volume as characteristic length
-  const double hk = pow(vol,(1.0/3.0));
-
-  // get element type constant for tau
-  const double mk = SCATRA::MK<distype>();
-
-  // get (density*specific heat capacity-weighted) velocity at element center
-  velint_.Multiply(evelnp,funct_);
-
-  // some necessary parameter definitions
-  double vel_norm, epe1, epe2, xi1, xi2;
-
-  for(int k = 0;k<numscal_;++k) // loop over all transported scalars
-  {
-    if (numdofpernode_ - numscal_ == 1) // ELCH
-    {
-      const double Dkzk = diffus_[k]*valence_[k];
-      // get Euclidean norm of effective velocity at element center:
+      // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
-      vel_norm = sqrt(DSQR(velint_(0)+Dkzk*migvelint_(0)) + DSQR(velint_(1)+Dkzk*migvelint_(1)) + DSQR(velint_(2)+Dkzk*migvelint_(2)));
-    }
-    else
-    {
-      // get Euclidean norm of (weighted) velocity at element center
-      vel_norm = velint_.Norm2();
-    }
-
-  // stabilization parameter definition according to Franca and Valentin (2000)
-  if (is_stationary == false)
-  {
-      /* parameter relating diffusive : reactive forces */
-      epe1 = 2.0 * timefac * diffus_[k] / (mk * DSQR(hk)); 
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi1 = DMAX(epe1,1.0);
-      xi2 = DMAX(epe2,1.0);
-
-      tau_[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus_[k]/mk)*xi2);
-  }
-  else
-  {
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi2 = DMAX(epe2,1.0);
-
-      tau_[k] = (DSQR(hk)*mk)/(2.0*diffus_[k]*xi2);
-  }
-
-  // compute artificial diffusivity kappa_art_[k]
-  if (fssgd == "artificial_all" and (not initial))
-  {
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi2 = DMAX(epe2,1.0);
-
-      kart_[k] = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus_[k]*xi2);
-
-      for (int vi=0; vi<iel; ++vi)
+      if (numdofpernode_ - numscal_ == 1) // ELCH
       {
-        subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        const double Dkzk = diffus_[k]*valence_[k];
+        velint_.Update(Dkzk,migvelint_,1.0);
       }
+
+      /*
+                                                                1.0
+               +-                                          -+ - ---
+               |                                            |   2.0
+               | 4.0    n+1       n+1             2         |
+        tau  = | --- + u     * G u     + C * kappa  * G : G |
+               |   2           -          I           -   - |
+               | dt            -                      -   - |
+               +-                                          -+
+
+      */
+
+      /*            +-           -+   +-           -+   +-           -+
+                    |             |   |             |   |             |
+                    |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+               ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                    |    i     j  |   |    i     j  |   |    i     j  |
+                    +-           -+   +-           -+   +-           -+
+      */
+      /*            +----
+                     \
+            G : G =   +   G   * G
+            -   -    /     ij    ij
+            -   -   +----
+                     i,j
+      */
+      /*                      +----
+             n+1       n+1     \     n+1          n+1
+            u     * G u     =   +   u    * G   * u
+                    -          /     i     -ij    j
+                    -         +----        -
+                               i,j
+      */
+      double G;
+      double normG = 0;
+      double Gnormu = 0;
+      for (int nn=0;nn<3;++nn)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          G = xij_(nn,0)*xij_(rr,0) + xij_(nn,1)*xij_(rr,1) + xij_(nn,2)*xij_(rr,2);
+          normG+=G*G;
+          Gnormu+=velint_(nn,0)*G*velint_(rr,0);
+        }
+      }
+
+      // definition of constant
+      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+      //  brought 144.0 from Austin...)
+      const double CI = 12.0/mk;
+
+      // stabilization parameters for instationary and stationary case, respectively
+      if (is_stationary == false)
+      {
+        // get density at element center
+        const double dens = funct_.Dot(edens);
+
+        tau_[k] = 1.0/(sqrt((4.0*dens*dens)/(dt*dt)+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      }
+      else
+        tau_[k] = 1.0/(sqrt(Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+
+      // compute artificial diffusivity kappa_art_[k] if required
+      if (fssgd == "artificial_all" and (not initial))
+      {
+        // get Euclidean norm of (weighted) velocity at element center
+        const double vel_norm = velint_.Norm2();
+
+        kart_[k] = DSQR(vel_norm)/(sqrt(Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        }
+      } // for artificial diffusivity
+    } // for k
   }
-  else if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" ||
-           fssgd == "Smagorinsky_small")
-    dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
+  // stabilization parameter definition according to Franca and Valentin (2000)
+  else if (whichtau == Condif3::franca_valentin)
+  {
+    // volume of element
+    const double vol = wquad*det;
 
-  } // loop over scalars
+    // There exist different definitions for 'the' characteristic element length hk:
+    // 1) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
+    // const double hk = pow((6.*vol/PI),(1.0/3.0));
 
-#if 0
-   // some debug output
-   cout<<"hk (volume equiv diam)            = "<<pow((6.*vol/PI),(1.0/3.0))<<endl;
-   cout<<"strle                             = "<<strle<<endl;
-   cout<<"hk (cubic root of element volume) = "<<pow(vol,(1.0/3.0))<<endl;
-   cout<<"tau = "<<tau<<endl;
-#endif
+    // 2) streamlength (based on velocity vector at element centre) -> not default
+
+    // 3) use cubic root of the element volume as characteristic length -> default
+    const double hk = pow(vol,(1.0/3.0));
+
+    // some necessary parameter definitions
+    double vel_norm, epe1, epe2, xi1, xi2;
+
+    for(int k = 0;k<numscal_;++k) // loop over all transported scalars
+    {
+      if (numdofpernode_ - numscal_ == 1) // ELCH
+      {
+        const double Dkzk = diffus_[k]*valence_[k];
+        // get Euclidean norm of effective velocity at element center:
+        // (weighted) convective velocity + individual migration velocity
+        vel_norm = sqrt(DSQR(velint_(0)+Dkzk*migvelint_(0))
+                      + DSQR(velint_(1)+Dkzk*migvelint_(1))
+                      + DSQR(velint_(2)+Dkzk*migvelint_(2)));
+      }
+      else
+      {
+        // get Euclidean norm of (weighted) velocity at element center
+        vel_norm = velint_.Norm2();
+      }
+
+      // check whether there is zero diffusivity
+      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+
+      // stabilization parameter for instationary case
+      if (is_stationary == false)
+      {
+        /* parameter relating diffusive : reactive forces */
+        epe1 = 2.0 * timefac * diffus_[k] / (mk * DSQR(hk));
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi1 = DMAX(epe1,1.0);
+        xi2 = DMAX(epe2,1.0);
+
+        tau_[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus_[k]/mk)*xi2);
+      }
+      // stabilization parameter for stationary case
+      else
+      {
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi2 = DMAX(epe2,1.0);
+
+        tau_[k] = (DSQR(hk)*mk)/(2.0*diffus_[k]*xi2);
+      }
+
+      // compute artificial diffusivity kappa_art_[k]
+      if (fssgd == "artificial_all" and (not initial))
+      {
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi2 = DMAX(epe2,1.0);
+
+        kart_[k] = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus_[k]*xi2);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        }
+      }
+    } // loop over scalars
+  }
+  else dserror("unknown definition of tau\n");
 
   return;
 } //Condif3Impl::Caltau
@@ -878,9 +977,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   derxy_.Multiply(xij_,deriv_);
 
   // compute second global derivatives (if needed)
-  if (higher_order_ele) 
+  if (higher_order_ele)
     CalSecondDeriv(e1,e2,e3);
-  else 
+  else
     derxy2_.Clear();
 
   // say goodbye
@@ -999,9 +1098,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalSecondDeriv(
-    const double&                            e1,      ///< first coordinate of GP
-    const double&                            e2,      ///< second coordinate of GP
-    const double&                            e3       ///< third coordinate of GP
+    const double&  e1, ///< first coordinate of GP
+    const double&  e2, ///< second coordinate of GP
+    const double&  e3  ///< third coordinate of GP
     )
 {
   /*--- get the second derivatives of standard element at current GP */
@@ -1519,20 +1618,22 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
-    const DRT::ELEMENTS::Condif3*   ele,
+    const DRT::ELEMENTS::Condif3*                             ele,
     const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephi0,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot0,
-    Epetra_SerialDenseMatrix&       massmat,
-    Epetra_SerialDenseVector&       rhs,
-    Epetra_SerialDenseVector&       subgrdiff,
-    const struct _MATERIAL*         material,
-    const double                    time,
-    const double                    timefac,
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evel,
-    const bool                      temperature,
-    const string                    fssgd,
-    const double                    frt
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          edens0,
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epot0,
+    Epetra_SerialDenseMatrix&                                 massmat,
+    Epetra_SerialDenseVector&                                 rhs,
+    Epetra_SerialDenseVector&                                 subgrdiff,
+    const struct _MATERIAL*                                   material,
+    const double                                              time,
+    const double                                              dt,
+    const double                                              timefac,
+    const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evel0,
+    const bool                                                temperature,
+    const enum Condif3::TauType                               whichtau,
+    const string                                              fssgd,
+    const double                                              frt
 )
 {
   // get node coordinates
@@ -1552,7 +1653,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
   /*----------------------------------------------------------------------*/
-  CalTau(ele,subgrdiff,evel,epot0,timefac,fssgd,false,true,frt);
+  CalTau(ele,subgrdiff,evel0,edens0,epot0,dt,timefac,whichtau,fssgd,false,true,frt);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -1569,11 +1670,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,higher_order_ele,ele);
 
-    // density*specific heat capacity-weighted shape functions
-    densfunct_.EMultiply(funct_,edens);
+    // density-weighted shape functions
+    densfunct_.EMultiply(funct_,edens0);
 
-    // get (density*specific heat capacity-weighted) velocity at element center
-    velint_.Multiply(evel,funct_);
+    // get (density-weighted) velocity at element center
+    velint_.Multiply(evel0,funct_);
 
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
@@ -1685,7 +1786,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
             massmat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*diff_(vi)*densfunct_(ui);
           }
           /* convective term */
-          rhs[vi*numdofpernode_+k] += -(taufac*diff_(vi)*conv_ephi0_k); 
+          rhs[vi*numdofpernode_+k] += -(taufac*diff_(vi)*conv_ephi0_k);
 
           /* diffusive term */
           rhs[vi*numdofpernode_+k] += -(-taufac*diff_(vi)*diff_ephi0_k);
@@ -1732,10 +1833,10 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalcSubgridDiffMatrix(
-    const DRT::ELEMENTS::Condif3*   ele,
-    Epetra_SerialDenseMatrix&       sys_mat_sd,
-    const double                    timefac,
-    const bool                      is_stationary
+    const DRT::ELEMENTS::Condif3* ele,
+    Epetra_SerialDenseMatrix&     sys_mat_sd,
+    const double                  timefac,
+    const bool                    is_stationary
     )
 {
 // get node coordinates
@@ -1785,14 +1886,14 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
-    Epetra_SerialDenseMatrix& emat,
-    Epetra_SerialDenseVector& erhs,
+    Epetra_SerialDenseMatrix&                                 emat,
+    Epetra_SerialDenseVector&                                 erhs,
     const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp,
-    const bool&               higher_order_ele,
-    const double&             frt,
-    const bool&               is_stationary,
-    const double&             timefac
+    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epotnp,
+    const bool&                                               higher_order_ele,
+    const double&                                             frt,
+    const bool&                                               is_stationary,
+    const double&                                             timefac
 )
 {
   // get values of all transported scalars at integration point
@@ -2027,12 +2128,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::ELEMENTS::Condif3*   ele,
-    ParameterList& params,
+    const DRT::ELEMENTS::Condif3*                    ele,
+    ParameterList&                                   params,
     const LINALG::FixedSizeSerialDenseMatrix<iel,2>& ephinp,
     const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp,
-    Epetra_SerialDenseVector& errors,
-    struct _MATERIAL* material
+    Epetra_SerialDenseVector&                        errors,
+    struct _MATERIAL*                                material
 )
 {
   //at the moment, there is only one analytical test problem available!

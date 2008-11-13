@@ -1209,6 +1209,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
+
+  // this parameter seperates stabilized from unstabilized methods
+  setStringToIntegralParameter<int>("STABTYPE",
+                               "residual_based",
+                               "Apply (un)stabilized scalar transport formulation",
+                               tuple<std::string>(
+                                 "no_stabilization",
+                                 "residual_based"),
+                               tuple<std::string>(
+                                 "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
+                                 "Use a residual-based stabilization")  ,
+                               tuple<int>(0,1),
+                               &scatradyn_stab);
+
+  // this parameter selects the tau definition applied
+  setStringToIntegralParameter<int>("DEFINITION_TAU",
+                               "Franca_Valentin",
+                               "Definition of tau",
+                               tuple<std::string>(
+                                 "Franca_Valentin",
+                                 "Bazilevs"),
+                               tuple<std::string>(
+                                 "tau according to Franca and Valentin (2000)",
+                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)")  ,
+                               tuple<int>(0,1),
+                               &scatradyn_stab);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",
       false,

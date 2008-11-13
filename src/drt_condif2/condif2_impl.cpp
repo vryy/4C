@@ -121,15 +121,17 @@ DRT::ELEMENTS::Condif2Impl::Condif2Impl(int iel, int numdofpernode, int numscal)
 void DRT::ELEMENTS::Condif2Impl::Sysmat(
     const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
     const vector<double>&           ehist, ///< rhs from beginning of time step
-    const vector<double>&           edens, ///< density*shc
+    const vector<double>&           edensnp, ///< density field at n+1
     Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector*       residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&       subgrdiff, ///< subgrid-diff.-scaling vector
     const struct _MATERIAL*         material, ///< material pointer
     const double                    time, ///< current simulation time
+    const double                    dt, ///< current time-step length
     const double                    timefac, ///< time discretization factor
-    const Epetra_SerialDenseVector& evel, ///< nodal velocities at n+1
+    const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
     bool                            temperature, ///< temperature flag
+    const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
     string                          fssgd, ///< subgrid-diff. flag
     const bool                      is_stationary ///< flag indicating stationary formulation
 )
@@ -198,7 +200,7 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
   /*----------------------------------------------------------------------*/
-  CalTau(ele,subgrdiff,evel,distype,timefac,fssgd,is_stationary,false);
+  CalTau(ele,subgrdiff,evelnp,edensnp,distype,dt,timefac,whichtau,fssgd,is_stationary,false);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif2 element
@@ -215,19 +217,19 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,distype,higher_order_ele,ele);
 
-    // density*specific heat capacity-weighted shape functions
+    // density-weighted shape functions
     for (int j=0; j<iel_; j++)
     {
-      densfunct_[j] = funct_[j]*edens[j];
+      densfunct_[j] = funct_[j]*edensnp[j];
     }
 
-    // get (density*specific heat capacity-weighted) velocity at element center
+    // get (density-weighted) velocity at element center
     for (int i=0;i<2;i++)
     {
       velint_[i]=0.0;
       for (int j=0;j<iel_;j++)
       {
-        velint_[i] += funct_[j]*evel[i+(2*j)];
+        velint_[i] += funct_[j]*evelnp[i+(2*j)];
       }
     }
 
@@ -353,15 +355,34 @@ void DRT::ELEMENTS::Condif2Impl::CalTau(
     const DRT::ELEMENTS::Condif2*&          ele,
     Epetra_SerialDenseVector&               subgrdiff,
     const Epetra_SerialDenseVector&         evel,
+    const vector<double>&                   edens,
     const DRT::Element::DiscretizationType& distype,
+    const double                            dt,
     const double&                           timefac,
+    const enum Condif2::TauType             whichtau,
     string                                  fssgd,
     const bool&                             is_stationary,
     const bool                              initial
   )
 {
-  /*------------------------------------------------------- initialize ---*/
-  // use one point gauss rule to calculate tau at element center
+  // get element-type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+      mk = 0.333333333333333333333;
+      break;
+    case DRT::Element::tri6:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+      mk = 0.083333333333333333333;
+      break;
+    default:
+      dserror("type unknown!\n");
+  }
+
+  // use one-point Gauss rule to calculate tau at element center
   DRT::UTILS::GaussRule2D integrationrule_stabili = DRT::UTILS::intrule2D_undefined;
   switch(distype)
   {
@@ -386,71 +407,13 @@ void DRT::ELEMENTS::Condif2Impl::CalTau(
   // EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,distype,false,ele);
 
   // shape functions and derivs at element center
-  const double e1    = intpoints_tau.qxg[0][0];
-  const double e2    = intpoints_tau.qxg[0][1];
+  const double e1 = intpoints_tau.qxg[0][0];
+  const double e2 = intpoints_tau.qxg[0][1];
 
   // shape functions and their derivatives
   DRT::UTILS::shape_function_2D(funct_,e1,e2,distype);
 
-  // get characteristic element length: square root of element area
-  double area=0;
-  double a,b,c;
-
-  switch (distype)
-  {
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    {
-      a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
-          +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
-      b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
-          +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
-      c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
-          +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
-      area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      break;
-    }
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    {
-      a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
-          +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
-      b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
-          +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
-      c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
-          +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
-      area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      a = (xyze_(0,2)-xyze_(0,3))*(xyze_(0,2)-xyze_(0,3))
-          +(xyze_(1,2)-xyze_(1,3))*(xyze_(1,2)-xyze_(1,3)); /* line 2-3 squared */
-      b = (xyze_(0,3)-xyze_(0,0))*(xyze_(0,3)-xyze_(0,0))
-          +(xyze_(1,3)-xyze_(1,0))*(xyze_(1,3)-xyze_(1,0)); /* line 3-0 squared */
-      area += 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      break;
-    }
-    default: dserror("type unknown!\n");
-  }
-
-  const double hk = sqrt(area);
-
-  // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-    case DRT::Element::tri3:
-    case DRT::Element::quad4:
-      mk = 0.333333333333333333333;
-      break;
-    case DRT::Element::tri6:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-      mk = 0.083333333333333333333;
-      break;
-    default:
-      dserror("type unknown!\n");
-  }
-
-  // get (density*specific heat capacity-weighted) velocity at element center
+  // get (density-weighted) velocity at element center
   for (int i=0;i<2;i++)
   {
     velint_[i]=0.0;
@@ -460,62 +423,241 @@ void DRT::ELEMENTS::Condif2Impl::CalTau(
     }
   }
 
-  // get Euclidean norm of (weighted) velocity at element center
-  const double vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]));
-
-  // some necessary parameter definitions
-  double epe1, epe2, xi1, xi2;
-
-  // stabilization parameter definition according to Franca and Valentin (2000)
-  if (is_stationary == false)
+  // stabilization parameter definition according to Bazilevs et al. (2007)
+  if(whichtau == Condif2::bazilevs)
   {
-    for(int k = 0;k<numscal_;++k)
+    // ------------------------------compute inverse of transposed jacobian
+    // ---------------------------------------get shapefunction derivatives
+    DRT::UTILS::shape_function_2D_deriv1(deriv_,e1,e2,distype);
+
+    /*----------------------------------------- compute Jacobian matrix */
+    double dum;
+    /*-------------------------------- determine jacobian at point r,s ---*/
+    for (int i=0; i<2; i++)
     {
-      /* parameter relating diffusive : reactive forces */
-      epe1 = 2.0 * timefac * diffus_[k] / (mk * DSQR(hk)); 
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi1 = DMAX(epe1,1.0);
-      xi2 = DMAX(epe2,1.0);
-
-      tau_[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus_[k]/mk)*xi2);
-    }
-  }
-  else
-  {
-    for (int k = 0;k<numscal_;++k)
-    {
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi2 = DMAX(epe2,1.0);
-
-      tau_[k] = (DSQR(hk)*mk)/(2.0*diffus_[k]*xi2);
-    }
-  }
-
-  // compute artificial diffusivity kappa_art_[k]
-  if (fssgd == "artificial_all" and (not initial))
-  {
-    for (int k = 0;k<numdofpernode_;++k)
-    {
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
-      /* parameter relating convective : diffusive forces */
-      epe2 = mk * vel_norm * hk / diffus_[k];
-      xi2 = DMAX(epe2,1.0);
-
-      kart_[k] = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus_[k]*xi2);
-
-      for (int vi=0; vi<iel_; ++vi)
+      for (int j=0; j<2; j++)
       {
-        subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        dum=0.0;
+        for (int l=0; l<iel_; l++)
+        {
+          dum += deriv_(i,l)*xyze_(j,l);
+        }
+        xjm_(i,j)=dum;
+      } // end of loop j
+    } // end of loop i
+
+    // The determinant is computed using Sarrus's rule:
+    const double det = xjm_(0,0)*xjm_(1,1)-xjm_(0,1)*xjm_(1,0);
+
+    if (det < 0.0)
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    if (abs(det) < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+
+    // ---------------------------------------inverse of transposed jacobian
+    xij_(0,0) =  xjm_(1,1)/det;
+    xij_(1,0) = -xjm_(1,0)/det;
+    xij_(0,1) = -xjm_(0,1)/det;
+    xij_(1,1) =  xjm_(0,0)/det;
+
+    /*
+                                                                1.0
+               +-                                          -+ - ---
+               |                                            |   2.0
+               | 4.0    n+1       n+1             2         |
+        tau  = | --- + u     * G u     + C * kappa  * G : G |
+               |   2           -          I           -   - |
+               | dt            -                      -   - |
+               +-                                          -+
+
+    */
+
+    /*            +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+    */
+    /*            +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+    */
+    /*                      +----
+           n+1       n+1     \     n+1          n+1
+          u     * G u     =   +   u    * G   * u
+                  -          /     i     -ij    j
+                  -         +----        -
+                             i,j
+    */
+    double G;
+    double normG = 0;
+    double Gnormu = 0;
+    for (int nn=0;nn<2;++nn)
+    {
+      for (int rr=0;rr<2;++rr)
+      {
+        G = xij_(nn,0)*xij_(rr,0) + xij_(nn,1)*xij_(rr,1) + xij_(nn,2)*xij_(rr,2);
+        normG+=G*G;
+        Gnormu+=velint_[nn]*G*velint_[rr];
       }
-    } // for k
+    }
+
+    // definition of constant
+    // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+    //  brought 144.0 from Austin...)
+    const double CI = 12.0/mk;
+
+    // stabilization parameter for instationary case
+    if (is_stationary == false)
+    {
+      double dens = 0.0;
+      // get density at element center
+      for (int j=0; j<iel_; j++)
+      {
+        dens += funct_[j]*edens[j];
+      }
+
+      for (int k = 0;k<numscal_;++k)
+      {
+        tau_[k] = 1.0/(sqrt((4.0*dens*dens)/(dt*dt)+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      }
+    }
+    // stabilization parameter for stationary case
+    else
+    {
+      for (int k = 0;k<numscal_;++k)
+      {
+        tau_[k] = 1.0/(sqrt(Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      }
+    }
+
+    // compute artificial diffusivity kappa_art_[k] if required
+    if (fssgd == "artificial_all" and (not initial))
+    {
+      // get Euclidean norm of (weighted) velocity at element center
+      const double vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]));
+
+      for (int k = 0;k<numdofpernode_;++k)
+      {
+        kart_[k] = DSQR(vel_norm)/(sqrt(Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        }
+      } // for k
+    } // for artificial diffusivity
   }
-  else if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" ||
-           fssgd == "Smagorinsky_small")
-    dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
+  // stabilization parameter definition according to Franca and Valentin (2000)
+  else if (whichtau == Condif2::franca_valentin)
+  {
+    // get characteristic element length: square root of element area
+    double area=0;
+    double a,b,c;
+
+    switch (distype)
+    {
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      {
+        a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
+            +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
+        b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
+            +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
+        c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
+            +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
+        area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
+        break;
+      }
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      {
+        a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
+            +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
+        b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
+            +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
+        c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
+            +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
+        area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
+        a = (xyze_(0,2)-xyze_(0,3))*(xyze_(0,2)-xyze_(0,3))
+            +(xyze_(1,2)-xyze_(1,3))*(xyze_(1,2)-xyze_(1,3)); /* line 2-3 squared */
+        b = (xyze_(0,3)-xyze_(0,0))*(xyze_(0,3)-xyze_(0,0))
+            +(xyze_(1,3)-xyze_(1,0))*(xyze_(1,3)-xyze_(1,0)); /* line 3-0 squared */
+        area += 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
+        break;
+      }
+      default: dserror("type unknown!\n");
+    }
+
+    const double hk = sqrt(area);
+
+    // get Euclidean norm of (weighted) velocity at element center
+    const double vel_norm = sqrt(DSQR(velint_[0]) + DSQR(velint_[1]));
+
+    // some necessary parameter definitions
+    double epe1, epe2, xi1, xi2;
+
+    // stabilization parameter for instationary case
+    if (is_stationary == false)
+    {
+      for (int k = 0;k<numscal_;++k)
+      {
+        // check whether there is zero diffusivity
+        if (diffus_[k] == 0.0)
+          dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+
+        /* parameter relating diffusive : reactive forces */
+        epe1 = 2.0 * timefac * diffus_[k] / (mk * DSQR(hk));
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi1 = DMAX(epe1,1.0);
+        xi2 = DMAX(epe2,1.0);
+
+        tau_[k] = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus_[k]/mk)*xi2);
+      }
+    }
+    // stabilization parameter for stationary case
+    else
+    {
+      for (int k = 0;k<numscal_;++k)
+      {
+        // check whether there is zero diffusivity
+        if (diffus_[k] == 0.0)
+          dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi2 = DMAX(epe2,1.0);
+
+        tau_[k] = (DSQR(hk)*mk)/(2.0*diffus_[k]*xi2);
+      }
+    }
+
+    // compute artificial diffusivity kappa_art_[k] if required
+    if (fssgd == "artificial_all" and (not initial))
+    {
+      for (int k = 0;k<numdofpernode_;++k)
+      {
+        /* parameter relating convective : diffusive forces */
+        epe2 = mk * vel_norm * hk / diffus_[k];
+        xi2 = DMAX(epe2,1.0);
+
+        kart_[k] = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus_[k]*xi2);
+
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        }
+      } // for k
+    } // for artificial diffusivity
+  }
+  else dserror("unknown definition of tau\n");
 
   return;
 } //Condif2Impl::Caltau
@@ -525,11 +667,11 @@ void DRT::ELEMENTS::Condif2Impl::CalTau(
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif2Impl::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntegrationPoints2D& intpoints, ///< integration points
-    const int& iquad,                                 ///< id of current Gauss point
-    const DRT::Element::DiscretizationType& distype,  ///< distinguish between DiscretizationType
-    const bool& higher_order_ele,                     ///< are second derivatives needed?
-    const DRT::ELEMENTS::Condif2*   ele               ///< the element
+    const DRT::UTILS::IntegrationPoints2D&  intpoints,        ///< integration points
+    const int&                              iquad,            ///< id of current Gauss point
+    const DRT::Element::DiscretizationType& distype,          ///< distinguish between DiscretizationType
+    const bool&                             higher_order_ele, ///< are second derivatives needed?
+    const DRT::ELEMENTS::Condif2*           ele               ///< the element
 )
 {
   // coordinates of the current integration point
@@ -694,7 +836,7 @@ void DRT::ELEMENTS::Condif2Impl::CalSecondDeriv(
   /*----------- now we have to compute the second global derivatives */
   // initialize and zero out everything
   static Epetra_SerialDenseMatrix bm(3,3);
-  
+
   /*------------------------------------------------- initialization */
   for(int k=0;k<iel_;k++)
   {
@@ -1129,15 +1271,17 @@ return;
 void DRT::ELEMENTS::Condif2Impl::InitializeOST(
     const DRT::ELEMENTS::Condif2*   ele,
     const vector<double>&           ephi0,
-    const vector<double>&           edens,
+    const vector<double>&           edens0,
     Epetra_SerialDenseMatrix&       massmat,
     Epetra_SerialDenseVector&       rhs,
     Epetra_SerialDenseVector&       subgrdiff,
     const struct _MATERIAL*         material,
     const double                    time,
+    const double                    dt,
     const double                    timefac,
-    const Epetra_SerialDenseVector& evel,
+    const Epetra_SerialDenseVector& evel0,
     bool                            temperature,
+    const enum Condif2::TauType     whichtau,
     string                          fssgd
     )
 {
@@ -1192,7 +1336,7 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
       shcacp_ = material->m.condif->shc;
       diffus_[0] = material->m.condif->diffusivity/shcacp_;
     }
-    else 
+    else
     {
       shcacp_ = 1.0;
       diffus_[0] = material->m.condif->diffusivity;
@@ -1204,7 +1348,7 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
   /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
   /*----------------------------------------------------------------------*/
-  CalTau(ele,subgrdiff,evel,distype,timefac,fssgd,false,true);
+  CalTau(ele,subgrdiff,evel0,edens0,distype,dt,timefac,whichtau,fssgd,false,true);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif2 element
@@ -1221,19 +1365,19 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,distype,higher_order_ele,ele);
 
-    // density*specific heat capacity-weighted shape functions
+    // density-weighted shape functions
     for (int j=0; j<iel_; j++)
     {
-      densfunct_[j] = funct_[j]*edens[j];
+      densfunct_[j] = funct_[j]*edens0[j];
     }
 
-    // get (density*specific heat capacity-weighted) velocity at element center
+    // get (density-weighted) velocity at element center
     for (int i=0;i<2;i++)
     {
       velint_[i]=0.0;
       for (int j=0;j<iel_;j++)
       {
-        velint_[i] += funct_[j]*evel[i+(2*j)];
+        velint_[i] += funct_[j]*evel0[i+(2*j)];
       }
     }
 
@@ -1326,7 +1470,7 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
             massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*densfunct_[ui];
 
             /* convective term */
-            rhs[vi*numdof+dofindex] += -(taufac*diff_[vi]*conv_[ui]*ephi0[ui*numdof+dofindex]); 
+            rhs[vi*numdof+dofindex] += -(taufac*diff_[vi]*conv_[ui]*ephi0[ui*numdof+dofindex]);
 
             /* diffusive term */
             rhs[vi*numdof+dofindex] += -(-taufac*diff_[vi]*diff_[ui]*ephi0[ui*numdof+dofindex]);
@@ -1371,10 +1515,10 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif2Impl::CalcSubgridDiffMatrix(
-    const DRT::ELEMENTS::Condif2*   ele,
-    Epetra_SerialDenseMatrix&       sys_mat_sd,
-    const double                    timefac,
-    const bool                      is_stationary
+    const DRT::ELEMENTS::Condif2* ele,
+    Epetra_SerialDenseMatrix&     sys_mat_sd,
+    const double                  timefac,
+    const bool                    is_stationary
     )
 {
 const DRT::Element::DiscretizationType distype = ele->Shape();
