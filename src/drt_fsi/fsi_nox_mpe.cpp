@@ -14,11 +14,13 @@
 #include <vector>
 #include <blitz/array.h>
 
+#include <Epetra_Comm.h>
+#include <Epetra_Time.h>
+
 // debug output
 #if 1
 
 #include <Epetra_Vector.h>
-#include <Epetra_Comm.h>
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -64,6 +66,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
 
   const NOX::Abstract::Vector& x = soln.getX();
+  const NOX::Epetra::Vector& ex = dynamic_cast<const NOX::Epetra::Vector&>(x);
 
   std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > q;
   blitz::Array<double,2> r(kmax_+1,kmax_+1);
@@ -78,6 +81,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   int k;
   for (k=0; k<kmax_; ++k)
   {
+    Epetra_Time t(ex.getEpetraVector().Comm());
     NOX::Abstract::Group::ReturnType status;
 
     // Compute F at current solution
@@ -174,10 +178,11 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
       {
-        utils_->out() << "RRE:  k=" << k
-                      << "  res=" << res
-                      << "  eps*r(0,0)=" << eps_*r(0,0)
-                      << "  r(k,k)=" << r(k,k)
+        utils_->out() << "RRE:  k=" << std::setw(2) << k
+                      << "  res=" << std::scientific << res
+                      << "  eps*r(0,0)=" << std::scientific << eps_*r(0,0)
+                      << "  r(k,k)=" << std::scientific << r(k,k)
+                      << "  time=" << std::scientific << t.ElapsedTime()
                       << endl;
       }
     }

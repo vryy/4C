@@ -484,7 +484,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     //exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
     exParams.set("Tolerance", tol);
     exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 25);
+    exParams.set("kmax", 15);
     exParams.set("Method", "RRE");
 
     lineSearchParams.set("Method", "Full Step");

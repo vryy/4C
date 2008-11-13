@@ -297,6 +297,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
 
     for (int i = 0; i < m and j <= max_iter; i++, j++)
     {
+      Epetra_Time t(x.getEpetraVector().Comm());
       //w = M.solve(A * v[i]);
       if (not applyJacobian(*v[i], w))
         throwError("SolveGMRES", "applyJacobian failed");
@@ -316,9 +317,11 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
       ApplyPlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
       ApplyPlaneRotation(s(i), s(i+1), cs(i), sn(i));
 
-      utils.out() << "gmres |r|=" << fabs(s(i+1))
-                  << " |b|=" << normb
-                  << " tol=" << tol << endl;
+      utils.out() << "gmres |r|=" << std::scientific << fabs(s(i+1))
+                  << "   |b|=" << std::scientific << normb
+                  << "   tol=" << std::scientific << tol
+                  << "   time=" << std::scientific << t.ElapsedTime()
+                  << endl;
 
       if ((resid = fabs(s(i+1)) / normb) < tol)
       {
