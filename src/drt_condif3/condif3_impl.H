@@ -141,11 +141,13 @@ public:
         const double                                              time, ///< current simulation time
         const double                                              dt, ///< current time-step length
         const double                                              timefac, ///< time discretization factor
+        const double                                              alphaF, ///< factor for generalized-alpha time integration
         const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
         const bool                                                temperature, ///< temperature flag
         const enum Condif3::TauType                               whichtau, ///< flag for stabilization parameter definition
         const string                                              fssgd, ///< subgrid-diff. flag
         const bool                                                is_stationary, ///< flag indicating stationary formulation
+        const bool                                                is_genalpha, ///< generalized-alpha flag
         const double                                              frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -227,6 +229,17 @@ public:
         const bool                higher_order_ele,
         const double&             timefac,
         const int&                dofindex
+    );
+
+    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
+    virtual void CalMatGenAlpha(
+        Epetra_SerialDenseMatrix&                                 estif,
+        Epetra_SerialDenseVector&                                 eforce,
+        const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,
+        const bool                                                higher_order_ele,
+        const double&                                             timefac,
+        const double&                                             alphaF,
+        const int&                                                dofindex
     );
 
     //! calculate element matrix and rhs vector (Stationary problem formulation)
@@ -317,6 +330,8 @@ public:
     vector<double> conint_;
     //! (global) gradient of transported scalar at integration point
     LINALG::FixedSizeSerialDenseMatrix<3,1> gradphi_;
+    //! (global) 2nd gradient (Laplacian) of transported scalar at integration point
+    LINALG::FixedSizeSerialDenseMatrix<6,1> lapphi_;
 
   };
 

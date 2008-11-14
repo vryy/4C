@@ -1,7 +1,7 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file scatra_timint_genalpha.cpp
-\brief Control routine for convection-diffusion instationary solver
-       based on generalized-alpha time-integration scheme
+\brief Generalized-alpha time-integration scheme
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -9,847 +9,246 @@ Maintainer: Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
+*/
+/*----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "scatra_timint_genalpha.H"
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                        vg 11/07|
+ |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-CondifGenAlphaIntegration::CondifGenAlphaIntegration(
-  RefCountPtr<DRT::Discretization> actdis,
-  LINALG::Solver&                  solver,
-  ParameterList&                   params,
-  IO::DiscretizationWriter&        output)
-  :
-  // call constructor for "nontrivial" objects
-  discret_(actdis),
-  solver_ (solver),
-  params_ (params),
-  output_ (output),
-  time_(0.0),
-  step_(0),
-  restartstep_(0),
-  uprestart_(params.get("write restart every", -1)),
-  writestep_(0),
-  upres_(params.get("write solution every", -1))
+SCATRA::TimIntGenAlpha::TimIntGenAlpha(
+  RCP<DRT::Discretization>      actdis,
+  RCP<LINALG::Solver>           solver,
+  RCP<ParameterList>            params,
+  RCP<IO::DiscretizationWriter> output)
+: ScaTraTimIntImpl(actdis,solver,params,output),
+  alphaM_(params_->get<double>("alpha_M")),
+  alphaF_(params_->get<double>("alpha_F")),
+  gamma_ (params_->get<double>("gamma"))
 {
-
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"        );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
-  timepcloop_     = TimeMonitor::getNewTimer("   + predictor-corrector"     );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
-  timesolupdate_  = TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
-  timeevaldirich_ = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
-  timeout_        = TimeMonitor::getNewTimer("      + output and statistics");
-
-  // time measurement --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
-
-  // time measurement --- start TimeMonitor tm7
-  tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
-
-  // -------------------------------------------------------------------
-  // connect degrees of freedom for periodic boundary conditions
-  // -------------------------------------------------------------------
-  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
-  pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-  // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled()) discret_->FillComplete();
-
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
-
-  // -------------------------------------------------------------------
-  // create empty system matrix --- stiffness and mass are assembled in
-  // one system matrix!
-  // -------------------------------------------------------------------
-
-  // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-condif mesh we have 27 adjacent
-  // nodes with 1 dof each.
-  // We do not need the exact number here, just for performance reasons
-  // a 'good' estimate
-
-  // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-  // initialize standard (stabilized) + discontinuity-capturing system matrix
-  sysmat_dc_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-
-  // -------------------------------------------------------------------
-  // create empty vectors
-  // -------------------------------------------------------------------
 
   // Vectors passed to the element
   // -----------------------------
 
-  // temporal solution derivatives at time n and n-1
-  phidtnp_      = LINALG::CreateVector(*dofrowmap,true);
-  phidtn_       = LINALG::CreateVector(*dofrowmap,true);
-  phidtam_      = LINALG::CreateVector(*dofrowmap,true);
+  // temporal solution derivative at time n
+  phidtn_  = LINALG::CreateVector(*dofrowmap,true);
 
-  // solutions at time n+1, n and n-1
-  phinp_        = LINALG::CreateVector(*dofrowmap,true);
-  phin_         = LINALG::CreateVector(*dofrowmap,true);
-  phiaf_        = LINALG::CreateVector(*dofrowmap,true);
-
-  // Vectors associated to boundary conditions
-  // -----------------------------------------
-
-  // toggle vector indicating which dofs have Dirichlet BCs
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_        = LINALG::CreateVector(*dofrowmap,true);
-
-  // the vector containing body and surface forces
-  neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
-
-  // Vectors used for solution process
-  // ---------------------------------
-
-  // The residual vector --- more or less the rhs for the incremental
-  // formulation!!!
-  residual_     = LINALG::CreateVector(*dofrowmap,true);
-
-  // The force vector (a copy of residual_ without Dirichlet
-  // conditions applied)
-  force_        = LINALG::CreateVector(*dofrowmap,true);
-
-  // Increment vector
-  increment_    = LINALG::CreateVector(*dofrowmap,true);
-
-
-  // end time measurement for timeloop
-  tm7_ref_ = null;
-
-  // maximum number of timesteps
-  endstep_  = params_.get<int>   ("max number timesteps");
-  // maximum simulation time
-  endtime_  = params_.get<double>("total time");
+  // compute specific time factor for generalized-alpha time integration:
+  // genalphatimefac = gamma*alpha_F/alpha_M
+  if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
+  genalphafac_ = gamma_/alphaM_;
 
   return;
-
-} // CondifGenAlphaIntegration::CondifGenAlphaIntegration
+}
 
 
 /*----------------------------------------------------------------------*
- | Destructor dtor (public)                                     vg 11/07|
+| Destructor dtor (public)                                     vg 11/08 |
+*-----------------------------------------------------------------------*/
+SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set part of the residual vector belonging to the old timestep        |
+ |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-CondifGenAlphaIntegration::~CondifGenAlphaIntegration()
+void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 {
+  // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
+  //       = phin_ + dt*(1-genalphafac)*phidtn_
+  hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
+
   return;
-}// CondifGenAlphaIntegration::~CondifGenAlphaIntegration
+}
 
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Contains the time loop for the generalized-alpha scheme              |
- |                                                              vg 11/07|
+ | perform an explicit predictor step                          vg 11/08 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
-void CondifGenAlphaIntegration::TimeLoop()
+void SCATRA::TimIntGenAlpha::ExplicitPredictor()
 {
-
-  bool stop_timeloop=false;
-
-  dt_     = params_.get<double>("time step size");
-
-  alphaM_ = params_.get<double>("alpha_M");
-  alphaF_ = params_.get<double>("alpha_F");
-
-  // choice of third parameter necessary but not sufficiant for second
-  // order accuracy
-  gamma_  = 0.5 + alphaM_ - alphaF_;
-
-  if (myrank_==0)
-  {
-    cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << endl;
-    cout << "                             alpha_M = " << alphaM_ << endl;
-    cout << "                             gamma   = " << gamma_  << endl <<endl;
-
-//     cout <<  "                             " << "INERTIA         = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("INERTIA")        <<endl;
-//     cout <<  "                             " << "SUPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("SUPG")           <<endl;
-//     cout <<  "                             " << "VSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("VSTAB")          <<endl;
-//     cout << endl;
-
-  }
-
-  // start time measurement for timeloop
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
-
-  while (stop_timeloop==false)
-  {
-    // -------------------------------------------------------------------
-    //              set time dependent parameters
-    // -------------------------------------------------------------------
-    step_++;
-    time_+=dt_;
-
-    // -------------------------------------------------------------------
-    //                         out to screen
-    // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E     GenAlpha     STEP = %4d/%4d \n",
-             time_,endtime_,dt_,step_,endstep_);
-
-    }
-
-    // -------------------------------------------------------------------
-    //  predict new values for phi, using a constant predictor so far
-    //  (Remark: For Dirichlet nodes, no matter what was set here,
-    //   it will be overwritten by the prescribed value. The dphi/dt
-    //   will calculated after the Dirichlet values will have been set.)
-    // -------------------------------------------------------------------
-    //       n+1      n
-    //    phi    = phi
-    //
-    phinp_->Update(1.0,*phin_ ,0.0);
-
-    // -------------------------------------------------------------------
-    //         evaluate Dirichlet and Neumann boundary conditions
-    // -------------------------------------------------------------------
-    // start time measurement for application of Dirichlet conditions
-    tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
-
-    this->GenAlphaApplyDirichletAndNeumann();
-
-    // end time measurement for application of Dirichlet conditions
-    tm1_ref_=null;
-
-    // -------------------------------------------------------------------
-    //      calculate initial time-derivatives according to predicted
-    //                  values of phi
-    // -------------------------------------------------------------------
-    this->GenAlphaCalcInitialTimeDeriv();
-
-    // -------------------------------------------------------------------
-    //     solve equation (linear problem: predictor + 1 corrector)
-    // -------------------------------------------------------------------
-    this->DoGenAlphaPredictorCorrector();
-
-    // -------------------------------------------------------------------
-    //                         update solution
-    // -------------------------------------------------------------------
-    this->GenAlphaTimeUpdate();
-
-
-    // time measurement --- start TimeMonitor tm8
-    tm8_ref_        = rcp(new TimeMonitor(*timeout_ ));
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    this->GenAlphaOutput();
-
-    // time measurement --- stop TimeMonitor tm8
-    tm8_ref_        = null;
-
-    // -------------------------------------------------------------------
-    //                    stop criterium for timeloop
-    // -------------------------------------------------------------------
-
-    if(step_>=endstep_||time_>=endtime_)
-    {
-	stop_timeloop=true;
-    }
-
-  }
-
-  // end time measurement for timeloop
-  tm2_ref_ = null;
-
-  tm0_ref_ = null; // end total time measurement
-  if(discret_->Comm().MyPID()==0)
-  {
-    cout<<endl<<endl;
-  }
-  TimeMonitor::summarize();
-
-
+  // constant predictor
+  phinp_ ->Update(1.0,*phin_,0.0);
   return;
-}// CondifGenAlphaIntegration::GenAlphaIntegrateFromTo
+}
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Apply Dirichlet boundary conditions to solution vector              |
- |  Apply surface Neumann conditions (not yet implemented)              |
- |                                                              vg 11/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
-{
-  // --------------------------------------------------
-  // apply Dirichlet conditions to phinp
-
-  ParameterList eleparams;
-  // action for elements
-  eleparams.set("action","calc_condif_eleload");
-
-  // other parameters needed by the elements
-  eleparams.set("total time",time_);
-  eleparams.set("delta time",dt_  );
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  // predicted dirichlet values
-  // phinp then also holds prescribed new dirichlet values
-  // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-  discret_->EvaluateDirichlet(eleparams,phinp_,null,null,dirichtoggle_);
-  discret_->ClearState();
-
-
-
-  // --------------------------------------------------
-  // evaluate Neumann conditions
-
-  // not yet implemented
-
-  return;
-} // CondifGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  calculate dphi/dt according to prescribed Dirichlet values and      |
- |  predicted solution values.                                          |
- |                                                              vg 11/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaCalcInitialTimeDeriv()
-{
-  // ---------------------------------------------------------
-  // adjust dphi/dt_np according to Dirichlet values of phi_np
-  //
-  //                                       n+1     n
-  //        n+1          n  gamma-1.0   phi   - phi
-  // dphi/dt    = dphi/dt * --------- + ------------
-  //                          gamma      gamma * dt
-  //
-
-  phidtnp_->Update(1.0,*phinp_,-1.0,*phin_,0.0);
-  phidtnp_->Update((gamma_-1.0)/gamma_,*phidtn_,1.0/(gamma_*dt_));
-
-  return;
-} // CondifGenAlphaIntegration::GenAlphaCalcInitialTimeDeriv
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Solve the linear problem resulting from the time-discrete version    |
- |                                                              vg 11/07|
+ | reset the residual vector and add actual Neumann loads               |
+ | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
-void CondifGenAlphaIntegration::DoGenAlphaPredictorCorrector(
-  )
+void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
 {
-
-  double            tcpu   ;
-
-  dtsolve_ = 0;
-  dtele_   = 0;
-
-
-  // start time measurement for predictor-corrector
-  tm6_ref_ = rcp(new TimeMonitor(*timepcloop_));
-
-  // -------------------------------------------------------------------
-  //  Evaluate dphi/dt and phi at the intermediate time level
-  //                     n+alpha_M and n+alpha_F
-  //
-  //                             -> (0)
-  // -------------------------------------------------------------------
-  // start time measurement for nonlinear update
-  tm9_ref_ = rcp(new TimeMonitor(*timesolupdate_));
-
-  this->GenAlphaComputeIntermediateSol();
-
-  // time measurement --- stop TimeMonitor tm9
-  tm9_ref_        = null;
-
-  // -------------------------------------------------------------------
-  // call elements to calculate residual and matrix for first iteration
-  // -------------------------------------------------------------------
-  // start time measurement for element call
-  tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
-
-  // get cpu time
-  tcpu=ds_cputime();
-
-  this->GenAlphaAssembleResidualAndMatrix();
-
-  // end time measurement for element call
-  tm3_ref_=null;
-  dtele_=ds_cputime()-tcpu;
-
-  // -------------------------------------------------------------------
-  // solve for increments
-  // -------------------------------------------------------------------
-  // start time measurement for solver call
-  tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
-
-  // get cpu time
-  tcpu=ds_cputime();
-
-  increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,true);
-
-  // end time measurement for solver call
-  tm5_ref_=null;
-  dtsolve_=ds_cputime()-tcpu;
-
-  // start time measurement for nonlinear update
-  tm9_ref_ = rcp(new TimeMonitor(*timesolupdate_));
-
-  // -------------------------------------------------------------------
-  // update estimates by incremental solution
-  // -------------------------------------------------------------------
-  this->GenAlphaSolUpdate();
-
-
-  // end time measurement for nonlinear iteration
-  tm6_ref_ = null;
-
+  residual_->Update(alphaF_*genalphafac_*dta_,*neumann_loads_,0.0);
   return;
-}// CondifGenAlphaIntegration::DoGenAlphaPredictorCorrector
+}
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Evaluate dphi/dt and phi at the intermediate time levels n+alpha_M    |
- | and n+alpha_F                                                        |
- |                                                              vg 11/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaComputeIntermediateSol()
+ | add parameters specific for time-integration scheme         vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
+  ParameterList& params)
 {
-  //         n+alphaM                    n+1                          n
-  //  dphi/dt         = alpha_M * dphi/dt     + (1-alpha_M) *  dphi/dt
-
-  phidtam_->Update((alphaM_),*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
-
-  //       n+alphaF                n+1                     n
-  //    phi         = alpha_F * phi     + (1-alpha_F) * phi
-
-  phiaf_->Update((alphaF_),*phinp_,(1.0-alphaF_),*phin_,0.0);
-
-
+  params.set("using stationary formulation",false);
+  params.set("using generalized-alpha time integration",true);
+  params.set("time factor",genalphafac_*dta_);
+  params.set("alpha_F",alphaF_);
   return;
-} // CondifGenAlphaIntegration::GenAlphaComputeIntermediateSol
+}
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Assemble residual and system matrix. Dirichlet conditions applied in |
- | here, the true residual is stored in force_.                         |
- |                                                              vg 11/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
+ | current solution becomes most recent solution of next timestep       |
+ | and computation of acceleration for next time step          vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::Update()
 {
-  // -------------------------------------------------------------------
-  // call elements to calculate residual and matrix
-  // -------------------------------------------------------------------
-  // zero out the stiffness matrix
-  sysmat_->Zero();
+  // update time derivative of phi
+  double fact1 = 1.0/(gamma_*dta_);
+  double fact2 = (-1.0/gamma_) +1.0;
 
-  // zero out residual
-  residual_->PutScalar(0.0);
+  // phidt(n) = (phi(n)-phi(n-1)) / (gamma*dt(n)) - (1/gamma -1)*phidt(n-1)
+  phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
 
-  // add Neumann loads to residual
-  residual_->Update(1.0,*neumann_loads_,0.0);
+  // we know the first time derivative on Dirichlet boundaries
+  // so we do not need an approximation of these values!
+  ApplyDirichletBC(time_,Teuchos::null,phidtn_);
 
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // action for elements
-  eleparams.set("action","calc_condif_genalpha_sysmat_and_residual");
-
-  // other parameters that might be needed by the elements
-  {
-    ParameterList& timelist = eleparams.sublist("time integration parameters");
-
-    timelist.set("alpha_M",alphaM_);
-    timelist.set("alpha_F",alphaF_);
-    timelist.set("gamma"  ,gamma_ );
-    timelist.set("time"   ,time_  );
-    timelist.set("dt"     ,dt_    );
-  }
-
-  // parameters for stabilisation
-  {
-    //eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
-    dserror("need to get stabilization flags from normal parameter list -- Uli");
-  }
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phi (n+1      ,trial)", phinp_);
-  discret_->SetState("phi (n+alpha_F,trial)", phiaf_);
-  discret_->SetState("phidt(n+alpha_M,trial)",phidtam_);
-
-  // call loop over elements
-  {
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
-    discret_->ClearState();
-  }
-
-#if 0  // DEBUG IO --- the whole systemmatrix
-      {
-	  int rr;
-	  int mm;
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      int NumEntries;
-
-	      vector<double> Values(maxentriesperrow_);
-	      vector<int> Indices(maxentriesperrow_);
-
-	      sysmat_->ExtractGlobalRowCopy(rr,
-					    maxentriesperrow_,
-					    NumEntries,
-					    &Values[0],&Indices[0]);
-	      printf("Row %4d\n",rr);
-
-	      for(mm=0;mm<NumEntries;mm++)
-	      {
-		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-	      }
-	  }
-      }
-#endif
-
-#if 0  // DEBUG IO  --- rhs of linear system
-  {
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-    int rr;
-
-
-    double* data = residual_->Values();
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      int  gid = dofrowmap->GID(rr);
-
-      if(gid%4==0)
-      printf("%4d rhs %22.15e\n",gid,data[rr]);
-    }
-  }
-
-#endif
-
-  // remember force vector for stress computation
-  *force_=Epetra_Vector(*residual_);
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  // -------------------------------------------------------------------
-  // Apply dirichlet boundary conditions to system of equations residual
-  // phi values are supposed to be zero at boundary conditions
-  // -------------------------------------------------------------------
-  // start time measurement for application of dirichlet conditions
-  tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
-
-  zeros_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
-                                 zeros_,dirichtoggle_);
-
-  // end time measurement for application of dirichlet conditions
-  tm4_ref_=null;
-
-  return;
-} // CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | update the current acceleration, velocity and pressure    gammi 06/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaSolUpdate()
-{
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  int numlocdofs = dofrowmap->NumMyElements();
-
-  int*   dof = dofrowmap->MyGlobalElements ();
-
-  // loop all dofs on this proc
-  for (int lid=0; lid<numlocdofs; ++lid)
-  {
-    int gid = dof[lid];
-
-    // ------------------------------------------------------
-    // update dphi/dt
-    //
-    //        n+1             n+1
-    // dphi/dt      =  dphi/dt    + ddphi/dt
-    //
-    double dphidt = (*increment_)[lid];
-
-    phidtnp_->SumIntoGlobalValues(1,&dphidt,&gid);
-
-    // ------------------------------------------------------
-    // use ddphi/dt to update phi:
-    //
-    //    n+1         n
-    // phi      =  phi   +  gamma * dt * ddphi/dt
-    //
-      //
-      double dphi = gamma_*dt_*dphidt;
-
-      phinp_->SumIntoGlobalValues(1,&dphi,&gid);
-
-  }
-
-#if 0  // DEBUG IO  --- solution
-  {
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-    int rr;
-
-
-    double* data = phinp_->Values();
-    for(rr=0;rr<phinp_->MyLength();rr++)
-    {
-      int  gid = dofrowmap->GID(rr);
-
-      if(gid%4==0)
-      printf("%4d phi %22.15e\n",gid,data[rr]);
-    }
-  }
-#endif
-
-
-  return;
-} // CondifGenAlphaIntegration::GenAlphaSolUpdate
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  Update: current solution becomes old solution of next timestep.     |
- |                                                              vg 11/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaTimeUpdate()
-{
-  //--------------------------------------------------
   // solution of this step becomes most recent solution of the last step
-
-  // for phi
-  phin_->Update(1.0,*phinp_ ,0.0);
-  // for dphi/dt
-  phidtn_->Update(1.0,*phidtnp_ ,0.0);
+  phin_ ->Update(1.0,*phinp_,0.0);
 
   return;
-} // CondifGenAlphaIntegration::GenAlphaTimeUpdate
+}
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Write solution to file                                   vg 06/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::GenAlphaOutput()
+ | write additional data required for restart                  vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::OutputRestart()
 {
-  //-------------------------------------------- output of solution
-  restartstep_ += 1;
-  writestep_ += 1;
-
-  if (writestep_ == upres_)  //write solution
-  {
-    writestep_= 0;
-    output_.NewStep    (step_,time_);
-
-    output_.WriteVector("phinp"   , phinp_);
-    output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
-
-    // write domain decomposition for visualization (only once!)
-    if (step_==upres_)
-     output_.WriteElementData();
-
-    // do restart if we have to
-    if (restartstep_ == uprestart_)
-    {
-      restartstep_ = 0;
-
-      output_.WriteVector("phin ",   phin_ );
-      output_.WriteVector("phidtnp", phidtnp_);
-      output_.WriteVector("phidtn ", phidtn_ );
-    }
-  }
-
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
-  {
-    restartstep_ = 0;
-
-    output_.NewStep    (step_,time_);
-
-    output_.WriteVector("phinp",   phinp_);
-    output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
-    output_.WriteVector("phin ",   phin_ );
-    output_.WriteVector("phidtnp", phidtnp_);
-    output_.WriteVector("phidtn ", phidtn_ );
-  }
-
-#if 0  //DEBUG IO --- convective velocity
-convel_->Print(cout);
-#endif
+  // additional state vectors that are needed for generalized-alpha restart
+  output_->WriteVector("phidtn", phidtn_);
+  output_->WriteVector("phin", phin_);
 
   return;
-} // CondifGenAlphaIntegration::GenAlphaOutput
+}
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Read restart information                                     vg 11/07|
+ |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::ReadRestart(int step)
+void SCATRA::TimIntGenAlpha::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+  // read state vectors that are needed for generalized-alpha restart
   reader.ReadVector(phinp_,  "phinp");
   reader.ReadVector(phin_,   "phin");
-  reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
+
+  return;
 }
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | update the velocity field                                   gjb 04/08|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::SetVelocityField(int veltype, int velfuncno)
+ | Initialization procedure before the first time step         vg 11/08 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
 {
-  if (veltype != cdvel_)
-    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
+  ApplyDirichletBC(time_, phin_,phidtn_);
+  CalcInitialPhidt();
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0            vg 11/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
+{
+  // time measurement:
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
+  if (myrank_ == 0)
+  cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
 
-  if (veltype == 0) // zero
-    convel_->PutScalar(0); // just to be sure!
-  else if (veltype == 1)  // function
+  // are we really at step 0?
+  dsassert(step_==0,"Step counter is not 0");
+
+  // call elements to calculate matrix and right-hand-side
   {
-    int numdim =3;
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    // zero out matrix entries
+    sysmat_->Zero();
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","initialize_one_step_theta");
+    // other parameters that are needed by the elements
+    eleparams.set("using generalized-alpha time integration",true);
+    eleparams.set("total time",time_);
+    eleparams.set("time-step length",dta_);
+    eleparams.set("time factor",genalphafac_*dta_);
+    eleparams.set("alpha_F",alphaF_);
+    eleparams.set("problem type",prbtype_);
+    eleparams.set("fs subgrid diffusivity",fssgd_);
+    if (prbtype_=="elch")
     {
-      // get the processor local node
-      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-      for(int index=0;index<numdim;++index)
-      {
-        double value=DRT::UTILS::FunctionManager::Instance().Funct(velfuncno-1).Evaluate(index,lnode->X());
-        convel_->ReplaceMyValue (lnodeid, index, value);
-      }
+      // get ELCH-specific paramter F/RT (default value for the temperature is 298K)
+      const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
+      eleparams.set("frt",frt); // factor F/RT
     }
+
+    //provide velocity field (export to column map necessary for parallel evaluation)
+    //SetState cannot be used since this Multivector is nodebased and not dofbased
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+    LINALG::Export(*convel_,*tmp);
+    eleparams.set("velocity field",tmp);
+
+    // parameters for stabilization
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phi0",phin_);
+    discret_->SetState("dens0",densnp_);
+    // call loop over elements
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    sysmat_->Complete();
   }
+
+  // apply Dirichlet boundary conditions to system matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+
+  // solve for phidtn
+  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
+
+  // reset the matrix (and its graph!) since we solved
+  // a very special problem here that has a different sparsity pattern_
+  if (params_->get<int>("BLOCKPRECOND") )
+    ; //how to reset a block matrix ??
   else
-    dserror("error in setVelocityField");
+    SystemMatrix()->Reset();
 
   return;
+}
 
-} // CondifGenAlphaIntegration::SetVelocityField
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | update the velocity field                                   gjb 04/08|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifGenAlphaIntegration::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
-{
-  dserror("not implemented.");
-  return;
-
-} // CondifGenAlphaIntegration::SetVelocityField
-
-#endif /* CCADISCRET       */
+#endif /* CCADISCRET */

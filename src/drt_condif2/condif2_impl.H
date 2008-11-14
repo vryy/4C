@@ -73,6 +73,7 @@ namespace ELEMENTS
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     void Sysmat(
         const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
+        const vector<double>&           ephinp, ///< scalar field at n+1
         const vector<double>&           ehist, ///< rhs from beginning of time step
         const vector<double>&           edensnp, ///< density field at n+1
         Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
@@ -82,11 +83,13 @@ namespace ELEMENTS
         const double                    time, ///< current simulation time
         const double                    dt, ///< current time-step length
         const double                    timefac, ///< time discretization factor
+        const double                    alphaF, ///< factor for gen.-alpha time int.
         const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
         bool                            temperature, ///< temperature flag
         const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
         string                          fssgd, ///< subgrid-diff. flag
-        const bool                      is_stationary ///< flag indicating stationary formulation
+        const bool                      is_stationary, ///< stationary flag
+        const bool                      is_genalpha ///< generalized-alpha flag
     );
 
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
@@ -164,6 +167,17 @@ namespace ELEMENTS
         const int&                dofindex
     );
 
+    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
+    void CalMatGenAlpha(
+        Epetra_SerialDenseMatrix& estif,
+        Epetra_SerialDenseVector& eforce,
+        const vector<double>&     ephinp,
+        const bool                higher_order_ele,
+        const double&             timefac,
+        const double&             alphaF,
+        const int&                dofindex
+    );
+
     //! calculate element matrix and rhs vector (Stationary problem formulation)
     void CalMatStationary(
         Epetra_SerialDenseMatrix& estif,
@@ -222,6 +236,10 @@ namespace ELEMENTS
     vector<double> conv_;
     //! diffusive part used in stabilization terms
     vector<double> diff_;
+    //! (global) gradient of transported scalar at integration point
+    vector<double> gradphi_;
+    //! (global) 2nd gradient (Laplacian) of transported scalar at integration point
+    vector<double> lapphi_;
   };
 
 }

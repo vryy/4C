@@ -60,6 +60,12 @@ protected:
   /// do explicit predictor step (nothing to predict for stationary problems!)
   void ExplicitPredictor(){return;};
 
+  /// reset the residual vector and add actual Neumann loads with time factor
+  void AddNeumannToResidual();
+
+  /// add parameters specific for time-integration scheme
+  void AddSpecificTimeIntegrationParameters(ParameterList& params);
+
   /// write additional data required for restart
   void OutputRestart();
 

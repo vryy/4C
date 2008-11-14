@@ -25,22 +25,20 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output)
+: ScaTraTimIntImpl(actdis,solver,params,output),
+  theta_(params_->get<double>("theta"))
 {
-    // -------------------------------------------------------------------
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    //                 local <-> global dof numbering
-    // -------------------------------------------------------------------
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    // Vectors passed to the element
-    // -----------------------------
+  // temporal solution derivative at time n
+  phidtn_       = LINALG::CreateVector(*dofrowmap,true);
 
-    // temporal solution derivative at time n
-    phidtn_       = LINALG::CreateVector(*dofrowmap,true);
-
-    return;
+  return;
 }
 
 
@@ -77,6 +75,31 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
   Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(phin_);
   conpotsplitter_.InsertCondVector(onlypot, phinp_);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | reset the residual vector and add actual Neumann loads               |
+ | scaled with a factor resulting from time discretization     vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::AddNeumannToResidual()
+{
+  residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameters specific for time-integration scheme         vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
+  ParameterList& params)
+{
+  params.set("using stationary formulation",false);
+  params.set("using generalized-alpha time integration",false);
+  params.set("time factor",theta_*dta_);
+  params.set("alpha_F",1.0);
   return;
 }
 
@@ -169,9 +192,11 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     // action for elements
     eleparams.set("action","initialize_one_step_theta");
     // other parameters that are needed by the elements
+    eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
     eleparams.set("time-step length",dta_);
-    eleparams.set("thsl",theta_*dta_);
+    eleparams.set("time factor",theta_*dta_);
+    eleparams.set("alpha_F",1.0);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     if (prbtype_=="elch")

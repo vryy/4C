@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
+#include "../drt_scatra/scatra_timint_genalpha.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -161,7 +162,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta",1.0);
+    scatratimeparams->set<double>("theta",1.0);
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -175,7 +176,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta",scatradyn.get<double>("THETA"));
+    scatratimeparams->set<double>("theta",scatradyn.get<double>("THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -189,7 +190,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // -----------------------------------------------------------------
 
     // parameter theta for time-integration schemes
-    scatratimeparams->set<double>           ("theta",scatradyn.get<double>("THETA"));
+    scatratimeparams->set<double>("theta",scatradyn.get<double>("THETA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
@@ -202,19 +203,19 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
     // parameter alpha_M for for generalized-alpha scheme
-    scatratimeparams->set<double>           ("alpha_M",scatradyn.get<double>("ALPHA_M"));
+    scatratimeparams->set<double>("alpha_M",scatradyn.get<double>("ALPHA_M"));
     // parameter alpha_F for for generalized-alpha scheme
-    scatratimeparams->set<double>           ("alpha_F",scatradyn.get<double>("ALPHA_F"));
+    scatratimeparams->set<double>("alpha_F",scatradyn.get<double>("ALPHA_F"));
+    // parameter gamma for for generalized-alpha scheme
+    scatratimeparams->set<double>("gamma",  scatradyn.get<double>("GAMMA"));
 
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
-    dserror("no adapter for generalized alpha scalar transport dynamic routine implemented.");
+    scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams, output));
   }
   else
-  {
-    dserror("Unknown time integration scheme for scalar tranport problem");
-  }
+    dserror("Unknown time-integration scheme for scalar tranport problem");
 
 }
 

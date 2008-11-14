@@ -223,9 +223,15 @@ protected:
   //! Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
 
+  //! reset the residual vector and add actual Neumann loads with time factor
+  virtual void AddNeumannToResidual() = 0;
+
+  //! add parameters specific for time-integration scheme
+  virtual void AddSpecificTimeIntegrationParameters(ParameterList& params) = 0;
+
   //! Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
-  (  
+  (
     const double& time,  //!< evaluation time
     Teuchos::RCP<Epetra_Vector> phinp, //!< transported scalar(s) (may be = null)
     Teuchos::RCP<Epetra_Vector> phidt  //!< first time derivative (may be = null)
@@ -294,9 +300,6 @@ protected:
 
   /// time step size
   double dtp_;
-
-  /// time factor given by time integration scheme
-  double theta_;
 
   int cdvel_;
 

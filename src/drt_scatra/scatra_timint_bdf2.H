@@ -58,6 +58,12 @@ protected:
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   void ExplicitPredictor();
 
+  /// reset the residual vector and add actual Neumann loads with time factor
+  void AddNeumannToResidual();
+
+  /// add parameters specific for time-integration scheme
+  void AddSpecificTimeIntegrationParameters(ParameterList& params);
+
   /// write additional data required for restart
   void OutputRestart();
 
@@ -65,6 +71,9 @@ private:
 
   /// solution vector phi at time t_{n-1}
   RCP<Epetra_Vector>    phinm_;
+
+  /// time factor for one-step-theta/BDF2 time integration
+  double theta_;
 
 }; // class TimIntBDF2
 

@@ -237,12 +237,16 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     const bool is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
     double timefac = 1.0;
+    double alphaF  = 1.0;
     if (not is_stationary)
     {
-      // One-step-Theta: timefac = theta*dt
-      // BDF2:           timefac = 2/3 * dt
-      timefac = params.get<double>("thsl");
-      if (timefac <= 0.0) dserror("thsl is not positive: %f",timefac);
+      // One-step-Theta:    timefac = theta*dt
+      // BDF2:              timefac = 2/3 * dt
+      // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+      timefac = params.get<double>("time factor");
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+      if (timefac < 0.0) dserror("time factor is negative.");
       // we multiply i0 with timefac. So we do not have to give down this paramater
       // and perform autmatically the multiplication of matrix and rhs with timefac 
       i0 *= timefac;

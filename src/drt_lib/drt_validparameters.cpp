@@ -1129,7 +1129,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTEP",20,"Total number of time steps",&scatradyn);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&scatradyn);
   IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&scatradyn);
-  DoubleParameter("THETA",0.5,"Time integration factor",&scatradyn);
+  DoubleParameter("THETA",0.5,"One-step-theta time integration factor",&scatradyn);
+  DoubleParameter("ALPHA_M",0.5,"Generalized-alpha time integration factor",&scatradyn);
+  DoubleParameter("ALPHA_F",0.5,"Generalized-alpha time integration factor",&scatradyn);
+  DoubleParameter("GAMMA",0.5,"Generalized-alpha time integration factor",&scatradyn);
   //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);

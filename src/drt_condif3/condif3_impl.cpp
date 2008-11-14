@@ -135,7 +135,9 @@ DRT::ELEMENTS::Condif3Impl<distype>::Condif3Impl(int numdofpernode, int numscal)
     diff_(true),
     mig_(),
     gradpot_(),
-    conint_(numscal_)
+    conint_(numscal_),
+    gradphi_(),
+    lapphi_()
 {
   return;
 }
@@ -163,29 +165,37 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // need current history vector and density vector
     RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
     RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    if (hist==null || densnp==null)
-      dserror("Cannot get state vector 'hist' and/or 'densnp'");
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (hist==null || densnp==null || phinp==null)
+      dserror("Cannot get state vector 'hist', 'densnp' and/or 'phinp'");
 
     // extract local values from the global vector
     vector<double> myhist(lm.size());
     vector<double> mydensnp(lm.size());
+    vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
     DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // get control parameter
     const bool is_stationary = params.get<bool>("using stationary formulation");
+    const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
     const double time = params.get<double>("total time");
 
     // get time-step length
     const double dt = params.get<double>("time-step length");
 
-    // One-step-Theta: timefac = theta*dt
-    // BDF2:           timefac = 2/3 * dt
-    double timefac = 0.0;
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
     if (not is_stationary)
     {
-      timefac = params.get<double>("thsl");
-      if (timefac < 0.0) dserror("thsl is negative.");
+      timefac = params.get<double>("time factor");
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+      if (timefac < 0.0) dserror("time factor is negative.");
     }
 
     // set parameters for stabilization
@@ -220,18 +230,9 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     bool temperature = false;
     if(scaltypestr =="loma") temperature = true;
 
-    // paramters needed for ELCH ;-)
-    vector<double> myphinp(lm.size());
+    // get parameter F/RT needed for ELCH ;-)
     double frt(0.0);
-    if(scaltypestr =="elch")
-    {
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
-      // extract local values from the global vector
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
+    if(scaltypestr =="elch") frt = params.get<double>("frt");
 
     // create objects for element arrays
     vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> > ephinp(numscal_);
@@ -286,11 +287,13 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         time,
         dt,
         timefac,
+        alphaF,
         evelnp,
         temperature,
         whichtau,
         fssgd,
         is_stationary,
+        is_genalpha,
         frt);
   }
   else if (action =="initialize_one_step_theta")
@@ -298,7 +301,16 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
   {
     const double time = params.get<double>("total time");
     const double dt = params.get<double>("time-step length");
-    const double timefac = params.get<double>("thsl");
+
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    timefac = params.get<double>("time factor");
+    alphaF = params.get<double>("alpha_F");
+    timefac *= alphaF;
+    if (timefac < 0.0) dserror("time factor is negative.");
 
     // set parameters for stabilization
     ParameterList& stablist = params.sublist("STABILIZATION");
@@ -409,13 +421,17 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // get control parameter
     const bool is_stationary = params.get<bool>("using stationary formulation");
 
-    // One-step-Theta: timefac = theta*dt
-    // BDF2:           timefac = 2/3 * dt
-    double timefac = 0.0;
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
     if (not is_stationary)
     {
-      timefac = params.get<double>("thsl");
-      if (timefac < 0.0) dserror("No thsl supplied");
+      timefac = params.get<double>("time factor");
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+      if (timefac < 0.0) dserror("time factor is negative.");
     }
 
     // calculate mass matrix and rhs
@@ -484,11 +500,13 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const double                                              time, ///< current simulation time
     const double                                              dt, ///< current time-step length
     const double                                              timefac, ///< time discretization factor
+    const double                                              alphaF, ///< factor for generalized-alpha time integration
     const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
     const bool                                                temperature, ///< temperature flag
     const enum Condif3::TauType                               whichtau, ///< stabilization parameter definition
     const string                                              fssgd, ///< subgrid-diff. flag
     const bool                                                is_stationary, ///< stationary flag
+    const bool                                                is_genalpha, ///< generalized-alpha flag
     const double                                              frt ///< factor F/RT needed for ELCH calculations
 )
 {
@@ -548,7 +566,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
         if (not is_stationary)
-          CalMat(sys_mat,residual,higher_order_ele,timefac,k);
+        {
+          if (is_genalpha)
+            CalMatGenAlpha(sys_mat,residual,ephinp,higher_order_ele,timefac,alphaF,k);
+          else
+            CalMat(sys_mat,residual,higher_order_ele,timefac,k);
+        }
         else
           CalMatStationary(sys_mat,residual,higher_order_ele,k);
       } // loop over each scalar
@@ -1483,6 +1506,168 @@ for (int vi=0; vi<iel; ++vi)
 
 return;
 } //Condif3Impl::Condif3CalMat
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate instationary convection-diffusion matrix for               |
+ |  generalized-alpha time-integration scheme (private)        vg 11/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalMatGenAlpha(
+    Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseVector& eforce,
+    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,
+    const bool                higher_order_ele,
+    const double&             timefac,
+    const double&             alphaF,
+    const int&                dofindex
+    )
+{
+static double rhsint;           /* rhs at int. point     */
+
+// stabilization parameter
+const double taufac = tau_[dofindex]*fac_;
+
+// integration factors and coefficients of single terms
+const double timefacfac  = timefac * fac_;
+const double timetaufac  = timefac * taufac;
+const double rhstimefacfac  = (1.0 - alphaF)/alphaF * timefacfac;
+const double rhstimetaufac  = (1.0 - alphaF)/alphaF * timetaufac;
+
+/*-------------------------------- evaluate rhs at integration point ---*/
+// approximation of rhs by value at n+1
+rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
+
+/* convective part */
+/* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y +  rho * c_p * u_z * N,z
+      with  N .. form function matrix */
+conv_.MultiplyTN(derxy_,velint_);
+
+/* gradient of scalar at time step n */
+gradphi_.Multiply(derxy_,ephinp[dofindex]);
+
+/* convective part at time step n */
+const double convn = velint_.Dot(gradphi_);
+
+double diffn = 0.0;
+if (higher_order_ele)
+{
+  for (int i=0; i<iel; i++)
+  {
+    /* diffusive part */
+    /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+    diff_(i) = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+  }
+
+  /* second gradient (Laplacian) of scalar at time step n */
+  lapphi_.Multiply(derxy2_,ephinp[dofindex]);
+
+  /* diffusive part at time step n */
+  diffn = diffus_[dofindex] * (lapphi_(0) + lapphi_(1) + lapphi_(2));
+}
+
+/*--------------------------------- now build single stiffness terms ---*/
+const int numdof =numdofpernode_;
+// -------------------------------------------System matrix
+for (int vi=0; vi<iel; ++vi)
+{
+  for (int ui=0; ui<iel; ++ui)
+  {
+    /* Standard Galerkin terms: */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_(vi)*densfunct_(ui) ;
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct_(vi)*conv_(ui) ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi) + derxy_(2, ui)*derxy_(2, vi)) ;
+
+    /* Stabilization terms: */
+    /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
+    /* transient term */
+    //estif(vi, ui) += -taufac*densfunct_(vi)*densfunct_[ui] ;
+
+    /* convective term */
+    //estif(vi, ui) += -timetaufac*densfunct_(vi)*conv_[ui] ;
+
+    /* diffusive term */
+    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_(vi)*diff[ui] ;
+
+    /* 2) convective stabilization */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_(vi)*densfunct_(ui);
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv_(vi)*conv_(ui) ;
+  }
+}
+
+if (higher_order_ele)
+{
+  for (int vi=0; vi<iel; ++vi)
+  {
+    for (int ui=0; ui<iel; ++ui)
+    {
+      /* diffusive term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv_(vi)*diff_(ui) ;
+
+      /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+      /* transient term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_(vi)*densfunct_(ui) ;
+
+      /* convective term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff_(vi)*conv_(ui) ;
+
+      /* diffusive term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff_(vi)*diff_(ui) ;
+    }
+  }
+}
+
+// ----------------------------------------------RHS
+for (int vi=0; vi<iel; ++vi)
+{
+  /* RHS source term */
+  eforce[vi*numdof+dofindex] += fac_*funct_(vi)*rhsint ;
+
+  /* transient stabilization of RHS source term */
+  //eforce(vi) += -taufac*densfunct_(vi)*rhsint ;
+
+  /* convective stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*conv_(vi)*rhsint ;
+
+  /* convective temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimefacfac*funct_(vi)*convn ;
+
+  /* diffusive temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimefacfac*diffus_[dofindex]*(derxy_(0, vi)*gradphi_(0) + derxy_(1, vi)*gradphi_(1) + derxy_(2, vi)*gradphi_(2)) ;
+
+  /* convective stabilization of convective temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_(vi)*convn ;
+}
+
+if (higher_order_ele)
+{
+  for (int vi=0; vi<iel; ++vi)
+  {
+    /*diffusive stabilization: USFEM assumed here, sign change necessary for GLS */
+    /* diffusive stabilization of RHS source term */
+    eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
+
+    /* diffusive stabilization of convective temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_(vi)*convn ;
+
+    /* convective stabilization of diffusive temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_(vi)*diffn ;
+
+    /* diffusive stabilization of diffusive temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_(vi)*diffn ;
+  }
+}
+
+return;
+} //Condif3Impl::Condif3CalMatGenAlpha
 
 
 /*----------------------------------------------------------------------*

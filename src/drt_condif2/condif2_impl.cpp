@@ -109,7 +109,9 @@ DRT::ELEMENTS::Condif2Impl::Condif2Impl(int iel, int numdofpernode, int numscal)
     xder2_(3,2),
     fac_(0),
     conv_(iel_),
-    diff_(iel_)
+    diff_(iel_),
+    gradphi_(2),
+    lapphi_(2)
 {
   return;
 }
@@ -120,6 +122,7 @@ DRT::ELEMENTS::Condif2Impl::Condif2Impl(int iel, int numdofpernode, int numscal)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif2Impl::Sysmat(
     const DRT::ELEMENTS::Condif2*   ele, ///< the element those matrix is calculated
+    const vector<double>&           ephinp, ///< scalar field at n+1
     const vector<double>&           ehist, ///< rhs from beginning of time step
     const vector<double>&           edensnp, ///< density field at n+1
     Epetra_SerialDenseMatrix*       sys_mat,///< element matrix to calculate
@@ -129,11 +132,13 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
     const double                    time, ///< current simulation time
     const double                    dt, ///< current time-step length
     const double                    timefac, ///< time discretization factor
+    const double                    alphaF, ///< factor for gen.-alpha time int.
     const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
     bool                            temperature, ///< temperature flag
     const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
     string                          fssgd, ///< subgrid-diff. flag
-    const bool                      is_stationary ///< flag indicating stationary formulation
+    const bool                      is_stationary, ///< stationary flag
+    const bool                      is_genalpha ///< generalized-alpha flag
 )
 {
   const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -255,7 +260,10 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
       if (not is_stationary)
-        CalMat(*sys_mat,*residual,higher_order_ele,timefac,k);
+        if (is_genalpha)
+          CalMatGenAlpha(*sys_mat,*residual,ephinp,higher_order_ele,timefac,alphaF,k);
+        else
+          CalMat(*sys_mat,*residual,higher_order_ele,timefac,k);
       else
         CalMatStationary(*sys_mat,*residual,higher_order_ele,k);
     } // loop over each scalar
@@ -1138,6 +1146,174 @@ for (int vi=0; vi<iel_; ++vi)
 
 return;
 } //Condif2Impl::Condif2CalMat
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate instationary convection-diffusion matrix for               |
+ |  generalized-alpha time-integration scheme (private)        vg 11/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Condif2Impl::CalMatGenAlpha(
+    Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseVector& eforce,
+    const vector<double>&     ephinp,
+    const bool                higher_order_ele,
+    const double&             timefac,
+    const double&             alphaF,
+    const int&                dofindex
+    )
+{
+static double rhsint;           /* rhs at int. point     */
+
+// stabilization parameter
+const double taufac = tau_[dofindex]*fac_;
+
+// integration factors and coefficients of single terms
+const double timefacfac  = timefac * fac_;
+const double timetaufac  = timefac * taufac;
+const double rhstimefacfac  = (1.0 - alphaF)/alphaF * timefacfac;
+const double rhstimetaufac  = (1.0 - alphaF)/alphaF * timetaufac;
+
+/*-------------------------------- evaluate rhs at integration point ---*/
+rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
+
+for (int i=0; i<iel_; i++)
+{
+   /* convective part */
+   /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
+      with  N .. form function matrix */
+   conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
+}
+
+/* gradient of scalar at time step n */
+for (int i=0;i<2;i++)
+{
+  gradphi_[i]=0.0;
+  for (int j=0;j<iel_;j++)
+  {
+    gradphi_[i] += derxy_(i,j)*ephinp[j];
+  }
+}
+
+/* convective part at time step n */
+double convn = velint_[0] * gradphi_[0] + velint_[1] * gradphi_[0];
+
+double diffn = 0.0;
+if (higher_order_ele)
+{
+  for (int i=0;i<2;i++)
+  {
+    lapphi_[i]=0.0;
+    for (int j=0;j<iel_;j++)
+    {
+      /* second gradient (Laplacian) of scalar at time step n */
+      lapphi_[i] += derxy2_(i,j)*ephinp[j];
+
+      /* diffusive part */
+      /* diffus * ( N,xx  +  N,yy ) */
+      diff_[j] = diffus_[dofindex] * (derxy2_(0,j) + derxy2_(1,j));
+    }
+  }
+
+  /* diffusive part at time step n */
+  diffn = diffus_[dofindex] * (lapphi_[0] + lapphi_[1]);
+}
+
+/*--------------------------------- now build single stiffness terms ---*/
+const int numdof =numdofpernode_;
+// -------------------------------------------System matrix
+for (int vi=0; vi<iel_; ++vi)
+{
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    /* Standard Galerkin terms: */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*densfunct_[ui] ;
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct_[vi]*conv_[ui] ;
+
+    /* diffusive term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)) ;
+
+    /* Stabilization terms: */
+    /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
+    /* transient term */
+    //estif(vi, ui) += -taufac*densfunct_[vi]*densfunct_[ui] ;
+
+    /* convective term */
+    //estif(vi, ui) += -timetaufac*densfunct_[vi]*conv_[ui] ;
+
+    /* diffusive term */
+    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_[vi]*diff[ui] ;
+
+    /* 2) convective stabilization */
+    /* transient term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_[vi]*densfunct_[ui];
+
+    /* convective term */
+    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv_[vi]*conv_[ui] ;
+
+    if (higher_order_ele)
+    {
+      /* diffusive term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv_[vi]*diff_[ui] ;
+
+      /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+      /* transient term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*densfunct_[ui] ;
+
+      /* convective term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff_[vi]*conv_[ui] ;
+
+      /* diffusive term */
+      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff_[vi]*diff_[ui] ;
+    }
+  }
+}
+
+// ----------------------------------------------RHS
+for (int vi=0; vi<iel_; ++vi)
+{
+  /* RHS source term */
+  eforce[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+
+  /* transient stabilization of RHS source term */
+  //eforce[vi] += -taufac*densfunct_[vi]*rhsint ;
+
+  /* convective stabilization of RHS source term */
+  eforce[vi*numdof+dofindex] += taufac*conv_[vi]*rhsint ;
+
+  /* convective temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimefacfac*funct_[vi]*convn ;
+
+  /* diffusive temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimefacfac*diffus_[dofindex]*(derxy_(0, vi)*gradphi_[0] + derxy_(1, vi)*gradphi_[1]) ;
+
+  /* convective stabilization of convective temporal rhs term */
+  eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_[vi]*convn ;
+}
+
+if (higher_order_ele)
+{
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    /*diffusive stabilization: USFEM assumed here, sign change necessary for GLS */
+    /* diffusive stabilization of RHS source term */
+    eforce[vi*numdof+dofindex] += taufac*diff_[vi]*rhsint ;
+
+    /* diffusive stabilization of convective temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_[vi]*convn ;
+
+    /* convective stabilization of diffusive temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_[vi]*diffn ;
+
+    /* diffusive stabilization of diffusive temporal rhs term */
+    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_[vi]*diffn ;
+  }
+}
+
+return;
+} //Condif2Impl::Condif2CalMatGenAlpha
 
 
 /*----------------------------------------------------------------------*

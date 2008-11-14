@@ -9,6 +9,8 @@
 
      o two-step BDF2 time-integration scheme
 
+     o generalized-alpha time-integration scheme
+
      and stationary solver.
 
 <pre>
@@ -61,7 +63,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   writeflux_(params_->get<string>("write flux")),
   dta_      (params_->get<double>("time step size")),
   dtp_      (params_->get<double>("time step size")),
-  theta_    (params_->get<double>("theta")),
   cdvel_    (params_->get<int>("velocity field")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0)))
@@ -147,36 +148,36 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -----------------------------
 
   // solutions at time n+1 and n
-  phinp_        = LINALG::CreateVector(*dofrowmap,true);
-  phin_         = LINALG::CreateVector(*dofrowmap,true);
+  phinp_ = LINALG::CreateVector(*dofrowmap,true);
+  phin_  = LINALG::CreateVector(*dofrowmap,true);
 
   // density at time n+1
-  densnp_        = LINALG::CreateVector(*dofrowmap,true);
+  densnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   if (prbtype_ == "loma")
   {
     // density at times n and n-1
-    densn_        = LINALG::CreateVector(*dofrowmap,true);
-    densnm_       = LINALG::CreateVector(*dofrowmap,true);
+    densn_  = LINALG::CreateVector(*dofrowmap,true);
+    densnm_ = LINALG::CreateVector(*dofrowmap,true);
 
     // density increment at time n+1
-    densincnp_    = LINALG::CreateVector(*dofrowmap,true);
+    densincnp_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // histvector --- a linear combination of phinm, phin (BDF)
-  //                or phin, phidtn (One-Step-Theta)
-  hist_         = LINALG::CreateVector(*dofrowmap,true);
+  //                or phin, phidtn (One-Step-Theta, Generalized-alpha)
+  hist_ = LINALG::CreateVector(*dofrowmap,true);
 
   // get noderowmap of discretization
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   /// convective velocity (always three velocity components per node)
-  convel_         = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_        = LINALG::CreateVector(*dofrowmap,true);
+  zeros_ = LINALG::CreateVector(*dofrowmap,true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -193,10 +194,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
   // the residual vector --- more or less the rhs
-  residual_     = LINALG::CreateVector(*dofrowmap,true);
+  residual_ = LINALG::CreateVector(*dofrowmap,true);
 
   // incremental solution vector
-  increment_     = LINALG::CreateVector(*dofrowmap,true);
+  increment_ = LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
@@ -477,7 +478,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // reset the residual vector and add actual Neumann loads
       // scaled with a factor resulting from time discretization
-      residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+      AddNeumannToResidual();
 
       if (prbtype_=="elch")
       { // evaluate electrode kinetics conditions
@@ -492,11 +493,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         condparams.set("action","calc_elch_electrode_kinetics");
         condparams.set("frt",frt_); // factor F/RT
         condparams.set("total time",time_);
-        condparams.set("thsl",theta_*dta_);
-        if (MethodName()==INPUTPARAMS::timeint_stationary)
-          condparams.set("using stationary formulation",true);
-        else
-          condparams.set("using stationary formulation",false);
+        AddSpecificTimeIntegrationParameters(condparams);
 
         // set vector values needed by elements
         discret_->ClearState();
@@ -520,14 +517,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("time-step length",dta_);
-      eleparams.set("thsl",theta_*dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
-      if (MethodName()==INPUTPARAMS::timeint_stationary)
-        eleparams.set("using stationary formulation",true);
-      else
-        eleparams.set("using stationary formulation",false);
+      AddSpecificTimeIntegrationParameters(eleparams);
 
       //provide velocity field (export to column map necessary for parallel evaluation)
       //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -779,7 +772,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     // reset the residual vector and add actual Neumann loads
     // scaled with a factor resulting from time discretization
-    residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+    AddNeumannToResidual();
 
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -790,13 +783,9 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("time-step length",dta_);
-    eleparams.set("thsl",theta_*dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
-    if (MethodName()==INPUTPARAMS::timeint_stationary)
-      eleparams.set("using stationary formulation",true);
-    else
-      eleparams.set("using stationary formulation",false);
+    AddSpecificTimeIntegrationParameters(eleparams);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -922,11 +911,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
   // action for elements, time factor and stationary flag
   eleparams.set("action","calc_subgrid_diffusivity_matrix");
-  eleparams.set("thsl",theta_*dta_);
-  if (MethodName()==INPUTPARAMS::timeint_stationary)
-    eleparams.set("using stationary formulation",true);
-  else
-    eleparams.set("using stationary formulation",false);
+  AddSpecificTimeIntegrationParameters(eleparams);
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_sd_,residual_);

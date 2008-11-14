@@ -25,19 +25,20 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   RCP<LINALG::Solver>           solver,
   RCP<ParameterList>            params,
   RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,output)
+: ScaTraTimIntImpl(actdis,solver,params,output),
+  theta_(params_->get<double>("theta"))
 {
-    // -------------------------------------------------------------------
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    //                 local <-> global dof numbering
-    // -------------------------------------------------------------------
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    // state vector for solution at time t_{n-1}
-    phinm_      = LINALG::CreateVector(*dofrowmap,true);
+  // state vector for solution at time t_{n-1}
+  phinm_      = LINALG::CreateVector(*dofrowmap,true);
 
-    return;
+  return;
 }
 
 
@@ -99,6 +100,31 @@ void SCATRA::TimIntBDF2::ExplicitPredictor()
   // for step == 1 phinp_ is already correctly initialized with the
   // initial field phin_
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | reset the residual vector and add actual Neumann loads               |
+ | scaled with a factor resulting from time discretization     vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::AddNeumannToResidual()
+{
+  residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameters specific for time-integration scheme         vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
+  ParameterList& params)
+{
+  params.set("using stationary formulation",false);
+  params.set("using generalized-alpha time integration",false);
+  params.set("time factor",theta_*dta_);
+  params.set("alpha_F",1.0);
   return;
 }
 

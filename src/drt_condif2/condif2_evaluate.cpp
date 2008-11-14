@@ -98,29 +98,37 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       // density*specific heat capacity at constant pressure vector
       RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
       RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-      if (hist==null || densnp==null)
-        dserror("Cannot get state vector 'hist' and/or 'densnp'");
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (hist==null || densnp==null || phinp==null)
+        dserror("Cannot get state vector 'hist', 'densnp' and/or 'phinp'");
 
       // extract local values from the global vector
       vector<double> myhist(lm.size());
       vector<double> mydensnp(lm.size());
+      vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
       DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // get control parameter
       const bool is_stationary = params.get<bool>("using stationary formulation");
+      const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
       const double time = params.get<double>("total time");
 
       // get time-step length
       const double dt = params.get<double>("time-step length");
 
-      // One-step-Theta: timefac = theta*dt
-      // BDF2:           timefac = 2/3 * dt
-      double timefac = 0.0;
+      // One-step-Theta:    timefac = theta*dt
+      // BDF2:              timefac = 2/3 * dt
+      // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+      double timefac = 1.0;
+      double alphaF  = 1.0;
       if (not is_stationary)
       {
-        timefac = params.get<double>("thsl");
-        if (timefac < 0.0) dserror("No thsl supplied");
+        timefac = params.get<double>("time factor");
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+        if (timefac < 0.0) dserror("time factor is negative.");
       }
 
       // set parameters for stabilization
@@ -158,6 +166,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       // calculate element coefficient matrix and rhs
       DRT::ELEMENTS::Condif2Impl::Impl(this)->Sysmat(
           this,
+          myphinp,
           myhist,
           mydensnp,
           &elemat1,
@@ -167,11 +176,13 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
           time,
           dt,
           timefac,
+          alphaF,
           evelnp,
           temperature,
           whichtau,
           fssgd,
-          is_stationary);
+          is_stationary,
+          is_genalpha);
     }
     break;
     // calculate time derivative for time value t_0
@@ -179,7 +190,16 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
     {
       const double time    = params.get<double>("total time");
       const double dt      = params.get<double>("time-step length");
-      const double timefac = params.get<double>("thsl");
+
+      // One-step-Theta:    timefac = theta*dt
+      // BDF2:              timefac = 2/3 * dt
+      // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+      double timefac = 1.0;
+      double alphaF  = 1.0;
+      timefac = params.get<double>("time factor");
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+      if (timefac < 0.0) dserror("time factor is negative.");
 
       // need initial field
       RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
@@ -249,13 +269,17 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       // get control parameter
       const bool is_stationary = params.get<bool>("using stationary formulation");
 
-      // One-step-Theta: timefac = theta*dt
-      // BDF2:           timefac = 2/3 * dt
-      double timefac = 0.0;
+      // One-step-Theta:    timefac = theta*dt
+      // BDF2:              timefac = 2/3 * dt
+      // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+      double timefac = 1.0;
+      double alphaF  = 1.0;
       if (not is_stationary)
       {
-        timefac = params.get<double>("thsl");
-        if (timefac < 0.0) dserror("No thsl supplied");
+        timefac = params.get<double>("time factor");
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+        if (timefac < 0.0) dserror("time factor is negative.");
       }
 
       // calculate mass matrix and rhs

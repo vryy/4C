@@ -27,7 +27,7 @@ SCATRA::TimIntStationary::TimIntStationary(
   RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,output)
 {
-    return;
+  return;
 }
 
 
@@ -48,6 +48,28 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 {
   hist_->PutScalar(0.0);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | reset the residual vector and add actual Neumann loads      vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::AddNeumannToResidual()
+{
+  residual_->Update(1.0,*neumann_loads_,0.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameters specific for time-integration scheme         vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
+  ParameterList& params)
+{
+  params.set("using stationary formulation",true);
+  params.set("using generalized-alpha time integration",false);
   return;
 }
 

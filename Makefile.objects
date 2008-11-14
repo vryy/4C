@@ -255,6 +255,7 @@ OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \
                 src/drt_scatra/scatra_timint_ost.o \
                 src/drt_scatra/scatra_timint_bdf2.o \
+                src/drt_scatra/scatra_timint_genalpha.o \
                 src/drt_scatra/scatra_timint_stat.o \
                 src/drt_scatra/scatra_resulttest.o \
                 src/drt_scatra/scatra_utils.o \
