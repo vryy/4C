@@ -761,7 +761,7 @@ namespace GEO
     }
 
     /*!
-     * a common task is to get an array of the current positions of all nodes of this element
+     * fill array with current nodal positions
      *
      * \note array is defined as (3,numnode)
      *
@@ -775,7 +775,31 @@ namespace GEO
         const map<int,BlitzVec3 >&   currentcutterpositions ///< current positions of all cutter nodes
         );
     
-    
+    /*!
+     * fill array with current nodal positions
+     * 
+     * \note array is defined as (3,numnode)
+     * 
+     * \author a.ger
+     * \date 11/08
+     */
+    template<class M>
+    void fillCurrentNodalPositions(
+        const DRT::Element*         ele,                      ///< element with nodal pointers
+        const map<int,BlitzVec3 >&  currentpositions,   ///< current positions of all cutter nodes
+        M&                          xyze                      ///< position array (3,numnode) to be filled
+        )
+    {
+        const int numnode = ele->NumNode();
+        const int* nodeids = ele->NodeIds();
+        for (int inode = 0; inode < numnode; ++inode)
+        {
+          const BlitzVec3 x(currentpositions.find(nodeids[inode])->second);
+          xyze(0,inode) = x(0);
+          xyze(1,inode) = x(1);
+          xyze(2,inode) = x(2);
+        }
+    }
 }
 
 
