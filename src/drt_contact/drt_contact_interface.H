@@ -40,9 +40,9 @@ Maintainer: Michael Gee
 #define DRT_CONTACT_INTERFACE_H
 
 #include "Epetra_Comm.h"
-#include "../drt_lib/drt_discret.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_geometry/searchtree.H"
 
@@ -497,7 +497,8 @@ public:
   \brief Integrate Mortar matrix M and gap g on slave/master overlap
           
   */
-  virtual bool IntegrateCoupling(CONTACT::CElement& sele);
+  virtual bool IntegrateCoupling(CONTACT::CElement& sele,
+                                 CONTACT::CElement& mele);
     
   /*!
   \brief Assemble Mortar matrices and weighted gap

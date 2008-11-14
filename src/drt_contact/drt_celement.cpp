@@ -377,6 +377,34 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, int i,
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute element normal at loc. coord. xi                  popp 11/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::ComputeUnitNormalAtXi(double* xi, double* n)
+{
+  // check input
+  if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
+  if (!n)  dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
+    
+  // empty local basis vectors
+  vector<double> gxi(3);
+  vector<double> geta(3);
+  
+  // metrics routine gives local basis vectors
+  Metrics(xi,gxi,geta);
+  
+  // n is cross product of gxi and geta
+  n[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+  n[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+  n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+
+  // build unit normal
+  double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  if (length==0.0) dserror("ERROR: Normal of length zero!");
+  for (int i=0;i<3;++i) n[i] /= length;
+  
+  return;
+}
+/*----------------------------------------------------------------------*
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::DerivNormalAtXi(double* xi, int i,
@@ -838,15 +866,11 @@ void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
  |  Get global coords for given local coords                  popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
-                                      bool inttype)
+                                      int inttype)
 {
   // check input
-  if (!xi)
-    dserror("ERROR: LocalToGlobal called with xi=NULL");
-  if (!globcoord)
-    dserror("ERROR: LocalToGlobal called with globcoord=NULL");
-  if (Shape()!=line3 && Shape()!=line2)
-    dserror("ERROR: LocalToGlobal called for CEl type != line2/3");
+  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
   
   // collect fundamental data
   int nnodes = NumNode();
@@ -854,12 +878,12 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
   LINALG::SerialDenseMatrix coord(3,nnodes);
   LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,1);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
   
   // Evaluate shape, get nodal coords  and interpolate global coords
   EvaluateShape(xi, val, deriv, nnodes);
-  for (int i=0;i<3;++i)
-    globcoord[i]=0.0;
+  for (int i=0;i<3;++i) globcoord[i]=0.0;
+  
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
@@ -868,20 +892,29 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
     coord(1,i) = mycnode->xspatial()[1];
     coord(2,i) = mycnode->xspatial()[2];
     
-    if (inttype)
+    if (inttype==0)
     {
       // use shape function values for interpolation
       globcoord[0]+=val[i]*coord(0,i);
       globcoord[1]+=val[i]*coord(1,i);
       globcoord[2]+=val[i]*coord(2,i);
     }
-    else
+    else if (inttype==1)
     {
-      // use shape function derivatives for interpolation
+      // use shape function derivatives xi for interpolation
       globcoord[0]+=deriv(i,0)*coord(0,i);
       globcoord[1]+=deriv(i,0)*coord(1,i);
       globcoord[2]+=deriv(i,0)*coord(2,i);
     }
+    else if (inttype==2)
+    {
+      // use shape function derivatives eta for interpolation
+      globcoord[0]+=deriv(i,1)*coord(0,i);
+      globcoord[1]+=deriv(i,1)*coord(1,i);
+      globcoord[2]+=deriv(i,1)*coord(2,i);
+    }
+    else
+      dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
   }
   
   return true;

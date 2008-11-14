@@ -436,6 +436,9 @@ void CONTACT::Interface::FillComplete()
   // create octree object for contact search
   tree_ = rcp(new GEO::SearchTree(CONTACTDEPTHOCTREE));
   
+  // create binarytree object for contact search
+  // binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim()));
+   
   return;
 }
 
@@ -679,8 +682,7 @@ void CONTACT::Interface::Evaluate()
       dserror("ERROR: FillComplete() not called on interface %", id_);
 
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
     
 #ifdef CONTACTFDNORMAL
   // FD check of normal derivatives
@@ -779,12 +781,22 @@ void CONTACT::Interface::Evaluate()
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
     
-    //********************************************************************
-    // 1) perform coupling (projection + overlap detection for sl/m pairs)
-    // 2) integrate Mortar matrix M and weighted gap g
-    // 3) compute directional derivative of M and g and store into nodes
-    //********************************************************************
-    IntegrateCoupling(*selement);
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement);
+    }
   }
 
 #ifdef CONTACTFDMORTARM
@@ -1022,12 +1034,13 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele)
+bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
+                                           CONTACT::CElement& mele)
 {
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
-  CONTACT::Coupling coup(Discret(),sele,Dim(),CSegs());
+  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs());
       
   return true;
 }

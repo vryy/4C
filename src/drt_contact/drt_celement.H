@@ -337,9 +337,18 @@ public:
     
   /*!
   \brief Compute element normal at local coordinate xi
+         Caution: This function cannot be called stand-alone! It is
+         integrated into the whole nodal normal calculation process.
   */
   virtual void ComputeNormalAtXi(double* xi, int i, Epetra_SerialDenseMatrix& elens);
   
+  /*!
+  \brief Compute unit element normal at local coordinate xi
+         This function is a real stand-alone function to be called
+         for a CElement in order to compute a unit normal at any point.
+  */
+  virtual void ComputeUnitNormalAtXi(double* xi, double* n);
+    
   /*!
   \brief Compute element normal derivative at local coordinate xi
   */
@@ -441,11 +450,12 @@ public:
   one can choose between shape functions or shape function derivatives!
   
   \param xi (in)        : local element coordinates
-  \param inttype (in)   : set to true for shape function usage,
-                          set to false for derivative usage
+  \param inttype (in)   : set to 0 for shape function usage,
+                          set to 1 for derivative xi usage
+                          set to 2 for derivative eta usage (3D only)
   \param globccord (out): interpolated global coordinates
   */
-  virtual bool LocalToGlobal(const double* xi, double* globcoord, bool inttype);
+  virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
 
   /*!
   \brief Add CElements to this CElement's potential contact partners

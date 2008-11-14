@@ -1004,11 +1004,33 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
 #endif // #ifndef CONTACTONEMORTARLOOP
-
-    // do interface coupling
-    // (projection slave and master, overlap detection, integration and
-    // linearization of the Mortar matrix M)
-    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+  }
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+    
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement);
+    }
   }
   // *******************************************************************
   
@@ -1182,7 +1204,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // contact search algorithm
     EvaluateContactSearch();
-
+    
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -1195,14 +1217,34 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
     }
     // *******************************************************************
     
@@ -1390,14 +1432,34 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
     }
     // *******************************************************************
     
@@ -1557,14 +1619,34 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#else
-    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
-
-    // do interface coupling
-    // (projection slave and master, overlap detection, integration and
-    // linearization of the Mortar matrix M)
-    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+  }
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+    
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement);
+    }
   }
   // *******************************************************************
   
@@ -1761,7 +1843,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
     // contact search algorithm
     EvaluateContactSearch();
-
+    
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -1774,14 +1856,34 @@ void CONTACT::Interface::FDCheckGapDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
     }
     // *******************************************************************
     
@@ -1982,7 +2084,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
     // contact search algorithm
     EvaluateContactSearch();
-
+    
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -1995,14 +2097,34 @@ void CONTACT::Interface::FDCheckGapDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
     }
     // *******************************************************************
     
@@ -2176,7 +2298,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
   // contact search algorithm
   EvaluateContactSearch();
-
+  
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -2189,14 +2311,34 @@ void CONTACT::Interface::FDCheckGapDeriv()
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#else
-    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
-
-    // do interface coupling
-    // (projection slave and master, overlap detection, integration and
-    // linearization of the Mortar matrix M)
-    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+  }
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+    
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement);
+    }
   }
   // *******************************************************************
   
@@ -2354,7 +2496,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     // contact search algorithm
     EvaluateContactSearch();
-
+    
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -2367,15 +2509,35 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
-    }   
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
+    }
     // *******************************************************************
     
     // compute finite difference derivative
@@ -2536,7 +2698,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     // contact search algorithm
     EvaluateContactSearch();
-
+    
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -2549,14 +2711,34 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #else
-      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
-
-      // do interface coupling
-      // (projection slave and master, overlap detection, integration and
-      // linearization of the Mortar matrix M)
-      CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement);
+      }
     }
     // *******************************************************************
     
@@ -2704,14 +2886,34 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#else
-    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
-
-    // do interface coupling
-    // (projection slave and master, overlap detection, integration and
-    // linearization of the Mortar matrix M)
-    CONTACT::Coupling coup(Discret(),*selement,Dim(),CSegs());
+  }
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+    
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement);
+    }
   }
   // *******************************************************************
   

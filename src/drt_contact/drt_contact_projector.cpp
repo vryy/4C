@@ -365,7 +365,7 @@ double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
   
     // build interpolation of master node coordinates for current eta
     double nx[3] = {0.0, 0.0, 0.0};
-    ele.LocalToGlobal(eta,nx,true);
+    ele.LocalToGlobal(eta,nx,0);
     
     // subtract slave node coordinates
     nx[0]-=node.xspatial()[0];
@@ -417,9 +417,9 @@ double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
     ele.EvaluateShape(eta, val, deriv, nnodes);
   
     // build interpolation of master node coordinates for current eta
-    // use shape function derivatives for interpolation
+    // use shape function derivatives for interpolation (hence "1")
     double nxeta[3] = {0.0, 0.0, 0.0};
-    ele.LocalToGlobal(eta,nxeta,false);
+    ele.LocalToGlobal(eta,nxeta,1);
     
     // calculate GradF
     fgrad =  nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0];
@@ -617,7 +617,7 @@ double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
   
     // build interpolation of master node coordinates for current eta
     double nx[3] = {0.0, 0.0, 0.0};
-    ele.LocalToGlobal(eta,nx,true);
+    ele.LocalToGlobal(eta,nx,0);
     
     // subtract GP coordinates
     nx[0]-=gpx[0];
@@ -670,9 +670,9 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
   ele.EvaluateShape(eta, val, deriv, nnodes);
 
   // build interpolation of master node coordinates for current eta
-  // use shape fuvntion derivatives for interpolation
+  // use shape function derivatives for interpolation (hence "1")
   double nxeta[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta,false);
+  ele.LocalToGlobal(eta,nxeta,1);
 
   // calculate GradF
   fgrad = nxeta[0]*gpn[1]-nxeta[1]*gpn[0];

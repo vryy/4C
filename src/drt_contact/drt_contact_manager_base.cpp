@@ -2886,7 +2886,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -2904,7 +2904,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
-      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+      if (cnode->n()[2] != 0.0) dserror("ERROR: PrintActiveSet: Not yet implemented for 3D!");
       
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
