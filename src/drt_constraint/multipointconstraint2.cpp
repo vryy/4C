@@ -70,8 +70,7 @@ void UTILS::MPConstraint2::Initialize
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    int condID=cond.Getint("ConditionID");
    
     // if current time (at) is larger than activation time of the condition, activate it 
     if((inittimes_.find(condID)->second <= time) && (!activecons_.find(condID)->second))
@@ -105,15 +104,13 @@ void UTILS::MPConstraint2::Initialize(
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    int condID=cond.Getint("ConditionID");
     if(inittimes_.find(condID)->second<=time)
     {
-      const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
-      const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
-      amplit[i]=(*MPCampl)[0];
+      const int    MPCcondID  = constrcond_[i]->Getint("ConditionID");
+      amplit[i] = constrcond_[i]->GetDouble("amplitude");
       const int mid=params.get("OffsetID",0);
-      IDs[i]=(*MPCcondID)[0]-mid;
+      IDs[i] = MPCcondID-mid;
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
@@ -273,12 +270,9 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
   vector<int> temp=nodeids;
   if (nodeids.size()==3)
   {
-    const vector<int>*    constrNode1  = cond->Get<vector<int> >("constrNode 1");
-    const vector<int>*    constrNode2  = cond->Get<vector<int> >("constrNode 2");
-    const vector<int>*    constrNode3  = cond->Get<vector<int> >("constrNode 3");
-    nodeids[0]=temp[(*constrNode1)[0]-1];
-    nodeids[1]=temp[(*constrNode2)[0]-1];
-    nodeids[2]=temp[(*constrNode3)[0]-1];
+    nodeids[0]=temp[cond->Getint("constrNode 1")-1];
+    nodeids[1]=temp[cond->Getint("constrNode 2")-1];
+    nodeids[2]=temp[cond->Getint("constrNode 3")-1];
   }
   else
   {
@@ -331,8 +325,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
   {
     DRT::Element* actele = disc->lColElement(i);
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    const int condID=(*CondIDVec)[0];
+    int condID=cond.Getint("ConditionID");
     
     if(inittimes_.find(condID)->second<=time)
     {
@@ -364,9 +357,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblevec1) elevector1.Size(eledim);
       if (assemblevec2) elevector2.Size(eledim);        
       if (assemblevec3) elevector3.Size(1); // elevector3 always contains a scalar
-      DRT::Condition& cond = *(constrcond_[actele->Id()]);
-      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-      int condID=(*CondIDVec)[0];
+      
       params.set("ConditionID",condID);
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
       // call the element evaluate method

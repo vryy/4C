@@ -48,7 +48,7 @@ MPConstraint
     vector<DRT::Condition*>::iterator conditer;
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
-      const int condID = (*(*conditer)->Get<vector<int> >("ConditionID"))[0];
+      const int condID = (*conditer)->Getint("ConditionID");
       if (offsetID>maxID) offsetID=maxID;
       if (Type()==mpcnormalcomp3d)
         absconstraint_[condID]=true;
@@ -94,8 +94,7 @@ void UTILS::MPConstraint3::Initialize
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    int condID=cond.Getint("ConditionID");
    
     // if current time (at) is larger than activation time of the condition, activate it 
     if((inittimes_.find(condID)->second <= time) && (!activecons_.find(condID)->second))
@@ -130,23 +129,22 @@ void UTILS::MPConstraint3::Initialize(
   {
     DRT::Condition& cond = *(constrcond_[i]);
     
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    int condID=(*CondIDVec)[0];
+    int condID=cond.Getint("ConditionID");
     if(inittimes_.find(condID)->second<=time&& (!(activecons_.find(condID)->second)))
     {
       if (absconstraint_.find(condID)->second)
       {
-        const vector<int>*    MPCcondID  = constrcond_[i]->Get<vector<int> >("ConditionID");
+        int  MPCcondID  = constrcond_[i]->Getint("ConditionID");
         //in case of a mpcnormalcomp3d-condition amplitude is always 0
         if (Type()==mpcnormalcomp3d)
           amplit[i]=0.0;
         else
         {
-          const vector<double>*    MPCampl  = constrcond_[i]->Get<vector<double> >("amplitude");
-          amplit[i]=(*MPCampl)[0];
+          double    MPCampl  = constrcond_[i]->GetDouble("amplitude");
+          amplit[i]=MPCampl;
         }
         const int mid=params.get("OffsetID",0);
-        IDs[i]=(*MPCcondID)[0]-mid;
+        IDs[i]=MPCcondID-mid;
       } 
       else
       {
@@ -315,7 +313,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
         newdis->AddElement(constraintele);
       }
       // save the connection between element and condition 
-      eletocondID_[nodeiter+startID]=(*(*conditer)->Get<vector<int> >("ConditionID"))[0];
+      eletocondID_[nodeiter+startID]=(*conditer)->Getint("ConditionID");
       eletocondvecindex_[nodeiter+startID]=index;
     }
     //adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter is larger than the ID
@@ -347,7 +345,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap,*constraintnodecolmap);
     //put new discretization into the map
-    newdiscmap[(*(*conditer)->Get<vector<int> >("ConditionID"))[0]]=newdis;
+    newdiscmap[(*conditer)->Getint("ConditionID")]=newdis;
     // increase counter 
     index++;
   }
