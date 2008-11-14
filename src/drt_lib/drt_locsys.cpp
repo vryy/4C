@@ -41,7 +41,6 @@ discret_(discret)
   // - Check, if D.B.C condition is defined wherever Locsys is defined
   // - Efficiency (at the moment, we use standard methods like LINALG::
   //   Multiply for the transformation of global vectors and matrices)
-  // - Preprocessor (GiD) treatment of locsys conditions
   
   // get problem dimension (2D or 3D) and store into dim_
   const ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
