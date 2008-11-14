@@ -182,7 +182,7 @@ void ResultTestManager::TestAll()
   }
 
   if (comm_.MyPID()==0)
-    cout << "\n" MAGENTA_LIGHT "OK" END_COLOR "\n";
+    cout << "\n" GREEN_LIGHT "OK" END_COLOR "\n";
 }
 
 
