@@ -976,9 +976,26 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   // We have arbirtary gids here and we do not tell metis about
   // them. So we have to keep rowrecv until the redistributed map is
   // build.
+
+
+  // rowrecv is a fully redundant vector (size of number of nodes) 
   vector<int> rowrecv(rowmap.NumGlobalElements());
+
+  // after Allreduce rowrecv contains
+  //
+  // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
+  // * | | .... | | * | | .... | | * ..........  * | | .... | | *
+  // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
+  //   gids stored     gids stored                  gids stored 
+  //  on first proc  on second proc                 on last proc 
+  //
+  // the ordering of the gids on the procs is arbitrary (as copied
+  // from the map)
   LINALG::AllreduceEMap(rowrecv, rowmap);
+
+  // construct an epetra map from the list of gids
   Epetra_Map tmap(rowmap.NumGlobalElements(),
+                  // if ..........    then ............... else
                   (myrank == workrank) ? (int)rowrecv.size() : 0,
                   &rowrecv[0],
                   0,
@@ -1009,8 +1026,32 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
       idxmap[rowrecv[i]] = i;
     }
 
+    // xadj points from index i to the index of the 
+    // first adjacent node
     vector<int> xadj(tmap.NumMyElements()+1);
+
+    // a list of adjacent nodes, adressed using xadj
     vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
+
+    // rowrecv(i)       rowrecv(i+1)                      node gids
+    //     ^                 ^
+    //     |                 |
+    //     | idxmap          | idxmap
+    //     |                 |
+    //     v                 v
+    //     i                i+1                       equivalent indices
+    //     |                 |
+    //     | xadj            | xadj
+    //     |                 |
+    //     v                 v
+    //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
+    //    | | | | | | | | | | | ............... | | |      adjncy
+    //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
+    //   
+    //    |       i's       |    (i+1)'s 
+    //    |    neighbours   |   neighbours           (numbered by equivalent indices)
+    //  
+
     vector<int> vwgt(tweights.MyLength());
     for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
 
