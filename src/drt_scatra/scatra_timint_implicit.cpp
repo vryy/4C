@@ -1493,7 +1493,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   {
     // evaluate fluxes on surface condition: only normal fluxes
     // normal flux value is stored at fluxx, fluxy and fluxz are set to 0.0
-    string condstring("ElectrodeKinetics");
+    string condstring("FluxCalculation");
 
     // calculate integral of normal fluxes over indicated boundary
     // may be sum over several boundary parts given in input file
