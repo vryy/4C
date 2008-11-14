@@ -32,10 +32,10 @@ http://www.lnm.mw.tum.de
 <\pre>
 
 <pre>
-Maintainer: Ulrrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/
