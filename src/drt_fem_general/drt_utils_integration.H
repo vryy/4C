@@ -30,7 +30,7 @@ Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
 http://www.lnm.mw.tum.de                   
 
 -------------------------------------------------------------------------
-<\pre>
+</pre>
 
 <pre>
 Maintainer: Axel Gerstenberger

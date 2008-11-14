@@ -30,7 +30,7 @@ Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
 http://www.lnm.mw.tum.de                   
 
 -------------------------------------------------------------------------
-<\pre>
+</pre>
 
  Provided are 1D, 2D and 3D shape functions
 

@@ -31,7 +31,7 @@ Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
 http://www.lnm.mw.tum.de                   
 
 -------------------------------------------------------------------------
-<\pre>
+</pre>
 
 \note: such mixing is not optimal in the sense, that matrix vector routines are tuned for one array library and
 it is hard to write similarily performing code. So this is more a debug solution until one settles for a array type

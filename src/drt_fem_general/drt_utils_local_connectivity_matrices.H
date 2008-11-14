@@ -30,7 +30,7 @@ Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
 http://www.lnm.mw.tum.de                   
 
 -------------------------------------------------------------------------
-<\pre>
+</pre>
 
 The surface mapping gives the node numbers such that the 2D shape functions can be used
  Nodal mappings describe the relation between volume, surface and line node numbering.
