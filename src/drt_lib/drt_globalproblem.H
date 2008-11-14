@@ -307,9 +307,6 @@ private:
   /// material vector
   vector<_MATERIAL> material_;
 
-  /// solver vector
-  vector<_SOLVAR> solver_;
-
   Teuchos::RCP<IO::InputControl>  inputcontrol_;
   Teuchos::RCP<IO::OutputControl> outputcontrol_;
   Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
