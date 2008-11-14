@@ -74,6 +74,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
 
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
@@ -1491,7 +1493,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   {
     // evaluate fluxes on surface condition: only normal fluxes
     // normal flux value is stored at fluxx, fluxy and fluxz are set to 0.0
-    string condstring("FluxCalculation");
+    string condstring("ElectrodeKinetics");
 
     // calculate integral of normal fluxes over indicated boundary
     // may be sum over several boundary parts given in input file
