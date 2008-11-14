@@ -136,6 +136,13 @@ public:
     const double& ScalarThis  /*!< scale this vector with */
   );
 
+  /*!
+   * \brief Set vector components to zero,
+   *        this = 0.0
+   * \author a.ger \date 11/08
+   */
+  void Zero();
+  
   //@}
 
 protected:

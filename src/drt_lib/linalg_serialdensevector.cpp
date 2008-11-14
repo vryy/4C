@@ -179,4 +179,14 @@ void LINALG::SerialDenseVector::Update(
   AXPY(M()*N(), ScalarB, B.A(), A());
 }
 
+
+/*----------------------------------------------------------------------*
+ |   Set vector components to zero                                      |
+ |   this = 0.0                                     (public) a.ger 11/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SerialDenseVector::Zero()
+{
+  memset(A(), 0, M()*N()*sizeof(double));
+}
+
 #endif  // #ifdef CCADISCRET
