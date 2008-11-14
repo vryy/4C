@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 #include "xfem_condition.H"
 #include "../drt_io/io_control.H"
@@ -254,7 +255,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       // stringstream for domains
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
-      BlitzVec vals(8);
+      LINALG::SerialDenseVector vals(8);
       vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
       vals(4) = 1.0;vals(5) = 1.0;vals(6) = 1.0;vals(7) = 1.0;
       for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
@@ -301,7 +302,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
           
           //const int domain_id = PositionWithinConditionNP(cellcenterpos);
           
-          BlitzMat point(3,1);
+          LINALG::SerialDenseMatrix point(3,1);
           point(0,0)=cellcenterpos(0);
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
@@ -546,14 +547,12 @@ double ElementVolumeT(
     posXiDomain(2) = intpoints.qxg[iquad][2];
     
     // shape functions and their first derivatives
-    static blitz::TinyVector<double,numnode> funct;
     static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> deriv;
-    DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
     DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
     // get transposed of the jacobian matrix d x / d \xi
     static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
-    BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+    xjm.MultiplyNT(deriv,xyze);
 
     const double det = xjm.Determinant();
     const double fac = intpoints.qwgt[iquad]*det;

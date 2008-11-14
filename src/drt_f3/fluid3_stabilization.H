@@ -19,7 +19,7 @@
 #ifndef XFLUID3_STABILIZATION_H
 #define XFLUID3_STABILIZATION_H
 
-#include "../drt_geometry/vector_definitions.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 namespace XFLUID
@@ -95,7 +95,7 @@ namespace XFLUID
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
-    LINALG::Vec3 e;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> e;
     e(0) = intpoints.qxg[0][0];
     e(1) = intpoints.qxg[0][1];
     e(2) = intpoints.qxg[0][2];
@@ -105,11 +105,11 @@ namespace XFLUID
     DRT::UTILS::shape_function_3D_deriv1(deriv_, e(0), e(1), e(2), DISTYPE);
     
     // get Jacobian matrix and determinant
-    //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
-    LINALG::Mat3x3 xjm_;
-    BLITZTINY::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
-    const double det = xjm_.Determinant();
-    const double vol = wquad*det;
+    // xjm_ = deriv_(i,k)*xyze(j,k);
+    LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
+    xjm_.MultiplyNT(deriv_,xyze);
+
+    const double vol = wquad * xjm_.Determinant();
     
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
     const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
@@ -138,7 +138,7 @@ namespace XFLUID
     const double vel_norm = sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
     // normed velocity at element centre
-    LINALG::Vec3 velino;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> velino;
     if (vel_norm>=1e-6)
     {
         for (int isd = 0; isd < nsd; ++isd)
@@ -151,8 +151,8 @@ namespace XFLUID
     }
 
     // get streamlength
-    //const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy(j,i),j)));
-    BlitzVec velinoder(numparamvelx);
+    //const double val = sum(abs(velino(j)*derxy(j,i)));
+    LINALG::SerialDenseVector velinoder(numparamvelx);
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
     {
         velinoder(iparam) = 0.0;

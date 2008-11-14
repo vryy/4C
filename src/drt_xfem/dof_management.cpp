@@ -28,6 +28,15 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+//! take a double C array of (hopefully) length 3 and convert it to a blitz TinyVector of length 3
+static inline BlitzVec3 toBlitzArray(const double* x)
+{
+  BlitzVec3 blitz_x;
+  blitz_x(0) = x[0];
+  blitz_x(1) = x[1];
+  blitz_x(2) = x[2];
+  return blitz_x;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -177,10 +186,9 @@ void XFEM::DofManager::toGmsh(
       {
         //DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-        const int node_gid = xfemnode->Id();
+        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
 
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         
         if (blub != nodalDofSet_.end())
         {
@@ -204,11 +212,10 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-        const int node_gid = xfemnode->Id();
+        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;
@@ -240,11 +247,10 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-        const int node_gid = xfemnode->Id();
+        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;
@@ -276,11 +282,10 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-        const int node_gid = xfemnode->Id();
+        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
         {
           const std::set<XFEM::FieldEnr> fields = blub->second;

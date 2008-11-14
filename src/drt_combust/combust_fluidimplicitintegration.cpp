@@ -958,7 +958,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
   const int nsd = 3;
   const Epetra_Map* dofcolmap = cutterdiscret->DofColMap();
-  LINALG::Vec3 c;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> c;
   c = 0.0;
   for (int inode = 0; inode < cutterdiscret->NumMyColNodes(); ++inode)
   {
@@ -1267,7 +1267,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-        BlitzVec elementvalues(numparam);
+        LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
@@ -1276,7 +1276,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
@@ -1284,7 +1284,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << endl;
         }
-        if (elegid == 1 and elementvalues.size() > 0)
+        if (elegid == 1 and elementvalues.Length() > 0)
         {
           //std::cout << elementvalues << std::endl;
           std::ofstream f;

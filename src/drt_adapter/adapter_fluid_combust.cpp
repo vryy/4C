@@ -231,8 +231,8 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
         
         const int nsd = 3;
         const int numnode = actele->NumNode();
-        BlitzMat elementvalues(nsd,numnode);
-        BlitzMat elementpositions(nsd,numnode);
+        LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
+        LINALG::SerialDenseMatrix elementpositions(nsd,numnode);
         int counter = 0;
         for (int iparam=0; iparam<numnode; ++iparam)
         {

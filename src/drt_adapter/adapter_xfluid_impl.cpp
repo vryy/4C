@@ -372,8 +372,8 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
         
         const int nsd = 3;
         const int numnode = actele->NumNode();
-        BlitzMat elementvalues(nsd,numnode);
-        BlitzMat elementpositions(nsd,numnode);
+        LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
+        LINALG::SerialDenseMatrix elementpositions(nsd,numnode);
         int counter = 0;
         for (int iparam=0; iparam<numnode; ++iparam)
         {
@@ -552,7 +552,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
     // compute force components
     const int nsd = 3;
     const Epetra_Map* dofcolmap = boundarydis_->DofColMap();
-    LINALG::Vec3 c = 0.0;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> c = 0.0;
     for (int inode = 0; inode < boundarydis_->NumMyColNodes(); ++inode)
     {
       const DRT::Node* node = boundarydis_->lColNode(inode);

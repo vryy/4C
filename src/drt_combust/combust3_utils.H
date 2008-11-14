@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management_element.H"
 #include <Epetra_SerialDenseSolver.h>
 
+
 namespace XFEM
 {
   
@@ -285,18 +286,18 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
    |                                          'chainrulerhs'
    |
    *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4>
+template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4, class M5>
 void gder2(
         const M1& xjm,
         const M2& derxy,
         const M3& deriv2,
         const M4& xyze,
-        BlitzMat& derxy2_)
+        M5& derxy2)
 {
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // initialize and zero out everything
-    static Epetra_SerialDenseMatrix bm(6,6);
+    static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
 
     // calculate elements of jacobian_bar matrix
     bm(0,0) = xjm(0,0)*xjm(0,0);
@@ -359,23 +360,23 @@ void gder2(
     |        +-+-+-+             +-+-+-+-+       | | | | .
     |        | | | | 5           | | | | | 5     +-+-+-+
     |        +-+-+-+             +-+-+-+-+       | | | | iel-1
-    |                                    +-+-+-+
+    |                                            +-+-+-+
     |
     |        xder2               deriv2          xyze^T
     |
     |
     |                                     +-                  -+
-    |                                 | d^2x   d^2y   d^2z |
-    |                                 | ----   ----   ---- |
-    |                         | dr^2   dr^2   dr^2 |
-    |                         |                    |
-    |                         | d^2x   d^2y   d^2z |
+    |                                     | d^2x   d^2y   d^2z |
     |                                     | ----   ----   ---- |
-    |                         | ds^2   ds^2   ds^2 |
-    |                         |                    |
-    |                         | d^2x   d^2y   d^2z |
-    |                         | ----   ----   ---- |
-    |                         | dt^2   dt^2   dt^2 |
+    |                                     | dr^2   dr^2   dr^2 |
+    |                                     |                    |
+    |                                     | d^2x   d^2y   d^2z |
+    |                                     | ----   ----   ---- |
+    |                                     | ds^2   ds^2   ds^2 |
+    |                                     |                    |
+    |                                     | d^2x   d^2y   d^2z |
+    |                                     | ----   ----   ---- |
+    |                                     | dt^2   dt^2   dt^2 |
     |               yields    xder2  =    |                    |
     |                                     | d^2x   d^2y   d^2z |
     |                                     | ----   ----   ---- |
@@ -388,14 +389,14 @@ void gder2(
     |                                     | d^2x   d^2y   d^2z |
     |                                     | ----   ----   ---- |
     |                                     | dsdt   dsdt   dsdt |
-    |                         +-                  -+
+    |                                     +-                  -+
     |
     |
     */
 
-    //const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
-    static blitz::TinyMatrix<double,6,3> xder2;
-    BLITZTINY::MMt_product<6,3,numnode>(deriv2,xyze,xder2);
+    //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
+    static LINALG::FixedSizeSerialDenseMatrix<6,3> xder2;
+    xder2.MultiplyNT(deriv2,xyze);
 
     /*
     |        0...iel-1             0 1 2
@@ -416,18 +417,8 @@ void gder2(
     |       chainrulerhs          xder2
     */
 
-    //derxy2_ = deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k);
-    for (int i = 0; i < 6; ++i)
-    {
-        for (int j = 0; j < numnode; ++j)
-        {
-            derxy2_(i,j) = deriv2(i,j);
-            for (int k = 0; k < 3; ++k)
-            {
-                derxy2_(i,j) -= xder2(i,k)*derxy(k,j);
-            }
-        }
-    }
+    //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
+    derxy2.Multiply(-1.0,xder2,derxy);
 
     /*
     |        0...iel-1            0...iel-1         0...iel-1
@@ -449,6 +440,7 @@ void gder2(
     */
 
     //derxy2_ += deriv2_;
+    derxy2.Update(1.0,deriv2,1.0);
 
     /* make LR decomposition and solve system for all right hand sides
      * (i.e. the components of chainrulerhs)
@@ -470,10 +462,10 @@ void gder2(
     |                                   |        |
     |                                   |        |
     |                                   derxy2[i]|
-    |                                    |
-    |                                    chainrulerhs[i]
+    |                                            |
+    |                                            chainrulerhs[i]
     |
-    |   yields
+    |       yields
     |
     |                      0...iel-1
     |                      +-+-+-+-+
@@ -488,19 +480,16 @@ void gder2(
     |                      | | | | | 4 = drdt
     |                      +-+-+-+-+
     |                      | | | | | 5 = dsdt
-    |                  +-+-+-+-+
+    |                      +-+-+-+-+
     */
-    Epetra_SerialDenseMatrix ederxy2(View,derxy2_.data(),6,6,numnode);
 
-    Epetra_SerialDenseSolver solver;
+    LINALG::FixedSizeSerialDenseSolver<6,6,numnode> solver;
     solver.SetMatrix(bm);
 
     // No need for a separate rhs. We assemble the rhs to the solution
     // vector. The solver will destroy the rhs and return the solution.
-    solver.SetVectors(ederxy2,ederxy2);
+    solver.SetVectors(derxy2,derxy2);
     solver.Solve();
-
-    return;
 }
 
 

@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 
 #include "integrationcell.H"
 #include "intersection_service.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -58,7 +59,7 @@ static void ComputePhysicalCoordinates(
     physicalCoordinates = 0.0;
     // for each cell node, compute physical position
     const int nen_ele = ele.NumNode();
-    BlitzVec funct(nen_ele);
+    LINALG::SerialDenseVector funct(nen_ele);
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
@@ -228,11 +229,11 @@ BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
     
     // center in local coordinates
-    BlitzVec3 localcenterpos;
+    LINALG::FixedSizeSerialDenseMatrix<3,1> localcenterpos;
     localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
-    BlitzVec funct(numnodecell);
+    LINALG::SerialDenseVector funct(numnodecell);
     DRT::UTILS::shape_function_3D(funct,
             localcenterpos(0),
             localcenterpos(1),
@@ -350,10 +351,10 @@ BlitzVec3 GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& el
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
-    const BlitzVec2 localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
+    const LINALG::FixedSizeSerialDenseMatrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
 
     // shape functions
-    BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
+    LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
     DRT::UTILS::shape_function_2D(funct,
             localcenterpos(0),
             localcenterpos(1),

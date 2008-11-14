@@ -23,7 +23,6 @@ Maintainer: Axel Gerstenberger
 #define TIME_INTEGRATION_SCHEME_H
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometry/vector_definitions.H"
 
 
 namespace FLD

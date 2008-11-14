@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
-#include "../drt_geometry/vector_definitions.H"
 #include "dof_management.H"
 #include "dof_distribution_switcher.H"
 #include "dofkey.H"
@@ -43,7 +42,7 @@ static XFEM::Enrichment genAlternativeEnrichment(
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
         RCP<Epetra_Vector>&             vector,
-        LINALG::Vec3                    ivalrigid_body
+        LINALG::FixedSizeSerialDenseMatrix<3,1>                    ivalrigid_body
         ) const
 {
     // create new vector with new number of dofs 
@@ -109,9 +108,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                 // current assumption: there is only one type of enrichment per node
                 // no overlapping enrichments allowed for now
                 const int nodegid = olddofkey.getGid();
-                const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(nodegid)->X()));
                 const XFEM::Enrichment oldenr(olddofkey.getFieldEnr().getEnrichment());
-                //const double enrval = oldenr.EnrValue(actpos, *ih_, Enrichment::approachUnknown);
                 
                 // create alternative dofkey
                 XFEM::Enrichment altenr(genAlternativeEnrichment(nodegid, oldphysvar, dofman_));
@@ -308,9 +305,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
                 // current assumption: there is only one type of enrichment per node
                 // no overlapping enrichments allowed for now
                 const int nodegid = olddofkey.getGid();
-                const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(nodegid)->X()));
                 const XFEM::Enrichment oldenr = olddofkey.getFieldEnr().getEnrichment();
-                //const double enrval = oldenr.EnrValue(actpos, *ih_, Enrichment::approachUnknown);
                 
                 // create alternative dofkey
                 XFEM::Enrichment altenr(genAlternativeEnrichment(nodegid, oldphysvar, dofman_));

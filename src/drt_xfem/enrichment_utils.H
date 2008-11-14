@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 
 #include "dof_management_element.H"
 #include "xfem_enums.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 class DRT::Element;
@@ -46,15 +48,15 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
-template<class V1>
+template<class VI, class VO>
 void ComputeEnrichedNodalShapefunction(
     const DRT::Element&                        ele,
     const RCP<XFEM::InterfaceHandle>           ih,
     const XFEM::ElementDofManager&             dofman,
     const XFEM::PHYSICS::Field                 field,
     const std::map<XFEM::Enrichment, double>&  enrvals,
-    const V1&                                  funct,
-    BlitzVec&                                  enr_funct
+    const VI&                                  funct,
+    VO&                                        enr_funct
     )
 {
     const int* nodeids = ele.NodeIds();
@@ -85,17 +87,17 @@ void ComputeEnrichedNodalShapefunction(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
-template<class V1, class M2>
+template<class VI, class MI, class VO, class MO>
 void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const V1& funct,
-        const M2& derxy,
-        BlitzVec& enr_funct,
-        BlitzMat& enr_derxy
+        const VI& funct,
+        const MI& derxy,
+        VO& enr_funct,
+        MO& enr_derxy
         )
 {
     const int* nodeids = ele.NodeIds();
@@ -130,19 +132,19 @@ void ComputeEnrichedNodalShapefunction(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
-template<class V1, class M2, class M3>
+template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
 void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const V1& funct,
-        const M2& derxy,
-        const M3& derxy2,
-        BlitzVec& enr_funct,
-        BlitzMat& enr_derxy,
-        BlitzMat& enr_derxy2
+        const VI& funct,
+        const MI1& derxy,
+        const MI2& derxy2,
+        VO& enr_funct,
+        MO1& enr_derxy,
+        MO2& enr_derxy2
         )
 {
     const int* nodeids = ele.NodeIds();
@@ -187,8 +189,8 @@ void ComputeEnrichedElementShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec& funct,
-        BlitzVec& enr_funct
+        const LINALG::SerialDenseVector& funct,
+        LINALG::SerialDenseVector& enr_funct
         );
 
 /*!
@@ -204,10 +206,10 @@ void ComputeEnrichedElementShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec& funct,
-        const BlitzMat& derxy,
-        BlitzVec& enr_funct,
-        BlitzMat& enr_derxy
+        const LINALG::SerialDenseVector& funct,
+        const LINALG::SerialDenseMatrix& derxy,
+        LINALG::SerialDenseVector& enr_funct,
+        LINALG::SerialDenseMatrix& enr_derxy
         );
 
 //! for output, compute values on integration cells
@@ -217,8 +219,8 @@ void computeScalarCellNodeValuesFromNodalUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzVec& elementvalues,
-  BlitzVec&     cellvalues
+  const LINALG::SerialDenseVector& elementvalues,
+  LINALG::SerialDenseVector&     cellvalues
   );
 
 //! for output, compute values on the integration cells
@@ -228,8 +230,8 @@ void computeScalarCellNodeValuesFromElementUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzVec& elementvalues,
-  BlitzVec&     cellvalues
+  const LINALG::SerialDenseVector& elementvalues,
+  LINALG::SerialDenseVector&     cellvalues
   );
 
 //! for output, compute values on the integration cells

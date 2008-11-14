@@ -97,7 +97,7 @@ static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, 
  */
 
 template <DRT::Element::DiscretizationType DISTYPE>
-BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
+LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
 {
   dserror("not adapted to xfem (, yet)!!!");
     
@@ -119,7 +119,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
   }
 
-  BlitzMat edeadng_(3,numnode,blitz::ColumnMajorArray<2>());
+  LINALG::SerialDenseMatrix edeadng_(3,numnode);
   if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
@@ -395,7 +395,7 @@ void gder2(
     |
     */
 
-    //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
+    //xder2_ = deriv2_(i,k)*xyze_(j,k);
     static LINALG::FixedSizeSerialDenseMatrix<6,3> xder2;
     xder2.MultiplyNT(deriv2,xyze);
 
@@ -418,7 +418,7 @@ void gder2(
     |       chainrulerhs          xder2
     */
 
-    //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
+    //derxy2_ = - xder2_(i,k)*derxy_(k,j);
     derxy2.Multiply(-1.0,xder2,derxy);
 
     /*
@@ -634,13 +634,13 @@ namespace XFLUID
 
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>
-static LINALG::Vec3 interpolateVectorFieldToIntPoint(
+static LINALG::FixedSizeSerialDenseMatrix<3,1> interpolateVectorFieldToIntPoint(
     const M&  eleVectorField,       ///< array with nodal vector values
     const VS& shp,                  ///< array with nodal shape function
     const int numparam              ///< number of parameters
     )
 {
-  LINALG::Vec3 v;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> v;
   const int nsd = 3;
   for (int isd = 0; isd < nsd; ++isd)
   {

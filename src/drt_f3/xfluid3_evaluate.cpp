@@ -314,7 +314,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
-              blitz::Array<double, 1> eforce_0(locval.size());
+              LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
               {
                   eforce_0(i) = eforce(i);

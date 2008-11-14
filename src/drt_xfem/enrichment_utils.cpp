@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 
 #include "enrichment_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
 #include "interfacexfsi.H"
@@ -56,8 +57,8 @@ void XFEM::ComputeEnrichedElementShapefunction(
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec&                       funct,
-        BlitzVec&                             enr_funct
+        const LINALG::SerialDenseVector&                       funct,
+        LINALG::SerialDenseVector&                             enr_funct
         )
 {
     int dofcounter = 0;
@@ -83,15 +84,15 @@ void XFEM::ComputeEnrichedElementShapefunction(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedElementShapefunction(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager&        dofman,
-        const XFEM::PHYSICS::Field            field,
+        const DRT::Element&                        ele,
+        const RCP<XFEM::InterfaceHandle>           ih,
+        const XFEM::ElementDofManager&             dofman,
+        const XFEM::PHYSICS::Field                 field,
         const std::map<XFEM::Enrichment, double>&  enrvals,
-        const BlitzVec&                       funct,
-        const BlitzMat&                       derxy,
-        BlitzVec&                             enr_funct,
-        BlitzMat&                             enr_derxy
+        const LINALG::SerialDenseVector&           funct,
+        const LINALG::SerialDenseMatrix&           derxy,
+        LINALG::SerialDenseVector&                 enr_funct,
+        LINALG::SerialDenseMatrix&                 enr_derxy
         )
 {
     int dofcounter = 0;
@@ -123,8 +124,8 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzVec& elementvalues,
-  BlitzVec&      cellvalues
+  const LINALG::SerialDenseVector& elementvalues,
+  LINALG::SerialDenseVector&      cellvalues
   )
 {
   const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
@@ -140,10 +141,10 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
         cellcenterpos,
         XFEM::Enrichment::approachUnknown));
   
-  cellvalues = 0.0;
+  cellvalues.Zero();
   for (int inen = 0; inen < cell.NumNode(); ++inen)
   {
-    BlitzVec funct(ele.NumNode());
+    LINALG::SerialDenseVector funct(ele.NumNode());
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       (*nodalPosXiDomain)(0,inen),
@@ -152,7 +153,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
       ele.Shape());
 
     const int numparam  = dofman.NumDofPerField(field);
-    BlitzVec enr_funct(numparam);
+    LINALG::SerialDenseVector enr_funct(numparam);
     XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
@@ -170,8 +171,8 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzVec& elementvalues,
-  BlitzVec&      cellvalues
+  const LINALG::SerialDenseVector& elementvalues,
+  LINALG::SerialDenseVector&      cellvalues
   )
 {
   const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
@@ -200,7 +201,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
     if (numvirtnode != numparam) dserror("bug");
     
-    BlitzVec funct(numparam);
+    LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       (*nodalPosXiDomain)(0,incn),
@@ -208,7 +209,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
       (*nodalPosXiDomain)(2,incn),
       eleval_distype);
 
-    BlitzVec enr_funct(numparam);
+    LINALG::SerialDenseVector enr_funct(numparam);
     XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
@@ -256,7 +257,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
     if (numvirtnode != numparam) dserror("bug");
     
-    BlitzVec funct(numparam);
+    LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       (*nodalPosXiDomain)(0,incn),
@@ -264,7 +265,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
       (*nodalPosXiDomain)(2,incn),
       eleval_distype);
 
-    BlitzVec enr_funct(numparam);
+    LINALG::SerialDenseVector enr_funct(numparam);
     XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
@@ -311,9 +312,9 @@ void XFEM::computeVectorCellNodeValues(
   
   // cell corner nodes
   //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
-  BlitzVec enr_funct(numparam);
-  //BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static BlitzVec funct(27);
+  LINALG::SerialDenseVector enr_funct(numparam);
+  //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+  static LINALG::SerialDenseVector funct(27);
   cellvalues = 0.0;
   for (int inen = 0; inen < nen_cell; ++inen)
   {
@@ -365,9 +366,9 @@ void XFEM::computeVectorCellNodeValues(
   
   // cell corner nodes
   //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
-  BlitzVec enr_funct(numparam);
-  //BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static BlitzVec funct(27);
+  LINALG::SerialDenseVector enr_funct(numparam);
+  //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+  static LINALG::SerialDenseVector funct(27);
   cellvalues = 0.0;
   for (int inen = 0; inen < nen_cell; ++inen)
   {
@@ -422,6 +423,10 @@ double DomainCoverageRatioT(
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
+      const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(ele));
+                  
+      const int label = ih.PositionWithinConditionNP(cellcenter);
+      
       DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
       switch (cell->Shape())
       {
@@ -465,14 +470,10 @@ double DomainCoverageRatioT(
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
-            // position of the gausspoint in physical coordinates
-            static BlitzVec3 gauss_pos_xyz;
-            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
-      
             // get transposed of the jacobian matrix d x / d \xi
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
-            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            xjm.MultiplyNT(deriv,xyze);
 
             const double det = xjm.Determinant();
             const double fac = intpoints.qwgt[iquad]*det*detcell;
@@ -483,10 +484,6 @@ double DomainCoverageRatioT(
             }
 
             area_ele += fac;
-            
-            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(ele));
-                        
-            const int label = ih.PositionWithinConditionNP(cellcenter);
             
             if (label != 0)
             {
@@ -596,17 +593,17 @@ double BoundaryCoverageRatioT(
       //            cout << posXiDomain << endl;
       
       // shape functions and their first derivatives
-      BlitzVec funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+      LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D(funct_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       BlitzMat deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       
       // shape functions and their first derivatives
-      static BlitzVec funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
+      static LINALG::SerialDenseVector funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       // get jacobian matrix d x / d \xi  (3x2)
-      static LINALG::Mat3x2 dxyzdrs;
+      static LINALG::FixedSizeSerialDenseMatrix<3,2> dxyzdrs;
       //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
       for (int isd = 0; isd < 3; ++isd)
       {
@@ -621,10 +618,9 @@ double BoundaryCoverageRatioT(
       }
       
       // compute covariant metric tensor G for surface element (2x2)
-      static LINALG::Mat2x2 metric;
+      static LINALG::FixedSizeSerialDenseMatrix<2,2> metric;
       //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
-      //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
       
       const double detmetric = sqrt(metric.Determinant());
       if (detmetric < 0.0)

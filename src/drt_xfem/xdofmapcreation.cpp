@@ -20,6 +20,15 @@ Maintainer: Axel Gerstenberger
 #include "enrichment_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 
+//! take a double C array of (hopefully) length 3 and convert it to a blitz TinyVector of length 3
+static inline BlitzVec3 toBlitzArray(const double* x)
+{
+  BlitzVec3 blitz_x;
+  blitz_x(0) = x[0];
+  blitz_x(1) = x[1];
+  blitz_x(2) = x[2];
+  return blitz_x;
+}
 
 void XFEM::ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,

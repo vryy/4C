@@ -23,7 +23,6 @@ Maintainer: Axel Gerstenberger
 #define TIME_INTEGRATION_SCHEME_H
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometry/vector_definitions.H"
 
 
 namespace FLD
@@ -53,10 +52,10 @@ namespace TIMEINT_THETA_BDF2
    * \return hist          linear combination of old values
    * 
    */
-  LINALG::Vec3 GetOldPartOfRighthandside(
-      const LINALG::Vec3&        veln,       ///< velocity      n
-      const LINALG::Vec3&        velnm,      ///< velocity      n-1
-      const LINALG::Vec3&        accn,       ///< acceleration  n
+  LINALG::FixedSizeSerialDenseMatrix<3,1> GetOldPartOfRighthandside(
+      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        veln,       ///< velocity      n
+      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        velnm,      ///< velocity      n-1
+      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        accn,       ///< acceleration  n
       const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
       const double               dta,        ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme

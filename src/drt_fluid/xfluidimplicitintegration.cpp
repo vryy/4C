@@ -1283,7 +1283,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-        BlitzVec elementvalues(numparam);
+        LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
@@ -1292,7 +1292,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
@@ -1300,7 +1300,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
-        if (elegid == 1 and elementvalues.size() > 0)
+        if (elegid == 1 and elementvalues.Length() > 0)
         {
           //std::cout << elementvalues << "\n";
           std::ofstream f;
@@ -1365,7 +1365,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-        BlitzVec elementvalues(numparam);
+        LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
         if(elementvalues.size() != 0)
@@ -1378,7 +1378,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
@@ -1502,12 +1502,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(7,iparam) = myvelnp[dofposyz[iparam]];
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(8,iparam) = myvelnp[dofposzz[iparam]];
 
-        BlitzVec elementvaluexx(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexx(iparam) = myvelnp[dofposxx[iparam]];
-        BlitzVec elementvalueyy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyy(iparam) = myvelnp[dofposyy[iparam]];
-        BlitzVec elementvaluezz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluezz(iparam) = myvelnp[dofposzz[iparam]];
-        BlitzVec elementvaluexy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexy(iparam) = myvelnp[dofposxy[iparam]];
-        BlitzVec elementvaluexz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexz(iparam) = myvelnp[dofposxz[iparam]];
-        BlitzVec elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
+        LINALG::SerialDenseVector elementvaluexx(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexx(iparam) = myvelnp[dofposxx[iparam]];
+        LINALG::SerialDenseVector elementvalueyy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyy(iparam) = myvelnp[dofposyy[iparam]];
+        LINALG::SerialDenseVector elementvaluezz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluezz(iparam) = myvelnp[dofposzz[iparam]];
+        LINALG::SerialDenseVector elementvaluexy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexy(iparam) = myvelnp[dofposxy[iparam]];
+        LINALG::SerialDenseVector elementvaluexz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexz(iparam) = myvelnp[dofposxz[iparam]];
+        LINALG::SerialDenseVector elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
 
 
         const GEO::DomainIntCells& domainintcells =
@@ -1526,32 +1526,32 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 //          }
 
           {
-          BlitzVec cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
           gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << "\n";
           }
           {
-          BlitzVec cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
           gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << "\n";
           }
           {
-          BlitzVec cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
           gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << "\n";
           }
           {
-          BlitzVec cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
           gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << "\n";
           }
           {
-          BlitzVec cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
           gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << "\n";
           }
           {
-          BlitzVec cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
           gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << "\n";
           }

@@ -41,8 +41,8 @@ namespace GEO
     const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
     
     // create shape function vectors
-    //BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
-    static BlitzVec funct(27);
+    //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
+    static LINALG::SerialDenseVector funct(27);
     DRT::UTILS::shape_function_3D(funct,pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
@@ -85,11 +85,11 @@ namespace GEO
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get shape function derivative
-    //BlitzMat deriv(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
-    static BlitzMat deriv(3,27);
+    //LINALG::SerialDenseMatrix deriv(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
+    static LINALG::SerialDenseMatrix deriv(3,27);
     DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
     // get jacobian matrix ...
-    LINALG::Mat3x3 xjm;
+    LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
     for (int i = 0; i < 3; ++i)
     {
       for (int j = 0; j < 3; ++j)
@@ -131,11 +131,11 @@ namespace GEO
     const BlitzMat* xyze_cell(cell.NodalPosXiBoundaryBlitz());
     
     // create shape function vectors
-    BlitzVec funct(numnodecell);
+    LINALG::SerialDenseVector funct(numnodecell);
     DRT::UTILS::shape_function_2D(funct,pos_eta(0),pos_eta(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+    //const LINALG::SerialDenseVector pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
     //GEO::PosXiBoundary pos_xsi_boundary;
     BLITZTINY::MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
@@ -155,11 +155,11 @@ namespace GEO
     const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
     
     // create shape function vectors
-    BlitzVec funct(numnodecell);
+    LINALG::SerialDenseVector funct(numnodecell);
     DRT::UTILS::shape_function_2D(funct, pos_eta(0),pos_eta(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+    //const LINALG::SerialDenseVector pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
     BLITZTINY::MV_product<3,3>(*xyze_cell, funct, pos_xsi_domain);
     
@@ -179,11 +179,11 @@ namespace GEO
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get shape function derivative
-    BlitzMat deriv(2,numnode);
+    LINALG::SerialDenseMatrix deriv(2,numnode);
     DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta(0), pos_eta(1), cell.Shape());
     
     // get jacobian matrix ...
-    LINALG::Mat2x2 xjm;
+    LINALG::FixedSizeSerialDenseMatrix<2,2> xjm;
     for (int i = 0; i < 2; ++i)
     {
       for (int j = 0; j < 2; ++j)

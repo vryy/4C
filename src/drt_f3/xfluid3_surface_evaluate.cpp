@@ -498,7 +498,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlow(
     const double fac = drs * intpoints.qwgt[gpid];
 
     // velocity at gausspoint
-    const LINALG::Vec3 gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
+    const LINALG::FixedSizeSerialDenseMatrix<3,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
     
     // get normal vector (in x coordinates) to surface element at integration point
     BlitzVec3 n;

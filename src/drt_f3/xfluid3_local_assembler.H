@@ -87,7 +87,7 @@ template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSIC
 template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
 template <XFEM::PHYSICS::Field FIELD>
-struct ShapeSelector {static BlitzMat shp;};
+struct ShapeSelector {static Epetra_SerialDenseMatrix shp;};
 //template<> struct ShapeSelector<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
 //template<> struct ShapeSelector<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
 //template<> struct ShapeSelector<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
