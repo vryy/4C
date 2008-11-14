@@ -22,6 +22,7 @@ Maintainer: Peter Gamnitzer
 #include "vm3_solver.H"
 #include "fluid_utils.H"
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -82,10 +83,14 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
+
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
   pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
+
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -2187,6 +2192,16 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       /* close box in case of convergence */
 
       printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
+    }
+    else if (what_to_print == "dof and node distribution")
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+      cout << noderowmap->NumMyElements() << " nodes on proc " << discret_->Comm().MyPID()<<" \n";
+
+      cout << pbcmapmastertoslave_->size() << " master nodes on PID " << discret_->Comm().MyPID()<<" \n";
+      cout << dofrowmap->NumMyElements() << " dofs on proc " << discret_->Comm().MyPID()<<" \n";
     }
     else
     {
