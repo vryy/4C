@@ -14,7 +14,6 @@ Maintainer: Thomas Kloeppel
 
 #include "constraint_manager.H"
 #include "constraint_element.H"
-#include "mpcdofset.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -34,16 +33,12 @@ actdisc_(discr)
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Constraint Conditions!
   
-  //Check, what kind of constraining boundary conditions there are
+  // constructors of constraints increment number of constraints defined and the minimum 
+  // ConditionID read so far.
   numConstrID_=0;
-  // Keep ParameterList p alive during initialization, so global information
-  // over IDs as well as element results stored here can be used after all
-  // constraints are evaluated
-  const Epetra_Map* dofrowmap1 = actdisc_->DofRowMap();
-  int offset;
-  offset=dofrowmap1->MaxAllGID()+1;
   offsetID_=10000;
   int maxConstrID=0;
+  //Check, what kind of constraining boundary conditions there are
   volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",offsetID_,maxConstrID));
   areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",offsetID_,maxConstrID));
   areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",offsetID_,maxConstrID));
@@ -51,8 +46,10 @@ actdisc_(discr)
   mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
   mpcnormcomp3d_=rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
   
-  numConstrID_=max(maxConstrID-offsetID_+1,0);
-  offsetID_-=offset;
+  numConstrID_ = max(maxConstrID-offsetID_+1,0);
+  constrdofset_ = rcp(new ConstraintDofSet());
+  constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0); 
+  offsetID_-= constrdofset_->FirstGID();
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -71,7 +68,7 @@ actdisc_(discr)
     //initialize constrMatrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors 
-    constrmap_=rcp(new Epetra_Map(numConstrID_,offset,actdisc_->Comm()));
+    constrmap_=rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
     //build an all reduced version of the constraintmap, since sometimes all processors
     //have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);

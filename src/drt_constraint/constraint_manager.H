@@ -30,6 +30,7 @@ Maintainer: Thomas Kloeppel
 #include "monitor.H"
 #include "multipointconstraint2.H"
 #include "multipointconstraint3.H"
+#include "constraintdofset.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -252,8 +253,8 @@ namespace UTILS
     ConstrManager operator = (const ConstrManager& old);
     ConstrManager(const ConstrManager& old);
   
-  
     RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
+    RCP<ConstraintDofSet> constrdofset_; ///< degrees of freedom of lagrange multipliers
     RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
     RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
     RCP<Epetra_Export> conimpo_;  ///< importer for fully redundant constraint vector into distributed one
