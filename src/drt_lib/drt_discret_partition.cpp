@@ -440,14 +440,14 @@ void DRT::Discretization::BuildElementRowColumn(
   return;
 }
 
-
-
-
 /*----------------------------------------------------------------------*
  |  redistribute discretization (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
-                                       const Epetra_Map& nodecolmap)
+                                       const Epetra_Map& nodecolmap,
+                                       bool assigndegreesoffreedom ,
+                                       bool initelements           ,
+                                       bool doboundaryconditions   )
 {
   // build the overlapping and non-overlapping element maps
   RefCountPtr<Epetra_Map> elerowmap;
@@ -461,11 +461,11 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   ExportColumnElements(*elecolmap);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = FillComplete();
+  int err = FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);
+
   if (err) dserror("FillComplete() returned err=%d",err);
 
   return;
 }
-
 
 #endif  // #ifdef CCADISCRET

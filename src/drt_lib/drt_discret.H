@@ -623,15 +623,27 @@ public:
   Steps taken in this method are:<br>
   - build element maps (row and column)
   - do export of row/col nodes and row/col elements
-  - call Fillcomplete()
+  - call Fillcomplete(assigndegreesoffreedom,initelements,doboundaryconditions)
 
   \param noderowmap (in): new node map the discretization shall have on exit
   \param nodecolmap (in): new column map the discretization shall have on exit
 
+  \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
+                                       assigning of degrees of freedoms to nodes and
+                                       elements.
+  \param initelements           (in) : if true, build element register classes and 
+                                       call Initialize() on each type of finite element 
+                                       present
+  \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
+                                       present.
+
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
-
-  virtual void Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
+  virtual void Redistribute(const Epetra_Map& noderowmap, 
+                            const Epetra_Map& nodecolmap,
+                            bool assigndegreesoffreedom=true,
+                            bool initelements          =true,
+                            bool doboundaryconditions  =true);
 
   /*!
   \brief Build element row and column map from nodal row and column maps
