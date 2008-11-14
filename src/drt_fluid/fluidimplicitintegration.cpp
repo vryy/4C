@@ -105,6 +105,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
 
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
