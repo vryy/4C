@@ -58,6 +58,12 @@ namespace ADAPTER {
 
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint()
+    {
+      return structure_.HaveConstraint();
+    };
+    
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();

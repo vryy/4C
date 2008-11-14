@@ -71,6 +71,12 @@ namespace ADAPTER {
     virtual void ReadRestart(int step);
 
     virtual void Solve();
+    
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint()
+    {
+      return structure_.HaveConstraint();
+    };
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }

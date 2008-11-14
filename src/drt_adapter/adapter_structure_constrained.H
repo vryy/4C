@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_timint.H
+\file adapter_structure_constrained.H
 
-\brief Structural time integration field adapter
+\brief Adapter Layer for Structures with Algebraic Constraints
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_STRUCTURE_TIMINT_H
-#define ADAPTER_STRUCTURE_TIMINT_H
+#ifndef ADAPTER_STRUCTURE_CONSTRAINED_H
+#define ADAPTER_STRUCTURE_CONSTRAINED_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -41,22 +41,20 @@ namespace ADAPTER {
 
   /*====================================================================*/
   /*!
-   * \brief Adapter to general implicit structural time integration
+   * \brief Adapter to constrained structural time integration.
+   * Basically this class modifies and merges results coming from one of the
+   * standard adapters for structural time integration 
    *
-   * \date 08/08
+   * \date 11/08
    */
-  class StructureTimInt : public Structure
+  class StructureConstrained : public Structure
   {
   public:
 
     /// Constructor
-    StructureTimInt(
-      Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
-      Teuchos::RCP<Teuchos::ParameterList> sdynparams,  ///< input parameters
-      Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
-      Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
+    StructureConstrained
+    (
+      Teuchos::RCP<Structure> stru
     );
 
     /// initial guess of Newton's method
@@ -87,7 +85,7 @@ namespace ADAPTER {
     double DispIncrFactor();
 
     /// External force at t_{n+1}
-    Teuchos::RCP<const Epetra_Vector> FExtn();
+//    Teuchos::RCP<const Epetra_Vector> FExtn();
 
     /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
     Teuchos::RCP<const Epetra_Vector> FRobin();
@@ -113,7 +111,7 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const
     { 
-      return interface_;
+      return structure_->Interface();
     }
 
     /// domain map of system matrix (do we really need this?)
@@ -126,10 +124,10 @@ namespace ADAPTER {
     );
 
     /// are there any algebraic constraints?
-    virtual bool HaveConstraint()
-    {
-      return structure_->HaveConstraint();
-    };
+     virtual bool HaveConstraint()
+     {
+       return structure_->HaveConstraint();
+     };
     
     /// @name Solver calls
     //@{
@@ -141,7 +139,7 @@ namespace ADAPTER {
     virtual void Solve();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return structure_->LinearSolver(); }
 
     /// linear structure solve with just a interface load
     ///
@@ -196,7 +194,7 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    Teuchos::RCP<STR::TimIntImpl> structure_;
+    Teuchos::RCP<Structure> structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
@@ -214,9 +212,11 @@ namespace ADAPTER {
     Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
     Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
+    
+    
     //@}
 
-  };  // class StructureTimInt
+  };  // class StructureConstrained
 
 }  // namespace ADAPTER
 

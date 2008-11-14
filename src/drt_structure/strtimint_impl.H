@@ -406,6 +406,11 @@ namespace STR
 
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
+    
+    virtual bool HaveConstraint()
+    {
+      return conman_->HaveConstraint();
+    }
 
     //@}
 

@@ -117,6 +117,9 @@ namespace ADAPTER {
 
     /// scaling factor for Lagrangian MFSI coupling (unused)
     virtual double DispIncrFactor() = 0;
+    
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint() = 0;
 
     /// structure part of the rhs to enforce coupling condition at the interface
     /*!

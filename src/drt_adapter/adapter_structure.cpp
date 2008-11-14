@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
 #include "adapter_structure_timint.H"
+#include "adapter_structure_constrained.H"
 #include "adapter_structure_bromotion.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -86,6 +87,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     break;
   }
+  
 }
 
 /*----------------------------------------------------------------------*/
@@ -287,10 +289,16 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<bool>  ("bro_motion",Teuchos::getIntegralValue<int>(bromop,"BROWNIAN_MOTION"));
   bool bromotion = genalphaparams->get("bro_motion",false);
 
+  RCP<Structure> tmpstr;
   if(bromotion)
-    structure_ = rcp(new StructureBroMotion(genalphaparams,actdis,solver,output));
+    tmpstr = rcp(new StructureBroMotion(genalphaparams,actdis,solver,output));
   else
-    structure_ = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
+    tmpstr = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
+  
+  if (tmpstr->HaveConstraint())
+    structure_ = rcp(new StructureConstrained(tmpstr));
+  else
+    structure_ = tmpstr;
 }
 
 /*----------------------------------------------------------------------*/
@@ -380,9 +388,15 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator
-  structure_ = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
+  RCP<Structure> tmpstr;
+  tmpstr = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
                                                 actdis, solver, output));
 
+  if (tmpstr->HaveConstraint())
+    structure_ = rcp(new StructureConstrained(tmpstr));
+  else
+    structure_ = tmpstr;
+  
   // see you
   return;
 }
