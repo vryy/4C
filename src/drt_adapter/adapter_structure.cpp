@@ -34,14 +34,6 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure()
@@ -122,8 +114,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[genprob.numsf];
-
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -137,12 +127,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+                           actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
@@ -325,9 +314,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0, 0.0);
 
-  // set some pointers and variables
-  SOLVAR* actsolv = &solv[genprob.numsf];
-
   // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype 
   //  = DRT::Problem::Instance()->ProblemTypeParams();
@@ -388,11 +374,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   Teuchos::RCP<ParameterList> solveparams 
     = Teuchos::rcp(new ParameterList());
   Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(solveparams,
+    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams, actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator
   structure_ = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,

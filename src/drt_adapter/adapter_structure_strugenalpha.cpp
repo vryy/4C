@@ -26,14 +26,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -30,22 +30,12 @@ using namespace Teuchos;
 using namespace IO;
 
 
-extern struct _SOLVAR  *solv;
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
 
 extern struct _MATERIAL    *mat;
 
@@ -253,15 +243,10 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
 //     rcp(new LINALG::Solver(solveparams,actdis->Comm(),
 //                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 //   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  DRT::Problem::Instance(microdisnum_)->ActivateSolver();
-  SOLVAR*         actsolv  = &solv[0];
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(solveparams,actdis->Comm(),
+  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+                                                               actdis->Comm(),
                                                                DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-  DRT::Problem::Instance()->ActivateSolver();
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
   // create a static "time integrator"

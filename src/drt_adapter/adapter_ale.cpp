@@ -37,14 +37,6 @@ using namespace Teuchos;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -89,20 +81,17 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numaf];
-
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->AleSolverParams(),
+                           actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   RCP<ParameterList> params = rcp(new ParameterList());
   params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));

@@ -59,7 +59,6 @@ using namespace Teuchos;
 
 
 // forward declarations
-struct _SOLVAR;
 // spooles stuff
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
@@ -107,7 +106,6 @@ class Solver
 {
 public:
 
-
   /*!
   \brief Standard Constructor
 
@@ -132,6 +130,29 @@ public:
                        no output will be generated.
   */
   Solver(const Epetra_Comm& comm, FILE* outfile = NULL);
+
+  /*!
+  \brief Constructor taking a validated input parameter list for Solver
+
+  Creates a solver using the parameters provided by inparams. This parameter 
+  list differs from the internally stored #params_. They are translated 
+  by #TranslateSolverParameters.
+  
+  \param inparams (in): input parameter list as provided by DRT::Problem, 
+                        e.g. DRT::Problem::StructSolverParams in case of solver for structures
+  \param comm     (in): a reference to a Epetra communicator object
+  \param outfile  (in): pointer to an error file
+
+  \date 11/08
+  */
+  Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile);
+
+  /*!
+  \brief Set-up of stuff common to all constructors 
+ 
+  \date 11/08
+  */
+  void Setup();
 
   /*!
   \brief Destructor
@@ -214,20 +235,37 @@ public:
 
   //@}
   //! @name Input of parameters
+  
+  /*!
+  \brief Translate solver input parameters from input parameter list to
+         internal solver parameters list style
+
+  \param inparams (in): input parameter list as provided by DRT::Problem, 
+                        e.g. DRT::Problem::StructSolverParams in case of 
+                        solver for structures
+  \return             : internal parameter list ready to be associated 
+                        with #params_
+  \date 02/07,11/08
+  */
+  const Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
 
   /*!
-  \brief Translate solver input parameters from old ccarat style to
-         new solver parameters list style
-
-  This method should go away once the input of all solver parameters is reworked
-
-  \param params (out): parameter list holding new style solver parameters
-                       on output
-  \param actsolv (in): ccarat style struct holding solver parameters
-
+  \brief Add a validated input parameter list as sublist to internal
+         parameters
+  
+  \param name     (in): name for sublist for #params_ to attach data to
+  \param inparams (in): input parameter list as provided by DRT::Problem, 
+                        e.g. DRT::Problem::FluidPressureSolverParams in case 
+                        of additional solver for pressure preconditioner
+  \author bborn
+  \date 11/08
   */
-  void TranslateSolverParameters(ParameterList& params, struct _SOLVAR* actsolv) const;
-
+  void PutSolverParamsToSubParams(const std::string name,
+                                  const Teuchos::ParameterList& inparams)
+  {
+    (*params_).sublist(name) = TranslateSolverParameters(inparams);
+    return;
+  }
   //@}
 
   //! @name Query methods
@@ -310,7 +348,7 @@ private:
 
   //! a communicator
   const Epetra_Comm&        comm_;
-  //! parameter list
+  //! (internal) parameter list
   RCP<ParameterList>        params_;
   //! file to write output to (proc 0 only, can be NULL on input)
   FILE*                     outfile_;

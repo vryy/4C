@@ -40,14 +40,6 @@ Maintainer: Ulrich Kuettler
 
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-/*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
@@ -84,20 +76,17 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[0];
-
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->AleSolverParams(),
+                           actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
   params->set<int>("numstep", adyn.get<int>("NUMSTEP"));

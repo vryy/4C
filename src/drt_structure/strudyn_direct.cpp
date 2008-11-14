@@ -61,14 +61,6 @@ Maintainer: Burkhard Bornemann
 //! \author m.gee \date 06/01
 extern GENPROB genprob;
 
-/*----------------------------------------------------------------------*/
-//! global variable *solv, vector of lenght numfld of structures SOLVAR
-//! defined in solver_control.c
-//!
-//! \author m.gee \date 11/00
-extern SOLVAR* solv;
-
-
 /*======================================================================*/
 /* structural non-linear dynamics */
 void STR::strudyn_direct()
@@ -83,9 +75,6 @@ void STR::strudyn_direct()
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output 
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-
-  // set some pointers and variables
-  SOLVAR* actsolv = &solv[0];
 
   // get input parameter lists
   //const Teuchos::ParameterList& probtype 
@@ -109,10 +98,9 @@ void STR::strudyn_direct()
 
   // create a solver
   Teuchos::RCP<LINALG::Solver> solver 
-    = Teuchos::rcp(new LINALG::Solver(actdis->Comm(),
+    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+                                      actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(solver->Params(),
-                                    actsolv);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator

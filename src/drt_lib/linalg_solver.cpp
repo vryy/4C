@@ -25,6 +25,8 @@ Maintainer: Michael Gee
 #include "linalg_sparsematrix.H"
 #include "standardtypes_cpp.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 extern "C"
 {
 #include "../solver/solver.h"
@@ -41,30 +43,7 @@ outfile_(outfile),
 factored_(false),
 ncall_(0)
 {
-  // create an empty linear problem
-  lp_ = rcp(new Epetra_LinearProblem());
-
-#ifdef PARALLEL
-#ifdef SPOOLES_PACKAGE
-  frontmtx_      =NULL;
-  newA_          =NULL;
-  newY_          =NULL;
-  frontETree_    =NULL;
-  mtxmanager_    =NULL;
-  newToOldIV_    =NULL;
-  oldToNewIV_    =NULL;
-  ownersIV_      =NULL;
-  vtxmapIV_      =NULL;
-  ownedColumnsIV_=NULL;
-  solvemap_      =NULL;
-  symbfacIVL_    =NULL;
-  graph_         =NULL;
-  mtxY_          =NULL;
-  mtxX_          =NULL;
-  mtxA_          =NULL;
-#endif
-#endif
-
+  Setup();
   return;
 }
 
@@ -82,6 +61,38 @@ ncall_(0)
   Params().set("solver","klu");
   Params().set("symmetric",false);
 
+  // set-up
+  Setup();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                                  11/08|
+ *----------------------------------------------------------------------*/
+LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, 
+                       const Epetra_Comm& comm, 
+                       FILE* outfile) :
+comm_(comm),
+params_(rcp(new ParameterList())),
+outfile_(outfile),
+factored_(false),
+ncall_(0)
+{
+  // set solver parameters
+  *params_ = TranslateSolverParameters(inparams);
+
+  // set-up
+  Setup();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  set-up of stuff common to all constructors                     11/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Setup()
+{
   // create an empty linear problem
   lp_ = rcp(new Epetra_LinearProblem());
 
@@ -707,55 +718,64 @@ void LINALG::Solver::Solve_lapack(const bool reset)
 }
 
 /*----------------------------------------------------------------------*
- |  translate solver parameters (public)                     mwgee 02/07|
+ |  translate solver parameters (public)               mwgee 02/07,11/08|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
-                                          struct _SOLVAR* actsolv) const
+const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const ParameterList& inparams)
 {
+  // check this -- you never know
+  if (params_ == Teuchos::null)
+    dserror("Solver parameter list has not been allocated yet\n");
+
+  // HINT:
+  // input parameter inparams.get<int>("AZGRAPH") is not retrieved
+
+  // make empty output parameters
+  Teuchos::ParameterList outparams;
+
   // switch type of solver
-  switch (actsolv->solvertyp)
+  switch (Teuchos::getIntegralValue<_SOLVER_TYP>(inparams,"SOLVER"))
   {
 #ifdef PARALLEL
   case superlu://============================== superlu solver (parallel only)
-    params.set("solver","superlu");
-    params.set("symmetric",false);
+    outparams.set("solver","superlu");
+    outparams.set("symmetric",false);
   break;
 #endif
   case amesos_klu_sym://====================================== Tim Davis' KLU
-    params.set("solver","klu");
-    params.set("symmetric",true);
+    outparams.set("solver","klu");
+    outparams.set("symmetric",true);
   break;
   case amesos_klu_nonsym://=================================== Tim Davis' KLU
-    params.set("solver","klu");
-    params.set("symmetric",false);
+    outparams.set("solver","klu");
+    outparams.set("symmetric",false);
   break;
   case umfpack://========================================= Tim Davis' Umfpack
-    params.set("solver","umfpack");
-    params.set("symmetric",false);
+    outparams.set("solver","umfpack");
+    outparams.set("symmetric",false);
   break;
   case lapack_sym://================================================== Lapack
-    params.set("solver","lapack");
-    params.set("symmetric",true);
+    outparams.set("solver","lapack");
+    outparams.set("symmetric",true);
   break;
   case lapack_nonsym://=============================================== Lapack
-    params.set("solver","lapack");
-    params.set("symmetric",false);
+    outparams.set("solver","lapack");
+    outparams.set("symmetric",false);
   break;
   case aztec_msr://================================================= AztecOO
   {
-    params.set("solver","aztec");
-    params.set("symmetric",false);
-    AZVAR* azvar = actsolv->azvar;
-    ParameterList& azlist = params.sublist("Aztec Parameters");
+    outparams.set("solver","aztec");
+    outparams.set("symmetric",false);
+    ParameterList& azlist = outparams.sublist("Aztec Parameters");
     //--------------------------------- set scaling of linear problem
-    if (azvar->azscal==1)
+    const int azscal = Teuchos::getIntegralValue<int>(inparams,"AZSCAL");
+    if (azscal==1)
       azlist.set("scaling","symmetric");
-    else if (azvar->azscal==2)
+    else if (azscal==2)
       azlist.set("scaling","infnorm");
     else
       azlist.set("scaling","none");
     //--------------------------------------------- set type of solver
-    switch (azvar->azsolvertyp)
+    switch (Teuchos::getIntegralValue<_AZSOLVERTYP>(inparams,"AZSOLVE"))
     {
     case azsolv_CG:       azlist.set("AZ_solver",AZ_cg);       break;
     case azsolv_GMRES:    azlist.set("AZ_solver",AZ_gmres);    break;
@@ -766,7 +786,8 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     default: dserror("Unknown solver for AztecOO");            break;
     }
     //------------------------------------- set type of preconditioner
-    switch (azvar->azprectyp)
+    const int azprectyp = Teuchos::getIntegralValue<_AZPRECTYP>(inparams,"AZPREC");
+    switch (azprectyp)
     {
     case azprec_none:
       azlist.set("AZ_precond",AZ_none);
@@ -809,7 +830,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
       azlist.set<bool>("downwinding",true);
-      azlist.set<double>("downwinding tau",azvar->dwindtau);
+      azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
     break;
     case azprec_LU:
       // using ifpack
@@ -819,7 +840,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     case azprec_RILU:
       azlist.set("AZ_precond",AZ_dom_decomp);
       azlist.set("AZ_subdomain_solve",AZ_rilu);
-      azlist.set("AZ_graph_fill",azvar->azgfill);
+      azlist.set("AZ_graph_fill",inparams.get<int>("AZGFILL"));
     break;
     case azprec_ICC:
       // using ifpack
@@ -837,64 +858,65 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     break;
     }
     //------------------------------------- set other aztec parameters
-    azlist.set("AZ_kspace",azvar->azsub);
-    azlist.set("AZ_max_iter",azvar->aziter);
-    azlist.set("AZ_overlap",azvar->azoverlap);
+    azlist.set("AZ_kspace",inparams.get<int>("AZSUB"));
+    azlist.set("AZ_max_iter",inparams.get<int>("AZITER"));
+    azlist.set("AZ_overlap",inparams.get<int>("AZOVERLAP"));
     azlist.set("AZ_type_overlap",AZ_symmetric);
-    azlist.set("AZ_poly_ord",azvar->azpoly);
-    if (!azvar->azoutput)
+    azlist.set("AZ_poly_ord",inparams.get<int>("AZPOLY"));
+    const int azoutput = inparams.get<int>("AZOUTPUT");
+    if (!azoutput)
       azlist.set("AZ_output",AZ_none);             // AZ_none AZ_all AZ_warnings AZ_last 10
     else
-      azlist.set("AZ_output",azvar->azoutput);
-    azlist.set("AZ_diagnostics",AZ_none);          // AZ_none AZ_all
-    azlist.set("AZ_conv",azvar->azconv);
-    azlist.set("AZ_tol",azvar->aztol);
-    azlist.set("AZ_drop",azvar->azdrop);
+      azlist.set("AZ_output",azoutput);
+    azlist.set("AZ_diagnostics",inparams.get<int>("AZBDIAG"));          // AZ_none AZ_all
+    azlist.set("AZ_conv",Teuchos::getIntegralValue<int>(inparams,"AZCONV"));
+    azlist.set("AZ_tol",inparams.get<double>("AZTOL"));
+    azlist.set("AZ_drop",inparams.get<double>("AZDROP"));
     azlist.set("AZ_scaling",AZ_none);
     azlist.set("AZ_keep_info",0);
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
-    azlist.set("reuse",azvar->azreuse);            // reuse info for n solver calls
+    azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
     //-------------------------------- set parameters for Ifpack if used
-    if (azvar->azprectyp == azprec_ILU  ||
-        azvar->azprectyp == azprec_ILUT ||
-        azvar->azprectyp == azprec_ICC  ||
-        azvar->azprectyp == azprec_LU   ||
-        azvar->azprectyp == azprec_SymmGaussSeidel ||
-        azvar->azprectyp == azprec_GaussSeidel ||
-        azvar->azprectyp == azprec_DownwindGaussSeidel ||
-        azvar->azprectyp == azprec_Jacobi)
+    if (azprectyp == azprec_ILU  ||
+        azprectyp == azprec_ILUT ||
+        azprectyp == azprec_ICC  ||
+        azprectyp == azprec_LU   ||
+        azprectyp == azprec_SymmGaussSeidel ||
+        azprectyp == azprec_GaussSeidel ||
+        azprectyp == azprec_DownwindGaussSeidel ||
+        azprectyp == azprec_Jacobi)
     {
-      ParameterList& ifpacklist = params.sublist("IFPACK Parameters");
-      ifpacklist.set("relaxation: damping factor",azvar->azomega);
-      ifpacklist.set("fact: drop tolerance",azvar->azdrop);
-      ifpacklist.set("fact: level-of-fill",azvar->azgfill);
-      ifpacklist.set("fact: ilut level-of-fill",azvar->azfill);
+      ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
+      ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+      ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+      ifpacklist.set("fact: level-of-fill",inparams.get<int>("AZGFILL"));
+      ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("AZFILL"));
       ifpacklist.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
-      if (azvar->azprectyp == azprec_SymmGaussSeidel)
+      if (azprectyp == azprec_SymmGaussSeidel)
         ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-      if (azvar->azprectyp == azprec_GaussSeidel)
+      if (azprectyp == azprec_GaussSeidel)
         ifpacklist.set("relaxation: type","Gauss-Seidel");
-      if (azvar->azprectyp == azprec_DownwindGaussSeidel)
+      if (azprectyp == azprec_DownwindGaussSeidel)
       {
         // in case of downwinding prevent ifpack from again reordering
         ifpacklist.set("schwarz: reordering type","none");
         ifpacklist.set("relaxation: type","Gauss-Seidel");
       }
-      if (azvar->azprectyp == azprec_Jacobi)
+      if (azprectyp == azprec_Jacobi)
         ifpacklist.set("relaxation: type","Jacobi");
     }
     //------------------------------------- set parameters for ML if used
-    if (azvar->azprectyp == azprec_ML       ||
-        azvar->azprectyp == azprec_MLfluid  ||
-        azvar->azprectyp == azprec_MLfluid2 ||
-        azvar->azprectyp == azprec_MLAPI       )
+    if (azprectyp == azprec_ML       ||
+        azprectyp == azprec_MLfluid  ||
+        azprectyp == azprec_MLfluid2 ||
+        azprectyp == azprec_MLAPI       )
     {
-      ParameterList& mllist = params.sublist("ML Parameters");
+      ParameterList& mllist = outparams.sublist("ML Parameters");
       ML_Epetra::SetDefaults("SA",mllist);
-      switch (azvar->azprectyp)
+      switch (azprectyp)
       {
       case azprec_ML: // do nothing, this is standard
       break;
@@ -911,19 +933,19 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       break;
       default: dserror("Unknown type of ml preconditioner");
       }
-      mllist.set("output"                          ,azvar->mlprint);
-      if (azvar->mlprint==10)
+      mllist.set("output"                          ,inparams.get<int>("ML_PRINT"));
+      if (inparams.get<int>("ML_PRINT")==10)
         mllist.set("print unused"                  ,1);
       else
         mllist.set("print unused"                  ,-2);
       mllist.set("increasing or decreasing"        ,"increasing");
-      mllist.set("coarse: max size"                ,azvar->mlcsize);
-      mllist.set("max levels"                      ,azvar->mlmaxlevel);
+      mllist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
+      mllist.set("max levels"                      ,inparams.get<int>("ML_MAXLEVEL"));
       mllist.set("smoother: pre or post"           ,"both");
-      mllist.set("aggregation: threshold"          ,azvar->ml_threshold);
-      mllist.set("aggregation: damping factor"     ,azvar->mldamp_prolong);
-      mllist.set("aggregation: nodes per aggregate",azvar->mlaggsize);
-      switch (azvar->mlcoarsentype)
+      mllist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
+      mllist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
+      mllist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
+      switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
       {
         case 0:  mllist.set("aggregation: type","Uncoupled");  break;
         case 1:  mllist.set("aggregation: type","METIS");      break;
@@ -931,8 +953,20 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         case 3:  mllist.set("aggregation: type","MIS");        break;
         default: dserror("Unknown type of coarsening for ML"); break;
       }
+
       // set ml smoothers
-      for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+      const int mlmaxlevel = inparams.get<int>("ML_MAXLEVEL");
+      // create vector of integers containing smoothing steps/polynomial order of level
+      std::vector<int> mlsmotimessteps;
+      {
+        std::istringstream mlsmotimes(Teuchos::getNumericStringParameter(inparams,"ML_SMOTIMES"));
+        std::string word;
+        while (mlsmotimes >> word)
+          mlsmotimessteps.push_back(std::atoi(word.c_str()));
+      }
+      if ((int)mlsmotimessteps.size() < mlmaxlevel)
+        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger than ML_MAXLEVEL=%d\n",mlsmotimessteps.size(),mlmaxlevel);
+      for (int i=0; i<mlmaxlevel-1; ++i)
       {
         char levelstr[11];
         sprintf(levelstr,"(level %d)",i);
@@ -940,37 +974,37 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         double damp;
         if (i==0)
         {
-          type = azvar->mlsmotype_fine;
-          damp = azvar->mldamp_fine;
+          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERFINE");
+          damp = inparams.get<double>("ML_DAMPFINE");
         }
-        else if (i < azvar->mlmaxlevel-1)
+        else if (i < mlmaxlevel-1)
         {
-          type = azvar->mlsmotype_med;
-          damp = azvar->mldamp_med;
+          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERMED");
+          damp = inparams.get<double>("ML_DAMPMED");
         }
         else
         {
-          type = azvar->mlsmotype_coarse;
-          damp = azvar->mldamp_coarse;
+          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
+          damp = inparams.get<double>("ML_DAMPCOARSE");
         }
         switch (type)
         {
         case 0: // SGS
           mllist.set("smoother: type "+(string)levelstr                    ,"symmetric Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
         break;
         case 7: // GS
           mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
         break;
         case 8: // DGS
           mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
           azlist.set<bool>("downwinding",true);
-          azlist.set<double>("downwinding tau",azvar->dwindtau);
+          azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
           {
             ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
             ifpacklist.set("schwarz: reordering type","true");
@@ -978,25 +1012,25 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         break;
         case 1: // Jacobi
           mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
         break;
         case 2: // Chebychev
           mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
-          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,mlsmotimessteps[i]);
         break;
         case 3: // MLS
           mllist.set("smoother: type (level 0)"                            ,"MLS");
-          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
+          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-mlsmotimessteps[i]);
         break;
         case 4: // Ifpack's ILU
         {
           mllist.set("smoother: type "+(string)levelstr,"ILU");
           mllist.set("smoother: ifpack type "+(string)levelstr,"ILU");
-          mllist.set("smoother: ifpack overlap "+(string)levelstr,azvar->azoverlap);
-          mllist.set<double>("smoother: ifpack level-of-fill",(double)azvar->mlsmotimes[i]);
+          mllist.set("smoother: ifpack overlap "+(string)levelstr,inparams.get<int>("AZOVERLAP"));
+          mllist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]);
           ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-          ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[i]);
+          ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[i]);
           ifpacklist.set("schwarz: reordering type","rcm");
         }
         break;
@@ -1012,25 +1046,25 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         } // switch (type)
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
       // set coarse grid solver
-      const int coarse = azvar->mlmaxlevel-1;
-      switch (azvar->mlsmotype_coarse)
+      const int coarse = mlmaxlevel-1;
+      switch (Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
       {
         case 0:
           mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
-          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
         break;
         case 7:
           mllist.set("coarse: type"          ,"Gauss-Seidel");
-          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
         break;
         case 8:
           mllist.set("coarse: type"          ,"Gauss-Seidel");
-          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
           azlist.set<bool>("downwinding",true);
-          azlist.set<double>("downwinding tau",azvar->dwindtau);
+          azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
           {
             ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
             ifpacklist.set("schwarz: reordering type","true");
@@ -1038,16 +1072,16 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         break;
         case 1:
           mllist.set("coarse: type"          ,"Jacobi");
-          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
         break;
         case 2:
           mllist.set("coarse: type"                ,"MLS");
-          mllist.set("coarse: MLS polynomial order",azvar->mlsmotimes[coarse]);
+          mllist.set("coarse: MLS polynomial order",mlsmotimessteps[coarse]);
         break;
         case 3:
           mllist.set("coarse: type"                ,"MLS");
-          mllist.set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
+          mllist.set("coarse: MLS polynomial order",-mlsmotimessteps[coarse]);
         break;
         case 4:
         {
@@ -1055,7 +1089,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("coarse: ifpack type"   ,"ILU");
           mllist.set("coarse: ifpack overlap",0);
           ParameterList& ifpacklist = mllist.sublist("coarse: ifpack list");
-          ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[coarse]);
+          ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
           ifpacklist.set("schwarz: reordering type","rcm");
         }
         break;
@@ -1079,17 +1113,18 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
 #ifdef PARALLEL
   case SPOOLES_sym://================================== Spooles (parallel only)
   case SPOOLES_nonsym:
-    params.set("solver","spooles");
-    params.set("symmetric",false);
+    outparams.set("solver","spooles");
+    outparams.set("symmetric",false);
   break;
 #endif
   default:
     dserror("Unsupported type of solver");
   break;
   }
-  return;
-}
 
+  //================================================================== deliver
+  return outparams;
+}
 
 
 /*----------------------------------------------------------------------*

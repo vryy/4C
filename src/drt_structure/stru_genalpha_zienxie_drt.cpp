@@ -50,14 +50,6 @@ extern FIELD* field;
 */
 extern GENPROB genprob;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern SOLVAR* solv;
-
 
 /*======================================================================*/
 /*!
@@ -217,9 +209,6 @@ void stru_genalpha_zienxie_drt()
 {
   // --------------------------------------------------------------------
   // set some pointers and variables
-  const INT disnum = 0;
-  SOLVAR* actsolv = &solv[disnum];
-
   const Teuchos::ParameterList& probtype
     = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags
@@ -228,6 +217,8 @@ void stru_genalpha_zienxie_drt()
     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& tap 
     = sdyn.sublist("TIMEADAPTIVITY");
+  const Teuchos::ParameterList&  solveparams
+    = DRT::Problem::Instance()->StructSolverParams();
 
   // --------------------------------------------------------------------
   // access the discretization
@@ -244,10 +235,8 @@ void stru_genalpha_zienxie_drt()
 
   // --------------------------------------------------------------------
   // create a solver
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // --------------------------------------------------------------------
   // A word to the user

@@ -50,15 +50,6 @@ Maintainer: Peter Gamnitzer
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of length numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
@@ -92,8 +83,6 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[0];
-
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
@@ -105,22 +94,18 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),
+  LINALG::Solver solver(DRT::Problem::Instance()->FluidSolverParams(),
+                        actdis->Comm(),
                         DRT::Problem::Instance()->ErrorFile()->Handle());
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // create a second solver for SIMPLER preconditioner if chosen from input
   // -------------------------------------------------------------------
   if (getIntegralValue<int>(fdyn,"SIMPLER"))
   {
-    ParameterList& p = solveparams->sublist("SIMPLER");
-    RCP<ParameterList> params = rcp(&p,false);
-    LINALG::Solver s(params,actdis->Comm(),
-                     DRT::Problem::Instance()->ErrorFile()->Handle());
-    s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+    solver.PutSolverParamsToSubParams("SIMPLER",
+                                      DRT::Problem::Instance()->FluidPressureSolverParams());
   }
 
   // -------------------------------------------------------------------

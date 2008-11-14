@@ -234,10 +234,11 @@ public:
 
   const Teuchos::ParameterList& StructSolverParams() const { return getParameterList()->sublist("STRUCT SOLVER"); }
   const Teuchos::ParameterList& FluidSolverParams() const { return getParameterList()->sublist("FLUID SOLVER"); }
+  const Teuchos::ParameterList& FluidPressureSolverParams() const { return getParameterList()->sublist("FLUID PRESSURE SOLVER"); }
   const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT SOLVER"); }
-
+  const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
 
   //@}
@@ -286,12 +287,6 @@ public:
 
   //@}
 
-  /// @name Solver
-
-  void ActivateSolver();
-
-  //@}
-
 private:
 
   /// private default constructor to disallow creation of instances
@@ -305,9 +300,6 @@ private:
 
   /// the single instance
   static vector<RCP<Problem> > instances_;
-
-  /// setup solver structure
-  void InputSolverControl(std::string section, _SOLVAR* solv);
 
   /// discretizations of this problem
   vector<vector<RCP<Discretization> > > discretizations_;

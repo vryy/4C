@@ -41,15 +41,6 @@ extern struct _GENPROB     genprob;
 extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-
-/*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
  *----------------------------------------------------------------------*/
 void stru_genalpha_drt()
@@ -81,7 +72,7 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[0];
+  const Teuchos::ParameterList& solveparams = DRT::Problem::Instance()->StructSolverParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   STRUCT_DYN_CALC dynvar;
   memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
@@ -89,10 +80,8 @@ void stru_genalpha_drt()
   double          timen;  // new time t_{n+1}
 
   //-----------------------------------------------------create a solver
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,actdis->Comm(),errfile);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

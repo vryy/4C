@@ -40,7 +40,6 @@ Maintainer: Axel Gerstenberger
 
 
 extern struct _GENPROB  genprob;
-extern struct _SOLVAR  *solv;
 
 
 
@@ -92,9 +91,6 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *fluidsolv  = &solv[genprob.numff];
-  //SOLVAR        *solidsolv  = &solv[genprob.numsf];
-
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
@@ -106,20 +102,18 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  Teuchos::RCP<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,fluiddis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
-  solver.TranslateSolverParameters(*solveparams,fluidsolv);
-  fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
+  LINALG::Solver solver(DRT::Problem::Instance()->FluidSolverParams(),
+                        fluiddis->Comm(),
+                        DRT::Problem::Instance()->ErrorFile()->Handle());
+  fluiddis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // create a second solver for SIMPLER preconditioner if chosen from input
   // -------------------------------------------------------------------
   if (getIntegralValue<int>(fdyn,"SIMPLER"))
   {
-    ParameterList& p = solveparams->sublist("SIMPLER");
-    Teuchos::RCP<ParameterList> params = rcp(&p,false);
-    LINALG::Solver s(params,fluiddis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
-    s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+    solver.PutSolverParamsToSubParams("SIMPLER",
+                                      DRT::Problem::Instance()->FluidPressureSolverParams());
   }
 
   // -------------------------------------------------------------------

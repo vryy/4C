@@ -27,15 +27,6 @@ Maintainer: Ulrich Kuettler
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                               Teuchos::RCP<LINALG::Solver> solver,

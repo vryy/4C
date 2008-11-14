@@ -26,7 +26,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_colors.H"
 #include "standardtypes_cpp.H"
 
-
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
 /*----------------------------------------------------------------------*/
@@ -1603,8 +1602,18 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   setStringToIntegralParameter<_AZSOLVERTYP>(
     "AZSOLVE", "GMRES",
     "Type of linear solver algorithm to use.",
-    tuple<std::string>("CG","GMRES","CGS","TFQMR","BiCGSTAB","LU"),
-    tuple<_AZSOLVERTYP>(azsolv_CG,azsolv_GMRES,azsolv_CGS,azsolv_TFQMR,azsolv_BiCGSTAB,azsolv_LU),
+    tuple<std::string>("CG",
+                       "GMRES",
+                       "CGS",
+                       "TFQMR",
+                       "BiCGSTAB",
+                       "LU"),
+    tuple<_AZSOLVERTYP>(azsolv_CG,
+                        azsolv_GMRES,
+                        azsolv_CGS,
+                        azsolv_TFQMR,
+                        azsolv_BiCGSTAB,
+                        azsolv_LU),
     &list
     );
 

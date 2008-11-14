@@ -66,14 +66,6 @@ Maintainer: Alexander Popp
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                         maf 05/07    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-/*----------------------------------------------------------------------*
  |                                                         maf 05/07    |
  | pointer to allocate static variables if needed                       |
  | defined in global_control.c                                          |
@@ -134,14 +126,13 @@ void contact_stru_static_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[0];
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
 
   //-----------------------------------------------------create a solver
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),errfile);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  LINALG::Solver solver(DRT::Problem::Instance()->StructSolverParams(),
+                        actdis->Comm(),
+                        errfile);
+  actdis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

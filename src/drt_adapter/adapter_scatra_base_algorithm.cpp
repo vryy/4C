@@ -30,14 +30,6 @@ Maintainer: Georg Bauer
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
@@ -77,14 +69,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  SOLVAR *actsolv  = &solv[genprob.numscatra];
-
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->ScalarTransportSolverParams(),
+                           actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -156,10 +145,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     if (scatratimeparams->get<int>("BLOCKPRECOND"))
     {
       // switch to the SIMPLE(R) algorithms
-      ParameterList& p = solveparams->sublist("SIMPLER");
-      RCP<ParameterList> params = rcp(&p,false);
-      LINALG::Solver s(params,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
-      s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+      solver->PutSolverParamsToSubParams("SIMPLER",
+                                         DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
     }
   }
 

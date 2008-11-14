@@ -45,15 +45,6 @@ Maintainer: Michael Gee
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 extern "C"
 void caldyn_drt()
@@ -121,8 +112,6 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[0];
-
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -137,10 +126,10 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle());
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  LINALG::Solver solver(DRT::Problem::Instance()->StructSolverParams(),
+                        actdis->Comm(),
+                        DRT::Problem::Instance()->ErrorFile()->Handle());
+  actdis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
