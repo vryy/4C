@@ -35,19 +35,19 @@ Maintainer: Florian Henke
 template <int shpVecSize>
 struct Shp
 {
-  blitz::TinyVector<double,shpVecSize>  d0;
-  blitz::TinyVector<double,shpVecSize>  dx;
-  blitz::TinyVector<double,shpVecSize>  dy;
-  blitz::TinyVector<double,shpVecSize>  dz;
-  blitz::TinyVector<double,shpVecSize>  dxdx;
-  blitz::TinyVector<double,shpVecSize>  dxdy;
-  blitz::TinyVector<double,shpVecSize>  dxdz;
-  blitz::TinyVector<double,shpVecSize>  dydx;
-  blitz::TinyVector<double,shpVecSize>  dydy;
-  blitz::TinyVector<double,shpVecSize>  dydz;
-  blitz::TinyVector<double,shpVecSize>  dzdx;
-  blitz::TinyVector<double,shpVecSize>  dzdy;
-  blitz::TinyVector<double,shpVecSize>  dzdz;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  d0;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dx;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dy;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dz;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dxdx;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dxdy;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dxdz;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dydx;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dydy;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dydz;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dzdx;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dzdy;
+  LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1>  dzdz;
 };
 
 using namespace XFEM::PHYSICS;
@@ -145,9 +145,9 @@ using namespace XFEM::PHYSICS;
         if (ivelcoln.GlobalLength() > 3)
         {
           // get interface velocities at the boundary element nodes
-          BlitzMat veln_boundary( 3,numnode_boundary*2);
-          BlitzMat velnm_boundary(3,numnode_boundary*2);
-          BlitzMat accn_boundary( 3,numnode_boundary*2);
+          LINALG::SerialDenseMatrix veln_boundary( 3,numnode_boundary*2);
+          LINALG::SerialDenseMatrix velnm_boundary(3,numnode_boundary*2);
+          LINALG::SerialDenseMatrix accn_boundary( 3,numnode_boundary*2);
           if (numnode_boundary != 4)
             dserror("needs more generalizashun!");
           const DRT::Node*const* nodes = boundaryele->Nodes();
@@ -260,9 +260,9 @@ using namespace XFEM::PHYSICS;
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
           if (mystate.instationary)
           {
-            eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
-            evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
-            eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+              eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
+              evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
+              eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
           }
       }
       for (int iparam=0; iparam<numparamvely; ++iparam)
@@ -270,9 +270,9 @@ using namespace XFEM::PHYSICS;
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
           if (mystate.instationary)
           {
-            eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
-            evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
-            eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+              eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
+              evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
+              eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
           }
       }
       for (int iparam=0; iparam<numparamvelz; ++iparam)
@@ -280,9 +280,9 @@ using namespace XFEM::PHYSICS;
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
           if (mystate.instationary)
           {
-            eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
-            evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
-            eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+              eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
+              evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
+              eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
           }
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
@@ -361,7 +361,7 @@ static void SysmatDomain4(
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
-    /////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
 
     // get viscosity
     // check here, if we really have a fluid !!
@@ -526,21 +526,19 @@ static void SysmatDomain4(
             static Shp<shpVecSize> shp;
             
             typedef LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1> ShpVec;
-/*
-            static ShpVec shp;
-            static ShpVec shp_dx;
-            static ShpVec shp_dy;
-            static ShpVec shp_dz;
-            static ShpVec shp_dxdx;
-            static ShpVec shp_dxdy;
-            static ShpVec shp_dxdz;
-            static ShpVec shp_dydx;
-            static ShpVec shp_dydy;
-            static ShpVec shp_dydz;
-            static ShpVec shp_dzdx;
-            static ShpVec shp_dzdy;
-            static ShpVec shp_dzdz;
-*/
+//            static ShpVec shp;
+//            static ShpVec shp_dx;
+//            static ShpVec shp_dy;
+//            static ShpVec shp_dz;
+//            static ShpVec shp_dxdx;
+//            static ShpVec shp_dxdy;
+//            static ShpVec shp_dxdz;
+//            static ShpVec shp_dydx;
+//            static ShpVec shp_dydy;
+//            static ShpVec shp_dydz;
+//            static ShpVec shp_dzdx;
+//            static ShpVec shp_dzdy;
+//            static ShpVec shp_dzdz;
             
             static LINALG::FixedSizeSerialDenseMatrix<shpVecSizeStress,1> shp_tau;
             
@@ -548,8 +546,8 @@ static void SysmatDomain4(
             {
                 // temporary arrays
                 static LINALG::SerialDenseVector enr_funct(3*numnode);
-                static BlitzMat enr_derxy(3,3*numnode);
-                static BlitzMat enr_derxy2(6,3*numnode);
+                static LINALG::SerialDenseMatrix enr_derxy(3,3*numnode);
+                static LINALG::SerialDenseMatrix enr_derxy2(6,3*numnode);
                 
 //                const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
 //                      ih,
@@ -658,7 +656,7 @@ static void SysmatDomain4(
 
             // get history data (n) at integration point
 //            LINALG::FixedSizeSerialDenseMatrix<3,1> histvec;
-//            //histvec = blitz::sum(enr_funct(j)*evelnp_hist(i,j),j);
+//            //histvec = enr_funct(j)*evelnp_hist(i,j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
 //                histvec(isd) = 0.0;
@@ -670,7 +668,7 @@ static void SysmatDomain4(
             
             // get velocity (np,i) derivatives at integration point
             LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy;
-            //vderxy = blitz::sum(enr_derxy(j,k)*evelnp(i,k),k);
+            //vderxy = enr_derxy(j,k)*evelnp(i,k);
             vderxy = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
@@ -688,7 +686,7 @@ static void SysmatDomain4(
             static LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2;
             if (higher_order_ele)
             {
-              //vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
+              //vderxy2 = enr_derxy2(j,k)*evelnp(i,k);
               vderxy2 = 0.0;
               for (int iparam = 0; iparam < numparamvelx; ++iparam)
               {
@@ -710,7 +708,7 @@ static void SysmatDomain4(
 
             // get pressure gradients
             LINALG::FixedSizeSerialDenseMatrix<3,1> gradp;
-            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
+            //gradp = enr_derxy(i,j)*eprenp(j);
             gradp = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
             {
@@ -721,7 +719,7 @@ static void SysmatDomain4(
     
 //            // get discont. pressure gradients
 //            static LINALG::FixedSizeSerialDenseMatrix<3,1> graddiscp;
-//            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
+//            //gradp = enr_derxy(i,j)*eprenp(j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
 //                graddiscp(isd) = 0.0;
@@ -730,7 +728,6 @@ static void SysmatDomain4(
 //            }
             
             // get pressure
-            //const double pres(blitz::sum(enr_funct*eprenp));
             double pres = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
               pres += shp.d0(iparam)*eprenp(iparam);
@@ -745,35 +742,13 @@ static void SysmatDomain4(
             {
               tau = 0.0;
             }
-          
-//            LINALG::FixedSizeSerialDenseMatrix<3,1> nabla_dot_tau;
-//            if (stress_unknowns_present)
-//            {
-//                nabla_dot_tau(0) = blitz::sum(shp_tau_dx(_)*etau(0,_)) + blitz::sum(shp_tau_dy(_)*etau(3,_)) + blitz::sum(shp_tau_dz(_)*etau(4,_));
-//                nabla_dot_tau(1) = blitz::sum(shp_tau_dx(_)*etau(3,_)) + blitz::sum(shp_tau_dy(_)*etau(1,_)) + blitz::sum(shp_tau_dz(_)*etau(5,_));
-//                nabla_dot_tau(2) = blitz::sum(shp_tau_dx(_)*etau(4,_)) + blitz::sum(shp_tau_dy(_)*etau(5,_)) + blitz::sum(shp_tau_dz(_)*etau(2,_));
-//            }
-            
-            
-      
-      
-//            const BlitzMat eps(0.5*(vderxy_(i,j) + vderxy_(j,i));
-//            const BlitzMat epstau(tau*reciproke_visc);
-//      
-//            if (ele->Id() == 0)
-//            {
-//                cout << endl;
-//                cout << "eps^tau: " << epstau << endl;
-//                cout << "eps^u:   " << eps << endl;
-//                cout << "pressure = " << press << endl;
-//            }
 
             
             // get bodyforce in gausspoint
 //            LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce;
 //            bodyforce = 0.0;
 //            cout << bodyforce << endl;
-            //////////////////////////////////////////LINALG::SerialDenseVector bodyforce_(blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j));
+            ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
             // compute stabilization parameters (3 taus)
             double tau_stab_M  = 0.0;
@@ -781,13 +756,15 @@ static void SysmatDomain4(
             double tau_stab_C  = 0.0;
             XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc, hk, mk, timefac,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
+            
 
+            
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint;
-            LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce;
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> rhsint;
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce;
             bodyforce = 0.0;
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
@@ -796,9 +773,9 @@ static void SysmatDomain4(
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old;
-            //conv_old = blitz::sum(vderxy(i, j)*gpvelnp(j), j);
-            BLITZTINY::MV_product<3,3>(vderxy,gpvelnp,conv_old);
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old;
+            //conv_old = vderxy(i, j)*gpvelnp(j);
+            conv_old.Multiply(vderxy,gpvelnp);
             
             /* Viscous term  div epsilon(u_old) */
             LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old;
@@ -821,7 +798,7 @@ static void SysmatDomain4(
             /*--- convective part u_old * grad (funct) --------------------------*/
             /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
              with  N .. form function matrix                                   */
-            //const LINALG::SerialDenseVector enr_conv_c_(blitz::sum(enr_derxy(j,i)*gpvelnp(j), j));
+            //const LINALG::SerialDenseVector enr_conv_c_(enr_derxy(j,i)*gpvelnp(j));
             static ShpVec enr_conv_c_;
             enr_conv_c_ = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
@@ -1484,7 +1461,8 @@ static void SysmatBoundary4(
         
         // get current node coordinates
         const std::map<int,BlitzVec3 >* positions = ih->cutterposnp();
-        const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
+        LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
+        GEO::fillCurrentNodalPositions(boundaryele, *positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
@@ -1502,8 +1480,8 @@ static void SysmatBoundary4(
           }
         }
         
-        BlitzMat force_boundary(3,numnode_boundary);
-        force_boundary = 0.0;
+        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary);
+        force_boundary.Zero();
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -1512,19 +1490,17 @@ static void SysmatBoundary4(
             GEO::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
-//            cout << pos_eta_boundary << endl;
             
-            // coordinates of the current integration point in element coordinates \xi
+            // coordinates of the current integration point in element coordinates \xi^\boundary
             GEO::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
-            //cout << posXiBoundary << endl;
             
+            // coordinates of the current integration point in element coordinates \xi^\domain
             GEO::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
-//            cout << cell->toString() << endl;
-//            cout << posXiDomain << endl;
+
             const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
-            if (detcell <= 0.0)
+            if (detcell < 0.0)
             {
               cout << "detcel :  " << detcell << endl;
               dserror("negative detcell! should be a bug!");
@@ -1533,7 +1509,7 @@ static void SysmatBoundary4(
             // shape functions and their first derivatives
             LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
             DRT::UTILS::shape_function_2D(funct_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
-            BlitzMat deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
             DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
@@ -1546,7 +1522,7 @@ static void SysmatBoundary4(
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
             
             // position of the gausspoint in physical coordinates
-//            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
+//            gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
             BlitzVec3 gauss_pos_xyz;
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1559,7 +1535,7 @@ static void SysmatBoundary4(
       
             // get jacobian matrix d x / d \xi  (3x2)
             static LINALG::FixedSizeSerialDenseMatrix<3,2> dxyzdrs;
-            //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
+            //dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
             for (int isd = 0; isd < 3; ++isd)
             {
                 for (int j = 0; j < 2; ++j)
@@ -1574,12 +1550,12 @@ static void SysmatBoundary4(
             
             // compute covariant metric tensor G for surface element (2x2)
             static LINALG::FixedSizeSerialDenseMatrix<2,2> metric;
-            //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+            //metric = dxyzdrs(k,i)*dxyzdrs(k,j);
             metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
-            //const BlitzMat derxy(blitz::sum(dxyzdrs(i,k)*deriv_boundary(k,j),k));
-            //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
+            //const LINALG::SerialDenseMatrix derxy(dxyzdrs(i,k)*deriv_boundary(k,j));
+            //const LINALG::SerialDenseMatrix derxy_stress(xji(i,k)*deriv_stress(k,j));
             
             const double detmetric = sqrt(metric.Determinant());
             if (detmetric < 0.0)
@@ -1645,19 +1621,19 @@ static void SysmatBoundary4(
             // perform integration for entire matrix and rhs
             const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-            typedef blitz::TinyVector<double,shpVecSize> ShpVec;
+            typedef LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1> ShpVec;
             static ShpVec shp;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
               shp(iparam) = enr_funct(iparam);
             }
-            static blitz::TinyVector<double,shpVecSizeStress> shp_tau;
+            static LINALG::FixedSizeSerialDenseMatrix<shpVecSizeStress,1> shp_tau;
             for (int iparam = 0; iparam < numparamtauxx; ++iparam)
             {
               shp_tau(iparam) = enr_funct_stress(iparam);
             }
             
-            // get normal vector (in x coordinates) to surface element at integration point
+            // get normal vector (in physical coordinates) to surface element at integration point
             BlitzVec3 normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
@@ -1667,7 +1643,7 @@ static void SysmatBoundary4(
 //            cout << normalvec_fluid << endl;
       
             // get velocities (n+g,i) at integration point
-            // gpvelnp = blitz::sum(evelnp(i,j)*shp(j),j);
+            // gpvelnp = evelnp(i,j)*shp(j);
             LINALG::FixedSizeSerialDenseMatrix<3,1> gpvelnp;
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -1836,7 +1812,7 @@ static void Sysmat4(
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // dead load in element nodes
-    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+    //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
@@ -1844,7 +1820,7 @@ static void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    blitz::TinyVector<double,shpVecSize> eprenp;
+    LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1> eprenp;
     LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnp;
     LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> eveln;
     LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnm;

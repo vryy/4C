@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "spacetime_boundary.H"
 #include <string>
 #include <sstream>
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -63,7 +64,7 @@ static void ComputePhysicalCoordinates(
     physicalCoordinates = 0.0;
     // for each cell node, compute physical position
     const int nen_ele = ele.NumNode();
-    BlitzVec funct(nen_ele);
+    LINALG::SerialDenseVector funct(nen_ele);
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions

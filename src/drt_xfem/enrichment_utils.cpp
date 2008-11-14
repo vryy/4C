@@ -188,7 +188,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
         cellcenterpos,
         XFEM::Enrichment::approachUnknown));
 
-  cellvalues = 0.0;
+  cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
     const int numparam  = dofman.NumDofPerField(field);
@@ -564,16 +564,6 @@ double BoundaryCoverageRatioT(
     
     // gaussian points
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
-    
-    // get the right boundary element
-//    const DRT::Element* boundaryele = ih.GetBoundaryEle(cell->GetSurfaceEleGid());
-    //cout << (*boundaryele) << endl;
-//    const int numnode_boundary = boundaryele->NumNode();
-    //        cout << "numnode_boundary: " << numnode_boundary << endl;
-    
-    // get current node coordinates
-//    const std::map<int,BlitzVec3 >* positions = ih.cutterposnp();
-//    const BlitzMat xyze_boundary(GEO::getCurrentNodalPositions(boundaryele, *positions));
     
     const BlitzMat* nodalpos_xi_domain = cell->NodalPosXiDomainBlitz();
     const int numnode_cell = cell->NumNode();
