@@ -21,12 +21,6 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_ale.H"
 #include "adapter_fluid_xfem.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -25,12 +25,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |

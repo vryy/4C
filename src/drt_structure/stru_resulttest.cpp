@@ -23,16 +23,6 @@ Maintainer: Moritz Frenzel
 #include <mpi.h>
 #endif
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

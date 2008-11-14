@@ -39,6 +39,8 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
   if (res->dis != 0)
     dserror("fix me: only one scalar transport discretization supported for testing");
 
+  
+  
   if (dis_->HaveGlobalNode(res->node))
   {
     DRT::Node* actnode = dis_->gNode(res->node);
@@ -53,9 +55,10 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
     const Epetra_BlockMap& phinpmap = mysol_->Map();
     string position = res->position;
 
-    // we only can test the first(!) scalar of a system (e.g. first dof at every node)
+    // test result value of single scalar field
     if (position=="phi")
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
+    // test result values for a system of scalars
     else if (position=="phi1")
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
     else if (position=="phi2")
@@ -68,7 +71,7 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,4))];
     else if (position=="phi6")
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,5))];
-    // we rely on the fact, that we have 
+    // we support only testing of fluxes for the first scalar
     else if (position=="fluxx")
       result = (*myflux_)[0][phinpmap.LID(dis_->Dof(actnode,0))];
     else if (position=="fluxy")

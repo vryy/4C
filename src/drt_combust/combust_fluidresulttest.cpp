@@ -18,20 +18,12 @@ Maintainer: Axel Gerstenberger
 #include <string>
 
 #include "combust_fluidresulttest.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-}
 
 
 /*----------------------------------------------------------------------*/
@@ -64,6 +56,8 @@ void FLD::CombustFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, in
 
     const Epetra_BlockMap& velnpmap = mysol_->Map();
 
+    const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+
     // TODO: use the Dofmanager here
     const string position = res->position;
     if (position=="velx")
@@ -80,7 +74,7 @@ void FLD::CombustFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, in
     }
     else if (position=="pressure")
     {
-      if (genprob.ndim==2)
+      if (numdim==2)
       {
         if (fluiddis_->NumDof(actnode)<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());

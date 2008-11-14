@@ -18,21 +18,11 @@ Maintainer: Ulrich Kuettler
 #include <string>
 
 #include "fluidresulttest.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -76,6 +66,8 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
 
     const Epetra_BlockMap& velnpmap = mysol_->Map();
 
+    const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+
     string position = res->position;
     if (position=="velx")
     {
@@ -87,13 +79,13 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
     }
     else if (position=="velz")
     {
-      if (genprob.ndim==2)
+      if (numdim==2)
         dserror("Cannot test result for velz in 2D case.");
       result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
     }
     else if (position=="pressure")
     {
-      if (genprob.ndim==2)
+      if (numdim==2)
       {
         if (fluiddis_->NumDof(actnode)<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
@@ -112,7 +104,7 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
       result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,1))];
     else if (position=="tractionz")
     {
-      if (genprob.ndim==2)
+      if (numdim==2)
         dserror("Cannot test result for tractionz in 2D case.");
       result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,2))];
     }
