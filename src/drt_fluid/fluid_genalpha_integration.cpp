@@ -2193,16 +2193,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
       printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
     }
-    else if (what_to_print == "dof and node distribution")
-    {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-      cout << noderowmap->NumMyElements() << " nodes on proc " << discret_->Comm().MyPID()<<" \n";
-
-      cout << pbcmapmastertoslave_->size() << " master nodes on PID " << discret_->Comm().MyPID()<<" \n";
-      cout << dofrowmap->NumMyElements() << " dofs on proc " << discret_->Comm().MyPID()<<" \n";
-    }
     else
     {
       dserror("Don't know what to print\n");

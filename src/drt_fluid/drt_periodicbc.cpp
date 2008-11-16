@@ -134,6 +134,65 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     {
       cout<<endl<<endl;
     }
+      
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* noderowmap = discret_->NodeRowMap();
+      
+      int mypid   =discret_->Comm().MyPID()  ;
+      int numprocs=discret_->Comm().NumProc();
+
+      int countslave=0;
+      for(map<int,vector<int> >::iterator iter=allcoupledcolnodes_->begin();
+	  iter!=allcoupledcolnodes_->end();++iter)
+      {
+	for(vector<int>::iterator viter=iter->second.begin();
+	    viter!=iter->second.end();++viter)
+	{
+	  ++countslave;
+	}
+      }
+
+      vector<int> my_n_nodes   (numprocs,0);
+      vector<int>    n_nodes   (numprocs,0);
+      vector<int> my_n_master  (numprocs,0);
+      vector<int>    n_master  (numprocs,0);
+      vector<int> my_n_slave   (numprocs,0);
+      vector<int>    n_slave   (numprocs,0);
+      vector<int> my_n_elements(numprocs,0);
+      vector<int>    n_elements(numprocs,0);
+      vector<int> my_n_ghostele(numprocs,0);
+      vector<int>    n_ghostele(numprocs,0);
+      vector<int> my_n_dof     (numprocs,0);
+      vector<int>    n_dof     (numprocs,0);
+
+      my_n_nodes   [mypid]=noderowmap->NumMyElements ();
+      my_n_master  [mypid]=allcoupledcolnodes_->size();
+      my_n_slave   [mypid]=countslave;
+      my_n_elements[mypid]=discret_->NumMyColElements();
+      my_n_ghostele[mypid]=discret_->NumMyColElements()-discret_->NumMyRowElements();
+      my_n_dof     [mypid]=dofrowmap->NumMyElements();
+
+      discret_->Comm().SumAll(&my_n_nodes[0]   ,&n_nodes[0]   ,numprocs);
+      discret_->Comm().SumAll(&my_n_master[0]  ,&n_master[0]  ,numprocs);
+      discret_->Comm().SumAll(&my_n_slave[0]   ,&n_slave[0]   ,numprocs);
+      discret_->Comm().SumAll(&my_n_elements[0],&n_elements[0],numprocs);
+      discret_->Comm().SumAll(&my_n_ghostele[0],&n_ghostele[0],numprocs);
+      discret_->Comm().SumAll(&my_n_dof[0]     ,&n_dof[0]     ,numprocs);
+
+      if(discret_->Comm().MyPID()==0)
+      {
+	printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+	printf("   | PID |    n_nodes    |   n_master   |   n_slave   |    n_elements   |   n_ghostele   |      n_dof      |\n");
+	printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+	for(int npid=0;npid<numprocs;++npid)
+	{
+	  printf("   | %3d | %13d | %12d | %11d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_master[npid],n_slave[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
+	  printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+	}
+	cout << endl <<endl;
+      }
+    }
   } // end if numpbcpairs_>0
   return;
 
