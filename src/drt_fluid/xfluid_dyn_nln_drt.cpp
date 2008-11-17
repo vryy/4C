@@ -185,6 +185,7 @@ void xdyn_fluid_drt()
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
     fluidtimeparams.set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
+    fluidtimeparams.set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
   }
   
   // -------------------------------------------------------------------

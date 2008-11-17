@@ -1540,6 +1540,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("DLM_CONDENSATION","No","Do you want to condense the distributed Lagrange multiplier?",
                                  yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
+                                   yesnotuple,yesnovalue,&xfem_general);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");

@@ -963,11 +963,16 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
-    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
-    // computation of significant digits might be completely bogus, so don't take it serious
-    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    const int sign_digits = (int)floor(tmp);
-    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits << endl;
+    // estimate condition number of the tangent stiffness matrix
+    if (params_.get<bool>("CONDEST"))
+    {
+      const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
+      // computation of significant digits might be completely bogus, so don't take it serious
+      const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+      const int sign_digits = (int)floor(tmp);
+      cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
+    }
+    cout0_ << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {
