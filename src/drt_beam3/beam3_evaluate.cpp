@@ -502,9 +502,9 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
 int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
-  LINALG::FixedSizeSerialDenseMatrix<3,1> newangle;
+  LINALG::Matrix<3,1> newangle;
   quaterniontoangle(Qnew_, newangle);
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Hinverse = Hinv(newangle);
+  LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
 
   Hinverse.Scale( params.get<double>("dti",0.0) );
  
@@ -526,7 +526,7 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing basis of stiffness matrix of Crisfield, Vol. 2, equation (17.81)
-inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cm, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cb, const LINALG::FixedSizeSerialDenseMatrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
+inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix)
 {
   //calculating the first matrix of (17.81) directly involves multiplications of large matrices (e.g. with the 12x6-matrix X)
   //application of the definitions in (17.74) allows blockwise evaluation with multiplication and addition of 3x3-matrices only
@@ -534,10 +534,10 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::FixedSizeSeria
   //e.g. TCmTt is the product of the 3 matrices T * C_m * T^t (with T and C_m according to (17.74) and (17.76)
   //for the blockwise calculation on which the following steps are based on the relation S^t = -S for spin matrices was applied
   
-  LINALG::FixedSizeSerialDenseMatrix<3,3> TCmTt;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> TCbTt;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> STCmTt;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> STCmTtSt;
+  LINALG::Matrix<3,3> TCmTt;
+  LINALG::Matrix<3,3> TCbTt;
+  LINALG::Matrix<3,3> STCmTt;
+  LINALG::Matrix<3,3> STCmTtSt;
   
   for (int i = 0; i < 3; ++i)
   {
@@ -608,7 +608,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::FixedSizeSeria
 /*----------------------------------------------------------------------*
  |computes from a quaternion q the related angle theta (public)cyron10/08|
  *----------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,1>& theta)
+inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta)
 {
   /*for the angle theta we assume the domain [0; 2*PI[; hence the halfangle sine is always
    * positive and if it is zero the only solution is theta = 0; the halfangle theta/2 has
@@ -637,7 +637,7 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::FixedSizeSeria
 } //DRT::ELEMENTS::Beam3::quaterniontoangle()
 
 //computing spin matrix out of a rotation vector
-inline void DRT::ELEMENTS::Beam3::computespin(LINALG::FixedSizeSerialDenseMatrix<3,3>& spin, LINALG::FixedSizeSerialDenseMatrix<3,1> rotationangle, const double& spinscale)
+inline void DRT::ELEMENTS::Beam3::computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale)
 {
   rotationangle.Scale(spinscale);
   spin(0,0) = 0;
@@ -654,10 +654,10 @@ inline void DRT::ELEMENTS::Beam3::computespin(LINALG::FixedSizeSerialDenseMatrix
 } // DRT::ELEMENTS::Beam3::computespin 
 
 //computing a rotation matrix R from a quaternion q, cf. Crisfield, Vol. 2, equation (17.70)
-inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,3>& R)
+inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R)
 { 
   //separate storage of vector part of q
-  LINALG::FixedSizeSerialDenseMatrix<3,1> qvec;
+  LINALG::Matrix<3,1> qvec;
   for(int i = 0; i<3; i++)
     qvec(i) = q(i);
 
@@ -685,7 +685,7 @@ inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const LINALG::FixedSizeSeria
 
 /*computing a quaternion q from a rotation matrix R; all operations are performed according to
 * Crisfield, Vol. 2, section 16.10 and the there described Spurrier's algorithm*/
-void DRT::ELEMENTS::Beam3::triadtoquaternion(const LINALG::FixedSizeSerialDenseMatrix<3,3>& R, LINALG::FixedSizeSerialDenseMatrix<4,1>& q)
+void DRT::ELEMENTS::Beam3::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q)
 {
   double trace = R(0,0) + R(1,1) + R(2,2);
   if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
@@ -721,9 +721,9 @@ void DRT::ELEMENTS::Beam3::triadtoquaternion(const LINALG::FixedSizeSerialDenseM
 
 
 /*matrix H^(-1) which turns non-additive spin variables into additive ones according to Crisfield, Vol. 2, equation (16.93)*/
-LINALG::FixedSizeSerialDenseMatrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::FixedSizeSerialDenseMatrix<3,1> theta)
+LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Matrix<3,1> theta)
 {
-  LINALG::FixedSizeSerialDenseMatrix<3,3> result;
+  LINALG::Matrix<3,3> result;
   double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
   
   //in case of theta_abs == 0 the following computation has problems with singularities
@@ -757,7 +757,7 @@ LINALG::FixedSizeSerialDenseMatrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Fixed
 
 /*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
  * quaterion product and then calculation of the equivalent rotation matrix according to eq. (16.70*/
-inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha, LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew)
+inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::Matrix<3,1> deltabetaplusalpha, LINALG::Matrix<3,3>& Tnew)
 {
   //calculating angle theta by which triad is rotated according to Crisfield, Vol. 2, equation (17.64)
   deltabetaplusalpha.Scale(0.5);
@@ -766,7 +766,7 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::FixedSizeSerialDenseMatrix
   double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);
   
   //computing quaterion for rotation by angle theta
-  LINALG::FixedSizeSerialDenseMatrix<4,1> Qrot;
+  LINALG::Matrix<4,1> Qrot;
   if (abs_theta > 0)
   {
     Qrot(0) = deltabetaplusalpha(0) * sin(abs_theta / 2) / abs_theta;
@@ -793,7 +793,7 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::FixedSizeSerialDenseMatrix
 
 //updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of the curvature is computed by
 //means of equation (16.148) instead of an approximated one as given by equs. (17.72) and (17.73)
-inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha,LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaminusalpha)
+inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha)
 {
   //-------------------calculating omega-------------------------------------//
   
@@ -803,12 +803,12 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::FixedSizeSerialD
   //absolute value of rotation vector theta
   double abs_theta = pow(deltabetaplusalpha(0)*deltabetaplusalpha(0) + deltabetaplusalpha(1)*deltabetaplusalpha(1) + deltabetaplusalpha(2)*deltabetaplusalpha(2) , 0.5);  
   
-  LINALG::FixedSizeSerialDenseMatrix<3,1> omega = deltabetaplusalpha;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> omegaprime = deltabetaplusalpha;
+  LINALG::Matrix<3,1> omega = deltabetaplusalpha;
+  LINALG::Matrix<3,1> omegaprime = deltabetaplusalpha;
   if (abs_theta > 0)
   {
     omega.Scale(2*tan(0.5*abs_theta) / abs_theta);
-    LINALG::FixedSizeSerialDenseMatrix<3,3> Aux;
+    LINALG::Matrix<3,3> Aux;
     for(int i = 0; i<3; i++)
     {
       for(int j = 0; j<3; j++)
@@ -825,7 +825,7 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::FixedSizeSerialD
     omegaprime.Multiply(Aux,deltabetaminusalpha);
   }
   
-  LINALG::FixedSizeSerialDenseMatrix<3,1> curvaux;
+  LINALG::Matrix<3,1> curvaux;
   curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
   curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
   curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
@@ -840,11 +840,11 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::FixedSizeSerialD
 } //DRT::ELEMENTS::Beam3::updatecurvature
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressm)
+inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm)
 {
   Ksig1.Shape(12,12);
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Sn;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Sm;
+  LINALG::Matrix<3,3> Sn;
+  LINALG::Matrix<3,3> Sm;
   computespin(Sn,stressn, 0.5);
   computespin(Sm,stressm, 0.5);
 
@@ -867,12 +867,12 @@ inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, 
 } //DRT::ELEMENTS::Beam3::computeKsig1
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.87) and (17.88)
-inline void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& x21)
+inline void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& x21)
 {
   Ksig2.Shape(12,12);
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Sn;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Sx21;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Y;
+  LINALG::Matrix<3,3> Sn;
+  LINALG::Matrix<3,3> Sx21;
+  LINALG::Matrix<3,3> Y;
   
   computespin(Sn,stressn, 0.5); 
   computespin(Sx21,x21, 0.5);
@@ -908,32 +908,32 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
                                             Epetra_SerialDenseVector* force)
 {
   //constitutive laws from Crisfield, Vol. 2, equation (17.76)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> Cm;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> Cb;
+  LINALG::Matrix<3,1> Cm;
+  LINALG::Matrix<3,1> Cb;
   
   //normal/shear strain and bending strain(curvature)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> epsilonn;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> epsilonm;
+  LINALG::Matrix<3,1> epsilonn;
+  LINALG::Matrix<3,1> epsilonm;
   
   //stress values n and m, Crisfield, Vol. 2, equation (17.78)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> stressn;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> stressm;
+  LINALG::Matrix<3,1> stressn;
+  LINALG::Matrix<3,1> stressm;
   
   //current position of nodal degrees of freedom
-  LINALG::FixedSizeSerialDenseMatrix<6,2> xcurr;
+  LINALG::Matrix<6,2> xcurr;
   
   //difference between coordinates of both nodes in current configuration, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> x21;
+  LINALG::Matrix<3,1> x21;
   
   //nonlinear parts of stiffness matrix, Crisfiel Vol. 2, equation (17.83) and (17.87)
   Epetra_SerialDenseMatrix Ksig1;
   Epetra_SerialDenseMatrix Ksig2;
   
   //auxiliary variables
-  LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaminusalpha;
+  LINALG::Matrix<3,1> deltabetaplusalpha;
+  LINALG::Matrix<3,1> deltabetaminusalpha;
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Tnew;
+  LINALG::Matrix<3,3> Tnew;
 
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
@@ -1001,7 +1001,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   }  
   
   //computing spin matrix S(x21)/2 according to Crisfield, Vol. 2, equation (17.74)
-  LINALG::FixedSizeSerialDenseMatrix<3,3> spinx21;
+  LINALG::Matrix<3,3> spinx21;
   computespin(spinx21,x21,0.5); 
 
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     for(int i = 0; i<3; i++)
     {
       //damping moment
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
       //node 1
@@ -1063,7 +1063,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     for(int i = 0; i<3; i++)
     {
       //damping moment
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
       //node 1
@@ -1078,12 +1078,12 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //artificial isotropic rotational damping
     {
       double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
-      LINALG::FixedSizeSerialDenseMatrix<3,1> newangle;
-      LINALG::FixedSizeSerialDenseMatrix<3,1> convangle;
+      LINALG::Matrix<3,1> newangle;
+      LINALG::Matrix<3,1> convangle;
       quaterniontoangle(Qnew_, newangle);
       quaterniontoangle(Qconv_, convangle);
   
-      LINALG::FixedSizeSerialDenseMatrix<3,1> omega = newangle;
+      LINALG::Matrix<3,1> omega = newangle;
       omega -= convangle;
       omega.Scale( 1.0 / params.get<double>("delta time",0.01) );
       for(int i = 0; i<3; i++)
@@ -1100,19 +1100,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //artificial explicit anisotropic rotational damping
     {
       double torsdamp = 0.01;
-      LINALG::FixedSizeSerialDenseMatrix<3,1> newangle;
-      LINALG::FixedSizeSerialDenseMatrix<3,1> convangle;
-      LINALG::FixedSizeSerialDenseMatrix<3,1> artforce;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,1> newangle;
+      LINALG::Matrix<3,1> convangle;
+      LINALG::Matrix<3,1> artforce;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       quaterniontoangle(Qnew_, newangle);
       quaterniontoangle(Qconv_, convangle);
   
-      LINALG::FixedSizeSerialDenseMatrix<3,1> omega = newangle;
+      LINALG::Matrix<3,1> omega = newangle;
       omega -= convangle;
       omega.Scale( 1.0 / params.get<double>("delta time",0.01) );
       
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Theta;
+      LINALG::Matrix<3,3> Theta;
       for(int i = 0; i<3 ; i++)
       {
         for(int j = 0; j<3; j++)
@@ -1161,10 +1161,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //adding isotropic torsional curvature damping
     {
       double torsdamp = 0.01;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       
-      LINALG::FixedSizeSerialDenseMatrix<3,3> aux;
+      LINALG::Matrix<3,3> aux;
       
       for(int i= 0; i<3; i++)
       {
@@ -1186,10 +1186,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //adding anisotropic torsional curvature damping
     {
       double torsdamp = 0.005;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       
-      LINALG::FixedSizeSerialDenseMatrix<3,3> aux;
+      LINALG::Matrix<3,3> aux;
       
       for(int i= 0; i<3; i++)
       {
@@ -1212,9 +1212,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //artificial isotropic rotational damping stiffness
     {
       double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
-      LINALG::FixedSizeSerialDenseMatrix<3,1> newangle;
+      LINALG::Matrix<3,1> newangle;
       quaterniontoangle(Qnew_, newangle);
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Hinverse = Hinv(newangle);
+      LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
 
       
       Hinverse.Scale(zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
@@ -1238,14 +1238,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //artificial explicit anisotropic rotational damping stiffness
     {
       double torsdamp = 0.01;
-      LINALG::FixedSizeSerialDenseMatrix<3,1> newangle;
+      LINALG::Matrix<3,1> newangle;
       quaterniontoangle(Qnew_, newangle);
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Hinverse = Hinv(newangle);
-      LINALG::FixedSizeSerialDenseMatrix<3,3> aux;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Tconv;
+      LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
+      LINALG::Matrix<3,3> aux;
+      LINALG::Matrix<3,3> Tconv;
       quaterniontotriad(Qconv_,Tconv);
       
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Theta;
+      LINALG::Matrix<3,3> Theta;
       for(int i = 0; i<3 ; i++)
       {
         for(int j = 0; j<3; j++)

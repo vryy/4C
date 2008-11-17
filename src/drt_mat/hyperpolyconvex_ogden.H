@@ -88,9 +88,9 @@ namespace MAT
 		  Epetra_SerialDenseVector* stress);
 
     // THE material routine
-    void Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-		  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-		  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress);
+    void Evaluate(LINALG::Matrix<6,1>* glstrain,
+		  LINALG::Matrix<6,6>* cmat,
+		  LINALG::Matrix<6,1>* stress);
 
   private:
 

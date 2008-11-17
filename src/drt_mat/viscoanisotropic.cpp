@@ -117,14 +117,14 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
 
   // unpack history
   ExtractfromPack(position,data,numhist);
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   for (int var=0; var<numhist; var++)
   {
     // current vectors have to be initialized
-    LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> tmp(true);
+    LINALG::Matrix<NUM_STRESS_3D,1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
 
@@ -164,7 +164,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   frdouble_n("CIR",&cir[0],3,&ierr); error*=ierr;
   if (error == 0) dserror("Problems with reading element local cosy, check RAD,AXI,CIR!");
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> locsys;
+  LINALG::Matrix<3,3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
   double radnorm=0.; double axinorm=0.; double cirnorm=0.;
   for (int i = 0; i < 3; ++i) {
@@ -193,11 +193,11 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
         dserror("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> emptyvec(true);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   
   // how many stress types are used?
   const int numst = matdata_->m.viscoanisotropic->numstresstypes;
@@ -224,9 +224,9 @@ void MAT::ViscoAnisotropic::Update()
 {
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> emptyvec(true);
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
+  const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const int histsize=histstresslast_->size();
   histstresscurr_->resize(histsize);
   artstresscurr_->resize(histsize);
@@ -243,11 +243,11 @@ void MAT::ViscoAnisotropic::Update()
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Evaluate
 (
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   Teuchos::ParameterList& params,
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+  LINALG::Matrix<NUM_STRESS_3D,1> * stress
 )
 {
   const double mue = matdata_->m.viscoanisotropic->mue;
@@ -258,9 +258,9 @@ void MAT::ViscoAnisotropic::Evaluate
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -275,7 +275,7 @@ void MAT::ViscoAnisotropic::Evaluate
   const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
 
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Cinv(6);
+  LINALG::Matrix<NUM_STRESS_3D,1> Cinv(6);
 
   Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
   Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
@@ -294,7 +294,7 @@ void MAT::ViscoAnisotropic::Evaluate
   // Isochoric (deviatoric) part via projection PP:Sbar, see Holzapfel p. 230
   // Siso = J^{-2/3}  Dev[Sbar] = J^{-2/3} [Sbar - 1/3 trace(Sbar C) Cinv
   // for this Wiso trace(C Sbar) = trace(mue I C) = mue I1
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_nh;  // isochoric elastic S from NeoHooke
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_nh;  // isochoric elastic S from NeoHooke
   const double third = 1./3.;
   const double p = kappa*(J-1);
   for (int i = 0; i < 6; ++i) {
@@ -308,14 +308,14 @@ void MAT::ViscoAnisotropic::Evaluate
   // Cvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
   // Ciso = 0 + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
   // Cvol not affected by viscosity
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_nh(true); // isochoric elastic C from NeoHooke
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_nh(true); // isochoric elastic C from NeoHooke
 
   AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));  // -2 J p Cinv o Cinv
 
   const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
 
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D>  Psl(true);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>  Psl(true);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
 
   for (int i = 0; i < 6; ++i) {
@@ -334,8 +334,8 @@ void MAT::ViscoAnisotropic::Evaluate
   // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
 
   // structural tensors in voigt notation
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>  A1;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>  A2;
+  LINALG::Matrix<NUM_STRESS_3D,1>  A1;
+  LINALG::Matrix<NUM_STRESS_3D,1>  A2;
   for (int i = 0; i < 3; ++i) {
     A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
     A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
@@ -363,8 +363,8 @@ void MAT::ViscoAnisotropic::Evaluate
   }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_fib2(A2); // first compute Sfbar2 = dWf/dJ6 A2
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2(A2); // first compute Sfbar2 = dWf/dJ6 A2
   const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
   const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   SisoEla_fib1.Scale(fib1);
@@ -384,8 +384,8 @@ void MAT::ViscoAnisotropic::Evaluate
   const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
   const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
 
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_fib1; // isochoric elastic C from Fib1
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_fib2; // isochoric elastic C from Fib2
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_fib1; // isochoric elastic C from Fib1
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> CisoEla_fib2; // isochoric elastic C from Fib2
 
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 6; ++j) {
@@ -414,12 +414,12 @@ void MAT::ViscoAnisotropic::Evaluate
 
   // read history
   const int numst = matdata_->m.viscoanisotropic->numstresstypes;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_nh_old (histstresslast_->at(numst*gp   + 0));
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_fib1_old (histstresslast_->at(numst*gp + 1));
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SisoEla_fib2_old (histstresslast_->at(numst*gp + 2));
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_nh_old (artstresslast_->at(numst*gp   + 0));
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_fib1_old (artstresslast_->at(numst*gp + 1));
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_fib2_old (artstresslast_->at(numst*gp + 2));
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_nh_old (histstresslast_->at(numst*gp   + 0));
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1_old (histstresslast_->at(numst*gp + 1));
+  LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2_old (histstresslast_->at(numst*gp + 2));
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_nh_old (artstresslast_->at(numst*gp   + 0));
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_fib1_old (artstresslast_->at(numst*gp + 1));
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_fib2_old (artstresslast_->at(numst*gp + 2));
 
   // visco parameters
   /*
@@ -470,11 +470,11 @@ void MAT::ViscoAnisotropic::Evaluate
 
   
   // evaluate current Q's
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_nh(SisoEla_nh);
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_nh(SisoEla_nh);
   Q_nh.Scale(artscalar2_nh*beta_nh);
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_fib1(SisoEla_fib1);
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_fib1(SisoEla_fib1);
   Q_fib1.Scale(beta_fib*artscalar2_fib);
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_fib2(SisoEla_fib2);
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_fib2(SisoEla_fib2);
   Q_fib2.Scale(beta_fib*artscalar2_fib);
   
   // scale history

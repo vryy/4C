@@ -30,7 +30,7 @@ isinit_(false)
   detJ_.resize(ngp);
 
   Fhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,9));
-  LINALG::FixedSizeSerialDenseMatrix<3,3> F(true); // set to zero
+  LINALG::Matrix<3,3> F(true); // set to zero
   F(0,0) = F(1,1) = F(2,2) = 1.0;
   for (int i=0; i<ngp; ++i) MatrixtoStorage(i,F,FHistory());
 

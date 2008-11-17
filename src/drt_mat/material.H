@@ -104,10 +104,10 @@ public:
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
   \param ScalarThis (in): Scalar to multiply with C before adding A x B
   */
-  void ElastSymTensorMultiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+  void ElastSymTensorMultiply(LINALG::Matrix<6,6>& C,
                               const double ScalarAB,
-                              const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-                              const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                              const LINALG::Matrix<3,3>& A,
+                              const LINALG::Matrix<3,3>& B,
                               const double ScalarThis);
 
   /*!
@@ -147,10 +147,10 @@ public:
   \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
   \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
-  void ElastSymTensorMultiplyAddSym(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+  void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6,6>& C,
           const double ScalarAB,
-          const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-          const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+          const LINALG::Matrix<3,3>& A,
+          const LINALG::Matrix<3,3>& B,
           const double ScalarThis);
   
   /*!
@@ -180,10 +180,10 @@ public:
   \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
   \param ScalarThis (in): Scalar to multiply with C before adding A o B
   */
-  void ElastSymTensor_o_Multiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+  void ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
                                  const double ScalarAB,
-                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                 const LINALG::Matrix<3,3>& A,
+                                 const LINALG::Matrix<3,3>& B,
                                  const double ScalarThis);
 
 
@@ -207,8 +207,8 @@ public:
   \param invc   (in)  : Inverse right Cauchy-Green vector(6)
   \param scalar (in)  : scalar corresponding to delta7
   */
-  void AddtoCmatHolzapfelProduct( LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-                                  LINALG::FixedSizeSerialDenseMatrix<6,1>& invc,
+  void AddtoCmatHolzapfelProduct( LINALG::Matrix<6,6>& cmat,
+                                  LINALG::Matrix<6,1>& invc,
                                   const double scalar);
 
 

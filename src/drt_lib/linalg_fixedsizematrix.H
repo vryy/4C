@@ -63,7 +63,7 @@ namespace LINALG
   /*!
 
     This namespace contains the compile time error checker used by
-    FixedSizeSerialDenseMatrix and FixedSizeSerialDenseSolver.
+    Matrix and FixedSizeSerialDenseSolver.
 
     \author Martin Kuettler
     \date 09/08
@@ -115,7 +115,7 @@ namespace LINALG
     matrix operations. They need the matrix sizes as template
     arguments and take the matrices as Epetra_SerialDenseMatrix, or as
     double*. Normally there is no need for calling them directly,
-    because FixedSizeSerialDenseMatrix provides a more convenient
+    because Matrix provides a more convenient
     interface.
 
     All double* arguments are considered to be pointers to a matrix stored
@@ -2834,7 +2834,7 @@ namespace LINALG
   \date 09/08
  */
 template <unsigned int rows, unsigned int cols /* =1  ?*/ >
-class FixedSizeSerialDenseMatrix
+class Matrix
 {
 private:
   /// the pointer holding the data
@@ -2845,18 +2845,18 @@ private:
 public:
   /// Default constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix and allocates the
+    Constructs a new Matrix and allocates the
     memory. If \e setzero==true it is filled with zeros, otherwise it
     is left uninitialized.
 
     \param setzero
       whether matrix should be initialised to zero
    */
-  explicit FixedSizeSerialDenseMatrix(bool setzero = false);
+  explicit Matrix(bool setzero = false);
 
   /// Constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
+    Constructs a new Matrix from data \e d. If
     \e view==false (the default) the data is copied, otherwise a view to
     it is constructed.
 
@@ -2865,11 +2865,11 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit FixedSizeSerialDenseMatrix(double* d, bool view=false);
+  explicit Matrix(double* d, bool view=false);
 
   /// Constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
+    Constructs a new Matrix from data \e d. If
     \e view==false (the default) the data is copied, otherwise a view to
     it is constructed.
     \note a view is currently not possible, the data will be copied!!! a.ger 17.11.2008
@@ -2879,11 +2879,11 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit FixedSizeSerialDenseMatrix(const double* d, bool view=false);
+  explicit Matrix(const double* d, bool view=false);
   
   /// Constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
+    Constructs a new Matrix from data \e d. If
     \e view==false (the default) the data is copied, otherwise a view to
     it is constructed.
 
@@ -2892,11 +2892,11 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit FixedSizeSerialDenseMatrix(Epetra_SerialDenseMatrix& d, bool view=false);
+  explicit Matrix(Epetra_SerialDenseMatrix& d, bool view=false);
 
   /// Constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix from \e source. If
+    Constructs a new Matrix from \e source. If
     \e view==false the data is copied, otherwise a view to
     it is constructed.
 
@@ -2910,21 +2910,21 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  FixedSizeSerialDenseMatrix(FixedSizeSerialDenseMatrix<rows,cols>& source, bool view);
+  Matrix(Matrix<rows,cols>& source, bool view);
 
   /// Copy constructor
   /*!
-    Constructs a new FixedSizeSerialDenseMatrix from source. Unlike
+    Constructs a new Matrix from source. Unlike
     the Epetra_SerialDenseMatrix copy constructor this one *always*
     copies the data, even when \e source is a view.
 
     \param source
       matrix to copy
    */
-  FixedSizeSerialDenseMatrix(const FixedSizeSerialDenseMatrix<rows,cols>& source);
+  Matrix(const Matrix<rows,cols>& source);
 
   /// Deconstructor
-  ~FixedSizeSerialDenseMatrix();
+  ~Matrix();
 
   /// Return the double* holding the data.
   inline const double* A() const { return data_; }
@@ -2969,7 +2969,7 @@ public:
     \param source
       matrix to be viewed
    */
-  void SetView(FixedSizeSerialDenseMatrix<rows, cols>& source);
+  void SetView(Matrix<rows, cols>& source);
 
   /// Set copy
   /*!
@@ -2993,7 +2993,7 @@ public:
     \param source
       matrix to copy from
    */
-  void SetCopy(FixedSizeSerialDenseMatrix<rows, cols>& source);
+  void SetCopy(Matrix<rows, cols>& source);
 
 
   /// Calculate determinant
@@ -3018,7 +3018,7 @@ public:
       matrix to be inverted
     \return determinant of \e other
    */
-  inline double Invert(const FixedSizeSerialDenseMatrix<rows, cols>& other);
+  inline double Invert(const Matrix<rows, cols>& other);
 
   /// Set to zero
   /*!
@@ -3047,7 +3047,7 @@ public:
       second factor
     \return dot product
    */
-  inline double Dot(const FixedSizeSerialDenseMatrix<rows, cols>& other) const
+  inline double Dot(const Matrix<rows, cols>& other) const
     { return DENSEFUNCTIONS::dot<rows, cols>(data_, other.data_); }
 
   /// Compute absolute value
@@ -3057,7 +3057,7 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Abs(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+  inline void Abs(const Matrix<rows, cols>& other)
     { DENSEFUNCTIONS::abs<rows, cols>(data_, other.data_); }
 
   /// Compute reciprocal value
@@ -3067,7 +3067,7 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Reciprocal(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+  inline void Reciprocal(const Matrix<rows, cols>& other)
     { DENSEFUNCTIONS::reciprocal<rows, cols>(data_, other.data_); }
 
   /// Scale
@@ -3087,7 +3087,7 @@ public:
     \param other
       matrix to copy
    */
-  inline void Update(const FixedSizeSerialDenseMatrix<rows, cols>& other)
+  inline void Update(const Matrix<rows, cols>& other)
     { DENSEFUNCTIONS::update<rows,cols>(data_,other.data_); }
 
   /// Scaled copy: \e this = \e scalarOther * \e other
@@ -3099,7 +3099,7 @@ public:
     \param other
       matrix to read from
    */
-  inline void Update(const double scalarOther, const FixedSizeSerialDenseMatrix<rows, cols>& other)
+  inline void Update(const double scalarOther, const Matrix<rows, cols>& other)
     { DENSEFUNCTIONS::update<rows,cols>(data_,scalarOther,other.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
@@ -3113,7 +3113,7 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void Update(const double scalarOther, const FixedSizeSerialDenseMatrix<rows, cols>& other,
+  inline void Update(const double scalarOther, const Matrix<rows, cols>& other,
                      const double scalarThis)
     { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarOther, other.data_); }
 
@@ -3126,8 +3126,8 @@ public:
     \param right
       second matrix to add
    */
-  inline void Update(const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                     const FixedSizeSerialDenseMatrix<rows, cols>& right)
+  inline void Update(const Matrix<rows, cols>& left,
+                     const Matrix<rows, cols>& right)
     { DENSEFUNCTIONS::update<rows, cols>(data_, left.data_, right.data_); }
 
   /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3143,8 +3143,8 @@ public:
     \param right
       second matrix to add
    */
-  inline void Update(const double scalarLeft, const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                     const double scalarRight, const FixedSizeSerialDenseMatrix<rows, cols>& right)
+  inline void Update(const double scalarLeft, const Matrix<rows, cols>& left,
+                     const double scalarRight, const Matrix<rows, cols>& right)
     { DENSEFUNCTIONS::update<rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3162,8 +3162,8 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void Update(const double scalarLeft, const FixedSizeSerialDenseMatrix<rows, cols>& left,
-                     const double scalarRight, const FixedSizeSerialDenseMatrix<rows, cols>& right,
+  inline void Update(const double scalarLeft, const Matrix<rows, cols>& left,
+                     const double scalarRight, const Matrix<rows, cols>& right,
                      const double scalarThis)
     { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_); }
 
@@ -3174,7 +3174,7 @@ public:
     \param other
       factor
    */
-  inline void EMultiply(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline void EMultiply(const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,other.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3186,7 +3186,7 @@ public:
     \param other
       factor
    */
-  inline void EMultiply(const double scalar, const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline void EMultiply(const double scalar, const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::eMultiply<rows,cols>(scalar,data_,other.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3198,7 +3198,7 @@ public:
     \param right
       second factor
    */
-  inline void EMultiply(const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+  inline void EMultiply(const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
     { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,left.data_,right.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3213,7 +3213,7 @@ public:
     \param right
       second factor
    */
-  inline void EMultiply(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+  inline void EMultiply(const double scalarOther, const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
     { DENSEFUNCTIONS::eMultiply<rows,cols>(data_, scalarOther, left.data_, right.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3229,8 +3229,8 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void EMultiply(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left,
-                         const FixedSizeSerialDenseMatrix<rows,cols>& right, const double scalarThis)
+  inline void EMultiply(const double scalarOther, const Matrix<rows,cols>& left,
+                         const Matrix<rows,cols>& right, const double scalarThis)
     { DENSEFUNCTIONS::eMultiply<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
 
   /// Divide element-wise: \e this(m,n) *= \e other(m,n)
@@ -3240,7 +3240,7 @@ public:
     \param other
       factor
    */
-  inline void EDivide(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline void EDivide(const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::eDivide<rows,cols>(data_,other.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3252,7 +3252,7 @@ public:
     \param other
       factor
    */
-  inline void EDivide(const double scalar, const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline void EDivide(const double scalar, const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::eDivide<rows,cols>(scalar,data_,other.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3264,7 +3264,7 @@ public:
     \param right
       divisor
    */
-  inline void EDivide(const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+  inline void EDivide(const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
     { DENSEFUNCTIONS::eDivide<rows,cols>(data_,left.data_,right.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3279,7 +3279,7 @@ public:
     \param right
       divisor
    */
-  inline void EDivide(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left, const FixedSizeSerialDenseMatrix<rows,cols>& right)
+  inline void EDivide(const double scalarOther, const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
     { DENSEFUNCTIONS::eDivide<rows,cols>(data_, scalarOther, left.data_, right.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)/\e right(m,n)
@@ -3295,8 +3295,8 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void EDivide(const double scalarOther, const FixedSizeSerialDenseMatrix<rows,cols>& left,
-                         const FixedSizeSerialDenseMatrix<rows,cols>& right, const double scalarThis)
+  inline void EDivide(const double scalarOther, const Matrix<rows,cols>& left,
+                         const Matrix<rows,cols>& right, const double scalarThis)
     { DENSEFUNCTIONS::eDivide<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
 
 
@@ -3356,8 +3356,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void Multiply(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void Multiply(const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right
@@ -3368,8 +3368,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void MultiplyNN(const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right^T
@@ -3380,8 +3380,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+  inline void MultiplyNT(const Matrix<rows, inner>& left,
+                       const Matrix<cols, inner>& right)
     { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right
@@ -3392,8 +3392,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void MultiplyTN(const Matrix<inner, rows>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right^T
@@ -3404,8 +3404,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+  inline void MultiplyTT(const Matrix<inner, rows>& left,
+                       const Matrix<cols, inner>& right)
     { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,left.A(),right.A()); }
 
 
@@ -3419,8 +3419,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void Multiply(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -3435,8 +3435,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void MultiplyNN(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right^T
@@ -3449,8 +3449,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+  inline void MultiplyNT(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<cols, inner>& right)
     { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right
@@ -3463,8 +3463,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right)
+  inline void MultiplyTN(const double scalarOthers, const Matrix<inner, rows>& left,
+                       const Matrix<inner, cols>& right)
     { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
@@ -3477,8 +3477,8 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right)
+  inline void MultiplyTT(const double scalarOthers, const Matrix<inner, rows>& left,
+                       const Matrix<cols, inner>& right)
     { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
@@ -3495,8 +3495,8 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void Multiply(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+  inline void Multiply(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right, const double scalarThis)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
@@ -3511,8 +3511,8 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+  inline void MultiplyNN(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<inner, cols>& right, const double scalarThis)
     { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
@@ -3527,8 +3527,8 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const double scalarOthers, const FixedSizeSerialDenseMatrix<rows, inner>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
+  inline void MultiplyNT(const double scalarOthers, const Matrix<rows, inner>& left,
+                       const Matrix<cols, inner>& right, const double scalarThis)
     { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
@@ -3543,8 +3543,8 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<inner, cols>& right, const double scalarThis)
+  inline void MultiplyTN(const double scalarOthers, const Matrix<inner, rows>& left,
+                       const Matrix<inner, cols>& right, const double scalarThis)
     { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
@@ -3559,8 +3559,8 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const double scalarOthers, const FixedSizeSerialDenseMatrix<inner, rows>& left,
-                       const FixedSizeSerialDenseMatrix<cols, inner>& right, const double scalarThis)
+  inline void MultiplyTT(const double scalarOthers, const Matrix<inner, rows>& left,
+                       const Matrix<cols, inner>& right, const double scalarThis)
     { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Write \e this to \e out
@@ -3579,7 +3579,7 @@ public:
     \param other
       matrix to get data from
    */
-  inline FixedSizeSerialDenseMatrix<rows,cols> operator=(const FixedSizeSerialDenseMatrix<rows,cols>& other);
+  inline Matrix<rows,cols> operator=(const Matrix<rows,cols>& other);
 
   /// = operator for double
   /*!
@@ -3588,7 +3588,7 @@ public:
     \param other
       scalar value
    */
-  inline FixedSizeSerialDenseMatrix<rows,cols> operator=(const double other);
+  inline Matrix<rows,cols> operator=(const double other);
 
   /// == operator
   /*!
@@ -3597,7 +3597,7 @@ public:
     \param other
       matrix to compare with
    */
-  inline bool operator==(const FixedSizeSerialDenseMatrix<rows,cols>& other) const;
+  inline bool operator==(const Matrix<rows,cols>& other) const;
 
   /// != operator
   /*!
@@ -3606,7 +3606,7 @@ public:
     \param other
       matrix to compare with
    */
-  inline bool operator!=(const FixedSizeSerialDenseMatrix<rows,cols>& other) const;
+  inline bool operator!=(const Matrix<rows,cols>& other) const;
 
   /// += operator
   /*!
@@ -3615,7 +3615,7 @@ public:
     \param other
       matrix to add
    */
-  inline FixedSizeSerialDenseMatrix<rows,cols>& operator+=(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline Matrix<rows,cols>& operator+=(const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, 1.0, other.data_); return *this; }
 
   /// -= operator
@@ -3625,7 +3625,7 @@ public:
     \param other
       matrix to subtract
    */
-  inline FixedSizeSerialDenseMatrix<rows,cols>& operator-=(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+  inline Matrix<rows,cols>& operator-=(const Matrix<rows,cols>& other)
     { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, -1.0, other.data_); return *this; }
 
   /// Access data
@@ -3672,12 +3672,12 @@ public:
 };
 
 template <unsigned int cols, unsigned int rows>
-std::ostream& operator<<(std::ostream& out, const FixedSizeSerialDenseMatrix<rows,cols>& matrix);
+std::ostream& operator<<(std::ostream& out, const Matrix<rows,cols>& matrix);
 
 // Constructors
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(bool setzero) : data_(0), isview_(false)
+Matrix<rows, cols>::Matrix(bool setzero) : data_(0), isview_(false)
 {
   DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
   data_ = new double[rows*cols];
@@ -3686,7 +3686,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(bool setzero)
 }
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(double* d, bool view) :
+Matrix<rows, cols>::Matrix(double* d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3700,7 +3700,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(double* d, bo
 }
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(const double* d, bool view) :
+Matrix<rows, cols>::Matrix(const double* d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3715,7 +3715,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(const double*
 }
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(Epetra_SerialDenseMatrix& d, bool view) :
+Matrix<rows, cols>::Matrix(Epetra_SerialDenseMatrix& d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3733,7 +3733,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(Epetra_Serial
 }
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(FixedSizeSerialDenseMatrix<rows,cols>& source, bool view) :
+Matrix<rows, cols>::Matrix(Matrix<rows,cols>& source, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3747,7 +3747,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(FixedSizeSeri
 }
 
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(const FixedSizeSerialDenseMatrix<rows,cols>& source) :
+Matrix<rows, cols>::Matrix(const Matrix<rows,cols>& source) :
   data_(0), isview_(false)
 {
   data_ = new double[rows*cols];
@@ -3756,14 +3756,14 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(const FixedSi
 
 // Destructor
 template<unsigned int rows, unsigned int cols>
-FixedSizeSerialDenseMatrix<rows, cols>::~FixedSizeSerialDenseMatrix()
+Matrix<rows, cols>::~Matrix()
 {
   if (not isview_)
     delete[] data_;
 }
 
 template<unsigned int rows, unsigned int cols>
-void FixedSizeSerialDenseMatrix<rows, cols>::SetView(double* data)
+void Matrix<rows, cols>::SetView(double* data)
 {
   if (not isview_) {
     delete[] data_;
@@ -3773,7 +3773,7 @@ void FixedSizeSerialDenseMatrix<rows, cols>::SetView(double* data)
 }
 
 template<unsigned int rows, unsigned int cols>
-void FixedSizeSerialDenseMatrix<rows, cols>::SetView(FixedSizeSerialDenseMatrix<rows, cols>& source)
+void Matrix<rows, cols>::SetView(Matrix<rows, cols>& source)
 {
   if (not isview_) {
     delete[] data_;
@@ -3783,7 +3783,7 @@ void FixedSizeSerialDenseMatrix<rows, cols>::SetView(FixedSizeSerialDenseMatrix<
 }
 
 template<unsigned int rows, unsigned int cols>
-void FixedSizeSerialDenseMatrix<rows, cols>::SetCopy(double* data)
+void Matrix<rows, cols>::SetCopy(double* data)
 {
     if (isview_) {
         data_ = new double[rows*cols];
@@ -3793,7 +3793,7 @@ void FixedSizeSerialDenseMatrix<rows, cols>::SetCopy(double* data)
 }
 
 template<unsigned int rows, unsigned int cols>
-void FixedSizeSerialDenseMatrix<rows, cols>::SetCopy(FixedSizeSerialDenseMatrix<rows, cols>& source)
+void Matrix<rows, cols>::SetCopy(Matrix<rows, cols>& source)
 {
   if (isview_) {
     data_ = new double[rows*cols];
@@ -3804,7 +3804,7 @@ void FixedSizeSerialDenseMatrix<rows, cols>::SetCopy(FixedSizeSerialDenseMatrix<
 
 // Determinant
 template<unsigned int rows, unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Determinant() const
+inline double Matrix<rows,cols>::Determinant() const
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_determinant_of_nonsquare_matrix();
   return DENSEFUNCTIONS::determinant<rows, cols>(data_);
@@ -3812,23 +3812,23 @@ inline double FixedSizeSerialDenseMatrix<rows,cols>::Determinant() const
 
 // Invert
 template<unsigned int rows, unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Invert()
+inline double Matrix<rows,cols>::Invert()
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
   return DENSEFUNCTIONS::invert<rows, cols>(data_);
 }
 
 template <unsigned int rows,  unsigned int cols>
-inline double FixedSizeSerialDenseMatrix<rows,cols>::Invert(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+inline double Matrix<rows,cols>::Invert(const Matrix<rows,cols>& other)
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
   return DENSEFUNCTIONS::invert<rows, cols>(data_, other.data_);
 }
 
 template <unsigned int rows,  unsigned int cols>
-void FixedSizeSerialDenseMatrix<rows,cols>::Print(std::ostream& out) const
+void Matrix<rows,cols>::Print(std::ostream& out) const
 {
-  out << "FixedSizeSerialDenseMatrix<" << rows << ',' << cols << '>';
+  out << "Matrix<" << rows << ',' << cols << '>';
   if (isview_) out << " (view to memory only)";
   if (data_ == NULL) {
     out << " with data_==NULL!\n";
@@ -3846,12 +3846,12 @@ void FixedSizeSerialDenseMatrix<rows,cols>::Print(std::ostream& out) const
   }
 }
 
-/// output operator for FixedSizeSerialDenseMatrix
+/// output operator for Matrix
 /*!
   Write matrix to out. This function calls matrix.Print(out).
  */
 template <unsigned int cols, unsigned int rows>
-std::ostream& operator<<(std::ostream& out, const FixedSizeSerialDenseMatrix<rows,cols>& matrix)
+std::ostream& operator<<(std::ostream& out, const Matrix<rows,cols>& matrix)
 {
     matrix.Print(out);
     return out;
@@ -3859,16 +3859,16 @@ std::ostream& operator<<(std::ostream& out, const FixedSizeSerialDenseMatrix<row
 
 
 template<unsigned int rows, unsigned int cols>
-inline FixedSizeSerialDenseMatrix<rows,cols>
-FixedSizeSerialDenseMatrix<rows, cols>::operator=(const FixedSizeSerialDenseMatrix<rows,cols>& other)
+inline Matrix<rows,cols>
+Matrix<rows, cols>::operator=(const Matrix<rows,cols>& other)
 {
   DENSEFUNCTIONS::update<rows,cols>(data_, other.data_);
   return *this;
 }
 
 template<unsigned int rows, unsigned int cols>
-inline FixedSizeSerialDenseMatrix<rows,cols>
-FixedSizeSerialDenseMatrix<rows, cols>::operator=(const double other)
+inline Matrix<rows,cols>
+Matrix<rows, cols>::operator=(const double other)
 {
   DENSEFUNCTIONS::putScalar<rows,cols>(other, data_);
   return *this;
@@ -3876,7 +3876,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::operator=(const double other)
 
 template<unsigned int rows, unsigned int cols>
 inline bool
-FixedSizeSerialDenseMatrix<rows, cols>::operator==(const FixedSizeSerialDenseMatrix<rows,cols>& other) const
+Matrix<rows, cols>::operator==(const Matrix<rows,cols>& other) const
 {
   if (data_ == other.data_) return true;
   // unfortunately memcmp does not work, because +0 and -0 are
@@ -3888,7 +3888,7 @@ FixedSizeSerialDenseMatrix<rows, cols>::operator==(const FixedSizeSerialDenseMat
 
 template<unsigned int rows, unsigned int cols>
 inline bool
-FixedSizeSerialDenseMatrix<rows, cols>::operator!=(const FixedSizeSerialDenseMatrix<rows,cols>& other) const
+Matrix<rows, cols>::operator!=(const Matrix<rows,cols>& other) const
 {
   return not (*this == other);
 }
@@ -3896,43 +3896,43 @@ FixedSizeSerialDenseMatrix<rows, cols>::operator!=(const FixedSizeSerialDenseMat
 // Access operator
 
 template<unsigned int rows, unsigned int cols>
-inline double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r, unsigned int c)
+inline double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c)
 {
 #ifdef DEBUG
     if (r < 0 or r >= rows or c < 0 or c >= cols)
-      dserror("Indices %i,%i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,c,rows,cols);
+      dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
 }
 
 template<unsigned int rows, unsigned int cols>
-inline const double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r, unsigned int c) const
+inline const double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c) const
 {
 #ifdef DEBUG
     if (r < 0 or r >= rows or c < 0 or c >= cols)
-      dserror("Indices %i,%i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,c,rows,cols);
+      dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
 }
 
 template<unsigned int rows, unsigned int cols>
-inline double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r)
+inline double& Matrix<rows, cols>::operator()(unsigned int r)
 {
   DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r < 0 or r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,rows,cols);
+      dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
 #endif
   return data_[r];
 }
 
 template<unsigned int rows, unsigned int cols>
-inline const double& FixedSizeSerialDenseMatrix<rows, cols>::operator()(unsigned int r) const
+inline const double& Matrix<rows, cols>::operator()(unsigned int r) const
 {
     DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r < 0 or r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in FixedSizeSerialDenseMatrix<%i,%i>.",r,rows,cols);
+      dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
 #endif
     return data_[r];
 }
@@ -3970,11 +3970,11 @@ private:
   static Epetra_BLAS blas_;
 
   /// the matrix we got
-  FixedSizeSerialDenseMatrix<rows,cols>* matrix_;
+  Matrix<rows,cols>* matrix_;
   /// the vector of unknowns
-  FixedSizeSerialDenseMatrix<cols,dim_rhs>* vec_X_;
+  Matrix<cols,dim_rhs>* vec_X_;
   /// the right hand side vector
-  FixedSizeSerialDenseMatrix<rows,dim_rhs>* vec_B_;
+  Matrix<rows,dim_rhs>* vec_B_;
 
   /// some storage for LAPACK
   std::vector<int> pivot_vec_;
@@ -4053,7 +4053,7 @@ public:
     \param mat
       new matrix
    */
-  void SetMatrix(FixedSizeSerialDenseMatrix<rows,cols>& mat);
+  void SetMatrix(Matrix<rows,cols>& mat);
 
   /// Set the vectors
   /*!
@@ -4064,7 +4064,7 @@ public:
     \param B
       right hand side vector
    */
-  void SetVectors(FixedSizeSerialDenseMatrix<cols,dim_rhs>& X, FixedSizeSerialDenseMatrix<rows,dim_rhs>& B);
+  void SetVectors(Matrix<cols,dim_rhs>& X, Matrix<rows,dim_rhs>& B);
 
   /// Set the equilibration
   /*!
@@ -4131,7 +4131,7 @@ FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::~FixedSizeSerialDenseSolver()
 }
 
 template<unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(FixedSizeSerialDenseMatrix<rows,cols>& mat)
+void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(Matrix<rows,cols>& mat)
 {
   c_.clear();
   r_.clear();
@@ -4142,8 +4142,8 @@ void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(FixedSizeSerialDen
 }
 
 template<unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetVectors(FixedSizeSerialDenseMatrix<cols,dim_rhs>& X,
-                                                               FixedSizeSerialDenseMatrix<rows,dim_rhs>& B)
+void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetVectors(Matrix<cols,dim_rhs>& X,
+                                                               Matrix<rows,dim_rhs>& B)
 {
   solved_ = false;
   vec_X_ = &X;

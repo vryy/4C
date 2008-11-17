@@ -342,7 +342,7 @@ protected:
   //! volume of the element
   double                                                                   V_;
   //! vector of partial derivatives in material frame
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
+  vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
 
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   /// Prestressing object
@@ -375,34 +375,34 @@ protected:
   virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
-                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
-                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
-                                 LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,1>* force,
-                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
-                                 LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
+                                 LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
+                                 LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
+                                 LINALG::Matrix<NUMDOF_SOTET4,1>* force,
+                                 LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
+                                 LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
                                  struct _MATERIAL*         material,
                                  bool                      cauchy = false,
                                  bool                      ea = false);
 
   //! lump mass matrix (bborn 07/08)
-  void so_tet4_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
+  void so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void so_tet4_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
-                     LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMSTR_SOTET4>& nodalstresses);
+  void so_tet4_expol(LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
+                     LINALG::Matrix<NUMNOD_SOTET4,NUMSTR_SOTET4>& nodalstresses);
 
   //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();
   //! Evaluate Tet4 Derivs at 1 gausspoint to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_1gp_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_1gp_derivs();
   //! Evaluate Tet4 Weights at 1 gausspoint to keep them static
   const vector<double> so_tet4_1gp_weights();
 
   //! Evaluate Tet4 Shapefcts at 4 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > so_tet4_4gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_4gp_shapefcts();
   //! Evaluate Tet4 Derivs at 4 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_4gp_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_4gp_derivs();
   //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
   const vector<double> so_tet4_4gp_weights();
 
@@ -416,11 +416,11 @@ protected:
 
   /// material selection for so_tet4
   void so_tet4_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                    LINALG::Matrix<6,1>* stress,
+                    LINALG::Matrix<6,6>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<6,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp);
 
 }; // class So_tet4

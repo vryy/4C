@@ -25,16 +25,16 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::FixedSizeSerialDenseMatrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
-    const LINALG::FixedSizeSerialDenseMatrix<3,1>&                 veln,
-    const LINALG::FixedSizeSerialDenseMatrix<3,1>&                 velnm,
-    const LINALG::FixedSizeSerialDenseMatrix<3,1>&                 accn,
+LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+    const LINALG::Matrix<3,1>&                 veln,
+    const LINALG::Matrix<3,1>&                 velnm,
+    const LINALG::Matrix<3,1>&                 accn,
     const FLUID_TIMEINTTYPE             timealgo,
     const double                        dta,
     const double                        theta
 )
 {
-  LINALG::FixedSizeSerialDenseMatrix<3,1> hist;
+  LINALG::Matrix<3,1> hist;
   switch (timealgo)
   {
   case timeint_stationary:

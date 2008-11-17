@@ -75,16 +75,16 @@ void MAT::NeoHooke::Unpack(const vector<char>& data)
  |  Calculate stress and constitutive tensor (Neo Hookean law) gee 10/08|
  *----------------------------------------------------------------------*/
 void MAT::NeoHooke::Evaluate(
-            const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress)
+            const LINALG::Matrix<6,1>& glstrain,
+                  LINALG::Matrix<6,6>& cmat,
+                  LINALG::Matrix<6,1>& stress)
 {
   // get material parameters
   double ym = matdata_->m.neohooke->youngs;    // Young's modulus
   double nu = matdata_->m.neohooke->possionratio; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
-  LINALG::FixedSizeSerialDenseMatrix<3,3> E(false);
+  LINALG::Matrix<3,3> E(false);
   E(0,0) = glstrain(0);
   E(1,1) = glstrain(1);
   E(2,2) = glstrain(2);
@@ -93,7 +93,7 @@ void MAT::NeoHooke::Evaluate(
   E(0,2) = 0.5 * glstrain(5);  E(2,0) = 0.5 * glstrain(5);
   
   // Right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::FixedSizeSerialDenseMatrix<3,3> C(E);
+  LINALG::Matrix<3,3> C(E);
   C.Scale(2.0);
   C(0,0) += 1.0;
   C(1,1) += 1.0;
@@ -117,7 +117,7 @@ void MAT::NeoHooke::Evaluate(
   // double W = c1/beta * (pow(J,-beta) - 1) + c1 (I1-3);
   
   // PK2 Stresses
-  LINALG::FixedSizeSerialDenseMatrix<3,3> PK2(false);
+  LINALG::Matrix<3,3> PK2(false);
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
     {
@@ -140,7 +140,7 @@ void MAT::NeoHooke::Evaluate(
   const double delta6 = 4. * c1 * beta * pow(I3,-beta);
   const double delta7 = 4. * c1 * pow(I3,-beta);
   
-  LINALG::FixedSizeSerialDenseMatrix<9,9> ET(false);
+  LINALG::Matrix<9,9> ET(false);
 
   
   for (int k=0; k<3; k++)
@@ -213,17 +213,17 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 #endif
 
   // this is temporary as long as the material does not have a 
-  // FixedSizeSerialDenseMatrix-type interface
-  const LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(glstrain_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(cmat_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,1> stress(stress_e->A(),true);
+  // Matrix-type interface
+  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
+        LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
+        LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   // get material parameters
   double ym = matdata_->m.neohooke->youngs;    // Young's modulus
   double nu = matdata_->m.neohooke->possionratio; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
-  LINALG::FixedSizeSerialDenseMatrix<3,3> E(false);
+  LINALG::Matrix<3,3> E(false);
   E(0,0) = glstrain(0);
   E(1,1) = glstrain(1);
   E(2,2) = glstrain(2);
@@ -232,7 +232,7 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   E(0,2) = 0.5 * glstrain(5);  E(2,0) = 0.5 * glstrain(5);
   
   // Right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::FixedSizeSerialDenseMatrix<3,3> C(E);
+  LINALG::Matrix<3,3> C(E);
   C.Scale(2.0);
   C(0,0) += 1.0;
   C(1,1) += 1.0;
@@ -256,7 +256,7 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   // double W = c1/beta * (pow(J,-beta) - 1) + c1 (I1-3);
   
   // PK2 Stresses
-  LINALG::FixedSizeSerialDenseMatrix<3,3> PK2(false);
+  LINALG::Matrix<3,3> PK2(false);
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
     {
@@ -279,7 +279,7 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   const double delta6 = 4. * c1 * beta * pow(I3,-beta);
   const double delta7 = 4. * c1 * pow(I3,-beta);
   
-  LINALG::FixedSizeSerialDenseMatrix<9,9> ET(false);
+  LINALG::Matrix<9,9> ET(false);
 
   
   for (int k=0; k<3; k++)

@@ -550,7 +550,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
       |     +-            -+        +-            -+
       |
       *----------------------------------------------------------------------*/
-    LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>    xjm;
+    LINALG::Matrix<NSD,NSD>    xjm;
 
     for (int isd=0; isd<NSD; isd++)
     {

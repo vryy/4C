@@ -368,7 +368,7 @@ private:
   static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
-  inline void ale3_edge_geometry(int i, int j, const LINALG::FixedSizeSerialDenseMatrix<3, iel>& xyze,
+  inline void ale3_edge_geometry(int i, int j, const LINALG::Matrix<3, iel>& xyze,
                                  double& length,
                                  double& dx,
                                  double& dy,
@@ -395,13 +395,13 @@ private:
   */
   void ale3_add_tria_stiffness(
       int node_p, int node_q, int node_r, int node_s,
-      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& sq,
+      const LINALG::Matrix<3, 1>& sq,
       const double len_sq,
-      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& rp,
+      const LINALG::Matrix<3, 1>& rp,
       const double len_rp,
-      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& qp,
-      const LINALG::FixedSizeSerialDenseMatrix<3, 1>& local_x,
-      LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat);
+      const LINALG::Matrix<3, 1>& qp,
+      const LINALG::Matrix<3, 1>& local_x,
+      LINALG::Matrix<3*iel,3*iel>& sys_mat);
 
   /*!
   \brief Prevents node-face-penetration for given nodes.
@@ -413,16 +413,16 @@ private:
   \param xyze (in)     : The actual element coordinates
   */
   void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
-                                LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                                const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
-  inline void ale3_tors_spring_tet4(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                                    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
-  inline void ale3_tors_spring_pyramid5(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                                        const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
-  inline void ale3_tors_spring_wedge6(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                                      const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
-  inline void ale3_tors_spring_hex8(LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-                                    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze);
+                                LINALG::Matrix<3*iel,3*iel>& sys_mat,
+                                const LINALG::Matrix<3,iel>& xyze);
+  inline void ale3_tors_spring_tet4(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+                                    const LINALG::Matrix<3,iel>& xyze);
+  inline void ale3_tors_spring_pyramid5(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+                                        const LINALG::Matrix<3,iel>& xyze);
+  inline void ale3_tors_spring_wedge6(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+                                      const LINALG::Matrix<3,iel>& xyze);
+  inline void ale3_tors_spring_hex8(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+                                    const LINALG::Matrix<3,iel>& xyze);
 
   inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
 

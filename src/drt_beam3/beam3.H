@@ -321,7 +321,7 @@ private:
   DRT::Container data_; 
   
   //!reference node position (not needed explicitly, but stored for the seek of completeness)
-  LINALG::FixedSizeSerialDenseMatrix<6,1> X_;
+  LINALG::Matrix<6,1> X_;
   
   //! material type
   int material_;
@@ -330,30 +330,30 @@ private:
   double lrefe_;
   
   //! quaternion of central triad at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::FixedSizeSerialDenseMatrix<4,1> Qconv_;
+  LINALG::Matrix<4,1> Qconv_;
   //! quaternion of central triad at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::FixedSizeSerialDenseMatrix<4,1> Qold_;
+  LINALG::Matrix<4,1> Qold_;
   //! quaternion of central triad during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
-  LINALG::FixedSizeSerialDenseMatrix<4,1> Qnew_;
+  LINALG::Matrix<4,1> Qnew_;
   //!curvature at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> curvconv_;
+  LINALG::Matrix<3,1> curvconv_;
   //!curvature at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> curvold_;
+  LINALG::Matrix<3,1> curvold_;
   //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
-  LINALG::FixedSizeSerialDenseMatrix<3,1> curvnew_;
+  LINALG::Matrix<3,1> curvnew_;
   
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding time step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphaconv_;
+  LINALG::Matrix<3,1> betaplusalphaconv_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding iteration step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphaold_;
+  LINALG::Matrix<3,1> betaplusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) during current iteration step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaplusalphanew_;
+  LINALG::Matrix<3,1> betaplusalphanew_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding time step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphaconv_;
+  LINALG::Matrix<3,1> betaminusalphaconv_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding iteration step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphaold_;
+  LINALG::Matrix<3,1> betaminusalphaold_;
   //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) during current iteration step
-  LINALG::FixedSizeSerialDenseMatrix<3,1> betaminusalphanew_;
+  LINALG::Matrix<3,1> betaminusalphanew_;
   
   //! cross section area
   double crosssec_;
@@ -378,26 +378,26 @@ private:
   //! @name methods for initilization of the element
   
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe);
+  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
   
   //@}
   
   //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
-  void computespin(LINALG::FixedSizeSerialDenseMatrix<3,3>& spin, LINALG::FixedSizeSerialDenseMatrix<3,1> rotationangle, const double& spinscale);
+  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale);
   
   //!computing a rotation matrix R from a quaternion q
-  void quaterniontotriad(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,3>& R);
+  void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
   
   //!computing an angle vector from a quaternion q
-  void quaterniontoangle(const LINALG::FixedSizeSerialDenseMatrix<4,1>& q, LINALG::FixedSizeSerialDenseMatrix<3,1>& theta);
+  void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
   
   //!computing a quaternion q from a rotation matrix R
-  void triadtoquaternion(const LINALG::FixedSizeSerialDenseMatrix<3,3>& R, LINALG::FixedSizeSerialDenseMatrix<4,1>& q);
+  void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
   
   //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Hinv(LINALG::FixedSizeSerialDenseMatrix<3,1> theta);
+  LINALG::Matrix<3,3> Hinv(LINALG::Matrix<3,1> theta);
 
   
   //@}
@@ -406,19 +406,19 @@ private:
   
   /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
    * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
-  void updatetriad(LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha, LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew);
+  void updatetriad(LINALG::Matrix<3,1> deltabetaplusalpha, LINALG::Matrix<3,3>& Tnew);
   
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-  void updatecurvature(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaplusalpha,LINALG::FixedSizeSerialDenseMatrix<3,1> deltabetaminusalpha);
+  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressm);
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm);
   
   //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const LINALG::FixedSizeSerialDenseMatrix<3,1>& stressn, const LINALG::FixedSizeSerialDenseMatrix<3,1>& x21);
+  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& x21);
   
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
-  void computestiffbasis(const LINALG::FixedSizeSerialDenseMatrix<3,3>& Tnew, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cm, const LINALG::FixedSizeSerialDenseMatrix<3,1>& Cb, const LINALG::FixedSizeSerialDenseMatrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
+  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass( ParameterList& params,

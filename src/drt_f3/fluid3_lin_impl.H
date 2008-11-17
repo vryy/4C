@@ -164,13 +164,13 @@ namespace ELEMENTS
       \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
       */
     void Sysmat(Fluid3* ele,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     evelnp,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     eprenp,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     edensnp,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&     emhist,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&     echist,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&     estif,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&         eforce,
+                const LINALG::Matrix<3,iel>&     evelnp,
+                const LINALG::Matrix<iel,1>&     eprenp,
+                const LINALG::Matrix<iel,1>&     edensnp,
+                const LINALG::Matrix<3,iel>&     emhist,
+                const LINALG::Matrix<iel,1>&     echist,
+                LINALG::Matrix<4*iel,4*iel>&     estif,
+                LINALG::Matrix<4*iel,1>&         eforce,
                 struct _MATERIAL*                                    material,
                 double                                               time,
                 double                                               timefac,
@@ -183,8 +183,8 @@ namespace ELEMENTS
     */
     void Caltau(
       Fluid3*                                          ele,
-      const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-      const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
+      const LINALG::Matrix<3,iel>& evelnp,
+      const LINALG::Matrix<iel,1>& edensnp,
       const double                                     visc,
       const double                                     timefac);
 
@@ -199,37 +199,37 @@ namespace ELEMENTS
     void gder2(Fluid3* ele);
 
   private:
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
-    LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
-    LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
-    LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;
-    LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
-    LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> pderxy_;
-    LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2_;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> densderxy_;
-    LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> histmom_;
+    LINALG::Matrix<3,iel> xyze_;
+    LINALG::Matrix<3,iel> edeadng_;
+    LINALG::Matrix<iel,1> funct_;
+    LINALG::Matrix<iel,1> densfunct_;
+    LINALG::Matrix<iel,1> functdens_;
+    LINALG::Matrix<3,iel> deriv_;
+    LINALG::Matrix<6,iel> deriv2_;
+    LINALG::Matrix<3,3> xjm_;
+    LINALG::Matrix<3,3> xji_;
+    LINALG::Matrix<3,3> vderxy_;
+    LINALG::Matrix<3,3> mderxy_;
+    LINALG::Matrix<3,1> pderxy_;
+    LINALG::Matrix<3,6> vderxy2_;
+    LINALG::Matrix<3,iel> derxy_;
+    LINALG::Matrix<3,iel> densderxy_;
+    LINALG::Matrix<6,iel> derxy2_;
+    LINALG::Matrix<3,1> bodyforce_;
+    LINALG::Matrix<3,1> histmom_;
     double histcon_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> velint_; /* newest, i.e. previous time leve velocity*/
-    LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
+    LINALG::Matrix<3,1> velino_;
+    LINALG::Matrix<3,1> velint_; /* newest, i.e. previous time leve velocity*/
+    LINALG::Matrix<3,1> gradp_;
+    LINALG::Matrix<3,1> tau_;
     // this array once had three dimensions, I combined the first two
     // to one.
-    LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_; /* viscous term including 2nd derivatives */
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_;   /* linearisation of convect, convective part */
+    LINALG::Matrix<3*3,iel> viscs2_; /* viscous term including 2nd derivatives */
+    LINALG::Matrix<iel,1> conv_;   /* linearisation of convect, convective part */
     double mdiv_;
-    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsmom_;
+    LINALG::Matrix<3,1> rhsmom_;
     double rhscon_;
-    LINALG::FixedSizeSerialDenseMatrix<6,3> xder2_;
+    LINALG::Matrix<6,3> xder2_;
     // this was a blitz::Array<int,1>
     std::vector<int> numepn_;
   };

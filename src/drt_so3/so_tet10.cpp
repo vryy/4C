@@ -137,10 +137,10 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-                                             LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses)
+void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+                                             LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses)
 {
-  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
+  static LINALG::Matrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
   static bool isfilled;
 
   if (isfilled==true)

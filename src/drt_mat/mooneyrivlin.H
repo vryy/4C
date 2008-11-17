@@ -94,9 +94,9 @@ namespace MAT
     Mind that it is not stress-free in reference configuration!
     */
     void Evaluate(
-            const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
-            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress);
+            const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
+            LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+            LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
     double Density();

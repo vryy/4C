@@ -139,9 +139,9 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   // the number of nodes
   const int numnode = iel;
 
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
 
   //--------------------------------------------------
   // get all state vectors
@@ -181,13 +181,13 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   }
 
   // create objects for element arrays
-  LINALG::FixedSizeSerialDenseMatrix<numnode, 1> eprenp;
-  LINALG::FixedSizeSerialDenseMatrix<2, numnode> evelnp;
-  LINALG::FixedSizeSerialDenseMatrix<numnode, 1> edensnp;
-  LINALG::FixedSizeSerialDenseMatrix<2, numnode> emhist;
-  LINALG::FixedSizeSerialDenseMatrix<numnode, 1> echist;
-  LINALG::FixedSizeSerialDenseMatrix<2, numnode> edispnp;
-  LINALG::FixedSizeSerialDenseMatrix<2, numnode> egridv;
+  LINALG::Matrix<numnode, 1> eprenp;
+  LINALG::Matrix<2, numnode> evelnp;
+  LINALG::Matrix<numnode, 1> edensnp;
+  LINALG::Matrix<2, numnode> emhist;
+  LINALG::Matrix<numnode, 1> echist;
+  LINALG::Matrix<2, numnode> edispnp;
+  LINALG::Matrix<2, numnode> egridv;
 
   for (int i=0;i<numnode;++i)
   {
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
 
   // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
-  LINALG::FixedSizeSerialDenseMatrix<2,numnode> fsevelnp;
+  LINALG::Matrix<2,numnode> fsevelnp;
 
   // get flag for fine-scale subgrid viscosity
   Fluid2::StabilisationAction fssgv =
@@ -409,17 +409,17 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   Fluid2*                                 ele,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           eprenp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           emhist,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           echist,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           edispnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&           egridv,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&           estif,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&           emesh,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,    1>&           eforce,
+  const LINALG::Matrix<2,iel>&           evelnp,
+  const LINALG::Matrix<2,iel>&           fsevelnp,
+  const LINALG::Matrix<iel,1>&           eprenp,
+  const LINALG::Matrix<iel,1>&           edensnp,
+  const LINALG::Matrix<2,iel>&           emhist,
+  const LINALG::Matrix<iel,1>&           echist,
+  const LINALG::Matrix<2,iel>&           edispnp,
+  const LINALG::Matrix<2,iel>&           egridv,
+  LINALG::Matrix<3*iel,3*iel>&           estif,
+  LINALG::Matrix<3*iel,3*iel>&           emesh,
+  LINALG::Matrix<3*iel,    1>&           eforce,
   struct _MATERIAL*                       material,
   double                                  time,
   double                                  dt,
@@ -641,7 +641,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       // get values of shape functions and derivatives in the gausspoint
       DRT::UTILS::shape_function_2D_deriv2(deriv2_,e1,e2,distype);
       // initialize everything
-      LINALG::FixedSizeSerialDenseMatrix<3,3> bm;
+      LINALG::Matrix<3,3> bm;
 
       // calculate elements of jacobian_bar matrix
       bm(0,0) =                     xjm_(0,0)*xjm_(0,0);
@@ -1981,9 +1981,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   Fluid2*                                           ele,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&  evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&  fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&  edensnp,
+  const LINALG::Matrix<2,iel>&  evelnp,
+  const LINALG::Matrix<2,iel>&  fsevelnp,
+  const LINALG::Matrix<iel,1>&  edensnp,
   const enum Fluid2::TauType                        whichtau,
   struct _MATERIAL*                                 material,
   double&                           	            visc,

@@ -220,10 +220,10 @@ void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes     maf 02/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::soweg6_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
-                                          LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6>& nodalstresses)
+void DRT::ELEMENTS::So_weg6::soweg6_expol(LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
+                                          LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6>& nodalstresses)
 {
-  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6> expol;
+  static LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6> expol;
   static bool isfilled;
 
   if (isfilled==true)

@@ -240,10 +240,10 @@ void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 02/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
-                                        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses)
+void DRT::ELEMENTS::So_hex8::soh8_expol(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
+                                        LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses)
 {
-  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8> expol;
+  static LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8> expol;
   static bool isfilled;
 
   if (isfilled==true)
@@ -458,14 +458,14 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else {
       RCP<vector<vector<double> > > gplis = chain->Getli();
       RCP<vector<vector<double> > > gpli0s = chain->Getli0();
-      RCP<vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > > gpnis = chain->Getni();
+      RCP<vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
 
       vector<double> centerli (3,0.0);
       vector<double> centerli_0 (3,0.0);
       for (int i = 0; i < (int)gplis->size(); ++i) {
-        LINALG::FixedSizeSerialDenseMatrix<3,1> loc(&(gplis->at(i)[0]));
+        LINALG::Matrix<3,1> loc(&(gplis->at(i)[0]));
         //Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
-        LINALG::FixedSizeSerialDenseMatrix<3,1> glo;
+        LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,gpnis->at(i),loc,0.0);
         glo.Multiply(gpnis->at(i),loc);
         // Unfortunately gpnis is a vector of Epetras, to change this
@@ -495,7 +495,7 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 //      Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
 //      Epetra_SerialDenseVector glo(3);
 //      glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
-      LINALG::FixedSizeSerialDenseMatrix<3,3> T(gpnis->at(gp).A(),true);
+      LINALG::Matrix<3,3> T(gpnis->at(gp).A(),true);
       vector<double> gpli =  chain->Getli()->at(gp);
 
       if (name == "Fiber1"){
@@ -508,23 +508,23 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       } else if (name == "Fiber4"){
         data[0] = -centerli[0]; data[1] = -centerli[1]; data[2] = centerli[2];
       } else if (name == "FiberCell1"){
-        LINALG::FixedSizeSerialDenseMatrix<3,1> e(true);
+        LINALG::Matrix<3,1> e(true);
         e(0) = gpli[0];
-        LINALG::FixedSizeSerialDenseMatrix<3,1> glo;
+        LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
         data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
       } else if (name == "FiberCell2"){
-        LINALG::FixedSizeSerialDenseMatrix<3,1> e(true);
+        LINALG::Matrix<3,1> e(true);
         e(1) = gpli[1];
-        LINALG::FixedSizeSerialDenseMatrix<3,1> glo;
+        LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
         data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
       } else if (name == "FiberCell3"){
-        LINALG::FixedSizeSerialDenseMatrix<3,1> e(true);
+        LINALG::Matrix<3,1> e(true);
         e(2) = gpli[2];
-        LINALG::FixedSizeSerialDenseMatrix<3,1> glo;
+        LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
         data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);

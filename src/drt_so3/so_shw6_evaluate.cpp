@@ -46,10 +46,10 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1> elevec1(elevec1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1> elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,1> elevec2(elevec2_epetra.A(),true);
   // elevec3 is not used anyway
 
   // start with "none"
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true);
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true);
       soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
     }
     break;
@@ -152,8 +152,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       if (iostrain!="euler_almansi") soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
@@ -176,11 +176,11 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
+        LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
         soweg6_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       }
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
+        LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
         soweg6_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -332,11 +332,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residual displ
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
+      LINALG::Matrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
       const bool                cauchy)         // stress output option
 {
@@ -344,14 +344,14 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
   const static vector<double> gpweights = sow6_weights();
 /* ============================================================================*/
 
   // update element geometry
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -371,7 +371,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
   vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,soshw6_easpoisthick> M; // EAS matrix M at current GP, fixed for sosh8
+  LINALG::Matrix<NUMSTR_WEG6,soshw6_easpoisthick> M; // EAS matrix M at current GP, fixed for sosh8
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
@@ -382,7 +382,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
   // here we already get the inverse transposed T0
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> T0invT;  // trafo matrix
+  LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> T0invT;  // trafo matrix
   if (eastype_ == soshw6_easpoisthick) {
     /*
     ** EAS Update of alphas:
@@ -436,13 +436,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   */
   // modified B-operator in local(parameter) element space
   // ANS modified rows of bop in local(parameter) coords
-  LINALG::FixedSizeSerialDenseMatrix<num_ans*num_sp,NUMDOF_WEG6> B_ans_loc;
+  LINALG::Matrix<num_ans*num_sp,NUMDOF_WEG6> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_sps(num_sp);
+  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_cur_sps(num_sp);
+  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> >* deriv_sp = NULL;   //derivs eval. at all sampling points
+  vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >* deriv_sp = NULL;   //derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   soshw6_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 6-node wedge
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> jac;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> jac;
     jac.Multiply(derivs[gp],xrefe);
 
     // compute determinant of Jacobian by Sarrus' rule
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> jac_cur;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> jac_cur;
     jac_cur.Multiply(derivs[gp],xcurr);
 
     // need gp-locations for ANS interpolation
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     //const double t = intpoints.qxg[gp][2]; // not needed
 
     // set up B-Operator in local(parameter) element space including ANS
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMDOF_WEG6> bop_loc;
+    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> bop_loc;
     for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
       for (int dim = 0; dim < NUMDIM_WEG6; ++dim) {
         // B_loc_rr = N_r.X_r
@@ -516,14 +516,14 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> TinvT;
+    LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> TinvT;
     soshw6_evaluateT(jac,TinvT);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMDOF_WEG6> bop;
+    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> bop;
     bop.Multiply(TinvT,bop_loc);
 
     // local GL strain vector lstrain={Err,Ess,Ett,2*Ers,2*Est,2*Ert}
     // but with modified ANS strains Ett, Est and Ert
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> lstrain;
+    LINALG::Matrix<NUMSTR_WEG6,1> lstrain;
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
     lstrain(0)= 0.5 * (
@@ -588,7 +588,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     // ANS modification of strains ************************************** ANS
 
     // transformation of local glstrains 'back' to global(material) space
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> glstrain(true);
+    LINALG::Matrix<NUMSTR_WEG6,1> glstrain(true);
     glstrain.Multiply(TinvT,lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
@@ -618,19 +618,19 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     double density = 0.0;
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd; // Caution!! empty!!
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd; // Caution!! empty!!
 //#define disp_based_F
 #ifdef disp_based_F
     Epetra_SerialDenseMatrix defgrd_epetra(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> invJ;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> invJ;
     invJ.Multiply(derivs[gp],xrefe);
     invJ.Invert();
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
+    LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ,derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd;
     defgrd.MultiplyTT(xcurr,N_XYZ);
     for (int i = 0; i < NUMDIM_WEG6; ++i) {
       for (int j = 0; j < NUMDIM_WEG6; ++j) {
@@ -638,8 +638,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       }
     }
 #endif
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> stress(true);
+    LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
+    LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
     sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -662,7 +662,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6, NUMDOF_WEG6> cb;
+      LINALG::Matrix<NUMSTR_WEG6, NUMDOF_WEG6> cb;
       cb.Multiply(cmat,bop); // temporary C . B
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
@@ -670,7 +670,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       // here also the ANS interpolation comes into play
       for (int inod=0; inod<NUMNOD_WEG6; ++inod) {
         for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod) {
-          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> G_ij;
+          LINALG::Matrix<NUMSTR_WEG6,1> G_ij;
           G_ij(0) = derivs[gp](0, inod) * derivs[gp](0, jnod); // rr-dir
           G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod); // ss-dir
           G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod)
@@ -701,7 +701,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
                           +(*deriv_sp)[spA](zdir, inod)
                           *(*deriv_sp)[spA](xdir, jnod));
           // transformation of local(parameter) space 'back' to global(material) space
-          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> G_ij_glob;
+          LINALG::Matrix<NUMSTR_WEG6,1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
@@ -717,7 +717,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eastype_ == soshw6_easpoisthick) {
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-        LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,soshw6_easpoisthick> cM; // temporary c . M
+        LINALG::Matrix<NUMSTR_WEG6,soshw6_easpoisthick> cM; // temporary c . M
         cM.Multiply(cmat, M);
         LINALG::DENSEFUNCTIONS::multiplyTN<soshw6_easpoisthick,NUMSTR_WEG6,soshw6_easpoisthick>(1.0, Kaa.A(), detJ_w, M.A(), cM.A());
 
@@ -784,15 +784,15 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
-        const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe, // material element coords
-        const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xcurr, // current element coords
-        vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   // derivs eval. at all sampling points
-        vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     // jac at all sampling points
-        vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, // current jac at all sampling points
-        LINALG::FixedSizeSerialDenseMatrix<num_ans*num_sp,NUMDOF_WEG6>& B_ans_loc) // modified B
+        const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe, // material element coords
+        const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xcurr, // current element coords
+        vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   // derivs eval. at all sampling points
+        vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     // jac at all sampling points
+        vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, // current jac at all sampling points
+        LINALG::Matrix<num_ans*num_sp,NUMDOF_WEG6>& B_ans_loc) // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
-  static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > df_sp(num_sp);
+  static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > df_sp(num_sp);
   static bool dfsp_eval;                      // flag for re-evaluate everything
 
   if (dfsp_eval!=0){             // if true f,df already evaluated
@@ -851,7 +851,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
   ** evaluated at all sampling points
   */
   // loop over each sampling point
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> jac_cur;
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> jac_cur;
   for (int sp = 0; sp < num_sp; ++sp) {
     /* compute the CURRENT Jacobian matrix at the sampling point:
     **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
@@ -883,8 +883,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6>& jac,
-                                                    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6>& TinvT)
+void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6>& jac,
+                                                    LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& TinvT)
 {
   // build T^T transformation matrix which maps
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -978,16 +978,16 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
 void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
           vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
-          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe)    // material element coords
+          LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
+          const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe)    // material element coords
 {
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> df0;
+  LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> df0;
   DRT::UTILS::shape_function_3D_deriv1(df0,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],DRT::Element::wedge6);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> jac0;
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> jac0;
   jac0.Multiply(df0,xrefe);
 
   // compute determinant of Jacobian at origin by Sarrus' rule

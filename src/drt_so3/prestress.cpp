@@ -36,7 +36,7 @@ numnode_(numnode)
     invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp,12));
 
   // init the deformation gradient history
-  LINALG::FixedSizeSerialDenseMatrix<3,3> F(true);
+  LINALG::Matrix<3,3> F(true);
   F(0,0) = F(1,1) = F(2,2) = 1.0;
   for (int i=0; i<NGP(); ++i) MatrixtoStorage(i,F,FHistory());
 }

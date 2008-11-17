@@ -70,7 +70,7 @@ public:
             RCP<Epetra_Vector>&     vector
             ) const
     {
-      LINALG::FixedSizeSerialDenseMatrix<3,1> dummy;
+      LINALG::Matrix<3,1> dummy;
       dummy(0) = 0.0;
       dummy(1) = 0.0;
       dummy(2) = 0.0;
@@ -80,7 +80,7 @@ public:
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
             RCP<Epetra_Vector>&     vector,
-            LINALG::FixedSizeSerialDenseMatrix<3,1>            ivelnrigid_body
+            LINALG::Matrix<3,1>            ivelnrigid_body
             ) const;
     
     //! switch from old to new dof distribution

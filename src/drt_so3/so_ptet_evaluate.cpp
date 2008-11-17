@@ -37,8 +37,8 @@ void DRT::ELEMENTS::Ptet::InitElement(DRT::ELEMENTS::PtetRegister* myregister)
 {
   myregister_ = myregister;
 
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET> xrefe;
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET+1> J;
+  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET> xrefe;
+  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET+1> J;
   {
     // compute element volume
     DRT::Node** nodes = Nodes();
@@ -59,22 +59,22 @@ void DRT::ELEMENTS::Ptet::InitElement(DRT::ELEMENTS::PtetRegister* myregister)
     // one gauss point at 0.25/0.25/0.25
     // gauss point weight is 1.0, so skip it
     const double gploc = 0.25;
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,1> funct;
+    LINALG::Matrix<NUMNOD_PTET,1> funct;
     ShapeFunction(funct,gploc,gploc,gploc,gploc);
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMCOORD_PTET> deriv;
+    LINALG::Matrix<NUMNOD_PTET,NUMCOORD_PTET> deriv;
     ShapeFunctionDerivatives(deriv);
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_PTET-1,NUMCOORD_PTET> tmp;
+    LINALG::Matrix<NUMCOORD_PTET-1,NUMCOORD_PTET> tmp;
     tmp.MultiplyTN(xrefe,deriv);
     for (int i=0; i<4; i++) J(0,i)=1;
     for (int row=0;row<3;row++)
       for (int col=0;col<4;col++)
         J(row+1,col)=tmp(row,col);
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_PTET,NUMDIM_PTET> Iaug(true); // initialize to zero
+    LINALG::Matrix<NUMCOORD_PTET,NUMDIM_PTET> Iaug(true); // initialize to zero
     Iaug(1,0)=1;
     Iaug(2,1)=1;
     Iaug(3,2)=1;
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_PTET,NUMDIM_PTET> partials;
+    LINALG::Matrix<NUMCOORD_PTET,NUMDIM_PTET> partials;
     LINALG::FixedSizeSerialDenseSolver<NUMCOORD_PTET,NUMCOORD_PTET,NUMDIM_PTET> solver;
     solver.SetMatrix(J);
     solver.SetVectors(partials,Iaug);
@@ -113,10 +113,10 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
                                   Epetra_SerialDenseVector& elevec2_epetra,
                                   Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,          1> elevec1(elevec1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,          1> elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_PTET,          1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_PTET,          1> elevec2(elevec2_epetra.A(),true);
   // start with "none"
   DRT::ELEMENTS::Ptet::ActionType act = Ptet::none;
 
@@ -169,7 +169,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* elemat1ptr = NULL;
+      LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* elemat1ptr = NULL;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
       ptetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1);
     }
@@ -184,8 +184,8 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (stressdata==null) dserror("Cannot get stress 'data'");
       if (straindata==null) dserror("Cannot get strain 'data'");
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET> strain;
+      LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> stress;
+      LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> strain;
       map<int,vector<double> >& nodestress = myregister_->nodestress_;
       map<int,vector<double> >& nodestrain = myregister_->nodestrain_;
       for (int i=0; i<NumNode(); ++i)
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> gpstress(((*gpstressmap)[gid])->A(),true);
 
       // make sure that nodal values are not summed up -> divide by
       // number of adjacent elements
@@ -295,7 +295,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET> myemat(true);
+      LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET> myemat(true);
       ptetnlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1);
     }
     break;
@@ -324,23 +324,23 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
       vector<int>&              lm,                                                // location matrix
       vector<double>&           disp,                                              // current displacements
       vector<double>&           residual,                                          // current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* stiffmatrix,    // element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* massmatrix,     // element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,          1>* force)          // stress output options
+      LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* stiffmatrix,    // element stiffness matrix
+      LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* massmatrix,     // element mass matrix
+      LINALG::Matrix<NUMDOF_PTET,          1>* force)          // stress output options
 {
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET>& defgrd = F_;
+  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& defgrd = F_;
   // reset the bool indicating that the stored deformation gradient is 'fresh'
   FisNew_ = false;
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> cauchygreen;
+  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET> cauchygreen;
   cauchygreen.MultiplyTN(defgrd,defgrd);
 
   // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> glstrain;
+  LINALG::Matrix<NUMSTR_PTET,1> glstrain;
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -370,7 +370,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   */
 
   // 6x12 n_stresses * number degrees of freedom per element
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMDOF_PTET> bop;
+  LINALG::Matrix<NUMSTR_PTET,NUMDOF_PTET> bop;
   for (int i=0; i<NUMNOD_PTET; i++)
   {
     bop(0,NODDOF_PTET*i+0) = defgrd(0,0)*nxyz_(i,0);
@@ -396,30 +396,30 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
 
   //------------------------------------------------- call material law
 #if 1 // dev stab on cauchy stresses
-  LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true); // Views
-  LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+  LINALG::Matrix<6,6> cmat(true); // Views
+  LINALG::Matrix<6,1> stress(true);
   double density = -999.99;
   {
     // do deviatoric F, C, E
     const double J = defgrd.Determinant();
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> Cbar(cauchygreen);
+    LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET> Cbar(cauchygreen);
     Cbar.Scale(pow(J,-2./3.));
-    LINALG::FixedSizeSerialDenseMatrix<6,1> glstrainbar(false);
+    LINALG::Matrix<6,1> glstrainbar(false);
     glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
     glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
     glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
     glstrainbar(3) = Cbar(0,1);
     glstrainbar(4) = Cbar(1,2);
     glstrainbar(5) = Cbar(2,0);
-    LINALG::FixedSizeSerialDenseMatrix<3,3> Fbar(false);
+    LINALG::Matrix<3,3> Fbar(false);
     Fbar.SetCopy(defgrd.A());
     Fbar.Scale(pow(J,-1./3.));
 
     SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
 
     // define stuff we need to do the split
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatdev; // set to zero?
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stressdev;
+    LINALG::Matrix<6,6> cmatdev; // set to zero?
+    LINALG::Matrix<6,1> stressdev;
 
     // do just the deviatoric components
     PtetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
@@ -448,7 +448,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   {
     // integrate elastic stiffness matrix
     // keu = keu + (B^T . C . B) * V_
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMDOF_PTET> cb;
+    LINALG::Matrix<NUMSTR_PTET,NUMDOF_PTET> cb;
     cb.Multiply(cmat,bop);
     stiffmatrix->MultiplyTN(V_,bop,cb,1.0);
     // integrate `geometric' stiffness matrix and add to keu
@@ -488,7 +488,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
     xsi[3][0] = beta ;   xsi[3][1] = beta ;   xsi[3][2] = beta ;   xsi[3][3] = alpha;
     for (int gp=0; gp<4; ++gp)
     {
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,1> funct;
+      LINALG::Matrix<NUMNOD_PTET,1> funct;
       ShapeFunction(funct,xsi[gp][0],xsi[gp][1],xsi[gp][2],xsi[gp][3]);
       const double f = density * V * weight;
       for (int i=0; i<NUMNOD_PTET; ++i)
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::ptetlumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* emass)
+void DRT::ELEMENTS::Ptet::ptetlumpmass(LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* emass)
 {
   // lump mass matrix
   if (emass != NULL)
@@ -535,7 +535,7 @@ void DRT::ELEMENTS::Ptet::ptetlumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ptet::DeformationGradient(vector<double>& disp)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET> xdisp;
+  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET> xdisp;
   for (int i=0; i<NUMNOD_PTET; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_PTET+0];
@@ -555,11 +555,11 @@ void DRT::ELEMENTS::Ptet::DeformationGradient(vector<double>& disp)
  | material laws for Ptet (protected)                          gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ptet::SelectMaterial(
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
-                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      LINALG::Matrix<6,1>& stress,
+                      LINALG::Matrix<6,6>& cmat,
                       double& density,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      LINALG::Matrix<6,1>& glstrain,
+                      LINALG::Matrix<3,3>& defgrd,
                       int gp)
 {
   Epetra_SerialDenseVector stress_e(View,stress.A(),stress.Rows());

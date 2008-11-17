@@ -109,9 +109,9 @@ Mind that it is not stress-free in reference configuration!
 */
 
 void MAT::MooneyRivlin::Evaluate(
-        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress)
+        const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::Matrix<NUM_STRESS_3D,1> * stress)
 {
         // get material parameters
   const double m1  = matdata_->m.mooneyrivlin->mu1;
@@ -122,9 +122,9 @@ void MAT::MooneyRivlin::Evaluate(
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
   for (int i = 0; i < 3; i++) C(i) = 2.*C(i);  // respect factor 2 in shear terms of glstrain
   C += Id;
 
@@ -137,7 +137,7 @@ void MAT::MooneyRivlin::Evaluate(
         - C(0)*C(4)*C(4);    // 3rd invariant, determinant
 
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Cinv(false);
+  LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
 
   Cinv(0) = C(1)*C(2) - C(4)*C(4);
   Cinv(1) = C(0)*C(2) - C(5)*C(5);

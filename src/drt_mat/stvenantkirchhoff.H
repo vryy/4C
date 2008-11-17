@@ -78,12 +78,12 @@ namespace MAT
                   Epetra_SerialDenseVector* stress_e);
                   
     //evaluates stresses for 3d
-    void Evaluate(const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress);
+    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
+                  LINALG::Matrix<6,6>& cmat,
+                  LINALG::Matrix<6,1>& stress);
 
     // computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat);
+    void SetupCmat(LINALG::Matrix<6,6>& cmat);
     
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry

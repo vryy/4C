@@ -221,35 +221,35 @@ private:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residual displ
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool      cauchy=false);            ///< stress output option
 
   //! Evaluate all ANS related data at the ANS sampling points
   void sosh8_anssetup(
-            const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe, ///< material element coords
-            const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr, ///< current element coords
-            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
-            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
-            vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
-            LINALG::FixedSizeSerialDenseMatrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc); ///< modified B
+            const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe, ///< material element coords
+            const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr, ///< current element coords
+            vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
+            vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
+            vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
+            LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc); ///< modified B
 
   //! Evaluate transformation matrix T (parameter->material) at gp
-  void sosh8_evaluateT(const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,///< actual jacobian
-                       LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8>& TinvT);///< T^{-T}
+  void sosh8_evaluateT(const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,///< actual jacobian
+                       LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& TinvT);///< T^{-T}
 
   //! Return true Cauchy-stress at gausspoint
-  void sosh8_Cauchy(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
+  void sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
                     const int gp,
-                    const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8>& deriv,
-                    const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
-                    const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
-                    const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1>& glstrain,
-                    const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1>& stress);
+                    const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& deriv,
+                    const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
+                    const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+                    const LINALG::Matrix<NUMSTR_SOH8,1>& glstrain,
+                    const LINALG::Matrix<NUMSTR_SOH8,1>& stress);
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();

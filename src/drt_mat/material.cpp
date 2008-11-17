@@ -245,8 +245,8 @@ void MAT::AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
  For more details see Holzapfel p. 254
 
  */
-void MAT::AddtoCmatHolzapfelProduct( LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-                                     LINALG::FixedSizeSerialDenseMatrix<6,1>& invc,
+void MAT::AddtoCmatHolzapfelProduct( LINALG::Matrix<6,6>& cmat,
+                                     LINALG::Matrix<6,1>& invc,
                                      const double scalar)
 {
 #ifdef DEBUG
@@ -392,15 +392,15 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
 // This is a copy of the above function, using the fixed size matrix.
-void MAT::ElastSymTensorMultiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+void MAT::ElastSymTensorMultiply(LINALG::Matrix<6,6>& C,
                                  const double ScalarAB,
-                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-                                 const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                 const LINALG::Matrix<3,3>& A,
+                                 const LINALG::Matrix<3,3>& B,
                                  const double ScalarThis)
 {
   // everything in Voigt-Notation
-  LINALG::FixedSizeSerialDenseMatrix<6,1> AVoigt;
-  LINALG::FixedSizeSerialDenseMatrix<6,1> BVoigt;
+  LINALG::Matrix<6,1> AVoigt;
+  LINALG::Matrix<6,1> BVoigt;
 
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
   /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
@@ -508,10 +508,10 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
 // This is a copy of the above function, using the fixed size matrix.
-void MAT::ElastSymTensorMultiplyAddSym(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+void MAT::ElastSymTensorMultiplyAddSym(LINALG::Matrix<6,6>& C,
         const double ScalarAB,
-        const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-        const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+        const LINALG::Matrix<3,3>& A,
+        const LINALG::Matrix<3,3>& B,
         const double ScalarThis)
 {
 #ifdef DEBUG
@@ -523,8 +523,8 @@ void MAT::ElastSymTensorMultiplyAddSym(LINALG::FixedSizeSerialDenseMatrix<6,6>& 
 #endif
 
   // everything in Voigt-Notation
-  LINALG::FixedSizeSerialDenseMatrix<6,1> AVoigt;
-  LINALG::FixedSizeSerialDenseMatrix<6,1> BVoigt;
+  LINALG::Matrix<6,1> AVoigt;
+  LINALG::Matrix<6,1> BVoigt;
 
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
   /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
@@ -684,10 +684,10 @@ void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
 // This is a copy of the above function, using the fixed size matrix.ss
-void MAT::ElastSymTensor_o_Multiply(LINALG::FixedSizeSerialDenseMatrix<6,6>& C,
+void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
                                     const double ScalarAB,
-                                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& A,
-                                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& B,
+                                    const LINALG::Matrix<3,3>& A,
+                                    const LINALG::Matrix<3,3>& B,
                                     const double ScalarThis)
 {
   // To keep the code somewhat shorter I removed the explanation comment here,

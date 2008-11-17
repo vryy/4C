@@ -345,7 +345,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
      if( (*crosslinkerpartner_)[i] == -1.0 && (*setcrosslinker)[i] <  -1.0 + 2*plink  )
      {    
         //fixed size variable for storing positions of the two nodes to be crosslinked
-        LINALG::FixedSizeSerialDenseMatrix<6,1> xrefe;
+        LINALG::Matrix<6,1> xrefe;
        
         //current position of node with LID i  
         for(int k = 0; k<3; k++)
@@ -365,7 +365,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
            if( (*filamentnumber_)[i] != (*filamentnumber_)[j] || (*filamentnumber_)[i] == -1)
            {
              //variable for convenient storage of coordinates of node j
-             LINALG::FixedSizeSerialDenseMatrix<3,1> xloop;
+             LINALG::Matrix<3,1> xloop;
              
               //current position of node with LID j  
              for(int k = 0; k<3; k++)

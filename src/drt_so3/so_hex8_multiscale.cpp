@@ -40,17 +40,17 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
 ** ============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
+  LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8>* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8*NUMDIM_SOH8,NUMNOD_SOH8>* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
+  LINALG::Matrix<NUMGPT_SOH8*NUMDIM_SOH8,NUMNOD_SOH8>* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
 /* pointer to (static) weight factors at each gp */
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>* weights;  //[NUMGPT_SOH8]
+  LINALG::Matrix<NUMGPT_SOH8,1>* weights;  //[NUMGPT_SOH8]
   soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
   // update element geometry
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i){
     const double* x = nodes[i]->X();
@@ -62,7 +62,7 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMGPT_SOH8> deriv_gp;
+  LINALG::Matrix<NUMDIM_SOH8,NUMGPT_SOH8> deriv_gp;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
     // get submatrix of deriv at actual gp
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
     //jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
     jac.Multiply(deriv_gp, xrefe);
 
@@ -87,19 +87,19 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     // (material) deformation gradient F (=I in reference configuration)
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
     for (unsigned int i = 0;i<3; ++i) defgrd(i,i) = 1.;
 
     // Green-Lagrange strains matrix (=0 in reference configuration)
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> glstrain(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> glstrain(true);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(true);
+    LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     double density;
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc

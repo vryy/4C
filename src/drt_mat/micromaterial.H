@@ -99,9 +99,9 @@ public:
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_struct_multiscale; }
 
-    void Evaluate(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+    void Evaluate(LINALG::Matrix<3,3>* defgrd,
+                  LINALG::Matrix<6,6>* cmat,
+                  LINALG::Matrix<6,1>* stress,
                   double* density,
                   const int gp,
                   const int ele_ID,

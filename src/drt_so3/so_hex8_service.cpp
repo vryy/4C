@@ -24,7 +24,7 @@ const vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i){
     const double* x = nodes[i]->X();
     xrefe(i,0) = x[0];
@@ -32,10 +32,10 @@ const vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
     xrefe(i,2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> funct;
+  LINALG::Matrix<NUMNOD_SOH8,1> funct;
   // Element midpoint at r=s=t=0.0
   DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
-  LINALG::FixedSizeSerialDenseMatrix<1,NUMDIM_SOH8> midpoint;
+  LINALG::Matrix<1,NUMDIM_SOH8> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
   vector<double> centercoords(3);

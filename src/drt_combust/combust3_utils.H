@@ -297,7 +297,7 @@ void gder2(
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // initialize and zero out everything
-    static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
+    static LINALG::Matrix<6,6> bm;
 
     // calculate elements of jacobian_bar matrix
     bm(0,0) = xjm(0,0)*xjm(0,0);
@@ -395,7 +395,7 @@ void gder2(
     */
 
     //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
-    static LINALG::FixedSizeSerialDenseMatrix<6,3> xder2;
+    static LINALG::Matrix<6,3> xder2;
     xder2.MultiplyNT(deriv2,xyze);
 
     /*

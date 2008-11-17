@@ -353,7 +353,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
   // this can make get rid of FnodeL and VnodeL
-  LINALG::FixedSizeSerialDenseMatrix<3,3> FnodeL(true);
+  LINALG::Matrix<3,3> FnodeL(true);
   double VnodeL = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
@@ -382,11 +382,11 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
     // current element
     DRT::ELEMENTS::Ptet*      actele = adjele[ele];
     // spatial deriv of that element
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
+    LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
     // volume of that element assigned to node L
     double V = actele->Volume()/NUMNOD_PTET;
     // def-gradient of the element
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET>& F = actele->F_;
+    LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& F = actele->F_;
 
     // volume ratio of volume per node L of this element to
     // whole volume of node L
@@ -430,14 +430,14 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   } // for (int ele=0; ele<neleinpatch; ++ele)
 
   //----------------------------------------- averaged material and stresses
-  LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-  LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+  LINALG::Matrix<6,6> cmat(true);
+  LINALG::Matrix<6,1> stress(true);
 
   // right cauchy green
-  LINALG::FixedSizeSerialDenseMatrix<3,3> cauchygreen;
+  LINALG::Matrix<3,3> cauchygreen;
   cauchygreen.MultiplyTN(FnodeL,FnodeL);
   // Green-Lagrange ( 2x on offdiagonal!)
-  LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(false);
+  LINALG::Matrix<6,1> glstrain(false);
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
     else
     {
       // rewriting Green-Lagrange strains in matrix format
-      LINALG::FixedSizeSerialDenseMatrix<3,3> gl;
+      LINALG::Matrix<3,3> gl;
       gl(0,0) = glstrain(0);
       gl(0,1) = 0.5*glstrain(3);
       gl(0,2) = 0.5*glstrain(5);
@@ -467,11 +467,11 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
       gl(2,2) = glstrain(2);
 
       // inverse of deformation gradient
-      LINALG::FixedSizeSerialDenseMatrix<3,3> invdefgrd;
+      LINALG::Matrix<3,3> invdefgrd;
       invdefgrd.Invert(FnodeL);
 
-      LINALG::FixedSizeSerialDenseMatrix<3,3> temp;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> euler_almansi;
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> euler_almansi;
       temp.Multiply(gl,invdefgrd);
       euler_almansi.MultiplyTN(invdefgrd,temp);
 
@@ -494,8 +494,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   else
   {
     double density; // just a dummy density
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatele(true);
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stressele(true);
+    LINALG::Matrix<6,6> cmatele(true);
+    LINALG::Matrix<6,1> stressele(true);
     for (int ele=0; ele<neleinpatch; ++ele)
     {
       // current element
@@ -521,7 +521,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
     {
       double detF = FnodeL.Determinant();
 
-      LINALG::FixedSizeSerialDenseMatrix<3,3> pkstress;
+      LINALG::Matrix<3,3> pkstress;
       pkstress(0,0) = stress(0);
       pkstress(0,1) = stress(3);
       pkstress(0,2) = stress(5);
@@ -532,8 +532,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
       pkstress(2,1) = pkstress(1,2);
       pkstress(2,2) = stress(2);
 
-      LINALG::FixedSizeSerialDenseMatrix<3,3> temp;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> cauchystress;
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
       temp.Multiply(1.0/detF,FnodeL,pkstress);
       cauchystress.MultiplyNT(temp,FnodeL);
 
@@ -549,8 +549,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 #if 1 // dev stab on cauchy stresses
   {
     // define stuff we need
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmatdev;
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stressdev;
+    LINALG::Matrix<6,6> cmatdev;
+    LINALG::Matrix<6,1> stressdev;
 
     // compute deviatoric stress and tangent
     DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
@@ -593,7 +593,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
       // current element
       DRT::ELEMENTS::Ptet*      actele = adjele[ele];
       // spatial deriv of that element
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
+      LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz   = actele->nxyz_;
       // volume of actele assigned to node L
       double V = actele->Volume()/NUMNOD_PTET;
       // loop nodes of that element
@@ -630,11 +630,11 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PtetRegister::SelectMaterial(
                       RCP<MAT::Material> mat,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
-                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      LINALG::Matrix<6,1>& stress,
+                      LINALG::Matrix<6,6>& cmat,
                       double& density,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      LINALG::Matrix<6,1>& glstrain,
+                      LINALG::Matrix<3,3>& defgrd,
                       int gp)
 {
   switch (mat->MaterialType())
@@ -673,23 +673,23 @@ void DRT::ELEMENTS::PtetRegister::SelectMaterial(
  |  compute deviatoric tangent and stresses (private/static)   gee 06/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PtetRegister::DevStressTangent(
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1>& Sdev,
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET>& CCdev,
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET>& CC,
-  const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1>& S,
-  const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET>& C)
+  LINALG::Matrix<NUMSTR_PTET,1>& Sdev,
+  LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CCdev,
+  LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CC,
+  const LINALG::Matrix<NUMSTR_PTET,1>& S,
+  const LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& C)
 {
 
   //---------------------------------- things that we'll definitely need
   // inverse of C
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Cinv;
+  LINALG::Matrix<3,3> Cinv;
   const double detC = Cinv.Invert(C);
 
   // J = det(F) = sqrt(detC)
   const double J = sqrt(detC);
 
   // S as a 3x3 matrix
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> Smat;
+  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET> Smat;
   Smat(0,0) = S(0);
   Smat(0,1) = S(3);
   Smat(0,2) = S(5);
@@ -718,7 +718,7 @@ void DRT::ELEMENTS::PtetRegister::DevStressTangent(
   Sdev(5) = Smat(0,2) - fac*Cinv(0,2);
 
   //======================================== volumetric tangent matrix CCvol
-  LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET> CCvol(true); // fill with zeros
+  LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET> CCvol(true); // fill with zeros
 
   //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
   MAT::ElastSymTensor_o_Multiply(CCvol,-2.0*fac,Cinv,Cinv,0.0);
@@ -729,7 +729,7 @@ void DRT::ELEMENTS::PtetRegister::DevStressTangent(
   //-------------------------------------- CCvol += 1/3 Cinv dyad ( CC : C )
   {
     // C as Voigt vector
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> Cvec;
+    LINALG::Matrix<NUMSTR_PTET,1> Cvec;
     Cvec(0) = C(0,0);
     Cvec(1) = C(1,1);
     Cvec(2) = C(2,2);
@@ -737,10 +737,10 @@ void DRT::ELEMENTS::PtetRegister::DevStressTangent(
     Cvec(4) = 2.0*C(1,2);
     Cvec(5) = 2.0*C(0,2);
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1> CCcolonC;
+    LINALG::Matrix<NUMSTR_PTET,1> CCcolonC;
     CCcolonC.Multiply(CC,Cvec);
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET> CCcC;
+    LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET> CCcC;
     CCcC(0,0) = CCcolonC(0);
     CCcC(0,1) = CCcolonC(3);
     CCcC(0,2) = CCcolonC(5);

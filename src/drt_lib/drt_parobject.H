@@ -379,13 +379,13 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
-  This method is an overload of the above template for FixedSizeSerialDenseMatrix
+  This method is an overload of the above template for Matrix
   \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : FixedSizeSerialDenseMatrix that get's added to data
+  \param stuff (in)    : Matrix that get's added to data
 
   */
   template<unsigned i, unsigned j>
-  static void AddtoPack(vector<char>& data, const LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
+  static void AddtoPack(vector<char>& data, const LINALG::Matrix<i,j>& stuff)
   {
     AddtoPack(data, i);
     AddtoPack(data, j);
@@ -501,15 +501,15 @@ public:
   /*!
   \brief Extract stuff from a char vector data and increment position
 
-  This method is an overload of the above template for stuff of type FixedSizeSerialDenseMatrix
+  This method is an overload of the above template for stuff of type Matrix
 
   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
   \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : FixedSizeSerialDenseMatrix to extract from data
+  \param stuff (out)       : Matrix to extract from data
 
   */
   template <unsigned int i, unsigned int j>
-  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::FixedSizeSerialDenseMatrix<i,j>& stuff)
+  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::Matrix<i,j>& stuff)
   {
     int m = 0;
     ExtractfromPack(position,data,m);

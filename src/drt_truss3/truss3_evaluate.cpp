@@ -290,7 +290,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     int& ActNumDof0)
 {     
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::FixedSizeSerialDenseMatrix<6,1> xcurr;
+  LINALG::Matrix<6,1> xcurr;
   
   /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
    * to reference configuration; note: in general this is not equal to the values in disp since the 
@@ -298,13 +298,13 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
    * time step whereas the following variable referes to the displacement with respect to a reference
    * configuration which may have been set up at any point of time during the simulation (usually this
    * is only important if an element has been added to the discretization after the start of the simulation)*/
-  LINALG::FixedSizeSerialDenseMatrix<6,1> ucurr; 
+  LINALG::Matrix<6,1> ucurr; 
   
   //Green-Lagrange strain
   double epsilon;
   
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::FixedSizeSerialDenseMatrix<6,1> aux;
+  LINALG::Matrix<6,1> aux;
 
   //current nodal position
   for (int j=0; j<3; ++j) 
@@ -440,13 +440,13 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
     int& ActNumDof0)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::FixedSizeSerialDenseMatrix<6,1> xcurr;
+  LINALG::Matrix<6,1> xcurr;
   
   //Green-Lagrange strain
   double epsilon;
   
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::FixedSizeSerialDenseMatrix<6,1> aux;
+  LINALG::Matrix<6,1> aux;
 
   //current nodal position (first
   for (int j=0; j<3; ++j) 

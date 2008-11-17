@@ -303,11 +303,11 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
 */
 
 void MAT::ArtWallRemod::Evaluate(
-        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+        const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
         const int gp,
         Teuchos::ParameterList& params,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress,
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::Matrix<NUM_STRESS_3D,1> * stress,
         const int eleid)
 
 {
@@ -319,9 +319,9 @@ void MAT::ArtWallRemod::Evaluate(
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -336,7 +336,7 @@ void MAT::ArtWallRemod::Evaluate(
   const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
 
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Cinv(false);
+  LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
 
   Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
   Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
@@ -372,7 +372,7 @@ void MAT::ArtWallRemod::Evaluate(
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
   //AddtoCmatHolzapfelProduct((*cmat),Cinv,fac);  // fac Cinv o Cinv
 
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> Psl(true);
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Psl(true);
   // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
 
@@ -399,8 +399,8 @@ void MAT::ArtWallRemod::Evaluate(
   }
 
   // structural tensors in voigt notation
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> A1;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> A2;
+  LINALG::Matrix<NUM_STRESS_3D,1> A1;
+  LINALG::Matrix<NUM_STRESS_3D,1> A2;
   for (int i = 0; i < 3; ++i) {
     A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
     A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
@@ -428,7 +428,7 @@ void MAT::ArtWallRemod::Evaluate(
   }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
+  LINALG::Matrix<NUM_STRESS_3D,1> Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
   const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
   const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   Sfiso.Scale(fib1);

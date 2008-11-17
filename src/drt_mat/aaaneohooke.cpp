@@ -129,9 +129,9 @@ double MAT::AAAneohooke::Density()
 
  */
 void MAT::AAAneohooke::Evaluate(
-            const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-		  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-		  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress)
+            const LINALG::Matrix<6,1>& glstrain,
+		  LINALG::Matrix<6,6>& cmat,
+		  LINALG::Matrix<6,1>& stress)
 {
   // material parameters for isochoric part
   double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
@@ -145,12 +145,12 @@ void MAT::AAAneohooke::Evaluate(
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> identity(true);
+  LINALG::Matrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -170,7 +170,7 @@ void MAT::AAAneohooke::Evaluate(
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<6,1> invc(false);
+  LINALG::Matrix<6,1> invc(false);
 
   double invdet = 1./iiinv;
 
@@ -198,7 +198,7 @@ void MAT::AAAneohooke::Evaluate(
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
 
   // contribution: Cinv
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwoiso(invc);
+  LINALG::Matrix<6,1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -211,7 +211,7 @@ void MAT::AAAneohooke::Evaluate(
   double scalar = komp/beta2 * (1.0-pow(detf,-beta2));
 
   // initialise PKtwo with volumetric part
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwovol(invc);
+  LINALG::Matrix<6,1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
@@ -322,10 +322,10 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                                       Epetra_SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a 
-  // FixedSizeSerialDenseMatrix-type interface
-  const LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(glstrain_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(cmat_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,1> stress(stress_e->A(),true);
+  // Matrix-type interface
+  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
+        LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
+        LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   // material parameters for isochoric part
   double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
@@ -339,12 +339,12 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> identity(true);
+  LINALG::Matrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -364,7 +364,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<6,1> invc(false);
+  LINALG::Matrix<6,1> invc(false);
 
   double invdet = 1./iiinv;
 
@@ -392,7 +392,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
 
   // contribution: Cinv
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwoiso(invc);
+  LINALG::Matrix<6,1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -405,7 +405,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   double scalar = komp/beta2 * (1.0-pow(detf,-beta2));
 
   // initialise PKtwo with volumetric part
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwovol(invc);
+  LINALG::Matrix<6,1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up

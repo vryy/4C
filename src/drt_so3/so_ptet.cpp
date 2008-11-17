@@ -113,10 +113,10 @@ void DRT::ELEMENTS::Ptet::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::so_ptet_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_PTET,NUMSTR_PTET>& stresses,
-                                        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET>& nodalstresses)
+void DRT::ELEMENTS::Ptet::so_ptet_expol(LINALG::Matrix<NUMGPT_PTET,NUMSTR_PTET>& stresses,
+                                        LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET>& nodalstresses)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET, NUMGPT_PTET> expol;
+  LINALG::Matrix<NUMNOD_PTET, NUMGPT_PTET> expol;
   expol(0,0)=1.0;
   expol(1,0)=1.0;
   expol(2,0)=1.0;

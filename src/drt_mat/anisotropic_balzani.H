@@ -77,10 +77,10 @@ namespace MAT
 
     /// evaluate stress and elasticity matrix
     void Evaluate(
-            const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+            const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
             const int gp, const int ele_ID, const double time,
-            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-            LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress);
+            LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+            LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
     double Density();

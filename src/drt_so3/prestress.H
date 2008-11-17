@@ -84,7 +84,7 @@ public:
 
   /// put a matrix to storage
   inline void MatrixtoStorage(const int gp,
-                              const LINALG::FixedSizeSerialDenseMatrix<3,3>& Mat,
+                              const LINALG::Matrix<3,3>& Mat,
                               Epetra_SerialDenseMatrix& gpMat) const
   {
     for (int i=0; i<gpMat.N(); ++i) gpMat(gp,i) = Mat.A()[i];
@@ -93,7 +93,7 @@ public:
 
   /// put a matrix to storage
   inline void MatrixtoStorage(const int gp,
-                              const LINALG::FixedSizeSerialDenseMatrix<4,3>& Mat,
+                              const LINALG::Matrix<4,3>& Mat,
                               Epetra_SerialDenseMatrix& gpMat) const
   {
     for (int i=0; i<gpMat.N(); ++i) gpMat(gp,i) = Mat.A()[i];
@@ -102,7 +102,7 @@ public:
 
   /// get matrix from storage
   inline void StoragetoMatrix(const int gp,
-                              LINALG::FixedSizeSerialDenseMatrix<3,3>& Mat,
+                              LINALG::Matrix<3,3>& Mat,
                               const Epetra_SerialDenseMatrix& gpMat) const
   {
     for (int i=0; i<gpMat.N(); ++i) Mat.A()[i] = gpMat(gp,i);
@@ -111,7 +111,7 @@ public:
 
   /// get matrix from storage
   inline void StoragetoMatrix(const int gp,
-                              LINALG::FixedSizeSerialDenseMatrix<4,3>& Mat,
+                              LINALG::Matrix<4,3>& Mat,
                               const Epetra_SerialDenseMatrix& gpMat) const
   {
     for (int i=0; i<gpMat.N(); ++i) Mat.A()[i] = gpMat(gp,i);

@@ -54,10 +54,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>              elevec1(elevec1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>              elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_SOTET10,1>              elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_SOTET10,1>              elevec2(elevec2_epetra.A(),true);
   // start with "none"
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
 
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); // set to zero
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); // set to zero
       so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
@@ -166,8 +166,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10> strain;
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> stress;
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> strain;
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       if (iostrain!="euler_almansi") so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
@@ -190,11 +190,11 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> gpstress(((*gpstressmap)[gid])->A(),true);
 
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
+        LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
         so_tet10_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       }
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
+        LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
         so_tet10_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -345,7 +345,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
  * =============================================================================*/
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& shapefcts = so_tet10_4gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& shapefcts = so_tet10_4gp_shapefcts();
   const vector<double>& gpweights = so_tet10_4gp_weights();
 /* ============================================================================*/
 
@@ -361,7 +361,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
     **             [ y_1  y_2  y_3  y_4 ]
     **		   [ z_1  z_2  z_3  z_4 ]
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac_coord;
+    LINALG::Matrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac_coord;
     for (int i=0; i<4; i++) jac_coord(0,i)=1;
     for (int col=0;col<4;col++)
     {
@@ -400,37 +400,37 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residual displ
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    // element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     // element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>* force,          // element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      // stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      // strains at GP
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    // element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     // element mass matrix
+      LINALG::Matrix<NUMDOF_SOTET10,1>* force,          // element internal force vector
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      // stresses at GP
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      // strains at GP
       struct _MATERIAL*         material,       // element material data
       const bool                cauchy)         // stress output option
 {
 /* =============================================================================*
 ** CONST DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** =============================================================================*/
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& derivs = so_tet10_4gp_derivs();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& derivs = so_tet10_4gp_derivs();
   const vector<double>& gpweights = so_tet10_4gp_weights();
 /* =============================================================================*/
   double density; //forward declaration for mass matrix
   // update element geometry
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
   /* structure of xrefe:
     **             [  X_1   Y_1   Z_1  ]
     **     xrefe = [  X_2   Y_2   Z_2  ]
     **             [   |     |     |   ]
     **             [  X_10  Y_10  Z_10 ]
     */
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xcurr;  // current  coord. of element
   /* structure of xcurr:
     **             [  x_1   y_1   z_1  ]
     **     xcurr = [  x_2   y_2   z_2  ]
     **             [   |     |     |   ]
     **             [  x_10  y_10  z_10 ]
     */
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xdisp;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xdisp;  // current  coord. of element
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOTET10; ++i){
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
   // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
   // but rather the volume of
 
-  LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac; // this was jac_coord
+  LINALG::Matrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac; // this was jac_coord
   for (int i=0; i<4; i++)  jac(0,i)=1;
   for (int row=0;row<3;row++)
   {
@@ -477,7 +477,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
   /* =========================================================================*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET10-1,NUMCOORD_SOTET10> jac_temp;
+  LINALG::Matrix<NUMCOORD_SOTET10-1,NUMCOORD_SOTET10> jac_temp;
   //Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET10,NUMCOORD_SOTET10);
   for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
 
@@ -519,9 +519,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **             [    dX       dY       dZ    ]
     */
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> I_aug(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> partials;
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMDIM_SOTET10> N_XYZ;
+    LINALG::Matrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> I_aug(true);
+    LINALG::Matrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> partials;
+    LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> N_XYZ;
     I_aug(1,0)=1;
     I_aug(2,1)=1;
     I_aug(3,2)=1;
@@ -582,7 +582,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **             [    dZ       dZ       dZ    ]
     */
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(true);
+    LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(true);
     defgrd.MultiplyTN(xdisp,N_XYZ);
     //multiply<NUMDIM_SOTET10,NUMNOD_SOTET10,NUMDIM_SOTET10,'T','N'>(defgrd,xdisp,N_XYZ);
     defgrd(0,0)+=1;
@@ -594,7 +594,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     #endif //VERBOSE_OUTPUT
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchygreen;
+    LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchygreen;
 
     cauchygreen.MultiplyTN(defgrd,defgrd);
     //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'T','N'>(cauchygreen,defgrd,defgrd);
@@ -607,7 +607,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET10);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::Matrix<NUMSTR_SOTET10,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -656,7 +656,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,NUMDOF_SOTET10> bop;
+    LINALG::Matrix<NUMSTR_SOTET10,NUMDOF_SOTET10> bop;
     #ifdef VERBOSE_OUTPUT
     cout << bop;
     cout << defgrd;
@@ -687,8 +687,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     ** every necessary data must be passed.
     */
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,1> stress(true);
+    LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
+    LINALG::Matrix<NUMSTR_SOTET10,1> stress(true);
 
     so_tet10_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
     #ifdef VERBOSE_OUTPUT
@@ -706,7 +706,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       else {                               // return Cauchy stresses
         double detF = defgrd.Determinant();
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> pkstress;
+        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> pkstress;
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -717,8 +717,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchystress;
+        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
+        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchystress;
         temp.Multiply(1.0/detF,defgrd,pkstress,0.);
         //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','N'>(0.0,temp,1.0/detF,defgrd,pkstress);
         cauchystress.MultiplyNT(temp,defgrd);
@@ -741,7 +741,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,NUMDOF_SOTET10> cb;
+      LINALG::Matrix<NUMSTR_SOTET10,NUMDOF_SOTET10> cb;
       cb.Multiply(cmat,bop);          // temporary C . B
       //multiply<NUMSTR_SOTET10,NUMSTR_SOTET10,NUMDOF_SOTET10,'N','N'>(cb,cmat,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
@@ -749,7 +749,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       //  (1.0,*stiffmatrix,detJ_w,bop,cb);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET10,1> sfac; // auxiliary integrated stress
+      LINALG::Matrix<NUMSTR_SOTET10,1> sfac; // auxiliary integrated stress
       sfac.Update(detJ_w,stress); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       vector<double> SmB_L(NUMDIM_SOTET10);     // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -796,14 +796,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS and WEIGHTS for TET_10 with 10 GAUSS POINTS            *
 ** =============================================================================*/
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& shapefcts10gp = so_tet10_10gp_shapefcts();
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& derivs10gp = so_tet10_10gp_derivs();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& shapefcts10gp = so_tet10_10gp_shapefcts();
+  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& derivs10gp = so_tet10_10gp_derivs();
   const vector<double>& gpweights10gp = so_tet10_10gp_weights();
 /* ============================================================================*/
   if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
     for (int gp=0; gp<10; gp++) {
       //integrate concistent mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMDIM_SOTET10> jac;
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> jac;
       jac.Multiply(derivs10gp[gp],xrefe);
       //multiply<NUMDIM_SOTET10,NUMNOD_SOTET10,NUMDIM_SOTET10,'N','N'>(jac,tet10_mass.deriv_gp[gp],xrefe);
 
@@ -842,9 +842,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
+const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
 {
-  static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
+  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
@@ -877,9 +877,9 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& DRT::ELEMEN
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fct derivs at 4 Gauss Points                   |
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
+const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
 {
-  static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10, NUMCOORD_SOTET10> > derivs(NUMGPT_SOTET10);
+  static vector<LINALG::Matrix<NUMNOD_SOTET10, NUMCOORD_SOTET10> > derivs(NUMGPT_SOTET10);
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
@@ -966,10 +966,10 @@ const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 10 Gauss Points                        |
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_shapefcts()
+const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_shapefcts()
 {
   const int num_gp = 10;
-  static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> > shapefcts(num_gp);
+  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(num_gp);
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
@@ -990,10 +990,10 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& DRT::ELEMEN
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fct derivs at 10 Gauss Points                  |
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_derivs()
+const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_derivs()
 {
   const int num_gp = 10;
-  static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(num_gp);
+  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(num_gp);
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
@@ -1033,7 +1033,7 @@ const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_10gp_weights()
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass)
+void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass)
 {
   // lump mass matrix
   if (emass != NULL)

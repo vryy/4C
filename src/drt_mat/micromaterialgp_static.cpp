@@ -337,9 +337,9 @@ void MAT::MicroMaterialGP::EasInit()
 
 /// perform microscale simulation
 
-void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
-                                                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                                                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
+                                                  LINALG::Matrix<6,1>* stress,
+                                                  LINALG::Matrix<6,6>* cmat,
                                                   double* density,
                                                   const double time,
                                                   const bool eleowner)

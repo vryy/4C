@@ -215,7 +215,7 @@ solver_(solver)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Predictor(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd)
+void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -767,7 +767,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
   np_ = np;
 }
 
-void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd)
+void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
 {
   vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
@@ -790,8 +790,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::FixedSizeSerialDenseMatrix<
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
       double dism_prescribed[3];
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Du(defgrd->A(),false);
-      LINALG::FixedSizeSerialDenseMatrix<3,3> I(true);
+      LINALG::Matrix<3,3> Du(defgrd->A(),false);
+      LINALG::Matrix<3,3> I(true);
       I(0,0)=-1.0;
       I(1,1)=-1.0;
       I(2,2)=-1.0;
@@ -1182,10 +1182,10 @@ void STRUMULTI::MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 
 
 
-void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                                                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
+                                                  LINALG::Matrix<6,6>* cmat,
                                                   double *density,
-                                                  LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                                                  LINALG::Matrix<3,3>* defgrd,
                                                   const bool mod_newton,
                                                   bool& build_stiff)
 {
@@ -1230,7 +1230,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::FixedSizeSerialDenseMa
 
   fp.Scale(-1.0);
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> P(true);
+  LINALG::Matrix<3,3> P(true);
 
   for (int i=0; i<3; ++i)
   {
@@ -1246,7 +1246,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::FixedSizeSerialDenseMa
 
   // determine inverse of deformation gradient
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> F_inv(defgrd->A(),false);
+  LINALG::Matrix<3,3> F_inv(defgrd->A(),false);
   F_inv.Invert();
 
   // convert to second Piola-Kirchhoff stresses and store them in

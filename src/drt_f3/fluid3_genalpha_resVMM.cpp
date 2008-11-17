@@ -147,18 +147,18 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // --------------------------------------------------
   // construct views
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,    1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<4*iel,    1> elevec1(elevec1_epetra.A(),true);
 
   // --------------------------------------------------
   // create matrix objects for nodal values
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> eprenp    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelnp    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelaf    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> eaccam    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
+  LINALG::Matrix<iel,1> eprenp    ;
+  LINALG::Matrix<3,iel> evelnp    ;
+  LINALG::Matrix<3,iel> evelaf    ;
+  LINALG::Matrix<3,iel> eaccam    ;
+  LINALG::Matrix<3,iel> edispnp   ;
+  LINALG::Matrix<3,iel> egridvelaf;
+  LINALG::Matrix<3,iel> fsevelaf  ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -396,15 +396,15 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   Fluid3*                                          ele             ,
   std::vector<blitz::Array<double,1> >&            myknots         ,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& elemat          ,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&     elevec          ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp         ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvaf        ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp          ,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp          ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam          ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf          ,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf        ,
+  LINALG::Matrix<4*iel,4*iel>& elemat          ,
+  LINALG::Matrix<4*iel,1>&     elevec          ,
+  const LINALG::Matrix<3,iel>& edispnp         ,
+  const LINALG::Matrix<3,iel>& egridvaf        ,
+  const LINALG::Matrix<3,iel>& evelnp          ,
+  const LINALG::Matrix<iel,1>& eprenp          ,
+  const LINALG::Matrix<3,iel>& eaccam          ,
+  const LINALG::Matrix<3,iel>& evelaf          ,
+  const LINALG::Matrix<3,iel>& fsevelaf        ,
   const struct _MATERIAL*                          material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
@@ -549,7 +549,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   // shape functions and derivs at element center
   const double wquad = intpoints_onepoint.qwgt[0];
         
-  LINALG::FixedSizeSerialDenseMatrix<3,1> gp;
+  LINALG::Matrix<3,1> gp;
   gp(0)=intpoints_onepoint.qxg[0][0];
   gp(1)=intpoints_onepoint.qxg[0][1];
   gp(2)=intpoints_onepoint.qxg[0][2];
@@ -840,7 +840,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
     double rateofstrain = 0;
     {
-      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
+      LINALG::Matrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -896,7 +896,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                   +-----
                   node j
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> centernodecoord;
+      LINALG::Matrix<3,1> centernodecoord;
 
       for(int rr=0;rr<3;++rr)
       {
@@ -959,7 +959,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
     double rateofstrain = 0;
     {
-      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
+      LINALG::Matrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -1029,7 +1029,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
+      LINALG::Matrix<3,3> G;
 
       for (int nn=0;nn<3;++nn)
       {
@@ -1100,7 +1100,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
+      LINALG::Matrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -1266,7 +1266,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
+      LINALG::Matrix<3,3> G;
       for (int nn=0;nn<3;++nn)
       {
         for (int rr=0;rr<3;++rr)
@@ -1336,7 +1336,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
+      LINALG::Matrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -1373,7 +1373,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
+      LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
@@ -1475,7 +1475,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
+      LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
@@ -1626,7 +1626,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
         }
       }
 
-      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
+      LINALG::Matrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -1707,7 +1707,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   for (int iquad=0;iquad<intpoints.nquad;++iquad)
   {
     // set gauss point coordinates
-    LINALG::FixedSizeSerialDenseMatrix<3,1> gp;
+    LINALG::Matrix<3,1> gp;
 
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
@@ -6115,13 +6115,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // --------------------------------------------------
   // create matrix objects for nodal values
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> eprenp    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelnp    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> evelaf    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> eaccam    ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> edispnp   ;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> egridvelaf;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> fsevelaf  ;
+  LINALG::Matrix<iel,1> eprenp    ;
+  LINALG::Matrix<3,iel> evelnp    ;
+  LINALG::Matrix<3,iel> evelaf    ;
+  LINALG::Matrix<3,iel> eaccam    ;
+  LINALG::Matrix<3,iel> edispnp   ;
+  LINALG::Matrix<3,iel> egridvelaf;
+  LINALG::Matrix<3,iel> fsevelaf  ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -6249,12 +6249,12 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // ---------------------------------------------------
   // working arrays for the quantities we want to compute
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_res      ;
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_sacc     ;
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_svelaf   ;
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_res_sq   ;
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_sacc_sq  ;
-  LINALG::FixedSizeSerialDenseMatrix<3,1>  mean_svelaf_sq;
+  LINALG::Matrix<3,1>  mean_res      ;
+  LINALG::Matrix<3,1>  mean_sacc     ;
+  LINALG::Matrix<3,1>  mean_svelaf   ;
+  LINALG::Matrix<3,1>  mean_res_sq   ;
+  LINALG::Matrix<3,1>  mean_sacc_sq  ;
+  LINALG::Matrix<3,1>  mean_svelaf_sq;
 
   double vol             = 0.0;
 
@@ -6377,7 +6377,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // shape functions and derivs at element center
   const double wquad = intpoints_onepoint.qwgt[0];
         
-  LINALG::FixedSizeSerialDenseMatrix<3,1> gp;
+  LINALG::Matrix<3,1> gp;
   gp(0)=intpoints_onepoint.qxg[0][0];
   gp(1)=intpoints_onepoint.qxg[0][1];
   gp(2)=intpoints_onepoint.qxg[0][2];
@@ -6668,7 +6668,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     double rateofstrain = 0;
     {
-      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
+      LINALG::Matrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -6724,7 +6724,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                   +-----
                   node j
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> centernodecoord;
+      LINALG::Matrix<3,1> centernodecoord;
 
       for(int rr=0;rr<3;++rr)
       {
@@ -6787,7 +6787,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     double rateofstrain = 0;
     {
-      LINALG::FixedSizeSerialDenseMatrix<3,3> epsilon;
+      LINALG::Matrix<3,3> epsilon;
 
       for(int rr=0;rr<3;rr++)
       {
@@ -6857,7 +6857,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
+      LINALG::Matrix<3,3> G;
 
       for (int nn=0;nn<3;++nn)
       {
@@ -6928,7 +6928,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
+      LINALG::Matrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -7094,7 +7094,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,3> G;
+      LINALG::Matrix<3,3> G;
       for (int nn=0;nn<3;++nn)
       {
         for (int rr=0;rr<3;++rr)
@@ -7164,7 +7164,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,1> g;
+      LINALG::Matrix<3,1> g;
 
       for (int rr=0;rr<3;++rr)
       {
@@ -7201,7 +7201,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
+      LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
@@ -7303,7 +7303,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
 
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::FixedSizeSerialDenseMatrix<3,1> normed_velintaf;
+      LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_normaf>=1e-6)
@@ -7419,7 +7419,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   for (int iquad=0;iquad<intpoints.nquad;++iquad)
   {
     // set gauss point coordinates
-    LINALG::FixedSizeSerialDenseMatrix<3,1>  gp;
+    LINALG::Matrix<3,1>  gp;
 
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
@@ -8669,7 +8669,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   double center = 0;
 
   // get node coordinates of element
-  LINALG::FixedSizeSerialDenseMatrix<3,iel>  xyze;
+  LINALG::Matrix<3,iel>  xyze;
   for(int inode=0;inode<iel;inode++)
   {
     xyze(0,inode)=ele->Nodes()[inode]->X()[0];
@@ -8746,13 +8746,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
         const bool                                 is_ale        ,
         const DRT::Discretization&                 discretization,
         const vector<int>&                         lm            ,
-        LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp       ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvelaf    ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf
+        LINALG::Matrix<iel,1>& eprenp        ,
+        LINALG::Matrix<3,iel>& evelnp        ,
+        LINALG::Matrix<3,iel>& evelaf        ,
+        LINALG::Matrix<3,iel>& eaccam        ,
+        LINALG::Matrix<3,iel>& edispnp       ,
+        LINALG::Matrix<3,iel>& egridvelaf    ,
+        LINALG::Matrix<3,iel>& fsevelaf
         )
 {
     // velocity and pressure values (current iterate, n+1)

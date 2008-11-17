@@ -235,11 +235,11 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     if(scaltypestr =="elch") frt = params.get<double>("frt");
 
     // create objects for element arrays
-    vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> > ephinp(numscal_);
-    vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> > ehist(numdofpernode_);
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> edensnp;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> evelnp;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> epotnp;
+    vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
+    vector<LINALG::Matrix<iel,1> > ehist(numdofpernode_);
+    LINALG::Matrix<iel,1> edensnp;
+    LINALG::Matrix<3,iel> evelnp;
+    LINALG::Matrix<iel,1> epotnp;
 
     // fill element arrays
     for (int i=0;i<iel;++i)
@@ -357,10 +357,10 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
 
 
     // create objects for element arrays
-    vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> > ephi0(numscal_);
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> edens0;
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> evel0;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> epot0;
+    vector<LINALG::Matrix<iel,1> > ephi0(numscal_);
+    LINALG::Matrix<iel,1> edens0;
+    LINALG::Matrix<3,iel> evel0;
+    LINALG::Matrix<iel,1> epot0;
 
     // fill element arrays
     for (int i=0;i<iel;++i)
@@ -452,8 +452,8 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // create objects for element arrays
-    LINALG::FixedSizeSerialDenseMatrix<iel,2> ephinp;
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> epotnp;
+    LINALG::Matrix<iel,2> ephinp;
+    LINALG::Matrix<iel,1> epotnp;
 
     // fill element arrays
     for (int i=0;i<iel;++i)
@@ -489,10 +489,10 @@ return 0;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const DRT::ELEMENTS::Condif3*                             ele, ///< the element those matrix is calculated
-    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,///< current scalar field
-    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ehist, ///< rhs from beginning of time step
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          edensnp, ///< current density field
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epotnp, ///< el. potential at element nodes
+    const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
+    const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
+    const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
+    const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
     Epetra_SerialDenseMatrix&                                 sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector&                                 residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&                                 subgrdiff, ///< subgrid-diff.-scaling vector
@@ -501,7 +501,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const double                                              dt, ///< current time-step length
     const double                                              timefac, ///< time discretization factor
     const double                                              alphaF, ///< factor for generalized-alpha time integration
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
+    const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
     const bool                                                temperature, ///< temperature flag
     const enum Condif3::TauType                               whichtau, ///< stabilization parameter definition
     const string                                              fssgd, ///< subgrid-diff. flag
@@ -722,9 +722,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     const DRT::ELEMENTS::Condif3*&                   ele,
     Epetra_SerialDenseVector&                        subgrdiff,
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evel,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edens,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epot,
+    const LINALG::Matrix<3,iel>& evel,
+    const LINALG::Matrix<iel,1>& edens,
+    const LINALG::Matrix<iel,1>& epot,
     const double                                     dt,
     const double&                                    timefac,
     const enum Condif3::TauType                      whichtau,
@@ -1131,7 +1131,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalSecondDeriv(
 dserror("Please check CalSecondDeriv first");
 
   /*----------- now we have to compute the second global derivatives */
-  static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
+  static LINALG::Matrix<6,6> bm;
 
   /*------------------------------------------------- initialization */
   derxy2_.Clear();
@@ -1516,7 +1516,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatGenAlpha(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseVector& eforce,
-    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,
+    const vector<LINALG::Matrix<iel,1> >& ephinp,
     const bool                higher_order_ele,
     const double&             timefac,
     const double&             alphaF,
@@ -1804,9 +1804,9 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
     const DRT::ELEMENTS::Condif3*                             ele,
-    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephi0,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          edens0,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epot0,
+    const vector<LINALG::Matrix<iel,1> >& ephi0,
+    const LINALG::Matrix<iel,1>&          edens0,
+    const LINALG::Matrix<iel,1>&          epot0,
     Epetra_SerialDenseMatrix&                                 massmat,
     Epetra_SerialDenseVector&                                 rhs,
     Epetra_SerialDenseVector&                                 subgrdiff,
@@ -1814,7 +1814,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
     const double                                              time,
     const double                                              dt,
     const double                                              timefac,
-    const LINALG::FixedSizeSerialDenseMatrix<3,iel>&          evel0,
+    const LINALG::Matrix<3,iel>&          evel0,
     const bool                                                temperature,
     const enum Condif3::TauType                               whichtau,
     const string                                              fssgd,
@@ -2073,8 +2073,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     Epetra_SerialDenseMatrix&                                 emat,
     Epetra_SerialDenseVector&                                 erhs,
-    const vector<LINALG::FixedSizeSerialDenseMatrix<iel,1> >& ephinp,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>&          epotnp,
+    const vector<LINALG::Matrix<iel,1> >& ephinp,
+    const LINALG::Matrix<iel,1>&          epotnp,
     const bool&                                               higher_order_ele,
     const double&                                             frt,
     const bool&                                               is_stationary,
@@ -2315,8 +2315,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
     const DRT::ELEMENTS::Condif3*                    ele,
     ParameterList&                                   params,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,2>& ephinp,
-    const LINALG::FixedSizeSerialDenseMatrix<iel,1>& epotnp,
+    const LINALG::Matrix<iel,2>& ephinp,
+    const LINALG::Matrix<iel,1>& epotnp,
     Epetra_SerialDenseVector&                        errors,
     struct _MATERIAL*                                material
 )
@@ -2350,11 +2350,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
 
   // working arrays
   double                                  potint;
-  LINALG::FixedSizeSerialDenseMatrix<2,1> conint;
-  LINALG::FixedSizeSerialDenseMatrix<3,1> xint;
-  LINALG::FixedSizeSerialDenseMatrix<2,1> c;
+  LINALG::Matrix<2,1> conint;
+  LINALG::Matrix<3,1> xint;
+  LINALG::Matrix<2,1> c;
   double                                  deltapot;
-  LINALG::FixedSizeSerialDenseMatrix<2,1> deltacon(true);
+  LINALG::Matrix<2,1> deltacon(true);
 
   // integration points
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point; // for cos/sin

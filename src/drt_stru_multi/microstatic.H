@@ -108,7 +108,7 @@ public:
   \brief Predictor step
 
   */
-  void Predictor(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd);
+  void Predictor(LINALG::Matrix<3,3>* defgrd);
 
   /*!
   \brief Full Newton iteration
@@ -148,7 +148,7 @@ public:
   associated macroscale deformation gradient
 
   */
-  void EvaluateMicroBC(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd);
+  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd);
 
   /*!
   \brief Set old state given from micromaterialgp
@@ -195,10 +195,10 @@ public:
   stresses and constitutive tensor by averaging over RVE
 
   */
-  void StaticHomogenization(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                            LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+  void StaticHomogenization(LINALG::Matrix<6,1>* stress,
+                            LINALG::Matrix<6,6>* cmat,
                             double *density,
-                            LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                            LINALG::Matrix<3,3>* defgrd,
                             const bool mod_newton,
                             bool& build_stiff);
 
@@ -213,9 +213,9 @@ public:
   Dover, pg. 215
   */
   void ConvertMat(const Epetra_MultiVector& cmatpf,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,3>& inv_defgrd,
-                  const LINALG::FixedSizeSerialDenseMatrix<6,1>& S,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat);
+                  const LINALG::Matrix<3,3>& inv_defgrd,
+                  const LINALG::Matrix<6,1>& S,
+                  LINALG::Matrix<6,6>& cmat);
 
 
   /*!

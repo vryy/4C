@@ -580,11 +580,11 @@ namespace UTILS
    * \tparam   dim  dimension of the element space (e.g. dim=2 for quad4)
    */
   template<int dim>
-  LINALG::FixedSizeSerialDenseMatrix<dim,1> getLocalCenterPosition(
+  LINALG::Matrix<dim,1> getLocalCenterPosition(
     const DRT::Element::DiscretizationType   distype     ///< shape of the element
     )
   {
-    LINALG::FixedSizeSerialDenseMatrix<dim,1> pos;
+    LINALG::Matrix<dim,1> pos;
     switch(distype)
     {
         case DRT::Element::line2 :  case DRT::Element::line3 :

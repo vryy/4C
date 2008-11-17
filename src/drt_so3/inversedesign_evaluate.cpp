@@ -22,8 +22,8 @@ Maintainer: Michael Gee
  |  Lambda tensor                                             (private) |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::BuildLambda(LINALG::FixedSizeSerialDenseMatrix<9,9>& L,
-                                           const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const
+void DRT::ELEMENTS::InvDesign::BuildLambda(LINALG::Matrix<9,9>& L,
+                                           const LINALG::Matrix<3,3>& F) const
 
 {
 #if 0 // this is for theory only
@@ -226,8 +226,8 @@ void DRT::ELEMENTS::InvDesign::BuildLambda(LINALG::FixedSizeSerialDenseMatrix<9,
  |  IF tensor                                                 (private) |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::BuildIF(LINALG::FixedSizeSerialDenseMatrix<6,6>& IF,
-                                       const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const
+void DRT::ELEMENTS::InvDesign::BuildIF(LINALG::Matrix<6,6>& IF,
+                                       const LINALG::Matrix<3,3>& F) const
 
 {
 #if 0 // this is for theory reference only
@@ -336,8 +336,8 @@ void DRT::ELEMENTS::InvDesign::BuildIF(LINALG::FixedSizeSerialDenseMatrix<6,6>& 
  |  Theta tensor                                              (private) |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::BuildTheta(LINALG::FixedSizeSerialDenseMatrix<6,9>& Theta,
-                                          const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const
+void DRT::ELEMENTS::InvDesign::BuildTheta(LINALG::Matrix<6,9>& Theta,
+                                          const LINALG::Matrix<3,3>& F) const
 
 {
 #if 0 // for theory reference only
@@ -485,9 +485,9 @@ void DRT::ELEMENTS::InvDesign::BuildTheta(LINALG::FixedSizeSerialDenseMatrix<6,9
  |  Ypsilon tensor                                            (private) |
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::BuildYpsilon(LINALG::FixedSizeSerialDenseMatrix<6,9>& Y,
-                                            const LINALG::FixedSizeSerialDenseMatrix<3,3>& F,
-                                            const LINALG::FixedSizeSerialDenseMatrix<3,3>& S) const
+void DRT::ELEMENTS::InvDesign::BuildYpsilon(LINALG::Matrix<6,9>& Y,
+                                            const LINALG::Matrix<3,3>& F,
+                                            const LINALG::Matrix<3,3>& S) const
 
 {
 
@@ -621,23 +621,23 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy,         ///< stress output option
       const bool                euler_almansi)  ///< strain output option
 {
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > shapefcts = ele->soh8_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = ele->soh8_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
   const static vector<double> gpweights = ele->soh8_weights();
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
   DRT::Node** nodes = ele->Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -658,22 +658,22 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
   {
     //----------------------------------- get inverse of Jacobian mapping
     const double                             detj = ele->detJ_[gp];
-    LINALG::FixedSizeSerialDenseMatrix<3,3>& invj = ele->invJ_[gp];
+    LINALG::Matrix<3,3>& invj = ele->invJ_[gp];
 
     //------------------------------ compute derivs wrt to spatial coords
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> n_xyz;
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> n_xyz;
     n_xyz.Multiply(invj,derivs[gp]);
 
     //--------------------------- build defgrd of inverse mapping dX / dx
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> f;
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> f;
     f.MultiplyTT(xrefe,n_xyz);
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> F(false);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
-    LINALG::FixedSizeSerialDenseMatrix<9,1> FTvec;
+    LINALG::Matrix<9,1> FTvec;
     FTvec(0) = F(0,0);
     FTvec(1) = F(0,1);
     FTvec(2) = F(0,2);
@@ -685,26 +685,26 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     FTvec(8) = F(2,2);
 
     //--------------------------------------------- build operator Lambda
-    LINALG::FixedSizeSerialDenseMatrix<9,9> Lambda;
+    LINALG::Matrix<9,9> Lambda;
     BuildLambda(Lambda,F);
 
     //------------------------------------------------- build operator IF
     // this has been analytically tested: IF*S == F S F^T and ok
-    LINALG::FixedSizeSerialDenseMatrix<6,6> IF;
+    LINALG::Matrix<6,6> IF;
     BuildIF(IF,F);
 
     //---------------------------------------------- build operator Theta
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Theta;
+    LINALG::Matrix<6,9> Theta;
     BuildTheta(Theta,F);
 
     //--------------- build right Cauchy-Green and Green-Lagrange strains
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
     cauchygreen.MultiplyTN(F,F);
 
     //-- Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOH8);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::Matrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -713,7 +713,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMDOF_SOH8> B;
+    LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> B;
     for (int i=0; i<NUMNOD_SOH8; ++i)
     {
       B(0,NODDOF_SOH8*i+0) = n_xyz(0,i);
@@ -742,7 +742,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     }
 
     //--------------------------- build N_x operator (wrt spatial config)
-    LINALG::FixedSizeSerialDenseMatrix<9,NUMDOF_SOH8> N_x(true); // set to zero
+    LINALG::Matrix<9,NUMDOF_SOH8> N_x(true); // set to zero
     for (int i=0; i<NUMNOD_SOH8; ++i)
     {
       N_x(0,3*i+0) = n_xyz(0,i);
@@ -760,12 +760,12 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
 
     //------------------------------------------------- call material law
     double density = 0.0;
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> stress(true);
+    LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,1> cstress;
+    LINALG::Matrix<NUMSTR_SOH8,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
@@ -781,7 +781,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       else
       {
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
         gl(0,2) = 0.5*glstrain(5);
@@ -792,8 +792,8 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
         gl(2,1) = gl(1,2);
         gl(2,2) = glstrain(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
         temp.Multiply(gl,f);
         euler_almansi.MultiplyTN(f,temp);
 
@@ -817,7 +817,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     }
 
     //-------------------------------------------- build operator Ypsilon
-    LINALG::FixedSizeSerialDenseMatrix<3,3> S;
+    LINALG::Matrix<3,3> S;
     S(0,0) = stress(0);
     S(0,1) = stress(3);
     S(0,2) = stress(5);
@@ -827,7 +827,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     S(2,0) = stress(5);
     S(2,1) = stress(4);
     S(2,2) = stress(2);
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Ypsilon;
+    LINALG::Matrix<6,9> Ypsilon;
     BuildYpsilon(Ypsilon,F,S);
 
     //----------------- integration factor dV (spatial) * Gaussian weight
@@ -843,7 +843,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     //*******************************************************************
     if (stiffmatrix)
     {
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sum;
+      LINALG::Matrix<6,9> sum;
 
       //================================== 1.) B^T * cstress * F^T * N_x
       sum.MultiplyNT(cstress,FTvec);
@@ -852,14 +852,14 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       sum.Multiply(-j,Ypsilon,Lambda,1.0);
 
       //======================= 3.) -j * B^T * IF * cmat * Theta * Lambda * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sixnine;
-      LINALG::FixedSizeSerialDenseMatrix<6,6> sixsix;
+      LINALG::Matrix<6,9> sixnine;
+      LINALG::Matrix<6,6> sixsix;
       sixnine.Multiply(Theta,Lambda);
       sixsix.Multiply(IF,cmat);
       sum.Multiply(-j,sixsix,sixnine,1.0);
 
       //================ put everything together: K = intfac * B*T * sum * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,NUMDOF_SOH8> tmp3;
+      LINALG::Matrix<6,NUMDOF_SOH8> tmp3;
       tmp3.Multiply(sum,N_x);
       (*stiffmatrix).MultiplyTN(intfac,B,tmp3,1.0);
 
@@ -905,9 +905,9 @@ void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
                                               DRT::ELEMENTS::So_hex8* ele,
                                               const vector<double>& disp)
 {
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,3> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,3> xcurr;  // current  coord. of element
+  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
+  LINALG::Matrix<NUMNOD_SOH8,3> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,3> xcurr;  // current  coord. of element
   DRT::Node** nodes = ele->Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -921,9 +921,9 @@ void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
     xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_SOH8+2];
   }
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> invJ;
-  LINALG::FixedSizeSerialDenseMatrix<3,NUMNOD_SOH8> N_XYZ;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> F;
+  LINALG::Matrix<3,3> invJ;
+  LINALG::Matrix<3,NUMNOD_SOH8> N_XYZ;
+  LINALG::Matrix<3,3> F;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // compute invJ and detJ
@@ -952,11 +952,11 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy,         ///< stress output option
       const bool                euler_almansi)  ///< strain output option
@@ -966,19 +966,19 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
 ** ============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
+  LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
+  LINALG::Matrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
 /* pointer to (static) weight factors at each gp */
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>* weights;
+  LINALG::Matrix<NUMGPT_WEG6,1>* weights;
   ele->sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
   DRT::Node** nodes = ele->Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -998,28 +998,28 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
+    LINALG::Matrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
     for (int m=0; m<NUMDIM_WEG6; ++m)
       for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
 
     const double detj                            = ele->detJ_[gp];
-    LINALG::FixedSizeSerialDenseMatrix<3,3>& invj = ele->invJ_[gp];
+    LINALG::Matrix<3,3>& invj = ele->invJ_[gp];
 
     //------------------------------ compute derivs wrt to spatial coords
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> n_xyz;
+    LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> n_xyz;
     n_xyz.Multiply(invj,deriv_gp);
 
     //--------------------------- build defgrd of inverse mapping dX / dx
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> f;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> f;
     f.MultiplyTT(xrefe,n_xyz);
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::FixedSizeSerialDenseMatrix<3,3> F(false);
+    LINALG::Matrix<3,3> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
-    LINALG::FixedSizeSerialDenseMatrix<9,1> FTvec;
+    LINALG::Matrix<9,1> FTvec;
     FTvec(0) = F(0,0);
     FTvec(1) = F(0,1);
     FTvec(2) = F(0,2);
@@ -1031,26 +1031,26 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     FTvec(8) = F(2,2);
 
     //--------------------------------------------- build operator Lambda
-    LINALG::FixedSizeSerialDenseMatrix<9,9> Lambda;
+    LINALG::Matrix<9,9> Lambda;
     BuildLambda(Lambda,F);
 
     //------------------------------------------------- build operator IF
     // this has been analytically tested: IF*S == F S F^T and ok
-    LINALG::FixedSizeSerialDenseMatrix<6,6> IF;
+    LINALG::Matrix<6,6> IF;
     BuildIF(IF,F);
 
     //---------------------------------------------- build operator Theta
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Theta;
+    LINALG::Matrix<6,9> Theta;
     BuildTheta(Theta,F);
 
     //--------------- build right Cauchy-Green and Green-Lagrange strains
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
     cauchygreen.MultiplyTN(F,F);
 
     //-- Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     LINALG::SerialDenseVector glstrain_epetra(NUMSTR_WEG6);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::Matrix<NUMSTR_WEG6,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1059,7 +1059,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMDOF_WEG6> B;
+    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> B;
     for (int i=0; i<NUMNOD_WEG6; ++i)
     {
       B(0,NODDOF_WEG6*i+0) = n_xyz(0,i);
@@ -1088,7 +1088,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     }
 
     //--------------------------- build N_x operator (wrt spatial config)
-    LINALG::FixedSizeSerialDenseMatrix<9,NUMDOF_WEG6> N_x(true); // set to zero
+    LINALG::Matrix<9,NUMDOF_WEG6> N_x(true); // set to zero
     for (int i=0; i<NUMNOD_WEG6; ++i)
     {
       N_x(0,3*i+0) = n_xyz(0,i);
@@ -1106,12 +1106,12 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
 
     //------------------------------------------------- call material law
     double density = 0.0;
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    LINALG::Matrix<6,6> cmat(true);
+    LINALG::Matrix<6,1> stress(true);
     ele->sow6_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::FixedSizeSerialDenseMatrix<6,1> cstress;
+    LINALG::Matrix<6,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
@@ -1127,7 +1127,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       else
       {
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
         gl(0,2) = 0.5*glstrain(5);
@@ -1138,8 +1138,8 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
         gl(2,1) = gl(1,2);
         gl(2,2) = glstrain(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
         temp.Multiply(gl,f);
         euler_almansi.MultiplyTN(f,temp);
 
@@ -1163,7 +1163,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     }
 
     //-------------------------------------------- build operator Ypsilon
-    LINALG::FixedSizeSerialDenseMatrix<3,3> S;
+    LINALG::Matrix<3,3> S;
     S(0,0) = stress(0);
     S(0,1) = stress(3);
     S(0,2) = stress(5);
@@ -1173,7 +1173,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     S(2,0) = stress(5);
     S(2,1) = stress(4);
     S(2,2) = stress(2);
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Ypsilon;
+    LINALG::Matrix<6,9> Ypsilon;
     BuildYpsilon(Ypsilon,F,S);
 
     //----------------- integration factor dV (spatial) * Gaussian weight
@@ -1189,7 +1189,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     //*******************************************************************
     if (stiffmatrix)
     {
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sum;
+      LINALG::Matrix<6,9> sum;
 
       //================================== 1.) B^T * cstress * F^T * N_x
       sum.MultiplyNT(cstress,FTvec);
@@ -1198,14 +1198,14 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       sum.Multiply(-j,Ypsilon,Lambda,1.0);
 
       //======================= 3.) -j * B^T * IF * cmat * Theta * Lambda * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sixnine;
-      LINALG::FixedSizeSerialDenseMatrix<6,6> sixsix;
+      LINALG::Matrix<6,9> sixnine;
+      LINALG::Matrix<6,6> sixsix;
       sixnine.Multiply(Theta,Lambda);
       sixsix.Multiply(IF,cmat);
       sum.Multiply(-j,sixsix,sixnine,1.0);
 
       //================ put everything together: K = intfac * B*T * sum * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,NUMDOF_WEG6> tmp3;
+      LINALG::Matrix<6,NUMDOF_WEG6> tmp3;
       tmp3.Multiply(sum,N_x);
       (*stiffmatrix).MultiplyTN(intfac,B,tmp3,1.0);
 
@@ -1254,17 +1254,17 @@ void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
 ** ============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
+  LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
+  LINALG::Matrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
 /* pointer to (static) weight factors at each gp */
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>* weights;
+  LINALG::Matrix<NUMGPT_WEG6,1>* weights;
   ele->sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,3> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,3> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,3> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,3> xcurr;  // current  coord. of element
   DRT::Node** nodes = ele->Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -1278,13 +1278,13 @@ void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
     xrefe(i,2) = xcurr(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> invJ;
-  LINALG::FixedSizeSerialDenseMatrix<3,NUMNOD_WEG6> N_XYZ;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> F;
+  LINALG::Matrix<3,3> invJ;
+  LINALG::Matrix<3,NUMNOD_WEG6> N_XYZ;
+  LINALG::Matrix<3,3> F;
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
+    LINALG::Matrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
     for (int m=0; m<NUMDIM_WEG6; ++m)
       for (int n=0; n<NUMGPT_WEG6; ++n)
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
@@ -1316,11 +1316,11 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,       ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,       ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
       struct _MATERIAL*         material,       ///< element material data
       const bool                cauchy,         ///< stress output options
       const bool                ea)
@@ -1328,14 +1328,14 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
   const static vector<double> gpweights = ele->so_tet4_1gp_weights();
   double density =  0.0;
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
@@ -1351,21 +1351,21 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   {
     //----------------------------------- get inverse of Jacobian mapping
     //------------------------------ compute derivs wrt to spatial coords
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& n_xyz = ele->nxyz_[gp];
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& n_xyz = ele->nxyz_[gp];
 
     //--------------------------- build defgrd of inverse mapping dX / dx
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> f;
+    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> f;
     f.MultiplyTN(xdisp,n_xyz);
     f(0,0)+=1;
     f(1,1)+=1;
     f(2,2)+=1;
 
     //--------------------------- build defgrd of forward mapping dx / dX
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> F(false);
+    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> F(false);
     const double j = F.Invert(f);
 
     //------------------------------------ build F^T as vector 9x1
-    LINALG::FixedSizeSerialDenseMatrix<9,1> FTvec;
+    LINALG::Matrix<9,1> FTvec;
     FTvec(0) = F(0,0);
     FTvec(1) = F(0,1);
     FTvec(2) = F(0,2);
@@ -1377,26 +1377,26 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     FTvec(8) = F(2,2);
 
     //--------------------------------------------- build operator Lambda
-    LINALG::FixedSizeSerialDenseMatrix<9,9> Lambda;
+    LINALG::Matrix<9,9> Lambda;
     BuildLambda(Lambda,F);
 
     //------------------------------------------------- build operator IF
     // this has been analytically tested: IF*S == F S F^T and ok
-    LINALG::FixedSizeSerialDenseMatrix<6,6> IF;
+    LINALG::Matrix<6,6> IF;
     BuildIF(IF,F);
 
     //---------------------------------------------- build operator Theta
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Theta;
+    LINALG::Matrix<6,9> Theta;
     BuildTheta(Theta,F);
 
     //--------------- build right Cauchy-Green and Green-Lagrange strains
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
+    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
     cauchygreen.MultiplyTN(F,F);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET4);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::Matrix<NUMSTR_SOTET4,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1405,7 +1405,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOTET4,NUMDOF_SOTET4> B;
+    LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> B;
     for (int i=0; i<NUMNOD_SOTET4; ++i)
     {
       B(0,NODDOF_SOTET4*i+0) = n_xyz(i,0);
@@ -1434,7 +1434,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     }
 
     //--------------------------- build N_x operator (wrt spatial config)
-    LINALG::FixedSizeSerialDenseMatrix<9,NUMDOF_SOTET4> N_x(true); // set to zero
+    LINALG::Matrix<9,NUMDOF_SOTET4> N_x(true); // set to zero
     for (int i=0; i<NUMNOD_SOTET4; ++i)
     {
       N_x(0,3*i+0) = n_xyz(i,0);
@@ -1451,12 +1451,12 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<6,1> stress(true);
+    LINALG::Matrix<6,6> cmat(true);
+    LINALG::Matrix<6,1> stress(true);
     ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F,gp);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::FixedSizeSerialDenseMatrix<6,1> cstress;
+    LINALG::Matrix<6,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
@@ -1472,7 +1472,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       else
       {
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
+        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
         gl(0,2) = 0.5*glstrain(5);
@@ -1483,8 +1483,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
         gl(2,1) = gl(1,2);
         gl(2,2) = glstrain(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
+        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
         temp.Multiply(gl,f);
         euler_almansi.MultiplyTN(f,temp);
 
@@ -1508,7 +1508,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     }
 
     //-------------------------------------------- build operator Ypsilon
-    LINALG::FixedSizeSerialDenseMatrix<3,3> S;
+    LINALG::Matrix<3,3> S;
     S(0,0) = stress(0);
     S(0,1) = stress(3);
     S(0,2) = stress(5);
@@ -1518,7 +1518,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     S(2,0) = stress(5);
     S(2,1) = stress(4);
     S(2,2) = stress(2);
-    LINALG::FixedSizeSerialDenseMatrix<6,9> Ypsilon;
+    LINALG::Matrix<6,9> Ypsilon;
     BuildYpsilon(Ypsilon,F,S);
 
     //----------------- integration factor dV (spatial) * Gaussian weight
@@ -1534,7 +1534,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     //*******************************************************************
     if (stiffmatrix)
     {
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sum;
+      LINALG::Matrix<6,9> sum;
 
       //================================== 1.) B^T * cstress * F^T * N_x
       sum.MultiplyNT(cstress,FTvec);
@@ -1543,14 +1543,14 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       sum.Multiply(-j,Ypsilon,Lambda,1.0);
 
       //======================= 3.) -j * B^T * IF * cmat * Theta * Lambda * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,9> sixnine;
-      LINALG::FixedSizeSerialDenseMatrix<6,6> sixsix;
+      LINALG::Matrix<6,9> sixnine;
+      LINALG::Matrix<6,6> sixsix;
       sixnine.Multiply(Theta,Lambda);
       sixsix.Multiply(IF,cmat);
       sum.Multiply(-j,sixsix,sixnine,1.0);
 
       //================ put everything together: K = intfac * B*T * sum * N_x
-      LINALG::FixedSizeSerialDenseMatrix<6,NUMDOF_SOTET4> tmp3;
+      LINALG::Matrix<6,NUMDOF_SOTET4> tmp3;
       tmp3.Multiply(sum,N_x);
       (*stiffmatrix).MultiplyTN(intfac,B,tmp3,1.0);
     } // if (stiffmatrix)
@@ -1561,7 +1561,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   //---------------------------------------------------------------------
 
   // static vectors created in any case to safe "if-case"
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > shapefcts4gp = ele->so_tet4_4gp_shapefcts();
+  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts4gp = ele->so_tet4_4gp_shapefcts();
   const static vector<double> gpweights4gp = ele->so_tet4_4gp_weights();
   // evaluate mass matrix
   if (massmatrix != NULL)
@@ -1597,11 +1597,11 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
                                        DRT::ELEMENTS::So_tet4* ele,
                                        const vector<double>& disp)
 {
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
   const static vector<double> gpweights = ele->so_tet4_1gp_weights();
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xcurr;
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xcurr;
   DRT::Node** nodes = ele->Nodes();
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
   **             [ Y_1  Y_2  Y_3  Y_4 ]
   **		 [ Z_1  Z_2  Z_3  Z_4 ]
   */
-  LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> J;
+  LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> J;
   for (int i=0; i<4; i++)  J(0,i)=1;
   for (int row=0;row<3;row++)
     for (int col=0;col<4;col++)
@@ -1633,12 +1633,12 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
 
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
   {
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
-    LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_XYZ;
-    LINALG::FixedSizeSerialDenseMatrix<3,3> F;
+    LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_XYZ;
+    LINALG::Matrix<3,3> F;
 
     {
-      LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4-1,NUMCOORD_SOTET4> tmp;
+      LINALG::Matrix<NUMCOORD_SOTET4-1,NUMCOORD_SOTET4> tmp;
       tmp.MultiplyTN(xrefe,derivs[gp]);
       for (int i=0; i<4; i++) jac(0,i)=1;
       for (int row=0;row<3;row++)
@@ -1646,9 +1646,9 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
           jac(row+1,col)=tmp(row,col);
     }
     // size is 4x3
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> I_aug(true);    // set to zero
+    LINALG::Matrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> I_aug(true);    // set to zero
     // size is 4x3
-    LINALG::FixedSizeSerialDenseMatrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> partials(true); // set to zero
+    LINALG::Matrix<NUMCOORD_SOTET4,NUMDIM_SOTET4> partials(true); // set to zero
     I_aug(1,0)=1;
     I_aug(2,1)=1;
     I_aug(3,2)=1;

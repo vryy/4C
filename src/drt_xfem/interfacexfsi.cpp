@@ -508,7 +508,7 @@ double ElementVolumeT(
   const int nsd = 3;
   
   // get node coordinates of the current element
-  static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
+  static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
   
   // physical element volume 
@@ -547,11 +547,11 @@ double ElementVolumeT(
     posXiDomain(2) = intpoints.qxg[iquad][2];
     
     // shape functions and their first derivatives
-    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> deriv;
+    static LINALG::Matrix<nsd,numnode> deriv;
     DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
     // get transposed of the jacobian matrix d x / d \xi
-    static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
+    static LINALG::Matrix<3,3> xjm;
     xjm.MultiplyNT(deriv,xyze);
 
     const double det = xjm.Determinant();

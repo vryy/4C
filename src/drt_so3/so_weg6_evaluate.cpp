@@ -46,10 +46,10 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,          1> elevec1(elevec1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,          1> elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,          1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_WEG6,          1> elevec2(elevec2_epetra.A(),true);
   // start with "none"
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
 
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true); // set to zero
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true); // set to zero
       sow6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
     }
     break;
@@ -165,8 +165,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
       bool ea = (iostrain == "euler_almansi");
@@ -194,12 +194,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
       if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
+        LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
         soweg6_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       else if (stresstype=="cxyz_ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
+        LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
         soweg6_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
@@ -329,9 +329,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DefGradient(mydisp,gpdefgrd,*prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::FixedSizeSerialDenseMatrix<3,3> deltaF;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
+      LINALG::Matrix<3,3> deltaF;
+      LINALG::Matrix<3,3> Fhist;
+      LINALG::Matrix<3,3> Fnew;
       for (int gp=0; gp<NUMGPT_WEG6; ++gp)
       {
         prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
@@ -387,15 +387,15 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
 {
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
+  LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6>* shapefct;
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
+  LINALG::Matrix<NUMGPT_WEG6*NUMDIM_WEG6,NUMNOD_WEG6>* deriv;
 /* pointer to (static) weight factors at each gp */
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>* weights;
+  LINALG::Matrix<NUMGPT_WEG6,1>* weights;
   sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
     xrefe(i,0) = Nodes()[i]->X()[0];
@@ -404,7 +404,7 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
   }
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
+  LINALG::Matrix<NUMDIM_WEG6,NUMGPT_WEG6> deriv_gp;
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
@@ -443,11 +443,11 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residual displ
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    // element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     // element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,1>* force,          // element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      // element stresses
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      // strains at GP
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    // element stiffness matrix
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     // element mass matrix
+      LINALG::Matrix<NUMDOF_WEG6,1>* force,          // element internal force vector
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      // element stresses
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      // strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
       const bool                cauchy,         // stress output option
       const bool                euler_almansi)  // strain output option
@@ -456,16 +456,16 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
   const static vector<double> gpweights = sow6_weights();
 /* ============================================================================*/
 
   // update element geometry
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
 #endif
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
@@ -497,20 +497,20 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
+    LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // get Jacobian mapping wrt to the stored configuration
-      LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
+      LINALG::Matrix<3,3> invJdef;
       prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+      LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
       N_xyz.Multiply(invJdef,derivs[gp]);
 
       // build multiplicative incremental defgrd
@@ -520,11 +520,11 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       defgrd(2,2) += 1.0;
 
       // get stored old incremental F
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
+      LINALG::Matrix<3,3> Fhist;
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Fnew;
+      LINALG::Matrix<3,3> Fnew;
       Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
@@ -538,9 +538,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
       // design analysis
-      LINALG::FixedSizeSerialDenseMatrix<3,3> Fhist;
+      LINALG::Matrix<3,3> Fhist;
       invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
-      LINALG::FixedSizeSerialDenseMatrix<3,3> tmp3x3;
+      LINALG::Matrix<3,3> tmp3x3;
       tmp3x3.Multiply(defgrd,Fhist);
       defgrd = tmp3x3;  // defgrd is still a view to defgrd_epetra
 
@@ -553,12 +553,12 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 #endif
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
     cauchygreen.MultiplyTN(defgrd,defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(false);
+    LINALG::Matrix<6,1> glstrain(false);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       else
       {
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
         gl(0,2) = 0.5*glstrain(5);
@@ -591,11 +591,11 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         gl(2,2) = glstrain(2);
 
         // inverse of deformation gradient
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> invdefgrd; // make a copy here otherwise defgrd is destroyed!
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> invdefgrd; // make a copy here otherwise defgrd is destroyed!
         invdefgrd.Invert(defgrd);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
         temp.Multiply(gl,invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd,temp);
 
@@ -628,7 +628,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMDOF_WEG6> bop;
+    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> bop;
     for (int i=0; i<NUMNOD_WEG6; ++i)
     {
       bop(0,NODDOF_WEG6*i+0) = defgrd(0,0)*N_XYZ(0,i);
@@ -657,8 +657,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
-    LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> stress(true);
+    LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
+    LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
     double density = 0.0;
     sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -673,7 +673,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       {                               // return Cauchy stresses
         const double detF = defgrd.Determinant();
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> pkstress;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> pkstress;
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -684,8 +684,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
-        LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchystress;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
+        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchystress;
         temp.Multiply(1.0/detF,defgrd,pkstress,0.);
         cauchystress.MultiplyNT(temp,defgrd);
 
@@ -706,12 +706,12 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,NUMDOF_WEG6> cb;
+      LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> cb;
       cb.Multiply(cmat,bop);          // temporary C . B
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::FixedSizeSerialDenseMatrix<NUMSTR_WEG6,1> sfac(stress); // auxiliary integrated stress
+      LINALG::Matrix<NUMSTR_WEG6,1> sfac(stress); // auxiliary integrated stress
       sfac.Scale(detJ_w);     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       vector<double> SmB_L(NUMDIM_WEG6);     // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -759,9 +759,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+const vector<LINALG::Matrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapefcts()
 {
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts(NUMGPT_WEG6);
+  vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
@@ -779,9 +779,9 @@ const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::sow6_derivs()
+const vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::sow6_derivs()
 {
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs(NUMGPT_WEG6);
+  vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
@@ -815,14 +815,14 @@ const vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
-  LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
-  LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1>** weights)   // pointer to pointer of weights
+  LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
+  LINALG::Matrix<NUMDOF_WEG6,NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
+  LINALG::Matrix<NUMGPT_WEG6,1>** weights)   // pointer to pointer of weights
 {
   // static matrix objects, kept in memory
-  static LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMGPT_WEG6>  f;  // shape functions
-  static LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMNOD_WEG6> df;  // derivatives
-  static LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,1> weightfactors;   // weights for each gp
+  static LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6>  f;  // shape functions
+  static LINALG::Matrix<NUMDOF_WEG6,NUMNOD_WEG6> df;  // derivatives
+  static LINALG::Matrix<NUMGPT_WEG6,1> weightfactors;   // weights for each gp
   static bool fdf_eval;                      // flag for re-evaluate everything
 
 
@@ -843,8 +843,8 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
       const double s = intpoints.qxg[igp][1];
       const double t = intpoints.qxg[igp][2];
 
-      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> funct;
-      LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
+      LINALG::Matrix<NUMNOD_WEG6,1> funct;
+      LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
       DRT::UTILS::shape_function_3D(funct, r, s, t, wedge6);
       DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
@@ -867,7 +867,7 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::sow6_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* emass)
+void DRT::ELEMENTS::So_weg6::sow6_lumpmass(LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* emass)
 {
   // lump mass matrix
   if (emass != NULL)
@@ -909,11 +909,11 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // update element geometry
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;  // current  coord. of element
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_WEG6+0];
@@ -932,15 +932,15 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
 #endif
 
     // get Jacobian mapping wrt to the stored deformed configuration
-    LINALG::FixedSizeSerialDenseMatrix<3,3> invJdef;
+    LINALG::Matrix<3,3> invJdef;
     prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+    LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
     N_xyz.Multiply(invJdef,derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
+    LINALG::Matrix<3,3> defgrd;
     defgrd.MultiplyTT(xdisp,N_xyz);
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
@@ -958,11 +958,11 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
                                             const vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // get incremental disp
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
     xdisp(i,0) = disp[i*NODDOF_WEG6+0];
@@ -970,11 +970,11 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
     xdisp(i,2) = disp[i*NODDOF_WEG6+2];
   }
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> invJhist;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> invJ;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> defgrd;
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> invJnew;
+  LINALG::Matrix<3,3> invJhist;
+  LINALG::Matrix<3,3> invJ;
+  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+  LINALG::Matrix<3,3> invJnew;
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
     // get the invJ old state

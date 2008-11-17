@@ -180,9 +180,9 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   // the number of nodes
   const int numnode = iel;
   // construct views
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
-  //LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,     1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra.A(),true);
+  //LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<4*iel,     1> elevec1(elevec1_epetra.A(),true);
 
   // need current velocity/pressure and velocity/density vector
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -199,9 +199,9 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   if (ele->is_ale_) dserror("No ALE support within stationary fluid solver.");
 
   // split velocity and pressure and set density
-  LINALG::FixedSizeSerialDenseMatrix<numnode,1> eprenp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> evelnp;
-  LINALG::FixedSizeSerialDenseMatrix<numnode,1> edensnp;
+  LINALG::Matrix<numnode,1> eprenp;
+  LINALG::Matrix<3,numnode> evelnp;
+  LINALG::Matrix<numnode,1> edensnp;
 
   for (int i=0;i<numnode;++i)
   {
@@ -253,9 +253,9 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   RCP<const Epetra_Vector> csvelnp;
   RCP<const Epetra_Vector> fsvelnp;
   RCP<const Epetra_Vector> csconvnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> csevelnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> fsevelnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> cseconvnp;
+  LINALG::Matrix<3,numnode> csevelnp;
+  LINALG::Matrix<3,numnode> fsevelnp;
+  LINALG::Matrix<3,numnode> cseconvnp;
 
   if (fssgv != Fluid3::fssgv_no)
   {
@@ -336,12 +336,12 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   Fluid3*                                          ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& estif,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&     eforce,
+  const LINALG::Matrix<3,iel>& evelnp,
+  const LINALG::Matrix<3,iel>& fsevelnp,
+  const LINALG::Matrix<iel,1>& eprenp,
+  const LINALG::Matrix<iel,1>& edensnp,
+  LINALG::Matrix<4*iel,4*iel>& estif,
+  LINALG::Matrix<4*iel,1>&     eforce,
   struct _MATERIAL*                                material,
   double                                           pseudotime,
   bool                                             newton,
@@ -1581,9 +1581,9 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   Fluid3*                                          ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
+  const LINALG::Matrix<3,iel>& evelnp,
+  const LINALG::Matrix<3,iel>& fsevelnp,
+  const LINALG::Matrix<iel,1>& edensnp,
   const double                                     visc,
   const enum Fluid3::StabilisationAction           fssgv,
   const double                                     Cs
@@ -1691,7 +1691,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   }
 
   // get streamlength
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+  LINALG::Matrix<iel,1> tmp;
   tmp.MultiplyTN(derxy_,velino_);
   const double val = tmp.Norm1();
   const double strle = 2.0/val;
@@ -1700,7 +1700,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   writeArray(derxy_,"derxy");
   writeArray(velino_,"velino");
   writeArray(xji_,"xji");
-  LINALG::FixedSizeSerialDenseMatrix<3,1> vvs;
+  LINALG::Matrix<3,1> vvs;
   vvs(0) = vel_norm;
   vvs(1) = val;
   vvs(2) = strle;
@@ -1806,7 +1806,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
 
     vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
 #ifdef PRINTDEBUG
-    LINALG::FixedSizeSerialDenseMatrix<2,1> rv;
+    LINALG::Matrix<2,1> rv;
     rv(0) = rateofstrain;
     rv(1) = vart_;
     writeArray(rv,"rateofstrain,vart");
@@ -2016,7 +2016,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::gder2(Fluid3* ele)
 {
   // initialize and zero out everything
-  static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
+  static LINALG::Matrix<6,6> bm;
 
   // calculate elements of jacobian_bar matrix
   bm(0,0) = xjm_(0,0)*xjm_(0,0);

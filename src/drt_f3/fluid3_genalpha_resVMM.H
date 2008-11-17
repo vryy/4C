@@ -369,15 +369,15 @@ namespace DRT
       */
       void Sysmat(Fluid3*                                          ele,
 		  std::vector<blitz::Array<double,1> >&            myknots,
-                  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& elemat,
-                  LINALG::FixedSizeSerialDenseMatrix<4*iel,    1>& elevec,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvaf,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-                  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf,
-                  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf,
+                  LINALG::Matrix<4*iel,4*iel>& elemat,
+                  LINALG::Matrix<4*iel,    1>& elevec,
+                  const LINALG::Matrix<3,iel>& edispnp,
+                  const LINALG::Matrix<3,iel>& egridvaf,
+                  const LINALG::Matrix<3,iel>& evelnp,
+                  const LINALG::Matrix<iel,1>& eprenp,
+                  const LINALG::Matrix<3,iel>& eaccam,
+                  const LINALG::Matrix<3,iel>& evelaf,
+                  const LINALG::Matrix<3,iel>& fsevelaf,
                   const struct _MATERIAL*                          material,
                   const double                                     alphaM,
                   const double                                     alphaF,
@@ -453,13 +453,13 @@ namespace DRT
         const bool                                 is_ale        ,
         const DRT::Discretization&                 discretization,
         const vector<int>&                         lm            ,
-        LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelaf        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& eaccam        ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp       ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridvelaf    ,
-        LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelaf
+        LINALG::Matrix<iel,1>& eprenp        ,
+        LINALG::Matrix<3,iel>& evelnp        ,
+        LINALG::Matrix<3,iel>& evelaf        ,
+        LINALG::Matrix<3,iel>& eaccam        ,
+        LINALG::Matrix<3,iel>& edispnp       ,
+        LINALG::Matrix<3,iel>& egridvelaf    ,
+        LINALG::Matrix<3,iel>& fsevelaf
         );
 
 
@@ -489,24 +489,24 @@ namespace DRT
       // nodal arrays
       // ------------
       //! node coordinates
-      LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
+      LINALG::Matrix<3,iel> xyze_;
       //! weights for nurbs elements
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> weights_;
+      LINALG::Matrix<iel,1> weights_;
       //! value of body force in the nodes of the element
-      LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadaf_;
+      LINALG::Matrix<3,iel> edeadaf_;
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! vector of shape functions
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
+      LINALG::Matrix<iel,1> funct_;
       //! vector of shape function derivatives in reference coordinate system
-      LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
+      LINALG::Matrix<3,iel> deriv_;
       //! vector of second shape function derivatives in reference coordinate system
-      LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
+      LINALG::Matrix<6,iel> deriv2_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
+      LINALG::Matrix<3,iel> derxy_;
       //! vector of second shape function derivatives in global coordinate system
-      LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
+      LINALG::Matrix<6,iel> derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
       /*
                        corresponds to a part of the operator
@@ -515,61 +515,61 @@ namespace DRT
 
                        on the discret level
       */
-      LINALG::FixedSizeSerialDenseMatrix<3,iel> viscs2_;
+      LINALG::Matrix<3,iel> viscs2_;
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   xjm_;
+      LINALG::Matrix<3,3>   xjm_;
       //! its inverse
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   xji_;
+      LINALG::Matrix<3,3>   xji_;
       //! second derivatives of the mapping (r,s,t)->(x,y,z)
-      LINALG::FixedSizeSerialDenseMatrix<6,3>   xder2_;
+      LINALG::Matrix<6,3>   xder2_;
 
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
       double                 prenp_;
       //! acceleration in gausspoint, time n+am
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   accintam_;
+      LINALG::Matrix<3,1>   accintam_;
       //! velocity in gausspoint, time n+1
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   velintnp_;
+      LINALG::Matrix<3,1>   velintnp_;
       //! velocity in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   velintaf_;
+      LINALG::Matrix<3,1>   velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   fsvelintaf_;
+      LINALG::Matrix<3,1>   fsvelintaf_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   aleconvintaf_;
+      LINALG::Matrix<3,1>   aleconvintaf_;
       //! pressure gradient in gausspoint, time n+1
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   pderxynp_;
+      LINALG::Matrix<3,1>   pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxynp_;
+      LINALG::Matrix<3,3>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   vderxyaf_;
+      LINALG::Matrix<3,3>   vderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,3>   fsvderxyaf_;
+      LINALG::Matrix<3,3>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   bodyforceaf_;
+      LINALG::Matrix<3,1>   bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_af_;
+      LINALG::Matrix<iel,1> conv_c_af_;
       //! convective part introduced by grid velocity, time n+af
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_g_af_;
+      LINALG::Matrix<iel,1> conv_g_af_;
 
       // element data
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   tau_;
+      LINALG::Matrix<3,1>   tau_;
       //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   svelaf_;
+      LINALG::Matrix<3,1>   svelaf_;
       //! Convective term, most recent iteration value
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   convaf_old_;
+      LINALG::Matrix<3,1>   convaf_old_;
       //! Convective part of scale-similarity term, most recent iteration value
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   convaf_s_;
+      LINALG::Matrix<3,1>   convaf_s_;
       /*
                          /  n+af        \   n+af
                         |  u     o grad  | u
                          \  (i)         /   (i)
       */
       //! Subgrid velocity convective term, most recent iteration value
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   convsubaf_old_;
+      LINALG::Matrix<3,1>   convsubaf_old_;
       /* Most recent value for subgrid velocity convective term
 
                         /~n+af         \   n+af
@@ -577,17 +577,17 @@ namespace DRT
                         \   (i)        /   (i)
       */
       //! Viscous term, most recent iteration value
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   viscaf_old_;
+      LINALG::Matrix<3,1>   viscaf_old_;
       /*
                                         /  n+af \
                        nabla o  epsilon | u     |
                                         \  (i)  /
       */
       //! Current residual of the momentum equation
-      LINALG::FixedSizeSerialDenseMatrix<3,1>   resM_;
+      LINALG::Matrix<3,1>   resM_;
 
       //! This is the convection operator using resM_ as the convecting velocity
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
+      LINALG::Matrix<iel,1> conv_resM_;
       /*
 
                      /               \
@@ -595,7 +595,7 @@ namespace DRT
                      \    (i)        /
       */
       //! This is the convection operator using the subscale velocity as the convecting velocity
-      LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_subaf_;
+      LINALG::Matrix<iel,1> conv_subaf_;
       /*
                     /~n+af         \
                    | u      o nabla |
@@ -610,7 +610,7 @@ namespace DRT
       // ------------------------
       //! array used for the computation of jacobian 
       //! determinant and second derivatives
-      LINALG::FixedSizeSerialDenseMatrix<6,6>   bm_;
+      LINALG::Matrix<6,6>   bm_;
 
     };
   }

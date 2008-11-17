@@ -342,33 +342,33 @@ protected:
   virtual void so_tet10_nlnstiffmass(vector<int>&          lm,
                                      vector<double>&           disp,
                                      vector<double>&           residual,
-                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,
-                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,
-                                     LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,1>* force,
-                                     LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
-                                     LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
+                                     LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,
+                                     LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,
+                                     LINALG::Matrix<NUMDOF_SOTET10,1>* force,
+                                     LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
+                                     LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
                                      struct _MATERIAL*         material,
                                      bool cauchy = false);
 
   //! lump mass matrix (bborn 07/08)
-  void so_tet10_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
+  void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
 
-  void so_tet10_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-                      LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses);
+  void so_tet10_expol(LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+                      LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses);
 
   // These functions are basically copied from the So_integrator,
   // along with the rather inconsitent matrix sizes.
   //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& so_tet10_4gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& so_tet10_4gp_shapefcts();
   //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& so_tet10_4gp_derivs();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& so_tet10_4gp_derivs();
   //! Evaluate Tet10 Weights at 4 gausspoints to keep them static
   const vector<double>&so_tet10_4gp_weights();
 
   //! Evaluate Tet10 Shapefcts at 10 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOTET10,1> >& so_tet10_10gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& so_tet10_10gp_shapefcts();
   //! Evaluate Tet10 Derivs at 10 gausspoints to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_10gp_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_10gp_derivs();
   //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
   const vector<double>& so_tet10_10gp_weights();
 
@@ -451,11 +451,11 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
       Epetra_SerialDenseVector** weights);
 
   void so_tet10_mat_sel(
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                      LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+                      LINALG::Matrix<6,1>* stress,
+                      LINALG::Matrix<6,6>* cmat,
                       double* density,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-                      LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                      LINALG::Matrix<6,1>* glstrain,
+                      LINALG::Matrix<3,3>* defgrd,
                       const int gp);
   
   /// material selection

@@ -136,9 +136,9 @@ double MAT::HyperPolyOgden::Density()
 
 
 */
-void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-                                   LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-                                   LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
+void MAT::HyperPolyOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
+                                   LINALG::Matrix<6,6>* cmat,
+                                   LINALG::Matrix<6,1>* stress)
 {
   // material parameters for isochoric part
   double c  = matdata_->m.hyper_poly_ogden->c;             // parameter for ground substance
@@ -153,12 +153,12 @@ void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glst
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> identity(true);
+  LINALG::Matrix<6,1> identity(true);
   for (int i = 0; i < 3; i++)
     identity(i) = 1.;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::FixedSizeSerialDenseMatrix<6,1> rcg;
+  LINALG::Matrix<6,1> rcg;
   rcg.Update(2.0, *glstrain, 1.0, identity);
 
   // invariants
@@ -182,7 +182,7 @@ void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glst
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<6,1> invc;
+  LINALG::Matrix<6,1> invc;
 
   double invdet = 1./iiinv;
 
@@ -208,7 +208,7 @@ void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glst
   double isochor2 = - twthi*c*pow(iiinv,-third)*inv;            // ground substance/elastin fiber  part
 
   // contribution: Cinv
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwoiso(invc, false);
+  LINALG::Matrix<6,1> pktwoiso(invc, false);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -220,7 +220,7 @@ void MAT::HyperPolyOgden::Evaluate(LINALG::FixedSizeSerialDenseMatrix<6,1>* glst
   double scalar = komp/beta*(1.-pow(detf,-beta));
 
   // initialise PKtwo with volumetric part
-  LINALG::FixedSizeSerialDenseMatrix<6,1> pktwovol(invc, false);
+  LINALG::Matrix<6,1> pktwovol(invc, false);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up

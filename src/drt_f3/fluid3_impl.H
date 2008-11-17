@@ -171,17 +171,17 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            evelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            fsevelnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            emhist_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            echist_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            edispnp_epetra,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&            egridv_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&                  estif_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>&                  emesh_epetra,
-                LINALG::FixedSizeSerialDenseMatrix<4*iel,     1>&                  eforce_epetra,
+                const LINALG::Matrix<3,iel>&            evelnp_epetra,
+                const LINALG::Matrix<3,iel>&            fsevelnp_epetra,
+                const LINALG::Matrix<iel,1>&            eprenp_epetra,
+                const LINALG::Matrix<iel,1>&            edensnp_epetra,
+                const LINALG::Matrix<3,iel>&            emhist_epetra,
+                const LINALG::Matrix<iel,1>&            echist_epetra,
+                const LINALG::Matrix<3,iel>&            edispnp_epetra,
+                const LINALG::Matrix<3,iel>&            egridv_epetra,
+                LINALG::Matrix<4*iel,4*iel>&                  estif_epetra,
+                LINALG::Matrix<4*iel,4*iel>&                  emesh_epetra,
+                LINALG::Matrix<4*iel,     1>&                  eforce_epetra,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   dt,
@@ -243,9 +243,9 @@ namespace ELEMENTS
 
     */
     void Caltau(Fluid3*                                 ele,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           evelnp,
-                const LINALG::FixedSizeSerialDenseMatrix<3,iel>&           fsevelnp,
-                const LINALG::FixedSizeSerialDenseMatrix<iel,1>&           edensnp,
+                const LINALG::Matrix<3,iel>&           evelnp,
+                const LINALG::Matrix<3,iel>&           fsevelnp,
+                const LINALG::Matrix<iel,1>&           edensnp,
                 const enum Fluid3::TauType              whichtau,
                 struct _MATERIAL*                       material,
                 double&                                 visc,
@@ -283,79 +283,79 @@ namespace ELEMENTS
     //! artificial viscosity
     double vart_;
     //! node coordinates
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze_;
+    LINALG::Matrix<3,iel> xyze_;
     //! dead load in nodes
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> edeadng_;
+    LINALG::Matrix<3,iel> edeadng_;
     //! array for shape functions
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct_;
+    LINALG::Matrix<iel,1> funct_;
     //! array for density-weighted shape functions
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> densfunct_;
+    LINALG::Matrix<iel,1> densfunct_;
     //! array for shape functions divided by density
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> functdens_;
+    LINALG::Matrix<iel,1> functdens_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv_;
+    LINALG::Matrix<3,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::FixedSizeSerialDenseMatrix<6,iel> deriv2_;
+    LINALG::Matrix<6,iel> deriv2_;
     //! transposed jacobian "dx/ds"
-    LINALG::FixedSizeSerialDenseMatrix<3,3> xjm_;
+    LINALG::Matrix<3,3> xjm_;
     //! inverse of transposed jacobian "ds/dx"
-    LINALG::FixedSizeSerialDenseMatrix<3,3> xji_;
+    LINALG::Matrix<3,3> xji_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy_;
+    LINALG::Matrix<3,3> vderxy_;
     //! global momentum derivatives in gausspoint w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,3> mderxy_;
+    LINALG::Matrix<3,3> mderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,3> fsvderxy_;
+    LINALG::Matrix<3,3> fsvderxy_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy_;
+    LINALG::Matrix<3,iel> derxy_;
     //! density-weighted global derivatives of shape functions w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<3,iel> densderxy_;
+    LINALG::Matrix<3,iel> densderxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::FixedSizeSerialDenseMatrix<6,iel> derxy2_;
+    LINALG::Matrix<6,iel> derxy2_;
     //! bodyforce in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> bodyforce_;
+    LINALG::Matrix<3,1> bodyforce_;
     //! vector containing all values from previous timelevel n for momentum equation
-    LINALG::FixedSizeSerialDenseMatrix<3,1> histmom_;
+    LINALG::Matrix<3,1> histmom_;
     //! value from previous timelevel n for continuity equation
     double histcon_;
     //! direction of flow (normed velocity vector)
-    LINALG::FixedSizeSerialDenseMatrix<3,1> velino_;
+    LINALG::Matrix<3,1> velino_;
     //! velocity vector in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> velint_;
+    LINALG::Matrix<3,1> velint_;
     //! fine-scale velocity vector in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> fsvelint_;
+    LINALG::Matrix<3,1> fsvelint_;
     //! ale convective velocity in gausspoint, c=u-u_G
-    LINALG::FixedSizeSerialDenseMatrix<3,1> convvelint_;
+    LINALG::Matrix<3,1> convvelint_;
     //! pressure gradient in gausspoint
-    LINALG::FixedSizeSerialDenseMatrix<3,1> gradp_;
+    LINALG::Matrix<3,1> gradp_;
     //! the stabilisation parameters
-    LINALG::FixedSizeSerialDenseMatrix<3,1> tau_;
+    LINALG::Matrix<3,1> tau_;
     // this array once had three dimensions, I combined the first two
     // to one.
     //! viscous term including 2nd derivatives
-    LINALG::FixedSizeSerialDenseMatrix<3*3,iel> viscs2_;
+    LINALG::Matrix<3*3,iel> viscs2_;
     //! linearisation of convect, convective part
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_c_;
+    LINALG::Matrix<iel,1> conv_c_;
     //! momentum divergence
     double mdiv_;
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation
-    LINALG::FixedSizeSerialDenseMatrix<3,1> rhsmom_;
+    LINALG::Matrix<3,1> rhsmom_;
     //! total right hand side term at int.-point for continuity equation
     double rhscon_;
     //! (u_old*nabla)u_old
-    LINALG::FixedSizeSerialDenseMatrix<3,1> conv_old_;
+    LINALG::Matrix<3,1> conv_old_;
     //! div epsilon(u_old)
-    LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old_;
+    LINALG::Matrix<3,1> visc_old_;
     //! the old residual
-    LINALG::FixedSizeSerialDenseMatrix<3,1> res_old_;
+    LINALG::Matrix<3,1> res_old_;
     //! convection by subgrid-scale velocity
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> conv_resM_;
+    LINALG::Matrix<iel,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
-    LINALG::FixedSizeSerialDenseMatrix<6,3> xder2_;
+    LINALG::Matrix<6,3> xder2_;
 
-    LINALG::FixedSizeSerialDenseMatrix<3,3> vderiv_;
+    LINALG::Matrix<3,3> vderiv_;
   };
 
 }

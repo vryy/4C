@@ -52,10 +52,10 @@ namespace TIMEINT_THETA_BDF2
    * \return hist          linear combination of old values
    * 
    */
-  LINALG::FixedSizeSerialDenseMatrix<3,1> GetOldPartOfRighthandside(
-      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        veln,       ///< velocity      n
-      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        velnm,      ///< velocity      n-1
-      const LINALG::FixedSizeSerialDenseMatrix<3,1>&        accn,       ///< acceleration  n
+  LINALG::Matrix<3,1> GetOldPartOfRighthandside(
+      const LINALG::Matrix<3,1>&        veln,       ///< velocity      n
+      const LINALG::Matrix<3,1>&        velnm,      ///< velocity      n-1
+      const LINALG::Matrix<3,1>&        accn,       ///< acceleration  n
       const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
       const double               dta,        ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme

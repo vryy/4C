@@ -107,7 +107,7 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 /*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::SetupCmat(LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat)
+void MAT::StVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
 {
   // get material parameters
   double Emod = matdata_->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
@@ -149,10 +149,10 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
                                       Epetra_SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a 
-  // FixedSizeSerialDenseMatrix-type interface
-  const LINALG::FixedSizeSerialDenseMatrix<6,1> glstrain(glstrain_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,6> cmat(cmat_e->A(),true);
-        LINALG::FixedSizeSerialDenseMatrix<6,1> stress(stress_e->A(),true);
+  // Matrix-type interface
+  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
+        LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
+        LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   SetupCmat(cmat);
   // evaluate stresses
@@ -164,9 +164,9 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::Evaluate(
-                  const LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                  LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-                  LINALG::FixedSizeSerialDenseMatrix<6,1>& stress)
+                  const LINALG::Matrix<6,1>& glstrain,
+                  LINALG::Matrix<6,6>& cmat,
+                  LINALG::Matrix<6,1>& stress)
 {
   SetupCmat(cmat);
   // evaluate stresses

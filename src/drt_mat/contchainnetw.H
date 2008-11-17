@@ -81,11 +81,11 @@ namespace MAT
     void Initialize(const int numgp, const int eleid) ;
 
     /// evaluate stress and elasticity matrix
-    void Evaluate(const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+    void Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
                                       const int gp,
                                       Teuchos::ParameterList& params,
-                                      LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-                                      LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress,
+                                      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+                                      LINALG::Matrix<NUM_STRESS_3D,1> * stress,
                                       int eleId);
 
     /// return density
@@ -105,40 +105,40 @@ namespace MAT
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
 
     /// return chain-cell basis
-    RCP<vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > >Getni() const {return ni_;}
+    RCP<vector<LINALG::Matrix<3,3> > >Getni() const {return ni_;}
 
     /// evaluate fiber-part of PK2-stress
-    LINALG::FixedSizeSerialDenseMatrix<3,3> EvaluateStress(
-        const LINALG::FixedSizeSerialDenseMatrix<3,3>& isostress,
-        const vector<LINALG::FixedSizeSerialDenseMatrix<3,3> >& Ni,
+    LINALG::Matrix<3,3> EvaluateStress(
+        const LINALG::Matrix<3,3>& isostress,
+        const vector<LINALG::Matrix<3,3> >& Ni,
         const vector<double>& cell_li,
         const vector<double>& cell_Inv,
         const double s_chn_scalar,
         const double stressfree);
     /// evaluate and add fiber-part of PK2-stress
     void UpdateStress(
-        LINALG::FixedSizeSerialDenseMatrix<3,3>& stress,
-        const vector<LINALG::FixedSizeSerialDenseMatrix<3,3> >& Ni,
+        LINALG::Matrix<3,3>& stress,
+        const vector<LINALG::Matrix<3,3> >& Ni,
         const vector<double>& cell_li,
         const vector<double>& cell_Inv,
         const double s_chn_scalar,
         const double stressfree);
 
     /// evaluate fiber-part of Cmat
-    void EvaluateCmat(LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,
-        const vector<LINALG::FixedSizeSerialDenseMatrix<3,3> >& Ni,
+    void EvaluateCmat(LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,
+        const vector<LINALG::Matrix<3,3> >& Ni,
         const vector<double>& cell_li,
         const vector<double>& cell_Inv,
         const double c_chn_scalar,
         const double stressfree);
 
     /// evaluate structural tensors from chain-cell basis
-    vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > EvaluateStructTensors(const int gp);
+    vector<LINALG::Matrix<3,3> > EvaluateStructTensors(const int gp);
 
     /// evaluate fiber invariants
     vector<double> EvaluateInvariants(
-        const LINALG::FixedSizeSerialDenseMatrix<3,3> & CG,
-        const vector<LINALG::FixedSizeSerialDenseMatrix<3,3> >& Ni);
+        const LINALG::Matrix<3,3> & CG,
+        const vector<LINALG::Matrix<3,3> >& Ni);
 
     /// update fiber basis (remodeling evolution)
     void Update(const Epetra_SerialDenseMatrix& Phi,
@@ -157,8 +157,8 @@ namespace MAT
     /// print chain-cell basis to string
     std::string PrintAnisoVects(const int gp);
     /// print anisotropic part of Cmat to string
-    std::string PrintAnisoCmat(const LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
-        const vector<LINALG::FixedSizeSerialDenseMatrix<3,3> >& Ni,
+    std::string PrintAnisoCmat(const LINALG::Matrix<6,6>& cmat,
+        const vector<LINALG::Matrix<3,3> >& Ni,
         const vector<double>& cell_li,
         const vector<double>& cell_Inv,
         const double c_chn_scalar,
@@ -174,13 +174,13 @@ namespace MAT
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;
     /// unit cell basis in undeformed config. per gp
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > > ni_;
+    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > ni_;
     /// initial unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li0_;
     /// eigenvalues per gp
     Teuchos::RCP<vector<vector<double> > > lambda_;
     /// current stress
-    Teuchos::RCP<vector<LINALG::FixedSizeSerialDenseMatrix<3,3> > > stresses_;
+    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > stresses_;
 
     /// remember time for remodeling evolution
     Teuchos::RCP<vector<double> > mytime_;
@@ -191,11 +191,11 @@ namespace MAT
   };
 
   Epetra_SerialDenseMatrix StressVoigt2Mat(Epetra_SerialDenseVector* stress);
-  LINALG::FixedSizeSerialDenseMatrix<3,3> StressVoigt2Mat(const LINALG::FixedSizeSerialDenseMatrix<6,1>* stress);
-  void StressVoigt2Mat(const LINALG::FixedSizeSerialDenseMatrix<6,1>* stress, LINALG::FixedSizeSerialDenseMatrix<3,3>& mat);
+  LINALG::Matrix<3,3> StressVoigt2Mat(const LINALG::Matrix<6,1>* stress);
+  void StressVoigt2Mat(const LINALG::Matrix<6,1>* stress, LINALG::Matrix<3,3>& mat);
   Epetra_SerialDenseVector StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat);
-  LINALG::FixedSizeSerialDenseMatrix<6,1> StressMat2Voigt(LINALG::FixedSizeSerialDenseMatrix<3,3>& stressmat);
-  void StressMat2Voigt(LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,const LINALG::FixedSizeSerialDenseMatrix<3,3>& mat);
+  LINALG::Matrix<6,1> StressMat2Voigt(LINALG::Matrix<3,3>& stressmat);
+  void StressMat2Voigt(LINALG::Matrix<6,1>& stress,const LINALG::Matrix<3,3>& mat);
   Epetra_SerialDenseMatrix StrainVoigt2Mat(const Epetra_SerialDenseVector* strain);
   void ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
   void ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);

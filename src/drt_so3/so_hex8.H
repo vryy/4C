@@ -422,7 +422,7 @@ protected:
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
   //vector<Epetra_SerialDenseMatrix>                 invJ_;
-  vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> >  invJ_;
+  vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >  invJ_;
   //! determinant of Jacobian in material frame
   vector<double>                                                        detJ_;
 
@@ -460,34 +460,34 @@ protected:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residual displ
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
 
   //! Lump mass matrix (bborn 07/08)
-  void soh8_lumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
+  void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void soh8_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
-                  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses);
+  void soh8_expol(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
+                  LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses);
 
   //! Evaluate Hex8 Shapefcts to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,1> > soh8_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();
   //! Evaluate Hex8 Derivs to keep them static
-  const vector<LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
   //! Evaluate Hex8 Weights to keep them static
   const vector<double> soh8_weights();
 
   // to be removed!!!
   void soh8_shapederiv(
-        LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,   // pointer to pointer of shapefct
-        LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,     // pointer to pointer of derivs
-        LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,1>** weights);   // pointer to pointer of weights
+        LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,   // pointer to pointer of shapefct
+        LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,     // pointer to pointer of derivs
+        LINALG::Matrix<NUMGPT_SOH8,1>** weights);   // pointer to pointer of weights
 
   /*!
    * \brief Interface to material laws working with soh8.
@@ -508,11 +508,11 @@ protected:
    * \param params (in): parameterlist to access time, etc. in materials
    * */
 
-  void soh8_mat_sel(LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
+  void soh8_mat_sel(LINALG::Matrix<6,1>* stress,
+                    LINALG::Matrix<6,6>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<6,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params);
 
@@ -526,8 +526,8 @@ protected:
   void soh8_eassetup(
           vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
-          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
+          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
+          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
 
 
   //! @name Multi-scale related stuff

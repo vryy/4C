@@ -126,11 +126,11 @@ public:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
@@ -146,11 +146,11 @@ void sow6_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,         ///< stress output option
       const bool                euler_almansi=false); ///< strain output option
@@ -166,11 +166,11 @@ void so_tet4_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
-      LINALG::FixedSizeSerialDenseMatrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      ///< stresses at GP
-      LINALG::FixedSizeSerialDenseMatrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
       struct _MATERIAL*         material,       ///< element material data
       const bool                cauchy=false,   ///< stress output options
       const bool                ea=false);
@@ -194,12 +194,12 @@ private:
   /// get no. of nodal points
   inline int NumNode() { return numnod_; }
 
-  void BuildLambda(LINALG::FixedSizeSerialDenseMatrix<9,9>& L, const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const;
-  void BuildIF(LINALG::FixedSizeSerialDenseMatrix<6,6>& IF, const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const;
-  void BuildTheta(LINALG::FixedSizeSerialDenseMatrix<6,9>& Theta, const LINALG::FixedSizeSerialDenseMatrix<3,3>& F) const;
-  void BuildYpsilon(LINALG::FixedSizeSerialDenseMatrix<6,9>& Y,
-                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& F,
-                    const LINALG::FixedSizeSerialDenseMatrix<3,3>& S) const;
+  void BuildLambda(LINALG::Matrix<9,9>& L, const LINALG::Matrix<3,3>& F) const;
+  void BuildIF(LINALG::Matrix<6,6>& IF, const LINALG::Matrix<3,3>& F) const;
+  void BuildTheta(LINALG::Matrix<6,9>& Theta, const LINALG::Matrix<3,3>& F) const;
+  void BuildYpsilon(LINALG::Matrix<6,9>& Y,
+                    const LINALG::Matrix<3,3>& F,
+                    const LINALG::Matrix<3,3>& S) const;
 
 
   // these were for debugging

@@ -100,8 +100,8 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
           vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          LINALG::FixedSizeSerialDenseMatrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
-          const LINALG::FixedSizeSerialDenseMatrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe)    // material element coords
+          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
+          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe)    // material element coords
 {
   // vector of df(origin)
   static double df0_vector[NUMDIM_SOH8*NUMNOD_SOH8] =
@@ -114,10 +114,10 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
                 +0.125,+0.125,+0.125,
                 -0.125,+0.125,+0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMNOD_SOH8> df0(df0_vector); // copy
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> df0(df0_vector); // copy
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0;
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0;
   jac0.Multiply(df0,xrefe);
   // compute determinant of Jacobian at origin
   detJ0 = jac0.Determinant();

@@ -70,9 +70,9 @@ void MAT::BioCell::Unpack(const vector<char>& data)
  |  Calculate stress and constitutive tensor (BioCell)          rm 08/08|
  *----------------------------------------------------------------------*/
 void MAT::BioCell::Evaluate(
-        const LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-        LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-        LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
+        const LINALG::Matrix<6,1>* glstrain,
+        LINALG::Matrix<6,6>* cmat,
+        LINALG::Matrix<6,1>* stress)
 {
   // set material parameters ///////////////////////////////////////////////////
   bool AN = true; // AN = Actin Network (NeoHookean) on/off = 1/0

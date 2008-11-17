@@ -54,11 +54,11 @@ using namespace LINALG; // our linear algebra
  | material laws for So_hex8                                   gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params)
 {
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
-  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // All materials that have a pure LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
   RCP<MAT::Material> mat = Material();
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
         // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
         // -> get C_enh from enhanced GL strains
-        LINALG::FixedSizeSerialDenseMatrix<3,3> C_enh;
+        LINALG::Matrix<3,3> C_enh;
         for (int i = 0; i < 3; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
         // off-diagonal terms are already twice in the Voigt-GLstrain-vector
         C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
@@ -231,12 +231,12 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
 
         // -> polar decomposition of (U^mod)^2
-        LINALG::FixedSizeSerialDenseMatrix<3,3> Q;
-        LINALG::FixedSizeSerialDenseMatrix<3,3> S;
-        LINALG::FixedSizeSerialDenseMatrix<3,3> VT;
+        LINALG::Matrix<3,3> Q;
+        LINALG::Matrix<3,3> S;
+        LINALG::Matrix<3,3> VT;
         LINALG::SVD<3,3>(C_enh,Q,S,VT); // Singular Value Decomposition
-        LINALG::FixedSizeSerialDenseMatrix<3,3> U_enh;
-        LINALG::FixedSizeSerialDenseMatrix<3,3> temp;
+        LINALG::Matrix<3,3> U_enh;
+        LINALG::Matrix<3,3> temp;
         for (int i = 0; i < 3; ++i) S(i,i) = sqrt(S(i,i));
         temp.MultiplyNN(Q,S);
         U_enh.MultiplyNN(temp,VT);
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         // Second step: determine rotation tensor R from F (F=R*U)
         // -> polar decomposition of displacement based F
         LINALG::SVD<3,3>(*defgrd,Q,S,VT); // Singular Value Decomposition
-        LINALG::FixedSizeSerialDenseMatrix<3,3> R;
+        LINALG::Matrix<3,3> R;
         R.MultiplyNN(Q,VT);
 
         // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
@@ -278,11 +278,11 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
  | material laws for So_weg6                                   gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params)         // algorithmic parameters e.g. time
 {
@@ -294,7 +294,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
-  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // All materials that have a pure LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore....
   RCP<MAT::Material> mat = Material();
@@ -362,10 +362,10 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
  | material laws for SoDisp                                   maf 08/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
-        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
-        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+        LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
         double* density,
-        LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
         ParameterList&            params)         // algorithmic parameters e.g. time
 {
 #ifdef DEBUG
@@ -375,7 +375,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
   if (!glstrain) dserror("No GL strains supplied");
 #endif
 
-  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // All materials that have a pure LINALG::Matrix
   // interface go to the material law here
   // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
@@ -436,11 +436,11 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
  | material laws for So_tet4                                  gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp)
 {
 #ifdef DEBUG
@@ -451,7 +451,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
-  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // All materials that have a pure LINALG::Matrix
   // interface go to the material law here
   // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
@@ -500,11 +500,11 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
  | material laws for So_tet10                                   maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* stress,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
-                    LINALG::FixedSizeSerialDenseMatrix<MAT::NUM_STRESS_3D,1>* glstrain,
-                    LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
                     const int gp)
 {
 #ifdef DEBUG
@@ -515,7 +515,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
-  // All materials that have a pure LINALG::FixedSizeSerialDenseMatrix
+  // All materials that have a pure LINALG::Matrix
   // interface go to the material law here, all others go through to
   // the old interface
   RCP<MAT::Material> mat = Material();

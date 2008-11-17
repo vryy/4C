@@ -700,7 +700,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
       |     +-            -+        +-            -+
       |
       *----------------------------------------------------------------------*/
-    LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>    xjm;
+    LINALG::Matrix<NSD,NSD>    xjm;
 
     for (int isd=0; isd<NSD; isd++)
     {
@@ -896,7 +896,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   )
 {
   // get view of solution vector
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> sol(&(solution[0]),true);
+  LINALG::Matrix<iel,1> sol(&(solution[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();
@@ -929,7 +929,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
      distype == DRT::Element::hex20)
   {
     // get node coordinates of element
-    LINALG::FixedSizeSerialDenseMatrix<3,iel>  xyze;
+    LINALG::Matrix<3,iel>  xyze;
     DRT::Node** nodes = Nodes();
     for(int inode=0;inode<iel;inode++)
     {
@@ -1055,7 +1055,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     }
 
     // allocate vector for shapefunctions
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> funct;
+    LINALG::Matrix<iel,1> funct;
 
     // get the quad9 gaussrule for the in plane integration
     const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
@@ -1230,7 +1230,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     knots->GetEleKnots(eleknots,gid);
 
     // aquire weights from nodes
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> weights;
+    LINALG::Matrix<iel,1> weights;
 
     for (int inode=0; inode<iel; ++inode)
     {
@@ -1242,7 +1242,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     }
 
     // get shapefunctions, compute all visualisation point positions
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> nurbs_shape_funct;
+    LINALG::Matrix<iel,1> nurbs_shape_funct;
 
     // there's one additional plane for the last element layer
     int endlayer=0;
@@ -1369,13 +1369,13 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     )
 {
   // alloc a fixed size array for nodal velocities
-  LINALG::FixedSizeSerialDenseMatrix<3,iel>   evel;
+  LINALG::Matrix<3,iel>   evel;
 
   // wrap matrix objects in fixed-size arrays
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,1> myvelvec                     (&(myvel[0])                   ,true);
-  LINALG::FixedSizeSerialDenseMatrix<3,1>     vel_hat                      (bvel_hat                      ,true);
-  LINALG::FixedSizeSerialDenseMatrix<3,3>     reystr_hat                   (breystr_hat                   ,true);
-  LINALG::FixedSizeSerialDenseMatrix<3,3>     modeled_stress_grid_scale_hat(bmodeled_stress_grid_scale_hat,true);
+  LINALG::Matrix<4*iel,1> myvelvec                     (&(myvel[0])                   ,true);
+  LINALG::Matrix<3,1>     vel_hat                      (bvel_hat                      ,true);
+  LINALG::Matrix<3,3>     reystr_hat                   (breystr_hat                   ,true);
+  LINALG::Matrix<3,3>     modeled_stress_grid_scale_hat(bmodeled_stress_grid_scale_hat,true);
 
   // split velocity and throw away  pressure, insert into element array
   for (int i=0;i<iel;++i)
@@ -1394,13 +1394,13 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   const DiscretizationType distype = this->Shape();
 
   // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-  LINALG::FixedSizeSerialDenseMatrix<iel,  1>  funct;
-  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>  xjm  ;
-  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD>  xji  ;
-  LINALG::FixedSizeSerialDenseMatrix<NSD,iel>  deriv;
+  LINALG::Matrix<iel,  1>  funct;
+  LINALG::Matrix<NSD,NSD>  xjm  ;
+  LINALG::Matrix<NSD,NSD>  xji  ;
+  LINALG::Matrix<NSD,iel>  deriv;
 
   // get node coordinates of element
-  LINALG::FixedSizeSerialDenseMatrix<NSD,iel> xyze;
+  LINALG::Matrix<NSD,iel> xyze;
   for(int inode=0;inode<iel;inode++)
   {
     xyze(0,inode)=Nodes()[inode]->X()[0];
@@ -1462,7 +1462,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   //
   //             compute global first derivates
   //
-  LINALG::FixedSizeSerialDenseMatrix<NSD,iel> derxy;
+  LINALG::Matrix<NSD,iel> derxy;
   /*
     Use the Jacobian and the known derivatives in element coordinate
     directions on the right hand side to compute the derivatives in
@@ -1515,7 +1515,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   //                   +-----
   //                   node j
   //
-  LINALG::FixedSizeSerialDenseMatrix<NSD,1> velint;
+  LINALG::Matrix<NSD,1> velint;
   for (int rr=0;rr<NSD;++rr)
   {
     velint(rr)=funct(0)*evel(rr,0);
@@ -1536,7 +1536,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   //
   // j : direction of derivative x/y/z
   //
-  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD> vderxy;
+  LINALG::Matrix<NSD,NSD> vderxy;
   for (int nn=0;nn<NSD;++nn)
   {
     for (int rr=0;rr<NSD;++rr)
@@ -1556,7 +1556,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
           \   / ij    2.0   |       dx              dx        |
                             +-        j               i      -+
   */
-  LINALG::FixedSizeSerialDenseMatrix<NSD,NSD> epsilon;
+  LINALG::Matrix<NSD,NSD> epsilon;
 
   for (int nn=0;nn<NSD;++nn)
   {
@@ -1642,9 +1642,9 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   double&                  center)
 {
 
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> evel_hat                            ;
-  LINALG::FixedSizeSerialDenseMatrix<9,iel> ereynoldsstress_hat                 ;
-  LINALG::FixedSizeSerialDenseMatrix<9,iel> efiltered_modeled_subgrid_stress_hat;
+  LINALG::Matrix<3,iel> evel_hat                            ;
+  LINALG::Matrix<9,iel> ereynoldsstress_hat                 ;
+  LINALG::Matrix<9,iel> efiltered_modeled_subgrid_stress_hat;
 
   for (int nn=0;nn<iel;++nn)
   {
@@ -1671,14 +1671,14 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   const DiscretizationType distype = this->Shape();
 
   // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-  LINALG::FixedSizeSerialDenseMatrix<iel,1> funct;
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> deriv;
+  LINALG::Matrix<iel,1> funct;
+  LINALG::Matrix<3,iel> deriv;
 
   //this will be the y-coordinate of a point in the element interior
   center = 0;
 
   // get node coordinates of element
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze;
+  LINALG::Matrix<3,iel> xyze;
   for(int inode=0;inode<iel;inode++)
   {
     xyze(0,inode)=Nodes()[inode]->X()[0];
@@ -1734,7 +1734,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
         dserror("type unknown!\n");
   }
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
+  LINALG::Matrix<3,3> xjm;
   // get Jacobian matrix and its determinant
   for (int nn=0;nn<3;++nn)
   {
@@ -1757,7 +1757,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //
   //             compute global first derivates
   //
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> derxy;
+  LINALG::Matrix<3,iel> derxy;
   /*
     Use the Jacobian and the known derivatives in element coordinate
     directions on the right hand side to compute the derivatives in
@@ -1778,7 +1778,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
           +-                 -+     +-    -+      +-    -+
 
   */
-  LINALG::FixedSizeSerialDenseMatrix<3,3> xji;
+  LINALG::Matrix<3,3> xji;
   xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
   xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
   xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
@@ -1811,7 +1811,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //                    +-----
   //                    node j
   //
-  LINALG::FixedSizeSerialDenseMatrix<3,1> velint_hat;
+  LINALG::Matrix<3,1> velint_hat;
   for (int rr=0;rr<3;++rr)
   {
     velint_hat(rr)=funct(0)*evel_hat(rr,0);
@@ -1832,7 +1832,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //
   // j : direction of derivative x/y/z
   //
-  LINALG::FixedSizeSerialDenseMatrix<3,3>  vderxy_hat;
+  LINALG::Matrix<3,3>  vderxy_hat;
 
   for (int nn=0;nn<3;++nn)
   {
@@ -1855,7 +1855,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //                        +-----
   //                        node k
   //
-  LINALG::FixedSizeSerialDenseMatrix<3,3> restress_hat;
+  LINALG::Matrix<3,3> restress_hat;
 
   for (int nn=0;nn<3;++nn)
   {
@@ -1888,7 +1888,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   //            node k
   //
   //
-  LINALG::FixedSizeSerialDenseMatrix<3,3> filtered_modeled_subgrid_stress_hat;
+  LINALG::Matrix<3,3> filtered_modeled_subgrid_stress_hat;
   for (int nn=0;nn<3;++nn)
   {
     for (int rr=0;rr<3;++rr)
@@ -1914,7 +1914,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
                             +-        j               i        -+
   */
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3>  epsilon_hat;
+  LINALG::Matrix<3,3>  epsilon_hat;
   for (int nn=0;nn<3;++nn)
   {
     for (int rr=0;rr<3;++rr)
@@ -1949,8 +1949,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   rateofstrain_hat *= 2.0;
   rateofstrain_hat = sqrt(rateofstrain_hat);
 
-  LINALG::FixedSizeSerialDenseMatrix<3,3> L_ij;
-  LINALG::FixedSizeSerialDenseMatrix<3,3> M_ij;
+  LINALG::Matrix<3,3> L_ij;
+  LINALG::Matrix<3,3> M_ij;
 
   for(int rr=0;rr<3;rr++)
   {

@@ -127,9 +127,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
 {
   const int numnode = iel;
 
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel> elemat1(elemat1_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<3*iel,    1> elevec1(elevec1_epetra.A(),true);
 
   // need current velocity/pressure and velocity/density vector
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -146,9 +146,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   if (ele->is_ale_) dserror("No ALE support within stationary fluid solver.");
 
   // create objects for element arrays
-  LINALG::FixedSizeSerialDenseMatrix<numnode, 1> eprenp;
-  LINALG::FixedSizeSerialDenseMatrix<2, numnode> evelnp;
-  LINALG::FixedSizeSerialDenseMatrix<numnode, 1> edensnp;
+  LINALG::Matrix<numnode, 1> eprenp;
+  LINALG::Matrix<2, numnode> evelnp;
+  LINALG::Matrix<numnode, 1> edensnp;
 
   for (int i=0;i<numnode;++i)
   {
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
 
   // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
-  LINALG::FixedSizeSerialDenseMatrix<2,numnode> fsevelnp;
+  LINALG::Matrix<2,numnode> fsevelnp;
 
   // get flag for fine-scale subgrid viscosity
   Fluid2::StabilisationAction fssgv =
@@ -275,12 +275,12 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
   Fluid2*                                 ele,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&            fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            eprenp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&            edensnp,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>&            estif,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,    1>&            eforce,
+  const LINALG::Matrix<2,iel>&            evelnp,
+  const LINALG::Matrix<2,iel>&            fsevelnp,
+  const LINALG::Matrix<iel,1>&            eprenp,
+  const LINALG::Matrix<iel,1>&            edensnp,
+  LINALG::Matrix<3*iel,3*iel>&            estif,
+  LINALG::Matrix<3*iel,    1>&            eforce,
   struct _MATERIAL*                       material,
   double                                  pseudotime,
   bool                                    newton,
@@ -487,7 +487,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
       DRT::UTILS::shape_function_2D_deriv2(deriv2_,e1,e2,distype);
 
       // initialize and zero out everything
-      LINALG::FixedSizeSerialDenseMatrix<3,3> bm;
+      LINALG::Matrix<3,3> bm;
 
       // calculate elements of jacobian_bar matrix
       bm(0,0) =                     xjm_(0,0)*xjm_(0,0);
@@ -1586,9 +1586,9 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
   Fluid2*                                           ele,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&  evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<2,iel>&  fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>&  edensnp,
+  const LINALG::Matrix<2,iel>&  evelnp,
+  const LINALG::Matrix<2,iel>&  fsevelnp,
+  const LINALG::Matrix<iel,1>&  edensnp,
   const double                                      visc,
   const enum Fluid2::StabilisationAction            fssgv,
   const double                                      Cs

@@ -24,10 +24,10 @@ MAT::ViscoNeoHooke::ViscoNeoHooke()
   : matdata_(NULL)
 {
   isinit_=false;
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 }
 
 
@@ -95,13 +95,13 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
 
   if (twicehistsize == 0) isinit_=false;
 
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   for (int var=0; var<twicehistsize; var+=2)
   {
-    LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> tmp(true);
+    LINALG::Matrix<NUM_STRESS_3D,1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
     ExtractfromPack(position,data,tmp);
@@ -121,11 +121,11 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Setup(const int numgp)
 {
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> emptyvec(true);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   histstresscurr_->resize(numgp);
   histstresslast_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -156,9 +156,9 @@ void MAT::ViscoNeoHooke::Update()
 {
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
-  const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> emptyvec(true);
-  histstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> >);
+  const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
+  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const int numgp=histstresslast_->size();
   histstresscurr_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -185,11 +185,11 @@ void MAT::ViscoNeoHooke::Reset()
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Evaluate(const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* glstrain,
+void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
                                   const int gp,
                                   Teuchos::ParameterList& params,
-                                  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
-                                  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1>* stress)
+                                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
+                                  LINALG::Matrix<NUM_STRESS_3D,1>* stress)
 
 {
   // get material parameters
@@ -263,10 +263,10 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::FixedSizeSerialDenseMatrix<NUM_S
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Id;
+  LINALG::Matrix<NUM_STRESS_3D,1> Id;
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
   for (int i =3; i<6;i++) Id(i)=0.0;
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> C(*glstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -281,7 +281,7 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::FixedSizeSerialDenseMatrix<NUM_S
   const double I3invcubroot = pow(I3,-1.0/3.0);
 
   // invert C
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Cinv;
+  LINALG::Matrix<NUM_STRESS_3D,1> Cinv;
   Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
   Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
   Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
@@ -296,24 +296,24 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::FixedSizeSerialDenseMatrix<NUM_S
 
   // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
   // Volumetric part of PK2 stress
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SVol(Cinv);
+  LINALG::Matrix<NUM_STRESS_3D,1> SVol(Cinv);
   SVol.Scale(kappa*(J-1.0)*J);
   *stress+=SVol;
 
   // Deviatoric elastic part (2 d W^dev/d C)
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> SDevEla(Cinv);
+  LINALG::Matrix<NUM_STRESS_3D,1> SDevEla(Cinv);
   SDevEla.Scale(-1.0/3.0*I1);
   SDevEla+=Id;
   SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
 
   // visco part
   // read history
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> S_n (histstresslast_->at(gp));
+  LINALG::Matrix<NUM_STRESS_3D,1> S_n (histstresslast_->at(gp));
   S_n.Scale(-1.0);
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q_n (artstresslast_->at(gp));
+  LINALG::Matrix<NUM_STRESS_3D,1> Q_n (artstresslast_->at(gp));
 
   // artificial visco stresses
-  LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> Q(Q_n);
+  LINALG::Matrix<NUM_STRESS_3D,1> Q(Q_n);
   Q.Scale(artscalar1);
   Q += SDevEla;
   Q += S_n;

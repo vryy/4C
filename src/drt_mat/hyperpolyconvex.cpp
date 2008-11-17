@@ -107,9 +107,9 @@ Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
 */
 
 void MAT::HyperPolyconvex::Evaluate(
-        const LINALG::FixedSizeSerialDenseMatrix<6,1>* glstrain,
-        LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-        LINALG::FixedSizeSerialDenseMatrix<6,1>* stress)
+        const LINALG::Matrix<6,1>* glstrain,
+        LINALG::Matrix<6,6>* cmat,
+        LINALG::Matrix<6,1>* stress)
 {
   // wrapper for FixedSizeMatrix
   Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());

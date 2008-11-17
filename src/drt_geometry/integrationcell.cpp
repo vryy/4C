@@ -229,7 +229,7 @@ BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
     
     // center in local coordinates
-    LINALG::FixedSizeSerialDenseMatrix<3,1> localcenterpos;
+    LINALG::Matrix<3,1> localcenterpos;
     localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
@@ -351,7 +351,7 @@ BlitzVec3 GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& el
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
-    const LINALG::FixedSizeSerialDenseMatrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
+    const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
 
     // shape functions
     LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));

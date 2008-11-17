@@ -190,7 +190,7 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(ParameterList& params,
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(
   int i, int j,
-  const LINALG::FixedSizeSerialDenseMatrix<3, iel>& xyze,
+  const LINALG::Matrix<3, iel>& xyze,
   double& length,
   double& dx,
   double& dy,
@@ -212,17 +212,17 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
     int node_p, int node_q, int node_r, int node_s,
-    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& sq,
+    const LINALG::Matrix<3, 1>& sq,
     const double len_sq,
-    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& rp,
+    const LINALG::Matrix<3, 1>& rp,
     const double len_rp,
-    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& qp,
-    const LINALG::FixedSizeSerialDenseMatrix<3, 1>& local_x,
-    LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat)
+    const LINALG::Matrix<3, 1>& qp,
+    const LINALG::Matrix<3, 1>& local_x,
+    LINALG::Matrix<3*iel,3*iel>& sys_mat)
 {
   //Positions for dynamic triangle (2D)
   //sequence: s,j,q
-  LINALG::FixedSizeSerialDenseMatrix<2,3> xyze_dyn_tria;
+  LINALG::Matrix<2,3> xyze_dyn_tria;
 
   // Some matrices that can be found in the paper are not assembled
   // here, because it can be done with less memory. I use only one
@@ -232,18 +232,18 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
   //transformation matrix from the plane of the triangle to the
   //three-dimensional global frame.
   //This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.
-  LINALG::FixedSizeSerialDenseMatrix<12, 3> trans_matrix;
+  LINALG::Matrix<12, 3> trans_matrix;
 
   //rotational stiffness matrix for tetrahedron with given dynamic triangle
-  LINALG::FixedSizeSerialDenseMatrix<12,12> k_dyn_tet;
+  LINALG::Matrix<12,12> k_dyn_tet;
 
   //local x,y in the plane of the dynamic triangle
   // these are the 3d-vectors that span this plane
-  LINALG::FixedSizeSerialDenseMatrix<3,1> local_y;
+  LINALG::Matrix<3,1> local_y;
 
   // the point p relativ to the point (0,0) in the triangle plane
   // transformed into 3d space
-  LINALG::FixedSizeSerialDenseMatrix<3,1> p;
+  LINALG::Matrix<3,1> p;
 
   //local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   //local y-value of s xyze_dyn_tria(1,0 := 0.0
@@ -527,13 +527,13 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(
   int tet_0, int tet_1, int tet_2, int tet_3,
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
 {
   //according to Farhat et al.
   //twelve-triangle configuration
 
-  LINALG::FixedSizeSerialDenseMatrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
+  LINALG::Matrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
   double l01, l02, l03, l12, l13, l23;
   ale3_edge_geometry(tet_0, tet_1, xyze, l01, e01(0), e01(1), e01(2));
   ale3_edge_geometry(tet_0, tet_2, xyze, l02, e02(0), e02(1), e02(2));
@@ -585,8 +585,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(
 // dummy function, "divide tetra into tetras"
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
 {
   ale3_add_tetra_stiffness(0,1,2,3,sys_mat,xyze);
 }
@@ -595,8 +595,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
 // divide pyramid into tetras
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
 {
   ale3_add_tetra_stiffness(0,1,3,4,sys_mat,xyze);
   ale3_add_tetra_stiffness(0,1,2,4,sys_mat,xyze);
@@ -608,8 +608,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
 // divide wedge into tetras
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
   ale3_add_tetra_stiffness(2, 0, 1, 4, sys_mat, xyze);
@@ -631,8 +631,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
 // divide hex into tetras
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel>& sys_mat,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& xyze)
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
 {
 
   //Use 8 tetrahedra to prevent node-face-penetration
@@ -653,14 +653,14 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
   Epetra_SerialDenseMatrix& sys_mat_epetra,
   const vector<double>&           displacements)
 {
-  LINALG::FixedSizeSerialDenseMatrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
   int node_i, node_j;                                     // end nodes of spring
   double length;                                          // length of edge
   double dx, dy, dz;                                      // deltas in each direction
   double factor;
 
   // get node coordinates
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze;
+  LINALG::Matrix<3,iel> xyze;
   DRT::Node** nodes = ele->Nodes();
   for(int i=0;i<iel;i++)
   {
@@ -1074,14 +1074,14 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
 {
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
-  LINALG::FixedSizeSerialDenseMatrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
+  LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
 
   //  get material using class StVenantKirchhoff
   if (material->MaterialType()!=m_stvenant)
     dserror("stvenant material expected but got type %d", material->MaterialType());
   MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
-  LINALG::FixedSizeSerialDenseMatrix<3,iel> xyze;
+  LINALG::Matrix<3,iel> xyze;
 
   // get node coordinates
   DRT::Node** nodes = ele->Nodes();
@@ -1104,12 +1104,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  LINALG::FixedSizeSerialDenseMatrix<iel,1  > funct;
-  LINALG::FixedSizeSerialDenseMatrix<3,  iel> deriv;
-  LINALG::FixedSizeSerialDenseMatrix<3,  3  > xjm;
-  LINALG::FixedSizeSerialDenseMatrix<3,  3  > xji;
-  LINALG::FixedSizeSerialDenseMatrix<6,  nd > bop;
-  LINALG::FixedSizeSerialDenseMatrix<6,  6  > D(true);
+  LINALG::Matrix<iel,1  > funct;
+  LINALG::Matrix<3,  iel> deriv;
+  LINALG::Matrix<3,  3  > xjm;
+  LINALG::Matrix<3,  3  > xji;
+  LINALG::Matrix<6,  nd > bop;
+  LINALG::Matrix<6,  6  > D(true);
 
   double                        vol=0.;
 

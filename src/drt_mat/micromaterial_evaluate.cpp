@@ -52,9 +52,9 @@ extern struct _GENPROB     genprob;
 // In case of any changes of the function prototype make sure that the
 // corresponding prototype in src/filter_common/filter_evaluation.cpp is adapted, too!!
 
-void MAT::MicroMaterial::Evaluate(LINALG::FixedSizeSerialDenseMatrix<3,3>* defgrd,
-                                  LINALG::FixedSizeSerialDenseMatrix<6,6>* cmat,
-                                  LINALG::FixedSizeSerialDenseMatrix<6,1>* stress,
+void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
+                                  LINALG::Matrix<6,6>* cmat,
+                                  LINALG::Matrix<6,1>* stress,
                                   double* density,
                                   const int gp,
                                   const int ele_ID,

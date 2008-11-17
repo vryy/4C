@@ -251,13 +251,13 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known (public)                   cyron 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
 {
   //setting reference coordinates
   X_ = xrefe;
 
   //center triad in reference configuration
-  LINALG::FixedSizeSerialDenseMatrix<3,3> Tref;
+  LINALG::Matrix<3,3> Tref;
   
   //length in reference configuration
   lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);   
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
   //reference node position
-  LINALG::FixedSizeSerialDenseMatrix<6,1> xrefe;
+  LINALG::Matrix<6,1> xrefe;
   
   //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)

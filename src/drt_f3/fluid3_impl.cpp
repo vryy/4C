@@ -163,9 +163,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const int numnode = iel;
 
   // construct views
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat1(elemat1_epetra,true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,    1> elevec1(elevec1_epetra,true);
+  LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra,true);
+  LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
+  LINALG::Matrix<4*iel,    1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are never used anyway
 
   //--------------------------------------------------
@@ -206,13 +206,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   }
 
   // create objects for element arrays
-  LINALG::FixedSizeSerialDenseMatrix<numnode,1> eprenp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> evelnp;
-  LINALG::FixedSizeSerialDenseMatrix<numnode,1> edensnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> emhist;
-  LINALG::FixedSizeSerialDenseMatrix<numnode,1> echist;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> edispnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> egridv;
+  LINALG::Matrix<numnode,1> eprenp;
+  LINALG::Matrix<3,numnode> evelnp;
+  LINALG::Matrix<numnode,1> edensnp;
+  LINALG::Matrix<3,numnode> emhist;
+  LINALG::Matrix<numnode,1> echist;
+  LINALG::Matrix<3,numnode> edispnp;
+  LINALG::Matrix<3,numnode> egridv;
 
   // split velocity and pressure, insert into element arrays
   for (int i=0;i<numnode;++i)
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
-  LINALG::FixedSizeSerialDenseMatrix<3,numnode> fsevelnp;
+  LINALG::Matrix<3,numnode> fsevelnp;
 
   // get flag for fine-scale subgrid viscosity
   Fluid3::StabilisationAction fssgv =
@@ -598,17 +598,17 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   Fluid3*                                          ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& eprenp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& emhist,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& echist,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& edispnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& egridv,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& estif,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,4*iel>& emesh,
-  LINALG::FixedSizeSerialDenseMatrix<4*iel,1>&     eforce,
+  const LINALG::Matrix<3,iel>& evelnp,
+  const LINALG::Matrix<3,iel>& fsevelnp,
+  const LINALG::Matrix<iel,1>& eprenp,
+  const LINALG::Matrix<iel,1>& edensnp,
+  const LINALG::Matrix<3,iel>& emhist,
+  const LINALG::Matrix<iel,1>& echist,
+  const LINALG::Matrix<3,iel>& edispnp,
+  const LINALG::Matrix<3,iel>& egridv,
+  LINALG::Matrix<4*iel,4*iel>& estif,
+  LINALG::Matrix<4*iel,4*iel>& emesh,
+  LINALG::Matrix<4*iel,1>&     eforce,
   struct _MATERIAL*                                material,
   double                                           time,
   double                                           dt,
@@ -2600,9 +2600,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   Fluid3*                                          ele,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& evelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<3,iel>& fsevelnp,
-  const LINALG::FixedSizeSerialDenseMatrix<iel,1>& edensnp,
+  const LINALG::Matrix<3,iel>& evelnp,
+  const LINALG::Matrix<3,iel>& fsevelnp,
+  const LINALG::Matrix<iel,1>& edensnp,
   const enum Fluid3::TauType                       whichtau,
   struct _MATERIAL*                                material,
   double&                                          visc,
@@ -2819,7 +2819,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
                   node j
       */
      //blitz::Array<double,1> centernodecoord(3);
-      LINALG::FixedSizeSerialDenseMatrix<3,1> centernodecoord;
+      LINALG::Matrix<3,1> centernodecoord;
       //centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
       centernodecoord.Multiply(xyze_,funct_);
 
@@ -2921,7 +2921,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
 
     // get streamlength
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+    LINALG::Matrix<iel,1> tmp;
     tmp.MultiplyTN(derxy_,velino_);
     const double val = tmp.Norm1();
     const double strle = 2.0/val;
@@ -3127,7 +3127,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
 
     // get streamlength
-    LINALG::FixedSizeSerialDenseMatrix<iel,1> tmp;
+    LINALG::Matrix<iel,1> tmp;
     tmp.MultiplyTN(derxy_,velino_);
     const double val = tmp.Norm1();
     const double strle = 2.0/val;
@@ -3525,7 +3525,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::gder2(Fluid3* ele)
 {
   // initialize and zero out everything
-  static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
+  static LINALG::Matrix<6,6> bm;
 
   // calculate elements of jacobian_bar matrix
   bm(0,0) = xjm_(0,0)*xjm_(0,0);

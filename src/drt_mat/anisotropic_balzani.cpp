@@ -150,10 +150,10 @@ Based on Dissertation of Daniel Balzani
 */
 
 void MAT::AnisotropicBalzani::Evaluate(
-        const LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * glstrain,
+        const LINALG::Matrix<NUM_STRESS_3D,1> * glstrain,
         const int gp, const int ele_ID, const double time,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-        LINALG::FixedSizeSerialDenseMatrix<NUM_STRESS_3D,1> * stress)
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
+        LINALG::Matrix<NUM_STRESS_3D,1> * stress)
 {
   // wrapper for FixedSizeMatrix
   Epetra_SerialDenseMatrix cmat_e(View,cmat->A(),cmat->Rows(),cmat->Rows(),cmat->Columns());

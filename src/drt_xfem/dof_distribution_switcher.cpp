@@ -42,7 +42,7 @@ static XFEM::Enrichment genAlternativeEnrichment(
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
         RCP<Epetra_Vector>&             vector,
-        LINALG::FixedSizeSerialDenseMatrix<3,1>                    ivalrigid_body
+        LINALG::Matrix<3,1>                    ivalrigid_body
         ) const
 {
     // create new vector with new number of dofs 

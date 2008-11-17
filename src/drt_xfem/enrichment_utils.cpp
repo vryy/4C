@@ -410,7 +410,7 @@ double DomainCoverageRatioT(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> xyze;
+    static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
     
     //double 
@@ -466,13 +466,13 @@ double DomainCoverageRatioT(
             
             // shape functions and their first derivatives
             static blitz::TinyVector<double,numnode> funct;
-            static LINALG::FixedSizeSerialDenseMatrix<nsd,numnode> deriv;
+            static LINALG::Matrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // get transposed of the jacobian matrix d x / d \xi
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static LINALG::FixedSizeSerialDenseMatrix<3,3> xjm;
+            static LINALG::Matrix<3,3> xjm;
             xjm.MultiplyNT(deriv,xyze);
 
             const double det = xjm.Determinant();
@@ -593,7 +593,7 @@ double BoundaryCoverageRatioT(
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       // get jacobian matrix d x / d \xi  (3x2)
-      static LINALG::FixedSizeSerialDenseMatrix<3,2> dxyzdrs;
+      static LINALG::Matrix<3,2> dxyzdrs;
       //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
       for (int isd = 0; isd < 3; ++isd)
       {
@@ -608,7 +608,7 @@ double BoundaryCoverageRatioT(
       }
       
       // compute covariant metric tensor G for surface element (2x2)
-      static LINALG::FixedSizeSerialDenseMatrix<2,2> metric;
+      static LINALG::Matrix<2,2> metric;
       //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
       

@@ -183,7 +183,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
   return lines;
 }
 
-void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::FixedSizeSerialDenseMatrix<6,1>& xrefe)
+void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
 {   
   //setting reference coordinates
   X_ = xrefe;

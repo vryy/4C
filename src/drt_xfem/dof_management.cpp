@@ -186,7 +186,7 @@ void XFEM::DofManager::toGmsh(
       {
         //DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
+        const LINALG::Matrix<3,1> pos(xfemnode->X());
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         
@@ -212,7 +212,7 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
+        const LINALG::Matrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
@@ -247,7 +247,7 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
+        const LINALG::Matrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
@@ -282,7 +282,7 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
       {
         const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-        const LINALG::FixedSizeSerialDenseMatrix<3,1> pos(xfemnode->X());
+        const LINALG::Matrix<3,1> pos(xfemnode->X());
         
         double val = 0.0;
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());

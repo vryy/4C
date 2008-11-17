@@ -193,19 +193,19 @@ private:
 
 
   void SelectMaterial(RCP<MAT::Material> mat,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
-                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+                      LINALG::Matrix<6,1>& stress,
+                      LINALG::Matrix<6,6>& cmat,
                       double& density,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      LINALG::Matrix<6,1>& glstrain,
+                      LINALG::Matrix<3,3>& defgrd,
                       int gp);
 
    // compute deviatoric stresses and tangent
-  static void DevStressTangent(LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1>& Sdev,
-                               LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET>& CCdev,
-                               LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,NUMSTR_PTET>& CC,
-                               const LINALG::FixedSizeSerialDenseMatrix<NUMSTR_PTET,1>& S,
-                               const LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET>& C);
+  static void DevStressTangent(LINALG::Matrix<NUMSTR_PTET,1>& Sdev,
+                               LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CCdev,
+                               LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CC,
+                               const LINALG::Matrix<NUMSTR_PTET,1>& S,
+                               const LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& C);
 
 }; // class PtetRegister
 
@@ -460,10 +460,10 @@ protected:
   //! volume of element
   double                                                   V_;
   //! derivs of shape functions wrt to material coords
-  LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMDIM_PTET>   nxyz_;
+  LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>   nxyz_;
   //! element's def-gradient
   bool                                                     FisNew_;
-  LINALG::FixedSizeSerialDenseMatrix<NUMDIM_PTET,NUMDIM_PTET>   F_;
+  LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>   F_;
   //! ptr to this element's register class
   DRT::ELEMENTS::PtetRegister*                             myregister_;
 
@@ -480,7 +480,7 @@ protected:
   virtual inline double Volume() { return V_; }
 
   //! Shape functions
-  inline void ShapeFunction(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,1>& funct,
+  inline void ShapeFunction(LINALG::Matrix<NUMNOD_PTET,1>& funct,
                             const double& e1,
                             const double& e2,
                             const double& e3,
@@ -495,7 +495,7 @@ protected:
   }
 
   //! Shape function derivatives
-  inline void ShapeFunctionDerivatives(LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMCOORD_PTET>& deriv)
+  inline void ShapeFunctionDerivatives(LINALG::Matrix<NUMNOD_PTET,NUMCOORD_PTET>& deriv)
   {
     // Ni,j = 1.0 for i==j, otherwise 0.0
     const int size = deriv.M()*deriv.N();
@@ -511,18 +511,18 @@ protected:
   virtual void ptetnlnstiffmass(vector<int>&              lm,
                                 vector<double>&           disp,
                                 vector<double>&           residual,
-                                LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* stiffmatrix,
-                                LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* massmatrix,
-                                LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,          1>* force);
+                                LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* stiffmatrix,
+                                LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* massmatrix,
+                                LINALG::Matrix<NUMDOF_PTET,          1>* force);
 
   //! lump mass matrix (bborn 07/08)
-  void ptetlumpmass(LINALG::FixedSizeSerialDenseMatrix<NUMDOF_PTET,NUMDOF_PTET>* emass);
+  void ptetlumpmass(LINALG::Matrix<NUMDOF_PTET,NUMDOF_PTET>* emass);
 
   void DeformationGradient(vector<double>& disp);
 
 
-  void so_ptet_expol(LINALG::FixedSizeSerialDenseMatrix<NUMGPT_PTET,NUMSTR_PTET>& stresses,
-                     LINALG::FixedSizeSerialDenseMatrix<NUMNOD_PTET,NUMSTR_PTET>& nodalstresses);
+  void so_ptet_expol(LINALG::Matrix<NUMGPT_PTET,NUMSTR_PTET>& stresses,
+                     LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET>& nodalstresses);
 
 
 
@@ -533,11 +533,11 @@ protected:
                       const Epetra_SerialDenseMatrix& defgrd,
                       int gp);
 
-  void SelectMaterial(LINALG::FixedSizeSerialDenseMatrix<6,1>& stress,
-                      LINALG::FixedSizeSerialDenseMatrix<6,6>& cmat,
+  void SelectMaterial(LINALG::Matrix<6,1>& stress,
+                      LINALG::Matrix<6,6>& cmat,
                       double& density,
-                      LINALG::FixedSizeSerialDenseMatrix<6,1>& glstrain,
-                      LINALG::FixedSizeSerialDenseMatrix<3,3>& defgrd,
+                      LINALG::Matrix<6,1>& glstrain,
+                      LINALG::Matrix<3,3>& defgrd,
                       int gp);
 
 }; // class Ptet

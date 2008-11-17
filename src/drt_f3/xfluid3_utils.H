@@ -298,7 +298,7 @@ void gder2(
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // initialize and zero out everything
-    static LINALG::FixedSizeSerialDenseMatrix<6,6> bm;
+    static LINALG::Matrix<6,6> bm;
 
     // calculate elements of jacobian_bar matrix
     bm(0,0) = xjm(0,0)*xjm(0,0);
@@ -396,7 +396,7 @@ void gder2(
     */
 
     //xder2_ = deriv2_(i,k)*xyze_(j,k);
-    static LINALG::FixedSizeSerialDenseMatrix<6,3> xder2;
+    static LINALG::Matrix<6,3> xder2;
     xder2.MultiplyNT(deriv2,xyze);
 
     /*
@@ -634,13 +634,13 @@ namespace XFLUID
 
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>
-static LINALG::FixedSizeSerialDenseMatrix<3,1> interpolateVectorFieldToIntPoint(
+static LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
     const M&  eleVectorField,       ///< array with nodal vector values
     const VS& shp,                  ///< array with nodal shape function
     const int numparam              ///< number of parameters
     )
 {
-  LINALG::FixedSizeSerialDenseMatrix<3,1> v(true);
+  LINALG::Matrix<3,1> v(true);
   const int nsd = 3;
   for (int iparam = 0; iparam < numparam; ++iparam)
     for (int isd = 0; isd < nsd; ++isd)

@@ -188,12 +188,12 @@ namespace LINALG
     \param VT (out):      N-by-N orthogonal matrix (transpose of V)
   */
   template <unsigned int rows, unsigned int cols>
-  void SVD(LINALG::FixedSizeSerialDenseMatrix<rows,cols>& A,
-           LINALG::FixedSizeSerialDenseMatrix<rows,rows>& Q,
-           LINALG::FixedSizeSerialDenseMatrix<rows,cols>& S,
-           LINALG::FixedSizeSerialDenseMatrix<cols,cols>& VT)
+  void SVD(LINALG::Matrix<rows,cols>& A,
+           LINALG::Matrix<rows,rows>& Q,
+           LINALG::Matrix<rows,cols>& S,
+           LINALG::Matrix<cols,cols>& VT)
   {
-    FixedSizeSerialDenseMatrix<rows,cols> tmp(A.A(),false);  // copy, because content of matrix ist destroyed
+    Matrix<rows,cols> tmp(A.A(),false);  // copy, because content of matrix ist destroyed
     Epetra_LAPACK lapack;
     const char jobu = 'A';  // compute and return all M columns of U
     const char jobvt = 'A'; // compute and return all N rows of V^T
