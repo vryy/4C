@@ -192,7 +192,11 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
 
             // calculate integral of normal flux
             // => only meaningful for one scalar, for the time being
-            NormalFluxIntegral(params,discretization,lm,xyze,mynormflux);
+            // NOTE: add integral value only for elements which are not ghosted
+            if(Owner() == discretization.Comm().MyPID())
+            {
+              NormalFluxIntegral(params,discretization,lm,xyze,mynormflux);
+            }
 
             // normal flux value is stored in elevec1, other elevecs set to 0.0
             elevec1[i*numdofpernode+j]+=mynormflux[i];
@@ -576,7 +580,10 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
 
     // anode:   eta= phi0 - phi
     // cathode: eta= phi - phi0
-    eta = sign*(potint-pot0); 
+    eta = sign*(potint-pot0);
+
+    double gammak = 1.0;
+    double pow_conint_gamma_k = pow(conint,gammak);
 
     const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
 
@@ -586,11 +593,11 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
       // ---------------------matrix
       for (int ui=0; ui<iel; ++ui)
       {
-        emat(vi*numdofpernode,ui*numdofpernode) += fac_fz_sign_i0_funct_vi*funct[ui]*expterm; 
-        emat(vi*numdofpernode,ui*numdofpernode+numscal) += fac_fz_sign_i0_funct_vi*conint*((alphaa*frt*sign*exp(alphaa*frt*eta))+(alphac*frt*sign*exp((-alphac)*frt*eta)))*funct[ui];
+        emat(vi*numdofpernode,ui*numdofpernode) += fac_fz_sign_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct[ui]*expterm; 
+        emat(vi*numdofpernode,ui*numdofpernode+numscal) += fac_fz_sign_i0_funct_vi*pow_conint_gamma_k*((alphaa*frt*sign*exp(alphaa*frt*eta))+(alphac*frt*sign*exp((-alphac)*frt*eta)))*funct[ui];
       }
       // ------------right-hand-side
-      erhs[vi*numdofpernode] -= fac_fz_sign_i0_funct_vi*conint*expterm;
+      erhs[vi*numdofpernode] -= fac_fz_sign_i0_funct_vi*pow_conint_gamma_k*expterm;
     }
 
   } // end of loop over integration points gpid
