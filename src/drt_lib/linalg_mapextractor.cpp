@@ -230,8 +230,7 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
   if (othergids.size() > 0)
   {
     othergidsv.reserve(othergids.size());
-    for (std::set<int>::iterator gid=othergids.begin(); gid!=othergids.end(); ++gid)
-      othergidsv.push_back(*gid);
+    othergidsv.assign(othergids.begin(), othergids.end());
     nummyelements = othergidsv.size();
     myglobalelements = &(othergidsv[0]);
   }
