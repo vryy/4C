@@ -2852,7 +2852,7 @@ public:
     \param setzero
       whether matrix should be initialised to zero
    */
-  FixedSizeSerialDenseMatrix(bool setzero = false);
+  explicit FixedSizeSerialDenseMatrix(bool setzero = false);
 
   /// Constructor
   /*!
@@ -2867,6 +2867,20 @@ public:
    */
   explicit FixedSizeSerialDenseMatrix(double* d, bool view=false);
 
+  /// Constructor
+  /*!
+    Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
+    \e view==false (the default) the data is copied, otherwise a view to
+    it is constructed.
+    \note a view is currently not possible, the data will be copied!!! a.ger 17.11.2008
+
+    \param d
+      pointer to data
+    \param view
+      whether the data is to be viewed or copied
+   */
+  explicit FixedSizeSerialDenseMatrix(const double* d, bool view=false);
+  
   /// Constructor
   /*!
     Constructs a new FixedSizeSerialDenseMatrix from data \e d. If
@@ -3678,6 +3692,21 @@ FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(double* d, bo
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (isview_) {
     data_ = d;
+  }
+  else {
+    data_ = new double[rows*cols];
+    std::memcpy(data_, d, rows*cols*sizeof(double));
+  }
+}
+
+template<unsigned int rows, unsigned int cols>
+FixedSizeSerialDenseMatrix<rows, cols>::FixedSizeSerialDenseMatrix(const double* d, bool view) :
+    data_(0), isview_(view)
+{
+  DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+  if (isview_) {
+    dserror("you cannot make a view on a const double pointer");
+    //data_ = d;
   }
   else {
     data_ = new double[rows*cols];
