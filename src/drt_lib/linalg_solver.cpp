@@ -718,10 +718,6 @@ void LINALG::Solver::Solve_lapack(const bool reset)
  *----------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const ParameterList& inparams)
 {
-  // check this -- you never know
-  if (params_ == Teuchos::null)
-    dserror("Solver parameter list has not been allocated yet\n");
-
   // HINT:
   // input parameter inparams.get<int>("AZGRAPH") is not retrieved
 
