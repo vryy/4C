@@ -134,7 +134,7 @@ void ResultTestManager::TestAll()
   INT test_count = 0;
 
   if (comm_.MyPID()==0)
-    cout << "\n" GRAY_LIGHT "Checking results ..." END_COLOR "\n";
+    cout << "\nChecking results ...\n";
 
   for (int i=0; i<genprob.numresults; ++i)
   {

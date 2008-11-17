@@ -396,7 +396,7 @@ void global_result_test()
   if (genprob.numtf>-1) thermpart  = &(partition[genprob.numtf]);
 
   /* let's do it in a fancy style :) */
-  printf("\n" GRAY_LIGHT "Checking results ..." END_COLOR "\n");
+  printf("\nChecking results ...\n");
   fprintf(err,"\n===========================================\n");
   fprintf(err,"Checking results ...\n");
 
