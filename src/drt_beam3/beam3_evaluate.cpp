@@ -1231,6 +1231,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       } 
     }
     
+    //std::cout<<"\ncurvnew = "<<curvnew_;
+    
     
     /*
     //artificial explicit anisotropic rotational damping stiffness
