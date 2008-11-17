@@ -839,6 +839,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
      output_.WriteVector("traction",traction);
     }
 
+    // write domain decomposition for visualization (only once!)
+    if (step_==upres_)
+     output_.WriteElementData();
+
     // do restart if we have to
     if (step_%uprestart_ == 0)
     {

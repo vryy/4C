@@ -366,7 +366,9 @@ void EnsightWriter::WriteCells(
       cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
            << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
       Write(geofile, ensightCellType);
-      Write(geofile, ne);
+
+
+      Write(geofile,ne);
     }
 
     nodevector.clear();
@@ -451,7 +453,6 @@ void EnsightWriter::WriteCells(
             nodevector     ,
             dis            ,
             proc0map       );
-
 	}
         break;
         default:
@@ -541,7 +542,6 @@ void EnsightWriter::WriteNodeConnectivityPar(
       // extract data from recieved package
       while (index < (int)rblock.size())
       {
-
         DRT::ParObject::ExtractfromPack(index,rblock,nodeids);
       }
       // compute node lid based on proc0map and write it to file
@@ -1543,6 +1543,26 @@ void EnsightWriter::WriteElementResultStep(
   for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
     const string ensighteleString = GetEnsightString(iter->first);
+
+    int numsubele;
+    switch (iter->first)
+    {
+    case DRT::Element::hex27:
+      numsubele = 8;
+      break;
+    case DRT::Element::nurbs27:
+      numsubele = 8;
+      break;
+    case DRT::Element::quad9:
+      numsubele = 4;
+      break;
+    case DRT::Element::nurbs9:
+      numsubele = 4;
+      break;
+    default:
+      numsubele = 1;
+    }
+
     const int numelepertype = (iter->second).size();
     vector<int> actelegids(numelepertype);
     actelegids = iter->second;
@@ -1569,7 +1589,8 @@ void EnsightWriter::WriteElementResultStep(
           int lid = finaldatamap.LID(gid);
           if (lid > -1)
           {
-            Write(file, static_cast<float>((*datacolumn)[lid]));
+            for(int i=0;i<numsubele;++i)
+              Write(file, static_cast<float>((*datacolumn)[lid]));
           }
           else
             dserror("received illegal dof local id: %d", lid);

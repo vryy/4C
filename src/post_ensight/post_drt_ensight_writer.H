@@ -233,9 +233,59 @@ protected:
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
                         ofstream&                              geofile   ,
-                        vector<int>                            nodevector,
+                        vector<int>&                           nodevector,
                         const RefCountPtr<DRT::Discretization> dis       ,
                         const RefCountPtr<Epetra_Map>&         proc0map  ) const;
+
+  /*! \brief Quadratic nurbs split one nurbs27 element 
+    in knot space into eight(3d) cells. The global 
+    numbering of the vizualisation points (i.e. the corner 
+    points of the cells) are computed from the local patch 
+    numbering and the patch offset. This method appends
+    the node connectivity for one hex8 cell to the vector
+    of cell nodes                                 (gammi)
+
+    \param DRT::Element::DiscretizationType (i/o)        the vector to which the node 
+                                                         connectivity is appended to
+    \param int                              (i)          0: left      1: right (which hex to generate)
+    \param int                              (i)          0: front     1: rear  (which hex to generate)
+    \param int                              (i)          0: bottom    1: top   (which hex to generate)
+    \param vector<int>                      (i)          cartesian element ids in patch
+    \param int                              (i)          number of visualisation points in u direction
+    \param int                              (i)          number of visualisation points in v direction
+    \param int                              (i)          number of patch
+
+    \return void
+
+  */  
+  void AppendNurbsSubHex(
+    vector<int>       & cellnodes,
+    const int         & l,
+    const int         & m,
+    const int         & n,
+    const vector<int> & ele_cart_id,
+    const int         & nvpu,
+    const int         & nvpv,
+    const int         & npatch) const
+    {
+      
+      int twoid[3];
+      twoid[0]=2*ele_cart_id[0];
+      twoid[1]=2*ele_cart_id[1];
+      twoid[2]=2*ele_cart_id[2];
+
+      cellnodes.push_back((twoid[0]  +l)+((twoid[1]  +m)+(twoid[2]  +n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]+1+l)+((twoid[1]  +m)+(twoid[2]  +n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]+1+l)+((twoid[1]+1+m)+(twoid[2]  +n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]  +l)+((twoid[1]+1+m)+(twoid[2]  +n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]  +l)+((twoid[1]  +m)+(twoid[2]+1+n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]+1+l)+((twoid[1]  +m)+(twoid[2]+1+n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]+1+l)+((twoid[1]+1+m)+(twoid[2]+1+n)*nvpv)*nvpu);
+      cellnodes.push_back((twoid[0]  +l)+((twoid[1]+1+m)+(twoid[2]+1+n)*nvpv)*nvpu);
+
+      return;
+    };
+
 
 
     void WriteNodeConnectivityPar(

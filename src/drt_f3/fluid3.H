@@ -113,6 +113,8 @@ public:
   friend class Fluid3GenalphaResVMM<DRT::Element::wedge15>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex20>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs8>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs27>;
   friend class Fluid3GenalphaResVMMInterface;
 
   friend class Fluid3SystemEvaluator;

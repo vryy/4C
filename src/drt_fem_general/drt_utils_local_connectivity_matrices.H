@@ -344,26 +344,28 @@ namespace UTILS
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToNumNodePerEle {};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::point1>   {static const int numNodePerElement = 1;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::line2>    {static const int numNodePerElement = 2;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::line3>    {static const int numNodePerElement = 3;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs2>   {static const int numNodePerElement = 2;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs3>   {static const int numNodePerElement = 3;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad4>    {static const int numNodePerElement = 4;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad8>    {static const int numNodePerElement = 8;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad9>    {static const int numNodePerElement = 9;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs4>   {static const int numNodePerElement = 4;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs9>   {static const int numNodePerElement = 9;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::tri3>     {static const int numNodePerElement = 3;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::tri6>     {static const int numNodePerElement = 6;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::hex8>     {static const int numNodePerElement = 8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::point1>   {static const int numNodePerElement =  1;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::line2>    {static const int numNodePerElement =  2;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::line3>    {static const int numNodePerElement =  3;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs2>   {static const int numNodePerElement =  2;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs3>   {static const int numNodePerElement =  3;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad4>    {static const int numNodePerElement =  4;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad8>    {static const int numNodePerElement =  8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::quad9>    {static const int numNodePerElement =  9;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs4>   {static const int numNodePerElement =  4;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs9>   {static const int numNodePerElement =  9;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::tri3>     {static const int numNodePerElement =  3;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::tri6>     {static const int numNodePerElement =  6;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::hex8>     {static const int numNodePerElement =  8;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex20>    {static const int numNodePerElement = 20;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex27>    {static const int numNodePerElement = 27;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::tet4>     {static const int numNodePerElement = 4;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs8>   {static const int numNodePerElement =  8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs27>  {static const int numNodePerElement = 27;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::tet4>     {static const int numNodePerElement =  4;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tet10>    {static const int numNodePerElement = 10;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge6>   {static const int numNodePerElement = 6;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge6>   {static const int numNodePerElement =  6;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge15>  {static const int numNodePerElement = 15;};
-  template<> struct DisTypeToNumNodePerEle<DRT::Element::pyramid5> {static const int numNodePerElement = 5;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::pyramid5> {static const int numNodePerElement =  5;};
 
    /*!
   \brief Returns the number of corner nodes

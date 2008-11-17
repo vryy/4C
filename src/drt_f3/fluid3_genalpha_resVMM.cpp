@@ -59,6 +59,20 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
       fh27 = new Fluid3GenalphaResVMM<DRT::Element::hex27>();
     return fh27;
   }
+  case DRT::Element::nurbs8:
+  {
+    static Fluid3GenalphaResVMM<DRT::Element::nurbs8>* fn8;
+    if (fn8==NULL)
+      fn8 = new Fluid3GenalphaResVMM<DRT::Element::nurbs8>();
+    return fn8;
+  }
+  case DRT::Element::nurbs27:
+  {
+    static Fluid3GenalphaResVMM<DRT::Element::nurbs27>* fn27;
+    if (fn27==NULL)
+      fn27 = new Fluid3GenalphaResVMM<DRT::Element::nurbs27>();
+    return fn27;
+  }
   case DRT::Element::tet4:
   {
     static Fluid3GenalphaResVMM<DRT::Element::tet4>* ft4;
