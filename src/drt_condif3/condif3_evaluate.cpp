@@ -358,7 +358,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   // loop over all nodes
   for (int iquad=0; iquad<iel; ++iquad)
   {
-    // coordiantes of the current integration point
+    // coordinates of the current integration point
     const double e1 = nodecoords[iquad][0];
     const double e2 = nodecoords[iquad][1];
     const double e3 = nodecoords[iquad][2];

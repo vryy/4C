@@ -188,24 +188,22 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
             double factor = (parent_->Nodes()[k])->NumElement();
 
             // calculate normal flux at present node
-            mynormflux[i] = abs((eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2])/factor);
+            mynormflux[i] = abs(eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
 
-            // calculate integral of normal flux
-            // => only meaningful for one scalar, for the time being
-            // NOTE: add integral value only for elements which are not ghosted
-            if(Owner() == discretization.Comm().MyPID())
-            {
-              NormalFluxIntegral(params,discretization,lm,xyze,mynormflux);
-            }
-
-            // normal flux value is stored in elevec1, other elevecs set to 0.0
-            elevec1[i*numdofpernode+j]+=mynormflux[i];
-            elevec2[i*numdofpernode+j]+=0.0;
-            elevec3[i*numdofpernode+j]+=0.0;
+            // normal flux value is stored in elevec1, other elevecs remain untouched
+            elevec1[i*numdofpernode+j]+=mynormflux[i]/factor;
           }
         }
       }
       if (dofcount != NumNode()) dserror("Expected dof for surface element is missing");
+
+      // calculate integral of normal flux
+      // => only meaningful for one scalar, for the time being
+      // NOTE: add integral value only for elements which are not ghosted
+      if(Owner() == discretization.Comm().MyPID())
+      {
+        NormalFluxIntegral(params,discretization,lm,xyze,mynormflux);
+      }
 
     } // loop over numdofpernode
 
@@ -669,10 +667,7 @@ void DRT::ELEMENTS::Condif3Surface::NormalFluxIntegral(
     // compute integral of normal flux
     for (int node=0;node<iel;++node)
     {
-      for(int dim=0;dim<3;dim++)
-      {
-        normfluxintegral += funct[node] * enormflux[node] *fac;
-      }
+      normfluxintegral += funct[node] * enormflux[node] * fac;
     }
   }
 
