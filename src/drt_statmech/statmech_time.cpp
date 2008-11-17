@@ -107,7 +107,7 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     //seeding random generator
     int seedvariable = time(0);
-    //seedvariable = 2; //2
+    seedvariable = 20; //5
     seedgenerator.seed((unsigned int)seedvariable);
   }
 
@@ -152,8 +152,8 @@ void StatMechTime::Integrate()
 
 
 
-    //FullNewton();
-    PTC();
+    FullNewton();
+    //PTC();
     UpdateandOutput();
 
 
