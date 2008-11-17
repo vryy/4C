@@ -174,7 +174,9 @@ typedef struct _SOLVAR
 {
   enum   _FIELDTYP        fieldtyp;          /* type of field */
   enum   _PART_TYP        parttyp;           /* typ of partition */
+#ifndef CCADISCRET
   enum   _SOLVER_TYP      solvertyp;         /* typ of chosen solver */
+#endif
   enum   _MATRIX_TYP      matrixtyp;         /* typ of chosen matrix */
 
 
@@ -239,8 +241,10 @@ typedef struct _MUMPSVARS
  *----------------------------------------------------------------------*/
 typedef struct _AZVAR
 {
+#ifndef CCADISCRET
   enum   _AZSOLVERTYP     azsolvertyp;        /* subtype of aztec solver, see enums.h */
   enum   _AZPRECTYP       azprectyp;          /* type of aztec preconditioner, see enums.h */
+#endif
   INT                     azreuse;            /* reuse of preconditioning feature, important,
                                                  but not yet implemented */
   INT                     azoutput;           /* output level for AztecOO 0=no output */

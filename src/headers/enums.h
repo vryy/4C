@@ -437,6 +437,7 @@ typedef enum _ASSEMBLE_ACTION
 /*----------------------------------------------------------------------*
  | enum SOLVER_TYP                                        m.gee 7/01    |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 typedef enum _SOLVER_TYP
 {
                        mlib_d_sp,        /* solver package, hp's mlib, ect-sparse-symmetric-unsymmetric*/
@@ -460,6 +461,7 @@ typedef enum _SOLVER_TYP
                        superlu,          /* Trilinos' solver interface Amesos using SuperLU_Dist */
                        vm3               /* VM3 solver */
 } SOLVER_TYP;
+#endif
 /*!----------------------------------------------------------------------
 \brief enum of possible matrix types
 
@@ -478,6 +480,7 @@ typedef enum _MATRIX_TYP
  | enum AZSOLVERTYP                                        m.gee 9/01  |
  | different solvers within the Aztec2.1 library                       |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 typedef enum _AZSOLVERTYP
 {
                        azsolv_CG,            /* cg-solver */
@@ -487,10 +490,12 @@ typedef enum _AZSOLVERTYP
                        azsolv_LU,            /* LU-solver (I think this doesn't work for some reasons) */
                        azsolv_TFQMR          /* quasi-minimum residual-solver (never used it) */
 } AZSOLVERTYP;
+#endif
 /*----------------------------------------------------------------------*
  | enum AZPRECTYP                                           m.gee 9/01  |
  | different preconditioners within the Aztec package                   |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 typedef enum _AZPRECTYP
 {
                        azprec_none,               /* no preconditioning */
@@ -511,6 +516,7 @@ typedef enum _AZPRECTYP
                        azprec_MLAPI,              /* experimental mlapi preconditioner */
                        azprec_ML                  /* standard ML for structures */
 } AZPRECTYP;
+#endif
 /*----------------------------------------------------------------------*
  | enum HYPREPRECTYP                                       m.gee 10/01  |
  | preconditioners within the HYPRE package                             |

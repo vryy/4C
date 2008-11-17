@@ -27,10 +27,6 @@ Maintainer: Michael Gee
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-extern "C"
-{
-#include "../solver/solver.h"
-}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|

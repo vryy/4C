@@ -20,10 +20,6 @@ Maintainer: Michael Gee
 
 #include "linalg_solver.H"
 #include "standardtypes_cpp.H"
-extern "C" 
-{
-#include "../solver/solver.h"
-}
 
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
@@ -53,17 +49,22 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   }
   
 
+  // see whether Operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+  if (A == NULL)
+    dserror("Unable to cast member A_ to Epetra_CrsMatrix. However, it's needed to access some stuff. Giving up.");
+
   // set some values
-  int            nnz         = A_->NumGlobalNonzeros();
-  int            numeq       = A_->NumMyRows();
-  int            numeq_total = A_->NumGlobalRows();  
+  int            nnz         = A->NumGlobalNonzeros();  // works only with Epetra_CrsMatrix
+  int            numeq       = A->NumMyRows();  // works only with Epetra_CrsMatrix
+  int            numeq_total = A->NumGlobalRows();  // works only with Epetra_CrsMatrix
   int            nrow        = 0;
   int*           rowind1;
   int            root,firsttag=0,error=-1,stats[20];
   IVzero(20,stats);
   int            msglvl=0;
   FILE           *msgFile=NULL;
-  const          Epetra_MpiComm& comm = dynamic_cast<const Epetra_MpiComm&>(A_->Comm());
+  const          Epetra_MpiComm& comm = dynamic_cast<const Epetra_MpiComm&>(A->Comm());
   int            nedges;
   double         *opcounts,minops,cutoff,cpus[20],tau=100.;
   DVzero(20,cpus);
@@ -82,17 +83,17 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   {
     mtxA_ = InpMtx_new();
     InpMtx_init(mtxA_,INPMTX_BY_ROWS,1,nnz,0);
-    for (int i=0; i<A_->NumMyRows(); ++i)
+    for (int i=0; i<A->NumMyRows(); ++i)
     {
       int     numentries;
       double* values;
       int*    indices;
-      int err = A_->ExtractMyRowView(i,numentries,values,indices);
+      int err = A->ExtractMyRowView(i,numentries,values,indices);
       if (err) dserror("Epetra_CrsMatrix::ExtractMyRowView returned an error");
-      int I = A_->RowMap().GID(i);
+      int I = A->RowMap().GID(i);
       for (int j=0; j<numentries; ++j)
       {
-        int J = A_->ColMap().GID(indices[j]);
+        int J = A->ColMap().GID(indices[j]);
         InpMtx_inputRealEntry(mtxA_,I,J,values[j]);
       }
     }

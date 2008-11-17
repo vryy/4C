@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -37,7 +38,7 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
  struct _SOLVAR  *solv;
 
-#ifndef CCADISCRET
+
 #ifdef TRILINOS_PACKAGE
 /* Trilinos solver interface defined in solver_trilinos_control.cpp */
 extern void solver_trilinos_control(struct _FIELD          *actfield,
@@ -176,4 +177,4 @@ dstrc_exit();
 return;
 } /* end of solver_control */
 
-#endif
+#endif  /* #ifndef CCADISCRET */
