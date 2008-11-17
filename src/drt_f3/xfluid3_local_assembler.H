@@ -131,29 +131,30 @@ public:
             const V2&           trialshape
             ) const
     {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(SymmetryMangle<testfield>::name);
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(SymmetryMangle<trialfield>::name);
+        const std::vector<int>& testdof( dofman_.LocalDofPosPerField(SymmetryMangle<testfield>::name));
+        const std::vector<int>& trialdof(dofman_.LocalDofPosPerField(SymmetryMangle<trialfield>::name));
         
-//        const int numparamtest  = testdof.size();
-//        const int numparamtrial = trialdof.size();
+//        const unsigned numparamtest  = testdof.size();
+//        const unsigned numparamtrial = trialdof.size();
 //        
-//        for (int ui=0; ui<numparamtrial; ++ui)
+//        for (unsigned ui=0; ui<numparamtrial; ++ui)
 //        {
-//            const int trialpos = trialdof[ui];
-//
-//            for (int vi=0; vi<numparamtest; ++vi)
+//            const unsigned trialpos = trialdof[ui];
+//            const double multiply = fac * trialshape(ui);
+//            for (unsigned vi=0; vi<numparamtest; ++vi)
 //            {
-//                const int testpos = testdof[vi];
-//                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+//                const unsigned testpos = testdof[vi];
+//                estif_(testpos, trialpos) += testshape(vi)*multiply ;
 //            }
 //        }
-        int ui = 0;
+        unsigned ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
-            int vi = 0;
+            const double multiply = fac * trialshape(ui);
+            unsigned vi = 0;
             for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
-                estif_(*testpos, *trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                estif_(*testpos, *trialpos) += testshape(vi)*multiply;
                 vi++;
             }
             ui++;
@@ -172,10 +173,10 @@ public:
         const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
         const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>();
         
-        int ui = 0;
+        unsigned ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
-            int vi = 0;
+            unsigned vi = 0;
             for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
                 estif_(*testpos, *trialpos) += fac*ShapeSelector<ShapeMangle<SymmetryMangle<testfield>::name>::name >::shp(testDerivId,vi)*ShapeSelector<trialfield>::shp(trialDerivId,ui) ;
@@ -195,14 +196,14 @@ public:
     {
         const std::vector<int>& testdof = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
         
-//        const int numparamtest  = testdof.size();
+//        const unsigned numparamtest  = testdof.size();
 //        
-//        for (int vi=0; vi<numparamtest; ++vi)
+//        for (unsigned vi=0; vi<numparamtest; ++vi)
 //        {
 //            const int testpos = testdof[vi];
 //            eforce_(testpos) += fac*testshape(vi);
 //        }
-        int vi = 0;
+        unsigned vi = 0;
         for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {
             eforce_(*testpos) += fac*testshape(vi);
@@ -267,14 +268,14 @@ public:
             const V2&           trialshape
             ) const
     {
-        const int numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (int ui=0; ui<numparam; ++ui)
+        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (unsigned ui=0; ui<numparam; ++ui)
         {
-            const int trialpos = 4*ui + FieldNum<trialfield>::pos;
+            const unsigned trialpos = 4*ui + FieldNum<trialfield>::pos;
             const double multiply = fac*trialshape(ui);
-            for (int vi=0; vi<numparam; ++vi)
+            for (unsigned vi=0; vi<numparam; ++vi)
             {
-                const int testpos = 4*vi + FieldNum<testfield>::pos;
+                const unsigned testpos = 4*vi + FieldNum<testfield>::pos;
                 estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
@@ -288,10 +289,10 @@ public:
             const double&       fac
             ) const
     {
-        const int numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (int vi=0; vi<numparam; ++vi)
+        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (unsigned vi=0; vi<numparam; ++vi)
         {
-            const int testpos = 4*vi + FieldNum<testfield>::pos;
+            const unsigned testpos = 4*vi + FieldNum<testfield>::pos;
             eforce_(testpos) += fac*testshape(vi);
         }
     }

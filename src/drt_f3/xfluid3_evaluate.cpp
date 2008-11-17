@@ -13,6 +13,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "xfluid3.H"
 #include "xfluid3_sysmat.H"
@@ -107,6 +108,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       }
       case calc_fluid_systemmat_and_residual:
       {
+        TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_systemmat_and_residual");
+        
         // do no calculation, if not needed
         if (lm.empty())
             break;
@@ -179,11 +182,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // condensation
           CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
         }
-        
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
-
       }
       break;
       case calc_fluid_beltrami_error:
@@ -221,6 +219,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
+          TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
+        
           // do no calculation, if not needed
           if (lm.empty())
               break;
@@ -362,6 +362,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       }
       case store_xfem_info:
       {
+          TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - store_xfem_info");
+        
           // store pointer to interface handle
           ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
         
@@ -708,7 +710,8 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
   
   if (na > 0)
   {
-    // note: the full (u,p,sigma) matrix is unsymmetric, hence we need both, rectangular matrizes Kda and Kad
+    // note: the full (u,p,sigma) matrix is unsymmetric, 
+    // hence we need both rectangular matrices Kda and Kad
     LINALG::SerialDenseMatrix Kda(nd,na);
     LINALG::SerialDenseMatrix Kaa(na,na);
     LINALG::SerialDenseMatrix Kad(na,nd);

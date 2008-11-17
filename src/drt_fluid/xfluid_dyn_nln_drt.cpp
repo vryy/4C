@@ -130,7 +130,7 @@ void xdyn_fluid_drt()
   // ------------------------------------------------ basic scheme, i.e.
   // --------------------- solving nonlinear or linearized flow equation
   fluidtimeparams.set<int>("type of nonlinear solve" ,
-					 Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
+                     Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
   // -------------------------------------------------- time integration
   // the default time step size
@@ -283,9 +283,6 @@ void xdyn_fluid_drt()
   {
     dserror("Unknown solver type for drt_xfluid");
   }
-
-  //---------- this is the end. Beautiful friend. My only friend, The end.
-  // thanks to RefCountPtr<> we do not need to delete anything here!
 
   return;
 

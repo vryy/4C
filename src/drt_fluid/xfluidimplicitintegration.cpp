@@ -145,7 +145,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
 
-  // get density from elements
+  // get constant density variable for incompressible flow
   {
     ParameterList eleparams;
     eleparams.set("action","get_density");

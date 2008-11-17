@@ -114,12 +114,12 @@ struct Shp
         }
 //              theta_dt = theta_dt_pure;// * delta_slab;
       
-        DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+        const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const int numnode_boundary = boundaryele->NumNode();
         
-        LINALG::FixedSizeSerialDenseMatrix<3,1> iveln;
-        LINALG::FixedSizeSerialDenseMatrix<3,1> ivelnm;
-        LINALG::FixedSizeSerialDenseMatrix<3,1> iaccn;
+        static LINALG::FixedSizeSerialDenseMatrix<3,1> iveln;
+        static LINALG::FixedSizeSerialDenseMatrix<3,1> ivelnm;
+        static LINALG::FixedSizeSerialDenseMatrix<3,1> iaccn;
         
         if (ivelcoln.GlobalLength() > 3)
         {
@@ -135,7 +135,7 @@ struct Shp
           {
             const DRT::Node* node = nodes[inode];
             const std::vector<int> lm = ih->cutterdis()->Dof(node);
-            std::vector<double> myvel(3);
+            static std::vector<double> myvel(3);
             DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
             veln_boundary(0,inode) = myvel[0];
             veln_boundary(1,inode) = myvel[1];
@@ -145,7 +145,7 @@ struct Shp
             veln_boundary(1,inode+4) = myvel[1];
             veln_boundary(2,inode+4) = myvel[2];
             
-            std::vector<double> myvelnm(3);
+            static std::vector<double> myvelnm(3);
             DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
             velnm_boundary(0,inode) = myvelnm[0];
             velnm_boundary(1,inode) = myvelnm[1];
@@ -155,7 +155,7 @@ struct Shp
             velnm_boundary(1,inode+4) = myvelnm[1];
             velnm_boundary(2,inode+4) = myvelnm[2];
             
-            std::vector<double> myacc(3);
+            static std::vector<double> myacc(3);
             DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
             accn_boundary(0,inode) = myacc[0];
             accn_boundary(1,inode) = myacc[1];
@@ -646,7 +646,7 @@ static void SysmatDomain4(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
-            LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy;
+            static LINALG::FixedSizeSerialDenseMatrix<3,3> vderxy;
             //vderxy = enr_derxy(j,k)*evelnp(i,k);
             vderxy = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
@@ -658,6 +658,7 @@ static void SysmatDomain4(
                 vderxy(isd,2) += evelnp(isd,iparam) * shp.dz(iparam);
               }
             }
+//            funct_stress.GEMV('N', numparamvelx, nsd,1.0, evelnp.A(), 3, shp.dx.A(), 0.0, vderxy.A());
             
             //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
       
@@ -665,7 +666,7 @@ static void SysmatDomain4(
             static LINALG::FixedSizeSerialDenseMatrix<3,6> vderxy2;
             if (higher_order_ele)
             {
-              //vderxy2 = enr_derxy2(j,k)*evelnp(i,k);
+              //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
               vderxy2 = 0.0;
               for (int iparam = 0; iparam < numparamvelx; ++iparam)
               {
@@ -686,7 +687,7 @@ static void SysmatDomain4(
             }
 
             // get pressure gradients
-            LINALG::FixedSizeSerialDenseMatrix<3,1> gradp;
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> gradp;
             //gradp = enr_derxy(i,j)*eprenp(j);
             gradp = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
@@ -712,7 +713,7 @@ static void SysmatDomain4(
               pres += shp.d0(iparam)*eprenp(iparam);
             
             // get viscous stress unknowns
-            LINALG::FixedSizeSerialDenseMatrix<3,3> tau;
+            static LINALG::FixedSizeSerialDenseMatrix<3,3> tau;
             if (tauele_unknowns_present)
             {
               XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -757,14 +758,13 @@ static void SysmatDomain4(
             conv_old.Multiply(vderxy,gpvelnp);
             
             /* Viscous term  div epsilon(u_old) */
-            LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old;
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            LINALG::FixedSizeSerialDenseMatrix<3,1> res_old;
-            //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
+            static LINALG::FixedSizeSerialDenseMatrix<3,1> res_old;
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
             
@@ -1514,18 +1514,19 @@ static void SysmatBoundary4(
       
             // get jacobian matrix d x / d \xi  (3x2)
             static LINALG::FixedSizeSerialDenseMatrix<3,2> dxyzdrs;
-            //dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
-            for (int isd = 0; isd < 3; ++isd)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    dxyzdrs(isd,j) = 0.0;
-                    for (int k = 0; k < numnode_boundary; ++k)
-                    {
-                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
-                    }
-                }
-            }
+            // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
+//            for (int isd = 0; isd < 3; ++isd)
+//            {
+//                for (int j = 0; j < 2; ++j)
+//                {
+//                    dxyzdrs(isd,j) = 0.0;
+//                    for (int k = 0; k < numnode_boundary; ++k)
+//                    {
+//                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
+//                    }
+//                }
+//            }
+            xyze_boundary.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
             
             // compute covariant metric tensor G for surface element (2x2)
             static LINALG::FixedSizeSerialDenseMatrix<2,2> metric;
@@ -1799,12 +1800,12 @@ static void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1> eprenp;
-    LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnp;
-    LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> eveln;
-    LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnm;
-    LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> eaccn;
-    LINALG::FixedSizeSerialDenseMatrix<6,shpVecSizeStress> etau;
+    static LINALG::FixedSizeSerialDenseMatrix<shpVecSize,1> eprenp;
+    static LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnp;
+    static LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> eveln;
+    static LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> evelnm;
+    static LINALG::FixedSizeSerialDenseMatrix<3,shpVecSize> eaccn;
+    static LINALG::FixedSizeSerialDenseMatrix<6,shpVecSizeStress> etau;
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
     

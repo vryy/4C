@@ -169,7 +169,7 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
   else
   {
     // we have no dead load
-    edeadng_ = 0.;
+    edeadng_.Zero();
   }
   
   return edeadng_;
@@ -640,14 +640,11 @@ static LINALG::FixedSizeSerialDenseMatrix<3,1> interpolateVectorFieldToIntPoint(
     const int numparam              ///< number of parameters
     )
 {
-  LINALG::FixedSizeSerialDenseMatrix<3,1> v;
+  LINALG::FixedSizeSerialDenseMatrix<3,1> v(true);
   const int nsd = 3;
-  for (int isd = 0; isd < nsd; ++isd)
-  {
-      v(isd) = 0.0;
-      for (int iparam = 0; iparam < numparam; ++iparam)
-          v(isd) += eleVectorField(isd,iparam)*shp(iparam);
-  }
+  for (int iparam = 0; iparam < numparam; ++iparam)
+    for (int isd = 0; isd < nsd; ++isd)
+      v(isd) += eleVectorField(isd,iparam)*shp(iparam);
   return v;
 }
 
