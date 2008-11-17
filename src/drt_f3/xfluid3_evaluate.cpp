@@ -666,15 +666,13 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
   vector<double> inc_velnp(lm.size());
   DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
   
-  //update old iteration residual of the stresses
-  for (int i=0;i<na;i++)
-    for (int j=0;j<nd;j++)
-      DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
+  // update old iteration residual of the stresses
+  // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
+  DLM_info_->oldfa_.GEMV('N', na, nd,1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
   
   // compute element stresses
-  for (int i=0;i<na;i++)
-    for (int j=0;j<na;j++)
-      DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+  // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+  DLM_info_->stressdofs_.GEMV('N', na, na,-1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
   
   // increase size of element vector (old values stay and zeros are added)
   mystate.velnp.resize(numdof_uncond,0.0);
@@ -711,10 +709,10 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
   if (na > 0)
   {
     // note: the full (u,p,sigma) matrix is unsymmetric, hence we need both, rectangular matrizes Kda and Kad
-    Epetra_SerialDenseMatrix Kda(nd,na);
-    Epetra_SerialDenseMatrix Kaa(na,na);
-    Epetra_SerialDenseMatrix Kad(na,nd);
-    Epetra_SerialDenseVector fa(na);
+    LINALG::SerialDenseMatrix Kda(nd,na);
+    LINALG::SerialDenseMatrix Kaa(na,na);
+    LINALG::SerialDenseMatrix Kad(na,nd);
+    LINALG::SerialDenseVector fa(na);
 
     for (int i=0;i<nd;i++)
       for (int j=0;j<na;j++)
@@ -742,40 +740,22 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
 
     {
       LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
-      KdaKaainv.Zero();
       
-      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,soh8_easfull>(KdaKaa, Kda, Kaa);
-      for (int i=0;i<nd;i++)
-        for (int j=0;j<na;j++)
-          for (int k=0;k<na;k++)
-            KdaKaainv(i,j) += Kda(i,k)*Kaa(k,j);
-//                cout << endl << "KdaKaainv" << endl;
-//                cout << KdaKaainv << endl;
+      // KdaKaainv(i,j) = Kda(i,k)*Kaa(k,j);
+      KdaKaainv.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
+
+      // elemat1(i,j) += - KdaKaainv(i,k)*Kad(k,j);
+      elemat1.GEMM('N','N',nd,nd,na,-1.0,KdaKaainv.A(),KdaKaainv.LDA(),Kad.A(),Kad.LDA(),1.0,elemat1.A(),elemat1.LDA());
       
-      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
-      for (int i=0;i<nd;i++)
-        for (int j=0;j<nd;j++)
-          for (int k=0;k<na;k++)
-            elemat1(i,j) -= KdaKaainv(i,k)*Kad(k,j);
-      
-      //LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
-      for (int i=0;i<nd;i++)
-        for (int j=0;j<na;j++)
-          elevec1(i) -= KdaKaainv(i,j)*fa(j);
+      // elevec1(i) += - KdaKaainv(i,j)*fa(j);
+      elevec1.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
     }
    
     {
       // store current DLM data in iteration history
-      for (int i=0; i<na; ++i)
-        for (int j=0; j<na; ++j)
-          DLM_info_->oldKaainv_(i,j) = Kaa(i,j);
-      
-      for (int i=0; i<na; ++i)
-        for (int j=0; j<nd; ++j)
-          DLM_info_->oldKad_(i,j) = Kad(i,j);
-
-      for (int i=0; i<na; ++i)
-        DLM_info_->oldfa_(i) = fa(i);
+      DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
+      DLM_info_->oldKad_.Update(1.0,Kad,0.0);
+      DLM_info_->oldfa_.Update(1.0,fa,0.0);
     }
   }
 }
