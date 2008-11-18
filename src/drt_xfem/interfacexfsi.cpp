@@ -412,7 +412,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
   {
     const DRT::Element* cutterele = cutterdis->lColElement(i);
     const int* nodeids = cutterele->NodeIds();
-    BlitzMat posnp(3,4);
+    LINALG::SerialDenseMatrix posnp(3,4);
     for (int inode = 0; inode != 4; ++inode) // fill n+1 position
     {
       const int nodeid = nodeids[inode];
@@ -422,7 +422,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
         posnp(isd,inode) = nodexyz(isd);
       }
     }
-    BlitzMat posn(3,4);
+    LINALG::SerialDenseMatrix posn(3,4);
     for (int inode = 0; inode != 4; ++inode) // fill n   position
     {
       const int nodeid = nodeids[inode];

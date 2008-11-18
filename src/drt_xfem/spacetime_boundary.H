@@ -32,9 +32,9 @@ public:
 
     //! Standard Constructor
     explicit SpaceTimeBoundaryCell(
-            const int           bele_id,                ///< boundary element id we want to track
-            const BlitzMat&     posnp,                  ///< nodal positions at n+1
-            const BlitzMat&     posn                    ///< nodal positions at n
+            const int                            bele_id,  ///< boundary element id we want to track
+            const LINALG::SerialDenseMatrix&     posnp,    ///< nodal positions at n+1
+            const LINALG::SerialDenseMatrix&     posn      ///< nodal positions at n
             );
 
 //    //! Copy Constructor
@@ -63,14 +63,14 @@ public:
 private:
   
   int           bele_id_;           ///< boundary element id we want to track
-  BlitzMat      posnp_;             ///< nodal positions at n+1
-  BlitzMat      posn_;              ///< nodal positions at n
+  LINALG::SerialDenseMatrix      posnp_;             ///< nodal positions at n+1
+  LINALG::SerialDenseMatrix      posn_;              ///< nodal positions at n
   BlitzMat      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
   
   //! from surface positions at two time steps, create prism element (e.g. hex)
   BlitzMat getLinearPositionArray(
-      const BlitzMat&      posnp,                 ///< nodal positions at n+1
-      const BlitzMat&      posn                   ///< nodal positions at n
+      const LINALG::SerialDenseMatrix&      posnp,                 ///< nodal positions at n+1
+      const LINALG::SerialDenseMatrix&      posn                   ///< nodal positions at n
       ) const;
     
 };

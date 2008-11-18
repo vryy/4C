@@ -70,8 +70,8 @@ static void ComputePhysicalCoordinates(
  *----------------------------------------------------------------------*/
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
     const int           bele_id,
-    const BlitzMat&     posnp,
-    const BlitzMat&     posn
+    const LINALG::SerialDenseMatrix&     posnp,
+    const LINALG::SerialDenseMatrix&     posn
     ) :
       bele_id_(bele_id),
       posnp_(posnp),
@@ -106,8 +106,8 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
 //}
         
 BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
-    const BlitzMat&      posnp,                 ///< nodal positions at n+1
-    const BlitzMat&      posn                   ///< nodal positions at n
+    const LINALG::SerialDenseMatrix&      posnp,
+    const LINALG::SerialDenseMatrix&      posn
     ) const
 {
   BlitzMat xyzt(3,8);

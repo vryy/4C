@@ -177,10 +177,9 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
   std::stringstream gmshfilecontent;
-  
-  BlitzMat xyze(GEO::getCurrentNodalPositions(ele,currentelepositions));
-  gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << "\n";
- 
+  gmshfilecontent << IO::GMSH::cellWithScalarToString(
+      distype, scalar, GEO::getCurrentNodalPositions(ele,currentelepositions)
+      ) << "\n";
   return gmshfilecontent.str();
 }
 
@@ -230,10 +229,8 @@ std::string IO::GMSH::disToString(
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
-    BlitzMat xyze(GEO::getCurrentNodalPositions(actele,
-        currentpositions));
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
-        scalar, xyze) << "\n";
+        scalar, GEO::getCurrentNodalPositions(actele, currentpositions)) << "\n";
   };
   gmshfilecontent << "};\n";
   return gmshfilecontent.str();
