@@ -126,6 +126,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -----------------------sublist containing stabilization parameters
   scatratimeparams->sublist("STABILIZATION")=scatradyn.sublist("STABILIZATION");
 
+  // ----------------sublist containing parameters for newton iteration
+  scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
+
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
@@ -137,7 +140,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
-    scatratimeparams->sublist("NONLINEAR") = scatradyn.sublist("NONLINEAR");
     scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 
     // -------------------------------------------------------------------
@@ -147,7 +149,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     {
       // switch to the SIMPLE(R) algorithms
       solver->PutSolverParamsToSubParams("SIMPLER",
-                                         DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+         DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
     }
   }
 
@@ -157,13 +159,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   if(timintscheme == INPUTPARAMS::timeint_stationary)
   {
-    // -----------------------------------------------------------------
-    // set additional parameters in list for stationary scheme
-    // -----------------------------------------------------------------
-
-    // parameter theta for time-integration schemes
-    scatratimeparams->set<double>("theta",1.0);
-
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
@@ -185,13 +180,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   }
   else if (timintscheme == INPUTPARAMS::timeint_bdf2)
   {
-    // -----------------------------------------------------------------
-    // set additional parameters in list for BDF2 scheme
-    // -----------------------------------------------------------------
-
-    // parameter theta for time-integration schemes
-    scatratimeparams->set<double>("theta",scatradyn.get<double>("THETA"));
-
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
