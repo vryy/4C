@@ -100,7 +100,7 @@ using namespace XFEM::PHYSICS;
       LINALG::Matrix<3,1>&                       gpaccn
       )
   {
-    GEO::PosX posx_gp;
+    BlitzVec3 posx_gp;
     GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);

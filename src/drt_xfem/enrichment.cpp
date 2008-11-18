@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
 #include "enrichment.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"

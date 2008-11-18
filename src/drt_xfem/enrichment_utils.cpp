@@ -127,7 +127,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   LINALG::SerialDenseVector&      cellvalues
   )
 {
-  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -174,7 +174,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   LINALG::SerialDenseVector&      cellvalues
   )
 {
-  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -226,11 +226,11 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&      cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&       cellvalues
   )
 {
-  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -285,17 +285,17 @@ void XFEM::computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&      cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&       cellvalues
   )
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
   
-  BlitzMat xyz_cell(3,nen_cell);
+  LINALG::SerialDenseMatrix xyz_cell(3,nen_cell);
   cell.NodalPosXYZ(ele, xyz_cell);
 
   // if cell node is on the interface, the value is not defined for a jump.
@@ -310,7 +310,7 @@ void XFEM::computeVectorCellNodeValues(
         XFEM::Enrichment::approachUnknown));
   
   // cell corner nodes
-  //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
+  //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
@@ -342,15 +342,15 @@ void XFEM::computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&      cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&      cellvalues
   )
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -364,7 +364,7 @@ void XFEM::computeVectorCellNodeValues(
         XFEM::Enrichment::approachFromPlus));
   
   // cell corner nodes
-  //const BlitzMat cellnodeposvectors = cell.NodalPosXYZ(ele);
+  //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
@@ -564,7 +564,7 @@ double BoundaryCoverageRatioT(
     // gaussian points
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
     
-    const BlitzMat* nodalpos_xi_domain = cell->NodalPosXiDomainBlitz();
+    const LINALG::SerialDenseMatrix* nodalpos_xi_domain = cell->NodalPosXiDomain();
     const int numnode_cell = cell->NumNode();
     
     // integration loop

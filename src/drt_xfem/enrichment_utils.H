@@ -241,8 +241,8 @@ void computeTensorCellNodeValuesFromElementUnknowns(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&     cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&     cellvalues
   );
 
 //! for output, compute values on the integration cells
@@ -252,8 +252,8 @@ void computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&     cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&     cellvalues
   );
 
 //! for output, compute values on the integration cells
@@ -263,8 +263,8 @@ void computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const BlitzMat& elementvalues,
-  BlitzMat&     cellvalues
+  const LINALG::SerialDenseMatrix& elementvalues,
+  LINALG::SerialDenseMatrix&     cellvalues
   );
 
 /*! 

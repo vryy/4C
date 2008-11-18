@@ -79,7 +79,7 @@ struct Shp
       LINALG::Matrix<3,1>&                       gpaccn
       )
   {
-    GEO::PosX posx_gp;
+    BlitzVec3 posx_gp;
     GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);
@@ -348,7 +348,7 @@ static void SysmatDomainTP1(
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
-    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+    //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
     // get viscosity
     // check here, if we really have a fluid !!

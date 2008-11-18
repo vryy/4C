@@ -1279,7 +1279,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << endl;
@@ -1368,7 +1368,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           if(elementvalues.size() != 0)
           {
@@ -1504,7 +1504,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
 
 //          {
@@ -1631,7 +1631,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
 
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
-        BlitzMat elementvalues(3, numparam);
+        LINALG::SerialDenseMatrix elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
           elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
@@ -1646,11 +1646,11 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
-            BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            BlitzMat xyze_cell(3, cell->NumNode());
+            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << endl;
@@ -1665,11 +1665,11 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
             {
-              BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+              LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
               XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-              BlitzMat xyze_cell(3, cell->NumNode());
+              LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
               gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                   cell->Shape(), cellvalues, xyze_cell) << endl;
@@ -1691,7 +1691,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1 and elementvalues.size() > 0 and plot_to_gnuplot)
+        if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;

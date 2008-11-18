@@ -22,16 +22,6 @@ Maintainer: Axel Gerstenberger
 namespace GEO
 {
 
-//! @name Vector names for coordinates in various systems - used for coordinate transformation when using integration cells
-
-typedef BlitzVec3 PosX;             ///< position in physical coordinates (x,y,z)
-typedef BlitzVec3 PosXiDomain;      ///< position in element coordinates of domain element (r,s,t)
-typedef BlitzVec2 PosXiBoundary;    ///< position in element coordinates of boundary element (r,s)
-typedef BlitzVec3 PosEtaDomain;     ///< position in local coordinates of a domain integrationcell (r,s,t)
-typedef BlitzVec2 PosEtaBoundary;   ///< position in local coordinates of a boundary integrationcell (r,s)
-
-//@}
-
 /*!
  * \brief An integration cell is used for specialized element integration routines 
  */
@@ -85,14 +75,14 @@ public:
 
     //! Standard Constructor
     explicit DomainIntCell(
-            const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
-            const std::vector<std::vector<double> >&          domainCoordinates   ///< coordinates in parent element coordinates
+            const DRT::Element::DiscretizationType    distype,            ///< distype of the integration cell
+            const std::vector<std::vector<double> >&  domainCoordinates   ///< coordinates in parent element coordinates
             );
 
     //! Standard Constructor
     explicit DomainIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
-            const BlitzMat&                         domainCoordinates   ///< coordinates in parent element coordinates
+            const LINALG::SerialDenseMatrix&        domainCoordinates   ///< coordinates in parent element coordinates
             );
     
     /*!
@@ -119,12 +109,12 @@ public:
 
      \return cells nodal coordinates  
      */
-    const BlitzMat* NodalPosXiDomainBlitz() const {return &nodalpos_xi_domain_blitz_;};
+    const LINALG::SerialDenseMatrix* NodalPosXiDomain() const {return &nodalpos_xi_domain_;};
     
     //! fills an array with the coordinates of the integration cell in physical coordinates
     void NodalPosXYZ(
-        const DRT::Element&  ele,     ///< parent element
-        BlitzMat&            xyz_cell ///< fill with nodal positions
+        const DRT::Element&         ele,     ///< parent element
+        LINALG::SerialDenseMatrix&  xyz_cell ///< fill with nodal positions
         ) const;
     
     //! return string representation of the DomainIntCell
@@ -136,13 +126,13 @@ public:
 private:
     
     //! coordinates of the nodes in the parent domain element coordinates xi_domain
-    BlitzMat nodalpos_xi_domain_blitz_;
+    LINALG::SerialDenseMatrix nodalpos_xi_domain_;
     
     //! hide default constructor
     explicit DomainIntCell();
     
     //! this function returns the coordinate array for all nodes of an element in parameter coordinates \f$ \xi \f$
-    BlitzMat GetDefaultCoordinates(
+    LINALG::SerialDenseMatrix GetDefaultCoordinates(
             const DRT::Element::DiscretizationType distype  ///< shape of element
             ) const;
 };
@@ -173,8 +163,8 @@ public:
     explicit BoundaryIntCell(
             const DRT::Element::DiscretizationType  distype,             ///< shape of the integration cell
             const int                               surface_ele_gid,     ///< global id of the boundary element (cutter)
-            const BlitzMat&                         domainCoordinates,   ///< coordinates of the integrationcell in xsi_domain
-            const BlitzMat&                         boundaryCoordinates  ///< coordinates of the integrationcell in xsi_boundary
+            const LINALG::SerialDenseMatrix&        domainCoordinates,   ///< coordinates of the integrationcell in xsi_domain
+            const LINALG::SerialDenseMatrix&        boundaryCoordinates  ///< coordinates of the integrationcell in xsi_boundary
             );
     
     //! Copy Constructor
@@ -183,8 +173,8 @@ public:
     
     //! fills an array with the coordinates of the integration cell in physical coordinates
     void NodalPosXYZ(
-        const DRT::Element&  ele,     ///< parent element
-        BlitzMat&            xyz_cell ///< fill with nodal positions
+        const DRT::Element&         ele,     ///< parent element
+        LINALG::SerialDenseMatrix&  xyz_cell ///< fill with nodal positions
         ) const;
     
     /*!
@@ -192,14 +182,14 @@ public:
 
      \return cells nodal coordinates  
      */
-    const BlitzMat* NodalPosXiDomainBlitz() const {return &nodalpos_xi_domain_blitz_;};
+    const LINALG::SerialDenseMatrix* NodalPosXiDomain() const {return &nodalpos_xi_domain_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    const BlitzMat* NodalPosXiBoundaryBlitz() const {return &nodalpos_xi_boundary_blitz_;};
+    const LINALG::SerialDenseMatrix* NodalPosXiBoundary() const {return &nodalpos_xi_boundary_;};
     
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
@@ -219,10 +209,10 @@ private:
     int surface_ele_gid_;
     
     //! coordinates of the nodes
-    BlitzMat nodalpos_xi_domain_blitz_;
+    LINALG::SerialDenseMatrix nodalpos_xi_domain_;
     
     //! boundary coordinates of the nodes
-    BlitzMat nodalpos_xi_boundary_blitz_;
+    LINALG::SerialDenseMatrix nodalpos_xi_boundary_;
     
 };
 

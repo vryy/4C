@@ -23,26 +23,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
-//! little helper function
-template <int dim>
-static BlitzMat ConvertPosArrayToBlitz(
-        const vector<vector<double> >&         pos_array,
-        const DRT::Element::DiscretizationType distype
-        )
-{
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    BlitzMat pos_array_blitz(dim,numnode);
-    for (int inode=0; inode<numnode; ++inode)
-    {
-        for (int isd=0; isd<dim; ++isd)
-        {
-            pos_array_blitz(isd,inode) = pos_array[inode][isd];
-        }
-    }    
-    return pos_array_blitz;
-}
-
-
 /*!
  * \brief create array with physical coordinates based an local coordinates of a parent element
  */
@@ -55,7 +35,7 @@ static void ComputePhysicalCoordinates(
 {
     const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
     //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-    const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
+    const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
     
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     

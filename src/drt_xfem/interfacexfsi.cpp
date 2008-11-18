@@ -224,8 +224,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
-          
-          BlitzMat cellpos(3,cell->NumNode()); 
+          LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           const int domain_id = PositionWithinConditionNP(cellcenterpos);
@@ -295,8 +294,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
-          
-          BlitzMat cellpos(3,cell->NumNode()); 
+          LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           

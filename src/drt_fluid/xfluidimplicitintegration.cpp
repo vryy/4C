@@ -1300,7 +1300,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
@@ -1386,7 +1386,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           if(elementvalues.size() != 0)
           {
@@ -1496,7 +1496,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxz);
         const vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayz);
 
-        BlitzMat elementvalues(9,numparam);
+        LINALG::SerialDenseMatrix elementvalues(9,numparam);
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(0,iparam) = myvelnp[dofposxx[iparam]];
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(1,iparam) = myvelnp[dofposxy[iparam]];
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(2,iparam) = myvelnp[dofposxz[iparam]];
@@ -1520,11 +1520,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          BlitzMat xyze_cell(3, cell->NumNode());
+          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
 
 //          {
-//          BlitzMat cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 //          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
 //              *cell, field, elementvalues, cellvalues);
 //          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
@@ -1649,7 +1649,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
 
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
-        BlitzMat elementvalues(3, numparam);
+        LINALG::SerialDenseMatrix elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
           elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
@@ -1664,11 +1664,11 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
-            BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            BlitzMat xyze_cell(3, cell->NumNode());
+            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << "\n";
@@ -1683,11 +1683,11 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
             {
-              BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+              LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
               XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-              BlitzMat xyze_cell(3, cell->NumNode());
+              LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
               gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                   cell->Shape(), cellvalues, xyze_cell) << "\n";
@@ -1696,7 +1696,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
           // draw uncutted element
           {
-            BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
+            LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
             const GEO::DomainIntCell cell(actele->Shape());
             elevalues = 0.0;
 //            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
@@ -1709,7 +1709,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1 and elementvalues.size() > 0 and plot_to_gnuplot)
+        if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;

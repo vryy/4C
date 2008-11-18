@@ -22,13 +22,13 @@ Maintainer: Axel Gerstenberger
 
 //! translate between std::vector and blitz array
 template <int dim>
-static BlitzMat ConvertPosArrayToBlitz(
+static LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
         const std::vector<std::vector<double> >&   pos_array,
         const DRT::Element::DiscretizationType     distype
         )
 {
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    BlitzMat pos_array_blitz(dim,numnode);
+    LINALG::SerialDenseMatrix pos_array_blitz(dim,numnode);
     for (int inode=0; inode<numnode; ++inode)
     {
         for (int isd=0; isd<dim; ++isd)
@@ -43,20 +43,20 @@ static BlitzMat ConvertPosArrayToBlitz(
 //! create array with physical coordinates based an local coordinates of a parent element
 template<class Cell>
 static void ComputePhysicalCoordinates(
-        const DRT::Element&  ele,  ///< parent element
-        const Cell&          cell, ///< integration cell whose coordinates we'd like to transform
-        BlitzMat&            physicalCoordinates
+        const DRT::Element&        ele,  ///< parent element
+        const Cell&                cell, ///< integration cell whose coordinates we'd like to transform
+        LINALG::SerialDenseMatrix& physicalCoordinates
         )
 {
     const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
     //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-    const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
+    const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
     
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // return value
     //BlitzMat physicalCoordinates(3, nen_cell);
-    physicalCoordinates = 0.0;
+    physicalCoordinates.Zero();
     // for each cell node, compute physical position
     const int nen_ele = ele.NumNode();
     LINALG::SerialDenseVector funct(nen_ele);
@@ -112,7 +112,7 @@ GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const std::vector< std::vector<double> >& domainCoordinates) :
             IntCell(distype),
-            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype))
+            nodalpos_xi_domain_(ConvertPosArrayToLINALG<3>(domainCoordinates, distype))
 {
     return;
 }
@@ -122,9 +122,9 @@ GEO::DomainIntCell::DomainIntCell(
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
-        const BlitzMat&                        domainCoordinates) :
+        const LINALG::SerialDenseMatrix&       domainCoordinates) :
             IntCell(distype),
-            nodalpos_xi_domain_blitz_(domainCoordinates)
+            nodalpos_xi_domain_(domainCoordinates)
 {
     return;
 }
@@ -135,7 +135,7 @@ GEO::DomainIntCell::DomainIntCell(
 GEO::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
-            nodalpos_xi_domain_blitz_(GetDefaultCoordinates(distype))
+            nodalpos_xi_domain_(GetDefaultCoordinates(distype))
 {
     return;
 }
@@ -145,7 +145,7 @@ GEO::DomainIntCell::DomainIntCell(
 GEO::DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
-            nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_)
+            nodalpos_xi_domain_(old.nodalpos_xi_domain_)
 {
     return;   
 }
@@ -156,7 +156,7 @@ std::string GEO::DomainIntCell::toString() const
 {
     std::stringstream s;
     s << "DomainIntCell" << endl;
-    s << nodalpos_xi_domain_blitz_ << endl;
+    s << nodalpos_xi_domain_ << endl;
 //    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";
@@ -171,19 +171,19 @@ std::string GEO::DomainIntCell::toString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+void GEO::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, LINALG::SerialDenseMatrix& xyz_cell) const
 {
     ComputePhysicalCoordinates(ele, (*this), xyz_cell);
     return;
 }
 
 // set element nodal coordinates according to given distype
-BlitzMat GEO::DomainIntCell::GetDefaultCoordinates(
+LINALG::SerialDenseMatrix GEO::DomainIntCell::GetDefaultCoordinates(
         const DRT::Element::DiscretizationType distype) const
 {
     const int nsd = 3;
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    BlitzMat coords(3,numnode);
+    LINALG::SerialDenseMatrix coords(3,numnode);
     
     switch (distype)
     {
@@ -223,7 +223,7 @@ BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
     const int nsd = 3;
     
     // physical positions of cell nodes
-    static BlitzMat physcoord(nsd,27);
+    static LINALG::SerialDenseMatrix physcoord(nsd,27);
     this->NodalPosXYZ(ele, physcoord);
     
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
@@ -264,8 +264,8 @@ GEO::BoundaryIntCell::BoundaryIntCell(
         const std::vector< std::vector<double> >&           boundaryCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
-            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz<3>(domainCoordinates, distype)),
-            nodalpos_xi_boundary_blitz_(ConvertPosArrayToBlitz<2>(boundaryCoordinates, distype))
+            nodalpos_xi_domain_(ConvertPosArrayToLINALG<3>(domainCoordinates, distype)),
+            nodalpos_xi_boundary_(ConvertPosArrayToLINALG<2>(boundaryCoordinates, distype))
 {
 //    if (abs(blitz::sum(nodalpos_xi_boundary_blitz_)) < 1.0e-7 )
 //    {
@@ -285,17 +285,13 @@ GEO::BoundaryIntCell::BoundaryIntCell(
 GEO::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
-        const BlitzMat&                           domainCoordinates,
-        const BlitzMat&                           boundaryCoordinates) :
+        const LINALG::SerialDenseMatrix&          domainCoordinates,
+        const LINALG::SerialDenseMatrix&          boundaryCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
-            nodalpos_xi_domain_blitz_(domainCoordinates),
-            nodalpos_xi_boundary_blitz_(boundaryCoordinates)
+            nodalpos_xi_domain_(domainCoordinates),
+            nodalpos_xi_boundary_(boundaryCoordinates)
 {
-//    if (abs(blitz::sum(nodalpos_xi_boundary_blitz_)) < 1.0e-7 )
-//    {
-//      dserror("something went wrong! B");
-//    }
     return;
 }
         
@@ -306,8 +302,8 @@ GEO::BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
             surface_ele_gid_(old.surface_ele_gid_),
-            nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_),
-            nodalpos_xi_boundary_blitz_(old.nodalpos_xi_boundary_blitz_)
+            nodalpos_xi_domain_(old.nodalpos_xi_domain_),
+            nodalpos_xi_boundary_(old.nodalpos_xi_boundary_)
 {
     return;   
 }
@@ -316,7 +312,7 @@ std::string GEO::BoundaryIntCell::toString() const
 {
     std::stringstream s;
     s << "BoundaryIntCell" << endl;
-    s << nodalpos_xi_domain_blitz_ << endl;
+    s << nodalpos_xi_domain_ << endl;
 //    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";
@@ -332,7 +328,7 @@ std::string GEO::BoundaryIntCell::toString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
+void GEO::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, LINALG::SerialDenseMatrix& xyz_cell) const
 {
     ComputePhysicalCoordinates(ele, (*this), xyz_cell);
     return;
@@ -347,7 +343,7 @@ BlitzVec3 GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& el
     //const int nsd = 3;
     
     // physical positions of cell nodes
-    static BlitzMat physcoord(3,27);
+    static LINALG::SerialDenseMatrix physcoord(3,27);
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates

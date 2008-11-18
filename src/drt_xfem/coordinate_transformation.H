@@ -38,7 +38,7 @@ namespace GEO
       )
   {   
     // get cell node coordinates
-    const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
+    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
     //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
@@ -80,7 +80,7 @@ namespace GEO
       )
   {   
     // get node coordinates
-    const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
+    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
     
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
@@ -128,7 +128,7 @@ namespace GEO
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get cell node coordinates
-    const BlitzMat* xyze_cell(cell.NodalPosXiBoundaryBlitz());
+    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiBoundary());
     
     // create shape function vectors
     LINALG::SerialDenseVector funct(numnodecell);
@@ -152,16 +152,17 @@ namespace GEO
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get cell node coordinates in xi_domain
-    const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
+    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
     LINALG::SerialDenseVector funct(numnodecell);
     DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0),pos_eta_boundary(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    //const LINALG::SerialDenseVector pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+    //const LINALG::SerialDenseVector pos_xsi_boundary = xyze_cell(i,j)*funct(j);
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
     BLITZTINY::MV_product<3,3>(*xyze_cell, funct, pos_xsi_domain);
+//    elevec1.GEMV('N', 3, numnodecell, 1.0, xyze_cell.A(), xyze_cell.LDA(), fa.A(), 1.0, elevec1.A());
     
     return;
   }
@@ -174,7 +175,7 @@ namespace GEO
       const LINALG::Matrix<2,1>&  pos_eta_boundary)
   {   
     // get node coordinates
-    const BlitzMat* xiBe_cell(cell.NodalPosXiBoundaryBlitz());
+    const LINALG::SerialDenseMatrix* xiBe_cell(cell.NodalPosXiBoundary());
     
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
@@ -199,27 +200,6 @@ namespace GEO
     // ...and return its determinante
     return xjm.Determinant();
   }
-  
-  //! Calculate inverse of a 3x3 matrix
-  template<class M1, class M2>
-  inline void Inverse3x3(
-      const M1&     mat,      ///< 3x3 matrix
-      const double  det,      ///< determinante of mat
-      M2&           inverse   ///< inverse 3x3 matrix 
-      )
-  {
-    inverse(0,0) = (  mat(1,1)*mat(2,2) - mat(2,1)*mat(1,2))/det;
-    inverse(1,0) = (- mat(1,0)*mat(2,2) + mat(2,0)*mat(1,2))/det;
-    inverse(2,0) = (  mat(1,0)*mat(2,1) - mat(2,0)*mat(1,1))/det;
-    inverse(0,1) = (- mat(0,1)*mat(2,2) + mat(2,1)*mat(0,2))/det;
-    inverse(1,1) = (  mat(0,0)*mat(2,2) - mat(2,0)*mat(0,2))/det;
-    inverse(2,1) = (- mat(0,0)*mat(2,1) + mat(2,0)*mat(0,1))/det;
-    inverse(0,2) = (  mat(0,1)*mat(1,2) - mat(1,1)*mat(0,2))/det;
-    inverse(1,2) = (- mat(0,0)*mat(1,2) + mat(1,0)*mat(0,2))/det;
-    inverse(2,2) = (  mat(0,0)*mat(1,1) - mat(1,0)*mat(0,1))/det;
-    return;
-  }
-  
 }
 
 
