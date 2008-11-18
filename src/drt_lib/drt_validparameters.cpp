@@ -730,6 +730,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,2,3),
                                &fdyn);
 
+  setStringToIntegralParameter<int>("PREDICTOR","steady_state_predictor",
+                               "Predictor for first guess in nonlinear iteration",
+                               tuple<std::string>(
+                                 "steady_state_predictor",
+                                 "zero_acceleration_predictor",
+                                 "constant_acceleration_predictor",
+                                 "constant_increment_predictor"
+                                 ),
+                               tuple<int>(1,2,3,4),
+                               &fdyn);
+
   setStringToIntegralParameter<int>("CONVCHECK","L_2_norm",
                                "norm for convergence check",
                                tuple<std::string>(

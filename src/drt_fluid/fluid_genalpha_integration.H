@@ -674,6 +674,14 @@ private:
   //! parameter for linearisation
   string                    newton_;
 
+  //! predictor used in nonlinear iteration
+  string                    predictor_;
+
+  //! in the case of a constant incremnt predictor we need velnm. This bool 
+  //! indicates whether it has been computed before or whether we need a
+  //! different start predictor
+  bool                      velnm_available_;
+
   //! parameters governing the nonlinear iteration --- iteration counter
   int                       itenum_      ;
   //! parameters governing the nonlinear iteration --- upper bound for
@@ -799,6 +807,10 @@ private:
   //! in velaf_, every component associated to a pressure dof is completely
   //! meaningless since the pressure is treated implicitly.
   RCP<Epetra_Vector>        velaf_;
+
+  //! velocities and pressure at time n-1
+  //! required only for the constant increment predictor
+  RCP<Epetra_Vector>        velnm_;
 
   //! velocities and densities at time n+alpha_F, n+1 and n
   RCP<Epetra_Vector>        vedeaf_;

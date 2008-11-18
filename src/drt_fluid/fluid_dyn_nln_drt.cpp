@@ -257,6 +257,9 @@ void dyn_fluid_drt()
 
     fluidtimeparams.set<double>           ("gamma"                    ,fdyn.get<double>("GAMMA"));
 
+    fluidtimeparams.set<string>           ("PREDICTOR"                ,fdyn.get<string>("PREDICTOR"));
+
+
     // create all vectors and variables associated with the time
     // integration (call the constructor);
     // the only parameter from the list required here is the number of

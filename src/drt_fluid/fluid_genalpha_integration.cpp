@@ -75,11 +75,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // time measurement --- start TimeMonitor tm7
   tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
 
-  numdim_ = params_.get<int>("number of velocity degrees of freedom");
-
-  // type of solver: low-Mach-number or incompressible solver
-  loma_ = params_.get<string>("low-Mach-number solver","No");
-
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -90,7 +85,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
-
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -103,17 +97,46 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
-  // get a vector layout from the discretization for a vector which only
-  // contains the velocity dofs and for one vector which only contains
-  // pressure degrees of freedom.
-  // -------------------------------------------------------------------
+  // init some class variables (parallelism)
 
-  FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
-
-  // -------------------------------------------------------------------
   // get the processor ID from the communicator
-  // -------------------------------------------------------------------
+
   myrank_  = discret_->Comm().MyPID();
+
+  //--------------------------------------------------------------------
+  // init some class variables (time integration)
+
+  // time step size
+  dt_     = params_.get<double>("time step size");
+  // maximum number of timesteps
+  endstep_= params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  endtime_= params_.get<double>("total time");
+
+  // generalized alpha parameters
+  // (choice of third parameter necessary but not sufficiant for second
+  // order accuracy)
+  //           gamma_  = 0.5 + alphaM_ - alphaF_
+  alphaM_ = params_.get<double>("alpha_M");
+  alphaF_ = params_.get<double>("alpha_F");
+  gamma_  = params_.get<double>("gamma");
+
+  // use of predictor
+  predictor_ = params_.get<string>("PREDICTOR","steady_state_predictor");
+
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_    = params_.get<string>("Linearisation");
+
+  itenum_    = 0;
+  itemax_    = params_.get<int>   ("max nonlin iter steps");
+
+  //--------------------------------------------------------------------
+  // init some class variables (algorithm)
+
+  numdim_ = params_.get<int>("number of velocity degrees of freedom");
+
+  // type of solver: low-Mach-number or incompressible solver
+  loma_ = params_.get<string>("low-Mach-number solver","No");
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -144,6 +167,14 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   velnp_        = LINALG::CreateVector(*dofrowmap,true);
   veln_         = LINALG::CreateVector(*dofrowmap,true);
   velaf_        = LINALG::CreateVector(*dofrowmap,true);
+
+  velnm_available_=false;
+
+  if(predictor_=="constant_increment_predictor")
+  {
+    // velocities and pressure at time n-1
+    velnm_        = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // velocity/density at time n+1
   vedeaf_       = LINALG::CreateVector(*dofrowmap,true);
@@ -199,30 +230,13 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // Nonlinear iteration increment vector
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  // -------------------------------------------------------------------
 
-  //--------------------------------------------------------------------
-  // init some class variables (time integration)
-
-  // time step size
-  dt_     = params_.get<double>("time step size");
-  // maximum number of timesteps
-  endstep_= params_.get<int>   ("max number timesteps");
-  // maximum simulation time
-  endtime_= params_.get<double>("total time");
-
-  // generalized alpha parameters
-  // (choice of third parameter necessary but not sufficiant for second
-  // order accuracy)
-  //           gamma_  = 0.5 + alphaM_ - alphaF_
-  alphaM_ = params_.get<double>("alpha_M");
-  alphaF_ = params_.get<double>("alpha_F");
-  gamma_  = params_.get<double>("gamma");
-
-  // parameter for linearisation scheme (fixed point like or newton like)
-  newton_   = params_.get<string>("Linearisation");
-
-  itenum_   = 0;
-  itemax_   = params_.get<int>   ("max nonlin iter steps");
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
@@ -577,7 +591,9 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  Predict velocity and pressure of the new timestep. Up to now, we    |
- |  use a constant predictor for the velocity and the pressure.         |
+ |  use a constant predictor for the velocity and the pressure or one   |
+ |  of the following: zero acceleration, constant acceleration          |
+ |  predictor, constant increment predictor                             |
  |                                                                      |
  |  Remark: For Dirichlet nodes, no matter what was set here, velnp     |
  |          will be overwritten by the prescribed value. The            |
@@ -592,18 +608,91 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 void FLD::FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 {
 
-  //       n+1    n
-  //      u    = u
-  //       (0)
-  //
-  //  and
-  //
-  //       n+1    n
-  //      p    = p
-  //       (0)
-
+  // first guess is the same for all predictors
   velnp_->Update(1.0,*veln_ ,0.0);
 
+  if(predictor_=="steady_state_predictor")
+  {
+    // steady state predictor
+    //
+    //       n+1    n
+    //      u    = u
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+
+    // there is nothing more to do
+  }
+  else if(predictor_=="zero_acceleration_predictor")
+  {
+    // zero acceleration predictor
+    //
+    //       n+1    n                   n
+    //      u    = u  + (1-gamma)*dt*acc
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+
+    // split between acceleration and pressure
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_.ExtractOtherVector(accn_);
+    inc->Scale((1.0-gamma_)*dt_);
+
+    velpressplitter_.AddOtherVector(inc,velnp_);
+  }
+  else if(predictor_=="constant_acceleration_predictor")
+  {
+    // constant acceleration predictor
+    //
+    //       n+1    n         n
+    //      u    = u  + dt*acc
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_.ExtractOtherVector(accn_);
+    inc->Scale(dt_);
+
+    velpressplitter_.AddOtherVector(inc,velnp_);
+  }
+  else if(predictor_=="constant_increment_predictor")
+  {
+    // constant increment predictor
+    //
+    //       n+1      n    n-1
+    //      u    = 2*u  - u
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+
+    if(velnm_available_)
+    {
+      Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
+      Teuchos::RCP<Epetra_Vector> onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
+      onlyvelnm->Scale(-1.0);
+
+      velpressplitter_.AddOtherVector(onlyveln ,velnp_);
+      velpressplitter_.AddOtherVector(onlyvelnm,velnp_);
+    }
+  }
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues
@@ -727,11 +816,17 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   //--------------------------------------------------
   // solution of this step becomes most recent solution of the last step
 
+  // store old velos for constant increment predictor
+  if(predictor_=="constant_increment_predictor")
+  {
+    velnm_available_=true;
+    // velocities and pressure at time n-1
+    velnm_->Update(1.0,*veln_ ,0.0);
+  }
   // for velocities and pressure
   veln_->Update(1.0,*velnp_ ,0.0);
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
-
 
   if(params_.sublist("STABILIZATION").get<string>("TDS")=="time_dependent")
   {
@@ -1878,6 +1973,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 	cout << "Linearisation              : ";
 	cout << params_.get<string>("Linearisation");
         cout << endl;
+
+        // predictor
+	cout << "                             ";
+        cout << "using " << predictor_ << " as an initial guess" << endl << endl;
       }
 
       //--------------------------------------------------------------------
