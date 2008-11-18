@@ -21,7 +21,6 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
-#include "../drt_io/io_micro.H"
 
 using namespace std;
 using namespace Teuchos;

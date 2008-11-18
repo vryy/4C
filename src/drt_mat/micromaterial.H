@@ -30,7 +30,6 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_io/io.H"
-#include "../drt_io/io_micro.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "material.H"
