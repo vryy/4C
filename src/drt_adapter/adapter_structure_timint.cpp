@@ -57,6 +57,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
   structure_->SetSurfaceFSI(&interface_);
 
   // initialise displacement increments to 0 (in words zero)
+  // this variable in only used in monolithic FSI
   disinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap()),true));
 }
 
