@@ -184,7 +184,7 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
 }
 
 std::string text3dToString(
-    const BlitzVec3&                      xyz,      ///< 3d Position of text
+    const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
     const std::string                     text,     ///< text to be printed 
     const int                             fontsize  ///< font size
     )
