@@ -243,7 +243,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
         cellcenterpos,
         XFEM::Enrichment::approachUnknown));
   
-  cellvalues = 0.0;
+  cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
     const int numparam  = dofman.NumDofPerField(field);
@@ -314,7 +314,7 @@ void XFEM::computeVectorCellNodeValues(
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
-  cellvalues = 0.0;
+  cellvalues.Zero();
   for (int inen = 0; inen < nen_cell; ++inen)
   {
     // fill shape functions
@@ -368,7 +368,7 @@ void XFEM::computeVectorCellNodeValues(
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
-  cellvalues = 0.0;
+  cellvalues.Zero();
   for (int inen = 0; inen < nen_cell; ++inen)
   {
     // fill shape functions

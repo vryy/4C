@@ -23,49 +23,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
-/*!
- * \brief create array with physical coordinates based an local coordinates of a parent element
- */
-template<class Cell>
-static void ComputePhysicalCoordinates(
-        const DRT::Element&  ele,  ///< parent element
-        const Cell&          cell, ///< integration cell whose coordinates we'd like to transform
-        BlitzMat&            physicalCoordinates
-        )
-{
-    const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
-    //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-    const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
-    
-    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
-    // return value
-    //BlitzMat physicalCoordinates(3, nen_cell);
-    physicalCoordinates = 0.0;
-    // for each cell node, compute physical position
-    const int nen_ele = ele.NumNode();
-    LINALG::SerialDenseVector funct(nen_ele);
-    for (int inen = 0; inen < nen_cell; ++inen)
-    {
-        // shape functions
-        DRT::UTILS::shape_function_3D(funct,
-                (*nodalPosXiDomain)(0, inen),
-                (*nodalPosXiDomain)(1, inen),
-                (*nodalPosXiDomain)(2, inen),
-                ele.Shape());
-
-        for (int i = 0; i < 3; ++i)
-        {
-            for (int j = 0; j < nen_ele; ++j)
-            {
-              physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
-            }
-        }
-    };
-    return;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(

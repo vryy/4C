@@ -1682,26 +1682,20 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           for (GEO::BoundaryIntCells::const_iterator cell =
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
-            {
-              LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-              //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                  *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-              LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-              cell->NodalPosXYZ(*actele, xyze_cell);
-              gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                  cell->Shape(), cellvalues, xyze_cell) << "\n";
-            }
+            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            //std::cout << cellvalues << endl;
+            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
+            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+            cell->NodalPosXYZ(*actele, xyze_cell);
+            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+                cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
 
           // draw uncutted element
           {
-            LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
+            LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
             const GEO::DomainIntCell cell(actele->Shape());
-            elevalues = 0.0;
-//            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-//                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
-
             const BlitzMat xyze_ele(GEO::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << "\n";
