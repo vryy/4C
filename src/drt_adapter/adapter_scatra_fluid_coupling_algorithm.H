@@ -140,11 +140,11 @@ namespace ADAPTER
     const Teuchos::ParameterList& params_;
 
     //! @name Time stepping variables
-    /// step counter
+    /// time step counter
     int step_;
     /// maximum number of time steps
     int nstep_;
-    /// actual time
+    /// current simulation time
     double time_;
     /// maximum simulation time
     double maxtime_;
