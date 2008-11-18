@@ -182,6 +182,9 @@ public:
   //! routine to return density field at time step n-1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> Densnm() { return densnm_; }
 
+  //! routine to return discretization
+  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+  
   //! return current time value
   double Time() const { return time_; }
 
