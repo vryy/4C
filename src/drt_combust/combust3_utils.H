@@ -17,6 +17,16 @@ Maintainer: Florian Henke
 #include <Epetra_SerialDenseSolver.h>
 
 
+// little helper function for transition to fixed size arrays
+template<int dim>
+blitz::TinyVector<double,dim> toBlitzArray(const LINALG::Matrix<dim,1>& a)
+{
+  blitz::TinyVector<double,dim> b;
+  for (int i = 0; i != dim; ++i)
+    b(i) = a(i);
+  return b;
+}
+
 namespace XFEM
 {
   

@@ -156,7 +156,7 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -371,7 +371,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const DRT::UTILS::IntegrationPoints2D  intpoints = DRT::UTILS::getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlow(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const DRT::UTILS::IntegrationPoints2D  intpoints = DRT::UTILS::getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {

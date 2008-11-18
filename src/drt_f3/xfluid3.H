@@ -46,10 +46,10 @@ namespace DRT
         struct MyState
         {
           bool instationary;
-          vector<double> velnp;
-          vector<double> veln;
-          vector<double> velnm;
-          vector<double> accn;
+          std::vector<double> velnp;
+          std::vector<double> veln;
+          std::vector<double> velnm;
+          std::vector<double> accn;
         };
         
         //! @name Constructors and destructors and related methods

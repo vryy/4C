@@ -32,9 +32,9 @@ namespace GEO
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>
   inline void mapEtaToXi3D(
-      const GEO::DomainIntCell& cell,
-      const PosEtaDomain&  pos_eta_domain,
-      PosXiDomain&  pos_xsi_domain
+      const GEO::DomainIntCell&   cell,
+      const LINALG::Matrix<3,1>&  pos_eta_domain,
+      LINALG::Matrix<3,1>&        pos_xsi_domain
       )
   {   
     // get cell node coordinates
@@ -61,8 +61,8 @@ namespace GEO
   template<> 
   inline void mapEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
-      const PosEtaDomain&  pos_eta_domain,
-      PosXiDomain&  pos_xsi_domain
+      const LINALG::Matrix<3,1>&  pos_eta_domain,
+      LINALG::Matrix<3,1>&        pos_xsi_domain
       )
   {   
     pos_xsi_domain(0) = pos_eta_domain(0);
@@ -75,8 +75,8 @@ namespace GEO
   //! get determinante between eta and xi space
   template<XFEM::AssemblyType ASSTYPE>
   inline double detEtaToXi3D(
-      const GEO::DomainIntCell& cell,
-      const GEO::PosEtaDomain&  pos_eta
+      const GEO::DomainIntCell&   cell,
+      const LINALG::Matrix<3,1>&  pos_eta_domain
       )
   {   
     // get node coordinates
@@ -87,7 +87,7 @@ namespace GEO
     // get shape function derivative
     //LINALG::SerialDenseMatrix deriv(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
     static LINALG::SerialDenseMatrix deriv(3,27);
-    DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
+    DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),cell.Shape());
     // get jacobian matrix ...
     LINALG::Matrix<3,3> xjm;
     for (int i = 0; i < 3; ++i)
@@ -109,7 +109,7 @@ namespace GEO
   template<>
   inline double detEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
-      const GEO::PosEtaDomain&
+      const LINALG::Matrix<3,1>&
       )
   {   
     return 1.0;
@@ -121,8 +121,8 @@ namespace GEO
   //! map position from eta^boundary to xi^boundary space
   inline void mapEtaBToXiB(
       const GEO::BoundaryIntCell& cell,
-      const GEO::PosEtaBoundary&  pos_eta,
-      GEO::PosXiBoundary&         pos_xsi_boundary
+      const LINALG::Matrix<2,1>&  pos_eta,
+      LINALG::Matrix<2,1>&         pos_xsi_boundary
   )
   {   
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
@@ -145,8 +145,8 @@ namespace GEO
   //! map position from eta^boundary to xi^domain space
   inline void mapEtaBToXiD(
       const GEO::BoundaryIntCell&  cell,
-      const GEO::PosEtaBoundary&   pos_eta,
-      GEO::PosXiDomain&            pos_xsi_domain
+      const LINALG::Matrix<2,1>&   pos_eta_boundary,
+      LINALG::Matrix<3,1>&         pos_xsi_domain
   )
   {   
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
@@ -156,7 +156,7 @@ namespace GEO
     
     // create shape function vectors
     LINALG::SerialDenseVector funct(numnodecell);
-    DRT::UTILS::shape_function_2D(funct, pos_eta(0),pos_eta(1),cell.Shape());
+    DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0),pos_eta_boundary(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
     //const LINALG::SerialDenseVector pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
@@ -171,7 +171,7 @@ namespace GEO
   //! get determinante between \f$\eta^{\Gamma (e)}\f$ and \f$\xi^{\Gamma (e)}\f$ space
   inline double detEtaBToXiB(
       const GEO::BoundaryIntCell& cell,
-      const GEO::PosEtaBoundary&  pos_eta)
+      const LINALG::Matrix<2,1>&  pos_eta_boundary)
   {   
     // get node coordinates
     const BlitzMat* xiBe_cell(cell.NodalPosXiBoundaryBlitz());
@@ -180,7 +180,7 @@ namespace GEO
     
     // get shape function derivative
     LINALG::SerialDenseMatrix deriv(2,numnode);
-    DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta(0), pos_eta(1), cell.Shape());
+    DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta_boundary(0), pos_eta_boundary(1), cell.Shape());
     
     // get jacobian matrix ...
     LINALG::Matrix<2,2> xjm;

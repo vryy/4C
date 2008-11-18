@@ -69,17 +69,17 @@ struct Shp
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,   ///< connection to the interface handler
       const M&                                   xyze,
-      const BlitzVec3&                           posXiDomain,
+      const LINALG::Matrix<3,1>&                 posXiDomain,
       const int                                  labelnp,
       const Epetra_Vector&                       ivelcoln,
       const Epetra_Vector&                       ivelcolnm,
       const Epetra_Vector&                       iacccoln,
-      LINALG::Matrix<3,1>&                              gpveln,
-      LINALG::Matrix<3,1>&                              gpvelnm,
-      LINALG::Matrix<3,1>&                              gpaccn
+      LINALG::Matrix<3,1>&                       gpveln,
+      LINALG::Matrix<3,1>&                       gpvelnm,
+      LINALG::Matrix<3,1>&                       gpaccn
       )
   {
-    GEO::PosX posx_gp;
+    BlitzVec3 posx_gp;
     GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);
@@ -430,13 +430,13 @@ static void SysmatDomain4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            GEO::PosEtaDomain pos_eta_domain;
+            LINALG::Matrix<3,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            GEO::PosXiDomain posXiDomain;
+            LINALG::Matrix<3,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
@@ -658,7 +658,6 @@ static void SysmatDomain4(
                 vderxy(isd,2) += evelnp(isd,iparam) * shp.dz(iparam);
               }
             }
-//            funct_stress.GEMV('N', numparamvelx, nsd,1.0, evelnp.A(), 3, shp.dx.A(), 0.0, vderxy.A());
             
             //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
       
@@ -1466,16 +1465,16 @@ static void SysmatBoundary4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            GEO::PosEtaBoundary pos_eta_boundary;
+            LINALG::Matrix<2,1> pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
             
             // coordinates of the current integration point in element coordinates \xi^\boundary
-            GEO::PosXiBoundary posXiBoundary;
+            LINALG::Matrix<2,1> posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             
             // coordinates of the current integration point in element coordinates \xi^\domain
-            GEO::PosXiDomain posXiDomain;
+            LINALG::Matrix<3,1> posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 
             const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
@@ -1615,7 +1614,7 @@ static void SysmatBoundary4(
             
             // get normal vector (in physical coordinates) to surface element at integration point
             BlitzVec3 normalvec_solid;
-            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
+            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, toBlitzArray<2>(posXiBoundary), normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             BlitzVec3 normalvec_fluid = 0.0;
             normalvec_fluid -= normalvec_solid;

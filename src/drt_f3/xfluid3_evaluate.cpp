@@ -195,7 +195,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
 
           // extract local values from the global vectors
-          vector<double> my_vel_pre_np(lm.size());
+          std::vector<double> my_vel_pre_np(lm.size());
           DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
 
           // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
@@ -519,7 +519,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
 
   // gaussian points
   const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)

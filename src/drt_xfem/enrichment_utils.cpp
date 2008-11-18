@@ -21,7 +21,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
 #include "interfacexfsi.H"
-#include "../drt_geometry/blitz_tiny_operation.H"
 #include "coordinate_transformation.H"
 
 
@@ -454,18 +453,18 @@ double DomainCoverageRatioT(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static GEO::PosEtaDomain pos_eta_domain;
+            static LINALG::Matrix<3,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static GEO::PosXiDomain posXiDomain;
+            static LINALG::Matrix<3,1> posXiDomain;
             GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
-            static blitz::TinyVector<double,numnode> funct;
+            static LINALG::Matrix<numnode,1> funct;
             static LINALG::Matrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
@@ -572,12 +571,12 @@ double BoundaryCoverageRatioT(
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta^\boundary
-      GEO::PosEtaBoundary pos_eta_boundary;
+      LINALG::Matrix<2,1> pos_eta_boundary;
       pos_eta_boundary(0) = intpoints.qxg[iquad][0];
       pos_eta_boundary(1) = intpoints.qxg[iquad][1];
       
       //            cout << pos_eta_boundary << endl;
-      GEO::PosXiDomain posXiDomain;
+      LINALG::Matrix<3,1> posXiDomain;
       mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
       //            cout << cell->toString() << endl;
       //            cout << posXiDomain << endl;
@@ -585,7 +584,7 @@ double BoundaryCoverageRatioT(
       // shape functions and their first derivatives
       LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D(funct_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
-      BlitzMat deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+      LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       
       // shape functions and their first derivatives

@@ -541,7 +541,7 @@ double ElementVolumeT(
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
     // coordinates of the current integration point in element coordinates \xi
-    static GEO::PosXiDomain posXiDomain;
+    static LINALG::Matrix<3,1> posXiDomain;
     posXiDomain(0) = intpoints.qxg[iquad][0];
     posXiDomain(1) = intpoints.qxg[iquad][1];
     posXiDomain(2) = intpoints.qxg[iquad][2];
