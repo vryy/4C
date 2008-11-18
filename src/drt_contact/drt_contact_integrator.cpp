@@ -387,12 +387,10 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow,1);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol,1);
   LINALG::SerialDenseVector dualval(nrow);
   LINALG::SerialDenseMatrix dualderiv(nrow,1);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
   
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
@@ -428,8 +426,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
-    // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    // evaluate trace space shape functions (on master element)
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
     
     // evaluate the two slave side Jacobians
