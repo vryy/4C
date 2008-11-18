@@ -51,7 +51,7 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
       {
         Teuchos::RCP<const Epetra_Vector> dispnp;
         std::vector<double> mydispnp(lm.size(),0.0);
-  
+
         dispnp = discretization.GetState("dispnp");
         if (dispnp!=null)
         {
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(
         break;
       }
       default:
-          dserror("Unknown type of action for Fluid3_Surface");
+        dserror("Unknown type of action for Fluid3_Surface");
     } // end of switch(act)
 
     return 0;

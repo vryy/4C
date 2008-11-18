@@ -78,13 +78,13 @@ DRT::ELEMENTS::XFluid3::StabilisationAction DRT::ELEMENTS::XFluid3::ConvertStrin
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    std::vector<int>&         lm,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix&,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector&,
-                                    Epetra_SerialDenseVector&)
+                                     DRT::Discretization&      discretization,
+                                     std::vector<int>&         lm,
+                                     Epetra_SerialDenseMatrix& elemat1,
+                                     Epetra_SerialDenseMatrix&,
+                                     Epetra_SerialDenseVector& elevec1,
+                                     Epetra_SerialDenseVector&,
+                                     Epetra_SerialDenseVector&)
 {
   // get the action required
   const string action(params.get<string>("action","none"));
@@ -99,202 +99,201 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-      case get_density:
-      {
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
+    case get_density:
+    {
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
+      params.set("density", actmat->m.fluid->density);
+      break;
+    }
+    case calc_fluid_systemmat_and_residual:
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_systemmat_and_residual");
+
+      // do no calculation, if not needed
+      if (lm.empty())
         break;
-      }
-      case calc_fluid_systemmat_and_residual:
-      {
-        TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_systemmat_and_residual");
-        
-        // do no calculation, if not needed
-        if (lm.empty())
-            break;
-        
-        // extract local values from the global vectors
-        DRT::ELEMENTS::XFluid3::MyState mystate;
-        mystate.instationary = true;
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
-        DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
+
+      // extract local values from the global vectors
+      DRT::ELEMENTS::XFluid3::MyState mystate;
+      mystate.instationary = true;
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
 
         if (is_ale_)
         {
             dserror("No ALE support within instationary fluid solver.");
         }
 
-        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
-        const bool pstab  = true;
-        const bool supg   = true;
-        const bool cstab  = true;
+      const bool pstab  = true;
+      const bool supg   = true;
+      const bool cstab  = true;
 
-        // time integration factors
-        const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
-        const double            dt       = params.get<double>("dt");
-        const double            theta    = params.get<double>("theta");
-        
-        const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-        const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+      // time integration factors
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const double            dt       = params.get<double>("dt");
+      const double            theta    = params.get<double>("theta");
 
-        const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
-        
-        if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
-        {
-          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                  *eleDofManager_, NumNode(), NodeIds());
-          
-          // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat4(assembly_type,
-                  this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
-        }
-        else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
-        {
-          // sanity checks
-          if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
-            dserror("NumNodeDof mismatch");
-          if (eleDofManager_->NumElemDof() != 0)
-            dserror("NumElemDof not 0");
-          if (eleDofManager_uncondensed_->NumElemDof() == 0)
-            dserror("uncondensed NumElemDof == 0");
-          
-          // stress update
-          UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
-          
-          // create uncondensed element matrix and vector
-          const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-          Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
-          Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-          
-          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                  *eleDofManager_uncondensed_, NumNode(), NodeIds());
-          
-          // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat4(assembly_type,
-                  this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                  actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
-          
-          // condensation
-          CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
-        }
-      }
-      break;
-      case calc_fluid_beltrami_error:
+      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
+      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+      
+      if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
-        // add error only for elements which are not ghosted
-        if(this->Owner() == discretization.Comm().MyPID())
-        {
-
-          // need current velocity and history vector
-          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
-
-          // extract local values from the global vectors
-          std::vector<double> my_vel_pre_np(lm.size());
-          DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-
-          // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-          const int numnode = NumNode();
-          vector<double> myprenp(numnode);
-          vector<double> myvelnp(3*numnode);
-
-          for (int i=0;i<numnode;++i)
-          {
-            myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-            myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-            myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
-
-            myprenp[i]=my_vel_pre_np[3+(i*4)];
-          }
-
-          // integrate beltrami error
-          f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
-        }
-      }
-      break;
-      case calc_fluid_stationary_systemmat_and_residual:
-      {
-          TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
+        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                *eleDofManager_, NumNode(), NodeIds());
         
-          // do no calculation, if not needed
-          if (lm.empty())
-              break;
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat4(assembly_type,
+                this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
+      }
+      else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+      {
+        // sanity checks
+        if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
+          dserror("NumNodeDof mismatch");
+        if (eleDofManager_->NumElemDof() != 0)
+          dserror("NumElemDof not 0");
+        if (eleDofManager_uncondensed_->NumElemDof() == 0)
+          dserror("uncondensed NumElemDof == 0");
 
-          // extract local values from the global vector
-          DRT::ELEMENTS::XFluid3::MyState mystate;
-          mystate.instationary = false;
-          DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-          
-          const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-          
-          if (is_ale_)
-          {
-              dserror("No ALE support within stationary fluid solver.");
-          }
-          
-          // time integration factors
-          const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
-          const double            dt       = 1.0;
-          const double            theta    = 1.0;
+        // stress update
+        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
 
-          const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          const bool pstab  = true;
-          const bool supg   = true;
-          const bool cstab  = true;
+        // create uncondensed element matrix and vector
+        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-          const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
-          
-          if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
-          {
-            const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                    *eleDofManager_, NumNode(), NodeIds());
-            
-            // calculate element coefficient matrix and rhs
-            XFLUID::callSysmat4(assembly_type,
-                    this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
-            
-          }
-          else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
-          {
-            // sanity checks
-            if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
-              dserror("NumNodeDof mismatch");
-            if (eleDofManager_->NumElemDof() != 0)
-              dserror("NumElemDof not 0");
+        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                *eleDofManager_uncondensed_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat4(assembly_type,
+          this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
+          actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
+
+        // condensation
+        CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
+      }
+    }
+    break;
+    case calc_fluid_beltrami_error:
+    {
+      // add error only for elements which are not ghosted
+      if(this->Owner() == discretization.Comm().MyPID())
+      {
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+        if (vel_pre_np==null)
+          dserror("Cannot get state vectors 'velnp'");
+
+        // extract local values from the global vectors
+        std::vector<double> my_vel_pre_np(lm.size());
+        DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+
+        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        const int numnode = NumNode();
+        vector<double> myprenp(numnode);
+        vector<double> myvelnp(3*numnode);
+
+        for (int i=0;i<numnode;++i)
+        {
+          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+
+          myprenp[i]=my_vel_pre_np[3+(i*4)];
+        }
+
+        // integrate beltrami error
+        f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+      }
+    }
+    break;
+    case calc_fluid_stationary_systemmat_and_residual:
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
+
+      // extract local values from the global vector
+      DRT::ELEMENTS::XFluid3::MyState mystate;
+      mystate.instationary = false;
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+
+      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
+      if (is_ale_)
+      {
+          dserror("No ALE support within stationary fluid solver.");
+      }
+
+      // time integration factors
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const double            dt       = 1.0;
+      const double            theta    = 1.0;
+
+      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      const bool pstab  = true;
+      const bool supg   = true;
+      const bool cstab  = true;
+
+      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+
+      if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+      {
+        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                *eleDofManager_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat4(assembly_type,
+                this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+
+      }
+      else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+      {
+        // sanity checks
+        if (eleDofManager_->NumNodeDof() != eleDofManager_uncondensed_->NumNodeDof())
+          dserror("NumNodeDof mismatch");
+        if (eleDofManager_->NumElemDof() != 0)
+          dserror("NumElemDof not 0");
 //            if (eleDofManager_uncondensed_->NumElemDof() == 0)
 //            {
 //              const double boundarysize = XFEM::BoundaryCoverageRatio(*this,*ih_);
 //              cout << "boundarysize = " << boundarysize << endl;
 ////              dserror("NumElemDof uncondensed == 0");
 //            }
-            
-            // stress update
-            UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
-            
-            // create uncondensed element matrix and vector
-            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-            Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
-            Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-            
-            const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                    *eleDofManager_uncondensed_, NumNode(), NodeIds());
-            
-            // calculate element coefficient matrix and rhs
-            XFLUID::callSysmat4(assembly_type,
-                    this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                    actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
-            
-            // condensation
-            CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
-          }
-          
+
+        // stress update
+        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+
+        // create uncondensed element matrix and vector
+        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
+
+        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                *eleDofManager_uncondensed_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat4(assembly_type,
+                this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
+                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+
+        // condensation
+        CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
+      }
+
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
           if ((assembly_type == XFEM::xfem_assembly) and (boundaryIntCells.size() > 0))
@@ -358,67 +357,65 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
-          break;
-      }
-      case store_xfem_info:
-      {
-          TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - store_xfem_info");
-        
-          // store pointer to interface handle
-          ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
-        
-          // get access to global dofman
-          const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
-          
-          const bool DLM_condensation = params.get<bool>("DLM_condensation");
-          {
-            // create local copy of information about dofs
-            map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-            if (not DLM_condensation)
-              element_ansatz = XFLUID::getElementAnsatz(this->Shape());
-          
-            eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
-          }
-          
-          if (ih_->ElementIntersected(Id()))
-          {
-            std::set<XFEM::FieldEnr> enrfieldset;
-            
-            const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
-            // loop condition labels
-            for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
-            {
-              const int label = *labeliter;
+      break;
+    }
+    case store_xfem_info:
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - store_xfem_info");
 
-              // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-              if (ih_->ElementHasLabel(this->Id(), label))
-              {
-                XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
-              }
-            };
-            
-            // create local copy of information about dofs
-            const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
-            
-            // nodal dofs for ele
-            eleDofManager_uncondensed_ = 
-              rcp(new XFEM::ElementDofManager(*this, *eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
-            
-            const int nd = eleDofManager_uncondensed_->NumNodeDof();
-            const int na = eleDofManager_uncondensed_->NumElemDof();
-            
-            DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
-          }
-          else
-          {
-            eleDofManager_uncondensed_ = Teuchos::null;
-            DLM_info_ = Teuchos::null;
-          }
-          
-          break;
+      // store pointer to interface handle
+      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
+
+      // get access to global dofman
+      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
+
+      const bool DLM_condensation = params.get<bool>("DLM_condensation");
+      {
+        // create local copy of information about dofs
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        if (not DLM_condensation)
+          element_ansatz = XFLUID::getElementAnsatz(this->Shape());
+
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
       }
-      default:
-        dserror("Unknown type of action for XFluid3");
+
+      if (ih_->ElementIntersected(Id()))
+      {
+        std::set<XFEM::FieldEnr> enrfieldset;
+
+        const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
+        // loop condition labels
+        for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
+        {
+          const int label = *labeliter;
+          // for surface with label, loop my col elements and add void enrichments to each elements member nodes
+          if (ih_->ElementHasLabel(this->Id(), label))
+          {
+            XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
+          }
+        };
+
+        // create local copy of information about dofs
+        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
+
+        // nodal dofs for ele
+        eleDofManager_uncondensed_ = 
+          rcp(new XFEM::ElementDofManager(*this, *eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
+
+        const int nd = eleDofManager_uncondensed_->NumNodeDof();
+        const int na = eleDofManager_uncondensed_->NumElemDof();
+
+        DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
+      }
+      else
+      {
+        eleDofManager_uncondensed_ = Teuchos::null;
+        DLM_info_ = Teuchos::null;
+      }
+      break;
+    }
+    default:
+      dserror("Unknown type of action for XFluid3");
   } // end of switch(act)
 
   return 0;
@@ -433,10 +430,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           std::vector<int>&         lm,
-                                           Epetra_SerialDenseVector& elevec1)
+                                            DRT::Discretization&      discretization,
+                                            DRT::Condition&           condition,
+                                            std::vector<int>&         lm,
+                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }

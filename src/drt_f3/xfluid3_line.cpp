@@ -26,7 +26,7 @@ DRT::ELEMENTS::XFluid3Line::XFluid3Line(
     const int nnode,
     const int* nodeids,
     DRT::Node** nodes,
-    DRT::Element* parent,  
+    DRT::Element* parent,
     const int lline) :
 DRT::Element(id,element_xfluid3line,owner),
 parent_(parent),
