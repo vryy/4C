@@ -179,13 +179,16 @@ public:
     }
 
   /*!
-  \brief Predict velocity and pressure of the new timestep. Up to now, we
-  use a constant predictor for the velocity and the pressure.
+  \brief Predict velocity and pressure of the new timestep. Choices for 
+   the predictor are a constant predictor for the velocity and the pressure 
+   or one of the following: zero acceleration predictor, constant 
+   acceleration predictor, constant increment predictor                             
+                                                                       
+   Remark: For Dirichlet nodes, no matter what was set here, velnp     
+           will be overwritten by the prescribed value. The            
+           accelerations are calculated after these Dirichlet values   
+           have been set.                                              
 
-  Remark: For Dirichlet nodes, no matter what was set here, velnp
-          will be overwritten by the prescribed value. The
-          accelerations are calculated after these Dirichlet values
-          have been set.
   */
   void GenAlphaPredictNewSolutionValues();
 
