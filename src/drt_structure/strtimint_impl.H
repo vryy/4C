@@ -350,6 +350,12 @@ namespace STR
       if (surfstressman_ != Teuchos::null) surfstressman_->Update();
     }
 
+    //! Update step for constraints
+    void UpdateStepConstraint()
+    {
+      if (conman_ -> HaveConstraint()) conman_->Update();
+    }
+    
     //! @name Output
     //@{
 
@@ -407,9 +413,16 @@ namespace STR
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
     
+    //! Return bool indicating if constraints are defined
     virtual bool HaveConstraint()
     {
       return conman_->HaveConstraint();
+    }
+    
+    //! Return rcp to ConstraintManager conman_
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    {
+      return conman_;
     }
 
     //@}

@@ -1125,6 +1125,14 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
         p.set("pot_man", pot_man_);
         pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
       }
+      
+      if (constrMan_->HaveConstraint())
+      {
+        ParameterList pcon;
+        pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,stiff_,pcon);
+      }
+
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -2979,6 +2987,13 @@ void StruGenAlpha::Update()
   {
     surf_stress_man_->Update();
   }
+  
+  //----------------- update constraint manager
+  if (constrMan_->HaveConstraint())
+  {
+    constrMan_->Update();
+  }
+  
 }
 
 /*----------------------------------------------------------------------*

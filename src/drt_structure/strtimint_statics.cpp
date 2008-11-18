@@ -257,7 +257,10 @@ void STR::TimIntStatics::UpdateStep()
 
   // update surface stress
   UpdateStepSurfstress();
-
+  
+  // update constraints
+  UpdateStepConstraint();
+  
   // look out
   return;
 }

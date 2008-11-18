@@ -99,11 +99,10 @@ actdisc_(discr)
     //Initialize Lagrange Multipliers, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
-    actvalues_=rcp(new Epetra_Vector(*constrmap_));
-    actvalues_->Scale(0.0);
+    actvalues_=rcp(new Epetra_Vector(*constrmap_,true));
     constrainterr_=rcp(new Epetra_Vector(*constrmap_));
-    lagrMultVec_=rcp(new Epetra_Vector(*constrmap_));
-    lagrMultVec_->Scale(0.0);
+    lagrMultVec_=rcp(new Epetra_Vector(*constrmap_,true));
+    lagrMultVecOld_=rcp(new Epetra_Vector(*constrmap_,true));
     fact_=rcp(new Epetra_Vector(*constrmap_));
   }
   //----------------------------------------------------------------------------

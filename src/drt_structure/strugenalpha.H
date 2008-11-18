@@ -369,7 +369,13 @@ public:
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
+  //! Return bool indicating if constraints are defined
   bool HaveConstraint() {return constrMan_->HaveConstraint(); }
+  //! Return rcp to ConstraintManager conman_
+  virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+  {
+    return constrMan_;
+  }
 
   /// linear solve with prescribed loads and without history
   /*!

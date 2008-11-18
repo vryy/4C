@@ -110,6 +110,14 @@ namespace UTILS
     };
   
     /*!
+         \brief Update constraint variables
+    */
+    void Update()
+    {
+      lagrMultVecOld_->Update(1.0,*lagrMultVec_,0.0);
+    };
+      
+    /*!
          \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)
     */
     void UpdateLagrMult
@@ -182,6 +190,14 @@ namespace UTILS
     {
       return lagrMultVec_;
     };
+    
+    /*!
+      \brief Return lagrange multiplier of last converged step
+    */
+    RCP<Epetra_Vector> GetLagrMultVectorOld() const
+    {
+      return lagrMultVecOld_;
+    };
   
     /*!
      \brief Return if there are constraints
@@ -237,6 +253,7 @@ namespace UTILS
     )
     {
       lagrMultVec_->Update(1.0,*newlagrmult,0.0);
+      lagrMultVecOld_->Update(1.0,*newlagrmult,0.0);
       return;
     }
     
@@ -273,6 +290,7 @@ namespace UTILS
     int minMonitorID_;  ///< number monitor boundary condition ID
     RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
     RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
+    RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
     RCP<LINALG::SparseMatrix> constrMatrix_;  ///< additional rectangular matrix 
     bool haveconstraint_;  ///< are there constraints at all?
     bool havemonitor_;  ///< are there monitor conditions?
