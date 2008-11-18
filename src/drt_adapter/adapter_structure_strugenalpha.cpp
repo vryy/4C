@@ -127,13 +127,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::StructureGenAlpha::DispIncrFactor()
-{
-  return structure_.DispIncrFactor();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FRobin()
 {
   return structure_.FRobin();

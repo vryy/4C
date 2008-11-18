@@ -83,9 +83,6 @@ namespace ADAPTER {
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
 
-    /// GET RID OF THIS ONE
-    double DispIncrFactor();
-
     /// External force at t_{n+1}
     Teuchos::RCP<const Epetra_Vector> FExtn();
 
@@ -145,10 +142,10 @@ namespace ADAPTER {
 
     /// linear structure solve with just a interface load
     ///
-    ///  The very special solve done in steepest descent relaxation
-    ///  calculation (and matrix free Newton Krylov).
+    /// The very special solve done in steepest descent relaxation
+    /// calculation (and matrix free Newton Krylov).
     ///
-    ///  \note Can only be called after a valid structural solve.
+    /// \note Can only be called after a valid structural solve.
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
       Teuchos::RCP<Epetra_Vector> iforce
     );
@@ -175,10 +172,10 @@ namespace ADAPTER {
 
     /// apply interface forces to structural solver
     ///
-    ///  This prepares a new solve of the structural field within one time
-    ///  step. The middle values are newly created.
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
     ///
-    ///  \note This is not yet the most efficient implementation.
+    /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(
       Teuchos::RCP<Epetra_Vector> iforce
     );

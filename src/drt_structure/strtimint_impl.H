@@ -460,6 +460,23 @@ namespace STR
     //! Linear structure solve with just an interface load 
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
+    //! Prepare system for solving with Newton's method
+    //!
+    //! - negative residual
+    //! - blank residual on Dirichlet DOFs
+    //! - apply Dirichlet boundary conditions on system
+    void PrepareSystemForNewtonSolve()
+    {
+      // make the residual negative
+      fres_->Scale(-1.0);
+      // blank residual at DOFs on Dirichlet BC
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+      // apply Dirichlet BCs to system of equations
+      disi_->PutScalar(0.0);  // Useful? depends on solver and more
+      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                     zeros_, *(dbcmaps_->CondMap()));
+    }
+
     //@}
 
     //! @name Access methods
@@ -475,7 +492,10 @@ namespace STR
     virtual void ReadRestartForce() = 0;
    
     //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    Teuchos::RCP<Epetra_Vector> DisRes() { return disi_; }
+    Teuchos::RCP<Epetra_Vector> DisRes()
+    { 
+      return disi_; 
+    }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual
@@ -487,7 +507,7 @@ namespace STR
     }
 
     //! Return effective residual force \f$R_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ForceRes() { return fres_; }
+    Teuchos::RCP<const Epetra_Vector> ForceRes() const { return fres_; }
 
     //@}
 

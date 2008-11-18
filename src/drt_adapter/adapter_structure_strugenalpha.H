@@ -50,7 +50,6 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Map> DofRowMap();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<DRT::Discretization> Discretization();
-    double DispIncrFactor();
     Teuchos::RCP<const Epetra_Vector> FExtn();
     Teuchos::RCP<const Epetra_Vector> FRobin();
     //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;

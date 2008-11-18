@@ -55,6 +55,9 @@ ADAPTER::StructureTimInt::StructureTimInt(
   // set-up FSI interface
   DRT::UTILS::SetupNDimExtractor(*discret, "FSICoupling", interface_);
   structure_->SetSurfaceFSI(&interface_);
+
+  // initialise displacement increments to 0 (in words zero)
+  disinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap()),true));
 }
 
 
@@ -71,6 +74,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::InitialGuess()
 /* right-hand side alias the dynamic force residual */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
 {
+  // this expects a _negative_ (Newton-ready) residual with blanked
+  // Dirichlet DOFs. We did it in #Evaluate.
   return structure_->ForceRes();
 }
 
@@ -144,14 +149,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// UNWANTED
-double ADAPTER::StructureTimInt::DispIncrFactor()
-{
-  return -1; //structure_->DispIncrFactor();
-}
-
-/*----------------------------------------------------------------------*/
 /* */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FRobin()
 {
@@ -214,8 +211,7 @@ void ADAPTER::StructureTimInt::PrepareTimeStep()
   structure_->Predict();
 
   // initialise incremental displacements
-  if (disinc_ != Teuchos::null)
-    disinc_->PutScalar(0.0);
+  disinc_->PutScalar(0.0);
 
 }
 
@@ -235,26 +231,25 @@ void ADAPTER::StructureTimInt::Evaluate(
   // increment only.
   if (disp != Teuchos::null)
   {
+    // residual displacemnts (or iteraion increments or iteratively incremental displacements)
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    if (disinc_ != Teuchos::null)
-    {
-      disi->Update(-1.0, *disinc_, 1.0);
-      disinc_->Update(1.0, *disp, 0.0);
-    }
-    else
-    {
-      disinc_ = Teuchos::rcp(new Epetra_Vector(*disp));
-    }
+    disi->Update(-1.0, *disinc_, 1.0);
+
+    // update incremental displacement member to provided step increments
+    // shortly: disinc_^<i> := disp^<i+1>
+    disinc_->Update(1.0, *disp, 0.0);
+
+    // do structural update with provided residual displacements
     structure_->UpdateIterIncrementally(disi);
-    structure_->EvaluateForceStiffResidual();
   }
   else
-  {
-    // ORIGINAL ACTION BUILDS TANGENT AND APPLIES DBC ON SLE
-    // SENSIBLE ???
+  { 
     structure_->UpdateIterIncrementally(Teuchos::null);
-    structure_->EvaluateForceStiffResidual();
   }
+
+  // builds tangent, residual and applies DBC
+  structure_->EvaluateForceStiffResidual();
+  structure_->PrepareSystemForNewtonSolve();
 }
 
 

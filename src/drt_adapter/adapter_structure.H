@@ -115,9 +115,6 @@ namespace ADAPTER {
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    /// scaling factor for Lagrangian MFSI coupling (unused)
-    virtual double DispIncrFactor() = 0;
-    
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
