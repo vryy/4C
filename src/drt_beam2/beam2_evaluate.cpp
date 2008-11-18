@@ -457,11 +457,11 @@ int DRT::ELEMENTS::Beam2::EvaluateStatForceDamp(ParameterList& params,
  | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //notation for this function similar to Crisfield, Volume 1;
-inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
-                    			              BlitzVec6& rcurr,
-                    			              BlitzVec6& zcurr,
+inline void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::Matrix<3,6>& Bcurr,
+                    			              LINALG::Matrix<6,1>& rcurr,
+                    			              LINALG::Matrix<6,1>& zcurr,
                                         double& beta,
-                                        const BlitzMat3x2& xcurr,
+                                        const LINALG::Matrix<3,2>& xcurr,
                                         const double& lcurr,
                                         const double& lrefe_)
 
@@ -523,9 +523,9 @@ inline void DRT::ELEMENTS::Beam2::b2_local_aux(BlitzMat3x6& Bcurr,
   //assigning values to each element of the Bcurr matrix  
   for(int id_col=0; id_col<6; id_col++)
   	{
-  	  Bcurr(0,id_col) = rcurr[id_col];
+  	  Bcurr(0,id_col) = rcurr(id_col);
   	  Bcurr(1,id_col) = 0;
-  	  Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr[id_col];
+  	  Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr(id_col);
   	}
     Bcurr(2,2) -= (lrefe_ / 2);
     Bcurr(2,5) -= (lrefe_ / 2);
@@ -549,20 +549,20 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   const int numdf = 3;
   const int iel = NumNode();
   //coordinates in current configuration of all the nodes in two dimensions stored in 3 x iel matrices
-  BlitzMat3x2 xcurr;
+  LINALG::Matrix<3,2> xcurr;
 
   //current length of beam in physical space
   double lcurr = 0;
   //current angle between x-axis and beam in physical space
   double beta;
   //some geometric auxiliary variables according to Crisfield, Vol. 1
-  BlitzVec6 zcurr;
-  BlitzVec6 rcurr;
-  BlitzMat3x6 Bcurr;
+  LINALG::Matrix<6,1> zcurr;
+  LINALG::Matrix<6,1> rcurr;
+  LINALG::Matrix<3,6> Bcurr;
   //auxiliary matrix storing the product of constitutive matrix C and Bcurr
-  BlitzMat3x6 aux_CB;
+  LINALG::Matrix<3,6> aux_CB;
   //declaration of local internal forces
-  BlitzVec3 force_loc;
+  LINALG::Matrix<3,1> force_loc;
   //declaration of material parameters
   double ym; //Young's modulus
   double sm; //shear modulus

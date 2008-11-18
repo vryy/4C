@@ -32,16 +32,11 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
-#include <blitz/array.h>
 #include "../drt_geometry/blitz_tiny_operation.H"
 
-//! generally usefull typedefs, when working with Blitz arrays
-typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
-typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
-typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
-typedef blitz::TinyMatrix<double,3,6> BlitzMat3x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
 
 
 
@@ -334,11 +329,11 @@ private:
   // internal calculation methods
 
   //!internal geometric calculations
-  void b2_local_aux(BlitzMat3x6& B_curr,
-                    BlitzVec6& r_curr,
-                    BlitzVec6& z_curr,
+  void b2_local_aux(LINALG::Matrix<3,6>& B_curr,
+                    LINALG::Matrix<6,1>& r_curr,
+                    LINALG::Matrix<6,1>& z_curr,
                     double& beta,
-                    const BlitzMat3x2& x_curr,
+                    const LINALG::Matrix<3,2>& x_curr,
                     const double& lcurr_,
                     const double& lrefe_);
   
