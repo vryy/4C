@@ -322,7 +322,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 |(public)                                                       tk 01/08|
 |Print monitored values                                                 |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::PrintMonitorValues()
+void UTILS::ConstrManager::PrintMonitorValues() const
 {
   for (int i = 0; i < numMonitorID_; ++i)
   {

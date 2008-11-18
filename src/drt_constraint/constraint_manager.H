@@ -82,7 +82,7 @@ namespace UTILS
     /*!
      \brief Return norm of difference between actual and constraint values
     */
-    double GetErrorNorm()
+    double GetErrorNorm() const
     {
       double foo;
       constrainterr_->Norm2(&foo);
@@ -92,7 +92,7 @@ namespace UTILS
     /*!
          \brief Return number of constraints
     */
-    int GetNumberOfConstraints()
+    int GetNumberOfConstraints() const
     {
         return numConstrID_;
     };
@@ -138,13 +138,13 @@ namespace UTILS
     double GetError
     (
       int i ///< ID of constraint of interest
-    )
+    ) const
     {
         return (*constrainterr_)[i];
     }
   
     /// return vector of differences between prescribed and actual values
-    RCP<Epetra_Vector> GetError()
+    RCP<Epetra_Vector> GetError() const
     {
       return constrainterr_;
     }
@@ -153,13 +153,13 @@ namespace UTILS
      \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
     */
-    RCP<Epetra_Map> GetConstraintMap()
+    RCP<Epetra_Map> GetConstraintMap() const
     {
       return constrmap_;
     };
   
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    RCP<LINALG::SparseMatrix> GetConstrMatrix()
+    RCP<LINALG::SparseMatrix> GetConstrMatrix() const
     {
       return constrMatrix_;
     };
@@ -167,10 +167,10 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier for constraint i
     */
-    double GetLagrMult
+    double GetLagrMult 
     (
       int i ///< ID of constraint of interest
-    )
+    ) const
     {
       return (*lagrMultVec_)[i];
     };
@@ -178,7 +178,7 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier vector
     */
-    RCP<Epetra_Vector> GetLagrMultVector()
+    RCP<Epetra_Vector> GetLagrMultVector() const
     {
       return lagrMultVec_;
     };
@@ -186,7 +186,7 @@ namespace UTILS
     /*!
      \brief Return if there are constraints
     */
-    bool HaveConstraint()
+    bool HaveConstraint() const
     {
         return haveconstraint_;
     };
@@ -194,7 +194,7 @@ namespace UTILS
     /*!
        \brief Return if there are monitors
     */
-    bool HaveMonitor()
+    bool HaveMonitor() const
     {
         return havemonitor_;
     };
@@ -205,7 +205,7 @@ namespace UTILS
     double GetCurrValue
     (
       int i ///< ID of constraint of interest
-    )
+    ) const
     {
         return (*actvalues_)[i];
     };
@@ -213,7 +213,7 @@ namespace UTILS
     /*!
          \brief Print out the values of current monitor values
      */
-    void PrintMonitorValues();
+    void PrintMonitorValues() const;
   
     /*!
        \brief Compute values described by a monitor boundary condition
@@ -241,7 +241,7 @@ namespace UTILS
     }
     
     /// Return Reference base values to write restart
-    RCP<Epetra_Vector> GetRefBaseValues()
+    RCP<Epetra_Vector> GetRefBaseValues() const
     {
       return refbasevalues_;
     }
