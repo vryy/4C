@@ -26,7 +26,7 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   RCP<ParameterList>            params,
   RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,output),
-  theta_(params_->get<double>("theta"))
+  theta_(0.0)
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
