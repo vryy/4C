@@ -458,6 +458,11 @@ public:
   virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
 
   /*!
+  \brief Evaluate minimal edge size of CElement
+  */
+  virtual double MinEdgeSize();
+  
+  /*!
   \brief Add CElements to this CElement's potential contact partners
   */
   virtual bool AddSearchElements(const vector<int>& gids);

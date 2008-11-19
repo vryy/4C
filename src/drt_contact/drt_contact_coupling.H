@@ -111,7 +111,7 @@ public:
   \brief Return vector of vertex coordinates (length 3)
   
   */
-  virtual inline vector<double> Coord() {return coord_; }
+  virtual inline vector<double>& Coord() {return coord_; }
   
   /*!
   \brief Return pointer to next vertex on polygon
@@ -369,10 +369,12 @@ public:
   
   \param polygon1 (in): vector of vertices for input polygon 1
   \param polygon2 (in): vector of vertices for input polygon 2
+  \param tol (in): clipping tolerance for close vertices detection 
   
   */
   virtual vector<vector<double> > PolygonClipping(vector<vector<double> > polygon1,
-                                                  vector<vector<double> > polygon2);
+                                                  vector<vector<double> > polygon2,
+                                                  double& tol);
   //@}
     
       

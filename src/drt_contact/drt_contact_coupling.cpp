@@ -91,7 +91,7 @@ dim_(dim),
 contactsegs_(csegs)
 {
   // check sanity of dimension
-  if(Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
+  if (Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
   
   // the two-dimensional case
   if (Dim()==2)
@@ -114,6 +114,12 @@ contactsegs_(csegs)
   // the three-dimensional case
   else if (Dim()==3)
   {
+    // check for quadratic elements
+    if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+        
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
     
@@ -123,12 +129,27 @@ contactsegs_(csegs)
     // project master element nodes onto auxiliary plane
     ProjectMaster3D();
     
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
+      
     // do clipping in auxiliary plane
-    vector<vector<double> > clip = PolygonClipping(SlaveVertices(),MasterVertices());
+    vector<vector<double> > clip = PolygonClipping(SlaveVertices(),MasterVertices(),tol);
+    
+    // proceed only if clipping polygon is not empty
+    bool overlap = false;
+    if ((int)clip.size()==0) overlap = true;
     
     // do triangulization of clipping polygon
+    if (overlap)
+    {
+      
+    }
     
     // do integration of triangles
+    
+    
   }
   
   // invalid cases for dim
@@ -787,12 +808,28 @@ bool CONTACT::Coupling::ProjectMaster3D()
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
 vector<vector<double> > CONTACT::Coupling::PolygonClipping(
-    vector<vector<double> > poly1, vector<vector<double> > poly2)
+    vector<vector<double> > poly1, vector<vector<double> > poly2, double& tol)
 {
   // print to screen
   cout << "\n\n*****************************************************";
   cout << "\n*          P O L Y G O N   C L I P P I N G          *";
   cout << "\n*****************************************************\n\n";
+  
+//  // hard-coded input polygons
+//  poly1.resize(4);
+//  poly1[0][0]= 0.0; poly1[0][1]= 0.0; poly1[0][2]= 0.0;
+//  poly1[1][0]= 1.0; poly1[1][1]= 0.0; poly1[1][2]= 0.0;
+//  poly1[2][0]= 1.0; poly1[2][1]= 1.0; poly1[2][2]= 0.0;
+//  poly1[3][0]= 0.0; poly1[3][1]= 1.0; poly1[3][2]= 0.0;
+//  
+//  poly2.resize(4);
+//  poly2[0][0]= 0.0; poly2[0][1]= 0.0; poly2[0][2]= 0.0;
+//  poly2[1][0]= 0.7; poly2[1][1]= 0.0; poly2[1][2]= 0.0;
+//  poly2[2][0]= 1.0; poly2[2][1]= 0.5; poly2[2][2]= 0.0;
+//  poly2[3][0]= 0.0; poly2[3][1]= 0.5; poly2[3][2]= 0.0;
+//  
+//  // hard-coded auxiliary plane normal
+//  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0; 
   
   //**********************************************************************
   // STEP1: Input check
@@ -844,9 +881,9 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   cross1[1] = diff1[2]*edge1[0]-diff1[0]*edge1[2];
   cross1[2] = diff1[0]*edge1[1]-diff1[1]*edge1[0];
   
-  cross2[0] = diff2[1]*edge2[2]-diff2[2]*edge1[1];
-  cross2[1] = diff2[2]*edge2[0]-diff2[0]*edge1[2];
-  cross2[2] = diff2[0]*edge2[1]-diff2[1]*edge1[0];
+  cross2[0] = diff2[1]*edge2[2]-diff2[2]*edge2[1];
+  cross2[1] = diff2[2]*edge2[0]-diff2[0]*edge2[2];
+  cross2[2] = diff2[0]*edge2[1]-diff2[1]*edge2[0];
   
   // check against auxiliary plane normal
   double check1 = cross1[0]*Auxn()[0]+cross1[1]*Auxn()[1]+cross1[2]*Auxn()[2];
@@ -864,7 +901,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       newpoly2[(int)poly2.size()-1-i] = poly2[i];
     poly2 = newpoly2;
   }
-  
+   
   // check if the two input polygons are convex
   // a polygon is convex if the scalar product of an edge normal and the
   // next edge direction is negative for all edges
@@ -999,7 +1036,117 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   }
   
   //**********************************************************************
-  // STEP3: Perform line intersection of all edge pairs
+  // STEP3: Avoid degenerate cases
+  // - if a point of poly1 is close (<tol) to a edge of poly2 or vice
+  //   versa we move this point away from the edge by tol
+  //**********************************************************************
+  for (int i=0;i<(int)poly1list.size();++i)
+  {
+    for (int j=0;j<(int)poly2list.size();++j)
+    {
+      // we need diff vector and edge2 first
+      double diff1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diff1[k] = poly1list[i].Coord()[k] - poly2list[j].Coord()[k];
+        edge2[k] = (poly2list[j].Next())->Coord()[k] - poly2list[j].Coord()[k];
+      }
+      
+      // check if point of poly1 lies within [0,1] for edge2
+      double checkalpha = diff1[0]*edge2[0]+diff1[1]*edge2[1]+diff1[2]*edge2[2];
+      checkalpha /= (edge2[0]*edge2[0]+edge2[1]*edge2[1]+edge2[2]*edge2[2]);
+      
+      // proceed only if inside [0,1] with tolerance tol
+      if (checkalpha<-tol || checkalpha>1+tol) continue;
+      
+      // compute distance from point on poly1 to edge2
+      double n2[3] = {0.0, 0.0, 0.0};
+      n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
+      n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
+      n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
+      double ln = sqrt(n2[0]*n2[0]+n2[1]*n2[1]+n2[2]*n2[2]);
+      for (int k=0;k<3;++k) n2[k] /= ln;
+      
+      double dist = diff1[0]*n2[0]+diff1[1]*n2[1]+diff1[2]*n2[2];
+      
+      // move point away if very close to edge 2
+      if (dist > -tol && dist < 0)
+      {
+        cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << endl;
+        poly1list[i].Coord()[0] -= tol*n2[0];
+        poly1list[i].Coord()[1] -= tol*n2[1];
+        poly1list[i].Coord()[2] -= tol*n2[2];                                   
+      }
+      else if (dist < tol && dist >= 0)
+      {
+        cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << endl;
+        poly1list[i].Coord()[0] += tol*n2[0];
+        poly1list[i].Coord()[1] += tol*n2[1];
+        poly1list[i].Coord()[2] += tol*n2[2];     
+      }
+      else
+      {
+        // do nothing, point is not very close
+      }    
+    }
+  }
+  
+  for (int i=0;i<(int)poly2list.size();++i)
+  {
+    for (int j=0;j<(int)poly1list.size();++j)
+    {
+      // we need diff vector and edge1 first
+      double diff2[3] = {0.0, 0.0, 0.0};
+      double edge1[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        diff2[k] = poly2list[i].Coord()[k] - poly1list[j].Coord()[k];
+        edge1[k] = (poly1list[j].Next())->Coord()[k] - poly1list[j].Coord()[k];
+      }
+      
+      // check if point of poly2 lies within [0,1] for edge1
+      double checkalpha = diff2[0]*edge1[0]+diff2[1]*edge1[1]+diff2[2]*edge1[2];
+      checkalpha /= (edge1[0]*edge1[0]+edge1[1]*edge1[1]+edge1[2]*edge1[2]);
+      
+      // proceed only if inside [0,1] with tolerance tol
+      if (checkalpha<-tol || checkalpha>1+tol) continue;
+      
+      // compute distance from point on poly2 to edge1
+      double n1[3] = {0.0, 0.0, 0.0};
+      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
+      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
+      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
+      double ln = sqrt(n1[0]*n1[0]+n1[1]*n1[1]+n1[2]*n1[2]);
+      for (int k=0;k<3;++k) n1[k] /= ln;
+      
+      double dist = diff2[0]*n1[0]+diff2[1]*n1[1]+diff2[2]*n1[2];
+      
+      // move point away if very close to edge 2
+      if (dist > -tol && dist < 0)
+      {
+        cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << endl;
+        poly2list[i].Coord()[0] -= tol*n1[0];
+        poly2list[i].Coord()[1] -= tol*n1[1];
+        poly2list[i].Coord()[2] -= tol*n1[2];                                   
+      }
+      else if (dist < tol && dist >= 0)
+      {
+        cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << endl;
+        poly2list[i].Coord()[0] += tol*n1[0];
+        poly2list[i].Coord()[1] += tol*n1[1];
+        poly2list[i].Coord()[2] += tol*n1[2];     
+      }
+      else
+      {
+        // do nothing, point is not very close
+      }    
+    }
+  }
+  
+  
+  //**********************************************************************
+  // STEP4: Perform line intersection of all edge pairs
   // - this yields two new vectors of intersection vertices
   // - by default the respective edge end vertices are assumed to be
   //   the next/prev vertices and connectivity is set up accordingly
@@ -1043,7 +1190,6 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       if(abs(parallel)<1.0e-12)
       {
         cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
-        cout << "We have to check for degenerate cases soon..." << endl;
         continue;
       }
       
@@ -1097,7 +1243,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   vector<vector<double> > respoly;
     
   //**********************************************************************
-  // STEP4: Find result polygon for no intersection case
+  // STEP5: Find result polygon for no intersection case
   // - if there are no intersections polygon 1 could lie within polygon 2,
   //   polygon 2 could lie within polygon 1 or they are fully adjacent
   // - by default the respective edge end vertices are assumed to be
@@ -1194,7 +1340,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   }
   
   //**********************************************************************
-  // STEP5: Find result polygon for intersection case
+  // STEP6: Find result polygon for intersection case
   // - assign neighbor connectivity for intersection points
   // - check for edges where 2 intersection points have been found
   // - establish new connectivity (next/prev) accordingly: first for
@@ -1301,43 +1447,67 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     // point is an entry or exit point with respect to the other polygon.
     // this status is then stored into the vertex data structure.
     
-    // check if previous vertex is inside for first intersection
-    bool entry1 = false;
-    bool entry2 = false;
-    double edge1[3] = {0.0, 0.0, 0.0};
-    double edge2[3] = {0.0, 0.0, 0.0};
-    for (int k=0;k<3;++k)
+    for (int i=0;i<(int)intersec1.size();++i)
     {
-      edge1[k] = (intersec1[0].Next())->Coord()[k] - (intersec1[0].Prev())->Coord()[k];
-      edge2[k] = ((intersec1[0].Neighbor())->Next())->Coord()[k] - ((intersec1[0].Neighbor())->Prev())->Coord()[k];
+      // check if previous vertex is inside for first intersection
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        edge1[k] = (intersec1[i].Next())->Coord()[k] - (intersec1[i].Prev())->Coord()[k];
+        edge2[k] = ((intersec1[i].Neighbor())->Next())->Coord()[k] - ((intersec1[i].Neighbor())->Prev())->Coord()[k];
+      }
+      double n1[3] = {0.0, 0.0, 0.0};
+      double n2[3] = {0.0, 0.0, 0.0};
+      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
+      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
+      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
+      n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
+      n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
+      n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
+      
+      double check = edge1[0]*n2[0] + edge1[1]*n2[1] + edge1[2]*n2[2];
+      if (check<0) intersec1[i].EntryExit()=true;
     }
-    double n1[3] = {0.0, 0.0, 0.0};
-    double n2[3] = {0.0, 0.0, 0.0};
-    n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
-    n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
-    n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
-    n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
-    n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
-    n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
-    
-    double check1 = edge1[0]*n2[0] + edge1[1]*n2[1] + edge1[2]*n2[2];
-    if (check1<0) entry1=true;
-    
-    double check2 = edge2[0]*n1[0] + edge2[1]*n1[1] + edge2[2]*n1[2];
-    if (check2<0) entry2=true;
     
     for (int i=0;i<(int)intersec1.size();++i)
     {
-      intersec1[i].EntryExit() = entry1;
-      entry1 = 1 - entry1;
+      // check if previous vertex is inside for first intersection
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        edge1[k] = (intersec2[i].Next())->Coord()[k] - (intersec2[i].Prev())->Coord()[k];
+        edge2[k] = ((intersec2[i].Neighbor())->Next())->Coord()[k] - ((intersec2[i].Neighbor())->Prev())->Coord()[k];
+      }
+      double n1[3] = {0.0, 0.0, 0.0};
+      double n2[3] = {0.0, 0.0, 0.0};
+      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
+      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
+      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
+      n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
+      n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
+      n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
+      
+      double check = edge1[0]*n2[0] + edge1[1]*n2[1] + edge1[2]*n2[2];
+      if (check<0) intersec2[i].EntryExit()=true;
     }
     
+    // print intersection points and their status
+    cout << endl;
+    for (int i=0;i<(int)intersec1.size();++i)
+    {
+      cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
+      cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
+    }
+    
+    cout << endl;
     for (int i=0;i<(int)intersec2.size();++i)
     {
-      intersec2[i].EntryExit() = entry2;
-      entry2 = 1 - entry2;
+      cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
+      cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
     }
-      
+    
     // create clipped polygon by filtering
     // We simply have to find our way through the linked data structures of
     // poly1, poly2 and intersection vertices. For this we start at an
@@ -1396,6 +1566,63 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     if (identical) respoly.pop_back();
     else dserror("ERROR: We did not arrive at the staring point again...?");
     
+    
+    // collapse respoly points that are very close
+    vector<vector<double> > collapsedrespoly;
+    for (int i=0;i<(int)respoly.size();++i)
+    {
+      // find distance between two consecutive points
+      // first point of respoly
+      if (i==0)
+        collapsedrespoly.push_back(respoly[i]);
+      
+      // last point of respoly
+      else if (i==(int)respoly.size()-1)
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        double diff2[3] = {0.0, 0.0, 0.0};
+        
+        for (int k=0;k<3;++k) diff[k] = respoly[i][k] - respoly[i-1][k];
+        for (int k=0;k<3;++k) diff2[k] = respoly[0][k] - respoly[i][k];
+        
+        double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+        double dist2 = sqrt(diff2[0]*diff2[0]+diff2[1]*diff2[1]+diff2[2]*diff2[2]);
+        double tolcollapse = 10*tol;
+        
+        if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
+          collapsedrespoly.push_back(respoly[i]);
+        else
+          cout << "Collapsed two points in result polygon!" << endl;
+      }
+      
+      // standard case
+      else
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k=0;k<3;++k) diff[k] = respoly[i][k] - respoly[i-1][k];
+
+        double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+        double tolcollapse = 10*tol;
+        
+        if (abs(dist) >= tolcollapse)
+          collapsedrespoly.push_back(respoly[i]);
+        else
+          cout << "Collapsed two points in result polygon!" << endl;
+      }
+    }
+    
+    // replace respoly by collapsed respoly
+    respoly = collapsedrespoly;
+    cout << "Final length of result list: " << (int)respoly.size() << endl;
+        
+    // check if respoly collapsed to nothing
+    if ((int)collapsedrespoly.size()<3)
+    {
+      cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
+      vector<vector<double> > empty(0,vector<double>(3));
+      respoly = empty;
+    }
+ 
     // check for rotation of result polygon (must be clockwise!!!)
     // first get geometric center
     double center[3] = {0.0, 0.0, 0.0};
@@ -1434,6 +1661,11 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       respoly = newrespoly;
     }
     
+    // print final input polygons to screen
+      cout << "\nResult Poylgon:";
+      for (int i=0;i<(int)respoly.size();++i)
+        cout << "\nVertex " << i << ":\t" << respoly[i][0] << "\t" << respoly[i][1] << "\t" << respoly[i][2];
+      
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the
     // next edge direction is negative for all edges
@@ -1468,13 +1700,12 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   
   cout << "\nRESULT POLYGON FINISHED!!!!!!!!!!!!!!!\n" << endl;
 
-  // at some point, we have to consider degenerate cases!
-  
-  //**********************************************************************
+  /*
+  // **********************************************************************
   // STEP6: Result visualization with GMSH
   // - plot the two input polygons and their vertex numbering
   // - plot the result polygon and its vertex numbering
-  //**********************************************************************
+  // **********************************************************************
   std::ostringstream filename;
   static int gmshcount=0;
   filename << "o/gmsh_output/" << "clipping_";
@@ -1572,7 +1803,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   // move everything to gmsh post-processing file and close it
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
-  
+  */
   // return result
   return respoly;
 }

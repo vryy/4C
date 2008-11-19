@@ -70,6 +70,7 @@ Maintainer: Alexander Popp
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
+#define CONTACTCLIPTOL 1.0e-6    /* tolerance for polygon clipping in 3D */
 #define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
 
 namespace CONTACT {
