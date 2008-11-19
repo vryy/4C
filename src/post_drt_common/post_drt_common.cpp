@@ -493,7 +493,8 @@ void PostProblem::read_meshes()
 
       // setup of parallel layout: create ghosting of already distributed nodes+elems
 #ifdef PARALLEL
-      setup_ghosting(currfield.discretization());
+      if (currfield.discretization()->Comm().NumProc() != 1)
+        setup_ghosting(currfield.discretization());
 #endif
 
       //distribute_drt_grids();
@@ -560,19 +561,23 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   // we have to know about the global node ids on each processor.
   // since the current discretization is NOT(!!!) Filled() yet, the following was
   // the only solution to create the ghosting for ALREADY DISTRIBUTED nodes/elements.
+  // Potential bug: Nodes do not neccessarily start from zero!
   int nodecount=0;
   int ngid=0;
   while(nodecount < numnode)
   {
     if (dis->HaveGlobalNode(ngid)) // do we have this global node id on this processor?
-    { nids[nodecount]= ngid;
+    { 
+      nids[nodecount]= ngid;
       nodecount+=1;
     }
     ngid+=1;
   }
 
   // now create a preliminary node row map
-  RCP<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
+  //RCP<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
+  // Shouldn't this look like this? gee
+  RCP<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nodecount,&nids[0],0,*comm_));
   nids.clear();
 
   // construct graphs
@@ -744,7 +749,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   graph = null;
   finalgraph = null;
   tgraph = null;
-
+  
   // distribute ghost nodes resolving the node dependencies given by the final graph
   DRT::UTILS::RedistributeWithNewNodalDistribution(*dis, *rownodes, *colnodes);
   dis->FillComplete();
