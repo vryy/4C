@@ -349,7 +349,7 @@ void STR::TimIntOneStepTheta::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntOneStepTheta::UpdateStep()
+void STR::TimIntOneStepTheta::UpdateStepState()
 {
   // update state
   // new displacements at t_{n+1} -> t_n

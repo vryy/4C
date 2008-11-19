@@ -353,7 +353,7 @@ void STR::TimIntGEMM::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntGEMM::UpdateStep()
+void STR::TimIntGEMM::UpdateStepState()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity

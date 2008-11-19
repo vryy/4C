@@ -186,7 +186,7 @@ void STR::TimAda::Integrate()
     sti_->dt_->UpdateSteps(stepsize_);
 
     // printing and output
-    sti_->UpdateStep();
+    sti_->UpdateStepState();
     sti_->PrintStep();
     OutputPeriod();
     OutputStepSize();

@@ -299,17 +299,8 @@ namespace STR
     //! displacements
     void UpdateIterIncrementally
     (
-      const Teuchos::RCP<Epetra_Vector> disi  //!< input residual displacements
-    )
-    {
-      // select residual displacements
-      if (disi != Teuchos::null)
-        disi_->Update(1.0, *disi, 0.0);  // set the new solution we just got
-      else
-        disi_->PutScalar(0.0);
-      // Update
-      UpdateIterIncrementally();
-    }
+      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+    );
 
     //! Update iteration iteratively
     //!
@@ -324,25 +315,13 @@ namespace STR
 
 
     //! Update configuration after time step
+    //!
     //! This means, the state set
     //! \f$D_{n} := D_{n+1}\f$, \f$V_{n} := V_{n+1}\f$ and \f$A_{n} := A_{n+1}\f$
     //! Thus the 'last' converged state is lost and a reset 
     //! of the time step becomes impossible.
     //! We are ready and keen awating the next time step.
-    virtual void UpdateStep() = 0;
-
-    //! Update configuration and time after time step
-    void UpdateStepAndTime()
-    {
-      // system state
-      UpdateStep();
-      // update time and step
-      time_->UpdateSteps(timen_);
-      step_ = stepn_;
-      // 
-      timen_ += (*dt_)[0];
-      stepn_ += 1;
-    }
+    virtual void UpdateStepState() = 0;
 
     //! Update step for surface stress
     void UpdateStepSurfstress()
@@ -465,17 +444,7 @@ namespace STR
     //! - negative residual
     //! - blank residual on Dirichlet DOFs
     //! - apply Dirichlet boundary conditions on system
-    void PrepareSystemForNewtonSolve()
-    {
-      // make the residual negative
-      fres_->Scale(-1.0);
-      // blank residual at DOFs on Dirichlet BC
-      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-      // apply Dirichlet BCs to system of equations
-      disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                     zeros_, *(dbcmaps_->CondMap()));
-    }
+    void PrepareSystemForNewtonSolve();
 
     //@}
 
@@ -492,15 +461,12 @@ namespace STR
     virtual void ReadRestartForce() = 0;
    
     //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    Teuchos::RCP<Epetra_Vector> DisRes()
-    { 
-      return disi_; 
-    }
+    Teuchos::RCP<const Epetra_Vector> DisRes() const { return disi_; }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual
     (
-      const Teuchos::RCP<Epetra_Vector> disi  //!< input residual displacements
+      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     )
     {  
       if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);

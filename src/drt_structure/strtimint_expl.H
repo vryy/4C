@@ -75,13 +75,13 @@ namespace STR
     //!
     //! Thus the 'last' converged is lost and a reset of the time step 
     //! becomes impossible. We are ready and keen awating the next time step.
-    virtual void UpdateStep() = 0;
+    virtual void UpdateStepState() = 0;
 
     //! Update configuration and time after time step
     void UpdateStepAndTime()
     {
       // system state
-      UpdateStep();
+      UpdateStepState();
       // update time and step
       time_->UpdateSteps(timen_);
       step_ = stepn_;

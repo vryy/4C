@@ -711,6 +711,11 @@ void STR::TimIntImpl::UpdateIter
   const int iter  //!< iteration counter
 )
 {
+  // we need to do an incremental update (expensive)
+  // in the very first iteration (i.e. predictor) of a Newton loop
+  // to protect the Dirichlet BCs and to achieve consistent
+  // behaviour across all predictors
+  // HINT: Sorry, this comment was added delayed and might be inaccurate.
   if (iter <= 1)
   {
     UpdateIterIncrementally();
@@ -719,6 +724,29 @@ void STR::TimIntImpl::UpdateIter
   {
     UpdateIterIteratively();
   }
+
+  // morning is broken
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update iteration incrementally with prescribed residual displacements */
+void STR::TimIntImpl::UpdateIterIncrementally
+(
+  const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+)
+{
+  // select residual displacements
+  if (disi != Teuchos::null)
+    disi_->Update(1.0, *disi, 0.0);  // set the new solution we just got
+  else
+    disi_->PutScalar(0.0);
+
+  // Update using #disi_
+  UpdateIterIncrementally();
+
+  // leave this place
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1007,6 +1035,22 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
   // go back
   return disi_;
+}
+
+/*----------------------------------------------------------------------*/
+/* Prepare system for solving with Newton's method */
+void STR::TimIntImpl::PrepareSystemForNewtonSolve()
+{
+  // make the residual negative
+  fres_->Scale(-1.0);
+  // blank residual at DOFs on Dirichlet BCs
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                 zeros_, *(dbcmaps_->CondMap()));
+  // final sip
+  return;
 }
 
 /*----------------------------------------------------------------------*/

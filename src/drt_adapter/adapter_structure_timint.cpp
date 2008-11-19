@@ -258,7 +258,9 @@ void ADAPTER::StructureTimInt::Evaluate(
 /* update time step */
 void ADAPTER::StructureTimInt::Update()
 {
-  structure_->UpdateStepAndTime();
+  structure_->UpdateStepState();
+  structure_->UpdateStepTime();
+  return;
 }
 
 

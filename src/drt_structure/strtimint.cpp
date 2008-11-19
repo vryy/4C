@@ -140,13 +140,13 @@ std::string STR::TimInt::MapNameEnumToString
 void STR::TimInt::Logo()
 {
   std::cout << "Welcome to Structural Time Integration " << std::endl;
-  std::cout << "     __o__                          __o__       " << std::endl;
-  std::cout << "__  /-----\\__                  __  /-----\\__           " << std::endl;
-  std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\          " << std::endl;
-  std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |          " << std::endl;
-  std::cout << "  \\|       |_/    |       /      \\|       |_/          " << std::endl;
-  std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /| " << std::endl;
-  std::cout << "              | |                            | | |   | " << std::endl;
+  std::cout << "     __o__                          __o__" << std::endl;
+  std::cout << "__  /-----\\__                  __  /-----\\__" << std::endl;
+  std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" << std::endl;
+  std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" << std::endl;
+  std::cout << "  \\|       |_/    |       /      \\|       |_/" << std::endl;
+  std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" << std::endl;
+  std::cout << "              | |                            | | |   |" << std::endl;
   std::cout << std::endl;
 }
 
@@ -244,7 +244,6 @@ STR::TimInt::TimInt
   }
   
   // displacements D_{n}
-  // cout << "we are here" << endl;
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
@@ -415,6 +414,21 @@ void STR::TimInt::ApplyDirichletBC
   discret_->ClearState();
 
   // ciao
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update time and step counter */
+void STR::TimInt::UpdateStepTime()
+{
+  // update time and step
+  time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
+  step_ = stepn_;  // n := n+1
+  // 
+  timen_ += (*dt_)[0];
+  stepn_ += 1;
+
+  // new deal
   return;
 }
 
@@ -935,14 +949,10 @@ void STR::TimInt::Integrate()
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
-    UpdateStep();
+    UpdateStepState();
 
     // update time and step
-    time_->UpdateSteps(timen_);
-    step_ = stepn_;
-    //
-    timen_ += (*dt_)[0];
-    stepn_ += 1;
+    UpdateStepTime();
 
     // print info about finished time step
     PrintStep();

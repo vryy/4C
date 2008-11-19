@@ -220,7 +220,7 @@ void STR::TimIntStatics::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntStatics::UpdateStep()
+void STR::TimIntStatics::UpdateStepState()
 {
   // update state
   // new displacements at t_{n+1} -> t_n

@@ -182,7 +182,7 @@ namespace STR
     void UpdateIterIteratively();
 
     //! Update step
-    void UpdateStep();
+    void UpdateStepState();
 
     //! Read and set restart for forces
     void ReadRestartForce();

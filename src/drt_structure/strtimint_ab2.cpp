@@ -168,7 +168,7 @@ void STR::TimIntAB2::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void STR::TimIntAB2::UpdateStep()
+void STR::TimIntAB2::UpdateStepState()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}

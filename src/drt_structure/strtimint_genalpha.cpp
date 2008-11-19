@@ -475,7 +475,7 @@ void STR::TimIntGenAlpha::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntGenAlpha::UpdateStep()
+void STR::TimIntGenAlpha::UpdateStepState()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity
