@@ -128,13 +128,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureBroMotion::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::StructureBroMotion::DispIncrFactor()
-{
-  return structure_.DispIncrFactor();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureBroMotion::FRobin()
 {
   return structure_.FRobin();

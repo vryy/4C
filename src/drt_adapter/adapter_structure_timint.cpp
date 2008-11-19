@@ -108,22 +108,6 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// UNWANTED
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnm()
-{
-/*
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-#else
-  return structure_->Dispm();
-#endif
-*/
-  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-}
-
-
-/*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
 Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
 {
@@ -232,7 +216,7 @@ void ADAPTER::StructureTimInt::Evaluate(
   // increment only.
   if (disp != Teuchos::null)
   {
-    // residual displacemnts (or iteraion increments or iteratively incremental displacements)
+    // residual displacements (or iteration increments or iteratively incremental displacements)
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
     disi->Update(-1.0, *disinc_, 1.0);
 

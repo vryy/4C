@@ -46,6 +46,8 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Vector> RHS();
     Teuchos::RCP<const Epetra_Vector> Dispnp();
     Teuchos::RCP<const Epetra_Vector> Dispn();
+    /// original comment: 'unknown displacements at t(n-1)'
+    /// actually Dispm()-called, mid-displacement? 
     Teuchos::RCP<const Epetra_Vector> Dispnm();
     Teuchos::RCP<const Epetra_Map> DofRowMap();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -60,6 +62,10 @@ namespace ADAPTER {
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();
+    void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
+    {
+      structure_.UpdateIterIncrConstr(lagrincr);
+    }
     void Output();
 
     /// communication object at the interface
@@ -77,6 +83,18 @@ namespace ADAPTER {
       return structure_.HaveConstraint();
     };
 
+    /// get constraint manager defined in the structure
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    {
+      return structure_.GetConstraintManager();
+    };
+    
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    {
+      return LINALG::ConvertDirichletToggleVectorToMaps(structure_.Dirichlet());
+    };
+    
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 

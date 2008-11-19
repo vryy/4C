@@ -33,106 +33,145 @@ Maintainer: Burkhard Bornemann
 /* constructor */
 ADAPTER::StructureConstrained::StructureConstrained
 (
-  Teuchos::RCP<Structure> stru
+  RCP<Structure> stru
 )
 : structure_(stru)
-{
-    
+{    
   // make sure
-  if (structure_ == Teuchos::null)
+  if (structure_ == null)
     dserror("Failed to create structural integrator");
+  
+  // build merged dof row map
+  dofrowmap_ = LINALG::MergeMap(*(structure_->DofRowMap()),
+                                *(structure_->GetConstraintManager()->GetConstraintMap()),
+                                false);
 
+  // set up interface between merged and single maps
+  conmerger_.Setup(*dofrowmap_, 
+                    structure_->DofRowMap(), 
+                    structure_->GetConstraintManager()->GetConstraintMap());
+
+  // initialise displacement increments to 0 (in words zero)
+  // this variable in only used in monolithic FSI
+  disinc_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+  
+  //setup fsi-Interface
+  DRT::UTILS::SetupNDimExtractor(*(structure_->Discretization()),"FSICoupling",dofrowmap_,interface_);
+  structure_->Discretization()->Print(cout);
 }
 
 
   
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
 {
-  //TODO: make it big
-  return structure_->InitialGuess();
+  //get initial guesses from structure and constraintmanager
+  RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess(); 
+  RCP<const Epetra_Vector> lagrGuess = rcp(new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()),true));
   
+  //merge stuff together
+  RCP<Epetra_Vector> mergedGuess = rcp(new Epetra_Vector(*dofrowmap_,true));
+  conmerger_.AddCondVector(strucGuess,mergedGuess);
+  conmerger_.AddOtherVector(lagrGuess,mergedGuess);
+  
+  return mergedGuess;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* right-hand side alias the dynamic force residual */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
 {
-  //TODO: make it big
-  return structure_->RHS();
+  //get rhs-vectors from structure and constraintmanager
+  RCP<const Epetra_Vector> struRHS = structure_->RHS(); 
+  RCP<const Epetra_Vector> lagrRHS = structure_->GetConstraintManager()->GetError();
+  
+  //merge stuff together
+  RCP<Epetra_Vector> mergedRHS = rcp(new Epetra_Vector(*dofrowmap_,true));
+  conmerger_.AddCondVector(struRHS,mergedRHS);
+  conmerger_.AddOtherVector(lagrRHS,mergedRHS);
+  
+  return mergedRHS;
 }
 
 
 /*----------------------------------------------------------------------*/
 /* get current displacements D_{n+1} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
 {
-  //TODO: make it big
-  return structure_->Dispnp();
+  //get current state from structure and constraintmanager
+  RCP<const Epetra_Vector> strudis = structure_->Dispnp(); 
+  RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVector();
+  
+  //merge stuff together
+  RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
+  conmerger_.AddCondVector(strudis,mergedstat);
+  conmerger_.AddOtherVector(lagrmult,mergedstat);
+  
+  return mergedstat;
 }
 
 
 /*----------------------------------------------------------------------*/
 /* get last converged displacements D_{n} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispn()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispn()
 {
-  //TODO: make it big
-  return structure_->Dispn();
+  //get last converged state from structure and constraintmanager
+  RCP<const Epetra_Vector> strudis = structure_->Dispn(); 
+  RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVectorOld();
+   
+  //merge stuff together
+   RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
+   conmerger_.AddCondVector(strudis,mergedstat);
+   conmerger_.AddOtherVector(lagrmult,mergedstat);
+  
+  return mergedstat;
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// UNWANTED
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnm()
-{
-  return structure_->Dispnm();
-}
-
 
 /*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureConstrained::DofRowMap()
+RCP<const Epetra_Map> ADAPTER::StructureConstrained::DofRowMap()
 {
-  //TODO: := Mergedmap
-  return structure_->DofRowMap();
+  return dofrowmap_;
 }
 
 
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
+RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
 {
-  //TODO: make it big
-  return structure_->SystemMatrix();
+  //create empty large matrix and get small ones from structure and constraints
+  RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_,dofrowmap_->NumMyElements()));
+  RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
+  RCP<LINALG::SparseMatrix> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
+  
+  // Add matrices together
+  mergedmatrix -> Add(*strustiff,false,1.0,0.0);
+  mergedmatrix -> Add(*constiff,false,1.0,1.0);
+  mergedmatrix -> Add(*constiff,true,1.0,1.0);
+  mergedmatrix -> Complete(*dofrowmap_,*dofrowmap_);
+  
+  mergedmatrix->ApplyDirichlet( *(structure_->GetDBCMapExtractor()->CondMap()));
+  
+  return mergedmatrix;
 }
 
 
 /*----------------------------------------------------------------------*/
 /* get discretisation */
-Teuchos::RCP<DRT::Discretization> ADAPTER::StructureConstrained::Discretization()
+RCP<DRT::Discretization> ADAPTER::StructureConstrained::Discretization()
 {
   return structure_->Discretization();
 }
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// UNWANTED
-double ADAPTER::StructureConstrained::DispIncrFactor()
-{
-  return -1; //structure_->DispIncrFactor();
-}
-
-/*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrained::FRobin()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrained::FRobin()
 {
   //return structure_->GetForceRobinFSI();
-  return LINALG::CreateVector(*discret_->DofRowMap(), true);
+  return LINALG::CreateVector(*dofrowmap_, true);
 }
 
 
@@ -147,7 +186,7 @@ void ADAPTER::StructureConstrained::PrepareTimeStep()
   structure_->PrepareTimeStep();
 
   // initialise incremental displacements
-  if (disinc_ != Teuchos::null)
+  if (disinc_ != null)
     disinc_->PutScalar(0.0);
 
 }
@@ -158,11 +197,32 @@ void ADAPTER::StructureConstrained::PrepareTimeStep()
  *
  * Monolithic FSI accesses the linearised structure problem. */
 void ADAPTER::StructureConstrained::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> disp
+  RCP<const Epetra_Vector> disp
 )
 {
-  //TODO: correct?
-  structure_->Evaluate(disp);
+  // 'initialize' structural displacement as null-pointer
+  RCP<Epetra_Vector> dispstruct = Teuchos::null;
+  
+  // Compute residual increments, update total increments and update lagrange multipliers  
+  if (disp != Teuchos::null)
+  {
+    // residual displacements (or iteration increments or iteratively incremental displacements)
+    Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
+    disi->Update(-1.0, *disinc_, 1.0);
+
+    // update incremental displacement member to provided step increments
+    // shortly: disinc_^<i> := disp^<i+1>
+    disinc_->Update(1.0, *disp, 0.0);
+    
+    // Extract increments for lagr multipliers and do update
+    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(disi);
+    structure_->UpdateIterIncrConstr(lagrincr);
+    dispstruct = conmerger_.ExtractCondVector(disp);
+  }
+  // Hand down incremental displacements, 
+  // structure_ will compute the residual increments on its own
+  structure_->Evaluate(dispstruct);
+  
 }
 
 /*----------------------------------------------------------------------*/
@@ -185,7 +245,9 @@ void ADAPTER::StructureConstrained::Output()
 /* domain map */
 const Epetra_Map& ADAPTER::StructureConstrained::DomainMap()
 {
-  return structure_->DomainMap();
+  return *(LINALG::MergeMap(structure_->DomainMap(),
+                            *(structure_->GetConstraintManager()->GetConstraintMap()),
+                            false));
 }
 
 
@@ -207,8 +269,8 @@ void ADAPTER::StructureConstrained::Solve()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::RelaxationSolve(
-  Teuchos::RCP<Epetra_Vector> iforce
+RCP<Epetra_Vector> ADAPTER::StructureConstrained::RelaxationSolve(
+  RCP<Epetra_Vector> iforce
 )
 {
   return structure_->RelaxationSolve(iforce);
@@ -216,28 +278,28 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispn()
+RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispn()
 {
   return structure_->ExtractInterfaceDispn();
 }
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispnp()
+RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceDispnp()
 {
   return structure_->ExtractInterfaceDispnp();
 }
 
 /*----------------------------------------------------------------------*/
 /* extract external forces at interface F_{ext,n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceForces()
+RCP<Epetra_Vector> ADAPTER::StructureConstrained::ExtractInterfaceForces()
 {
   return structure_->ExtractInterfaceForces();
 }
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::PredictInterfaceDispnp()
+RCP<Epetra_Vector> ADAPTER::StructureConstrained::PredictInterfaceDispnp()
 {
    return structure_->PredictInterfaceDispnp();
 }
@@ -246,7 +308,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureConstrained::PredictInterfaceDispn
 /*----------------------------------------------------------------------*/
 /* */
 void ADAPTER::StructureConstrained::ApplyInterfaceForces(
-  Teuchos::RCP<Epetra_Vector> iforce
+  RCP<Epetra_Vector> iforce
 )
 {
 /*
@@ -267,8 +329,8 @@ void ADAPTER::StructureConstrained::ApplyInterfaceForces(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
-  Teuchos::RCP<Epetra_Vector> iforce,
-  Teuchos::RCP<Epetra_Vector> ifluidvel
+  RCP<Epetra_Vector> iforce,
+  RCP<Epetra_Vector> ifluidvel
 )
 {
   dserror("Not impl.");
@@ -293,8 +355,8 @@ void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
   // after successfully reaching timestep end.
   // This is why an additional robin force vector is needed.
 
-  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_->Disp());
-  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_->FRobin());
+  RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_->Disp());
+  RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_->FRobin());
 
   // save robin coupling values in frobin vector (except iforce which
   // is passed separately)
@@ -308,7 +370,7 @@ void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
 
 /*----------------------------------------------------------------------*/
 /* structural result test */
-Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureConstrained::CreateFieldTest()
+RCP<DRT::ResultTest> ADAPTER::StructureConstrained::CreateFieldTest()
 {
   return structure_->CreateFieldTest();
 }

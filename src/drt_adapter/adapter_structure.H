@@ -96,9 +96,6 @@ namespace ADAPTER {
     /// unknown displacements at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
-    /// unknown displacements at t(n-1)
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnm() = 0;
-
     //@}
 
     //! @name Misc
@@ -117,6 +114,12 @@ namespace ADAPTER {
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
+    
+    /// get constraint manager defined in the structure
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager() = 0;
+    
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// structure part of the rhs to enforce coupling condition at the interface
     /*!
@@ -147,6 +150,11 @@ namespace ADAPTER {
 
     /// update at time step end
     virtual void Update() = 0;
+    
+    //! Update iteration
+    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
+ 
 
     /// output results
     virtual void Output() = 0;

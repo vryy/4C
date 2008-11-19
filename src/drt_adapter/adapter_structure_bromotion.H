@@ -64,6 +64,28 @@ namespace ADAPTER {
       return structure_.HaveConstraint();
     };
     
+    /// Return constraint manager
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    {
+      return structure_.GetConstraintManager();
+    };
+    
+    //! Update iteration
+    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    )
+    {
+      structure_.UpdateIterIncrConstr(lagrincr);
+    }
+    
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    {
+      return LINALG::ConvertDirichletToggleVectorToMaps(structure_.Dirichlet());
+    };
+    
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();

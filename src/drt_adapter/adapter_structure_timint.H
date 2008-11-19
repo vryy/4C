@@ -71,9 +71,6 @@ namespace ADAPTER {
     /// unknown displacements at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Dispn();
 
-    /// GET RID OF THIS ONE
-    Teuchos::RCP<const Epetra_Vector> Dispnm();
-
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
@@ -103,6 +100,22 @@ namespace ADAPTER {
 
     /// update at time step end
     void Update();
+    
+    //! Update iteration
+    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    )
+    {
+      structure_->UpdateIterIncrConstr(lagrincr);
+    }
+    
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    {
+      return structure_->GetDBCMapExtractor();
+    }
 
     /// output results
     void Output();
@@ -126,6 +139,12 @@ namespace ADAPTER {
     virtual bool HaveConstraint()
     {
       return structure_->HaveConstraint();
+    };
+    
+    /// get constraint manager defined in the structure
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    {
+      return structure_->GetConstraintManager();
     };
     
     /// @name Solver calls

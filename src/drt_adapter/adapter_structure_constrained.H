@@ -34,7 +34,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
 
-
+using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
 namespace ADAPTER {
@@ -54,52 +54,46 @@ namespace ADAPTER {
     /// Constructor
     StructureConstrained
     (
-      Teuchos::RCP<Structure> stru
+      RCP<Structure> stru
     );
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    RCP<const Epetra_Vector> InitialGuess();
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS();
+    RCP<const Epetra_Vector> RHS();
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp();
+    RCP<const Epetra_Vector> Dispnp();
 
     /// unknown displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn();
-
-    /// GET RID OF THIS ONE
-    Teuchos::RCP<const Epetra_Vector> Dispnm();
+    RCP<const Epetra_Vector> Dispn();
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    RCP<LINALG::SparseMatrix> SystemMatrix();
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> Discretization();
-
-    /// GET RID OF THIS ONE
-    double DispIncrFactor();
+    RCP<DRT::Discretization> Discretization();
 
     /// External force at t_{n+1}
-//    Teuchos::RCP<const Epetra_Vector> FExtn();
+    RCP<const Epetra_Vector> FExtn();
 
     /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
-    Teuchos::RCP<const Epetra_Vector> FRobin();
-    //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
-    //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
+    RCP<const Epetra_Vector> FRobin();
+    //virtual RCP<Epetra_Vector> FluidCondRHS() const;
+    //virtual RCP<Epetra_Vector> MeshCondRHS() const;
 
-    //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
+    //RCP<Epetra_Vector> InterfaceDispn();
 
     /// start new time step
     void PrepareTimeStep();
 
     /// evaluate elements with given displacement
     void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disp  ///< current state
+      RCP<const Epetra_Vector> disp  ///< current state
     );
 
     /// update at time step end
@@ -111,9 +105,15 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const
     { 
-      return structure_->Interface();
+      return interface_;
     }
 
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    {
+      return structure_->GetDBCMapExtractor();
+    };
+    
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap();
 
@@ -129,6 +129,22 @@ namespace ADAPTER {
        return structure_->HaveConstraint();
      };
     
+    /// Return bool indicating if constraints are defined
+    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    {
+      return structure_->GetConstraintManager();
+    }; 
+    
+    //! Update iteration
+    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    )
+    {
+      structure_->UpdateIterIncrConstr(lagrincr);
+    }
+     
     /// @name Solver calls
     //@{
 
@@ -139,7 +155,7 @@ namespace ADAPTER {
     virtual void Solve();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return structure_->LinearSolver(); }
+    virtual RCP<LINALG::Solver> LinearSolver() { return structure_->LinearSolver(); }
 
     /// linear structure solve with just a interface load
     ///
@@ -147,8 +163,8 @@ namespace ADAPTER {
     ///  calculation (and matrix free Newton Krylov).
     ///
     ///  \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-      Teuchos::RCP<Epetra_Vector> iforce
+    virtual RCP<Epetra_Vector> RelaxationSolve(
+      RCP<Epetra_Vector> iforce
     );
 
     //@}
@@ -156,16 +172,16 @@ namespace ADAPTER {
     /// @name Extract interface values
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
+    virtual RCP<Epetra_Vector> ExtractInterfaceDispn();
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
+    virtual RCP<Epetra_Vector> ExtractInterfaceDispnp();
 
     /// extract interface forces (necessary for robin-BC)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual RCP<Epetra_Vector> ExtractInterfaceForces();
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
+    virtual RCP<Epetra_Vector> PredictInterfaceDispnp();
 
     //@}
 
@@ -178,40 +194,46 @@ namespace ADAPTER {
     ///
     ///  \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(
-      Teuchos::RCP<Epetra_Vector> iforce
+      RCP<Epetra_Vector> iforce
     );
 
     virtual void ApplyInterfaceRobinValue(
-      Teuchos::RCP<Epetra_Vector> iforce,
-      Teuchos::RCP<Epetra_Vector> ifluidvel
+      RCP<Epetra_Vector> iforce,
+      RCP<Epetra_Vector> ifluidvel
     );
 
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    virtual RCP<DRT::ResultTest> CreateFieldTest();
 
   private:
 
-    /// the actual structure algorithm
-    Teuchos::RCP<Structure> structure_;
+    /// the underlying structural adapter containing the actual structural algorithm
+    RCP<Structure> structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
+    
+    /// the constraint map setup for full <-> stuct+constr transition 
+    LINALG::MapExtractor conmerger_;
+    
+    /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers 
+    RCP<Epetra_Map> dofrowmap_;
 
     /// sum of displacement vectors already applied,
     /// i.e. the incremental displacements
-    Teuchos::RCP<Epetra_Vector> disinc_;
+    RCP<Epetra_Vector> disinc_;
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
-    Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used, 
+    RCP<DRT::Discretization> discret_;  ///< the discretisation
+    RCP<ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
+    RCP<ParameterList> sdynparams_;  ///< dynamic control flags ... used, 
                                                        ///< but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
-    Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
+    RCP<ParameterList> xparams_;  ///< eXtra input parameters
+    RCP<LINALG::Solver> solver_;  ///< the solver
+    RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     
     
     //@}

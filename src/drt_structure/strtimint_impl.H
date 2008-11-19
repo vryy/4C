@@ -403,7 +403,18 @@ namespace STR
     {
       return conman_;
     }
-
+    
+    //! Update iteration
+    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    )
+    {
+      conman_->UpdateLagrMult(lagrincr);
+    }
+    
+    
     //@}
 
     //! @name Fluid-structure-interaction specific methods

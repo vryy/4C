@@ -513,6 +513,12 @@ namespace STR
 
     //! Return current step number map
     double GetTime() { return (*time_)[0]; }
+    
+    //! Return MapExtractor for Dirichlet boundary conditions 
+    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const 
+    { 
+      return dbcmaps_;
+    }
 
 
     //@}

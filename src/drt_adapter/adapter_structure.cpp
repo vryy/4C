@@ -296,7 +296,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     tmpstr = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
   
   if (tmpstr->HaveConstraint())
+  {
     structure_ = rcp(new StructureConstrained(tmpstr));
+  }
   else
     structure_ = tmpstr;
 }
