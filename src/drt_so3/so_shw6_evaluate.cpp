@@ -1033,6 +1033,105 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   }
 }
 
+/*----------------------------------------------------------------------*
+ | find optimal map between material space and parameter space maf 11/08|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
+{
+  // create edge vectors of lower triangle
+  vector<vector<double> > edgevecs(3);
+  edgevecs.at(0).resize(3); edgevecs.at(1).resize(3); edgevecs.at(2).resize(3);
+  for (int i=0; i<3; ++i){
+    edgevecs.at(0)[i] = this->Nodes()[1]->X()[i] - this->Nodes()[0]->X()[i]; //a
+    edgevecs.at(1)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[1]->X()[i]; //b
+    edgevecs.at(2)[i] = this->Nodes()[0]->X()[i] - this->Nodes()[2]->X()[i]; //c
+  }
+  
+  // normalize
+  for (int i=0; i<3; ++i){
+    double d = 0.;
+    for (int j=0; j<3; ++j) d += edgevecs.at(i)[j]*edgevecs.at(i)[j];
+    for (int j=0; j<3; ++j) edgevecs.at(i)[j] = edgevecs.at(i)[j]/d;
+  }
+  
+  // scalar product of edge vectors
+  double ab=0.; double bc=0.; double ac=0.;
+  for (int i=0; i<3; ++i){
+    ab += edgevecs.at(0)[i] * edgevecs.at(1)[i];
+    bc += edgevecs.at(1)[i] * edgevecs.at(2)[i];
+    ac += edgevecs.at(0)[i] * edgevecs.at(2)[i];
+  }
+  
+  // find min(ab,bc,ac)
+  if ( (abs(ab)<=abs(bc)) && (abs(ab)<=abs(ac)) ) return 0; // = ab
+  else if ( abs(bc)<=abs(ac) ) return 1; // = bc
+  else return 2; // =ac
+  
+  // impossible case
+  dserror("Could not find optimal map!");
+  return 0; 
+}
+
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                  maf 11/08|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_shw6) continue;
+    DRT::ELEMENTS::So_shw6* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_shw6* failed");
+    
+    // check whether we should align the material space optimally with the parameter space.
+    // The idea is that elimination of shear-locking works best if the origin of the
+    // triangle-parameter space coincides with the node where the angle between the edges
+    // is closest to 90 degree.
+    if ((!actele->optimal_parameterspace_map_) && (!actele->nodes_rearranged_)) {
+      
+      int originnode = actele->soshw6_findoptparmap();
+
+      int new_nodeids[NUMNOD_WEG6];
+      
+      switch (originnode){
+      case 0: {
+        // no resorting necessary, already aligned with FIRST node
+        actele->nodes_rearranged_ = true;
+        break;
+      }
+      case 1: {
+        // resorting of nodes to align with SECOND node
+        new_nodeids[0] = actele->NodeIds()[0];
+        new_nodeids[1] = actele->NodeIds()[0];
+        new_nodeids[2] = actele->NodeIds()[0];
+        new_nodeids[3] = actele->NodeIds()[0];
+        new_nodeids[4] = actele->NodeIds()[0];
+        new_nodeids[5] = actele->NodeIds()[0];
+        actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
+        actele->nodes_rearranged_ = true;
+        break;
+      }
+      case 2: {
+        // resorting of nodes to align with THIRD node
+        new_nodeids[0] = actele->NodeIds()[0];
+        new_nodeids[1] = actele->NodeIds()[0];
+        new_nodeids[2] = actele->NodeIds()[0];
+        new_nodeids[3] = actele->NodeIds()[0];
+        new_nodeids[4] = actele->NodeIds()[0];
+        new_nodeids[5] = actele->NodeIds()[0];
+        actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
+        actele->nodes_rearranged_ = true;
+        break;
+      }
+      default: dserror("reordering of So_shw6 failed");
+      }
+    }
+
+  }
+  return 0;
+}
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WEG6

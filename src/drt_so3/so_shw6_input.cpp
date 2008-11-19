@@ -104,6 +104,15 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
     soshw6_easinit();
   }
   
+  // check for automatically align material space optimally with parameter space
+  optimal_parameterspace_map_ = false;
+  nodes_rearranged_ = false;
+  frchar("OPTORDER",buffer,&ierr);
+  if (ierr) 
+    if (strncmp(buffer,"true",4)==0)
+      optimal_parameterspace_map_ = true;
+  
+    
 
   return true;
 } // So_weg6::ReadElement()

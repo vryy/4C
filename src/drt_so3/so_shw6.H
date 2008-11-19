@@ -161,6 +161,12 @@ private:
   //! number of EAS parameters (alphas), defined by 'EASType"
   int                                                 neas_;
 
+  //! reorder nodes to optimally align material space with parameter space
+  bool optimal_parameterspace_map_;
+
+  //! in case of changed nodal order this is true
+  bool nodes_rearranged_;
+  
   //! don't want = operator
   So_shw6& operator = (const So_shw6& old);
 
@@ -238,6 +244,7 @@ private:
             LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
             const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe);    // material element coords
 
+  int soshw6_findoptparmap();
 
 }; // class So_shw6
 
@@ -322,6 +329,16 @@ public:
 
   //@}
 
+  //! @name Construction
+  /*!
+  \brief Call Element init routines
+
+  The method performs all steps needed to init the sosh-wedge elements
+
+  */
+  virtual int Initialize(DRT::Discretization& dis);
+
+  //@}
 
 
 private:
