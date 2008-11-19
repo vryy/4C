@@ -116,7 +116,8 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   for (int i=0; i<oldmap.NumMyElements(); ++i)
   {
     int gid = oldmap.GID(i);
-    if (!(newmap.MyGID(gid))) dserror("Proc %d: Node gid=%d from oldmap is not in newmap",myrank,gid);
+    if (!(newmap.MyGID(gid))) 
+      dserror("Proc %d: Node gid=%d from oldmap is not in newmap",myrank,gid);
   }
   
   // create an exporter object that will figure out the communication pattern
@@ -279,8 +280,8 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,
-                                    RefCountPtr<Epetra_Map>& elerowmap,
-                                    RefCountPtr<Epetra_Map>& elecolmap) const
+                                    RCP<Epetra_Map>& elerowmap,
+                                    RCP<Epetra_Map>& elecolmap) const
 {
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
