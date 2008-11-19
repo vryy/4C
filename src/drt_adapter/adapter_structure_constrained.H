@@ -42,8 +42,9 @@ namespace ADAPTER {
   /*====================================================================*/
   /*!
    * \brief Adapter to constrained structural time integration.
-   * Basically this class modifies and merges results coming from one of the
-   * standard adapters for structural time integration 
+   * This class wraps one of the standard adapters for structural time 
+   * integration. The results are modified and/or merged to account for the 
+   * additional degrees of freedom of the lagrange multipliers. 
    *
    * \date 11/08
    */
@@ -234,7 +235,6 @@ namespace ADAPTER {
     RCP<ParameterList> xparams_;  ///< eXtra input parameters
     RCP<LINALG::Solver> solver_;  ///< the solver
     RCP<IO::DiscretizationWriter> output_;  ///< the output writer
-    
     
     //@}
 

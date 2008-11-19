@@ -2,13 +2,13 @@
 /*!
 \file adapter_structure_constrained.cpp
 
-\brief Structure field adapter
+\brief Adapter Layer for Structures with Algebraic Constraints
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15267
 </pre>
 */
 
@@ -39,7 +39,7 @@ ADAPTER::StructureConstrained::StructureConstrained
 {    
   // make sure
   if (structure_ == null)
-    dserror("Failed to create structural integrator");
+    dserror("Failed to create the underlying structural adapter");
   
   // build merged dof row map
   dofrowmap_ = LINALG::MergeMap(*(structure_->DofRowMap()),
@@ -57,7 +57,6 @@ ADAPTER::StructureConstrained::StructureConstrained
   
   //setup fsi-Interface
   DRT::UTILS::SetupNDimExtractor(*(structure_->Discretization()),"FSICoupling",dofrowmap_,interface_);
-  structure_->Discretization()->Print(cout);
 }
 
 
@@ -89,7 +88,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
   //merge stuff together
   RCP<Epetra_Vector> mergedRHS = rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_.AddCondVector(struRHS,mergedRHS);
-  conmerger_.AddOtherVector(lagrRHS,mergedRHS);
+  conmerger_.AddOtherVector(-1.0,lagrRHS,mergedRHS);
   
   return mergedRHS;
 }
@@ -333,38 +332,7 @@ void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
   RCP<Epetra_Vector> ifluidvel
 )
 {
-  dserror("Not impl.");
-/*
-  // get robin parameter and timestep
-  double alphas  = params_->get<double>("alpha s",-1.);
-  double dt      = params_->get<double>("delta time",-1.);
-  double alphaf  = params_->get<double>("alpha f", 0.459);
-
-  if (alphas<0. or dt<0.)
-    dserror("couldn't get robin parameter alpha_s or time step size");
-
-  // the RobinRHS is going to be:
-  //
-  // RobinRHS =
-  //     - (alpha_s/dt)*(dis(n))
-  //     - alpha_s*(1-alpha_f)*(fluidvel(n+1))
-  //     + (1-alpha_f)*(iforce(n+1))
-
-  // Attention: We must not change iforce here, because we would
-  // implicitely change fextn_, too. fextn_ is needed to set fext_
-  // after successfully reaching timestep end.
-  // This is why an additional robin force vector is needed.
-
-  RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_->Disp());
-  RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_->FRobin());
-
-  // save robin coupling values in frobin vector (except iforce which
-  // is passed separately)
-  frobin->Update(alphas/dt,*idisn,alphas*(1-alphaf),*ifluidvel,0.0);
-
-  interface_.InsertCondVector(frobin,structure_->FRobin());
-  structure_->ApplyExternalForce(interface_,iforce);
-*/
+  dserror("Not implemented!");
 }
 
 
