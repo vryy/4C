@@ -304,11 +304,25 @@ namespace UTILS
                           std::string condname,
                           LINALG::MapExtractor& extractor);
 
+  void SetupNDimExtractor(const DRT::Discretization& dis,
+                            std::string condname,
+                            Teuchos::RCP<Epetra_Map> fullmap,
+                            LINALG::MapExtractor& extractor);
+
+  
   /// setup the extractor object to couple some dofs at the named condition
   void SetupExtractor(const DRT::Discretization& dis,
                       std::string condname,
                       unsigned startdim,
                       unsigned enddim,
+                      LINALG::MapExtractor& extractor);
+  
+  /// setup the extractor object to couple some dofs at the named condition
+  void SetupExtractor(const DRT::Discretization& dis,
+                      std::string condname,
+                      unsigned startdim,
+                      unsigned enddim,
+                      Teuchos::RCP<Epetra_Map> fullmap,
                       LINALG::MapExtractor& extractor);
 
   /// row map with nodes from condition

@@ -1385,7 +1385,17 @@ void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
                                         std::string condname,
                                         LINALG::MapExtractor& extractor)
 {
-  SetupExtractor(dis,condname,0,genprob.ndim,extractor);
+  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
+                                        std::string condname,
+                                        Teuchos::RCP<Epetra_Map> fullmap,
+                                        LINALG::MapExtractor& extractor)
+{
+  SetupExtractor(dis,condname,0,genprob.ndim,fullmap,extractor);
 }
 
 
@@ -1397,8 +1407,21 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                     unsigned enddim,
                                     LINALG::MapExtractor& extractor)
 {
+ 
+  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
+                                    std::string condname,
+                                    unsigned startdim,
+                                    unsigned enddim,
+                                    Teuchos::RCP<Epetra_Map> fullmap,
+                                    LINALG::MapExtractor& extractor)
+{
   std::set<int> conddofset;
-  std::set<int> otherdofset;
+  
 
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -1423,6 +1446,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
       }
     }
 
+    // put all conditioned dofs into conddofset
     std::vector<int> dof = dis.Dof(node);
     for (unsigned j=0; j<dof.size(); ++j)
     {
@@ -1431,12 +1455,18 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
       {
         conddofset.insert(dof[j]);
       }
-      else
-      {
-        otherdofset.insert(dof[j]);
-      }
     }
   }
+  
+  std::set<int> otherdofset(fullmap->MyGlobalElements(),
+                  fullmap->MyGlobalElements() + fullmap->NumMyElements());
+  
+  std::set<int>::iterator conditer;
+  for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
+  {
+    otherdofset.erase(*conditer);
+  }
+  
 
   // if there is no such condition, do not waste any more time
   int conddofsetsize = static_cast<int>(conddofset.size());
@@ -1450,7 +1480,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                   NULL,
                                   0,
                                   dis.Comm()));
-    extractor.Setup(*dis.DofRowMap(),emptymap,Teuchos::rcp(dis.DofRowMap(),false));
+    extractor.Setup(*fullmap,emptymap,Teuchos::rcp(dis.DofRowMap(),false));
   }
   else
   {
@@ -1478,7 +1508,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                   dis.Comm()));
     otherdofmapvec.clear();
 
-    extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
+    extractor.Setup(*fullmap,conddofmap,otherdofmap);
   }
 }
 
