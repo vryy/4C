@@ -1088,7 +1088,7 @@ int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
     // The idea is that elimination of shear-locking works best if the origin of the
     // triangle-parameter space coincides with the node where the angle between the edges
     // is closest to 90 degree.
-    if ((!actele->optimal_parameterspace_map_) && (!actele->nodes_rearranged_)) {
+    if ((actele->optimal_parameterspace_map_) && (!actele->nodes_rearranged_)) {
       
       int originnode = actele->soshw6_findoptparmap();
 
