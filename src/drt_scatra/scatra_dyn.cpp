@@ -90,7 +90,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         if (comm.MyPID()==0)
         {
           cout<<"Found "<<conditions.size()<<" nonlinear boundary condition(s) applied to "<<scatradis->Name()<<" discretization"<<endl;
-          cout<<"--> Solving nonlinear problem...\n"<<endl;
+          cout<<"--> Solving nonlinear problem\n"<<endl;
         }
         // solve the nonlinear problem with given convective velocity
         (condifonly->ScaTraField()).TimeLoop(true);
