@@ -89,29 +89,48 @@ namespace ADAPTER
     /// current velocity from fluid solver
     RCP<const Epetra_Vector> ConvectiveVelocity(){ return velocitynp_; }
 
-    /// get current velocity+pressure from fluid solver
-    void GetCurrentFluidVelPress(){ velpressnp_=FluidField().Velnp(); }
+    /// get velocity+pressure vector at time step n+1 from fluid solver
+    void GetFluidVelPressNp(){ velpressnp_=FluidField().Velnp(); }
 
-    /// current velocity from fluid solver
-    RCP<const Epetra_Vector> VelocityPressure(){ return velpressnp_; }
+    /// velocity+pressure vector at time step n+1
+    RCP<const Epetra_Vector> VelocityPressureNp(){ return velpressnp_; }
 
-    /// get current density from scalar transport solver
-    void GetCurrentDensity(){ densnp_=ScaTraField().Densnp(); }
+    /// get velocity+pressure vector at imtermediate time step n+alpha_F
+    /// from fluid solver -> only for generalized-alpha time integration
+    void GetFluidVelPressAf(){ velpressaf_=FluidField().Velaf(); }
 
-    /// current density from scalar transport solver
-    RCP<const Epetra_Vector> Density(){ return densnp_; }
+    /// velocity+pressure vector at imtermediate time step n+alpha_F
+    RCP<const Epetra_Vector> VelocityPressureAf(){ return velpressaf_; }
+
+    /// get density at time step n+1 from scalar transport solver
+    void GetDensityNp(){ densnp_=ScaTraField().DensNp(); }
+
+    /// density at time step n+1 from scalar transport solver
+    RCP<const Epetra_Vector> DensityNp(){ return densnp_; }
 
     /// get density at time step n from scalar transport solver
-    void GetNDensity(){ densn_=ScaTraField().Densn(); }
+    void GetDensityN(){ densn_=ScaTraField().DensN(); }
 
     /// density at time step n from scalar transport solver
-    RCP<const Epetra_Vector> NDensity(){ return densn_; }
+    RCP<const Epetra_Vector> DensityN(){ return densn_; }
 
     /// get density at time step n-1 from scalar transport solver
-    void GetNmDensity(){ densnm_=ScaTraField().Densnm(); }
+    void GetDensityNm(){ densnm_=ScaTraField().DensNm(); }
 
-    /// density at time step n-1 from scalar transport solver
-    RCP<const Epetra_Vector> NmDensity(){ return densnm_; }
+    /// density at time step n+1 from scalar transport solver
+    RCP<const Epetra_Vector> DensityNm(){ return densnm_; }
+
+    /// get time derivative of density at time step n+1 from scalar transport solver
+    void GetDensityDtNp(){ densdtnp_=ScaTraField().DensDtNp(); }
+
+    /// time derivative of density at time step n+1 from scalar transport solver
+    RCP<const Epetra_Vector> DensityDtNp(){ return densdtnp_; }
+
+    /// get time derivative of density at time step n from scalar transport solver
+    void GetDensityDtN(){ densdtn_=ScaTraField().DensDtN(); }
+
+    /// time derivative of density at time step n from scalar transport solver
+    RCP<const Epetra_Vector> DensityDtN(){ return densdtn_; }
 
     /// increment time and step value
     void IncrementTimeAndStep()
@@ -128,13 +147,18 @@ namespace ADAPTER
     /// current velocity field at time n+1
     RCP<const Epetra_Vector>    velocitynp_;
 
-    /// current velocity and pressure field at time n+1
+    /// velocity and pressure field at times n+1 and n+alpha_F
     RCP<const Epetra_Vector>    velpressnp_;
+    RCP<const Epetra_Vector>    velpressaf_;
 
     /// density fields at times n+1, n and n-1
     RCP<const Epetra_Vector>    densnp_;
     RCP<const Epetra_Vector>    densn_;
     RCP<const Epetra_Vector>    densnm_;
+
+    /// time derivatives of density at times n+1 and n
+    RCP<const Epetra_Vector>    densdtnp_;
+    RCP<const Epetra_Vector>    densdtn_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

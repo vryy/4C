@@ -155,36 +155,45 @@ public:
   void SetInitialField(int init,int startfuncno);
 
   //! set velocity field for low-Mach-number flow
-  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                       RCP<DRT::Discretization> fluiddis);
+  virtual void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<DRT::Discretization> fluiddis)=0;
 
   //! predict density field for low-Mach-number flow
-  void PredictDensity();
+  virtual void PredictDensity() = 0;
 
   //! compute density field for low-Mach-number flow
   void ComputeDensity();
+
+  //! compute time derivative of density field for low-Mach-number flow
+  virtual void ComputeDensityDerivative() = 0;
 
   //! check convergence of density field for low-Mach-number flow
   bool DensityConvergenceCheck(int itnum, int itmax, const double ittol);
 
   //! update density field for low-Mach-number flow
-  void UpdateDensity();
+  virtual void UpdateDensity() = 0;
 
   //! output of mean temperature and density
   void OutputMeanTempAndDens();
 
-  //! routine to return current density field for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> Densnp() { return densnp_; }
+  //! routine to return density field at time step n+1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
 
   //! routine to return density field at time step n for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> Densn() { return densn_; }
+  Teuchos::RCP<Epetra_Vector> DensN() { return densn_; }
 
   //! routine to return density field at time step n-1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> Densnm() { return densnm_; }
+  Teuchos::RCP<Epetra_Vector> DensNm() { return densnm_; }
+
+  //! routine to return time deriv. of density at time step n for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> DensDtN() { return densdtn_; }
+
+  //! routine to return time deriv. of density at time step n+1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> DensDtNp() { return densdtnp_; }
 
   //! routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
-  
+
   //! return current time value
   double Time() const { return time_; }
 
@@ -334,10 +343,14 @@ protected:
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
 
-  /// density at time n+1, n and n-1
+  /// density at times n+1, n and n-1
   RCP<Epetra_Vector>    densnp_;
   RCP<Epetra_Vector>    densn_;
   RCP<Epetra_Vector>    densnm_;
+
+  /// time derivative of density at times n+1 and n
+  RCP<Epetra_Vector>  densdtnp_;
+  RCP<Epetra_Vector>  densdtn_;
 
   /// density increment at time n+1
   RCP<Epetra_Vector>    densincnp_;

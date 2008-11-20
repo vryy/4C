@@ -68,6 +68,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Velaf()
+{
+  return fluid_.Velaf();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Veln()
 {
   return fluid_.Veln();
@@ -135,12 +143,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidGenAlpha::Discretization()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidGenAlpha::PrepareTimeStep()
 {
-  fluid_.GenAlphaIncreaseTimeAndStep();
-
-  fluid_.GenAlphaEchoToScreen("print time algorithm info");
-  fluid_.GenAlphaPredictNewSolutionValues();
-  fluid_.GenAlphaApplyDirichletAndNeumann();
-  fluid_.GenAlphaCalcInitialAccelerations();
+  fluid_.GenAlphaPrepareTimeStep();
 
   return;
 }
@@ -461,17 +464,17 @@ void ADAPTER::FluidGenAlpha::SetInitialFlowField(int whichinitialfield,int start
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm)
+void ADAPTER::FluidGenAlpha::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densdtn)
 {
-   dserror("not implemented!");
+   fluid_.SetTimeLomaFields(densnp,densn,densdtn);
    return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
+void ADAPTER::FluidGenAlpha::SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp)
 {
-   dserror("not implemented!");
+   fluid_.SetGenAlphaIterLomaFields(densnp,densdtnp);
    return;
 }
 

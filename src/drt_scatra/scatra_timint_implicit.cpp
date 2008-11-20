@@ -154,15 +154,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // density at time n+1
   densnp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  if (prbtype_ == "loma")
-  {
-    // density at times n and n-1
-    densn_  = LINALG::CreateVector(*dofrowmap,true);
-    densnm_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // density increment at time n+1
-    densincnp_ = LINALG::CreateVector(*dofrowmap,true);
-  }
+  // density increment at time n+1
+  if (prbtype_ == "loma") densincnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta, Generalized-alpha)
@@ -413,11 +406,14 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // set needed parameters in parameter list
   ParameterList p;
   p.set("total time", time); // actual time t_{n+1}
+  // for generalized-alpha time integration, this is an approximation,
+  // for the time being, since the time actually would have to be set
+  // to time-(1-alphaF_)*dta_
+  // Since we do not use time-dependent Neumann loads currently, this
+  // approximation does not pose a problem; in fact, it is not an
+  // approximation in this case.
 
-  // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp);
-  discret_->SetState("densnp",densnp_);
   // evaluate Neumann conditions at actual time t_{n+1}
   discret_->EvaluateNeumann(p,*neumann_loads);
   discret_->ClearState();
@@ -493,11 +489,13 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         condparams.set("action","calc_elch_electrode_kinetics");
         condparams.set("frt",frt_); // factor F/RT
         condparams.set("total time",time_);
-        AddSpecificTimeIntegrationParameters(condparams);
 
         // set vector values needed by elements
         discret_->ClearState();
         discret_->SetState("phinp",phinp_);
+
+        // add element parameters and density state according to time-int. scheme
+        AddSpecificTimeIntegrationParameters(condparams);
 
         std::string condstring("ElectrodeKinetics");
         discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
@@ -520,7 +518,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("problem type",prbtype_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
-      AddSpecificTimeIntegrationParameters(eleparams);
 
       //provide velocity field (export to column map necessary for parallel evaluation)
       //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -535,8 +532,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
-      discret_->SetState("densnp",densnp_);
       discret_->SetState("hist" ,hist_);
+
+      // add element parameters and density state according to time-int. scheme
+      AddSpecificTimeIntegrationParameters(eleparams);
 
       {
         // call standard loop over elements
@@ -785,7 +784,6 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
-    AddSpecificTimeIntegrationParameters(eleparams);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -800,8 +798,10 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
-    discret_->SetState("densnp",densnp_);
     discret_->SetState("hist" ,hist_ );
+
+    // add element parameters and density state according to time-int. scheme
+    AddSpecificTimeIntegrationParameters(eleparams);
 
     // decide whether AVM3-based solution approach or standard approach
     if (fssgd_ != "No") AVM3Scaling(eleparams);
@@ -911,6 +911,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
   // action for elements, time factor and stationary flag
   eleparams.set("action","calc_subgrid_diffusivity_matrix");
+
+  // add element parameters and density state according to time-int. scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
   // call loop over elements
@@ -1130,130 +1132,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
 
 /*----------------------------------------------------------------------*
- | set velocity field for low-Mach-number flow                 vg 11/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-    RCP<DRT::Discretization> fluiddis)
-{
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  if (extvel->MyLength()<= (4* convel_->MyLength()) and
-      extvel->MyLength() > (3* convel_->MyLength()))
-    numdim = 3;
-  else if (extvel->MyLength()<= (3* convel_->MyLength()))
-    numdim = 2;
-  else
-    dserror("fluid velocity vector too large");
-
-  // get noderowmap of scatra discretization
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-  // get dofrowmap of fluid discretization
-  const Epetra_Map* dofrowmap = fluiddis->DofRowMap();
-
-  // loop over local nodes of scatra discretization
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-  {
-    // first of all, assume the present node is not a slavenode
-    bool slavenode=false;
-
-    // get the processor-local scatra node
-    DRT::Node*  scatralnode = discret_->lRowNode(lnodeid);
-
-    // get the processor-local fluid node
-    DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
-
-    // the set of degrees of freedom associated with the fluid node
-    vector<int> nodedofset = fluiddis->Dof(fluidlnode);
-
-    // check whether we have a pbc condition on this scatra node
-    vector<DRT::Condition*> mypbc;
-    scatralnode->GetCondition("SurfacePeriodic",mypbc);
-
-    // yes, we have a periodic boundary condition on this scatra node
-    if (mypbc.size()>0)
-    {
-      // get master and list of all his slavenodes
-      map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(scatralnode->Id());
-
-      // check whether this is a slavenode
-      if (master == pbcmapmastertoslave_->end())
-      {
-        // indeed a slavenode
-        slavenode = true;
-      }
-      else
-      {
-        // we have a masternode: set values for all slavenodes
-        vector<int>::iterator i;
-        for(i=(master->second).begin();i!=(master->second).end();++i)
-        {
-          // global and processor-local scatra node ID for slavenode
-          int globalslaveid = *i;
-          int localslaveid  = noderowmap->LID(globalslaveid);
-
-          // get the processor-local fluid slavenode
-          DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
-
-          // the set of degrees of freedom associated with the node
-          vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
-
-          for(int index=0;index<numdim;++index)
-          {
-            // global and processor-local fluid dof ID
-            int gid = slavenodedofset[index];
-            int lid = dofrowmap->LID(gid);
-
-            // get density for this processor-local scatra node
-            double dens  = (*densnp_)[localslaveid];
-            // get velocity for this processor-local fluid dof
-            double velocity =(*extvel)[lid];
-            // insert velocity*density-value in vector
-            convel_->ReplaceMyValue(localslaveid, index, velocity*dens);
-          }
-        }
-      }
-    }
-
-    // do this for all nodes other than slavenodes
-    if (slavenode == false)
-    {
-      for(int index=0;index<numdim;++index)
-      {
-        // global and processor-local fluid dof ID
-        int gid = nodedofset[index];
-        int lid = dofrowmap->LID(gid);
-
-        // get density for this processor-local scatra node
-        double dens  = (*densnp_)[lnodeid];
-        // get velocity for this processor-local fluid dof
-        double velocity = (*extvel)[lid];
-        // insert velocity*density-value in vector
-        convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
-      }
-    }
-  }
-
-  return;
-} // ScaTraTimIntImpl::SetLomaVelocity
-
-
-/*----------------------------------------------------------------------*
- | predict density for next time step for low-Mach-number flow vg 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::PredictDensity()
-{
-  // predictor: linear extrapolation in time
-  //densnp_->Update(2.0,*densn_,-1.0,*densnm_,0.0);
-
-  // predictor: constant extrapolation in time
-  densnp_->Update(1.0,*densn_,0.0);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | compute density for low-Mach-number flow                    vg 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeDensity()
@@ -1296,13 +1174,13 @@ bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
 
   if (myrank_==0)
   {
-    cout<<"\n**********************\n OUTER ITERATION STEP \n**********************\n";
-    printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- dens-norm -|-- dens-inc --|\n");
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-             itnum,itmax,ittol,densnorm_L2,densincnorm_L2/densnorm_L2);
+    cout<<"\n***************\n OUTER ITERATION STEP \n**************\n";
+    printf("+------------+-------------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- dens-inc --|\n");
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",
+             itnum,itmax,ittol,densincnorm_L2/densnorm_L2);
     printf("\n");
-    printf("+------------+-------------------+--------------+--------------+\n");
+    printf("+------------+-------------------+--------------+\n");
   }
 
   if (densincnorm_L2/densnorm_L2 <= ittol) stopnonliniter=true;
@@ -1313,24 +1191,12 @@ bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
     stopnonliniter=true;
     if (myrank_==0)
     {
-      printf("|    >>>>>> not converged in itemax steps!                     |\n");
-      printf("+--------------------------------------------------------------+\n");
+      printf("|     >>>>>> not converged in itemax steps!     |\n");
+      printf("+-----------------------------------------------+\n");
     }
   }
 
   return stopnonliniter;
-}
-
-
-/*----------------------------------------------------------------------*
- | update density at n-1 and n for low-Mach-number flow        vg 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::UpdateDensity()
-{
-  densnm_->Update(1.0,*densn_ ,0.0);
-  densn_->Update(1.0,*densnp_,0.0);
-
-  return;
 }
 
 

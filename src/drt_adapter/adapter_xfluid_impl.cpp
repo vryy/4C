@@ -779,4 +779,12 @@ void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
    return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp, RCP<const Epetra_Vector> densdtnp)
+{
+   dserror("not implemented!");
+   return;
+}
+
 #endif  // #ifdef CCADISCRET

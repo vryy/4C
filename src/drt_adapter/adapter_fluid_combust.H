@@ -65,6 +65,8 @@ namespace ADAPTER
                                                                return fluid_.Residual(); };
     virtual Teuchos::RCP<const Epetra_Vector> Velnp()        { dserror("not implemented");
                                                                return fluid_.Velnp(); };
+    virtual Teuchos::RCP<const Epetra_Vector> Velaf()        { dserror("not implemented");
+                                                               return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Veln()         { dserror("not implemented");
                                                                return fluid_.Veln(); };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
@@ -147,6 +149,11 @@ namespace ADAPTER
 
     /// set outer-iteration-related fields for low-Mach-number flow
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp){ dserror("not implemented!");
+                                                                     return; };
+
+    /// set outer-iteration-related fields for low-Mach-number flow
+    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                           RCP<const Epetra_Vector> densdtnp){ dserror("not implemented!");
                                                                      return; };
 
 

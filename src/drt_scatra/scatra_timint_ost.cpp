@@ -38,6 +38,20 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // temporal solution derivative at time n
   phidtn_       = LINALG::CreateVector(*dofrowmap,true);
 
+  // density at time n
+  if (prbtype_ == "loma")
+  {
+    // density at time n
+    densn_  = LINALG::CreateVector(*dofrowmap,true);
+    // density at time n-1 (only defined since required by fluid OST scheme)
+    densnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // time derivative of density at time n
+    // (required for same-density-derivative predictor, currently not active)
+    //densdtn_  = LINALG::CreateVector(*dofrowmap,true);
+  }
+
+
   return;
 }
 
@@ -80,6 +94,21 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
 
 
 /*----------------------------------------------------------------------*
+ | predict density for next time step for low-Mach-number flow vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PredictDensity()
+{
+  // same-density predictor (not required to be performed, since we just
+  // updated the density field, and thus, densnp_ = densn_)
+
+  // same-density-derivative predictor, currently not active
+  //densnp_->Update(dta_, *densdtn_,1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | reset the residual vector and add actual Neumann loads               |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
@@ -100,6 +129,8 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
   params.set("using generalized-alpha time integration",false);
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
+
+  discret_->SetState("densnp",densnp_);
   return;
 }
 
@@ -123,6 +154,32 @@ void SCATRA::TimIntOneStepTheta::Update()
 
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update density at n for low-Mach-number flow                vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::UpdateDensity()
+{
+  // compute density derivative at time n if required for
+  // same-density-derivative predictor, currently not active
+  /*if (step_ == 1)
+  {
+    // first timestep: densdt(n) = (dens(n)-dens(n-1))/dt
+    densdtn_->Update(1.0/dta_,*densnp_,-1.0/dta_,*densn_, 0.0);
+  }
+  else
+  {
+    // densdt(n) = (dens(n)-dens(n-1))/(theta*dt)+((theta-1)/theta)*densdt(n-1)
+    double fact1 = 1.0/(theta_*dta_);
+    double fact2 = (theta_-1.0)/theta_;
+    densdtn_->Update(fact1,*densnp_,-fact1,*densn_ ,fact2);
+  }*/
+
+  densn_->Update(1.0,*densnp_,0.0);
 
   return;
 }
@@ -240,6 +297,114 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     ; //how to reset a block matrix ??
   else
     SystemMatrix()->Reset();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set velocity field for low-Mach-number flow                 vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+    RCP<DRT::Discretization> fluiddis)
+{
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  if (extvel->MyLength()<= (4* convel_->MyLength()) and
+      extvel->MyLength() > (3* convel_->MyLength()))
+    numdim = 3;
+  else if (extvel->MyLength()<= (3* convel_->MyLength()))
+    numdim = 2;
+  else
+    dserror("fluid velocity vector too large");
+
+  // get noderowmap of scatra discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // get dofrowmap of fluid discretization
+  const Epetra_Map* dofrowmap = fluiddis->DofRowMap();
+
+  // loop over local nodes of scatra discretization
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // first of all, assume the present node is not a slavenode
+    bool slavenode=false;
+
+    // get the processor-local scatra node
+    DRT::Node*  scatralnode = discret_->lRowNode(lnodeid);
+
+    // get the processor-local fluid node
+    DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the fluid node
+    vector<int> nodedofset = fluiddis->Dof(fluidlnode);
+
+    // check whether we have a pbc condition on this scatra node
+    vector<DRT::Condition*> mypbc;
+    scatralnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // yes, we have a periodic boundary condition on this scatra node
+    if (mypbc.size()>0)
+    {
+      // get master and list of all his slavenodes
+      map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(scatralnode->Id());
+
+      // check whether this is a slavenode
+      if (master == pbcmapmastertoslave_->end())
+      {
+        // indeed a slavenode
+        slavenode = true;
+      }
+      else
+      {
+        // we have a masternode: set values for all slavenodes
+        vector<int>::iterator i;
+        for(i=(master->second).begin();i!=(master->second).end();++i)
+        {
+          // global and processor-local scatra node ID for slavenode
+          int globalslaveid = *i;
+          int localslaveid  = noderowmap->LID(globalslaveid);
+
+          // get the processor-local fluid slavenode
+          DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
+
+          // the set of degrees of freedom associated with the node
+          vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
+
+          for(int index=0;index<numdim;++index)
+          {
+            // global and processor-local fluid dof ID
+            int gid = slavenodedofset[index];
+            int lid = dofrowmap->LID(gid);
+
+            // get density for this processor-local scatra node
+            double dens  = (*densnp_)[localslaveid];
+            // get velocity for this processor-local fluid dof
+            double velocity =(*extvel)[lid];
+            // insert velocity*density-value in vector
+            convel_->ReplaceMyValue(localslaveid, index, velocity*dens);
+          }
+        }
+      }
+    }
+
+    // do this for all nodes other than slavenodes
+    if (slavenode == false)
+    {
+      for(int index=0;index<numdim;++index)
+      {
+        // global and processor-local fluid dof ID
+        int gid = nodedofset[index];
+        int lid = dofrowmap->LID(gid);
+
+        // get density for this processor-local scatra node
+        double dens  = (*densnp_)[lnodeid];
+        // get velocity for this processor-local fluid dof
+        double velocity = (*extvel)[lid];
+        // insert velocity*density-value in vector
+        convel_->ReplaceMyValue(lnodeid, index, velocity*dens);
+      }
+    }
+  }
 
   return;
 }

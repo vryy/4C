@@ -83,6 +83,9 @@ namespace ADAPTER {
     /// unknown velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
+    /// unknown velocities (and pressures) at t(n+alphaF)
+    virtual Teuchos::RCP<const Epetra_Vector> Velaf() = 0;
+
     /// unknown velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
@@ -120,6 +123,10 @@ namespace ADAPTER {
 
     /// set outer-iteration-related fields for low-Mach-number flow
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp) = 0;
+
+    /// set outer-iteration-related fields for low-Mach-number flow
+    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                           RCP<const Epetra_Vector> densdtnp) = 0;
 
     //@}
 

@@ -143,6 +143,12 @@ public:
   void GenAlphaTimeloop();
 
   /*!
+  \brief preparation of time step by performing several procedures
+
+  */
+  void GenAlphaPrepareTimeStep();
+
+  /*!
   \brief do nonlinear iteration, e.g. Newton like iteration
 
   In each step, the linearised system based on the (partially
@@ -179,15 +185,15 @@ public:
     }
 
   /*!
-  \brief Predict velocity and pressure of the new timestep. Choices for 
-   the predictor are a constant predictor for the velocity and the pressure 
-   or one of the following: zero acceleration predictor, constant 
-   acceleration predictor, constant increment predictor                             
-                                                                       
-   Remark: For Dirichlet nodes, no matter what was set here, velnp     
-           will be overwritten by the prescribed value. The            
-           accelerations are calculated after these Dirichlet values   
-           have been set.                                              
+  \brief Predict velocity and pressure of the new timestep. Choices for
+   the predictor are a constant predictor for the velocity and the pressure
+   or one of the following: zero-acceleration predictor, constant-
+   acceleration predictor, constant-increment predictor.
+
+   Remark: For Dirichlet nodes, no matter what was set here, velnp
+           will be overwritten by the prescribed value. The
+           accelerations are calculated after these Dirichlet values
+           have been set.
 
   */
   void GenAlphaPredictNewSolutionValues();
@@ -404,6 +410,13 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
 
   /*!
+  \brief return velocity and pressure solutions at
+         intermediate time step n+alpha_F
+
+  */
+  Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
+
+  /*!
   \brief return previous velocity and pressure solutions
 
   */
@@ -426,7 +439,7 @@ public:
   \brief Expand the Dirichlet DOF set
 
   The method expands the DOF set (map) which contains the DOFs
-  subjected to Dirichlet boundary conditions. For instance, the method is 
+  subjected to Dirichlet boundary conditions. For instance, the method is
   called by the staggered FSI in which the velocities on the FSI
   interface are prescribed by the other fields.
 
@@ -435,7 +448,7 @@ public:
 
   /*!
   \brief Extract the Dirichlet toggle vector based on Dirichlet BC maps
-  
+
   This method provides backward compatability only. Formerly, the Dirichlet conditions
   were handled with the Dirichlet toggle vector. Now, they are stored and applied
   with maps, ie #dbcmaps_. Eventually, this method will be removed.
@@ -445,7 +458,7 @@ public:
 
   /*!
   \brief Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
-  
+
   This method provides backward compatability only. Formerly, the Dirichlet conditions
   were handled with the Dirichlet toggle vector. Now, they are stored and applied
   with maps, ie #dbcmaps_. Eventually, this method will be removed.
@@ -619,6 +632,21 @@ public:
    */
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
+  /*!
+  \brief set time-step-related fields for low-Mach-number flow
+
+  */
+  void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
+                         RCP<const Epetra_Vector> densn,
+                         RCP<const Epetra_Vector> densdtn);
+
+  /*!
+  \brief set outer-iteration-related fields for low-Mach-number flow
+
+  */
+  void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                 RCP<const Epetra_Vector> densdtnp);
+
 
 protected:
 
@@ -647,7 +675,7 @@ private:
   //! flag for low-Mach-number solver (no: standard incompressible solver)
   string                    loma_;
 
-  //! fluid density
+  //! fluid density (for incompressible flow)
   double                    density_;
 
   //! @name time integration parameters
@@ -726,14 +754,14 @@ private:
   //! parameters for sampling/dumping period
   int samstart_;
 
-  //! flag for special flow: currently channel flow, flow in 
+  //! flag for special flow: currently channel flow, flow in
   //! a lid-driven cavity and flow around a square cylinder
   string special_flow_;
 
   //! flag for potential Neumann-type outflow stabilization
   string outflow_stab_;
 
-  //! manager for turbulence statistics 
+  //! manager for turbulence statistics
   RCP<TurbulenceStatisticManager> statisticsmanager_;
 
   //@}
@@ -815,9 +843,9 @@ private:
   //! required only for the constant increment predictor
   RCP<Epetra_Vector>        velnm_;
 
-  //! velocities and densities at time n+alpha_F, n+1 and n
-  RCP<Epetra_Vector>        vedeaf_;
+  //! velocities and densities at times n+1, n+alpha_M and n
   RCP<Epetra_Vector>        vedenp_;
+  RCP<Epetra_Vector>        vedeam_;
   RCP<Epetra_Vector>        veden_;
 
   //! ALE related stuff: grid displacements, time n+1
@@ -859,7 +887,7 @@ private:
   RCP<map<int,vector<int> > > pbcmapmastertoslave_;
   //@}
 
-  //! @name Dynamic Smagorinsky model: methods and variables 
+  //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------
 
   //! one instance of the filter object

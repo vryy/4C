@@ -2066,12 +2066,11 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   // get velocity dofs for vede-vectors as copies from vel-vectors
   vedenp_->Update(1.0,*velnp_,0.0);
   veden_->Update(1.0,*veln_,0.0);
-  vedenm_->Update(1.0,*velnm_,0.0);
 
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
-  // insert density values in vede-vectors
+  // insert density values in vedenp- and veden-vectors
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
@@ -2082,9 +2081,21 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 
     Values[numdim] = (*densn)[lnodeid];
     veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+  }
 
-    Values[numdim] = (*densnm)[lnodeid];
-    vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+  if (timealgo_==timeint_bdf2)
+  {
+    vedenm_->Update(1.0,*velnm_,0.0);
+
+    // insert density values in vedenm-vector
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      Indices[numdim] = lnodeid*numdof + numdim;
+
+      Values[numdim] = (*densnm)[lnodeid];
+      vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+    }
   }
 
   return;

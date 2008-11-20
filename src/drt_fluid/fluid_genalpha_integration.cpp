@@ -176,15 +176,12 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     velnm_        = LINALG::CreateVector(*dofrowmap,true);
   }
 
-  // velocity/density at time n+1
-  vedeaf_       = LINALG::CreateVector(*dofrowmap,true);
+  // velocity/density at time n+1, n+alpha_M and n+alpha_F
+  vedenp_       = LINALG::CreateVector(*dofrowmap,true);
+  vedeam_       = LINALG::CreateVector(*dofrowmap,true);
 
-  if (loma_ != "No")
-  {
-    // velocity/density at time n and n-1
-    vedenp_     = LINALG::CreateVector(*dofrowmap,true);
-    veden_      = LINALG::CreateVector(*dofrowmap,true);
-  }
+  // velocity/density at time n
+  if (loma_ != "No") veden_ = LINALG::CreateVector(*dofrowmap,true);
 
   // grid displacements and velocities for the ale case
   if (alefluid_)
@@ -313,8 +310,20 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // end time measurement for timeloop
 
-  // set vedenp-vector values to 1.0 for incompressible flow, for the time being
-  if (loma_ == "No") vedeaf_->PutScalar(1.0);
+  // get constant density variable for incompressible flow
+  // set various vede-vector values to 1.0 for incompressible flow
+  // set density variable to 1.0 for low-Mach-number flow
+  if (loma_ == "No")
+  {
+    ParameterList eleparams;
+    eleparams.set("action","get_density");
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+    density_ = eleparams.get("density", 1.0);
+    if (density_ <= 0.0) dserror("received illegal density value");
+    vedeam_->PutScalar(1.0);
+    vedenp_->PutScalar(1.0);
+  }
+  else density_ = 1.0;
 
   tm7_ref_ = null;
 
@@ -354,41 +363,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
   while (stop_timeloop==false)
   {
     // -------------------------------------------------------------------
-    //              set time dependent parameters
+    //     preparation of time step by performing several procedures
     // -------------------------------------------------------------------
-    this->GenAlphaIncreaseTimeAndStep();
-
-    // -------------------------------------------------------------------
-    //                         out to screen
-    // -------------------------------------------------------------------
-    this->GenAlphaEchoToScreen("print time algorithm info");
-
-    // -------------------------------------------------------------------
-    //     predict new values for velocity and pressure
-    // -------------------------------------------------------------------
-    this->GenAlphaPredictNewSolutionValues();
-
-    // -------------------------------------------------------------------
-    //         evaluate dirichlet and neumann boundary conditions
-    // -------------------------------------------------------------------
-    // start time measurement for application of dirichlet conditions
-    tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
-
-    this->GenAlphaApplyDirichletAndNeumann();
-
-    // end time measurement for application of dirichlet conditions
-    tm1_ref_=null;
-
-    // -------------------------------------------------------------------
-    //           preparation of AVM3-based scale separation
-    // -------------------------------------------------------------------
-    if (step_==1 and fssgv_ != "No") this->AVM3Preparation();
-
-    // -------------------------------------------------------------------
-    //      calculate initial acceleration according to predicted
-    //                  velocities and boundary values
-    // -------------------------------------------------------------------
-    this->GenAlphaCalcInitialAccelerations();
+    this->GenAlphaPrepareTimeStep();
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
@@ -433,6 +410,58 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
 
   return;
 }// FluidGenAlphaIntegration::GenAlphaIntegrateFromTo
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | preparation of time step by performing several procedures   vg 11/08 |
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidGenAlphaIntegration::GenAlphaPrepareTimeStep()
+{
+  // -------------------------------------------------------------------
+  //              set time dependent parameters
+  // -------------------------------------------------------------------
+  this->GenAlphaIncreaseTimeAndStep();
+
+  // -------------------------------------------------------------------
+  //                         out to screen
+  // -------------------------------------------------------------------
+  this->GenAlphaEchoToScreen("print time algorithm info");
+
+  // -------------------------------------------------------------------
+  //     predict new values for velocity and pressure
+  // -------------------------------------------------------------------
+  this->GenAlphaPredictNewSolutionValues();
+
+  // -------------------------------------------------------------------
+  //         evaluate dirichlet and neumann boundary conditions
+  // -------------------------------------------------------------------
+  // start time measurement for application of dirichlet conditions
+  tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
+
+  this->GenAlphaApplyDirichletAndNeumann();
+
+  // end time measurement for application of dirichlet conditions
+  tm1_ref_=null;
+
+  // -------------------------------------------------------------------
+  //           preparation of AVM3-based scale separation
+  // -------------------------------------------------------------------
+  if (step_==1 and fssgv_ != "No") this->AVM3Preparation();
+
+  // -------------------------------------------------------------------
+  //      calculate initial acceleration according to predicted
+  //                  velocities and boundary values
+  // -------------------------------------------------------------------
+  this->GenAlphaCalcInitialAccelerations();
+
+  return;
+} // FluidGenAlphaIntegration::GenAlphaPrepareTimeStep
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -592,8 +621,8 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 /*----------------------------------------------------------------------*
  |  Predict velocity and pressure of the new timestep. Up to now, we    |
  |  use a constant predictor for the velocity and the pressure or one   |
- |  of the following: zero acceleration, constant acceleration          |
- |  predictor, constant increment predictor                             |
+ |  of the following: zero-acceleration, constant-acceleration          |
+ |  predictor, constant-increment predictor                             |
  |                                                                      |
  |  Remark: For Dirichlet nodes, no matter what was set here, velnp     |
  |          will be overwritten by the prescribed value. The            |
@@ -733,7 +762,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("total time",time_-(1-alphaF_)*dt_);
   eleparams.set("thsl",1.);
 
-  discret_->SetState("vedenp",vedeaf_);
+  // for low-Mach-number flow, this is an approximation,
+  // for the time being, since density actually would have to be set
+  // at time n+alpha_F not at time n+1.
+  discret_->SetState("vedenp",vedenp_);
   neumann_loads_->PutScalar(0.0);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
@@ -790,11 +822,19 @@ void FLD::FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 
   accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
 
-  //       n+alphaF              n+1                   n
-  //      u         = alpha_F * u     + (1-alpha_F) * u
-  //       (i)                   (i)
+  if (loma_ != "No")
+  {
+    velaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
+    vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
+  }
+  else
+  {
+    //       n+alphaF              n+1                   n
+    //      u         = alpha_F * u     + (1-alpha_F) * u
+    //       (i)                   (i)
 
-  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+    velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+  }
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
@@ -1054,11 +1094,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   if(outflow_stab_ == "yes_outstab")
   {
     discret_->ClearState();
-    discret_->SetState("velnp",velnp_);
+    // velocity and density at t_n+aF provided for generalized-alpha
+    discret_->SetState("velnp",velaf_);
+    discret_->SetState("vedenp",velaf_);
     eleparams.set("thsl",1.);
     eleparams.set("outflow stabilization",outflow_stab_);
 
-    discret_->SetState("vedeaf",vedeaf_);
     outflow_stabil_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
     discret_->ClearState();
@@ -1105,8 +1146,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     eleparams.set("compute element matrix",false);
   }
 
-  // parameters for nonlinear treatment (linearisation)
+  // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
   eleparams.set("Linearisation",newton_);
+  eleparams.set("low-Mach-number solver",loma_);
 
   // parameters for stabilisation
   {
@@ -1126,7 +1168,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->SetState("u and p (n+1      ,trial)",velnp_ );
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
   discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
-  discret_->SetState("vedeaf"                   ,vedeaf_);
+  discret_->SetState("vedenp"                   ,vedenp_);
+  discret_->SetState("vedeam"                   ,vedeam_);
 
   if (alefluid_)
   {
@@ -1159,7 +1202,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   density_ = eleparams.get<double>("density");
 
   //----------------------------------------------------------------------
-  // extended statistics (plane average of Cs) for dynamic 
+  // extended statistics (plane average of Cs) for dynamic
   // Smagorinsky model --- communication part, store values
   //----------------------------------------------------------------------
   statisticsmanager_->StoreElementValues(step_);
@@ -1194,7 +1237,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // end time measurement for element call
   tm3_ref_=null;
-  
+
   // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
   force_->Scale(density_);
@@ -1254,7 +1297,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   //-------solve for residual displacements to correct incremental displacements
   increment_->PutScalar(0.0);
 
-  // always refactor the matrix for a new solver call --- we assume that 
+  // always refactor the matrix for a new solver call --- we assume that
   // it has changed since the last call
   bool refactor=true;
   // never reset solver from time integration level
@@ -1514,8 +1557,9 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
     timelist.set("dt"     ,dt_    );
   }
 
-  // parameters for nonlinear treatment (linearisation)
+  // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
   eleparams.set("Linearisation",newton_);
+  eleparams.set("low-Mach-number solver",loma_);
 
   // parameters for stabilisation
   {
@@ -1535,7 +1579,8 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   discret_->SetState("u and p (n+1      ,trial)",velnp_ );
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
   discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
-  discret_->SetState("vedeaf"                   ,vedeaf_);
+  discret_->SetState("vedenp"                   ,vedenp_);
+  discret_->SetState("vedeam"                   ,vedeam_);
 
   // zero and set fine-scale vector required by element routines
   fsvelaf_->PutScalar(0.0);
@@ -2403,6 +2448,105 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::CalcStresses()
 
 
 /*----------------------------------------------------------------------*
+ | set time-step-related fields for low-Mach-number flow       vg 08/08 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidGenAlphaIntegration::SetTimeLomaFields(
+   RCP<const Epetra_Vector> densnp,
+   RCP<const Epetra_Vector> densn,
+   RCP<const Epetra_Vector> densdtn)
+{
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  int numdof =-1;
+  if (veln_->MyLength()== (3* densn->MyLength()))
+  {
+    numdim = 2;
+    numdof = 3;
+  }
+  else if (veln_->MyLength()== (4* densn->MyLength()))
+  {
+    numdim = 3;
+    numdof = 4;
+  }
+  else
+    dserror("velocity/pressure and density vectors do not match in size");
+
+  // get velocity dofs for vede-vectors as copies from vel-vectors
+  vedenp_->Update(1.0,*velnp_,0.0);
+  veden_->Update(1.0,*veln_,0.0);
+
+  vector<int>    Indices(numdof);
+  vector<double> Values(numdof);
+
+  // insert density values in vede-vectors
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    Indices[numdim] = lnodeid*numdof + numdim;
+
+    Values[numdim] = (*densnp)[lnodeid];
+    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+    Values[numdim] = (*densn)[lnodeid];
+    veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+    Values[numdim] = (*densdtn)[lnodeid];
+    accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+  }
+
+  return;
+
+} // FluidGenAlphaIntegration::SetTimeLomaFields
+
+
+/*----------------------------------------------------------------------*
+ | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidGenAlphaIntegration::SetGenAlphaIterLomaFields(
+   RCP<const Epetra_Vector> densnp,
+   RCP<const Epetra_Vector> densdtnp)
+{
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  int numdof =-1;
+  if (velnp_->MyLength()== (3* densnp->MyLength()))
+  {
+    numdim = 2;
+    numdof = 3;
+  }
+  else if (velnp_->MyLength()== (4* densnp->MyLength()))
+  {
+    numdim = 3;
+    numdof = 4;
+  }
+  else
+    dserror("velocity/pressure and density vectors do not match in size");
+
+  // get velocity dofs for vedenp-vector as copies from velnp-vector
+  vedenp_->Update(1.0,*velnp_,0.0);
+
+  vector<int>    Indices(numdof);
+  vector<double> Values(numdof);
+
+  // insert density values in vedenp-vector
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    Indices[numdim] = lnodeid*numdof + numdim;
+
+    Values[numdim] = (*densnp)[lnodeid];
+    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+    Values[numdim] = (*densdtnp)[lnodeid];
+    accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+  }
+
+  return;
+
+} // FluidGenAlphaIntegration::SetGenAlphaIterLomaFields
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::IntegrateInterfaceShape(
   std::string condname)
@@ -2479,7 +2623,7 @@ void FLD::FluidGenAlphaIntegration::AddDirichCond(const Teuchos::RCP<const Epetr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::Dirichlet()
-{ 
+{
   if (dbcmaps_ == Teuchos::null)
     dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
@@ -2493,7 +2637,7 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::Dirichlet
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::InvDirichlet()
-{ 
+{
   if (dbcmaps_ == Teuchos::null)
     dserror("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros = LINALG::CreateVector(*(dbcmaps_->CondMap()),true);

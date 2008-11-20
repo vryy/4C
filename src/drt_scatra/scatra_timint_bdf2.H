@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_bdf2.H
-\brief 
+\brief
 
 <pre>
 Maintainer: Georg Bauer
@@ -34,12 +34,26 @@ public:
   /// Destructor
   virtual ~TimIntBDF2();
 
+  //! set velocity field for low-Mach-number flow
+  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<DRT::Discretization> fluiddis);
+
+  //! predict density field for low-Mach-number flow
+  void PredictDensity();
+
+  //! compute time derivative of density field for low-Mach-number flow
+  void ComputeDensityDerivative(){return;};
+
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update();
 
+  //! update density field for low-Mach-number flow
+  void UpdateDensity();
+
   /// read restart data
   void ReadRestart(int step);
+
 
 protected:
 

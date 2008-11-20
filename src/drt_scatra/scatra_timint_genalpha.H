@@ -35,9 +35,22 @@ public:
   /// Destructor
   virtual ~TimIntGenAlpha();
 
+  //! set velocity field for low-Mach-number flow
+  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<DRT::Discretization> fluiddis);
+
+  //! predict density field for low-Mach-number flow
+  void PredictDensity();
+
+  //! compute time derivative of density field for low-Mach-number flow
+  void ComputeDensityDerivative();
+
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update();
+
+  //! update density field for low-Mach-number flow
+  void UpdateDensity();
 
   /// read restart data
   void ReadRestart(int step);
@@ -77,6 +90,10 @@ private:
 
   /// calculate initial value for phidtn_
   void CalcInitialPhidt();
+
+  /// density at times n+alpha_M and n+alpha_F
+  RCP<Epetra_Vector>  densam_;
+  RCP<Epetra_Vector>  densaf_;
 
   /// time factors for generalized-alpha time integration
   double alphaM_;
