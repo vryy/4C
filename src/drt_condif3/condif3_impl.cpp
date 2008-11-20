@@ -181,6 +181,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     const bool is_stationary = params.get<bool>("using stationary formulation");
     const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
     const double time = params.get<double>("total time");
+    const bool islinear = params.get<bool>("is linear problem");
 
     // get time-step length
     const double dt = params.get<double>("time-step length");
@@ -294,6 +295,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         fssgd,
         is_stationary,
         is_genalpha,
+        islinear,
         frt);
   }
   else if (action =="initialize_one_step_theta")
@@ -488,26 +490,27 @@ return 0;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
-    const DRT::ELEMENTS::Condif3*                             ele, ///< the element those matrix is calculated
+    const DRT::ELEMENTS::Condif3*         ele, ///< the element those matrix is calculated
     const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
     const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
     const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
     const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-    Epetra_SerialDenseMatrix&                                 sys_mat,///< element matrix to calculate
-    Epetra_SerialDenseVector&                                 residual, ///< element rhs to calculate
-    Epetra_SerialDenseVector&                                 subgrdiff, ///< subgrid-diff.-scaling vector
-    const struct _MATERIAL*                                   material, ///< material pointer
-    const double                                              time, ///< current simulation time
-    const double                                              dt, ///< current time-step length
-    const double                                              timefac, ///< time discretization factor
-    const double                                              alphaF, ///< factor for generalized-alpha time integration
+    Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+    Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+    Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+    const struct _MATERIAL*               material, ///< material pointer
+    const double                          time, ///< current simulation time
+    const double                          dt, ///< current time-step length
+    const double                          timefac, ///< time discretization factor
+    const double                          alphaF, ///< factor for generalized-alpha time integration
     const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
-    const bool                                                temperature, ///< temperature flag
-    const enum Condif3::TauType                               whichtau, ///< stabilization parameter definition
-    const string                                              fssgd, ///< subgrid-diff. flag
-    const bool                                                is_stationary, ///< stationary flag
-    const bool                                                is_genalpha, ///< generalized-alpha flag
-    const double                                              frt ///< factor F/RT needed for ELCH calculations
+    const bool                            temperature, ///< temperature flag
+    const enum Condif3::TauType           whichtau, ///< stabilization parameter definition
+    const string                          fssgd, ///< subgrid-diff. flag
+    const bool                            is_stationary, ///< stationary flag
+    const bool                            is_genalpha, ///< generalized-alpha flag
+    const bool                            islinear, ///< flag for linear/nonlinear problem
+    const double                          frt ///< factor F/RT needed for ELCH calculations
 )
 {
   // get node coordinates
@@ -563,18 +566,23 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     //----------- perform integration for entire matrix and rhs
     if (numdofpernode_-numscal_== 0) // 'standard' scalar transport
     {
-      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+      if (islinear)
       {
-        if (not is_stationary)
+        for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
         {
-          if (is_genalpha)
-            CalMatGenAlpha(sys_mat,residual,ephinp,higher_order_ele,timefac,alphaF,k);
+          if (not is_stationary)
+          {
+            if (is_genalpha)
+              CalMatGenAlpha(sys_mat,residual,ephinp,higher_order_ele,timefac,alphaF,k);
+            else
+              CalMat(sys_mat,residual,higher_order_ele,timefac,k);
+          }
           else
-            CalMat(sys_mat,residual,higher_order_ele,timefac,k);
-        }
-        else
-          CalMatStationary(sys_mat,residual,higher_order_ele,k);
-      } // loop over each scalar
+            CalMatStationary(sys_mat,residual,higher_order_ele,k);
+        } // loop over each scalar
+      }
+      else
+        CalMatInc(sys_mat,residual,ephinp,higher_order_ele,is_stationary,timefac);
     }
     else  // ELCH problems
      CalMatElch(sys_mat,residual,ephinp,epotnp,higher_order_ele,frt,is_stationary,timefac);
@@ -720,18 +728,18 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
-    const DRT::ELEMENTS::Condif3*&                   ele,
-    Epetra_SerialDenseVector&                        subgrdiff,
-    const LINALG::Matrix<3,iel>& evel,
-    const LINALG::Matrix<iel,1>& edens,
-    const LINALG::Matrix<iel,1>& epot,
-    const double                                     dt,
-    const double&                                    timefac,
-    const enum Condif3::TauType                      whichtau,
-    string                                           fssgd,
-    const bool&                                      is_stationary,
-    const bool                                       initial,
-    const double&                                    frt
+    const DRT::ELEMENTS::Condif3*&  ele,
+    Epetra_SerialDenseVector&       subgrdiff,
+    const LINALG::Matrix<3,iel>&    evel,
+    const LINALG::Matrix<iel,1>&    edens,
+    const LINALG::Matrix<iel,1>&    epot,
+    const double                    dt,
+    const double&                   timefac,
+    const enum Condif3::TauType     whichtau,
+    const string                    fssgd,
+    const bool&                     is_stationary,
+    const bool                      initial,
+    const double&                   frt
   )
 {
   // get element-type constant for tau
@@ -1803,22 +1811,22 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
-    const DRT::ELEMENTS::Condif3*                             ele,
+    const DRT::ELEMENTS::Condif3*         ele,
     const vector<LINALG::Matrix<iel,1> >& ephi0,
     const LINALG::Matrix<iel,1>&          edens0,
     const LINALG::Matrix<iel,1>&          epot0,
-    Epetra_SerialDenseMatrix&                                 massmat,
-    Epetra_SerialDenseVector&                                 rhs,
-    Epetra_SerialDenseVector&                                 subgrdiff,
-    const struct _MATERIAL*                                   material,
-    const double                                              time,
-    const double                                              dt,
-    const double                                              timefac,
+    Epetra_SerialDenseMatrix&             massmat,
+    Epetra_SerialDenseVector&             rhs,
+    Epetra_SerialDenseVector&             subgrdiff,
+    const struct _MATERIAL*               material,
+    const double                          time,
+    const double                          dt,
+    const double                          timefac,
     const LINALG::Matrix<3,iel>&          evel0,
-    const bool                                                temperature,
-    const enum Condif3::TauType                               whichtau,
-    const string                                              fssgd,
-    const double                                              frt
+    const bool                            temperature,
+    const enum Condif3::TauType           whichtau,
+    const string                          fssgd,
+    const double                          frt
 )
 {
   // get node coordinates
@@ -2067,18 +2075,219 @@ return;
 
 
 /*----------------------------------------------------------------------*
+ | calculate matrix and rhs vector (incremental condif form)  gjb 11/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
+    Epetra_SerialDenseMatrix&             emat,
+    Epetra_SerialDenseVector&             erhs,
+    const vector<LINALG::Matrix<iel,1> >& ephinp,
+    const bool&                           higher_order_ele,
+    const bool&                           is_stationary,
+    const double&                         timefac
+)
+{
+  // get values of all transported scalars at integration point
+  for (int k=0; k<numscal_; ++k)
+  {
+    conint_[k] = funct_.Dot(ephinp[k]);
+  }
+
+  // convective part
+  /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y +  rho * c_p * u_z * N,z
+      with  N .. form function matrix */
+  conv_.MultiplyTN(derxy_,velint_);
+
+#if 0
+  // DEBUG output
+  cout<<endl<<"values at GP:"<<endl;
+  cout<<"factor F/RT = "<<frt<<endl;
+  for (int k=0;k<numscal_;++k)
+  {cout<<"conint_["<<k<<"] = "<<conint_[k]<<endl;}
+#endif
+  // some 'working doubles'
+  double rhsint(0.0);  // rhs at int. point
+  // integration factors and coefficients of single terms
+  static double timefacfac(0.0);
+  static double timetaufac(0.0);
+  static double taufac(0.0);
+
+  for (int k = 0; k < numscal_;++k) // loop over all transported sclars
+  {
+    // stabilization parameters
+    taufac = tau_[k]*fac_;
+
+    if (is_stationary)
+    {
+      timefacfac  = fac_;
+      timetaufac  = taufac;
+      rhsint = rhs_[k];     // set rhs at integration point
+    }
+    else
+    {
+      timefacfac  = timefac * fac_;
+      timetaufac  = timefac * taufac;
+      rhsint = hist_[k] + rhs_[k]*timefac;     // set rhs at integration point
+    }
+
+    // compute gradient of scalar k at integration point
+    gradphi_.Multiply(derxy_,ephinp[k]);
+
+    if (higher_order_ele)
+    {
+      for (int i=0; i<iel; i++)
+      {
+        // diffusive part
+        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+        diff_(i) = diffus_[k] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+      }
+    }
+
+    // ----------------------------------------matrix entries
+    for (int vi=0; vi<iel; ++vi)
+    {
+      const double timetaufac_conv_vi = timetaufac*conv_(vi);
+      const double timefacfac_funct_vi = timefacfac*funct_(vi);
+
+      for (int ui=0; ui<iel; ++ui)
+      {
+        /* Standard Galerkin terms: */
+        /* convective term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac_funct_vi*conv_(ui) ;
+
+        /* diffusive term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+
+        /* Stabilization term: */
+        /* 0) transient stabilization */
+        // not implemented
+
+        /* 1) convective stabilization */
+
+        /* convective term */
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac_conv_vi*conv_(ui);
+
+      } // for ui
+    } // for vi
+
+    if (higher_order_ele)
+    {
+      for (int vi=0; vi<iel; ++vi)
+      {
+        for (int ui=0; ui<iel; ++ui)
+        {
+          /* diffusive term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += -timetaufac*conv_(vi)*diff_(ui) ;
+
+          /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+
+          /* convective term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac*diff_(vi)*conv_(ui);
+
+          /* diffusive term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timetaufac*diff_(vi)*diff_(ui) ;
+        } // for ui
+      } // for vi
+
+    } // higher_order_ele
+
+    // ----------------------------------------------RHS
+    const double conv_ephinp_k = conv_.Dot(ephinp[k]);
+    const double densfunct_ephinp_k = densfunct_.Dot(ephinp[k]);
+    double diff_ephinp_k(0.0);
+    if (higher_order_ele) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
+
+    // compute residual of strong form for stabilization
+    double taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + diff_ephinp_k);
+    if (!is_stationary) // add transient term to the residual
+      taufacresidual -= taufac*densfunct_ephinp_k;
+
+    //------------residual formulation (Newton iteration)
+    for (int vi=0; vi<iel; ++vi)
+    {
+      // RHS source term
+      erhs[vi*numdofpernode_+k] += fac_*funct_(vi)*rhsint ;
+
+      // convective term
+      erhs[vi*numdofpernode_+k] -= timefacfac*funct_(vi)*conv_ephinp_k;
+
+      // diffusive term
+      erhs[vi*numdofpernode_+k] -= timefacfac*diffus_[k]*(gradphi_(0)*derxy_(0, vi) + gradphi_(1)*derxy_(1, vi)+ gradphi_(2)*derxy_(2, vi));
+
+      // Stabilization terms:
+
+      // 0) transient stabilization
+      // not implemented
+
+      // 1) convective stabilization
+      erhs[vi*numdofpernode_+k] += conv_(vi) * taufacresidual;
+
+    } // for vi
+
+    if (higher_order_ele)
+    {
+      for (int vi=0; vi<iel; ++vi)
+      {
+        dserror("higher order terms not yet tested");
+
+        // 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS)
+        erhs[vi*numdofpernode_+k] += diff_(vi)*taufacresidual ;
+
+      } // for vi
+    } // higher_order_ele
+
+    // -----------------------------------INSTATIONARY TERMS
+    if (!is_stationary)
+    {
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const double fac_funct_vi = fac_*funct_(vi);
+        for (int ui=0; ui<iel; ++ui)
+        {
+          /* Standard Galerkin terms: */
+          /* transient term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += fac_funct_vi*densfunct_(ui) ;
+
+          /* 1) convective stabilization */
+          /* transient term */
+          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*conv_(vi)*densfunct_(ui);
+
+          if (higher_order_ele)
+          {
+            /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+            /* transient term */
+            emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*diff_(vi)*densfunct_(ui) ;
+          }
+        } // for ui
+
+        // residuum on RHS:
+
+        /* Standard Galerkin terms: */
+        /* transient term */
+        erhs[vi*numdofpernode_+k] -= fac_funct_vi*densfunct_ephinp_k;
+
+      } // for vi
+    } // instationary case
+
+  } // loop over scalars
+
+  return;
+} // Condif3Impl::CalMatInc
+
+
+/*----------------------------------------------------------------------*
  | calculate matrix and rhs for electrochemistry problem      gjb 10/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
-    Epetra_SerialDenseMatrix&                                 emat,
-    Epetra_SerialDenseVector&                                 erhs,
+    Epetra_SerialDenseMatrix&             emat,
+    Epetra_SerialDenseVector&             erhs,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<iel,1>&          epotnp,
-    const bool&                                               higher_order_ele,
-    const double&                                             frt,
-    const bool&                                               is_stationary,
-    const double&                                             timefac
+    const bool&                           higher_order_ele,
+    const double&                         frt,
+    const bool&                           is_stationary,
+    const double&                         timefac
 )
 {
   // get values of all transported scalars at integration point

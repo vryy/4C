@@ -25,26 +25,20 @@ Maintainer: Volker Gravemeier
 #include "scatra_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
 #include "scatra_resulttest.H"
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
  * Main control routine for scalar transport problems, icl. various solvers
  *
+ *        o Laplace-/ Poisson equation (zero velocity field)
+ *          (with linear and nonlinear boundary conditons)
  *        o transport of passive scalar in velocity field given by spatial function
  *        o transport of passive scalar in velocity field given by Navier-Stokes
  *          (one-way coupling)
  *
  *----------------------------------------------------------------------*/
-void scatra_dyn()
+void scatra_dyn(int disnumff, int disnumscatra, int restart)
 {
   // create a communicator
 #ifdef PARALLEL
@@ -55,10 +49,6 @@ void scatra_dyn()
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& scatradyn     = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-
-  // get discretization ids
-  int disnumff = genprob.numff; // typically 0
-  int disnumscatra = genprob.numscatra; // typically 1
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -82,20 +72,36 @@ void scatra_dyn()
       // create instance of convection diffusion basis algorithm (empty fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> condifonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
 
-      if (genprob.restart)
+      if (restart)
       {
         // read the restart information, set vectors and variables
-        condifonly->ScaTraField().ReadRestart(genprob.restart);
+        condifonly->ScaTraField().ReadRestart(restart);
       }
 
       // set velocity field 
       //(this is done only once. Time-dependent velocity fields are not supported)
       (condifonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
 
-      // solve the problem with given convective velocity
-      (condifonly->ScaTraField()).Integrate();
+      // do we have a nonlinear problem due to applied boundary conditions?
+      vector< DRT::Condition * >  conditions;
+      scatradis->GetCondition("ElectrodeKinetics", conditions);
+      if (conditions.size() > 0) 
+      {
+        if (comm.MyPID()==0)
+        {
+          cout<<"Found "<<conditions.size()<<" nonlinear boundary condition(s) applied to "<<scatradis->Name()<<" discretization"<<endl;
+          cout<<"--> Solving nonlinear problem...\n"<<endl;
+        }
+        // solve the nonlinear problem with given convective velocity
+        (condifonly->ScaTraField()).TimeLoop(true);
+      }
+      else
+      {
+        // solve the linear problem with given convective velocity
+        (condifonly->ScaTraField()).TimeLoop(false);
+      }
 
-      // do result test if required
+      // perform the result test if required
       DRT::ResultTestManager testmanager(comm);
       testmanager.AddFieldTest(condifonly->CreateScaTraFieldTest());
       testmanager.TestAll();
@@ -125,10 +131,10 @@ void scatra_dyn()
       // create an one-way coupling algorithm instance
       Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,scatradyn));
 
-      if (genprob.restart)
+      if (restart)
       {
         // read the restart information, set vectors and variables
-        algo->ReadRestart(genprob.restart);
+        algo->ReadRestart(restart);
       }
 
       // solve the whole (one-way-coupled) problem
@@ -148,7 +154,6 @@ void scatra_dyn()
     default:
       dserror("unknown velocity field type for transport of passive scalar");
   }
-
 
   return;
 

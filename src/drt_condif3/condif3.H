@@ -718,7 +718,8 @@ private:
      const double&           alphaa,  ///< anodic factor in Butler-Volmer model
      const double&           alphac,  ///< cathodic factor in Butler-Volmer model
      const double&               i0,  ///< exchange current density
-     const double&              frt   ///< factor F/RT
+     const double&              frt,  ///< factor F/RT
+     const bool&             iselch   ///< problemtype elch or scatra
      );
 
  /*!

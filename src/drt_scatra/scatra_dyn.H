@@ -59,7 +59,11 @@ extern "C"
 /* headers and prototypes of functions also acessible from c */
 
 /*! entry point for the solution of scalar transport problems */
-void scatra_dyn();
+void scatra_dyn(
+    int disnumff,      /* fluid discretization number, typically 0 */
+    int disnumscatra,  /* scatra discretization number, typically 1 */
+    int restart        /* do we have to perform a restart?  */
+    );
 
 
 

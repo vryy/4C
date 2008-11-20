@@ -255,31 +255,9 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
 
 
 /*----------------------------------------------------------------------*
- | Start the time integration. Allows                                   |
- |                                                                      |
- |  o starting steps with different algorithms                          |
- |  o the "standard" time integration                                   |
- |                                                              vg 05/07|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Integrate()
-{
-  // solve the problem
-  TimeLoop();
-
-  // just beauty
-  cout<<endl<<endl;
-
-  // print the results of time measurements
-  TimeMonitor::summarize();
-
-  return;
-} // ScaTraTimIntImpl::Integrate
-
-
-/*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::TimeLoop()
+void SCATRA::ScaTraTimIntImpl::TimeLoop(const bool nonlinear)
 {
   // write out inital state
   // Output();
@@ -292,9 +270,12 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     PrepareTimeStep();
 
     // -------------------------------------------------------------------
-    //                     solve nonlinear equation
+    //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
-    Solve();
+    if (nonlinear)
+      NonlinearSolve();
+    else
+      Solve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -318,6 +299,9 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     dtp_ = dta_;
 
   } // while
+
+  // print the results of time measurements
+  TimeMonitor::summarize();
 
   return;
 } // ScaTraTimIntImpl::TimeLoop
@@ -375,7 +359,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:      + apply dirich cond.");
 
-  // apply DBCs
   // needed parameters
   ParameterList p;
   p.set("total time",time);  // actual time t_{n+1}
@@ -476,9 +459,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // scaled with a factor resulting from time discretization
       AddNeumannToResidual();
 
-      if (prbtype_=="elch")
-      { // evaluate electrode kinetics conditions
-
+      // evaluate electrode kinetics conditions
+      {
         // time measurement: evaluate condition 'ElectrodeKinetics'
         TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
 
@@ -489,6 +471,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         condparams.set("action","calc_elch_electrode_kinetics");
         condparams.set("frt",frt_); // factor F/RT
         condparams.set("total time",time_);
+        condparams.set("iselch",(prbtype_=="elch")); // a boolean
+        AddSpecificTimeIntegrationParameters(condparams);
 
         // set vector values needed by elements
         discret_->ClearState();
@@ -516,6 +500,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("total time",time_);
       eleparams.set("time-step length",dta_);
       eleparams.set("problem type",prbtype_);
+      eleparams.set("is linear problem", false);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
@@ -553,18 +538,18 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the dirichlet positions
+    // We can do this because the values at the Dirichlet positions
     // are not used anyway.
-    // We could avoid this though, if velrowmap_ and prerowmap_ would
-    // not include the dirichlet values as well. But it is expensive
-    // to avoid that.
+    // We could avoid this though, if the dofrowmap would not include 
+    // the Dirichlet values as well. But it is expensive to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
-    stopnonliniter = AbortNonlinIter(itnum,itemax,ittol,actresidual);
-    if (stopnonliniter == true) break;
+    // abort nonlinear iteration if desired
+    if (AbortNonlinIter(itnum,itemax,ittol,actresidual))
+       break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
-    //          residual values are supposed to be zero at Dirichlet boundaries
+    // residual values are supposed to be zero at Dirichlet boundaries
     increment_->PutScalar(0.0);
 
     // Apply dirichlet boundary conditions to system matrix
@@ -617,8 +602,6 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     const double ittol,
     double& actresidual)
 {
-  bool stopnonliniter = false;
-
   //----------------------------------------------------- compute norms
   double incconnorm_L2(0.0);
   double incpotnorm_L2(0.0);
@@ -629,23 +612,32 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   double conresnorm(0.0);
   double potresnorm(0.0);
 
-  Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter_.ExtractOtherVector(residual_);
-  onlycon->Norm2(&conresnorm);
+  if (prbtype_ == "elch")
+  {
+    Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter_.ExtractOtherVector(residual_);
+    onlycon->Norm2(&conresnorm);
 
-  conpotsplitter_.ExtractOtherVector(increment_,onlycon);
-  onlycon->Norm2(&incconnorm_L2);
+    conpotsplitter_.ExtractOtherVector(increment_,onlycon);
+    onlycon->Norm2(&incconnorm_L2);
 
-  conpotsplitter_.ExtractOtherVector(phinp_,onlycon);
-  onlycon->Norm2(&connorm_L2);
+    conpotsplitter_.ExtractOtherVector(phinp_,onlycon);
+    onlycon->Norm2(&connorm_L2);
 
-  Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(residual_);
-  onlypot->Norm2(&potresnorm);
+    Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter_.ExtractCondVector(residual_);
+    onlypot->Norm2(&potresnorm);
 
-  conpotsplitter_.ExtractCondVector(increment_,onlypot);
-  onlypot->Norm2(&incpotnorm_L2);
+    conpotsplitter_.ExtractCondVector(increment_,onlypot);
+    onlypot->Norm2(&incpotnorm_L2);
 
-  conpotsplitter_.ExtractCondVector(phinp_,onlypot);
-  onlypot->Norm2(&potnorm_L2);
+    conpotsplitter_.ExtractCondVector(phinp_,onlypot);
+    onlypot->Norm2(&potnorm_L2);
+  }
+  else
+  {
+    residual_ ->Norm2(&conresnorm);
+    increment_->Norm2(&incconnorm_L2);
+    phinp_    ->Norm2(&connorm_L2);
+  }
 
   // care for the case that nothing really happens in the concentration
   // or potential field
@@ -678,30 +670,28 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   else
   {
     // this is the convergence check
-    // We always require at least one solve. Otherwise the
-    // perturbation at the FSI interface might get by unnoticed.
-    if (conresnorm <= ittol and potresnorm <= ittol and
-        incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
+    // We always require at least one solve. We test the L_2-norm of the 
+    // current residual. Norm of residual is just printed for information
+    if (conresnorm <= ittol and potresnorm <= ittol)
     {
-      stopnonliniter=true;
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
             itnum,itemax,ittol,conresnorm,potresnorm,
             incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-        printf(")\n");
+        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
         printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
         FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
-          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+          fprintf(errfile,"elch solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
               itnum,itemax,ittol,conresnorm,potresnorm,
               incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
         }
       }
-      //break;
+      // yes, we stop the iteration
+      return true;
     }
     else // if not yet converged
       if (myrank_ == 0)
@@ -709,8 +699,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
             itnum,itemax,ittol,conresnorm,potresnorm,
             incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-        printf(")\n");
+        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
       }
   }
 
@@ -718,7 +707,6 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   // next timestep...
   if ((itnum == itemax))
   {
-    stopnonliniter=true;
     if (myrank_ == 0)
     {
       printf("+---------------------------------------------------------------+\n");
@@ -728,12 +716,13 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       FILE* errfile = params_->get<FILE*>("err file",NULL);
       if (errfile!=NULL)
       {
-        fprintf(errfile,"elch unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+        fprintf(errfile,"elch divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
             itnum,itemax,ittol,conresnorm,potresnorm,
             incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
       }
     }
-    //break;
+    // yes, we stop the iteration
+    return true;
   }
 
   // return the maximum residual value -> used for adaptivity of linear solver tolarance
@@ -741,7 +730,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   actresidual = max(actresidual,incconnorm_L2/connorm_L2);
   actresidual = max(actresidual,incpotnorm_L2/potnorm_L2);
 
-  return stopnonliniter;
+  return false;
 }
 
 
@@ -783,6 +772,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("total time",time_);
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
+    eleparams.set("is linear problem", true);
     eleparams.set("fs subgrid diffusivity",fssgd_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
@@ -1072,7 +1062,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
+        double initialval = DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
         phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)

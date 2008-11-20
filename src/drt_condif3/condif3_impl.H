@@ -129,46 +129,47 @@ public:
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
-        const DRT::ELEMENTS::Condif3*                             ele, ///< the element those matrix is calculated
+        const DRT::ELEMENTS::Condif3*         ele, ///< the element those matrix is calculated
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
         const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        Epetra_SerialDenseMatrix&                                 sys_mat,///< element matrix to calculate
-        Epetra_SerialDenseVector&                                 residual, ///< element rhs to calculate
-        Epetra_SerialDenseVector&                                 subgrdiff, ///< subgrid-diff.-scaling vector
-        const struct _MATERIAL*                                   material, ///< material pointer
-        const double                                              time, ///< current simulation time
-        const double                                              dt, ///< current time-step length
-        const double                                              timefac, ///< time discretization factor
-        const double                                              alphaF, ///< factor for generalized-alpha time integration
+        Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+        Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+        const struct _MATERIAL*               material, ///< material pointer
+        const double                          time, ///< current simulation time
+        const double                          dt, ///< current time-step length
+        const double                          timefac, ///< time discretization factor
+        const double                          alphaF, ///< factor for generalized-alpha time integration
         const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
-        const bool                                                temperature, ///< temperature flag
-        const enum Condif3::TauType                               whichtau, ///< flag for stabilization parameter definition
-        const string                                              fssgd, ///< subgrid-diff. flag
-        const bool                                                is_stationary, ///< flag indicating stationary formulation
-        const bool                                                is_genalpha, ///< generalized-alpha flag
-        const double                                              frt ///< factor F/RT needed for ELCH calculations
+        const bool                            temperature, ///< temperature flag
+        const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
+        const string                          fssgd, ///< subgrid-diff. flag
+        const bool                            is_stationary, ///< flag indicating stationary formulation
+        const bool                            is_genalpha, ///< generalized-alpha flag
+        const bool                            islinear, ///< flag for linear/nonlinear problem
+        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
     virtual void InitializeOST(
-        const DRT::ELEMENTS::Condif3*                             ele,  ///< the element
+        const DRT::ELEMENTS::Condif3*         ele,  ///< the element
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
         const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
         const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
-        Epetra_SerialDenseMatrix&                                 massmat, ///< mass matrix to calculate
-        Epetra_SerialDenseVector&                                 rhs, ///< element rhs to calculate
-        Epetra_SerialDenseVector&                                 subgrdiff, ///< subgrid-diff.-scaling vector
-        const struct _MATERIAL*                                   material, ///< material pointer
-        const double                                              time, ///< current simulation time
-        const double                                              dt, ///< current time-step length
-        const double                                              timefac, ///< time discretization factor
+        Epetra_SerialDenseMatrix&             massmat, ///< mass matrix to calculate
+        Epetra_SerialDenseVector&             rhs, ///< element rhs to calculate
+        Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+        const struct _MATERIAL*               material, ///< material pointer
+        const double                          time, ///< current simulation time
+        const double                          dt, ///< current time-step length
+        const double                          timefac, ///< time discretization factor
         const LINALG::Matrix<3,iel>&          evel0, ///< initial nodal velocities
-        const bool                                                temperature, ///< temperature flag
-        const enum Condif3::TauType                               whichtau, ///< flag for stabilization parameter definition
-        const string                                              fssgd, ///< subgrid-diff. flag
-        const double                                              frt ///< factor F/RT needed for ELCH calculations
+        const bool                            temperature, ///< temperature flag
+        const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
+        const string                          fssgd, ///< subgrid-diff. flag
+        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! calculate normalized subgrid-diffusivity matrix
@@ -193,18 +194,18 @@ public:
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        const DRT::ELEMENTS::Condif3*&                   ele, ///< the element
-        Epetra_SerialDenseVector&                        subgrdiff, ///< subgrid-diff.-scaling vector
-        const LINALG::Matrix<3,iel>& evel,///< nodal velocities
-        const LINALG::Matrix<iel,1>& edens, ///< density
-        const LINALG::Matrix<iel,1>& epot,  ///< el. potential at element nodes
-        const double                                     dt, ///< current time-step length
-        const double&                                    timefac, ///< time discretization factor
-        const enum Condif3::TauType                      whichtau, ///< flag for stabilization parameter definition
-        string                                           fssgd, ///< subgrid-diff. flag
-        const bool&                                      is_stationary, ///< flag indicating stationary formulation
-        const bool                                       initial, ///< flag for intitial calculation
-        const double&                                    frt ///< factor F/RT needed for ELCH calculations
+        const DRT::ELEMENTS::Condif3*&   ele, ///< the element
+        Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
+        const LINALG::Matrix<3,iel>&     evel,///< nodal velocities
+        const LINALG::Matrix<iel,1>&     edens, ///< density
+        const LINALG::Matrix<iel,1>&     epot,  ///< el. potential at element nodes
+        const double                     dt, ///< current time-step length
+        const double&                    timefac, ///< time discretization factor
+        const enum Condif3::TauType      whichtau, ///< flag for stabilization parameter definition
+        const string                     fssgd, ///< subgrid-diff. flag
+        const bool&                      is_stationary, ///< flag indicating stationary formulation
+        const bool                       initial, ///< flag for intitial calculation
+        const double&                    frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -248,6 +249,17 @@ public:
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
         const int&                dofindex
+    );
+
+
+    //! calculate matrix and rhs vector (incremental condif formulation)
+    virtual void CalMatInc(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const vector<LINALG::Matrix<iel,1> >& ephinp,
+        const bool&                           higher_order_ele,
+        const bool&                           is_stationary,
+        const double&                         timefac
     );
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)

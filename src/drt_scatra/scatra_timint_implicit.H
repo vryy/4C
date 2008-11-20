@@ -98,11 +98,8 @@ public:
     return;
   }
 
-  //! start time loop for startingalgo, normal problems and restarts
-  void Integrate();
-
   //! do time integration (time loop)
-  void TimeLoop();
+  void TimeLoop(bool nonlinear = false);
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();

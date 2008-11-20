@@ -256,7 +256,7 @@ case prb_scatra:
 #ifndef CCADISCRET
   dserror("dyn_scatra without DRT not implemented");
 #else
-  scatra_dyn();
+  scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);
 #endif
   break;
 case prb_fluid_xfem:
