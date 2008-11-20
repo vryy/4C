@@ -68,7 +68,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     if (screen_out) cout << " done" << endl;
   }
 
-  const int numsmallele = CheckXFEMElementSize();
+  CheckXFEMElementSize();
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
@@ -442,15 +442,14 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::CheckSurfaceElementSize()
+void XFEM::InterfaceHandleXFSI::CheckSurfaceElementSize() const
 {
   cout << "Warning: Not implemented, yet! No checking performed!" << endl;
-  return 0;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::CheckXFEMElementSize()
+void XFEM::InterfaceHandleXFSI::CheckXFEMElementSize() const
 {
   
   int small_ele_counter = 0;
@@ -480,8 +479,6 @@ int XFEM::InterfaceHandleXFSI::CheckXFEMElementSize()
     cout << "Warning: Smallest edge length is " << smallest_edge_length << ", ";
     cout << small_ele_counter << " elements are too small!" << endl;
   }
-  
-  return small_ele_counter;
 }
 
 /*! 

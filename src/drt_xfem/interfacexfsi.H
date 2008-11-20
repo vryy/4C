@@ -53,13 +53,13 @@ namespace XFEM
     //! that might conflict with tolerances in the intersection routines
     //!
     //! \return number of too small elements
-    int CheckSurfaceElementSize();
+    void CheckSurfaceElementSize() const;
     
     //! check xfem element size to prevent too small elements
     //! that might conflict with tolerances in the intersection routines
     //!
     //! \return number of too small elements
-    int CheckXFEMElementSize();
+    void CheckXFEMElementSize() const;
     
     /*!
      * get pointer to boundary element
