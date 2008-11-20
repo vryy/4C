@@ -1110,6 +1110,8 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #endif
       discret_.ClearState();
 
+      // some of the managers do need end-displacement
+      disn_->Update(1.,*disi_,1.0);
       if (surf_stress_man_!=null)
       {
         p.set("surfstr_man", surf_stress_man_);
@@ -1117,7 +1119,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #ifdef STRUGENALPHA_FINTLIKETR
       p.set("fintliketr", true);
 #endif
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
       
       if (pot_man_!=null)
