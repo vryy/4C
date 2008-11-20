@@ -76,6 +76,10 @@ enum STR::TimIntImpl::SolTechEnum STR::TimIntImpl::MapSolTechStringToEnum
   {
     return soltech_uzawanonlinnewton;
   }
+  else if (name == "NoxNewtonLineSearch")
+  {
+    return soltech_noxnewtonlinesearch;
+  }
   else
   {
     dserror("Unknown type of solution technique %s", name.c_str());
@@ -106,6 +110,9 @@ std::string  STR::TimIntImpl::MapSolTechEnumToString
     break;
   case soltech_uzawanonlinnewton :
     return "augmentedlagrange";
+    break;
+  case soltech_noxnewtonlinesearch :
+    return "NoxNewtonLineSearch";
     break;
   default :
     dserror("Unknown type of solution technique %d", name);
@@ -218,6 +225,10 @@ STR::TimIntImpl::TimIntImpl
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  // setup NOX parameter lists
+  if (itertype_ == soltech_noxnewtonlinesearch)
+    NoxSetup();
 
   // done so far
   return;
@@ -442,6 +453,9 @@ void STR::TimIntImpl::Solve()
     break;
   case soltech_uzawalinnewton :
     UzawaLinearNewtonFull();
+    break;
+  case soltech_noxnewtonlinesearch :
+    NoxSolve();
     break;
   // catch problems
   default :

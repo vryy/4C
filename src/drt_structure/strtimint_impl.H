@@ -17,6 +17,11 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Direction_UserDefinedFactory.H>
+#include <NOX_Epetra_Group.H>
+
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
@@ -35,7 +40,10 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class TimIntImpl : public TimInt
+  class TimIntImpl : public TimInt,
+                     public NOX::Epetra::Interface::Required,
+                     public NOX::Epetra::Interface::Jacobian,
+                     public NOX::Epetra::Interface::Preconditioner
   {
 
   public:
@@ -50,9 +58,11 @@ namespace STR
       soltech_newtonfull,  //!< full Newton-Raphson iteration
       soltech_newtonmod,  //!< modified Newton-Raphson iteration
       soltech_uzawalinnewton,  //!< linear Uzawa iteration for 
-      //!< constraint system
-      soltech_uzawanonlinnewton  //!< non-linear Uzawa iteration 
-      //!< for constraint system
+                               //!< constraint system
+      soltech_uzawanonlinnewton,  //!< non-linear Uzawa iteration 
+                                  //!< for constraint system
+      soltech_noxnewtonlinesearch  //!< Line search Newton
+                                   //!< utilising NOX
     };
 
     //! map solution technique identification string to enum term
@@ -173,7 +183,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
       Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
       Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is added onto
-      Teuchos::ParameterList pcon   //!<Parameterlist containing scale factors for matrix entries
+      Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness
@@ -270,6 +280,99 @@ namespace STR
     //!
     //! \author mwgee (originally) \date 03/07
     void PTC() { dserror("Not impl."); }
+
+    //@}
+
+    //! @name NOX actions
+    //@{
+
+    //! Compute the residual of linear momentum
+    //!
+    //! Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by NOX. 
+    //! This method must be supplied by the user.
+    bool computeF
+    (
+      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
+                               //!< i.e. total displacements
+      Epetra_Vector& RHS,  //!< to be filled with the \f$F\f$ values that correspond 
+                           //!< to the input solution vector \f$x\f$.
+      const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated 
+                                        //!< type (see NOX::Epetra::FillType) 
+                                        //!< that tells a users interface why 
+                                        //!< computeF() was called. NOX has 
+                                        //!< the ability to generate 
+                                        //!< Jacobians based on numerical 
+                                        //!< differencing using calls to 
+                                        //!< computeF(). In this case, 
+                                        //!< the user may want to compute 
+                                        //!< an inexact 
+                                        //!< (and hopefully cheaper) \f$F\f$ 
+                                        //!< since it 
+                                        //!< is only used in the Jacobian (or 
+                                        //!< preconditioner).
+    );
+
+    //! Compute effective dynamic stiffness matrix
+    bool computeJacobian
+    (
+      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
+                               //!< i.e. total displacements
+      Epetra_Operator& Jac  //!< a reference to the Jacobian operator 
+                            //!< \f$\frac{\partial F}{\partial x}\f$ 
+                            //!< that the user supplied in the 
+                            //!< NOX::Epetra::Group constructor.
+    );
+
+    //! Compute preconditioner
+    //!
+    //! This method allows a user to supply their own preconditioner. 
+    //! The method should compute a preconditioner based upon the 
+    //! solution vector x and store it in the Epetra_Operator M. 
+    //! Subsequent calls to the Epetra_Operator::Apply method will apply 
+    //! this user supplied preconditioner to epetra vectors. 
+    //! The Epetra_Operator M can also be an Epetra_RowMatrix that can 
+    //! be used by internally constructed preconditioner objects such as AztecOO, Ipfack, and ML
+    bool computePreconditioner
+    (
+      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
+                               //!< i.e. total displacements
+      Epetra_Operator& M,  //!< a reference to the operator that is to be filled. 
+                           //!< This operator should be updated to correspond to the current 
+                           //!< solution vector x.
+      Teuchos::ParameterList* precParams  //!< a pointer to a parameter list 
+                                          //!< that can be used by the preconditioner.
+    );
+
+    //! Setup for solution with NOX
+    void NoxSetup();
+
+    //! Create status test for non-linear solution with NOX
+    Teuchos::RCP<NOX::StatusTest::Combo> NoxCreateStatusTest
+    (
+      Teuchos::RCP<NOX::Abstract::Group> grp  //!< NOX group
+    );
+
+    //! Create solver parameters for  non-linear solution with NOX
+    Teuchos::RCP<Teuchos::ParameterList> NoxCreateSolverParameters();
+
+    //! Create printing parameters for non-linear solution with NOX
+    Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters
+    (
+      const bool verbose = false  //!< verbosity level
+    ) const;
+
+    /// setup solver for global block system
+    Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem
+    (
+      Teuchos::ParameterList& nlParams,
+      NOX::Epetra::Vector& noxSoln,
+      Teuchos::RCP<NOX::Utils> utils
+    );
+
+    //! Do non-linear solve with NOX
+    void NoxSolve();
+
+
 
     //@}
 
@@ -537,6 +640,13 @@ namespace STR
     //! @name Interface stuff
     //@{
     Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
+    //@}
+
+    //! @name NOX variables
+    //@{
+    Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;
+    Teuchos::RCP<Teuchos::ParameterList> noxparams_;
+    Teuchos::RCP<NOX::Utils> noxutils_;
     //@}
 
   };  // class TimIntImpl

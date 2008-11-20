@@ -470,7 +470,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "nlncg",
                                  "ptc",
                                  "newtonlinuzawa",
-                                 "augmentedlagrange"),
+                                 "augmentedlagrange",
+                                 "NoxNewtonLineSearch"),
                                tuple<int>(
                                  STRUCT_DYNAMIC::vague,
                                  STRUCT_DYNAMIC::fullnewton,
@@ -479,7 +480,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  STRUCT_DYNAMIC::nlncg,
                                  STRUCT_DYNAMIC::ptc,
                                  STRUCT_DYNAMIC::newtonlinuzawa,
-                                 STRUCT_DYNAMIC::augmentedlagrange),
+                                 STRUCT_DYNAMIC::augmentedlagrange,
+                                 STRUCT_DYNAMIC::noxnewtonlinesearch),
                                &sdyn);
 
   setStringToIntegralParameter<int>("PREDICT","ConstDis","",

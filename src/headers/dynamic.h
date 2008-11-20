@@ -99,7 +99,8 @@ enum _nlnSolvTyp
     nlncg,                      /* nonlinear CG iteration using Nox */
     ptc,                        /* pseudo transient continuation nonlinear iteration */
     newtonlinuzawa,             /* linear Uzawa solution for constraint system */
-    augmentedlagrange           /* non-linear Uzawa solution for constraint system */
+    augmentedlagrange,          /* non-linear Uzawa solution for constraint system */
+    noxnewtonlinesearch         /* Line search Newton utilising NOX */
    }               nlnSolvTyp;  /* type of nonlinear solver to be used */
 enum _PredType
    {
