@@ -259,7 +259,7 @@ void STR::TimIntImpl::Predict()
   }
   else
   {
-    dserror("Trouble in determing predictor %i", pred_);
+    dserror("Trouble in determining predictor %i", pred_);
   }
 
   // apply Dirichlet BCs
@@ -352,7 +352,7 @@ void STR::TimIntImpl::ApplyForceStiffPotential
     potman_->EvaluatePotential(p, dis, fint, stiff);
   }
 
-  // bye bye
+  // wooop
   return;
 }
 
@@ -886,6 +886,9 @@ void STR::TimIntImpl::PrintNewtonIterText
 
   // print it, now
   fflush(ofile);
+
+  // nice to have met you
+  return;
 }
 
 /*----------------------------------------------------------------------*/

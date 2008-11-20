@@ -195,6 +195,13 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreatePrintParameters
                        + NOX::Utils::TestDetails
                        + NOX::Utils::Error);
   }
+  else if (printiter_)
+  {
+    (*printParams).set("Output Information", 
+                       NOX::Utils::Error
+                       + NOX::Utils::OuterIterationStatusTest
+                       + NOX::Utils::TestDetails);
+  }
   else
   {
     (*printParams).set("Output Information", 
@@ -354,7 +361,7 @@ void STR::TimIntImpl::NoxSolve()
       noxutils_->out() << "Nonlinear solver failed to converge!" << endl;
 
   // extract number of iteration steps
-  iter_ = solver->getNumIterations() + 1;
+  iter_ = solver->getNumIterations();
 
   // Print the parameter list
 //  std::cout << "\n" << "-- Parameter List From Solver --" << "\n";
