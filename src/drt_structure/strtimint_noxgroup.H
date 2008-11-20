@@ -74,7 +74,7 @@ namespace NOX
     private:
       
       //! structural time integrator
-      //! HINT: Currently this not unused within the group
+      //! HINT: Currently this variable is unused within the group
       ::STR::TimIntImpl& sti_;
     };
 

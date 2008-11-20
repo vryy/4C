@@ -202,7 +202,7 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreatePrintParameters
                        + NOX::Utils::TestDetails);
   }
 
-  // deliver
+  // deliver liver
   return printParams;
 }
 
@@ -217,18 +217,23 @@ bool STR::TimIntImpl::computeF
 )
 {
   // determine residual displacements
+  //   #x holds the current trial total displacements due to NOX: D_{n+1}^{<k+1>} 
+  //   #disn_ holds the total displacement of last NOX iteration: D_{n+1}^{<k>}
   disi_->Update(1.0, x, -1.0, *disn_, 0.0);
 
-  // update end-point displacements etc
+  // update end-point displacements etc.
+  //   brings #disn_ in sync with #x, so we are ready for next call here
   UpdateIter(0);
 
   // make forec residual and tangent, disi is needed for elementwise variables
   EvaluateForceStiffResidual();
 
   // blank DBC stuff etc.
+  // HINT: a negative residual is returned
   PrepareSystemForNewtonSolve();
 
-  // associate
+  // associate the RHS
+  // scale back to positive residual as expected by NOX
   RHS.Update(-1.0, *fres_, 0.0);
 
   // deliver
