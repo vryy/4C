@@ -160,7 +160,7 @@ while(strncmp(fractplace(),"------",6)!=0)
       localmat.m.aaaneohooke = new AAA_NEO_HOOKE();
       frdouble("YOUNG",&(localmat.m.aaaneohooke->youngs)   ,&ierr);
       frdouble("BETA" ,&(localmat.m.aaaneohooke->beta)     ,&ierr);
-      frdouble("NUE"  ,&(localmat.m.neohooke->possionratio),&ierr);
+      frdouble("NUE"  ,&(localmat.m.aaaneohooke->nue)      ,&ierr);
       frdouble("DENS" ,&(localmat.m.aaaneohooke->density)  ,&ierr);
    }
    // Biological cell material model
