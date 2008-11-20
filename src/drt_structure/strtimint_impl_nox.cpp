@@ -39,7 +39,7 @@ void STR::TimIntImpl::NoxSetup()
 
   // printing
   Teuchos::ParameterList& printParams = (*noxparams_).sublist("Printing");
-  printParams = *(NoxCreatePrintParameters(true));
+  printParams = *(NoxCreatePrintParameters(false));
 
   // Create printing utilities
   noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));

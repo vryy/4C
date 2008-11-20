@@ -283,7 +283,7 @@ namespace STR
 
     //@}
 
-    //! @name NOX actions
+    //! @name NOX solution
     //@{
 
     //! Compute the residual of linear momentum

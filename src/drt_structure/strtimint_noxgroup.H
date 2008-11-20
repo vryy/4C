@@ -34,13 +34,13 @@ namespace STR
 namespace NOX
 {
   /*--------------------------------------------------------------------*/
-  /* belongs to STR name space of Baci/DRT */
+  //! NOX::STR holds local extensions to NOX for structural time integration
   namespace STR
   {
 
     /*==================================================================*/
     /*!
-     * \brief Special NOX::Epetra::NOX group that always 
+     * \brief Special NOX::Epetra::Group that always 
      *        sets Jacobian and RHS at the same time.
      *
      * \author bborn
@@ -55,15 +55,20 @@ namespace NOX
       (
         ::STR::TimIntImpl& sti,  //!< time integrator
         Teuchos::ParameterList& printParams,  //!< printing parameters
-        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically time integrator 
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified 
+                                                                  //!< time integrator 
         const NOX::Epetra::Vector& x,  //!< current solution vector
-        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system, i.e. matrix and RHS
+        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system, 
+                                                               //!< i.e. matrix and RHS etc.
       );
-      
+
+      //! Compute and store \f$F(x)\f$
       virtual NOX::Abstract::Group::ReturnType computeF();
       
+      //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
       virtual NOX::Abstract::Group::ReturnType computeJacobian();
       
+      //! Compute the Newton direction, using parameters for the linear solvexs
       NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
       
     private:
