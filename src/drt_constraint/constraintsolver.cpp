@@ -92,10 +92,10 @@ void UTILS::ConstraintSolver::Setup
   }
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {
-    // for StruTimIntImpl
+    // for STR::TimIntImpl
     isadapttol_ = true;
     isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
-    algochoice = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
+    algochoice = (int) getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
   }
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
   uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
