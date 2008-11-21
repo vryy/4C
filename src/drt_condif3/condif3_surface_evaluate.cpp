@@ -75,7 +75,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     dserror("action=none");
   case Condif3Surface::calc_condif_flux:
   {
-    const int iel   = this->NumNode();
+    const int iel   = NumNode();
 
     // get velocity values at the nodes (needed for total flux values)
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -141,9 +141,9 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     LINALG::SerialDenseMatrix xyze(3,iel);
     for(int i=0;i<iel;i++)
     {
-      xyze(0,i)=this->Nodes()[i]->X()[0];
-      xyze(1,i)=this->Nodes()[i]->X()[1];
-      xyze(2,i)=this->Nodes()[i]->X()[2];
+      xyze(0,i)=Nodes()[i]->X()[0];
+      xyze(1,i)=Nodes()[i]->X()[1];
+      xyze(2,i)=Nodes()[i]->X()[2];
     }
 
     // determine normal to this element
@@ -187,10 +187,12 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
             double factor = (parent_->Nodes()[k])->NumElement();
 
             // calculate normal flux at present node
-            mynormflux[i] = (eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
+            mynormflux[i] = abs(eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
 
-            // normal flux value is stored in elevec1, other elevecs remain untouched
-            elevec1[i*numdofpernode+j]+=mynormflux[i]/factor;
+            // store normal flux vector for this node
+            elevec1[i*numdofpernode+j]+=normal[0]*mynormflux[i]/factor;
+            elevec2[i*numdofpernode+j]+=normal[1]*mynormflux[i]/factor;
+            elevec3[i*numdofpernode+j]+=normal[2]*mynormflux[i]/factor;
           }
         }
       }
@@ -311,10 +313,10 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {
-  const DiscretizationType distype = this->Shape();
+  const DiscretizationType distype = Shape();
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const int iel   = NumNode();
 
   DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
@@ -351,9 +353,9 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
   // get node coordinates
   for(int i=0;i<iel;i++)
   {
-    xyze(0,i)=this->Nodes()[i]->X()[0];
-    xyze(1,i)=this->Nodes()[i]->X()[1];
-    xyze(2,i)=this->Nodes()[i]->X()[2];
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+    xyze(2,i)=Nodes()[i]->X()[2];
   }
 
   // find out whether we will use a time curve
@@ -522,9 +524,9 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   // get node coordinates
   for(int i=0;i<iel;i++)
   {
-    xyze(0,i)=this->Nodes()[i]->X()[0];
-    xyze(1,i)=this->Nodes()[i]->X()[1];
-    xyze(2,i)=this->Nodes()[i]->X()[2];
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+    xyze(2,i)=Nodes()[i]->X()[2];
   }
 
   // concentration values of reactive species at element nodes
@@ -669,8 +671,8 @@ void DRT::ELEMENTS::Condif3Surface::NormalFluxIntegral(
    const vector<double>&           enormflux
 )
 {
-  const int iel   = this->NumNode();
-  const DiscretizationType distype = this->Shape();
+  const int iel   = NumNode();
+  const DiscretizationType distype = Shape();
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector funct       (iel);
   LINALG::SerialDenseMatrix deriv       (2,iel);
