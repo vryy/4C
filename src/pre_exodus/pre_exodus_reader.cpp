@@ -1339,6 +1339,59 @@ EXODUS::SideSet::~SideSet()
   return;
 }
 
+
+EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
+{
+  map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
+  map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    RCP<EXODUS::ElementBlock> quadblock = i_ebs->second;
+    EXODUS::ElementBlock::Shape quadshape = quadblock->GetShape();
+    if ((quadshape != EXODUS::ElementBlock::quad4) && (quadshape != EXODUS::ElementBlock::shell4)){
+      //dserror("Only quad4 or shell4 in quad->tri conversion");
+      cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock" << endl;
+    } else {
+    
+      RCP<map<int,vector<int> > > quad_conn = quadblock->GetEleConn();
+      map<int,vector<int> >::const_iterator i_quad;
+      RCP<map<int,vector<int> > > triconn = rcp(new map<int,vector<int> >);
+      
+      for (i_quad = quad_conn->begin(); i_quad != quad_conn->end(); ++i_quad){
+        vector<int> quad = i_quad->second;
+        vector<int> tri1(3);
+        vector<int> tri2(3);
+        tri1[0] = quad[0]; tri1[1] = quad[1]; tri1[2] = quad[2];
+        tri2[0] = quad[2]; tri2[1] = quad[3]; tri2[2] = quad[0];
+        int tri1_id = 2*i_quad->first;
+        int tri2_id = 2*i_quad->first + 1;
+        triconn->insert(pair<int,vector<int> >(tri1_id,tri1));
+        triconn->insert(pair<int,vector<int> >(tri2_id,tri2));
+      }
+      
+      RCP<EXODUS::ElementBlock> triblock = rcp(new EXODUS::ElementBlock(EXODUS::ElementBlock::tri3,triconn,quadblock->GetName()));
+      neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(i_ebs->first,triblock));
+      basemesh.EraseElementBlock(i_ebs->first);
+    }
+  }
+
+  string newtitle = "trimesh";
+  map<int,EXODUS::NodeSet> emptynodeset;
+  map<int,EXODUS::SideSet> emptysideset;
+  if (basemesh.GetNumSideSets()>0) cout << "Warning! SideSets will not be transfered by quad->tri!" << endl;
+  RCP<map<int,vector<double> > > emptynodes = rcp(new map<int,vector<double> >);
+  EXODUS::Mesh trimesh(basemesh,emptynodes,neweblocks,emptynodeset,emptysideset,newtitle);
+  return trimesh;
+}
+
+
+
+/*----------------------------------------------------------------------*
+  TINY HELPER FUNCTIONS
+ *----------------------------------------------------------------------*/
+
+
 void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
 {
   map<int,vector<int> >::const_iterator iter;

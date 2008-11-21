@@ -76,6 +76,9 @@ int main(
   double clinedx = 0.0;
   double clinedy = 0.0;
   double clinedz = 0.0;
+  
+  // related to quad->tri conversion
+  bool quadtri = false;
 
   Teuchos::CommandLineProcessor My_CLP;
   My_CLP.setDocString("Preprocessor Exodus2Baci \n");
@@ -98,6 +101,9 @@ int main(
   My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
   My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
   map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
+  
+  // check for quad->tri conversion
+  My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = My_CLP.parse(argc,argv);
@@ -156,6 +162,13 @@ int main(
   // generate local element coordinate systems based on centerline
   if (cline!=""){
     elecenterlineinfo = EleCenterlineInfo(cline,mymesh,cline_coordcorr);
+  }
+  
+  // transform quads->tris
+  if (quadtri){
+    EXODUS::Mesh trimesh = EXODUS::QuadtoTri(mymesh);
+    trimesh.WriteMesh("tri_" + exofile);
+    exit(0);
   }
 
   /**************************************************************************

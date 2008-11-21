@@ -32,7 +32,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 {
   int highestnid = basemesh.GetNumNodes();  // this is the currently highest id, a new node must become highestnid+1
   //map<int,vector<double> > newnodes;
-  RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes ar stored
+  RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes are stored
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
   map<int,EXODUS::NodeSet> newnodesets;             // here the new NS are stored
   map<int,EXODUS::SideSet> newsidesets;             // here the new SS are stored
@@ -729,7 +729,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
   highestns ++;
 
-  // extrude NodeSets which transfers a marked NodeSet to its extrudes base- and roof-NodeSet
+  // extrude NodeSets which transfers a marked NodeSet to its extruded base- and roof-NodeSet
   // loop through all NodeSets to check for extrusion ones
   for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
     bool toextrude = CheckExtrusion(i_nss->second);

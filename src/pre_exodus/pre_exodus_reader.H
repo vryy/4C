@@ -316,6 +316,7 @@ private:
 };
 // *********** end of classes
 
+Mesh QuadtoTri(EXODUS::Mesh& basemesh);
 
 inline ElementBlock::Shape StringToShape(const string shape)
 {
