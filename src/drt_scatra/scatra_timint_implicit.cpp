@@ -472,7 +472,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         condparams.set("frt",frt_); // factor F/RT
         condparams.set("total time",time_);
         condparams.set("iselch",(prbtype_=="elch")); // a boolean
-        AddSpecificTimeIntegrationParameters(condparams);
 
         // set vector values needed by elements
         discret_->ClearState();
@@ -672,7 +671,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the 
     // current residual. Norm of residual is just printed for information
-    if (conresnorm <= ittol and potresnorm <= ittol)
+    if (conresnorm <= ittol and potresnorm <= ittol and
+        incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
     {
       if (myrank_ == 0)
       {
@@ -1417,7 +1417,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     if (myrank_ == 0)
     {
-      printf("\nL2_err for Kwok et Wu:\n concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
+      printf("\nL2_err for Kwok and Wu:\n");
+      printf("concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }
   }

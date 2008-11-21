@@ -711,15 +711,14 @@ private:
      Epetra_SerialDenseVector& erhs,  ///< element-rhs
      const vector<double>&   ephinp,  ///< actual conc. and pot. values
      struct _MATERIAL*     material,  ///< the material
-     const double&             sign,  ///< sign due to electrode type
      const int&          reactantid,  ///< MATERIAL id of reactive species
      const std::string*    kinetics,  ///< desired electrode kinetics model
      const double&             pot0,  ///< actual electrode potential on metal side
      const double&           alphaa,  ///< anodic factor in Butler-Volmer model
      const double&           alphac,  ///< cathodic factor in Butler-Volmer model
      const double&               i0,  ///< exchange current density
-     const double&              frt   ///< factor F/RT
-     //const bool&             iselch   ///< problemtype elch or scatra
+     const double&              frt,  ///< factor F/RT
+     const bool&             iselch   ///< problemtype elch or scatra
      );
 
  /*!

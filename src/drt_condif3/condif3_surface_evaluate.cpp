@@ -148,7 +148,6 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
 
     // determine normal to this element
     std::vector<double> dist1(3), dist2(3), normal(3);
-    double length;
 
     for (int i=0; i<3; i++)
     {
@@ -161,7 +160,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
 
     // length of normal to this element
-    length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+    double length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
     // outward-pointing normal of length 1.0
     for (int i=0; i<3; i++) normal[i] = normal[i] / length;
@@ -188,7 +187,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
             double factor = (parent_->Nodes()[k])->NumElement();
 
             // calculate normal flux at present node
-            mynormflux[i] = abs(eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
+            mynormflux[i] = (eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
 
             // normal flux value is stored in elevec1, other elevecs remain untouched
             elevec1[i*numdofpernode+j]+=mynormflux[i]/factor;
@@ -223,9 +222,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
      if (cond == Teuchos::null) dserror("Cannot access condition 'ElectrodeKinetics'");
 
     // access parameters of the condition
-    double sign(1.0);
-    const std::string* eltype = cond->Get<std::string>("electrode type");
-    if ((*eltype)== "anode") sign = -1.0;
+    //const std::string* eltype = cond->Get<std::string>("electrode type");
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
     const int    reactantid = cond->Getint("reactant id");
     double       pot0 = cond->GetDouble("pot0");
@@ -233,13 +230,15 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     const double alphaa = cond->GetDouble("alpha_a");
     const double alphac = cond->GetDouble("alpha_c");
     double       i0 = cond->GetDouble("i0");
+    if (i0>0.0) dserror("i0 is positive, ergo not pointing INTO the domain: %f",i0);
     const double frt = params.get<double>("frt"); // = F/RT
 
     // get control parameter from parameter list
-    const bool is_stationary = params.get<bool>("using stationary formulation");
+    const bool   iselch = params.get<bool>("iselch");
+    const bool   is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
-    double timefac = 1.0;
-    double alphaF  = 1.0;
+    double       timefac = 1.0;
+    double       alphaF  = 1.0;
     if (not is_stationary)
     {
       // One-step-Theta:    timefac = theta*dt
@@ -283,14 +282,14 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
         elevec1,
         ephinp,
         actmat,
-        sign,
         reactantid,
         kinetics,
         pot0,
         alphaa,
         alphac,
         i0,
-        frt
+        frt,
+        iselch
         );
   }
   break;
@@ -448,14 +447,14 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
     Epetra_SerialDenseVector& erhs,
     const vector<double>&   ephinp,
     struct _MATERIAL*     material,
-    const double&             sign,
     const int&               rctid,
     const std::string*    kinetics,
     const double&             pot0,
     const double&           alphaa,
     const double&           alphac,
     const double&               i0,
-    const double&              frt
+    const double&              frt,
+    const bool&             iselch
 )
 {
   if ((*kinetics) != "Butler-Volmer")
@@ -464,11 +463,14 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   // some parameters
   const int numdofpernode = parent_->numdofpernode_;
   const int numscal = numdofpernode-1;
-  const DiscretizationType distype = this->Shape();
-  const int iel   = this->NumNode();
+  const DiscretizationType distype = Shape();
+  const int iel   = NumNode();
 
   //pre-multiplication with 1/(F*z_1)
   double fz = 1.0/96485.3399;
+
+  if (iselch)
+  {
   // get valence of the single(!) reactant
   if (material->mattyp == m_matlist)
   {
@@ -483,6 +485,7 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   }
   else
     dserror("material type is not a 'matlist' material");
+  }
 
   // Gaussian points
   GaussRule2D  gaussrule = intrule2D_undefined;
@@ -529,10 +532,21 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
 
   // el. potential values at element nodes
   Epetra_SerialDenseVector pot(iel);
-  for (int inode=0; inode< iel;++inode)
+  if(iselch)
   {
-    conreact[inode] += ephinp[inode*numdofpernode];
-    pot[inode] += ephinp[inode*numdofpernode+numscal];
+    for (int inode=0; inode< iel;++inode)
+    {
+      conreact[inode] += ephinp[inode*numdofpernode];
+      pot[inode] += ephinp[inode*numdofpernode+numscal];
+    }
+  }
+  else
+  {
+    for (int inode=0; inode< iel;++inode)
+    {
+      conreact[inode] = 1.0;
+      pot[inode] += ephinp[inode*numdofpernode];
+    }
   }
 
   // concentration of active species at integration point
@@ -542,7 +556,7 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   // surface overpotential eta at integration point
   static double eta;
   // a 'working variable'
-  static double fac_fz_sign_i0_funct_vi;
+  static double fac_fz_i0_funct_vi;
 
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
@@ -578,25 +592,64 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
 
     // anode:   eta= phi0 - phi
     // cathode: eta= phi - phi0
-    eta = sign*(potint-pot0);
+    eta = (pot0 - potint);
 
     double gammak = 1.0;
     double pow_conint_gamma_k = pow(conint,gammak);
 
-    const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
-
-    for (int vi=0; vi<iel; ++vi)
+    if (iselch)
     {
-      fac_fz_sign_i0_funct_vi = fac*fz*sign*i0*funct[vi];
-      // ---------------------matrix
-      for (int ui=0; ui<iel; ++ui)
+      const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+
+      for (int vi=0; vi<iel; ++vi)
       {
-        emat(vi*numdofpernode,ui*numdofpernode) += fac_fz_sign_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct[ui]*expterm; 
-        emat(vi*numdofpernode,ui*numdofpernode+numscal) += fac_fz_sign_i0_funct_vi*pow_conint_gamma_k*((alphaa*frt*sign*exp(alphaa*frt*eta))+(alphac*frt*sign*exp((-alphac)*frt*eta)))*funct[ui];
+        fac_fz_i0_funct_vi = fac*fz*i0*funct[vi];
+        // ---------------------matrix
+        for (int ui=0; ui<iel; ++ui)
+        {
+          emat(vi*numdofpernode,ui*numdofpernode) += fac_fz_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct[ui]*expterm; 
+          emat(vi*numdofpernode,ui*numdofpernode+numscal) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct[ui];
+        }
+        // ------------right-hand-side
+        erhs[vi*numdofpernode] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
       }
-      // ------------right-hand-side
-      erhs[vi*numdofpernode] -= fac_fz_sign_i0_funct_vi*pow_conint_gamma_k*expterm;
     }
+    else
+    {
+#if 1
+      // Butler-Volmer kinetics
+      const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
+      const double exptermderiv = (((-alphaa)*exp(alphaa*eta))+((-alphac)*exp((-alphac)*eta)));
+
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const double fac_i0_funct_vi = fac*i0*funct[vi];
+        // ---------------------matrix
+        for (int ui=0; ui<iel; ++ui)
+        {
+          emat(vi*numdofpernode,ui*numdofpernode) += fac_i0_funct_vi*exptermderiv*funct[ui];
+        }
+        // ------------right-hand-side
+        erhs[vi*numdofpernode] -= fac_i0_funct_vi*expterm;
+      }
+#else
+      // Tafel kinetics
+      const double expterm = -exp((-alphac)*eta);
+      const double exptermderiv = alphac*expterm;
+
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const double fac_i0_funct_vi = fac*i0*funct[vi];
+        // ---------------------matrix
+        for (int ui=0; ui<iel; ++ui)
+        {
+          emat(vi*numdofpernode,ui*numdofpernode) += fac_i0_funct_vi*exptermderiv*funct[ui];
+        }
+        // ------------right-hand-side
+        erhs[vi*numdofpernode] -= fac_i0_funct_vi*expterm;
+      }
+#endif
+    } // if iselch
 
   } // end of loop over integration points gpid
 
