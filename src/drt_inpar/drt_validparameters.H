@@ -62,45 +62,6 @@ namespace INPAR {}
 */
 namespace INPUTPARAMS
 {
-//-------------------------------------------STATISTICAL MECHANICS
-
-  /// Type of thermal bath affecting elements
-  /// (this enum represents the input file parameter THERMALBATH)
-  enum ThermalBathType
-  {
-    thermalbath_none,
-    thermalbath_uniform,
-    thermalbath_shearflow
-  };
-  /// (this enum represents the input file parameter STAT_OUTPUT)
-  enum StatOutput
-  {
-    statout_none,
-    statout_endtoendlog,
-    statout_endtoendergodicity,
-    statout_viscoelasticity
-  };
-  //-------------------------------------------STRUCTURAL CONTACT
-
-  /// Type of structural contact problem
-  /// (this enum represents the input file parameter CONTACT)
-  enum ContactType
-  {
-    contact_none,
-    contact_normal,
-    contact_frictional,
-    contact_meshtying
-  };
-
-  /// Type of contact friction law
-  /// (this enum represents the input file parameter FRICTION)
-  enum ContactFrictionType
-  {
-    friction_none,
-    friction_stick,
-    friction_tresca,
-    friction_coulomb
-  };
 
   //----------------------------------------------------------FSI
 

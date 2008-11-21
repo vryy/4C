@@ -13,7 +13,7 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "statmech_manager.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_element.H"
@@ -112,9 +112,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis)
 {
-  switch(Teuchos::getIntegralValue<int>(statmechparams_,"SPECIAL_OUTPUT"))
+  switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
-    case INPUTPARAMS::statout_endtoendlog:
+    case INPAR::STATMECH::statout_endtoendlog:
     {
       FILE* fp = NULL; //file pointer for statistical output file
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
@@ -203,7 +203,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       }
     }
     break;
-    case INPUTPARAMS::statout_endtoendergodicity:
+    case INPAR::STATMECH::statout_endtoendergodicity:
     {
       FILE* fp = NULL; //file pointer for statistical output file
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
@@ -238,8 +238,8 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
         }
     }
     break;
-    case INPUTPARAMS::statout_none:
-    case INPUTPARAMS::statout_viscoelasticity:
+    case INPAR::STATMECH::statout_none:
+    case INPAR::STATMECH::statout_viscoelasticity:
     default:
     break;
   }

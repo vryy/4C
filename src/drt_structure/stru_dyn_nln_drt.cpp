@@ -29,7 +29,8 @@ Maintainer: Michael Gee
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_statmech.H"
 #include "stru_resulttest.H"
 
 #include "../drt_inv_analysis/inv_analysis.H"
@@ -282,18 +283,18 @@ void dyn_nlnstructural_drt()
 
       // detect if contact is present
       bool contact = false;
-      switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
+      switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
       {
-        case INPUTPARAMS::contact_none:
+        case INPAR::CONTACT::contact_none:
           contact = false;
           break;
-        case INPUTPARAMS::contact_normal:
+        case INPAR::CONTACT::contact_normal:
           contact = true;
           break;
-        case INPUTPARAMS::contact_frictional:
+        case INPAR::CONTACT::contact_frictional:
           contact = true;
           break;
-        case INPUTPARAMS::contact_meshtying:
+        case INPAR::CONTACT::contact_meshtying:
           contact = true;
           break;
         default:
@@ -303,15 +304,15 @@ void dyn_nlnstructural_drt()
       
       // detect whether thermal bath is present
       bool thermalbath = false;
-      switch (Teuchos::getIntegralValue<int>(statmech,"THERMALBATH"))
+      switch (Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
       {
-        case INPUTPARAMS::thermalbath_none:
+        case INPAR::STATMECH::thermalbath_none:
           thermalbath = false;
           break;
-        case INPUTPARAMS::thermalbath_uniform:
+        case INPAR::STATMECH::thermalbath_uniform:
           thermalbath = true;
           break;
-        case INPUTPARAMS::thermalbath_shearflow:
+        case INPAR::STATMECH::thermalbath_shearflow:
           thermalbath = true;
           break;
         default:

@@ -26,6 +26,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_solver.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_statmech.H"
+
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -576,30 +579,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
 
-  setStringToIntegralParameter<int>("CONTACT","None","Type of structural contact",
+  setStringToIntegralParameter<INPAR::CONTACT::ContactType>("CONTACT","None","Type of structural contact",
                                tuple<std::string>("None","none",
                                                   "Normal","normal",
                                                   "Frictional","frictional",
                                                   "MeshTying","Meshtying","meshtying"),
-                               tuple<int>(INPUTPARAMS::contact_none,INPUTPARAMS::contact_none,
-                                          INPUTPARAMS::contact_normal,INPUTPARAMS::contact_normal,
-                                          INPUTPARAMS::contact_frictional,INPUTPARAMS::contact_frictional,
-                                          INPUTPARAMS::contact_meshtying,INPUTPARAMS::contact_meshtying,
-                                          INPUTPARAMS::contact_meshtying),
+                               tuple<INPAR::CONTACT::ContactType>(INPAR::CONTACT::contact_none,INPAR::CONTACT::contact_none,
+                                          INPAR::CONTACT::contact_normal,INPAR::CONTACT::contact_normal,
+                                          INPAR::CONTACT::contact_frictional,INPAR::CONTACT::contact_frictional,
+                                          INPAR::CONTACT::contact_meshtying,INPAR::CONTACT::contact_meshtying,
+                                          INPAR::CONTACT::contact_meshtying),
                                &scontact);
 
   setStringToIntegralParameter<int>("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
                                yesnotuple,yesnovalue,&scontact);
 
-  setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
+  setStringToIntegralParameter<INPAR::CONTACT::ContactFrictionType>("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
                                                    "Stick","stick",
                                                    "Tresca","tresca",
                                                    "Coulomb","coulomb"),
-                                tuple<int>(INPUTPARAMS::friction_none,INPUTPARAMS::friction_none,
-                                           INPUTPARAMS::friction_stick,INPUTPARAMS::friction_stick,
-                                           INPUTPARAMS::friction_tresca,INPUTPARAMS::friction_tresca,
-                                           INPUTPARAMS::friction_coulomb,INPUTPARAMS::friction_coulomb),
+                                tuple<INPAR::CONTACT::ContactFrictionType>(INPAR::CONTACT::friction_none,INPAR::CONTACT::friction_none,
+                                           INPAR::CONTACT::friction_stick,INPAR::CONTACT::friction_stick,
+                                           INPAR::CONTACT::friction_tresca,INPAR::CONTACT::friction_tresca,
+                                           INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
                                 &scontact);
 
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
@@ -626,28 +629,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
   //Reading kind of background fluid stream in the thermal bath
-  setStringToIntegralParameter<int>("THERMALBATH","None","Type of thermal bath applied to elements",
+  setStringToIntegralParameter<INPAR::STATMECH::ThermalBathType>("THERMALBATH","None","Type of thermal bath applied to elements",
                                //listing possible strings in input file in category THERMALBATH
                                tuple<std::string>("None","none",
                                                   "Uniform","uniform",
                                                   "ShearFlow","shearflow","Shearflow"),
                                //translating input strings into BACI input parameters
-                               tuple<int>(INPUTPARAMS::thermalbath_none,INPUTPARAMS::thermalbath_none,
-                                          INPUTPARAMS::thermalbath_uniform,INPUTPARAMS::thermalbath_uniform,
-                                          INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow,INPUTPARAMS::thermalbath_shearflow),
+                               tuple<INPAR::STATMECH::ThermalBathType>(INPAR::STATMECH::thermalbath_none,INPAR::STATMECH::thermalbath_none,
+                                          INPAR::STATMECH::thermalbath_uniform,INPAR::STATMECH::thermalbath_uniform,
+                                          INPAR::STATMECH::thermalbath_shearflow,INPAR::STATMECH::thermalbath_shearflow,INPAR::STATMECH::thermalbath_shearflow),
                                &statmech);
   //Reading which kind of special output should be written to files
-  setStringToIntegralParameter<int>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
+  setStringToIntegralParameter<INPAR::STATMECH::StatOutput>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
                                  //listing possible strings in input file in category SPECIAL_OUTPUT
                                  tuple<std::string>("None","none",
                                                     "EndToEnd_Log","endtoend_log","EndtoEnd_log",
                                                     "EndToEnd_Ergodicity","endtoend_ergodicity",
                                                     "Viscoelasticity","viscoelasticity","ViscoElasticity"),
                                  //translating input strings into BACI input parameters
-                                 tuple<int>(INPUTPARAMS::statout_none,INPUTPARAMS::statout_none,
-                                            INPUTPARAMS::statout_endtoendlog,INPUTPARAMS::statout_endtoendlog,INPUTPARAMS::statout_endtoendlog,
-                                            INPUTPARAMS::statout_endtoendergodicity,INPUTPARAMS::statout_endtoendergodicity,
-                                            INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity,INPUTPARAMS::statout_viscoelasticity),
+                                 tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
+                                            INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,
+                                            INPAR::STATMECH::statout_endtoendergodicity,INPAR::STATMECH::statout_endtoendergodicity,
+                                            INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity),
                                  &statmech);
   //percentage of total simulation time after which writing of statistical output is started
   DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);

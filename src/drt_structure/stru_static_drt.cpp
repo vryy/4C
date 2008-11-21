@@ -25,7 +25,7 @@ Maintainer: Moritz Frenzel
 #include "stru_static_drt.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "stru_resulttest.H"
 #include "Teuchos_TimeMonitor.hpp"
@@ -68,16 +68,16 @@ void stru_static_drt()
   bool contact = false;
   switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
   {
-    case INPUTPARAMS::contact_none:
+    case INPAR::CONTACT::contact_none:
       contact = false;
       break;
-    case INPUTPARAMS::contact_normal:
+    case INPAR::CONTACT::contact_normal:
       contact = true;
       break;
-    case INPUTPARAMS::contact_frictional:
+    case INPAR::CONTACT::contact_frictional:
       contact = true;
       break;
-    case INPUTPARAMS::contact_meshtying:
+    case INPAR::CONTACT::contact_meshtying:
       contact = true;
       break;
     default:

@@ -489,6 +489,7 @@ INPUT                  = index.doc \
                          ../src/drt_timada \
                          ../src/drt_structure \
                          ../src/drt_contact \
+                         ../src/drt_statmech \
                          ../src/drt_elch \
                          ../src/drt_surfstress \
                          ../src/drt_constraint \

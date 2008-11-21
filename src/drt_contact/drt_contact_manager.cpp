@@ -44,7 +44,7 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "contactdefines.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -376,18 +376,18 @@ bool CONTACT::Manager::ReadAndCheckInput()
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
   
   // read contact type
-  switch (Teuchos::getIntegralValue<int>(input,"CONTACT"))
+  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT"))
   {
-    case INPUTPARAMS::contact_none:
+    case INPAR::CONTACT::contact_none:
       scontact_.set<string>("contact type","none");
       break;
-    case INPUTPARAMS::contact_normal:
+    case INPAR::CONTACT::contact_normal:
       scontact_.set<string>("contact type","normal");
       break;
-    case INPUTPARAMS::contact_frictional:
+    case INPAR::CONTACT::contact_frictional:
       scontact_.set<string>("contact type","frictional");
       break;
-    case INPUTPARAMS::contact_meshtying:
+    case INPAR::CONTACT::contact_meshtying:
       scontact_.set<string>("contact type","meshtying");
       break;
     default:
@@ -399,18 +399,18 @@ bool CONTACT::Manager::ReadAndCheckInput()
   scontact_.set<bool> ("basis transformation",Teuchos::getIntegralValue<int>(input,"BASISTRAFO"));
   
   // read friction type
-  switch (Teuchos::getIntegralValue<int>(input,"FRICTION"))
+  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION"))
   {
-    case INPUTPARAMS::friction_none:
+    case INPAR::CONTACT::friction_none:
       scontact_.set<string>("friction type","none");
       break;
-    case INPUTPARAMS::friction_stick:
+    case INPAR::CONTACT::friction_stick:
       scontact_.set<string>("friction type","stick");
       break;
-    case INPUTPARAMS::friction_tresca:
+    case INPAR::CONTACT::friction_tresca:
       scontact_.set<string>("friction type","tresca");
       break;
-    case INPUTPARAMS::friction_coulomb:
+    case INPAR::CONTACT::friction_coulomb:
       scontact_.set<string>("friction type","coulomb");
       break;
     default:
