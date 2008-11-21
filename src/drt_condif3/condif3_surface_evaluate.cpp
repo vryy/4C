@@ -187,7 +187,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
             double factor = (parent_->Nodes()[k])->NumElement();
 
             // calculate normal flux at present node
-            mynormflux[i] = abs(eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
+            mynormflux[i] = (eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
 
             // store normal flux vector for this node
             elevec1[i*numdofpernode+j]+=normal[0]*mynormflux[i]/factor;
