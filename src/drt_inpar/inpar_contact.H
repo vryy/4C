@@ -26,20 +26,20 @@ namespace INPAR
     /// (this enum represents the input file parameter CONTACT)
     enum ContactType
     {
-      contact_none,  ///< ???
-      contact_normal,  ///< ???
-      contact_frictional,  ///< ???
-      contact_meshtying  ///< ???
+      contact_none,  ///< no contact
+      contact_normal,  ///< frictionless contact
+      contact_frictional,  ///< frictional contact
+      contact_meshtying  ///< tied contact (mesh tying)
     };
 
     /// Type of contact friction law
     /// (this enum represents the input file parameter FRICTION)
     enum ContactFrictionType
     {
-      friction_none,  ///< ???
-      friction_stick,  ///< ???
-      friction_tresca,  ///< ???
-      friction_coulomb  ///< ???
+      friction_none,  ///< no friction
+      friction_stick,  ///< perfect stick
+      friction_tresca,  ///< Tresca friction law
+      friction_coulomb  ///< Coulomb friction law
     };
 
   }  // namespace CONTACT
