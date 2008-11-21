@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -113,11 +113,11 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
         coupling == fsi_iter_monolithicstructuresplit)
     {
       // partitioned MFSI solvers require Dirichlet conditions
-      INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy =
-        Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-      if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
-          linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
-          linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+        Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+      if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+          linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+          linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
         dirichletcond = true;
       else
         dirichletcond = false;

@@ -205,7 +205,7 @@ NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolver(Teuchos::ParameterLis
                                                            ADAPTER::Structure& structurefield,
                                                            ADAPTER::Fluid& fluidfield,
                                                            ADAPTER::Ale& alefield,
-                                                           INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy)
+                                                           INPAR::FSI::LinearBlockSolver linearsolverstrategy)
   : utils_(printParams),
     extractor_(extractor),
     algorithm_(algorithm),
@@ -453,7 +453,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
 
   switch (linearsolverstrategy_)
   {
-  case INPUTPARAMS::fsi_PartitionedAitken:
+  case INPAR::FSI::PartitionedAitken:
   {
     dirParams.set("Method","User Defined");
     Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
@@ -471,7 +471,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
     break;
   }
-  case INPUTPARAMS::fsi_PartitionedVectorExtrapolation:
+  case INPAR::FSI::PartitionedVectorExtrapolation:
   {
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -491,7 +491,7 @@ void NOX::FSI::LinearPartitionedSolver::LinearPartitionedSolve(NOX::Epetra::Vect
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
     break;
   }
-  case INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov:
+  case INPAR::FSI::PartitionedJacobianFreeNewtonKrylov:
   {
     nlParams.set("Jacobian", "FSI Matrix Free");
 

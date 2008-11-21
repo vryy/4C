@@ -23,6 +23,7 @@
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 class SparseMatrix;
 class BlockSparseMatrix;
@@ -96,7 +97,7 @@ namespace FSI {
       Teuchos::RCP < LINALG::Solver > structure_solver,
       Teuchos::RCP < LINALG::Solver > fluid_solver,
       Teuchos::RCP < LINALG::Solver > ale_solver,
-      INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy,
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy,
       const Teuchos::RefCountPtr< NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
     ~LinearBGSSolver();
@@ -199,7 +200,7 @@ namespace FSI {
     Epetra_Time timer_;
     mutable double timeApplyJacbianInverse_;
 
-    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 
 }

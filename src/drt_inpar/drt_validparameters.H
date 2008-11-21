@@ -63,28 +63,6 @@ namespace INPAR {}
 namespace INPUTPARAMS
 {
 
-  //----------------------------------------------------------FSI
-
-  /// Type of partitioned coupling for FSI problems
-  enum FSIPartitionedCouplingMethod
-  {
-    fsi_DirichletNeumann,
-    fsi_RobinNeumann,
-    fsi_DirichletRobin,
-    fsi_RobinRobin
-  };
-
-  /// Linear solver algorithm for monolithic block system in monolithic FSI
-  enum FSILinearBlockSolver
-  {
-    fsi_PreconditionedKrylov,
-    fsi_PartitionedAitken,
-    fsi_PartitionedVectorExtrapolation,
-    fsi_PartitionedJacobianFreeNewtonKrylov,
-    fsi_BGSAitken,
-    fsi_BGSVectorExtrapolation,
-    fsi_BGSJacobianFreeNewtonKrylov
-  };
 
   //--------------------------------------SCALAR TRANSPORT DYNAMIC
 

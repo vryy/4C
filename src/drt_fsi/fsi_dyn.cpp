@@ -20,7 +20,7 @@
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
 
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
 
 #ifdef PARALLEL
@@ -149,11 +149,11 @@ void fsi_ale_drt()
   {
     Teuchos::RCP<FSI::Monolithic> fsi;
 
-    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
-    if (linearsolverstrategy==INPUTPARAMS::fsi_PartitionedAitken or
-        linearsolverstrategy==INPUTPARAMS::fsi_PartitionedVectorExtrapolation or
-        linearsolverstrategy==INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov)
+    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
       fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
 
     else if (coupling==fsi_iter_monolithic)
@@ -188,14 +188,14 @@ void fsi_ale_drt()
 
     Teuchos::RCP<FSI::Partitioned> fsi;
 
-    INPUTPARAMS::FSIPartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    INPAR::FSI::PartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-    if (method==INPUTPARAMS::fsi_DirichletNeumann)
+    if (method==INPAR::FSI::DirichletNeumann)
     {
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     }
-    else if (method==INPUTPARAMS::fsi_RobinNeumann)
+    else if (method==INPAR::FSI::RobinNeumann)
     {
       fsi = Teuchos::rcp(new FSI::RobinNeumann(comm));
     }

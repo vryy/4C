@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -168,10 +169,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ------------------------------------------- Robin scheme parameters
   if (genprob.probtyp == prb_fsi)
   {
-    INPUTPARAMS::FSIPartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(prbdyn,"PARTITIONED");
+    INPAR::FSI::PartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(prbdyn,"PARTITIONED");
     fluidtimeparams->set<bool>("fluidrobin",
-        method==INPUTPARAMS::fsi_RobinNeumann or method==INPUTPARAMS::fsi_RobinRobin);
+        method==INPAR::FSI::RobinNeumann or method==INPAR::FSI::RobinRobin);
     fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
   }
 
@@ -278,10 +279,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       else
       {
-        INPUTPARAMS::FSIPartitionedCouplingMethod method =
-          Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-        if (method==INPUTPARAMS::fsi_RobinNeumann or
-            method==INPUTPARAMS::fsi_RobinRobin)
+        INPAR::FSI::PartitionedCouplingMethod method =
+          Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+        if (method==INPAR::FSI::RobinNeumann or
+            method==INPAR::FSI::RobinRobin)
           dirichletcond = false;
       }
     }

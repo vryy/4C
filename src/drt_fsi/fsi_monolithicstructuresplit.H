@@ -3,6 +3,7 @@
 #ifndef FSI_MONOLITHICSTRUCTURESPLIT_H
 #define FSI_MONOLITHICSTRUCTURESPLIT_H
 
+#include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
@@ -114,7 +115,7 @@ namespace FSI
     //@}
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 }
 

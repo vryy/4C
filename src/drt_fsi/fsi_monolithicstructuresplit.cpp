@@ -6,7 +6,7 @@
 #include "fsi_nox_linearsystem_bgs.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_io/io_control.H"
 
@@ -19,7 +19,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
@@ -467,7 +467,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
 
   switch (linearsolverstrategy_)
   {
-  case INPUTPARAMS::fsi_PreconditionedKrylov:
+  case INPAR::FSI::PreconditionedKrylov:
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
                                                                lsParams,
                                                                Teuchos::rcp(iJac,false),
@@ -476,9 +476,9 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
                                                                M,
                                                                noxSoln));
     break;
-  case INPUTPARAMS::fsi_BGSAitken:
-  case INPUTPARAMS::fsi_BGSVectorExtrapolation:
-  case INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov:
+  case INPAR::FSI::BGSAitken:
+  case INPAR::FSI::BGSVectorExtrapolation:
+  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
     linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
                                                         lsParams,
                                                         Teuchos::rcp(iJac,false),

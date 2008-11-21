@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1378,7 +1379,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_pseudo_structureale),
                                  &fsidyn);
 
-  setStringToIntegralParameter<INPUTPARAMS::FSIPartitionedCouplingMethod>(
+  setStringToIntegralParameter<INPAR::FSI::PartitionedCouplingMethod>(
                                "PARTITIONED","DirichletNeumann",
                                "Coupling strategies for partitioned FSI solvers. Most of the time Dirichlet-Neumann is just right.",
                                tuple<std::string>(
@@ -1387,11 +1388,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "DirichletRobin",
                                  "RobinRobin"
                                  ),
-                               tuple<INPUTPARAMS::FSIPartitionedCouplingMethod>(
-                                 INPUTPARAMS::fsi_DirichletNeumann,
-                                 INPUTPARAMS::fsi_RobinNeumann,
-                                 INPUTPARAMS::fsi_DirichletRobin,
-                                 INPUTPARAMS::fsi_RobinRobin
+                               tuple<INPAR::FSI::PartitionedCouplingMethod>(
+                                 INPAR::FSI::DirichletNeumann,
+                                 INPAR::FSI::RobinNeumann,
+                                 INPAR::FSI::DirichletRobin,
+                                 INPAR::FSI::RobinRobin
                                  ),
                                &fsidyn);
 
@@ -1480,7 +1481,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "Number of preconditioner reused in monolithic FSI",
                &fsidyn);
 
-  setStringToIntegralParameter<INPUTPARAMS::FSILinearBlockSolver>(
+  setStringToIntegralParameter<INPAR::FSI::LinearBlockSolver>(
                                "LINEARBLOCKSOLVER","PreconditionedKrylov",
                                "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
                                "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
@@ -1494,14 +1495,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "BGSVectorExtrapolation",
                                  "BGSJacobianFreeNewtonKrylov"
                                  ),
-                               tuple<INPUTPARAMS::FSILinearBlockSolver>(
-                                 INPUTPARAMS::fsi_PreconditionedKrylov,
-                                 INPUTPARAMS::fsi_PartitionedAitken,
-                                 INPUTPARAMS::fsi_PartitionedVectorExtrapolation,
-                                 INPUTPARAMS::fsi_PartitionedJacobianFreeNewtonKrylov,
-                                 INPUTPARAMS::fsi_BGSAitken,
-                                 INPUTPARAMS::fsi_BGSVectorExtrapolation,
-                                 INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov
+                               tuple<INPAR::FSI::LinearBlockSolver>(
+                                 INPAR::FSI::PreconditionedKrylov,
+                                 INPAR::FSI::PartitionedAitken,
+                                 INPAR::FSI::PartitionedVectorExtrapolation,
+                                 INPAR::FSI::PartitionedJacobianFreeNewtonKrylov,
+                                 INPAR::FSI::BGSAitken,
+                                 INPAR::FSI::BGSVectorExtrapolation,
+                                 INPAR::FSI::BGSJacobianFreeNewtonKrylov
                                  ),
                                &fsidyn);
 

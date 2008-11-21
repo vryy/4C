@@ -12,7 +12,7 @@ FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
   : Monolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPUTPARAMS::FSILinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 

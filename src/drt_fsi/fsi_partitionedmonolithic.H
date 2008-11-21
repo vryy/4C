@@ -3,6 +3,7 @@
 #ifndef FSI_PARTITIONEDMONOLITHIC_H
 #define FSI_PARTITIONEDMONOLITHIC_H
 
+#include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
 
 namespace NOX
@@ -62,7 +63,7 @@ namespace FSI
     ADAPTER::Coupling icoupfa_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 }
 

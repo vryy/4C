@@ -2,7 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_robin.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 
 
@@ -13,11 +13,11 @@ FSI::Robin::Robin(Epetra_Comm& comm)
 {
    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-   INPUTPARAMS::FSIPartitionedCouplingMethod method =
-     Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+   INPAR::FSI::PartitionedCouplingMethod method =
+     Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-   fluidrobin_  = method==INPUTPARAMS::fsi_RobinNeumann   or method==INPUTPARAMS::fsi_RobinRobin;
-   structrobin_ = method==INPUTPARAMS::fsi_DirichletRobin or method==INPUTPARAMS::fsi_RobinRobin;
+   fluidrobin_  = method==INPAR::FSI::RobinNeumann   or method==INPAR::FSI::RobinRobin;
+   structrobin_ = method==INPAR::FSI::DirichletRobin or method==INPAR::FSI::RobinRobin;
 }
 
 

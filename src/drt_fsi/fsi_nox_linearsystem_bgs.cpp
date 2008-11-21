@@ -15,7 +15,7 @@
 
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/linalg_solver.H"
 
 #include "fsi_nox_aitken.H"
@@ -118,7 +118,7 @@ NOX::FSI::LinearBGSSolver::LinearBGSSolver(Teuchos::ParameterList& printParams,
                                            Teuchos::RCP < LINALG::Solver > structure_solver,
                                            Teuchos::RCP < LINALG::Solver > fluid_solver,
                                            Teuchos::RCP < LINALG::Solver > ale_solver,
-                                           INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy,
+                                           INPAR::FSI::LinearBlockSolver linearsolverstrategy,
                                            const Teuchos::RefCountPtr< NOX::Epetra::Scaling> s)
   :
   utils_(printParams),
@@ -295,7 +295,7 @@ void NOX::FSI::LinearBGSSolver::bgs(const LINALG::BlockSparseMatrixBase& A,
 
   switch (linearsolverstrategy_)
   {
-  case INPUTPARAMS::fsi_BGSAitken:
+  case INPAR::FSI::BGSAitken:
   {
     dirParams.set("Method","User Defined");
     Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
@@ -313,7 +313,7 @@ void NOX::FSI::LinearBGSSolver::bgs(const LINALG::BlockSparseMatrixBase& A,
     lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
     break;
   }
-  case INPUTPARAMS::fsi_BGSVectorExtrapolation:
+  case INPAR::FSI::BGSVectorExtrapolation:
   {
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -333,7 +333,7 @@ void NOX::FSI::LinearBGSSolver::bgs(const LINALG::BlockSparseMatrixBase& A,
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
     break;
   }
-  case INPUTPARAMS::fsi_BGSJacobianFreeNewtonKrylov:
+  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
     // Newton-Krylov on block Gauss-Seidel? Can there be any difference to
     // preconditioned block Newton-Krylov (real monolithic)?
   default:

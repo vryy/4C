@@ -24,6 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // further includes for StructureBaseAlgorithm:
+#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -261,10 +262,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
     // robin flags
-    INPUTPARAMS::FSIPartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    INPAR::FSI::PartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     genalphaparams->set<bool>  ("structrobin",
-                                method==INPUTPARAMS::fsi_DirichletRobin or method==INPUTPARAMS::fsi_RobinRobin);
+                                method==INPAR::FSI::DirichletRobin or method==INPAR::FSI::RobinRobin);
 
     genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
 
@@ -357,11 +358,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       = DRT::Problem::Instance()->FSIDynamicParams();
 
     // Robin flags
-    INPUTPARAMS::FSIPartitionedCouplingMethod method
-      = Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    INPAR::FSI::PartitionedCouplingMethod method
+      = Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     xparams->set<bool>("structrobin",
-                       ( (method==INPUTPARAMS::fsi_DirichletRobin) 
-                         or (method==INPUTPARAMS::fsi_RobinRobin) ));
+                       ( (method==INPAR::FSI::DirichletRobin) 
+                         or (method==INPAR::FSI::RobinRobin) ));
 
     // THIS SHOULD GO, OR SHOULDN'T IT?
     xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));

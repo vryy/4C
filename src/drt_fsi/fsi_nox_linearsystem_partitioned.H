@@ -26,6 +26,8 @@
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_ale.H"
 
+#include "../drt_inpar/inpar_fsi.H"
+
 namespace FSI
 {
   class PartitionedMonolithic;
@@ -107,7 +109,7 @@ namespace FSI {
       ADAPTER::Structure& structurefield,
       ADAPTER::Fluid& fluidfield,
       ADAPTER::Ale& alefield,
-      INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy);
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy);
 
     ~LinearPartitionedSolver();
 
@@ -196,7 +198,7 @@ namespace FSI {
     ADAPTER::Fluid& fluidfield_;
     ADAPTER::Ale& alefield_;
 
-    INPUTPARAMS::FSILinearBlockSolver linearsolverstrategy_;
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 
 }
