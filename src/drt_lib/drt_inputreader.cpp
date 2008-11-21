@@ -24,7 +24,6 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Time.h>
 #include <iterator>
 
-
 /*!----------------------------------------------------------------------
   \brief file pointers
 

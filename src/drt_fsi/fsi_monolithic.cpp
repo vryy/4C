@@ -12,7 +12,7 @@
 #include "fsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 
 #include "../drt_io/io_control.H"

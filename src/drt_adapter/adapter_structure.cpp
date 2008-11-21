@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // further includes for StructureBaseAlgorithm:
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 

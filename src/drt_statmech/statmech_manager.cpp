@@ -13,7 +13,7 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "statmech_manager.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_element.H"

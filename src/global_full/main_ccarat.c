@@ -12,8 +12,8 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include <../headers/compile_settings.h>
-#include "../drt_lib/drt_validparameters.H"
-#include "../drt_lib/drt_validconditions.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/drt_validconditions.H"
 
 #ifdef TRAP_FE
 

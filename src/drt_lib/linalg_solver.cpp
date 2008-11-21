@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialComm.h"
 #endif
 
+#include "../drt_inpar/inpar_solver.H"
 #include "linalg_solver.H"
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
@@ -725,35 +726,35 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
   Teuchos::ParameterList outparams;
 
   // switch type of solver
-  switch (Teuchos::getIntegralValue<_SOLVER_TYP>(inparams,"SOLVER"))
+  switch (Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
   {
 #ifdef PARALLEL
-  case superlu://============================== superlu solver (parallel only)
+  case INPAR::SOLVER::superlu://============================== superlu solver (parallel only)
     outparams.set("solver","superlu");
     outparams.set("symmetric",false);
   break;
 #endif
-  case amesos_klu_sym://====================================== Tim Davis' KLU
+  case INPAR::SOLVER::amesos_klu_sym://====================================== Tim Davis' KLU
     outparams.set("solver","klu");
     outparams.set("symmetric",true);
   break;
-  case amesos_klu_nonsym://=================================== Tim Davis' KLU
+  case INPAR::SOLVER::amesos_klu_nonsym://=================================== Tim Davis' KLU
     outparams.set("solver","klu");
     outparams.set("symmetric",false);
   break;
-  case umfpack://========================================= Tim Davis' Umfpack
+  case INPAR::SOLVER::umfpack://========================================= Tim Davis' Umfpack
     outparams.set("solver","umfpack");
     outparams.set("symmetric",false);
   break;
-  case lapack_sym://================================================== Lapack
+  case INPAR::SOLVER::lapack_sym://================================================== Lapack
     outparams.set("solver","lapack");
     outparams.set("symmetric",true);
   break;
-  case lapack_nonsym://=============================================== Lapack
+  case INPAR::SOLVER::lapack_nonsym://=============================================== Lapack
     outparams.set("solver","lapack");
     outparams.set("symmetric",false);
   break;
-  case aztec_msr://================================================= AztecOO
+  case INPAR::SOLVER::aztec_msr://================================================= AztecOO
   {
     outparams.set("solver","aztec");
     outparams.set("symmetric",false);
@@ -767,82 +768,82 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     else
       azlist.set("scaling","none");
     //--------------------------------------------- set type of solver
-    switch (Teuchos::getIntegralValue<_AZSOLVERTYP>(inparams,"AZSOLVE"))
+    switch (Teuchos::getIntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
     {
-    case azsolv_CG:       azlist.set("AZ_solver",AZ_cg);       break;
-    case azsolv_GMRES:    azlist.set("AZ_solver",AZ_gmres);    break;
-    case azsolv_CGS:      azlist.set("AZ_solver",AZ_cgs);      break;
-    case azsolv_BiCGSTAB: azlist.set("AZ_solver",AZ_bicgstab); break;
-    case azsolv_LU:       azlist.set("AZ_solver",AZ_lu);       break;
-    case azsolv_TFQMR:    azlist.set("AZ_solver",AZ_tfqmr);    break;
+    case INPAR::SOLVER::azsolv_CG:       azlist.set("AZ_solver",AZ_cg);       break;
+    case INPAR::SOLVER::azsolv_GMRES:    azlist.set("AZ_solver",AZ_gmres);    break;
+    case INPAR::SOLVER::azsolv_CGS:      azlist.set("AZ_solver",AZ_cgs);      break;
+    case INPAR::SOLVER::azsolv_BiCGSTAB: azlist.set("AZ_solver",AZ_bicgstab); break;
+    case INPAR::SOLVER::azsolv_LU:       azlist.set("AZ_solver",AZ_lu);       break;
+    case INPAR::SOLVER::azsolv_TFQMR:    azlist.set("AZ_solver",AZ_tfqmr);    break;
     default: dserror("Unknown solver for AztecOO");            break;
     }
     //------------------------------------- set type of preconditioner
-    const int azprectyp = Teuchos::getIntegralValue<_AZPRECTYP>(inparams,"AZPREC");
+    const int azprectyp = Teuchos::getIntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
     switch (azprectyp)
     {
-    case azprec_none:
+    case INPAR::SOLVER::azprec_none:
       azlist.set("AZ_precond",AZ_none);
       azlist.set("AZ_subdomain_solve",AZ_none);
       azlist.set("preconditioner",AZ_none);
     break;
-    case azprec_ILUT:
+    case INPAR::SOLVER::azprec_ILUT:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","ILUT");
     break;
-    case azprec_ILU:
+    case INPAR::SOLVER::azprec_ILU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","ILU");
     break;
-    case azprec_Neumann:
+    case INPAR::SOLVER::azprec_Neumann:
       azlist.set("AZ_precond",AZ_Neumann);
     break;
-    case azprec_Least_Squares:
+    case INPAR::SOLVER::azprec_Least_Squares:
       azlist.set("AZ_precond",AZ_ls);
     break;
-    case azprec_Jacobi:
+    case INPAR::SOLVER::azprec_Jacobi:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
     break;
-    case azprec_SymmGaussSeidel:
+    case INPAR::SOLVER::azprec_SymmGaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
     break;
-    case azprec_GaussSeidel:
+    case INPAR::SOLVER::azprec_GaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
     break;
-    case azprec_DownwindGaussSeidel:
+    case INPAR::SOLVER::azprec_DownwindGaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
       azlist.set<bool>("downwinding",true);
       azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
     break;
-    case azprec_LU:
+    case INPAR::SOLVER::azprec_LU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","Amesos");
     break;
-    case azprec_RILU:
+    case INPAR::SOLVER::azprec_RILU:
       azlist.set("AZ_precond",AZ_dom_decomp);
       azlist.set("AZ_subdomain_solve",AZ_rilu);
       azlist.set("AZ_graph_fill",inparams.get<int>("AZGFILL"));
     break;
-    case azprec_ICC:
+    case INPAR::SOLVER::azprec_ICC:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","IC");
     break;
-    case azprec_ML:
-    case azprec_MLfluid:
-    case azprec_MLAPI:
-    case azprec_MLfluid2:
+    case INPAR::SOLVER::azprec_ML:
+    case INPAR::SOLVER::azprec_MLfluid:
+    case INPAR::SOLVER::azprec_MLAPI:
+    case INPAR::SOLVER::azprec_MLfluid2:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -870,14 +871,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     azlist.set("ncall",0);                         // counting number of solver calls
     azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
     //-------------------------------- set parameters for Ifpack if used
-    if (azprectyp == azprec_ILU  ||
-        azprectyp == azprec_ILUT ||
-        azprectyp == azprec_ICC  ||
-        azprectyp == azprec_LU   ||
-        azprectyp == azprec_SymmGaussSeidel ||
-        azprectyp == azprec_GaussSeidel ||
-        azprectyp == azprec_DownwindGaussSeidel ||
-        azprectyp == azprec_Jacobi)
+    if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
+        azprectyp == INPAR::SOLVER::azprec_ILUT ||
+        azprectyp == INPAR::SOLVER::azprec_ICC  ||
+        azprectyp == INPAR::SOLVER::azprec_LU   ||
+        azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
+        azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
+        azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
+        azprectyp == INPAR::SOLVER::azprec_Jacobi)
     {
       ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
       ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
@@ -887,38 +888,38 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       ifpacklist.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
-      if (azprectyp == azprec_SymmGaussSeidel)
+      if (azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel)
         ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-      if (azprectyp == azprec_GaussSeidel)
+      if (azprectyp == INPAR::SOLVER::azprec_GaussSeidel)
         ifpacklist.set("relaxation: type","Gauss-Seidel");
-      if (azprectyp == azprec_DownwindGaussSeidel)
+      if (azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel)
       {
         // in case of downwinding prevent ifpack from again reordering
         ifpacklist.set("schwarz: reordering type","none");
         ifpacklist.set("relaxation: type","Gauss-Seidel");
       }
-      if (azprectyp == azprec_Jacobi)
+      if (azprectyp == INPAR::SOLVER::azprec_Jacobi)
         ifpacklist.set("relaxation: type","Jacobi");
     }
     //------------------------------------- set parameters for ML if used
-    if (azprectyp == azprec_ML       ||
-        azprectyp == azprec_MLfluid  ||
-        azprectyp == azprec_MLfluid2 ||
-        azprectyp == azprec_MLAPI       )
+    if (azprectyp == INPAR::SOLVER::azprec_ML       ||
+        azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
+        azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
+        azprectyp == INPAR::SOLVER::azprec_MLAPI       )
     {
       ParameterList& mllist = outparams.sublist("ML Parameters");
       ML_Epetra::SetDefaults("SA",mllist);
       switch (azprectyp)
       {
-      case azprec_ML: // do nothing, this is standard
+      case INPAR::SOLVER::azprec_ML: // do nothing, this is standard
       break;
-      case azprec_MLAPI: // set flag to use mlapi operator
+      case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
         mllist.set<bool>("LINALG::AMG_Operator",true);
       break;
-      case azprec_MLfluid: // unsymmetric, unsmoothed restruction
+      case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restruction
         mllist.set("aggregation: use tentative restriction",true);
       break;
-      case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
+      case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
         mllist.set("energy minimization: enable",true);
         mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
         mllist.set("aggregation: block scaling",false);
@@ -957,7 +958,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
           mlsmotimessteps.push_back(std::atoi(word.c_str()));
       }
       if ((int)mlsmotimessteps.size() < mlmaxlevel)
-        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger than ML_MAXLEVEL=%d\n",mlsmotimessteps.size(),mlmaxlevel);
+        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger than ML_MAXLEVEL=%d\n",
+                mlsmotimessteps.size(),mlmaxlevel);
       for (int i=0; i<mlmaxlevel-1; ++i)
       {
         char levelstr[11];
@@ -1103,8 +1105,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
   }
   break;
 #ifdef PARALLEL
-  case SPOOLES_sym://================================== Spooles (parallel only)
-  case SPOOLES_nonsym:
+  case INPAR::SOLVER::SPOOLES_sym://================================== Spooles (parallel only)
+  case INPAR::SOLVER::SPOOLES_nonsym:
     outparams.set("solver","spooles");
     outparams.set("symmetric",false);
   break;

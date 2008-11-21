@@ -17,7 +17,7 @@ Here is everything related with writing a dat-file
 #ifdef D_EXODUS
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
-#include "../drt_lib/drt_validconditions.H"
+#include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
 

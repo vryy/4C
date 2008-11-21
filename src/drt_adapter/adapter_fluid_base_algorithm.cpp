@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>

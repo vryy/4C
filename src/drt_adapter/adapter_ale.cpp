@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 using namespace std;
 using namespace Teuchos;

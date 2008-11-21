@@ -123,8 +123,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/drt_function.o \
                 src/drt_lib/drt_discret_evaluate.o \
-                src/drt_lib/drt_validparameters.o \
-                src/drt_lib/drt_validconditions.o \
                 src/drt_lib/linalg_mapextractor.o \
                 src/drt_lib/linalg_sparsematrix.o \
                 src/drt_lib/linalg_blocksparsematrix.o \
@@ -141,6 +139,10 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_tetgen/tetgen.o \
                 src/drt_geometry/integrationcell.o \
                 src/drt_lib/drt_locsys.o
+#               input parameters and definitions
+OBJS_DRT_INPAR = \
+                src/drt_inpar/drt_validparameters.o \
+                src/drt_inpar/drt_validconditions.o
 #               nurbs discretization for isogeometric fe (c++)
 OBJS_DRT_NURBS_DISCRET = \
                 src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \

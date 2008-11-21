@@ -37,7 +37,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"

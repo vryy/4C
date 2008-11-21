@@ -26,8 +26,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 #include "drt_timecurve.H"
 #include "drt_utils.H"
-#include "drt_validconditions.H"
-#include "drt_validparameters.H"
+#include "../drt_inpar/drt_validconditions.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 #include "../drt_io/io_control.H"
 

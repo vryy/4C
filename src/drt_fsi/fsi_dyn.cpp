@@ -20,7 +20,7 @@
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
 
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_resulttest.H"
 
 #ifdef PARALLEL

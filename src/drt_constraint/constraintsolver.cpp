@@ -19,7 +19,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_utils.H"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*

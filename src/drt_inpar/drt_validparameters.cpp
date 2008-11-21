@@ -23,9 +23,9 @@ Maintainer: Ulrich Kuettler
 
 
 #include "drt_validparameters.H"
-#include "drt_colors.H"
-#include "standardtypes_cpp.H"
-#include "linalg_solver.H"
+#include "../drt_lib/drt_colors.H"
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_inpar/inpar_solver.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -1596,7 +1596,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  setStringToIntegralParameter<LINALG::Solver::_SOLVER_TYP>(
+  setStringToIntegralParameter<INPAR::SOLVER::SolverType>(
     "SOLVER", "UMFPACK",
     "The solver to attack the system of linear equations arising of FE approach with.",
     tuple<std::string>("Amesos_KLU_sym",
@@ -1607,18 +1607,18 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                        "LAPACK_sym",
                        "LAPACK_nonsym",
                        "UMFPACK"),
-    tuple<LINALG::Solver::_SOLVER_TYP>(LINALG::Solver::amesos_klu_sym,
-                                       LINALG::Solver::amesos_klu_nonsym,
-                                       LINALG::Solver::superlu,
-                                       LINALG::Solver::vm3,
-                                       LINALG::Solver::aztec_msr,
-                                       LINALG::Solver::lapack_sym,
-                                       LINALG::Solver::lapack_nonsym,
-                                       LINALG::Solver::umfpack),
+    tuple<INPAR::SOLVER::SolverType>(INPAR::SOLVER::amesos_klu_sym,
+                                     INPAR::SOLVER::amesos_klu_nonsym,
+                                     INPAR::SOLVER::superlu,
+                                     INPAR::SOLVER::vm3,
+                                     INPAR::SOLVER::aztec_msr,
+                                     INPAR::SOLVER::lapack_sym,
+                                     INPAR::SOLVER::lapack_nonsym,
+                                     INPAR::SOLVER::umfpack),
     &list
     );
 
-  setStringToIntegralParameter<LINALG::Solver::_AZSOLVERTYP>(
+  setStringToIntegralParameter<INPAR::SOLVER::AzSolverType>(
     "AZSOLVE", "GMRES",
     "Type of linear solver algorithm to use.",
     tuple<std::string>("CG",
@@ -1627,12 +1627,12 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                        "TFQMR",
                        "BiCGSTAB",
                        "LU"),
-    tuple<LINALG::Solver::_AZSOLVERTYP>(LINALG::Solver::azsolv_CG,
-                                        LINALG::Solver::azsolv_GMRES,
-                                        LINALG::Solver::azsolv_CGS,
-                                        LINALG::Solver::azsolv_TFQMR,
-                                        LINALG::Solver::azsolv_BiCGSTAB,
-                                        LINALG::Solver::azsolv_LU),
+    tuple<INPAR::SOLVER::AzSolverType>(INPAR::SOLVER::azsolv_CG,
+                                       INPAR::SOLVER::azsolv_GMRES,
+                                       INPAR::SOLVER::azsolv_CGS,
+                                       INPAR::SOLVER::azsolv_TFQMR,
+                                       INPAR::SOLVER::azsolv_BiCGSTAB,
+                                       INPAR::SOLVER::azsolv_LU),
     &list
     );
 
@@ -1640,27 +1640,27 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
     Teuchos::Tuple<std::string,17> name;
-    Teuchos::Tuple<LINALG::Solver::_AZPRECTYP,17>  number;
+    Teuchos::Tuple<INPAR::SOLVER::AzPrecType,17>  number;
 
-    name[0] = "none";                         number[0] = LINALG::Solver::azprec_none;
-    name[1] = "ILU";                          number[1] = LINALG::Solver::azprec_ILU;
-    name[2] = "ILUT";                         number[2] = LINALG::Solver::azprec_ILUT;
-    name[3] = "Jacobi";                       number[3] = LINALG::Solver::azprec_Jacobi;
-    name[4] = "SymmGaussSeidel";              number[4] = LINALG::Solver::azprec_SymmGaussSeidel;
-    name[5] = "Least_Squares";                number[5] = LINALG::Solver::azprec_Least_Squares;
-    name[6] = "Neumann";                      number[6] = LINALG::Solver::azprec_Neumann;
-    name[7] = "ICC";                          number[7] = LINALG::Solver::azprec_ICC;
-    name[8] = "LU";                           number[8] = LINALG::Solver::azprec_LU;
-    name[9] = "RILU";                         number[9] = LINALG::Solver::azprec_RILU;
-    name[10] = "BILU";                        number[10] = LINALG::Solver::azprec_BILU;
-    name[11] = "ML";                          number[11] = LINALG::Solver::azprec_ML;
-    name[12] = "MLFLUID";                     number[12] = LINALG::Solver::azprec_MLfluid;
-    name[13] = "MLFLUID2";                    number[13] = LINALG::Solver::azprec_MLfluid2;
-    name[14] = "MLAPI";                       number[14] = LINALG::Solver::azprec_MLAPI;
-    name[15] = "GaussSeidel";                 number[15] = LINALG::Solver::azprec_GaussSeidel;
-    name[16] = "DownwindGaussSeidel";         number[16] = LINALG::Solver::azprec_DownwindGaussSeidel;
+    name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
+    name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
+    name[2] = "ILUT";                         number[2] = INPAR::SOLVER::azprec_ILUT;
+    name[3] = "Jacobi";                       number[3] = INPAR::SOLVER::azprec_Jacobi;
+    name[4] = "SymmGaussSeidel";              number[4] = INPAR::SOLVER::azprec_SymmGaussSeidel;
+    name[5] = "Least_Squares";                number[5] = INPAR::SOLVER::azprec_Least_Squares;
+    name[6] = "Neumann";                      number[6] = INPAR::SOLVER::azprec_Neumann;
+    name[7] = "ICC";                          number[7] = INPAR::SOLVER::azprec_ICC;
+    name[8] = "LU";                           number[8] = INPAR::SOLVER::azprec_LU;
+    name[9] = "RILU";                         number[9] = INPAR::SOLVER::azprec_RILU;
+    name[10] = "BILU";                        number[10] = INPAR::SOLVER::azprec_BILU;
+    name[11] = "ML";                          number[11] = INPAR::SOLVER::azprec_ML;
+    name[12] = "MLFLUID";                     number[12] = INPAR::SOLVER::azprec_MLfluid;
+    name[13] = "MLFLUID2";                    number[13] = INPAR::SOLVER::azprec_MLfluid2;
+    name[14] = "MLAPI";                       number[14] = INPAR::SOLVER::azprec_MLAPI;
+    name[15] = "GaussSeidel";                 number[15] = INPAR::SOLVER::azprec_GaussSeidel;
+    name[16] = "DownwindGaussSeidel";         number[16] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
 
-    setStringToIntegralParameter<LINALG::Solver::_AZPRECTYP>(
+    setStringToIntegralParameter<INPAR::SOLVER::AzPrecType>(
       "AZPREC", "ILU",
       "Type of internal preconditioner to use.\n"
       "Note! this preconditioner will only be used if the input operator\n"

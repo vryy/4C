@@ -3,7 +3,7 @@
 #include "fsi_fluid_ale.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*/

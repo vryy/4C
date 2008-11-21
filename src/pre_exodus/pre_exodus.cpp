@@ -28,8 +28,8 @@ its parameters and conditions.
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
-#include "../drt_lib/drt_validparameters.H"
-#include "../drt_lib/drt_validconditions.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"

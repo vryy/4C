@@ -15,7 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "drt_validconditions.H"
-#include "drt_conditiondefinition.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 /*----------------------------------------------------------------------*/
