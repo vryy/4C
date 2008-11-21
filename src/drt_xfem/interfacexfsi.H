@@ -84,6 +84,16 @@ namespace XFEM
     
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(
+        const LINALG::Matrix<3,1>&        x_in
+    ) const;
+
+    //! get domain information at x_in at timestep n
+    int PositionWithinConditionN(
+        const LINALG::Matrix<3,1>&        x_in
+    ) const;
+    
+    //! get domain information at x_in at timestep n+1
+    int PositionWithinConditionNP(
         const BlitzVec3&                  x_in,
         GEO::NearestObject&               nearestobject
     ) const;

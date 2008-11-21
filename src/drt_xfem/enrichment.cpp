@@ -53,9 +53,9 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
 double XFEM::Enrichment::EnrValue(
-        const BlitzVec3&                    actpos,
-        const XFEM::InterfaceHandle&    ih,
-        const XFEM::Enrichment::ApproachFrom approachdirection
+        const LINALG::Matrix<3,1>&            actpos,
+        const XFEM::InterfaceHandle&          ih,
+        const XFEM::Enrichment::ApproachFrom  approachdirection
         ) const
 {
     // return value
@@ -137,10 +137,10 @@ double XFEM::Enrichment::EnrValue(
  *                                                              ag 11/07
  */
 double XFEM::Enrichment::ModifiedEnrValue(
-        const BlitzVec3&                    actpos,
-        const BlitzVec3&                    nodalpos,
-        const XFEM::InterfaceHandle&    ih,
-        const XFEM::Enrichment::ApproachFrom approachdirection
+        const LINALG::Matrix<3,1>&            actpos,
+        const LINALG::Matrix<3,1>&            nodalpos,
+        const XFEM::InterfaceHandle&          ih,
+        const XFEM::Enrichment::ApproachFrom  approachdirection
         ) const
 {
     dserror("needs update for the approach variable");

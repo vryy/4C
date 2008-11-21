@@ -30,6 +30,16 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
+//! take a LINALG::Matrix of length 3,1 and convert it to a blitz TinyVector of length 3
+static inline BlitzVec3 toBlitzArray(const LINALG::Matrix<3,1>& x)
+{
+  BlitzVec3 blitz_x;
+  blitz_x(0) = x(0);
+  blitz_x(1) = x(1);
+  blitz_x(2) = x(2);
+  return blitz_x;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
@@ -155,7 +165,7 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
     bool one_cell_is_fluid = false;
     for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
     {
-      const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
+      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
       const int current_label = PositionWithinConditionNP(cellcenter);
       if (current_label == 0)
       {
@@ -226,7 +236,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         {
           LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
-          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           const int domain_id = PositionWithinConditionNP(cellcenterpos);
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
@@ -296,7 +306,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
         {
           LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
-          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           
           //const int domain_id = PositionWithinConditionNP(cellcenterpos);
           
@@ -375,6 +385,26 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
   return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>&        x_in
+) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, toBlitzArray(x_in));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>&        x_in
+) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, toBlitzArray(x_in));
 }
 
 /*----------------------------------------------------------------------*

@@ -30,7 +30,7 @@ class DRT::Discretization;
 std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
         const RCP<XFEM::InterfaceHandle>      ih,
         const std::set<XFEM::Enrichment>&     enrset,
-        const BlitzVec3&                      actpos,
+        const LINALG::Matrix<3,1>&            actpos,
         const XFEM::Enrichment::ApproachFrom  approachdirection
         )
 {
@@ -132,7 +132,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -179,7 +179,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
   
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -235,7 +235,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
   flush(cout);
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -301,7 +301,7 @@ void XFEM::computeVectorCellNodeValues(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -355,7 +355,7 @@ void XFEM::computeVectorCellNodeValues(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
@@ -422,7 +422,7 @@ double DomainCoverageRatioT(
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
-      const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(ele));
+      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
                   
       const int label = ih.PositionWithinConditionNP(cellcenter);
       

@@ -19,9 +19,9 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 std::string XFEM::FieldEnr::toString() const
 {
-    std::stringstream s;
-    s << "(" << PHYSICS::physVarToString(field_) << ", " << enr_.toString() << ")";
-    return s.str();
+  std::stringstream s;
+  s << "(" << PHYSICS::physVarToString(field_) << ", " << enr_.toString() << ")";
+  return s.str();
 }
 
 

@@ -400,7 +400,7 @@ static void SysmatDomainTP1(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-        const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(*ele));
         
         int labelnp = 0;
         
@@ -1643,7 +1643,7 @@ static void SysmatBoundaryTP1(
             
             // position of the gausspoint in physical coordinates
 //            gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            BlitzVec3 gauss_pos_xyz;
+            LINALG::Matrix<3,1> gauss_pos_xyz;
             for (int isd = 0; isd < 3; ++isd)
             {
                 gauss_pos_xyz(isd) = 0.0;

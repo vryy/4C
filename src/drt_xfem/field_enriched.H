@@ -66,34 +66,34 @@ class FieldEnr
     //! order is given first by field, then by the enrichment
     bool operator <(const FieldEnr& rhs) const
     {
-        if (field_ < rhs.field_)
-            return true;
-        else if (field_ > rhs.field_)
-            return false;
+      if (field_ < rhs.field_)
+        return true;
+      else if (field_ > rhs.field_)
+        return false;
+      else
+      {
+        if (enr_ < rhs.enr_)
+          return true;
         else
-        {
-            if (enr_ < rhs.enr_)
-                return true;
-            else
-                return false;
-        }
+          return false;
+      }
     }
     //! equality, if everything is equal
     bool operator ==(const FieldEnr& rhs) const
     {
-        if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
-            return true;
-        else
-            return false;
+      if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
+        return true;
+      else
+        return false;
     }
     //! inequality if any member differs
     bool operator !=(const FieldEnr& rhs) const
     {
 //        return (!(*this == rhs));
-        if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
-            return true;
-        else
-            return false;
+      if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
+        return true;
+      else
+        return false;
     }
     
 

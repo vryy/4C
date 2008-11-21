@@ -20,16 +20,6 @@ Maintainer: Axel Gerstenberger
 #include "enrichment_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 
-//! take a double C array of (hopefully) length 3 and convert it to a blitz TinyVector of length 3
-static inline BlitzVec3 toBlitzArray(const double* x)
-{
-  BlitzVec3 blitz_x;
-  blitz_x(0) = x[0];
-  blitz_x(1) = x[1];
-  blitz_x(2) = x[2];
-  return blitz_x;
-}
-
 void XFEM::ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -64,7 +54,7 @@ void XFEM::ApplyNodalEnrichments(
     for (int inen = 0; inen<nen; ++inen)
     {
       const int node_gid = nodeidptrs[inen];
-      const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
+      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
       const int label = ih.PositionWithinConditionNP(nodalpos);
       const bool in_fluid = (label == 0);
   
@@ -90,7 +80,7 @@ void XFEM::ApplyElementEnrichments(
 {
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
-  const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-2);
+  const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-4);
   const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
 //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
   if ( not almost_zero_surface) 
@@ -205,7 +195,7 @@ void XFEM::applyStandardEnrichment(
     if ( not ih.ElementIntersected(xfemele->Id()))
     {
       const int* nodeidptrs = xfemele->NodeIds();
-      const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
+      const LINALG::Matrix<3,1> nodalpos(xfemele->Nodes()[0]->X());
 
       bool in_fluid = false;
       const int label = ih.PositionWithinConditionNP(nodalpos);
@@ -272,11 +262,11 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
   for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
   {
     const DRT::Node* node = ih.xfemdis()->lColNode(i);
-    const BlitzVec3 nodalpos(toBlitzArray(node->X()));
+    const LINALG::Matrix<3,1> nodalpos(node->X());
 
     const int node_gid = node->Id();
     bool voidenrichment_in_set = false;
-    //check for void enrichement in a given set, if such set already exists for this node_gid
+    //check for void enrichment in a given set, if such set already exists for this node_gid
     std::map<int, std::set<FieldEnr> >::const_iterator setiter = nodalDofSet.find(node_gid);
     if (setiter != nodalDofSet.end())
     {

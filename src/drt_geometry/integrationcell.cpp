@@ -27,16 +27,16 @@ static LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
         const DRT::Element::DiscretizationType     distype
         )
 {
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    LINALG::SerialDenseMatrix pos_array_blitz(dim,numnode);
-    for (int inode=0; inode<numnode; ++inode)
+  const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+  LINALG::SerialDenseMatrix pos_array_blitz(dim,numnode);
+  for (int inode=0; inode<numnode; ++inode)
+  {
+    for (int isd=0; isd<dim; ++isd)
     {
-        for (int isd=0; isd<dim; ++isd)
-        {
-            pos_array_blitz(isd,inode) = pos_array[inode][isd];
-        }
-    }    
-    return pos_array_blitz;
+      pos_array_blitz(isd,inode) = pos_array[inode][isd];
+    }
+  }    
+  return pos_array_blitz;
 }
 
 
@@ -48,36 +48,36 @@ static void ComputePhysicalCoordinates(
         LINALG::SerialDenseMatrix& physicalCoordinates
         )
 {
-    const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
-    //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-    const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
+  const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
+  //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
+  const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
+  
+  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+  
+  // return value
+  //BlitzMat physicalCoordinates(3, nen_cell);
+  physicalCoordinates.Zero();
+  // for each cell node, compute physical position
+  const int nen_ele = ele.NumNode();
+  LINALG::SerialDenseVector funct(nen_ele);
+  for (int inen = 0; inen < nen_cell; ++inen)
+  {
+    // shape functions
+    DRT::UTILS::shape_function_3D(funct,
+        (*nodalPosXiDomain)(0, inen),
+        (*nodalPosXiDomain)(1, inen),
+        (*nodalPosXiDomain)(2, inen),
+        ele.Shape());
     
-    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
-    // return value
-    //BlitzMat physicalCoordinates(3, nen_cell);
-    physicalCoordinates.Zero();
-    // for each cell node, compute physical position
-    const int nen_ele = ele.NumNode();
-    LINALG::SerialDenseVector funct(nen_ele);
-    for (int inen = 0; inen < nen_cell; ++inen)
+    for (int j = 0; j < nen_ele; ++j)
     {
-        // shape functions
-        DRT::UTILS::shape_function_3D(funct,
-                (*nodalPosXiDomain)(0, inen),
-                (*nodalPosXiDomain)(1, inen),
-                (*nodalPosXiDomain)(2, inen),
-                ele.Shape());
-
-        for (int j = 0; j < nen_ele; ++j)
-        {
-            for (int i = 0; i < 3; ++i)
-            {
-              physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
-            }
-        }
-    };
-    return;
+      for (int i = 0; i < 3; ++i)
+      {
+        physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
+      }
+    }
+  };
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -86,7 +86,7 @@ GEO::IntCell::IntCell(
         const DRT::Element::DiscretizationType distype) :
             distype_(distype)
 {
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -95,7 +95,7 @@ GEO::IntCell::IntCell(
         const IntCell& old) : 
             distype_(old.distype_)
 {
-    return;   
+  return;   
 }
  
 /*----------------------------------------------------------------------*
@@ -114,7 +114,7 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(ConvertPosArrayToLINALG<3>(domainCoordinates, distype))
 {
-    return;
+  return;
 }
 
 
@@ -126,7 +126,7 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(domainCoordinates)
 {
-    return;
+  return;
 }
 
         
@@ -137,7 +137,7 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(GetDefaultCoordinates(distype))
 {
-    return;
+  return;
 }
         
 /*----------------------------------------------------------------------*
@@ -147,111 +147,103 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(old),
             nodalpos_xi_domain_(old.nodalpos_xi_domain_)
 {
-    return;   
+  return;   
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::string GEO::DomainIntCell::toString() const
 {
-    std::stringstream s;
-    s << "DomainIntCell" << endl;
-    s << nodalpos_xi_domain_ << endl;
-//    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
-//    {
-//        s << "[";
-//        MPFOREACH(std::vector<double>, val, coordinate)
-//        {
-//            s << *val << " ";
-//        };
-//        s << "]" << endl;
-//    };
-    return s.str();
+  std::stringstream s;
+  s << "DomainIntCell" << endl;
+  s << nodalpos_xi_domain_ << endl;
+  return s.str();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void GEO::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, LINALG::SerialDenseMatrix& xyz_cell) const
 {
-    ComputePhysicalCoordinates(ele, (*this), xyz_cell);
-    return;
+  ComputePhysicalCoordinates(ele, (*this), xyz_cell);
+  return;
 }
 
 // set element nodal coordinates according to given distype
 LINALG::SerialDenseMatrix GEO::DomainIntCell::GetDefaultCoordinates(
         const DRT::Element::DiscretizationType distype) const
 {
-    const int nsd = 3;
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    LINALG::SerialDenseMatrix coords(3,numnode);
-    
-    switch (distype)
+  const int nsd = 3;
+  const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+  LINALG::SerialDenseMatrix coords(3,numnode);
+  
+  switch (distype)
+  {
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+  {
+    for(int inode = 0; inode < numnode; ++inode)
     {
-        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
-        {
-            for(int inode = 0; inode < numnode; ++inode)
-            {
-                for(int k = 0; k < nsd; ++k)
-                {
-                    coords(k,inode) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[inode][k];
-                }
-            }
-            break;
-        }
-        case DRT::Element::tet4: case DRT::Element::tet10:
-        {
-            for(int inode = 0; inode < numnode; ++inode)
-            {
-                for(int k = 0; k < nsd; ++k)
-                {
-                    coords(k,inode) = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[inode][k];
-                }
-            }
-            break;
-        }
-        default:
-            dserror("not supported in integrationcells. can be coded easily... ;-)");
+      for(int k = 0; k < nsd; ++k)
+      {
+        coords(k,inode) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[inode][k];
+      }
     }
-    return coords;
+    break;
+  }
+  case DRT::Element::tet4: case DRT::Element::tet10:
+  {
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      for(int k = 0; k < nsd; ++k)
+      {
+        coords(k,inode) = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[inode][k];
+      }
+    }
+    break;
+  }
+  default:
+    dserror("not supported in integrationcells. can be coded easily... ;-)");
+  }
+  return coords;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BlitzVec3 GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+LINALG::Matrix<3,1> GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
-    // number of space dimensions
-    const int nsd = 3;
-    
-    // physical positions of cell nodes
-    static LINALG::SerialDenseMatrix physcoord(nsd,27);
-    this->NodalPosXYZ(ele, physcoord);
-    
-    const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
-    
-    // center in local coordinates
-    LINALG::Matrix<3,1> localcenterpos;
-    localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
-
-    // shape functions
-    LINALG::SerialDenseVector funct(numnodecell);
-    DRT::UTILS::shape_function_3D(funct,
-            localcenterpos(0),
-            localcenterpos(1),
-            localcenterpos(2),
-            this->Shape());
-    
-    //interpolate position to x-space
-    BlitzVec3 x_interpol;
-    x_interpol = 0.0;
-    for (int inode = 0; inode < numnodecell; ++inode)
+  const int nsd = 3;
+  const int maxnode = 27;
+  
+  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
+  
+  if (numnodecell >= maxnode)
+    dserror("you need to increase size of fixedsize array!");
+  
+  // physical positions of cell nodes
+  static LINALG::SerialDenseMatrix physcoord(nsd,maxnode);
+  this->NodalPosXYZ(ele, physcoord);
+  
+  // center in local coordinates
+  const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(this->Shape()));
+  
+  // shape functions
+  LINALG::Matrix<maxnode,1> funct;
+  DRT::UTILS::shape_function_3D(funct,
+      localcenterpos(0),
+      localcenterpos(1),
+      localcenterpos(2),
+      this->Shape());
+  
+  //interpolate position to x-space
+  LINALG::Matrix<3,1> x_interpol(true);
+  for (int inode = 0; inode < numnodecell; ++inode)
+  {
+    for (int isd = 0; isd < nsd; ++isd)
     {
-        for (int isd = 0; isd < nsd; ++isd)
-        {
-            x_interpol(isd) += funct(inode)*physcoord(isd,inode);
-        }
+      x_interpol(isd) += physcoord(isd,inode)*funct(inode);
     }
-    
-    return x_interpol;
+  }
+  
+  return x_interpol;
 }
 
 
@@ -276,7 +268,7 @@ GEO::BoundaryIntCell::BoundaryIntCell(
 //      cout << DRT::DistypeToString(distype) << endl;
 //      dserror("something went wrong! A");
 //    }
-    return;
+  return;
 }
 
 
@@ -292,7 +284,7 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(domainCoordinates),
             nodalpos_xi_boundary_(boundaryCoordinates)
 {
-    return;
+  return;
 }
         
         
@@ -305,14 +297,14 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(old.nodalpos_xi_domain_),
             nodalpos_xi_boundary_(old.nodalpos_xi_boundary_)
 {
-    return;   
+  return;   
 }
      
 std::string GEO::BoundaryIntCell::toString() const
 {
-    std::stringstream s;
-    s << "BoundaryIntCell" << endl;
-    s << nodalpos_xi_domain_ << endl;
+  std::stringstream s;
+  s << "BoundaryIntCell" << endl;
+  s << nodalpos_xi_domain_ << endl;
 //    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
 //    {
 //        s << "[";
@@ -322,52 +314,58 @@ std::string GEO::BoundaryIntCell::toString() const
 //        };
 //        s << "]" << endl;
 //    };
-    return s.str();
+  return s.str();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::BoundaryIntCell::NodalPosXYZ(const DRT::Element& ele, LINALG::SerialDenseMatrix& xyz_cell) const
+void GEO::BoundaryIntCell::NodalPosXYZ(
+    const DRT::Element& ele,
+    LINALG::SerialDenseMatrix& xyz_cell) const
 {
-    ComputePhysicalCoordinates(ele, (*this), xyz_cell);
-    return;
+  ComputePhysicalCoordinates(ele, (*this), xyz_cell);
+  return;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BlitzVec3 GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+LINALG::Matrix<3,1> GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
-    // number of space dimensions
-    //const int nsd = 3;
-    
-    // physical positions of cell nodes
-    static LINALG::SerialDenseMatrix physcoord(3,27);
-    this->NodalPosXYZ(ele, physcoord);
-    
-    // center in local coordinates
-    const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
-
-    // shape functions
-    LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
-    DRT::UTILS::shape_function_2D(funct,
-            localcenterpos(0),
-            localcenterpos(1),
-            this->Shape());
-    
-    //interpolate position to x-space
-    BlitzVec3 x_interpol;
+  const int nsd = 3;
+  const int maxnode = 27;
+  
+  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
+  
+  if (numnodecell >= maxnode)
+    dserror("you need to increase size of fixedsize array!");
+  
+  // physical positions of cell nodes
+  static LINALG::SerialDenseMatrix physcoord(nsd,maxnode);
+  this->NodalPosXYZ(ele, physcoord);
+  
+  // center in local coordinates
+  const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
+  
+  // shape functions
+  LINALG::Matrix<maxnode,1> funct;
+  DRT::UTILS::shape_function_2D(funct,
+      localcenterpos(0),
+      localcenterpos(1),
+      this->Shape());
+  
+  //interpolate position to x-space
+  LINALG::Matrix<3,1> x_interpol(true);
+  for (int inode = 0; inode < numnodecell; ++inode)
+  {
     for (int isd = 0; isd < 3; ++isd)
     {
-        x_interpol(isd) = 0.0;
-        for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(this->Shape()); ++inode)
-        {
-            x_interpol(isd) += funct(inode)*physcoord(isd,inode);
-        }
+      x_interpol(isd) += physcoord(isd,inode)*funct(inode);
     }
-    
-    return x_interpol;
+  }
+  
+  return x_interpol;
 }
 
 #endif  // #ifdef CCADISCRET

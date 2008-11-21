@@ -121,7 +121,7 @@ public:
     std::string toString() const;
     
     //! get geometric center of the cell in physical coordinates
-    BlitzVec3 GetPhysicalCenterPosition(const DRT::Element& ele) const;
+    LINALG::Matrix<3,1> GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 private:
     
@@ -198,7 +198,7 @@ public:
     std::string toString() const;
     
     //! get geometric center of the cell in physical coordinates
-    BlitzVec3 GetPhysicalCenterPosition(const DRT::Element& ele) const;
+    LINALG::Matrix<3,1> GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 private:
     

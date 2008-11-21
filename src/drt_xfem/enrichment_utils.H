@@ -37,7 +37,7 @@ namespace XFEM
 std::map<XFEM::Enrichment, double> computeEnrvalMap(
         const RCP<XFEM::InterfaceHandle>  ih,               ///< interface onformation
         const std::set<XFEM::Enrichment>&     enrset,           ///< enrichments for which one seeks enrichment values
-        const BlitzVec3&                      actpos,           ///< a 3d position
+        const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
         );
 

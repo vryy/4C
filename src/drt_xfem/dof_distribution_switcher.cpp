@@ -156,7 +156,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
           const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
           const int node_gid = newdofkey.getGid();
           
-          const BlitzVec3 nodalpos(toBlitzArray(ih_->xfemdis()->gNode(node_gid)->X()));
+          const LINALG::Matrix<3,1> nodalpos(ih_->xfemdis()->gNode(node_gid)->X());
           const int label = ih_->PositionWithinConditionNP(nodalpos);
           bool in_fluid = false;
           if (label == 0)

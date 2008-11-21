@@ -28,15 +28,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-//! take a double C array of (hopefully) length 3 and convert it to a blitz TinyVector of length 3
-static inline BlitzVec3 toBlitzArray(const double* x)
-{
-  BlitzVec3 blitz_x;
-  blitz_x(0) = x[0];
-  blitz_x(1) = x[1];
-  blitz_x(2) = x[2];
-  return blitz_x;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -479,7 +470,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
       //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
       const std::set<FieldEnr> dofset = entry->second;
       
-      const BlitzVec3 actpos(toBlitzArray(xfemnode->X()));
+      const LINALG::Matrix<3,1> actpos(xfemnode->X());
       int idof = 0;
       for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
       {
