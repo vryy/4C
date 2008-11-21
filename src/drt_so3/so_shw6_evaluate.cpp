@@ -31,6 +31,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -1020,8 +1021,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
       for (int i=0; i<intpoints.nquad; ++i) {
         M[i].Shape(NUMSTR_WEG6,soshw6_easpoisthick);
         M[i](2,0) = intpoints.qxg[i][2];  // t at gp
-        //M[i](2,1) = intpoints.qxg[i][0]*intpoints.qxg[i][2];  // r*t at gp
-        //M[i](2,2) = intpoints.qxg[i][1]*intpoints.qxg[i][2];  // s*t at gp
+        //M[i](2,1) = intpoints.qxg[i][0]*intpoints.qxg[i][2];  // r*t at gp ->not activated at all due to tri
+        //M[i](2,2) = intpoints.qxg[i][1]*intpoints.qxg[i][2];  // s*t at gp ->not activated at all due to tri
       }
 
       // return adress of just evaluated matrix
@@ -1043,17 +1044,17 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
   edgevecs.at(0).resize(3); edgevecs.at(1).resize(3); edgevecs.at(2).resize(3);
   for (int i=0; i<3; ++i){
     edgevecs.at(0)[i] = this->Nodes()[1]->X()[i] - this->Nodes()[0]->X()[i]; //a
-    edgevecs.at(1)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[1]->X()[i]; //b
-    edgevecs.at(2)[i] = this->Nodes()[0]->X()[i] - this->Nodes()[2]->X()[i]; //c
+    edgevecs.at(1)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[0]->X()[i]; //b
+    edgevecs.at(2)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[1]->X()[i]; //c
   }
   
   // normalize
   for (int i=0; i<3; ++i){
     double d = 0.;
     for (int j=0; j<3; ++j) d += edgevecs.at(i)[j]*edgevecs.at(i)[j];
-    for (int j=0; j<3; ++j) edgevecs.at(i)[j] = edgevecs.at(i)[j]/d;
+    for (int j=0; j<3; ++j) edgevecs.at(i)[j] = edgevecs.at(i)[j]/sqrt(d);
   }
-  
+
   // scalar product of edge vectors
   double ab=0.; double bc=0.; double ac=0.;
   for (int i=0; i<3; ++i){
@@ -1063,8 +1064,8 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
   }
   
   // find min(ab,bc,ac)
-  if ( (abs(ab)<=abs(bc)) && (abs(ab)<=abs(ac)) ) return 0; // = ab
-  else if ( abs(bc)<=abs(ac) ) return 1; // = bc
+  if ( (abs(ab)<=abs(bc)) && (abs(ab)<=abs(ac)) ) return 1; // = ab
+  else if ( abs(bc)<=abs(ac) ) return 3; // = bc
   else return 2; // =ac
   
   // impossible case
@@ -1095,31 +1096,31 @@ int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
       int new_nodeids[NUMNOD_WEG6];
       
       switch (originnode){
-      case 0: {
+      case 1: {
         // no resorting necessary, already aligned with FIRST node
         actele->nodes_rearranged_ = true;
         break;
       }
-      case 1: {
+      case 2: {
         // resorting of nodes to align with SECOND node
-        new_nodeids[0] = actele->NodeIds()[0];
-        new_nodeids[1] = actele->NodeIds()[0];
+        new_nodeids[0] = actele->NodeIds()[1];
+        new_nodeids[1] = actele->NodeIds()[2];
         new_nodeids[2] = actele->NodeIds()[0];
-        new_nodeids[3] = actele->NodeIds()[0];
-        new_nodeids[4] = actele->NodeIds()[0];
-        new_nodeids[5] = actele->NodeIds()[0];
+        new_nodeids[3] = actele->NodeIds()[4];
+        new_nodeids[4] = actele->NodeIds()[5];
+        new_nodeids[5] = actele->NodeIds()[3];
         actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
       }
-      case 2: {
+      case 3: {
         // resorting of nodes to align with THIRD node
-        new_nodeids[0] = actele->NodeIds()[0];
+        new_nodeids[0] = actele->NodeIds()[2];
         new_nodeids[1] = actele->NodeIds()[0];
-        new_nodeids[2] = actele->NodeIds()[0];
-        new_nodeids[3] = actele->NodeIds()[0];
-        new_nodeids[4] = actele->NodeIds()[0];
-        new_nodeids[5] = actele->NodeIds()[0];
+        new_nodeids[2] = actele->NodeIds()[1];
+        new_nodeids[3] = actele->NodeIds()[5];
+        new_nodeids[4] = actele->NodeIds()[3];
+        new_nodeids[5] = actele->NodeIds()[4];
         actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
@@ -1127,8 +1128,11 @@ int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
       default: dserror("reordering of So_shw6 failed");
       }
     }
-
   }
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  dis.FillComplete(false,false,false);
+
   return 0;
 }
 

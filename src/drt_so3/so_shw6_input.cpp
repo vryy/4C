@@ -87,7 +87,7 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
     // full sohw6 EAS technology
     if      (strncmp(buffer,"soshw6",6)==0){
       eastype_ = soshw6_easpoisthick; // EAS to allow linear thickness strain
-      neas_ = 1;                      // number of eas parameters
+      neas_ = soshw6_easpoisthick;    // number of eas parameters
       soshw6_easinit();
     }
     // no EAS technology

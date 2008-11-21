@@ -396,6 +396,34 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
+        case DRT::Element::wedge6:
+        {
+            const int nLine = 9;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_wedge15_lines[i][j];
+            }
+            break;
+        }
+        case DRT::Element::wedge15:
+        {
+            const int nLine = 9;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_wedge15_lines[i][j];
+            }
+            break;
+        }
         case DRT::Element::quad9:
         case DRT::Element::quad8:
         {
