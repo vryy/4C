@@ -28,7 +28,6 @@ Maintainer: Burkhard Bornemann
 #endif
 
 #include "stru_dyn_nln_drt.H"
-#include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"

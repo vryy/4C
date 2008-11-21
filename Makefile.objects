@@ -168,7 +168,6 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \
                 src/drt_structure/strugenalpha.o \
                 src/drt_structure/strugenalpha_lsnewton.o \
-                src/drt_structure/stru_genalpha_zienxie_drt.o \
                 src/drt_structure/strtimint.o \
                 src/drt_structure/strtimint_vector.o \
                 src/drt_structure/strtimint_impl.o \
@@ -1250,9 +1249,6 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/xdofmapcreation.o \
                     src/drt_xfem/xfsi_searchtree.o \
                     src/drt_xfem/geometry_service.o
-#               time adaptivity
-OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
-                  src/drt_timada/ta_zienkiewiczxie.o
 #               inverse analysis
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
 #               low-Mach-number flow

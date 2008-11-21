@@ -27,9 +27,6 @@ Maintainer: Burkhard Bornemann
 #include <mpi.h>
 #endif
 
-#include "stru_dyn_nln_drt.H"
-#include "stru_genalpha_zienxie_drt.H"
-#include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
@@ -95,4 +92,5 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
   return sta;
 }
 
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

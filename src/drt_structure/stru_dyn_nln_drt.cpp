@@ -23,7 +23,6 @@ Maintainer: Michael Gee
 #endif
 
 #include "stru_dyn_nln_drt.H"
-#include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
@@ -53,7 +52,6 @@ void caldyn_drt()
 {
   // get input lists
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY");
 
   // major switch to different time integrators
   switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
@@ -63,17 +61,7 @@ void caldyn_drt()
     break;
   case STRUCT_DYNAMIC::gen_alfa:
   case STRUCT_DYNAMIC::gen_alfa_statics:
-    switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
-    {
-    case TIMADA_DYNAMIC::timada_kind_none:
-      dyn_nlnstructural_drt();
-      break;
-    case TIMADA_DYNAMIC::timada_kind_zienxie:
-      stru_genalpha_zienxie_drt();
-      break;
-    default:
-      dserror("unknown time adaption scheme '%s'", sdyn.get<std::string>("TA_KIND").c_str());
-    }
+    dyn_nlnstructural_drt();
     break;
   case STRUCT_DYNAMIC::Gen_EMM:
     dserror("GEMM not supported");
