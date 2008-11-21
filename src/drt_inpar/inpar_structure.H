@@ -22,6 +22,13 @@ namespace INPAR
   namespace STR
   {
 
+    /// possible constraint solvers
+    enum ConSolveAlgo
+    {
+      consolve_direct,  ///< ???
+      consolve_iterative  ///< ???
+    };
+
     /// Type of structural stress output
     /// (this enum represents the input file parameter STRUCT_STRESS)
     enum StressType

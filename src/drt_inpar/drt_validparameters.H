@@ -62,15 +62,6 @@ namespace INPAR {}
 */
 namespace INPUTPARAMS
 {
-
-  //--------------------------------------STRUCTURAL DYNAMIC
-  
-  /// possible constraint solvers
-  enum ConSolveAlgo
-  {
-    consolve_direct,
-    consolve_iterative
-  };
 }
 
 namespace DRT {

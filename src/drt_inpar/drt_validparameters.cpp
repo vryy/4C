@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -509,13 +510,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   DoubleParameter("UZAWATOL",1.0E-8,"Tolerance for iterative solve with Uzawa algorithm",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
-  setStringToIntegralParameter<int>("UZAWAALGO","iterative","",
+  setStringToIntegralParameter<INPAR::STR::ConSolveAlgo>("UZAWAALGO","iterative","",
                                  tuple<std::string>(
                                    "iterative",
                                    "direct"),
-                                 tuple<int>(
-                                   INPUTPARAMS::consolve_iterative,
-                                   INPUTPARAMS::consolve_direct),
+                                 tuple<INPAR::STR::ConSolveAlgo>(
+                                   INPAR::STR::consolve_iterative,
+                                   INPAR::STR::consolve_direct),
                                  &sdyn);
 
   // convergence criteria adaptivity

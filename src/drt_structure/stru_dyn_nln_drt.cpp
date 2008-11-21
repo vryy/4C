@@ -31,6 +31,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "stru_resulttest.H"
 
 #include "../drt_inv_analysis/inv_analysis.H"
@@ -180,7 +181,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
       genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-      genalphaparams.set<int>   ("UZAWAALGO",getIntegralValue<int>(sdyn,"UZAWAALGO"));
+      genalphaparams.set<int>   ("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 

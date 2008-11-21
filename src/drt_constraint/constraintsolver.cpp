@@ -19,7 +19,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_utils.H"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*
@@ -95,7 +95,7 @@ void UTILS::ConstraintSolver::Setup
     // for StruTimIntImpl
     isadapttol_ = true;
     isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
-    algochoice = getIntegralValue<int>(params,"UZAWAALGO");
+    algochoice = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
   }
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
   uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
@@ -104,10 +104,10 @@ void UTILS::ConstraintSolver::Setup
   
   switch (algochoice)
   {
-  case (INPUTPARAMS::consolve_iterative):
+  case (INPAR::STR::consolve_iterative):
     algo_ = UTILS::ConstraintSolver::iterative;
   break;
-  case (INPUTPARAMS::consolve_direct):
+  case (INPAR::STR::consolve_direct):
     algo_ = UTILS::ConstraintSolver::direct;
 //    #ifdef PARALLEL
 //      dserror("Direct constraint solver is not working in parallel!");
