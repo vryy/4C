@@ -17,7 +17,7 @@ Maintainer: Georg Bauer
 #include "../drt_io/io_control.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_scatra.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
@@ -85,9 +85,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   scatratimeparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
   // --------------------type of time-integration (or stationary) scheme
-  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme =
-    Teuchos::getIntegralValue<INPUTPARAMS::ScaTraTimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
-  scatratimeparams->set<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo",timintscheme);
+  INPAR::SCATRA::TimeIntegrationScheme timintscheme =
+    Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+  scatratimeparams->set<INPAR::SCATRA::TimeIntegrationScheme>("time int algo",timintscheme);
 
   // --------------------------------------- time integration parameters
   // the default time step size
@@ -157,14 +157,14 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // additional parameters and algorithm construction depending on
   // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  if(timintscheme == INPUTPARAMS::timeint_stationary)
+  if(timintscheme == INPAR::SCATRA::timeint_stationary)
   {
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
     scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, output));
   }
-  else if (timintscheme == INPUTPARAMS::timeint_one_step_theta)
+  else if (timintscheme == INPAR::SCATRA::timeint_one_step_theta)
   {
     // -----------------------------------------------------------------
     // set additional parameters in list for one-step-theta scheme
@@ -178,14 +178,14 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     //------------------------------------------------------------------
     scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, output));
   }
-  else if (timintscheme == INPUTPARAMS::timeint_bdf2)
+  else if (timintscheme == INPAR::SCATRA::timeint_bdf2)
   {
     //------------------------------------------------------------------
     // create instance of time integration class (call the constructor)
     //------------------------------------------------------------------
     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams, output));
   }
-  else if (timintscheme == INPUTPARAMS::timeint_gen_alpha)
+  else if (timintscheme == INPAR::SCATRA::timeint_gen_alpha)
   {
     // -------------------------------------------------------------------
     // set additional parameters in list for generalized-alpha scheme

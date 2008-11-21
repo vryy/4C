@@ -142,7 +142,7 @@ void LOMA::Algorithm::PrepareTimeStep()
   // get density at n+1 and n
   GetDensityNp();
   GetDensityN();
-  if (ScaTraField().MethodName()==INPUTPARAMS::timeint_gen_alpha)
+  if (ScaTraField().MethodName()==INPAR::SCATRA::timeint_gen_alpha)
   {
     // get density time derivative at n
     GetDensityDtN();
@@ -180,7 +180,7 @@ void LOMA::Algorithm::OuterLoop()
   {
     itnum++;
 
-    if (ScaTraField().MethodName()==INPUTPARAMS::timeint_gen_alpha)
+    if (ScaTraField().MethodName()==INPAR::SCATRA::timeint_gen_alpha)
     {
       // get velocity (and pressure) field at intermediate time step n+alpha_F
       GetFluidVelPressAf();
@@ -207,7 +207,7 @@ void LOMA::Algorithm::OuterLoop()
     // get current density at n+1
     GetDensityNp();
 
-    if (ScaTraField().MethodName()==INPUTPARAMS::timeint_gen_alpha)
+    if (ScaTraField().MethodName()==INPAR::SCATRA::timeint_gen_alpha)
     {
       // compute time derivative of density
       ScaTraField().ComputeDensityDerivative();
@@ -249,7 +249,7 @@ void LOMA::Algorithm::Update()
   // get density at n+1 and n
   GetDensityNp();
   GetDensityN();
-  if (ScaTraField().MethodName()==INPUTPARAMS::timeint_gen_alpha)
+  if (ScaTraField().MethodName()==INPAR::SCATRA::timeint_gen_alpha)
   {
     // get density time derivative at n
     GetDensityDtN();

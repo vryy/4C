@@ -51,6 +51,8 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/avms_solver.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
+#include "../drt_inpar/inpar_scatra.H"
+
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -84,7 +86,7 @@ public:
   virtual ~ScaTraTimIntImpl();
 
   //! Provide enum of time integration scheme
-  enum INPUTPARAMS::ScaTraTimeIntegrationScheme MethodName(){return timealgo_;}
+  enum INPAR::SCATRA::TimeIntegrationScheme MethodName(){return timealgo_;}
 
   //! Provide title of time integration scheme
   std::string MethodTitle(){return MapTimIntEnumToString(MethodName());}
@@ -216,7 +218,7 @@ protected:
   //! helper function to get algorithm title
   std::string MapTimIntEnumToString
   (
-    const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term  //!< the enum
+    const enum INPAR::SCATRA::TimeIntegrationScheme term  //!< the enum
   );
 
   /// increment time and step value
@@ -293,7 +295,7 @@ protected:
   double maxtime_;
 
   /// used time integration scheme
-  INPUTPARAMS::ScaTraTimeIntegrationScheme timealgo_;
+  INPAR::SCATRA::TimeIntegrationScheme timealgo_;
 
   /// write results every upres_ steps
   int upres_;

@@ -57,7 +57,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   prbtype_  (params_->get<string>("problem type")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
-  timealgo_ (params_->get<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo")),
+  timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
   upres_    (params_->get<int>("write solution every")),
   uprestart_(params_->get<int>("write restart every")),
   writeflux_(params_->get<string>("write flux")),
@@ -228,22 +228,22 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 *----------------------------------------------------------------------*/
 std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
 (
-   const enum INPUTPARAMS::ScaTraTimeIntegrationScheme term
+   const enum INPAR::SCATRA::TimeIntegrationScheme term
 )
 {
   // length of return string is 14 due to usage in formated screen output
   switch (term)
   {
-  case INPUTPARAMS::timeint_one_step_theta :
+  case INPAR::SCATRA::timeint_one_step_theta :
     return "One-Step-Theta";
     break;
-  case INPUTPARAMS::timeint_bdf2 :
+  case INPAR::SCATRA::timeint_bdf2 :
     return "    BDF2      ";
     break;
-  case INPUTPARAMS::timeint_stationary :
+  case INPAR::SCATRA::timeint_stationary :
     return "  Stationary  ";
     break;
-  case INPUTPARAMS::timeint_gen_alpha :
+  case INPAR::SCATRA::timeint_gen_alpha :
     return "  Gen. Alpha  ";
     break;
   default :

@@ -63,18 +63,6 @@ namespace INPAR {}
 namespace INPUTPARAMS
 {
 
-
-  //--------------------------------------SCALAR TRANSPORT DYNAMIC
-
-  /// time integration schemes for scalar transport problems
-  enum ScaTraTimeIntegrationScheme
-  {
-    timeint_stationary,
-    timeint_one_step_theta,
-    timeint_bdf2,
-    timeint_gen_alpha
-  };
-  
   //--------------------------------------STRUCTURAL DYNAMIC
   
   /// possible constraint solvers

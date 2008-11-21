@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1127,7 +1128,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for scalar transport problems\n");
 
-  setStringToIntegralParameter<INPUTPARAMS::ScaTraTimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
+  setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
@@ -1135,11 +1136,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "BDF2",
                                  "Gen_Alpha"
                                  ),
-                               tuple<INPUTPARAMS::ScaTraTimeIntegrationScheme>(
-                                   INPUTPARAMS::timeint_stationary,
-                                   INPUTPARAMS::timeint_one_step_theta,
-                                   INPUTPARAMS::timeint_bdf2,
-                                   INPUTPARAMS::timeint_gen_alpha
+                               tuple<INPAR::SCATRA::TimeIntegrationScheme>(
+                                   INPAR::SCATRA::timeint_stationary,
+                                   INPAR::SCATRA::timeint_one_step_theta,
+                                   INPAR::SCATRA::timeint_bdf2,
+                                   INPAR::SCATRA::timeint_gen_alpha
                                  ),
                                &scatradyn);
 
