@@ -24,7 +24,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
-
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 namespace DRT
@@ -248,16 +248,15 @@ private:
   ConstraintElement& operator = (const ConstraintElement& old);
   
   /*!
-  \brief Create matrix with material configuration
-
+  \brief Create matrix with material configuration for 3 dimensions and 4 nodes
   */
   inline void MaterialConfiguration
   (
-    LINALG::SerialDenseMatrix& x, ///< nodal coords in material frame
-    const int& numdim             ///< number of dimensions
+    LINALG::Matrix<4,3>& x ///< nodal coords in material frame
   ) const
   {
-    const int numnode = NumNode();
+    const int numnode = 4;
+    const int numdim=3;
     for (int i=0; i<numnode; ++i)
     {
       for (int j = 0; j < numdim; ++j) 
@@ -269,104 +268,144 @@ private:
   }
   
   /*!
-  \brief Create matrix with spatial configuration
-
+  \brief Create matrix with material configuration for 2 dimensions and 3 nodes
   */
-  inline void SpatialConfiguration
+  inline void MaterialConfiguration
   (
-    LINALG::SerialDenseMatrix& x, ///< nodal coords in spatial frame
-    const vector<double> disp,  ///< displacements
-    const int& numdim   ///< number of dimensions
+    LINALG::Matrix<3,2>& x ///< nodal coords in material frame
   ) const
   {
-    const int numnode = NumNode();
+    const int numnode = 3;
+    const int numdim=2;
     for (int i=0; i<numnode; ++i)
     {
       for (int j = 0; j < numdim; ++j) 
       {
-        x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
+        x(i,j) = Nodes()[i]->X()[j];
       }
     }
     return;
   }
   
+  /*!
+  \brief Create matrix with spatial configuration for 3 dimensions and 4 nodes
+  */
+  inline void SpatialConfiguration
+  (   
+    LINALG::Matrix<4,3>& x, ///< nodal coords in spatial frame
+    const vector<double> disp  ///< displacements
+  ) const
+  {
+      const int numnode = 4;
+      const int numdim = 3;
+      for (int i=0; i<numnode; ++i)
+      {
+        for (int j = 0; j < numdim; ++j) 
+        {
+          x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
+        }
+      }
+      return;
+  }
+  
+  /*!
+  \brief Create matrix with spatial configuration for 2 dimensions and 3 nodes
+  */
+  inline void SpatialConfiguration
+  (   
+    LINALG::Matrix<3,2>& x, ///< nodal coords in spatial frame
+    const vector<double> disp  ///< displacements
+  ) const
+  {
+      const int numnode = 3;
+      const int numdim = 2;
+      for (int i=0; i<numnode; ++i)
+      {
+        for (int j = 0; j < numdim; ++j) 
+        {
+          x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
+        }
+      }
+      return;
+  }
+  
   /// compute normal for 3D case using the first three nodes to specify a plane
   void ComputeNormal3D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
-    LINALG::SerialDenseVector& elenormal  ///< resulting element normal
+    const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
+    LINALG::Matrix<3,1>& elenormal  ///< resulting element normal
   );
   
   /// Compute normal distance between plane and fourth node
   double ComputeNormalDist3D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,1>& elenormal  ///< element normal
   );
   
   /// Compute first derivative of normal distance with respect to the nodal displacements
   void ComputeFirstDeriv3D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<3,1>& elenormal  ///< element normal
   );
   
   /// Compute first derivative of normal distance with respect to the nodal displacements
   void ComputeSecondDeriv3D
   (
-    const LINALG::SerialDenseMatrix&,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseMatrix& elematrix,  ///< vector to store results into
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<3,1>& elenormal  ///< element normal
   );
 
   /// compute normal for 2D case using the first two nodes to specify a line
   void ComputeNormal2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
-    LINALG::SerialDenseVector& elenormal  ///< resulting element normal
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
+    LINALG::Matrix<2,1>& elenormal  ///< resulting element normal
   );
   
   /// Compute normal distance between line and third node
   double ComputeNormalDist2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
   
   /// Compute first derivatives of normal distance with respect to the nodal displacements
   void ComputeFirstDerivDist2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
   
   /// Compute second derivatives of normal distance with respect to the nodal displacements
   void ComputeSecondDerivDist2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseMatrix& elevector,  ///< matrix to store results into
-    const LINALG::SerialDenseVector& elenormal  ///< element normal
+    const LINALG::Matrix<2,1>& elenormal  ///< element normal
   );
 
   /// Compute angle at second node 
   double ComputeAngle2D
   (
-    const LINALG::SerialDenseMatrix& xc  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,2>& xc  ///< nodal coords in spatial frame
   );
   
   /// Compute first derivatives of angle at second node with respect to the nodal displacements
   void ComputeFirstDerivAngle2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseVector& elevector  ///< vector to store results into
   );
   
   /// Compute second derivatives of angle at second node with respect to the nodal displacements
   void ComputeSecondDerivAngle2D
   (
-    const LINALG::SerialDenseMatrix& xc,  ///< nodal coords in spatial frame
+    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseMatrix& elematrix  ///< matrix to store results into
   );
 
