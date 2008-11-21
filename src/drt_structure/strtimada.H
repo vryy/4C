@@ -40,6 +40,8 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
+#include "../drt_inpar/inpar_structure.H"
+
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
@@ -59,26 +61,18 @@ namespace STR
 
   public:
 
-    //! List of all available auxiliar schemes
-    enum NameEnum
-    {
-      name_vague,  //!< name is unknown
-      name_zienxie,  //!< Zienkiewicz-Xie method
-      name_ab2  //!< Adams-Bashforth 2nd order
-    };
-
     //! Provide the name as string
-    static std::string MapNameEnumToString
+    static std::string MapKindEnumToString
     (
-      const enum NameEnum term  //!< the enum
+      const enum INPAR::STR::TimAdaKind term  //!< the enum
     )
     {
       switch (term)
       {
-      case name_zienxie :
+      case INPAR::STR::timada_kind_zienxie :
         return "ZienkiewiczXie";
         break;
-      case name_ab2 :
+      case INPAR::STR::timada_kind_ab2 :
         return "AdamsBashforth2";
         break;
       default :
@@ -222,12 +216,12 @@ namespace STR
     //@{
 
     //! Provide the name
-    virtual enum NameEnum MethodName() = 0;
+    virtual enum INPAR::STR::TimAdaKind MethodName() = 0;
 
     //! Provide the name as string
     std::string MethodTitle()
     {
-      return MapNameEnumToString(MethodName());
+      return MapKindEnumToString(MethodName());
     }
 
     //! Provide local order of accuracy based upon linear test equation 
@@ -297,7 +291,7 @@ namespace STR
                            //!< of current step size relative to last converged one
     double sizeratioscale_;  //!< safety factor, should be lower than 1.0
     enum CtrlEnum errctrl_;  //!< type of control, see #CtrlEnum
-    enum TimIntVector::NormEnum errnorm_;  //!< norm for local error vector
+    enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
     double errtol_;  //!< target local error tolerance
     int errorder_;  //!< order of local error indication
     int adaptstepmax_;  //!< maximally permitted trials to find tolerable step size

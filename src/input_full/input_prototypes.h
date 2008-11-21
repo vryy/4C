@@ -91,8 +91,10 @@ void inpctr_dyn_tsi(
     TSI_DYNAMIC    *tsidyn);
 #endif
 
+#ifndef CCADISCRET
 void inpctr_dyn_timada(
     TIMADA_DYNAMIC* timada);
+#endif
 
 /*----------------------------------------------------------------------*
   |  input_ctr_head.c                                  m.gee 11/01       |

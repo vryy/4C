@@ -30,6 +30,7 @@ typedef union _ALLDYNA
 /*----------------------------------------------------------------------*
  | time adaptivity only for read in                     bborn 10/07     |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 typedef struct _TIMADA_DYNAMIC
 {
   enum _timadakindenum {
@@ -57,6 +58,7 @@ typedef struct _TIMADA_DYNAMIC
   INT adastpmax;                /* maximally permitted adaptive
                                  * step size iterations */
 } TIMADA_DYNAMIC;
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -172,7 +174,9 @@ INT                itwant;     /* requested number of newton iterations */
 DOUBLE             maxdt;      /* max allowed time step */
 DOUBLE             resultdt;   /* postprocessing time step */
 /* time step size adaptivity --- new style */
+#ifndef CCADISCRET
 TIMADA_DYNAMIC     timada;     /* time adaptivity data */
+#endif
 /* output */
 INT                writecounter; /* counter for output steps */
 } STRUCT_DYNAMIC;

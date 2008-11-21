@@ -1001,7 +1001,9 @@ sdyn->updevry_stress=1;
 sdyn->res_write_evry=1;
 sdyn->eigen=0;
 sdyn->timada.kind = timada_kind_none;  /* default time adaptivity is off */
+#ifndef CCADISCRET
 sdyn->timada.err_norm = timada_err_norm_vague; /* default error norm */
+#endif
 sdyn->predtype = pred_constdis;  /* default predictor */
 
 
@@ -1105,7 +1107,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("RESULTDT",&(sdyn->resultdt) ,&ierr);
 
 /*------ read time adaptivity (new style) */
+#ifndef CCADISCRET
    inpctr_dyn_timada(&(sdyn->timada));
+#endif
 
 /*------ finish */
    frread();
@@ -2237,6 +2241,7 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
 \author bborn
 \date 10/07
 */
+#ifndef CCADISCRET
 void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
 {
   INT ierr = 0;
@@ -2303,5 +2308,6 @@ void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
 #endif
   return;
 }
+#endif
 
 #endif

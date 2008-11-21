@@ -612,7 +612,7 @@ namespace STR
     //@{
     enum SolTechEnum itertype_;  //!< kind of iteration technique
     enum ConvCheckEnum itercnvchk_;  //!< convergence check
-    enum TimIntVector::NormEnum iternorm_;  //!< vector norm to 
+    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to 
     //!< check with
     int itermax_;  //!< maximally permitted iterations
     double toldisi_;  //!< tolerance residual displacements

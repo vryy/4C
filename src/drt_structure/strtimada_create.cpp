@@ -64,20 +64,20 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
   Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
 
   // auxiliar time integrator
-  switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::TimAdaKind>(tap,"KIND"))
   {
 
-  case TIMADA_DYNAMIC::timada_kind_none :
+  case INPAR::STR::timada_kind_none :
     // No adaptivity in time
     sta = Teuchos::null;
     break;
 
-  case TIMADA_DYNAMIC::timada_kind_zienxie :
+  case INPAR::STR::timada_kind_zienxie :
     // Zienkiewivz-Xie error indicator for generalised-alpha
     sta = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, tap, tis));
     break;
 
-  case TIMADA_DYNAMIC::timada_kind_ab2 :
+  case INPAR::STR::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
     sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, sdyn, xparams, tap, tis));
     break;

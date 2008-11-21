@@ -89,9 +89,9 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum TimAda::NameEnum MethodName()
+    enum INPAR::STR::TimAdaKind MethodName()
     {
-      return TimAda::name_zienxie;
+      return INPAR::STR::timada_kind_zienxie;
     }
 
     //! Provide local order of accuracy

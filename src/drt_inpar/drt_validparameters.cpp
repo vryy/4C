@@ -1845,16 +1845,16 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  setStringToIntegralParameter<int>(
+  setStringToIntegralParameter<INPAR::STR::TimAdaKind>(
     "KIND","None","Method for time step size adapivity",
     tuple<std::string>(
       "None",
       "ZienkiewiczXie",
       "AdamsBashforth2"),
-    tuple<int>(
-      TIMADA_DYNAMIC::timada_kind_none,
-      TIMADA_DYNAMIC::timada_kind_zienxie,
-      TIMADA_DYNAMIC::timada_kind_ab2),
+    tuple<INPAR::STR::TimAdaKind>(
+      INPAR::STR::timada_kind_none,
+      INPAR::STR::timada_kind_zienxie,
+      INPAR::STR::timada_kind_ab2),
     &list);
 
   DoubleParameter("OUTSYSPERIOD", 0.0, "Write system vectors (displacements, velocities, etc) every given period of time", &list);
@@ -1867,9 +1867,9 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   DoubleParameter("STEPSIZEMIN", 0.0, "Limit minimally allowed time step size (>0)", &list);
   DoubleParameter("SIZERATIOMAX", 0.0, "Limit maximally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
   DoubleParameter("SIZERATIOMIN", 0.0, "Limit minimally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
-  DoubleParameter("SIZERATIOSCALE", 0.0, "This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than 0", &list);
+  DoubleParameter("SIZERATIOSCALE", 0.9, "This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than 0", &list);
 
-  setStringToIntegralParameter<int>(
+  setStringToIntegralParameter<INPAR::STR::VectorNorm>(
     "LOCERRNORM", "Vague", "Vector norm to treat error vector with",
     tuple<std::string>(
       "Vague",
@@ -1877,12 +1877,12 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       "L2",
       "Rms",
       "Inf"),
-    tuple<int>(
-      TIMADA_DYNAMIC::timada_err_norm_vague,
-      TIMADA_DYNAMIC::timada_err_norm_l1,
-      TIMADA_DYNAMIC::timada_err_norm_l2,
-      TIMADA_DYNAMIC::timada_err_norm_rms,
-      TIMADA_DYNAMIC::timada_err_norm_inf),
+    tuple<INPAR::STR::VectorNorm>(
+      INPAR::STR::norm_vague,
+      INPAR::STR::norm_l1,
+      INPAR::STR::norm_l2,
+      INPAR::STR::norm_rms,
+      INPAR::STR::norm_inf),
     &list);
 
   DoubleParameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);

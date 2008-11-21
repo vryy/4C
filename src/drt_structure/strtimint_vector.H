@@ -20,6 +20,8 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <string>
 
+#include "../drt_inpar/inpar_structure.H"
+
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
@@ -41,18 +43,8 @@ namespace STR
 
   public:
 
-    //! Kind of vector norms available for convergence check
-    enum NormEnum
-    {
-      norm_vague,  //!< undetermined
-      norm_l1,  //!< L1/linear norm
-      norm_l2,  //!< L2/Euclidean norm
-      norm_rms,  //!< RMS/weighted-L2 norm
-      norm_inf  //!< Maximum/infinity norm
-    };
-
     //! Map vector norm identifaction string to enum term
-    static enum NormEnum MapNormStringToEnum
+    static enum INPAR::STR::VectorNorm MapNormStringToEnum
     (
       const std::string name  //!< name identification string
     );
@@ -60,13 +52,13 @@ namespace STR
     //! Map enum term to string
     static std::string MapNormEnumToString
     (
-      const enum NormEnum norm  //!< input enum term
+      const enum INPAR::STR::VectorNorm norm  //!< input enum term
     );
 
     //! Determine norm of force residual
     static double CalculateNorm
     (
-      const enum TimIntVector::NormEnum norm,  //!< norm to use
+      const enum INPAR::STR::VectorNorm norm,  //!< norm to use
       const Teuchos::RCP<Epetra_Vector> vect  //!< the vector
     );
 

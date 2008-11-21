@@ -22,12 +22,20 @@ namespace INPAR
   namespace STR
   {
 
+    /// @name Constraints
+    //@{
+
     /// possible constraint solvers
     enum ConSolveAlgo
     {
       consolve_direct,  ///< ???
       consolve_iterative  ///< ???
     };
+
+    //@}
+
+    /// @name Output
+    //@{
 
     /// Type of structural stress output
     /// (this enum represents the input file parameter STRUCT_STRESS)
@@ -47,6 +55,30 @@ namespace INPAR
       strain_gl       ///< output of Green-Lagrange strains
     };
 
+    //@}
+
+    /// @name Time adapivity
+    //@{
+
+    /// type of adaptivity in time
+    enum TimAdaKind
+    {
+      timada_kind_none,           ///< no time adaptivity
+      timada_kind_zienxie,        ///< Zienkiewicz-Xie indicator
+      timada_kind_ab2             ///< Adams-Bahsforth2 indicator
+    };
+
+    //@}
+
+    /// type of vector norm used for error/residual vectors
+    enum VectorNorm
+    {
+      norm_vague = 0,  ///< undetermined norm
+      norm_l1,         ///< L1/linear norm
+      norm_l2,         ///< L2/Euclidean norm
+      norm_rms,        ///< root mean square (RMS) norm
+      norm_inf         ///< Maximum/infinity norm
+    };
 
   }  // namespace STR
 

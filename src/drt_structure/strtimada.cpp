@@ -52,7 +52,7 @@ STR::TimAda::TimAda
   sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
   sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
   errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-  errnorm_(TimIntVector::MapNormStringToEnum(tap.get<std::string>("LOCERRNORM"))),
+  errnorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(tap,"LOCERRNORM")),
   errtol_(tap.get<double>("LOCERRTOL")),
   errorder_(1),  // CHANGE THIS CONSTANT
   adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),

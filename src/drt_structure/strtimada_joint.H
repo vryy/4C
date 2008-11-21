@@ -61,7 +61,7 @@ namespace STR
   public:
 
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
-    enum TimAda::NameEnum MapNameTimIntToTimAda
+    enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda
     (
       const enum TimInt::NameEnum term  //!< input enum term
     )
@@ -69,11 +69,11 @@ namespace STR
       switch (term)
       {
       case TimInt::name_ab2 :
-        return TimAda::name_ab2; 
+        return INPAR::STR::timada_kind_ab2;
         break; 
       default : 
         dserror("Cannot handle requested time integrator");
-        return TimAda::name_vague; 
+        return INPAR::STR::timada_kind_none;
         break;
       }
     }
@@ -179,7 +179,7 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum TimAda::NameEnum MethodName()
+    enum INPAR::STR::TimAdaKind MethodName()
     {
       return MapNameTimIntToTimAda(sti_->MethodName());
     }

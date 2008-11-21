@@ -56,25 +56,25 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   NOX::Epetra::Vector::NormType norm = NOX::Epetra::Vector::TwoNorm;
   NOX::StatusTest::NormF::ScaleType scalefres = NOX::StatusTest::NormF::Scaled;
   NOX::StatusTest::NormUpdate::ScaleType scaledisi = NOX::StatusTest::NormUpdate::Scaled;
-  if (iternorm_ == STR::TimIntVector::norm_l1)
+  if (iternorm_ == INPAR::STR::norm_l1)
   {
     norm = NOX::Epetra::Vector::OneNorm;
     scalefres = NOX::StatusTest::NormF::Unscaled;
     scaledisi = NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == TimIntVector::norm_l2)
+  else if (iternorm_ == INPAR::STR::norm_l2)
   {
     norm = NOX::Epetra::Vector::TwoNorm;
     scalefres = NOX::StatusTest::NormF::Unscaled;
     scaledisi = NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == TimIntVector::norm_rms)
+  else if (iternorm_ == INPAR::STR::norm_rms)
   {
     norm = NOX::Epetra::Vector::TwoNorm;
     scalefres = NOX::StatusTest::NormF::Scaled;
     scaledisi = NOX::StatusTest::NormUpdate::Scaled;
   }
-  else if (iternorm_ == TimIntVector::norm_inf)
+  else if (iternorm_ == INPAR::STR::norm_inf)
   {
     norm = NOX::Epetra::Vector::MaxNorm;
     scalefres = NOX::StatusTest::NormF::Unscaled;
