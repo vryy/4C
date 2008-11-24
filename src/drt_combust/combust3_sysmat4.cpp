@@ -1459,7 +1459,7 @@ static void SysmatBoundary4(
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
-        BlitzMat vel_boundary(3,numnode_boundary);
+        LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
         const DRT::Node*const* nodes = boundaryele->Nodes();
         {
           for (int inode = 0; inode < numnode_boundary; ++inode)

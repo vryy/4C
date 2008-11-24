@@ -1202,10 +1202,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 {
-  dserror("check which data was written. one might need 2 discretization writers: \n \
-           one for the output and one for the restart with changing vectors.\n \
-           Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
-
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
@@ -1283,11 +1279,11 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << endl;
+              cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
         if (elegid == 1 and elementvalues.Length() > 0)
         {
-          //std::cout << elementvalues << std::endl;
+          //std::cout << elementvalues << "\n";
           std::ofstream f;
           const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                                   + ".outflowpres.txt";
@@ -1297,7 +1293,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0) << endl;
+          f << time_ << "  " << elementvalues(0) << "\n";
 
           f.close();
         }
@@ -1679,16 +1675,11 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
           // draw uncutted element
           {
-            BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
+            LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
             const GEO::DomainIntCell cell(actele->Shape());
-            elevalues = 0.0;
-//            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-//                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
-
-            LINALG::SerialDenseMatrix xyze_ele = GEO::InitialPositionArrayBlitz(actele);
-                  
+            const LINALG::SerialDenseMatrix xyze_ele(GEO::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                actele->Shape(), elevalues, xyze_ele) << endl;
+                actele->Shape(), elevalues, xyze_ele) << "\n";
           }
 
         }
@@ -1712,7 +1703,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
 
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();

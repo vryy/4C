@@ -17,7 +17,6 @@ Maintainer: Florian Henke
 #include <Epetra_SerialDenseSolver.h>
 #include "../drt_geometry/vector_definitions.H"
 
-
 // little helper function for transition to fixed size arrays
 template<int dim>
 blitz::TinyVector<double,dim> toBlitzArray(const LINALG::Matrix<dim,1>& a)
@@ -107,7 +106,7 @@ static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, 
  */
 
 template <DRT::Element::DiscretizationType DISTYPE>
-BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
+LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
 {
   dserror("not adapted to xfem (, yet)!!!");
     
@@ -129,7 +128,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
   }
 
-  BlitzMat edeadng_(3,numnode,blitz::ColumnMajorArray<2>());
+  LINALG::SerialDenseMatrix edeadng_(3,numnode);
   if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
@@ -179,7 +178,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   else
   {
     // we have no dead load
-    edeadng_ = 0.;
+    edeadng_.Zero();
   }
   
   return edeadng_;
@@ -405,7 +404,7 @@ void gder2(
     |
     */
 
-    //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
+    //xder2_ = deriv2_(i,k)*xyze_(j,k);
     static LINALG::Matrix<6,3> xder2;
     xder2.MultiplyNT(deriv2,xyze);
 
@@ -428,7 +427,7 @@ void gder2(
     |       chainrulerhs          xder2
     */
 
-    //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
+    //derxy2_ = - xder2_(i,k)*derxy_(k,j);
     derxy2.Multiply(-1.0,xder2,derxy);
 
     /*
