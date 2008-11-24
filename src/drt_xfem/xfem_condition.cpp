@@ -81,7 +81,7 @@ void XFEM::InvertElementsByLabel(
       const int eleid = *eleiditer;
       if (labelByElementId.count(eleid) == 1)
         dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
-      labelByElementId[eleid] = xfemlabel;
+      labelByElementId.insert(make_pair(eleid,xfemlabel));
     }
   }
 }

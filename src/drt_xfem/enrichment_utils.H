@@ -14,203 +14,202 @@ Maintainer: Axel Gerstenberger
 #ifndef ENRICHMENT_UTILS_H
 #define ENRICHMENT_UTILS_H
 
+#include "interface.H"
 #include "dof_management_element.H"
 #include "xfem_enums.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
-
-
-class DRT::Element;
-class DRT::Discretization;
+#include "../drt_lib/drt_discret.H"
 
 namespace XFEM
 {
-
-  class InterfaceHandle;
-
-  /*!
-   * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
-   * 
-   * if one already knows, an which side of the discontinuity one computes something,
-   * the information can be given via approachdirection
-   */
-std::map<XFEM::Enrichment, double> computeEnrvalMap(
-        const RCP<XFEM::InterfaceHandle>  ih,               ///< interface onformation
-        const std::set<XFEM::Enrichment>&     enrset,           ///< enrichments for which one seeks enrichment values
+  
+  class ElementEnrichmentValues
+  {
+    
+  public:
+    
+    /*!
+    * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
+    * 
+    * if one already knows, an which side of the discontinuity one computes something,
+    * the information can be given via approachdirection
+    */
+    explicit ElementEnrichmentValues(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,               ///< interface onformation
+        const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
-        );
-
-/*!
- * \brief For a given situation compute the enriched shape functions
- * 
- * simplest case: jump or void enrichment
- * -> no chain rule, since enrichment function derivative is zero
- * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
- */
-template<class VI, class VO>
-void ComputeEnrichedNodalShapefunction(
-    const DRT::Element&                        ele,
-    const RCP<XFEM::InterfaceHandle>           ih,
-    const XFEM::ElementDofManager&             dofman,
-    const XFEM::PHYSICS::Field                 field,
-    const std::map<XFEM::Enrichment, double>&  enrvals,
-    const VI&                                  funct,
-    VO&                                        enr_funct
-    )
-{
-    const int* nodeids = ele.NodeIds();
+    );
     
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
+    /*!
+    * \brief For a given situation compute the enriched shape functions
+    * 
+    * simplest case: jump or void enrichment
+    * -> no chain rule, since enrichment function derivative is zero
+    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    */
+    template<class VI, class VO>
+    inline void ComputeEnrichedNodalShapefunction(
+        const XFEM::PHYSICS::Field                 field,
+        const VI&                                  funct,
+        VO&                                        enr_funct
+    ) const
     {
+      const int* nodeids = ele_.NodeIds();
+      const int numnode = ele_.NumNode();
+      
+      int dofcounter = 0;
+      for (int inode=0; inode < numnode; ++inode)
+      {
         const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                dofcounter += 1;
-            }
+          if (enrfield->getField() == field)
+          {
+            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            dofcounter += 1;
+          }
         }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-/*!
- * \brief For a given situation compute the enriched shape functions
- * 
- * simplest case: jump or void enrichment
- * -> no chain rule, since enrichment function derivative is zero
- * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
- */
-template<class VI, class MI, class VO, class MO>
-void ComputeEnrichedNodalShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
+    
+    /*!
+    * \brief For a given situation compute the enriched shape functions
+    * 
+    * simplest case: jump or void enrichment
+    * -> no chain rule, since enrichment function derivative is zero
+    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    */
+    template<class VI, class MI, class VO, class MO>
+    inline void ComputeEnrichedNodalShapefunction(
         const XFEM::PHYSICS::Field field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
         const VI& funct,
         const MI& derxy,
         VO& enr_funct,
         MO& enr_derxy
-        )
-{
-    const int* nodeids = ele.NodeIds();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
+    ) const
     {
+      const int* nodeids = ele_.NodeIds();
+      const int numnode = ele_.NumNode();
+      
+      int dofcounter = 0;
+      for (int inode=0; inode < numnode; ++inode)
+      {
         const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
-            if (enrfield->getField() == field)
+          if (enrfield->getField() == field)
+          {
+            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            for (int isd = 0; isd < 3; ++isd)
             {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                for (int isd = 0; isd < 3; ++isd)
-                {
-                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-                }
-                dofcounter += 1;
+              enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
             }
+            dofcounter += 1;
+          }
         }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-/*!
- * \brief For a given situation compute the enriched shape functions
- * 
- * simplest case: jump or void enrichment
- * -> no chain rule, since enrichment function derivative is zero
- * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
- */
-template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
-void ComputeEnrichedNodalShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
+    
+    /*!
+    * \brief For a given situation compute the enriched shape functions
+    * 
+    * simplest case: jump or void enrichment
+    * -> no chain rule, since enrichment function derivative is zero
+    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    */
+    template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
+    inline void ComputeEnrichedNodalShapefunction(
         const XFEM::PHYSICS::Field field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
         const VI& funct,
         const MI1& derxy,
         const MI2& derxy2,
         VO& enr_funct,
         MO1& enr_derxy,
         MO2& enr_derxy2
-        )
-{
-    const int* nodeids = ele.NodeIds();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode < ele.NumNode(); ++inode)
+    ) const
     {
+      const int* nodeids = ele_.NodeIds();
+      const int numnode = ele_.NumNode();
+      
+      int dofcounter = 0;
+      for (int inode=0; inode < numnode; ++inode)
+      {
         const int gid = nodeids[inode];
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
-            if (enrfield->getField() == field)
+          if (enrfield->getField() == field)
+          {
+            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            for (int isd = 0; isd < 3; ++isd)
             {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                for (int isd = 0; isd < 3; ++isd)
-                {
-                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-                }
-                for (int isd = 0; isd < 6; ++isd)
-                {
-                  enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
-                }
-                dofcounter += 1;
+              enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
             }
+            for (int isd = 0; isd < 6; ++isd)
+            {
+              enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
+            }
+            dofcounter += 1;
+          }
         }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-/*!
- * \brief For a given situation compute the enriched shape functions
- * 
- * simplest case: jump or void enrichment
- * -> no chain rule, since enrichment function derivative is zero
- * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
- */
-void ComputeEnrichedElementShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
+    
+    /*!
+    * \brief For a given situation compute the enriched shape functions
+    * 
+    * simplest case: jump or void enrichment
+    * -> no chain rule, since enrichment function derivative is zero
+    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    */
+    void ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
         const LINALG::SerialDenseVector& funct,
         LINALG::SerialDenseVector& enr_funct
-        );
-
-/*!
- * \brief For a given situation compute the enriched shape functions
- * 
- * simplest case: jump or void enrichment
- * -> no chain rule, since enrichment function derivative is zero
- * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
- */
-void ComputeEnrichedElementShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
+    ) const;
+    
+    /*!
+    * \brief For a given situation compute the enriched shape functions
+    * 
+    * simplest case: jump or void enrichment
+    * -> no chain rule, since enrichment function derivative is zero
+    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    */
+    void ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
         const LINALG::SerialDenseVector& funct,
         const LINALG::SerialDenseMatrix& derxy,
         LINALG::SerialDenseVector& enr_funct,
         LINALG::SerialDenseMatrix& enr_derxy
-        );
+    ) const;
+    
+  private:
+    
+    //! don't want default constructor
+    explicit ElementEnrichmentValues();
+    
+    const DRT::Element&                        ele_;
+    //  const RCP<XFEM::InterfaceHandle>           ih_;
+    const XFEM::ElementDofManager&             dofman_;
+    
+    std::map<XFEM::Enrichment, double>        enrvals_;
+    
+  };
+
 
 //! for output, compute values on integration cells
 void computeScalarCellNodeValuesFromNodalUnknowns(

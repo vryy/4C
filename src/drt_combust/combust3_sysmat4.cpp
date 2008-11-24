@@ -436,11 +436,12 @@ static void SysmatDomain4(
           }
         }
             
-        const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        const XFEM::ElementEnrichmentValues enrvals(
+              *ele,
               ih,
-              dofman.getUniqueEnrichments(),
+              dofman,
               cellcenter,
-              XFEM::Enrichment::approachUnknown));
+              XFEM::Enrichment::approachUnknown);
         
         const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
         
@@ -556,12 +557,8 @@ static void SysmatDomain4(
 //                      XFEM::Enrichment::approachUnknown));
               
                 // shape function for nodal dofs
-                XFEM::ComputeEnrichedNodalShapefunction(
-                        *ele,
-                        ih,
-                        dofman,
+                enrvals.ComputeEnrichedNodalShapefunction(
                         Velx,
-                        enrvals,
                         funct,
                         derxy,
                         derxy2, 
@@ -593,12 +590,8 @@ static void SysmatDomain4(
                     static LINALG::SerialDenseVector enr_funct_stress(3*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
                   
                     // shape functions for element dofs
-                    XFEM::ComputeEnrichedElementShapefunction(
-                            *ele,
-                            ih,
-                            dofman,
+                    enrvals.ComputeEnrichedElementShapefunction(
                             Sigmaxx,
-                            enrvals,
                             funct_stress,
                             enr_funct_stress);
                     
@@ -1578,19 +1571,16 @@ static void SysmatBoundary4(
             
             if (dofman.getUniqueEnrichments().size() > 1)
               dserror("for an intersected element, we assume only 1 enrichment for now!");
-            const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+            const XFEM::ElementEnrichmentValues enrvals(
+                  *ele,
                   ih,
-                  dofman.getUniqueEnrichments(),
+                  dofman,
                   gauss_pos_xyz,
-                  XFEM::Enrichment::approachFromPlus));
+                  XFEM::Enrichment::approachFromPlus);
             
             // shape function for nodal dofs
-            XFEM::ComputeEnrichedNodalShapefunction(
-                    *ele,
-                    ih,
-                    dofman,
+            enrvals.ComputeEnrichedNodalShapefunction(
                     Velx,
-                    enrvals,
                     funct,
                     enr_funct);
             
@@ -1610,12 +1600,8 @@ static void SysmatBoundary4(
 //                    enr_derxy2);
 
             // shape functions for element dofs
-            XFEM::ComputeEnrichedElementShapefunction(
-                    *ele,
-                    ih,
-                    dofman,
+            enrvals.ComputeEnrichedElementShapefunction(
                     Sigmaxx,
-                    enrvals,
                     funct_stress,
                     enr_funct_stress);
                 

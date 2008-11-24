@@ -17,32 +17,32 @@ Maintainer: Axel Gerstenberger
 
 #include "enrichment_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
-#include "interfacexfsi.H"
 #include "coordinate_transformation.H"
 
 
-class DRT::Discretization;
-
-
-std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
-        const RCP<XFEM::InterfaceHandle>      ih,
-        const std::set<XFEM::Enrichment>&     enrset,
+XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,               ///< interface information
+        const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,
         const XFEM::Enrichment::ApproachFrom  approachdirection
-        )
+        ) :
+          ele_(ele),
+          dofman_(dofman) 
 {
-    std::map<XFEM::Enrichment, double> enrvals;
+    enrvals_.clear();
+    const std::set<XFEM::Enrichment>& enrset = dofman.getUniqueEnrichments();
     //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
         const double enrval = enriter->EnrValue(actpos, *ih, approachdirection);
-        enrvals.insert(make_pair((*enriter), enrval));
+//        enrvals_.insert(make_pair((*enriter), enrval));
+        enrvals_[*enriter] = enrval;
     }
-    return enrvals;
+    return;
 }
 
 
@@ -50,20 +50,16 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedElementShapefunction(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager&        dofman,
+void XFEM::ElementEnrichmentValues::ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field            field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
-        const LINALG::SerialDenseVector&                       funct,
-        LINALG::SerialDenseVector&                             enr_funct
-        )
+        const LINALG::SerialDenseVector&      funct,
+        LINALG::SerialDenseVector&            enr_funct
+        ) const
 {
     int dofcounter = 0;
     
-    const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getEnrichedFieldsPerEleField(field));
-    const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
+    const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+    const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
     const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
     dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
@@ -71,33 +67,29 @@ void XFEM::ComputeEnrichedElementShapefunction(
     {
       for (int inode = 0; inode < numvirtualnode; ++inode)
       {
-        const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+        const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
         enr_funct(dofcounter) = funct(inode) * enrval;
         dofcounter += 1;
       }
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedElementShapefunction(
-        const DRT::Element&                        ele,
-        const RCP<XFEM::InterfaceHandle>           ih,
-        const XFEM::ElementDofManager&             dofman,
+void XFEM::ElementEnrichmentValues::ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field                 field,
-        const std::map<XFEM::Enrichment, double>&  enrvals,
         const LINALG::SerialDenseVector&           funct,
         const LINALG::SerialDenseMatrix&           derxy,
         LINALG::SerialDenseVector&                 enr_funct,
         LINALG::SerialDenseMatrix&                 enr_derxy
-        )
+        ) const
 {
     int dofcounter = 0;
 
-    const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getEnrichedFieldsPerEleField(field));
-    const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
+    const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+    const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
     const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
     dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
@@ -105,7 +97,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
     {
       for (int inode = 0; inode < numvirtualnode; ++inode)
       {
-        const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+        const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
         enr_funct(dofcounter) = funct(inode) * enrval;
         for (int isd = 0; isd < 3; ++isd)
         {
@@ -114,7 +106,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
         dofcounter += 1;
       }
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
@@ -134,11 +126,12 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
-  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+  const XFEM::ElementEnrichmentValues enrvals(
+        ele,
         ih,
-        dofman.getUniqueEnrichments(),
+        dofman,
         cellcenterpos,
-        XFEM::Enrichment::approachUnknown));
+        XFEM::Enrichment::approachUnknown);
   
   cellvalues.Zero();
   for (int inen = 0; inen < cell.NumNode(); ++inen)
@@ -153,7 +146,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
 
     const int numparam  = dofman.NumDofPerField(field);
     LINALG::SerialDenseVector enr_funct(numparam);
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
+    enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -181,11 +174,12 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
   
-  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+  const XFEM::ElementEnrichmentValues enrvals(
+        ele,
         ih,
-        dofman.getUniqueEnrichments(),
+        dofman,
         cellcenterpos,
-        XFEM::Enrichment::approachUnknown));
+        XFEM::Enrichment::approachUnknown);
 
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
@@ -209,7 +203,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
       eleval_distype);
 
     LINALG::SerialDenseVector enr_funct(numparam);
-    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
+    enrvals.ComputeEnrichedElementShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -237,11 +231,12 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
   flush(cout);
-  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+  const XFEM::ElementEnrichmentValues enrvals(
+        ele,
         ih,
-        dofman.getUniqueEnrichments(),
+        dofman,
         cellcenterpos,
-        XFEM::Enrichment::approachUnknown));
+        XFEM::Enrichment::approachUnknown);
   
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
@@ -265,7 +260,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
       eleval_distype);
 
     LINALG::SerialDenseVector enr_funct(numparam);
-    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
+    enrvals.ComputeEnrichedElementShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -303,11 +298,12 @@ void XFEM::computeVectorCellNodeValues(
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
-  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+  const XFEM::ElementEnrichmentValues enrvals(
+        ele,
         ih,
-        dofman.getUniqueEnrichments(),
+        dofman,
         cellcenterpos,
-        XFEM::Enrichment::approachUnknown));
+        XFEM::Enrichment::approachUnknown);
   
   // cell corner nodes
   //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
@@ -323,7 +319,7 @@ void XFEM::computeVectorCellNodeValues(
       (*nodalPosXiDomain)(1,inen),
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
+    enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -357,11 +353,12 @@ void XFEM::computeVectorCellNodeValues(
   // -> we use the center of the cell to determine, where we come from
   const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
-  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+  const XFEM::ElementEnrichmentValues enrvals(
+        ele,
         ih,
-        dofman.getUniqueEnrichments(),
+        dofman,
         cellcenterpos,
-        XFEM::Enrichment::approachFromPlus));
+        XFEM::Enrichment::approachFromPlus);
   
   // cell corner nodes
   //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
@@ -378,7 +375,7 @@ void XFEM::computeVectorCellNodeValues(
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
 
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
+    enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
