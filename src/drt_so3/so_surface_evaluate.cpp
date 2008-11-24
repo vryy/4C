@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
+#include <blitz/array.h>
 #include "so_surface.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
