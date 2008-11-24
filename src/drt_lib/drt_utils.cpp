@@ -1305,7 +1305,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretizatio
     for (unsigned i=0; i<conds.size(); ++i)
     {
       std::map<int,RefCountPtr<DRT::Element> >& geometry = conds[i]->Geometry();
-      for (std::map<int,RefCountPtr<DRT::Element> >::iterator iter=geometry.begin();
+      for (std::map<int,RefCountPtr<DRT::Element> >::const_iterator iter=geometry.begin();
            iter!=geometry.end();
            ++iter)
       {
@@ -1461,7 +1461,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
   std::set<int> otherdofset(fullmap->MyGlobalElements(),
                   fullmap->MyGlobalElements() + fullmap->NumMyElements());
   
-  std::set<int>::iterator conditer;
+  std::set<int>::const_iterator conditer;
   for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
   {
     otherdofset.erase(*conditer);
