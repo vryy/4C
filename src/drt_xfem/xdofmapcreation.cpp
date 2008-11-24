@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
  */
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
 #include "xdofmapcreation.H"
 #include "xfem_condition.H"
 #include "enrichment_utils.H"

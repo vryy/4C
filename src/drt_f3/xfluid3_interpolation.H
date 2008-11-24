@@ -135,12 +135,12 @@ namespace XFLUID
 //    element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(eledistype);
 //    element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(eledistype);
 //    element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmaxx] = XFLUID::getStressInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmayy] = XFLUID::getStressInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmazz] = XFLUID::getStressInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmaxy] = XFLUID::getStressInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmaxz] = XFLUID::getStressInterpolationType3D(eledistype);
-    element_ansatz[XFEM::PHYSICS::Sigmayz] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxx,XFLUID::getStressInterpolationType3D(eledistype)));
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayy,XFLUID::getStressInterpolationType3D(eledistype)));
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmazz,XFLUID::getStressInterpolationType3D(eledistype)));
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxy,XFLUID::getStressInterpolationType3D(eledistype)));
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxz,XFLUID::getStressInterpolationType3D(eledistype)));
+    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayz,XFLUID::getStressInterpolationType3D(eledistype)));
     return element_ansatz;
   }
 }

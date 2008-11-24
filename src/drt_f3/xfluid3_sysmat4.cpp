@@ -348,7 +348,7 @@ static void SysmatDomain4(
     const double visc = material->m.fluid->viscosity;
 
     // flag for higher order elements
-    const bool higher_order_ele = XFEM::isHigherOrderElement<DISTYPE>();
+    const bool higher_order_ele = XFLUID::isHigherOrderElement<DISTYPE>();
     //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
@@ -422,7 +422,7 @@ static void SysmatDomain4(
               cellcenter,
               XFEM::Enrichment::approachUnknown);
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -493,7 +493,7 @@ static void SysmatDomain4(
             {
                 static LINALG::Matrix<6,numnode> deriv2;
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-                XFEM::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+                XFLUID::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
             else
             {
@@ -708,7 +708,7 @@ static void SysmatDomain4(
             static LINALG::Matrix<3,3> tau;
             if (tauele_unknowns_present)
             {
-              XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
+              XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -1494,7 +1494,7 @@ static void SysmatBoundary4(
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
             
             // position of the gausspoint in physical coordinates
-//            gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
+            // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
             LINALG::Matrix<3,1> gauss_pos_xyz(true);
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
@@ -1637,7 +1637,7 @@ static void SysmatBoundary4(
 
             // get viscous stress unknowns
             static LINALG::Matrix<3,3> tau;
-            XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
+            XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;

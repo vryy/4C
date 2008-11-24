@@ -1333,9 +1333,9 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
-    << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename    << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_   << ".pos";
+    filenamedel << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1352,7 +1352,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1373,11 +1373,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
-        if(elementvalues.size() != 0)
-        {
-          //cout << "eleval DiscPres" << endl;
-          //cout << elementvalues << endl;
-        }
+
         const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
         for (GEO::DomainIntCells::const_iterator cell =
@@ -1388,11 +1384,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
               *cell, field, elementvalues, cellvalues);
           LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
-          if(elementvalues.size() != 0)
-          {
-            //cout << "cellvalues DiscPres" << endl;
-            //cout << cellvalues << endl;
-          }
+
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
@@ -1473,7 +1465,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 

@@ -32,7 +32,6 @@ Maintainer: Florian Henke
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_geometry/vector_definitions.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -1171,7 +1170,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArrayBlitz(actele);
+        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1253,7 +1252,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1274,7 +1273,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
-        if(elementvalues.size() != 0)
+        if(elementvalues.Length() != 0)
         {
           //cout << "eleval DiscPres" << endl;
           //cout << elementvalues << endl;
@@ -1289,7 +1288,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
               *cell, field, elementvalues, cellvalues);
           LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
-          if(elementvalues.size() != 0)
+          if(elementvalues.Length() != 0)
           {
             //cout << "cellvalues DiscPres" << endl;
             //cout << cellvalues << endl;
@@ -1374,7 +1373,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 

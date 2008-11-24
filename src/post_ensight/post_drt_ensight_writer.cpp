@@ -15,6 +15,7 @@
 #ifdef CCADISCRET
 
 #include "post_drt_ensight_writer.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include <string>
 
 using namespace std;

@@ -13,59 +13,12 @@ Maintainer: Axel Gerstenberger
 #define XFLUID3_UTILS_H
 
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_xfem/dof_management_element.H"
+//#include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
 #include <Epetra_SerialDenseSolver.h>
 
-namespace XFEM
+namespace XFLUID
 {
-  
-/*! get number of unknowns for this field
- * use the dofmanager in the general case,
- * otherwise use a given number numnode
- */
-template<XFEM::AssemblyType>
-inline int getNumParam(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
-        const int)
-{
-    return dofman.NumDofPerField(field);
-}
-template<> 
-inline int getNumParam<XFEM::standard_assembly>(
-        const XFEM::ElementDofManager&,
-        const XFEM::PHYSICS::Field,
-        const int numnode)
-{
-    return numnode;
-}
-
-//! determine number of parameter
-template<int NUMNODE, XFEM::AssemblyType ASSTYPE>
-struct NumParam
-{
-  static int get(
-     const XFEM::ElementDofManager& dofman,
-     const XFEM::PHYSICS::Field     field
-     )
-  {
-    return dofman.NumDofPerField(field);
-  }
-};
-
-/// determine number of parameter for standard_assembly
-template<int NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
-{
-  static int get(
-      const XFEM::ElementDofManager& dofman,
-      const XFEM::PHYSICS::Field     field
-      )
-  {
-    return NUMNODE;
-  }
-};
-
 
 template<class M1, class M2, class M3>
 static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
@@ -625,11 +578,6 @@ bool isHigherOrderElement()
   return hoel;
 }
 
-
-} // namespace XFEM
-
-namespace XFLUID
-{
 
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>

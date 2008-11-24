@@ -293,6 +293,52 @@ XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
     const int*                 nodeids
 );
 
+/*! get number of unknowns for this field
+ * use the dofmanager in the general case,
+ * otherwise use a given number numnode
+ */
+template<XFEM::AssemblyType>
+inline int getNumParam(
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field     field,
+        const int)
+{
+    return dofman.NumDofPerField(field);
+}
+template<> 
+inline int getNumParam<XFEM::standard_assembly>(
+        const XFEM::ElementDofManager&,
+        const XFEM::PHYSICS::Field,
+        const int numnode)
+{
+    return numnode;
+}
+
+//! determine number of parameter
+template<int NUMNODE, XFEM::AssemblyType ASSTYPE>
+struct NumParam
+{
+  static int get(
+     const XFEM::ElementDofManager& dofman,
+     const XFEM::PHYSICS::Field     field
+     )
+  {
+    return dofman.NumDofPerField(field);
+  }
+};
+
+/// determine number of parameter for standard_assembly
+template<int NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
+{
+  static int get(
+      const XFEM::ElementDofManager& dofman,
+      const XFEM::PHYSICS::Field     field
+      )
+  {
+    return NUMNODE;
+  }
+};
+
 }
 
 

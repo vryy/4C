@@ -10,7 +10,6 @@
 #include "../drt_io/io_control.H"
 
 #include <Teuchos_RCP.hpp>
-#include <blitz/array.h>
 #include <vector>
 
 
@@ -44,8 +43,7 @@ Converter::Converter(PostField* field)
 
   int numnodes = s8dis_->NumGlobalNodes();
 
-  blitz::Array<double,2> coords(2*numnodes, 3);
-  //Epetra_SerialDenseMatrix coords(2*numnodes, 3);
+  Epetra_SerialDenseMatrix coords(2*numnodes, 3);
   for (int i=0; i<numnodes; ++i)
   {
     DRT::Node* actnode = s8dis_->lRowNode(i);

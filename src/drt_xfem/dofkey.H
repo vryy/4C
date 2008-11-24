@@ -22,9 +22,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
   
-  //! global Position in Epetra vector 
-  typedef int DofPos; 
-  
   //! Allows to distinguish between nodal and elemental dofs
   enum DofType
   {
@@ -160,6 +157,8 @@ namespace XFEM
       
   };
   
+  //! global Position in Epetra vector 
+  typedef int DofPos; 
   //! connects each dofkey on Node with a specific position in an solution vector
   typedef std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
   //! connects each dofkey on Element with a specific position in an solution vector
