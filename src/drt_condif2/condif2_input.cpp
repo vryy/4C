@@ -15,6 +15,7 @@ Maintainer: Volker Gravemeier
 
 #include "condif2.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace DRT::UTILS;
 
@@ -31,14 +32,6 @@ bool DRT::ELEMENTS::Condif2::ReadElement()
     gid2distype["TRI3"]     = tri3;
     gid2distype["TRI6"]     = tri6;
 
-    typedef map<DiscretizationType, int> DisType2NumNodes;
-    DisType2NumNodes distype2NumNodes;
-    distype2NumNodes[quad4]    = 4;
-    distype2NumNodes[quad8]    = 8;
-    distype2NumNodes[quad9]    = 9;
-    distype2NumNodes[tri3]     = 3;
-    distype2NumNodes[tri6]     = 6;
-
     // read element's nodes
     int   ierr = 0;
     int   nnode = 0;
@@ -53,7 +46,7 @@ bool DRT::ELEMENTS::Condif2::ReadElement()
         if (ierr == 1)
         {
             distype = gid2distype[eletext];
-            nnode = distype2NumNodes[distype];
+            nnode = DRT::UTILS::getNumberOfElementNodes(distype);
             frint_n(eletext.c_str(), nodes, nnode, &ierr);
             dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
             break;
