@@ -81,6 +81,7 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::nurbs3:       return 3;    break;
     case DRT::Element::nurbs4:       return 4;    break;
     case DRT::Element::nurbs9:       return 9;    break;
+    case DRT::Element::nurbs27:      return 27;   break;
     case DRT::Element::hex8:         return 8;    break;
     case DRT::Element::hex20:        return 20;   break;
     case DRT::Element::hex27:        return 27;   break;
