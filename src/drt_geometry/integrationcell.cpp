@@ -54,8 +54,6 @@ static void ComputePhysicalCoordinates(
   
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   
-  // return value
-  //BlitzMat physicalCoordinates(3, nen_cell);
   physicalCoordinates.Zero();
   // for each cell node, compute physical position
   const int nen_ele = ele.NumNode();

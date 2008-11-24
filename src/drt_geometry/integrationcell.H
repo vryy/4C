@@ -139,8 +139,6 @@ private:
 
 //! shortcut for a vector of DomainIntCells
 typedef std::vector<GEO::DomainIntCell > DomainIntCells;
-//! shortcut for a set of DomainIntCells
-typedef std::set<GEO::DomainIntCell > DomainIntCellSet;
 
 
 /*!
@@ -218,8 +216,6 @@ private:
 
 //! shortcut for a vector of BoundaryIntCells
 typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
-//! shortcut for a set of BoundaryIntCells
-typedef std::set<GEO::BoundaryIntCell > BoundaryIntCellSet;
 
 }
 
