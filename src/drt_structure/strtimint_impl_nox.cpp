@@ -83,22 +83,22 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   else
   {
     dserror("Norm %s is not available",
-            STR::TimIntVector::MapNormEnumToString(iternorm_).c_str());
+            INPAR::STR::VectorNormString(iternorm_).c_str());
   }
 
   // convergence tests for force residual
   Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres = Teuchos::null;
-  if ( (itercnvchk_ == convcheck_absres_or_absdis)
-       or (itercnvchk_ == convcheck_absres_and_absdis) )
+  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis) )
   {
     // absolute test
     statusTestNormFres 
       = Teuchos::rcp(new NOX::StatusTest::NormF(tolfres_, norm, scalefres));
   }
-  else if ( (itercnvchk_ == convcheck_relres_or_absdis)
-            or (itercnvchk_ == convcheck_relres_and_absdis)
-            or (itercnvchk_ == convcheck_relres_or_reldis)
-            or (itercnvchk_ == convcheck_relres_and_reldis) )
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
   {
     // relative
     statusTestNormFres 
@@ -111,17 +111,17 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 
   // convergence tests for residual displacements
   Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi = Teuchos::null;
-  if ( (itercnvchk_ == convcheck_absres_or_absdis)
-       or (itercnvchk_ == convcheck_absres_and_absdis)
-       or (itercnvchk_ == convcheck_relres_or_absdis)
-       or (itercnvchk_ == convcheck_relres_and_absdis) )
+  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis) )
   {
     // absolute test
     statusTestNormDisi
       = Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
   }
-  else if ( (itercnvchk_ == convcheck_relres_or_reldis)
-            or (itercnvchk_ == convcheck_relres_and_reldis) )
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
   {
     // relative test
     dserror("Not available");

@@ -181,7 +181,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   mass_->Multiply(false, *accm_, *finertm_);
 
   // viscous forces due Rayleigh damping
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
@@ -193,7 +193,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   //        - F_{ext;n+1-alpha_f}
   fres_->Update(-1.0, *fextm_, 0.0);
   fres_->Update(1.0, *fintm_, 1.0);
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fviscm_, 1.0);
   }
@@ -204,7 +204,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   //                + (1 - alpha_f)*y/(beta*dt) C     
   //                + K_{T;m}
   stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.0);
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
   }
@@ -289,7 +289,7 @@ double STR::TimIntGEMM::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fviscm_->Norm2(&fviscnorm);
   }
@@ -429,7 +429,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   discret_->SetState("old displacement", dis);
   discret_->SetState("displacement", disn);
   discret_->SetState("residual displacement", disi);
-  if (damping_ == damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);

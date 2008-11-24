@@ -43,17 +43,21 @@ namespace STR
 
   public:
 
+/*
     //! Map vector norm identifaction string to enum term
     static enum INPAR::STR::VectorNorm MapNormStringToEnum
     (
       const std::string name  //!< name identification string
     );
+*/
 
+/*
     //! Map enum term to string
     static std::string MapNormEnumToString
     (
       const enum INPAR::STR::VectorNorm norm  //!< input enum term
     );
+*/
 
     //! Determine norm of force residual
     static double CalculateNorm

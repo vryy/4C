@@ -71,8 +71,10 @@ void inpctrstat(void);
 
 void inpctreig(void);
 
+#ifndef CCADISCRET
 void inpctr_dyn_struct(
     STRUCT_DYNAMIC *sdyn);
+#endif
 
 void inpctr_dyn_ale(
     ALE_DYNAMIC    *adyn);

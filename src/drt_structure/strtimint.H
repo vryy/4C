@@ -40,7 +40,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
@@ -97,20 +97,6 @@ namespace STR
     template <typename T> friend class TimAdaJoint;
 
   public:
-
-    //! Type of damping
-    enum DampEnum
-    {
-      damp_none,  //!< damping off
-      damp_rayleigh,  //!< globally applied Rayleigh damping
-      damp_material  //!< element-wise applied damping
-    };
-
-    //! Map inpu string to damping enum
-    static enum DampEnum MapDampStringToEnum
-    (
-      const std::string name  //!< identifier
-    );
 
     //! Type of stress
     enum StressEnum
@@ -564,7 +550,7 @@ namespace STR
     //!
     //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
-    enum DampEnum damping_;  //!< damping type
+    enum INPAR::STR::DampKind damping_;  //!< damping type
     double dampk_;  //!< damping factor for stiffness \f$c_\text{K}\f$
     double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
     //@}

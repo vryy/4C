@@ -24,33 +24,6 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
-/* Map damping input string to enum term */
-enum STR::TimInt::DampEnum STR::TimInt::MapDampStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  if ( (name == "no") or (name == "No") or (name == "NO") )
-  {
-    return damp_none;
-  }
-  else if ( (name == "yes") or (name == "Yes") or (name ==  "YES")
-            or (name == "Rayleigh") )
-  {
-    return damp_rayleigh;
-  }
-  else if (name == "Material")
-  {
-    return damp_material;
-  }
-  else
-  {
-    dserror("Cannot cope with damping type %s", name.c_str());
-    return damp_none;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 /* Map stress input string to enum */
 enum STR::TimInt::StressEnum STR::TimInt::MapStressStringToEnum
 (
@@ -182,7 +155,7 @@ STR::TimInt::TimInt
   writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
-  damping_(MapDampStringToEnum(sdynparams.get<std::string>("DAMPING"))),
+  damping_(Teuchos::getIntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
@@ -260,7 +233,7 @@ STR::TimInt::TimInt
   // create empty matrices
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
   mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
     damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
   // initialize constraint manager
@@ -337,7 +310,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->ClearState();
     discret_->SetState("residual displacement", zeros_);
     discret_->SetState("displacement", (*dis_)(0));
-    if (damping_ == damp_material) discret_->SetState("velocity", (*vel_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -349,7 +322,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   stiff_->Complete();
 
   // build Rayleigh damping matrix if desired
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Add(*stiff_, false, dampk_, 0.0);
     damp_->Add(*mass_, false, dampm_, 1.0);
@@ -363,7 +336,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   {
     Teuchos::RCP<Epetra_Vector> rhs
       = LINALG::CreateVector(*dofrowmap_, true);
-    if (damping_ == damp_rayleigh)
+    if (damping_ == INPAR::STR::damp_rayleigh)
     {
       damp_->Multiply(false, (*vel_)[0], *rhs);
     }
@@ -855,7 +828,7 @@ void STR::TimInt::ApplyForceExternal
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("displacement", dis);
-  if (damping_ == damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
@@ -889,7 +862,7 @@ void STR::TimInt::ApplyForceStiffInternal
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);
   discret_->SetState("displacement", dis);
-  if (damping_ == damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -922,7 +895,7 @@ void STR::TimInt::ApplyForceInternal
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
-  if (damping_ == damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);

@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 #include <iostream>
 
 #include "../drt_io/io_ostream0.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "strtimada.H"
 
@@ -434,7 +435,7 @@ void STR::TimAda::PrintConstants
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " << TimIntVector::MapNormEnumToString(errnorm_) << std::endl
+      << "   Error norm = " << INPAR::STR::VectorNormString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptations = " << adaptstepmax_ << std::endl;

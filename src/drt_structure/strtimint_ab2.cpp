@@ -128,7 +128,7 @@ void STR::TimIntAB2::IntegrateStep()
   }
 
   // viscous forces due Rayleigh damping
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *veln_, *fviscn_);
   }
@@ -141,7 +141,7 @@ void STR::TimIntAB2::IntegrateStep()
 //   fextn_->Norm2(&more);
 //   fintn_->Norm2(&less);
 //   cout << some << " " << more << " " << less << endl;
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }

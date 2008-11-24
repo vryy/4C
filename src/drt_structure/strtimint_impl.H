@@ -48,77 +48,6 @@ namespace STR
 
   public:
 
-    //! NOX interface is friend of this class
-    //friend class NoxInterface;
-
-    //! type of solution techniques
-    enum SolTechEnum
-    {
-      soltech_vague,  //!< undefined
-      soltech_newtonfull,  //!< full Newton-Raphson iteration
-      soltech_newtonmod,  //!< modified Newton-Raphson iteration
-      soltech_uzawalinnewton,  //!< linear Uzawa iteration for 
-                               //!< constraint system
-      soltech_uzawanonlinnewton,  //!< non-linear Uzawa iteration 
-                                  //!< for constraint system
-      soltech_noxnewtonlinesearch  //!< Line search Newton
-                                   //!< utilising NOX
-    };
-
-    //! map solution technique identification string to enum term
-    static enum SolTechEnum MapSolTechStringToEnum
-    (
-      const std::string name  //!< name identification string
-    );
-
-    //! map solution technique enum term identification string
-    static std::string MapSolTechEnumToString
-    (
-      const enum SolTechEnum name  //!< identifying enum term
-    );
-
-    //! kind of iteration convergence checks
-    //! \author lw \date 12/07
-    enum ConvCheckEnum
-    {
-      convcheck_absres_or_absdis,  //!< absolute norms of residual forces
-                                   //!< OR iterative displacement increments
-      convcheck_absres_and_absdis,  //!< absolute norms of residual forces
-                                    //!< AND iterative displacement increments
-      convcheck_relres_or_absdis,  //!< relative norm of residual forces
-                                   //!< OR absolute norm if iterative
-                                   //!< displacement increments
-      convcheck_relres_and_absdis,  //!< relative norm of residual forces
-                                    //!< AND absolute norm if iterative
-                                    //!< displacement increments
-      convcheck_relres_or_reldis,  //!< relative norms of residual forces
-                                   //!< OR iterative displacement increments
-      convcheck_relres_and_reldis,  //!< relative norms of residual forces
-                                    //!< AND iterative displacement increments
-      convcheck_vague  //!< undetermined
-    };
-
-    //! map convergence check to enum term
-    static enum ConvCheckEnum MapConvCheckStringToEnum
-    (
-      const std::string name  //!< name identification string
-    );
-
-    //! Type of predictor
-    enum PredEnum
-    {
-      pred_vague,  //!< undetermined
-      pred_constdis,  //!< constant displacements
-      pred_constdisvelacc  //!< constant displacements, 
-                           //!< velocities and accelerations
-    };
-
-    //! Map enum term to input string
-    static enum PredEnum MapPredictorStringToEnum
-    (
-      const std::string name  //!< identifier
-    );
-
     //! @name Construction
     //@{
 
@@ -605,13 +534,14 @@ namespace STR
 
     //! @name General purpose algorithm parameters
     //@{
-    enum PredEnum pred_;  //!< predictor
+    enum INPAR::STR::PredEnum pred_;  //!< predictor
     //@}
 
     //! @name Iterative solution technique
     //@{
-    enum SolTechEnum itertype_;  //!< kind of iteration technique
-    enum ConvCheckEnum itercnvchk_;  //!< convergence check
+    enum INPAR::STR::NonlinSolTech itertype_;  //!< kind of iteration technique 
+                                               //!< or non-linear solution technique
+    enum INPAR::STR::ConvCheck itercnvchk_;  //!< convergence check
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to 
     //!< check with
     int itermax_;  //!< maximally permitted iterations

@@ -19,7 +19,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_stru_multi/microstatic.H"
 
@@ -174,7 +174,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL")==STRUCT_DYNAMIC::modnewton)
+  if (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL")==INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;

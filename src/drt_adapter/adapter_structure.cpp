@@ -62,25 +62,25 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
-  case STRUCT_DYNAMIC::centr_diff :
+  case INPAR::STR::dyna_centr_diff :
     dserror("no central differences in DRT");
     break;
-  case STRUCT_DYNAMIC::gen_alfa :
-  case STRUCT_DYNAMIC::gen_alfa_statics :
+  case INPAR::STR::dyna_gen_alfa :
+  case INPAR::STR::dyna_gen_alfa_statics :
     SetupStruGenAlpha(prbdyn);  // <-- here is the show
     break;
-  case STRUCT_DYNAMIC::Gen_EMM :
+  case INPAR::STR::dyna_Gen_EMM :
     dserror("Gen_EMM not supported");
     break;
-  case STRUCT_DYNAMIC::statics :
-  case STRUCT_DYNAMIC::genalpha :
-  case STRUCT_DYNAMIC::onesteptheta :
-  case STRUCT_DYNAMIC::gemm :
+  case INPAR::STR::dyna_statics :
+  case INPAR::STR::dyna_genalpha :
+  case INPAR::STR::dyna_onesteptheta :
+  case INPAR::STR::dyna_gemm :
     SetupTimIntImpl(prbdyn);  // <-- here is the show
     break;
-  case STRUCT_DYNAMIC::ab2 :
+  case INPAR::STR::dyna_ab2 :
 //  case STRUCT_DYNAMIC::euma :
     dserror("explicitly no");
     break;
@@ -142,7 +142,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   StruGenAlpha::SetDefaults(*genalphaparams);
 
   genalphaparams->set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
-  genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
+  genalphaparams->set<bool>  ("damping",(not (sdyn.get<std::string>("DAMPING") == "no"
+                                              or sdyn.get<std::string>("DAMPING") == "No"
+                                              or sdyn.get<std::string>("DAMPING") == "NO")));
   genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
   genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 
@@ -188,27 +190,27 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<bool>  ("print to err",true);
   genalphaparams->set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-  switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
   {
-  case STRUCT_DYNAMIC::fullnewton:
+  case INPAR::STR::soltech_newtonfull:
     genalphaparams->set<string>("equilibrium iteration","full newton");
     break;
-  case STRUCT_DYNAMIC::lsnewton:
+  case INPAR::STR::soltech_newtonls:
     genalphaparams->set<string>("equilibrium iteration","line search newton");
     break;
-  case STRUCT_DYNAMIC::modnewton:
+  case INPAR::STR::soltech_newtonmod:
     genalphaparams->set<string>("equilibrium iteration","modified newton");
     break;
-  case STRUCT_DYNAMIC::nlncg:
+  case INPAR::STR::soltech_nlncg:
     genalphaparams->set<string>("equilibrium iteration","nonlinear cg");
     break;
-  case STRUCT_DYNAMIC::ptc:
+  case INPAR::STR::soltech_ptc:
     genalphaparams->set<string>("equilibrium iteration","ptc");
     break;
-  case STRUCT_DYNAMIC::newtonlinuzawa:
+  case INPAR::STR::soltech_newtonuzawalin:
     genalphaparams->set<string>("equilibrium iteration","newtonlinuzawa");
   break;
-  case STRUCT_DYNAMIC::augmentedlagrange:
+  case INPAR::STR::soltech_newtonuzawanonlin:
     genalphaparams->set<string>("equilibrium iteration","augmentedlagrange"); 
     break;
   default:
@@ -234,15 +236,15 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
 
   // set predictor (takes values "constant" "consistent")
-  switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
   {
-  case STRUCT_DYNAMIC::pred_vague:
+  case INPAR::STR::pred_vague:
     dserror("You have to define the predictor");
     break;
-  case STRUCT_DYNAMIC::pred_constdis:
+  case INPAR::STR::pred_constdis:
     genalphaparams->set<string>("predictor","consistent");
     break;
-  case STRUCT_DYNAMIC::pred_constdisvelacc:
+  case INPAR::STR::pred_constdisvelacc:
     genalphaparams->set<string>("predictor","constant");
     break;
   default:
@@ -273,7 +275,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-      if (Teuchos::getIntegralValue<int>(sdyn,"PREDICT")!=STRUCT_DYNAMIC::pred_constdisvelacc)
+      if (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
         dserror("only constant structure predictor with monolithic FSI possible");
 
 #if 0
@@ -365,8 +367,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_monolithiclagrange)
          or (coupling == fsi_iter_monolithicstructuresplit) )
     {
-      if (Teuchos::getIntegralValue<int>(*sdyn,"PREDICT")
-          != STRUCT_DYNAMIC::pred_constdisvelacc)
+      if (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
+          != INPAR::STR::pred_constdisvelacc)
       {
         dserror("only constant structure predictor with monolithic FSI possible");
       }

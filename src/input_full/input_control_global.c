@@ -988,6 +988,7 @@ if (genprob.probtyp == prb_tsi)
 /*----------------------------------------------------------------------*
  | input of dynamic problem data  for field structure     m.gee 2/02    |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 void inpctr_dyn_struct(STRUCT_DYNAMIC *sdyn)
 {
 INT    ierr;
@@ -1123,6 +1124,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_struct */
+#endif
 
 /*!---------------------------------------------------------------------
 \brief input of the FLUID DYNAMIC block in the input-file

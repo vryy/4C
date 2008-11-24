@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Map vector norm identifaction string to enum term */
+/*
 enum INPAR::STR::VectorNorm STR::TimIntVector::MapNormStringToEnum
 (
   const std::string name  //!< name identification string
@@ -52,9 +53,11 @@ enum INPAR::STR::VectorNorm STR::TimIntVector::MapNormStringToEnum
     return INPAR::STR::norm_vague;
   }
 }
+*/
 
 /*----------------------------------------------------------------------*/
 /* map enum term to string */
+/*
 std::string STR::TimIntVector::MapNormEnumToString
 (
   const enum INPAR::STR::VectorNorm norm  //!< input enum term
@@ -89,6 +92,7 @@ std::string STR::TimIntVector::MapNormEnumToString
   // send to hell
   return str;
 }
+*/
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */

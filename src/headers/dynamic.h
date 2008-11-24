@@ -15,7 +15,9 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 typedef union _ALLDYNA
 {
+#ifndef CCADISCRET
    struct _STRUCT_DYNAMIC    *sdyn;   /* ptr for allocation of structural dynamic data */
+#endif
    struct _FLUID_DYNAMIC     *fdyn;   /* ptr for allocation of fluid dynamic data */
    struct _FSI_DYNAMIC       *fsidyn; /* ptr for allocation of fsi dynamic data */
    struct _SSI_DYNAMIC       *ssidyn; /* ptr for allocation of ssi dynamic data */
@@ -64,6 +66,7 @@ typedef struct _TIMADA_DYNAMIC
 /*----------------------------------------------------------------------*
  | general structural dynamic-variables                   m.gee 4/01    |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 typedef struct _STRUCT_DYNAMIC
 {
 enum
@@ -180,6 +183,7 @@ TIMADA_DYNAMIC     timada;     /* time adaptivity data */
 /* output */
 INT                writecounter; /* counter for output steps */
 } STRUCT_DYNAMIC;
+#endif
 /*----------------------------------------------------------------------*
  | general dynamic-variables for analysis                 m.gee 4/01    |
  *----------------------------------------------------------------------*/

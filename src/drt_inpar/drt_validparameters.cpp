@@ -373,26 +373,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
-  setStringToIntegralParameter<int>("DYNAMICTYP","Gen_Alfa",
+  setStringToIntegralParameter<INPAR::STR::DynamicType>("DYNAMICTYP","Gen_Alfa",
                                "type of time integration control",
-                               tuple<std::string>("Centr_Diff",
-                                                  "Gen_EMM",
-                                                  "Gen_Alfa",
-                                                  "Static",
-                                                  "Statics",
-                                                  "GenAlpha",
-                                                  "OneStepTheta",
-                                                  "GEMM",
-                                                  "AdamsBashforth2"),
-                               tuple<int>(STRUCT_DYNAMIC::centr_diff,
-                                          STRUCT_DYNAMIC::Gen_EMM,
-                                          STRUCT_DYNAMIC::gen_alfa,
-                                          STRUCT_DYNAMIC::gen_alfa_statics,
-                                          STRUCT_DYNAMIC::statics,
-                                          STRUCT_DYNAMIC::genalpha,
-                                          STRUCT_DYNAMIC::onesteptheta,
-                                          STRUCT_DYNAMIC::gemm,
-                                          STRUCT_DYNAMIC::ab2),
+                               tuple<std::string>(
+                                 "Centr_Diff",
+                                 "Gen_EMM",
+                                 "Gen_Alfa",
+                                 "Static",
+                                 "Statics",
+                                 "GenAlpha",
+                                 "OneStepTheta",
+                                 "GEMM",
+                                 "AdamsBashforth2"),
+                               tuple<INPAR::STR::DynamicType>(
+                                 INPAR::STR::dyna_centr_diff,
+                                 INPAR::STR::dyna_Gen_EMM,
+                                 INPAR::STR::dyna_gen_alfa,
+                                 INPAR::STR::dyna_gen_alfa_statics,
+                                 INPAR::STR::dyna_statics,
+                                 INPAR::STR::dyna_genalpha,
+                                 INPAR::STR::dyna_onesteptheta,
+                                 INPAR::STR::dyna_gemm,
+                                 INPAR::STR::dyna_ab2),
                                &sdyn);
 
   // Output type
@@ -412,24 +414,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
   DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
   // Damping
-  setStringToIntegralParameter<int>("DAMPING","No",
+  setStringToIntegralParameter<INPAR::STR::DampKind>("DAMPING","No",
                                "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements",
-                               tuple<std::string>("no",
-                                                  "No",
-                                                  "NO",
-                                                  "yes",
-                                                  "Yes",
-                                                  "YES",
-                                                  "Rayleigh",
-                                                  "Material"),
-                               tuple<int>(STRUCT_DYNAMIC::damp_none,
-                                          STRUCT_DYNAMIC::damp_none,
-                                          STRUCT_DYNAMIC::damp_none,
-                                          STRUCT_DYNAMIC::damp_rayleigh,
-                                          STRUCT_DYNAMIC::damp_rayleigh,
-                                          STRUCT_DYNAMIC::damp_rayleigh,
-                                          STRUCT_DYNAMIC::damp_rayleigh,
-                                          STRUCT_DYNAMIC::damp_material),
+                               tuple<std::string>(
+                                 "no",
+                                 "No",
+                                 "NO",
+                                 "yes",
+                                 "Yes",
+                                 "YES",
+                                 "Rayleigh",
+                                 "Material"),
+                               tuple<INPAR::STR::DampKind>(
+                                 INPAR::STR::damp_none,
+                                 INPAR::STR::damp_none,
+                                 INPAR::STR::damp_none,
+                                 INPAR::STR::damp_rayleigh,
+                                 INPAR::STR::damp_rayleigh,
+                                 INPAR::STR::damp_rayleigh,
+                                 INPAR::STR::damp_rayleigh,
+                                 INPAR::STR::damp_material),
                                &sdyn);
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
@@ -438,7 +442,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
                                &sdyn);
-  setStringToIntegralParameter<int>("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
+  setStringToIntegralParameter<INPAR::STR::ConvCheck>("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
                                tuple<std::string>(
                                  "AbsRes_Or_AbsDis",
                                  "AbsRes_And_AbsDis",
@@ -446,12 +450,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "RelRes_And_AbsDis",
                                  "RelRes_Or_RelDis",
                                  "RelRes_And_RelDis"),
-                               tuple<int>(STRUCT_DYNAMIC::absres_or_absdis,
-                                          STRUCT_DYNAMIC::absres_and_absdis,
-                                          STRUCT_DYNAMIC::relres_or_absdis,
-                                          STRUCT_DYNAMIC::relres_and_absdis,
-                                          STRUCT_DYNAMIC::relres_or_reldis,
-                                          STRUCT_DYNAMIC::relres_and_reldis),
+                               tuple<INPAR::STR::ConvCheck>(
+                                 INPAR::STR::convcheck_absres_or_absdis,
+                                 INPAR::STR::convcheck_absres_and_absdis,
+                                 INPAR::STR::convcheck_relres_or_absdis,
+                                 INPAR::STR::convcheck_relres_and_absdis,
+                                 INPAR::STR::convcheck_relres_or_reldis,
+                                 INPAR::STR::convcheck_relres_and_reldis),
                                &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
@@ -467,7 +472,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);
 
-  setStringToIntegralParameter<int>("NLNSOL","fullnewton","",
+  setStringToIntegralParameter<INPAR::STR::NonlinSolTech>("NLNSOL","fullnewton","",
                                tuple<std::string>(
                                  "vague",
                                  "fullnewton",
@@ -478,27 +483,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "newtonlinuzawa",
                                  "augmentedlagrange",
                                  "NoxNewtonLineSearch"),
-                               tuple<int>(
-                                 STRUCT_DYNAMIC::vague,
-                                 STRUCT_DYNAMIC::fullnewton,
-                                 STRUCT_DYNAMIC::lsnewton,
-                                 STRUCT_DYNAMIC::modnewton,
-                                 STRUCT_DYNAMIC::nlncg,
-                                 STRUCT_DYNAMIC::ptc,
-                                 STRUCT_DYNAMIC::newtonlinuzawa,
-                                 STRUCT_DYNAMIC::augmentedlagrange,
-                                 STRUCT_DYNAMIC::noxnewtonlinesearch),
+                               tuple<INPAR::STR::NonlinSolTech>(
+                                 INPAR::STR::soltech_vague,
+                                 INPAR::STR::soltech_newtonfull,
+                                 INPAR::STR::soltech_newtonls,
+                                 INPAR::STR::soltech_newtonmod,
+                                 INPAR::STR::soltech_nlncg,
+                                 INPAR::STR::soltech_ptc,
+                                 INPAR::STR::soltech_newtonuzawalin,
+                                 INPAR::STR::soltech_newtonuzawanonlin,
+                                 INPAR::STR::soltech_noxnewtonlinesearch),
                                &sdyn);
 
-  setStringToIntegralParameter<int>("PREDICT","ConstDis","",
+  setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",
                                  "ConstDisVelAcc"),
-                               tuple<int>(
-                                 STRUCT_DYNAMIC::pred_vague,
-                                 STRUCT_DYNAMIC::pred_constdis,
-                                 STRUCT_DYNAMIC::pred_constdisvelacc),
+                               tuple<INPAR::STR::PredEnum>(
+                                 INPAR::STR::pred_vague,
+                                 INPAR::STR::pred_constdis,
+                                 INPAR::STR::pred_constdisvelacc),
                                &sdyn);
 
   // time adaptivity (old style)
@@ -529,21 +534,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   /*--------------------------------------------------------------------*/
+  /* parameters for time step size adaptivity in structural dynamics */
   Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY",false,"");
-  // Time adaptivity
   SetValidTimeAdaptivityParameters(tap);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for generalised-alpha structural integrator */
   Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
 
-  setStringToIntegralParameter<int>("GENAVG","ImrLike",
+  setStringToIntegralParameter<INPAR::STR::MidAverageEnum>("GENAVG","ImrLike",
                                "mid-average type of internal forces",
-                               tuple<std::string>("Vague",
-                                                  "ImrLike",
-                                                  "TrLike"),
-                               tuple<int>(STRUCT_DYNAMIC::genavg_vague,
-                                          STRUCT_DYNAMIC::genavg_imrlike,
-                                          STRUCT_DYNAMIC::genavg_trlike),
+                               tuple<std::string>(
+                                 "Vague",
+                                 "ImrLike",
+                                 "TrLike"),
+                               tuple<INPAR::STR::MidAverageEnum>(
+                                 INPAR::STR::midavg_vague,
+                                 INPAR::STR::midavg_imrlike,
+                                 INPAR::STR::midavg_trlike),
                                &genalpha);
   DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
@@ -551,12 +559,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for one-step-theta structural integrator */
   Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA",false,"");
 
   DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&onesteptheta);
 
 
   /*----------------------------------------------------------------------*/
+  /* parameters for generalised-energy-momentum structural integrator */
   Teuchos::ParameterList& gemm = sdyn.sublist("GEMM",false,"");
 
   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&gemm);

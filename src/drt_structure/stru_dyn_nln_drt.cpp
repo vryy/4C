@@ -54,23 +54,23 @@ void caldyn_drt()
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
-  case STRUCT_DYNAMIC::centr_diff:
+  case INPAR::STR::dyna_centr_diff:
     dserror("no central differences in DRT");
     break;
-  case STRUCT_DYNAMIC::gen_alfa:
-  case STRUCT_DYNAMIC::gen_alfa_statics:
+  case INPAR::STR::dyna_gen_alfa:
+  case INPAR::STR::dyna_gen_alfa_statics:
     dyn_nlnstructural_drt();
     break;
-  case STRUCT_DYNAMIC::Gen_EMM:
+  case INPAR::STR::dyna_Gen_EMM:
     dserror("GEMM not supported");
     break;
-  case STRUCT_DYNAMIC::statics:
-  case STRUCT_DYNAMIC::genalpha:
-  case STRUCT_DYNAMIC::onesteptheta:
-  case STRUCT_DYNAMIC::gemm:
-  case STRUCT_DYNAMIC::ab2:
+  case INPAR::STR::dyna_statics:
+  case INPAR::STR::dyna_genalpha:
+  case INPAR::STR::dyna_onesteptheta:
+  case INPAR::STR::dyna_gemm:
+  case INPAR::STR::dyna_ab2:
     // direct time integration
     STR::strudyn_direct();
     break;
@@ -124,13 +124,13 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
-  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
     //==================================================================
     // Generalized alpha time integration
     //==================================================================
-    case STRUCT_DYNAMIC::gen_alfa :
-    case STRUCT_DYNAMIC::gen_alfa_statics :
+    case INPAR::STR::dyna_gen_alfa :
+    case INPAR::STR::dyna_gen_alfa_statics :
     {
       ParameterList genalphaparams;
       StruGenAlpha::SetDefaults(genalphaparams);
@@ -225,27 +225,27 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
 
       // non-linear solution technique
-      switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
+      switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
       {
-        case STRUCT_DYNAMIC::fullnewton:
+        case INPAR::STR::soltech_newtonfull:
           genalphaparams.set<string>("equilibrium iteration","full newton");
         break;
-        case STRUCT_DYNAMIC::lsnewton:
+        case INPAR::STR::soltech_newtonls:
           genalphaparams.set<string>("equilibrium iteration","line search newton");
         break;
-        case STRUCT_DYNAMIC::modnewton:
+        case INPAR::STR::soltech_newtonmod:
           genalphaparams.set<string>("equilibrium iteration","modified newton");
         break;
-        case STRUCT_DYNAMIC::nlncg:
+        case INPAR::STR::soltech_nlncg:
           genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
         break;
-        case STRUCT_DYNAMIC::ptc:
+        case INPAR::STR::soltech_ptc:
           genalphaparams.set<string>("equilibrium iteration","ptc");
         break;
-        case STRUCT_DYNAMIC::newtonlinuzawa:
+        case INPAR::STR::soltech_newtonuzawalin:
           genalphaparams.set<string>("equilibrium iteration","newtonlinuzawa");
         break;
-        case STRUCT_DYNAMIC::augmentedlagrange:
+        case INPAR::STR::soltech_newtonuzawanonlin:
           genalphaparams.set<string>("equilibrium iteration","augmentedlagrange");              
         break;
         default:
@@ -254,15 +254,15 @@ void dyn_nlnstructural_drt()
       }
 
       // set predictor (takes values "constant" "consistent")
-      switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
+      switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
       {
-        case STRUCT_DYNAMIC::pred_vague:
+        case INPAR::STR::pred_vague:
           dserror("You have to define the predictor");
           break;
-        case STRUCT_DYNAMIC::pred_constdis:
+        case INPAR::STR::pred_constdis:
           genalphaparams.set<string>("predictor","consistent");
           break;
-        case STRUCT_DYNAMIC::pred_constdisvelacc:
+        case INPAR::STR::pred_constdisvelacc:
           genalphaparams.set<string>("predictor","constant");
           break;
         default:
@@ -357,7 +357,7 @@ void dyn_nlnstructural_drt()
     //==================================================================
     // Generalized Energy Momentum Method
     //==================================================================
-    case STRUCT_DYNAMIC::Gen_EMM :
+    case INPAR::STR::dyna_Gen_EMM :
     {
       dserror("Not yet impl.");
     }

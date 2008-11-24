@@ -22,141 +22,6 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 
-/*----------------------------------------------------------------------*/
-/* map enum term to input string */
-enum STR::TimIntImpl::PredEnum STR::TimIntImpl::MapPredictorStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  // for explanations please look at #PredEnum
-  if (name == "Vague")
-  {
-    return pred_vague;
-  }
-  else if (name == "ConstDis")
-  {
-    return pred_constdis;
-  }
-  else if (name == "ConstDisVelAcc")
-  {
-    return pred_constdisvelacc;
-  }
-  else
-  {
-    dserror("Unknown kind of predictor %s", name.c_str());
-    return pred_vague;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* map solution technique identification string to enum term */
-enum STR::TimIntImpl::SolTechEnum STR::TimIntImpl::MapSolTechStringToEnum
-(
-  const std::string name  //!< name identification string
-)
-{
-  if (name == "vague")
-  {
-    return soltech_vague;
-  }
-  else if (name == "fullnewton")
-  {
-    return soltech_newtonfull;
-  }
-  else if (name == "modnewton")
-  {
-    return soltech_newtonmod;
-  }
-  else if (name == "newtonlinuzawa")
-  {
-    return soltech_uzawalinnewton;
-  }
-  else if (name == "augmentedlagrange")
-  {
-    return soltech_uzawanonlinnewton;
-  }
-  else if (name == "NoxNewtonLineSearch")
-  {
-    return soltech_noxnewtonlinesearch;
-  }
-  else
-  {
-    dserror("Unknown type of solution technique %s", name.c_str());
-    return soltech_vague;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* map solution technique identification string to enum term */
-std::string  STR::TimIntImpl::MapSolTechEnumToString
-(
-  const enum SolTechEnum name  //!< identifying enum term
-)
-{
-  switch (name)
-  {
-  case soltech_vague :
-    return "vague";
-    break;
-  case soltech_newtonfull :
-    return "fullnewton";
-    break;
-  case soltech_newtonmod :
-    return "modnewton";
-    break;
-  case soltech_uzawalinnewton :
-    return "newtonlinuzawa";
-    break;
-  case soltech_uzawanonlinnewton :
-    return "augmentedlagrange";
-    break;
-  case soltech_noxnewtonlinesearch :
-    return "NoxNewtonLineSearch";
-    break;
-  default :
-    dserror("Unknown type of solution technique %d", name);
-    return "vague";
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* map convergence check to enum term */
-enum STR::TimIntImpl::ConvCheckEnum STR::TimIntImpl::MapConvCheckStringToEnum
-(
-  const std::string name  //!< name identification string
-)
-{
-  if (name == "AbsRes_Or_AbsDis")
-  {
-    return convcheck_absres_or_absdis;
-  }
-  else if (name == "AbsRes_And_AbsDis")
-  {
-    return convcheck_absres_and_absdis;
-  }
-  else if (name == "RelRes_Or_AbsDis")
-  {
-    return convcheck_relres_or_absdis;
-  }
-  else if (name == "RelRes_And_AbsDis")
-  {
-    return convcheck_relres_and_absdis;
-  }
-  else if (name == "RelRes_Or_RelDis")
-  {
-    return convcheck_relres_or_reldis;
-  }
-  else if (name == "RelRes_And_RelDis")
-  {
-    return convcheck_relres_and_reldis;
-  }
-  else
-  {
-    dserror("Unknown type %s of iterative convergence check", name.c_str());
-    return convcheck_vague;
-  }
-}
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -179,10 +44,10 @@ STR::TimIntImpl::TimIntImpl
     output
   ),
   fsisurface_(NULL),
-  pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
-  itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
-  itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
-  iternorm_(TimIntVector::MapNormStringToEnum("L2")),  // ADD INPUT FEATURE
+  pred_(Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
+  itertype_(Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
+  itercnvchk_(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")),
+  iternorm_(INPAR::STR::norm_l2),  // ADD INPUT FEATURE
   itermax_(sdynparams.get<int>("MAXITER")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
@@ -202,18 +67,18 @@ STR::TimIntImpl::TimIntImpl
   // verify: if system has constraints, then Uzawa-type solver is used
   if ( conman_->HaveConstraint())
   {
-    if ( (itertype_ != soltech_uzawalinnewton)
-               and (itertype_ != soltech_uzawanonlinnewton) ) 
+    if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
+               and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) ) 
     {
       dserror("Chosen solution technique %s does not work constrained.",
-                MapSolTechEnumToString(itertype_).c_str());
+              INPAR::STR::NonlinSolTechString(itertype_).c_str());
     }
   }
-  else if ( (itertype_ == soltech_uzawalinnewton)
-    or (itertype_ == soltech_uzawanonlinnewton) )
+  else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
+            or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
   {
       dserror("Chosen solution technique %s does only work constrained.",
-              MapSolTechEnumToString(itertype_).c_str());
+              INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   
   // create empty residual force vector
@@ -227,7 +92,7 @@ STR::TimIntImpl::TimIntImpl
   disi_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // setup NOX parameter lists
-  if (itertype_ == soltech_noxnewtonlinesearch)
+  if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
     NoxSetup();
 
   // done so far
@@ -249,11 +114,11 @@ void STR::TimIntImpl::Predict()
 {
 
   // choose predictor
-  if (pred_ == pred_constdis)
+  if (pred_ == INPAR::STR::pred_constdis)
   {
     PredictConstDisConsistVelAcc();
   }
-  else if (pred_ == pred_constdisvelacc)
+  else if (pred_ == INPAR::STR::pred_constdisvelacc)
   {
     PredictConstDisVelAcc();
   }
@@ -399,25 +264,25 @@ bool STR::TimIntImpl::Converged()
   bool fdc = false;
   switch (itercnvchk_)
   {
-  case convcheck_absres_or_absdis:
+  case INPAR::STR::convcheck_absres_or_absdis:
     fdc = ( (normdisi_ < toldisi_) or (normfres_ < tolfres_) );
     break;
-  case convcheck_absres_and_absdis:
+  case INPAR::STR::convcheck_absres_and_absdis:
     fdc = ( (normdisi_ < toldisi_) and (normfres_ < tolfres_) );
     break;
-  case convcheck_relres_or_absdis:
+  case INPAR::STR::convcheck_relres_or_absdis:
     fdc = ( (normdisi_ < toldisi_)
             or (normfres_/normcharforce_ < tolfres_) );
     break;
-  case convcheck_relres_and_absdis:
+  case INPAR::STR::convcheck_relres_and_absdis:
     fdc = ( (normdisi_ < toldisi_)
             and (normfres_/normcharforce_ < tolfres_) );
     break;
-  case convcheck_relres_or_reldis:
+  case INPAR::STR::convcheck_relres_or_reldis:
     fdc = ( (normdisi_/normchardis_ < toldisi_)
             or (normfres_/normcharforce_ < tolfres_) );
     break;
-  case convcheck_relres_and_reldis:
+  case INPAR::STR::convcheck_relres_and_reldis:
     fdc = ( (normdisi_/normchardis_ < toldisi_)
             and (normfres_/normcharforce_ < tolfres_) );
     break;
@@ -445,22 +310,22 @@ void STR::TimIntImpl::Solve()
   // choose solution technique in accordance with user's will
   switch (itertype_)
   {
-  case soltech_newtonfull :
+  case INPAR::STR::soltech_newtonfull :
     NewtonFull();
     break;
-  case soltech_uzawanonlinnewton :
+  case INPAR::STR::soltech_newtonuzawanonlin :
     UzawaNonLinearNewtonFull();
     break;
-  case soltech_uzawalinnewton :
+  case INPAR::STR::soltech_newtonuzawalin :
     UzawaLinearNewtonFull();
     break;
-  case soltech_noxnewtonlinesearch :
+  case INPAR::STR::soltech_noxnewtonlinesearch :
     NoxSolve();
     break;
   // catch problems
   default :
     dserror("Solution technique %s is not implemented",
-            MapSolTechEnumToString(itertype_).c_str());
+            INPAR::STR::NonlinSolTechString(itertype_).c_str());
     break;
   }
 
@@ -772,8 +637,8 @@ void STR::TimIntImpl::PrintPredictor()
   if ( (myrank_ == 0) and printscreen_ )
   {
     // relative check of force residual
-    if ( (itercnvchk_ != convcheck_absres_or_absdis)
-         and (itercnvchk_ != convcheck_absres_and_absdis) )
+    if ( (itercnvchk_ != INPAR::STR::convcheck_absres_or_absdis)
+         and (itercnvchk_ != INPAR::STR::convcheck_absres_and_absdis) )
     {
       std::cout << "Predictor scaled res-norm "
                 << normfres_/normcharforce_
@@ -833,8 +698,8 @@ void STR::TimIntImpl::PrintNewtonIterText
   switch (itercnvchk_)
   {
   // relative residual forces AND displacements
-  case convcheck_relres_and_reldis:
-  case convcheck_relres_or_reldis:
+  case INPAR::STR::convcheck_relres_and_reldis:
+  case INPAR::STR::convcheck_relres_or_reldis:
     oss << " rel-res-norm "
         << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_/normcharforce_
@@ -843,8 +708,8 @@ void STR::TimIntImpl::PrintNewtonIterText
         << normdisi_/normchardis_;
     break;
   // relative residual forces
-  case convcheck_relres_and_absdis:
-  case convcheck_relres_or_absdis:
+  case INPAR::STR::convcheck_relres_and_absdis:
+  case INPAR::STR::convcheck_relres_or_absdis:
     oss << " rel-res-norm "
         << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_/normcharforce_
@@ -853,8 +718,8 @@ void STR::TimIntImpl::PrintNewtonIterText
         << normdisi_;
     break;
   // absolute forces and displacements
-  case convcheck_absres_and_absdis:
-  case convcheck_absres_or_absdis:
+  case INPAR::STR::convcheck_absres_and_absdis:
+  case INPAR::STR::convcheck_absres_or_absdis:
     oss << " abs-res-norm "
         << std::setw(10) << std::setprecision(5) << std::scientific
         << normfres_
@@ -911,20 +776,20 @@ void STR::TimIntImpl::PrintNewtonConv()
   switch (itercnvchk_)
   {
   // relative residual forces AND displacements
-  case convcheck_relres_and_reldis:
-  case convcheck_relres_or_reldis:
+  case INPAR::STR::convcheck_relres_and_reldis:
+  case INPAR::STR::convcheck_relres_or_reldis:
     oss << " scaled res-norm " << normfres_/normcharforce_
         << " scaled dis-norm " << normdisi_/normchardis_;
     break;
   // relative residual forces
-  case convcheck_relres_and_absdis:
-  case convcheck_relres_or_absdis:
+  case INPAR::STR::convcheck_relres_and_absdis:
+  case INPAR::STR::convcheck_relres_or_absdis:
     oss << " scaled res-norm " << normfres_/normcharforce_
         << " absolute dis-norm " << normdisi_;
     break;
   // absolute forces and displacements
-  case convcheck_absres_and_absdis:
-  case convcheck_absres_or_absdis:
+  case INPAR::STR::convcheck_absres_and_absdis:
+  case INPAR::STR::convcheck_absres_or_absdis:
     oss << " absolute res-norm " << normfres_
         << " absolute dis-norm " << normdisi_;
     break;

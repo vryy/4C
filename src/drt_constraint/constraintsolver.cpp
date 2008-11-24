@@ -83,7 +83,7 @@ void UTILS::ConstraintSolver::Setup
   // data.
   // Thus we need this exception handler to getting along.
 
-  // different setup for 
+  // different setup for #algo_
   INPAR::STR::ConSolveAlgo algochoice;
   try
   {

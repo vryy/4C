@@ -62,13 +62,13 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
   
   // exclude old names
-  switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // old style time integrators
-    case STRUCT_DYNAMIC::gen_alfa :
-    case STRUCT_DYNAMIC::gen_alfa_statics :
-    case STRUCT_DYNAMIC::Gen_EMM :
-    case STRUCT_DYNAMIC::centr_diff :
+    case INPAR::STR::dyna_gen_alfa :
+    case INPAR::STR::dyna_gen_alfa_statics :
+    case INPAR::STR::dyna_Gen_EMM :
+    case INPAR::STR::dyna_centr_diff :
     {
       dserror("You should not turn up here.");
       break;
@@ -106,10 +106,10 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   Teuchos::RCP<STR::TimIntImpl> sti = Teuchos::null;
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Static analysis
-    case STRUCT_DYNAMIC::statics :
+    case INPAR::STR::dyna_statics :
     {
       sti = Teuchos::rcp(new STR::TimIntStatics(ioflags, sdyn, xparams,
                                                 actdis, solver, output));
@@ -117,7 +117,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     }
 
     // Generalised-alpha time integration
-    case STRUCT_DYNAMIC::genalpha :
+    case INPAR::STR::dyna_genalpha :
     {
       sti = Teuchos::rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams,
                                                  actdis, solver, output));
@@ -125,7 +125,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     }
 
     // One-step-theta (OST) time integration
-    case STRUCT_DYNAMIC::onesteptheta :
+    case INPAR::STR::dyna_onesteptheta :
     {
       sti = Teuchos::rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams,
                                                      actdis, solver, output));
@@ -133,7 +133,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     }
 
     // Generalised energy-momentum method (GEMM)
-    case STRUCT_DYNAMIC::gemm :
+    case INPAR::STR::dyna_gemm :
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(ioflags, sdyn, xparams,
                                              actdis, solver, output));
@@ -167,10 +167,10 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Adams-Bashforth 2nd order (AB2) time integration
-    case STRUCT_DYNAMIC::ab2 :
+    case INPAR::STR::dyna_ab2 :
     {
       sti = Teuchos::rcp(new STR::TimIntAB2(ioflags, sdyn, xparams,
                                             actdis, solver, output));

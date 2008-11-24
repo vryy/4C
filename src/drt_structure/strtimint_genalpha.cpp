@@ -20,31 +20,6 @@ Maintainer: Burkhard Bornemann
 #include "strtimint_genalpha.H"
 
 /*----------------------------------------------------------------------*/
-/* convert input string to enum for mid-average type */
-enum STR::TimIntGenAlpha::MidAverageEnum STR::TimIntGenAlpha::MapMidAvgStringToEnum
-(
-  const std::string name
-)
-{
-  if (name == "Vague")
-  {
-    return midavg_vague;
-  }
-  else if (name == "ImrLike")
-  {    
-    return midavg_imrlike;
-  }
-  else if (name == "TrLike")
-  {
-    return midavg_trlike;
-  }
-  else
-  {
-    return midavg_vague;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
 {
   // beta
@@ -92,7 +67,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     solver,
     output
   ),
-  midavg_(MapMidAvgStringToEnum(sdynparams.sublist("GENALPHA").get<string>("GENAVG"))),
+  midavg_(Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"),"GENAVG")),
   /* iterupditer_(false), */
   beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -136,7 +111,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // create force vectors
 
   // internal forces
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     // internal force vector F_{int;n} at last time
     fint_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -146,7 +121,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
                             fint_, stiff_);
   } 
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     // internal force vector F_{int;m} at mid-time
     fintm_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -222,11 +197,11 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // initialise internal forces
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fintn_->PutScalar(0.0);
   } 
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     fintm_->PutScalar(0.0);
   }
@@ -235,12 +210,12 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   stiff_->Zero();
 
   // ordinary internal force and stiffness
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_,  veln_, 
                             fintn_, stiff_);
   } 
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
     ApplyForceStiffInternal(timen_, (*dt_)[0], dism_, disi_, velm_,
@@ -248,14 +223,14 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   }
 
   // apply forces and stiffness due to constraints
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     ParameterList pcon;
     // for TR scale constraint matrix with the same value fintn_ is scaled with
     pcon.set("scaleConstrMat", (1.0-alphaf_));
     ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
   }
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     ParameterList pcon;
     // for IMR scale stiffness matrix, since constraint is always evaluated at the end of time step
@@ -264,21 +239,21 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   }
 
   // surface stress force
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
   } 
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     ApplyForceStiffSurfstress(dism_, fintm_, stiff_);
   }
 
   // potential forces
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     ApplyForceStiffPotential(disn_, fintn_, stiff_);
   } 
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     ApplyForceStiffPotential(dism_, fintm_, stiff_);
   }
@@ -287,7 +262,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   mass_->Multiply(false, *accm_, *finertm_);
 
   // viscous forces due Rayleigh damping
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
@@ -298,15 +273,15 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   //        + F_{int;m}
   //        - F_{ext;n+1-alpha_f}
   fres_->Update(-1.0, *fextm_, 0.0);
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fres_->Update((1.-alphaf_), *fintn_, alphaf_, *fint_, 1.0);
   }
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     fres_->Update(1.0, *fintm_, 1.0);
   }
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fviscm_, 1.0);
   }
@@ -317,7 +292,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   //                + (1 - alpha_f)*y/(beta*dt) C     
   //                + (1 - alpha_f) K_{T}
   stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
   }
@@ -393,11 +368,11 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fintn_->Norm2(&fintnorm);
   }
-  else if (midavg_ == midavg_imrlike)
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     fintm_->Norm2(&fintnorm);
   }
@@ -412,7 +387,7 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == damp_rayleigh)
+  if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fviscm_->Norm2(&fviscnorm);
   }
@@ -495,7 +470,7 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update new internal force
   //    F_{int;n} := F_{int;n+1}
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fint_->Update(1.0, *fintn_, 0.0);
   }
@@ -508,11 +483,11 @@ void STR::TimIntGenAlpha::UpdateStepState()
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
     // action for elements
-    if (midavg_ == midavg_trlike) 
+    if (midavg_ == INPAR::STR::midavg_trlike) 
     {
       p.set("action", "calc_struct_update_istep");    
     }
-    else if (midavg_ == midavg_imrlike)
+    else if (midavg_ == INPAR::STR::midavg_imrlike)
     {
       p.set("alpha f", alphaf_);
       p.set("action", "calc_struct_update_imrlike");
@@ -539,7 +514,7 @@ void STR::TimIntGenAlpha::ReadRestartForce()
   IO::DiscretizationReader reader(discret_, step_);
   reader.ReadVector(fext_, "fexternal");
   // determine internal force
-  if (midavg_ == midavg_trlike)
+  if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fint_->PutScalar(0.0);
     ApplyForceStiffInternal((*time_)[0], (*dt_)[0],
