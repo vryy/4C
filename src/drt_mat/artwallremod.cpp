@@ -616,7 +616,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numnode = actele->NumNode();
     const int numdof = 3;
-    blitz::Array<double,2> xyze(3, numnode);
+    LINALG::SerialDenseMatrix xyze(3, numnode);
     for (int inode = 0; inode < numnode; ++inode)
     {
       xyze(0, inode) = actele->Nodes()[inode]->X()[0]+ mydisp[inode*numdof+0];
