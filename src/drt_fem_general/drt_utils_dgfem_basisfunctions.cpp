@@ -25,7 +25,7 @@
 // 3D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_3D(
-        blitz::Array<double, 1>& funct,
+        Epetra_SerialDenseVector& funct,
         const double& r,
         const double& s,
         const double& t,
@@ -77,7 +77,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D(
 // first natural derivative of 3D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_3D_deriv1(
-        blitz::Array<double, 2>& deriv1,
+        Epetra_SerialDenseMatrix& deriv1,
         const double& r,
         const double& s,
         const double& t,
@@ -141,7 +141,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv1(
 // second natural derivative of 3D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_3D_deriv2(
-        blitz::Array<double, 2>& deriv2,
+        Epetra_SerialDenseMatrix& deriv2,
         const double& r,
         const double& s,
         const double& t,
@@ -208,7 +208,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv2(
 // 2D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_2D(
-        blitz::Array<double, 1>& funct,
+        Epetra_SerialDenseVector& funct,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& shape,
@@ -249,7 +249,7 @@ void DRT::UTILS::DGFEM_BasisFunction_2D(
 // first natural derivative of 2D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_2D_deriv1(
-        blitz::Array<double, 2>& deriv1,
+        Epetra_SerialDenseMatrix& deriv1,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& shape,
@@ -294,7 +294,7 @@ void DRT::UTILS::DGFEM_BasisFunction_2D_deriv1(
 // second natural derivative of 2D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_2D_deriv2(
-        blitz::Array<double, 2>& deriv2,
+        Epetra_SerialDenseMatrix& deriv2,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& shape,
@@ -339,7 +339,7 @@ void DRT::UTILS::DGFEM_BasisFunction_2D_deriv2(
 // 1D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_1D(
-        blitz::Array<double, 1>& funct,
+        Epetra_SerialDenseVector& funct,
         const double& r,
         const DRT::Element::DiscretizationType& shape,
         const int& npol)
@@ -373,12 +373,12 @@ void DRT::UTILS::DGFEM_BasisFunction_1D(
 // first natural derivative of 1D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_1D_deriv1(
-        blitz::Array<double, 1>& deriv1,
+        LINALG::SerialDenseVector& deriv1,
         const double& r,
         const DRT::Element::DiscretizationType& shape,
         const int& npol)
 {
-	deriv1=0.0;
+    deriv1.Zero();
 	
     switch (shape)
     {
@@ -408,12 +408,12 @@ void DRT::UTILS::DGFEM_BasisFunction_1D_deriv1(
 // second natural derivative of 1D Legendre basis-functions
 //
 void DRT::UTILS::DGFEM_BasisFunction_1D_deriv2(
-        blitz::Array<double, 1>& deriv2,
+        LINALG::SerialDenseVector& deriv2,
         const double& r,
         const DRT::Element::DiscretizationType& shape,
         const int& npol)
 {
-	deriv2=0.0;
+    deriv2.Zero();
 	
     switch (shape)
     {

@@ -20,9 +20,8 @@
 #ifndef DRT_UTILS_DGFEM_BASISFUNCTIONS
 #define DRT_UTILS_DGFEM_BASISFUNCTIONS
 
-#include <blitz/array.h>
-
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 namespace DRT
@@ -33,7 +32,7 @@ namespace UTILS
   \brief Fill a blitz-vector with with 3D shape function
   */
   void DGFEM_BasisFunction_3D(
-    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    Epetra_SerialDenseVector&                funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const double&                            t,       ///< t coordinate
@@ -45,7 +44,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with with 3D first shape function derivatives
   */
   void DGFEM_BasisFunction_3D_deriv1(
-    blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
+    Epetra_SerialDenseMatrix&                deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const double&                            t,       ///< t coordinate
@@ -57,7 +56,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with with 3D second shape function derivatives
   */
   void DGFEM_BasisFunction_3D_deriv2(
-    blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    Epetra_SerialDenseMatrix&                deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const double&                            t,       ///< t coordinate
@@ -69,7 +68,7 @@ namespace UTILS
   \brief Fill a blitz-vector with 2D shape function
   */
   void DGFEM_BasisFunction_2D(
-    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    Epetra_SerialDenseVector&                funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
@@ -80,7 +79,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with first 2D shape function derivative
   */
   void DGFEM_BasisFunction_2D_deriv1(
-    blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
+    Epetra_SerialDenseMatrix&                deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
@@ -91,7 +90,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with second 2D shape function derivative
   */
   void DGFEM_BasisFunction_2D_deriv2(
-    blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    Epetra_SerialDenseMatrix&                deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
@@ -102,7 +101,7 @@ namespace UTILS
   \brief Fill a blitz-vector with 1D shape function
   */
   void DGFEM_BasisFunction_1D(
-    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    Epetra_SerialDenseVector&                funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
     const int&                               npol     ///< Number of polynomials
@@ -112,7 +111,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with first 1D shape function derivative
   */
   void DGFEM_BasisFunction_1D_deriv1(
-    blitz::Array<double, 1>&                 deriv1,  ///< to be filled with shape function derivative values
+    LINALG::SerialDenseVector&               deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
     const int&                               npol     ///< Number of polynomials
@@ -122,7 +121,7 @@ namespace UTILS
   \brief Fill a blitz-matrix with second 1D shape function derivative
   */
   void DGFEM_BasisFunction_1D_deriv2(
-    blitz::Array<double, 1>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    LINALG::SerialDenseVector&               deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between shape of the element
     const int&                               npol     ///< Number of polynomials
@@ -204,7 +203,7 @@ namespace UTILS
   \brief Fill a Epetra_SerialDenseVector with first 1D shape function derivative
   */
   void DGFEM_BasisFunction_1D_deriv1(
-    Epetra_SerialDenseMatrix&                deriv1,  ///< to be filled with shape function derivative values
+    LINALG::SerialDenseVector&               deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
@@ -213,7 +212,7 @@ namespace UTILS
   \brief Fill a Epetra_SerialDenseVector with second 1D shape function derivative
   */
   void DGFEM_BasisFunction_1D_deriv2(
-    Epetra_SerialDenseMatrix&                deriv2,  ///< to be filled with shape function 2-nd derivative values
+    LINALG::SerialDenseVector&               deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
