@@ -467,7 +467,7 @@ double DomainCoverageRatioT(
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // get transposed of the jacobian matrix d x / d \xi
-            //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+            //xjm = deriv(i,k)*xyze(j,k);
             static LINALG::Matrix<3,3> xjm;
             xjm.MultiplyNT(deriv,xyze);
 
@@ -590,7 +590,7 @@ double BoundaryCoverageRatioT(
       
       // get jacobian matrix d x / d \xi  (3x2)
       static LINALG::Matrix<3,2> dxyzdrs;
-      //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
+      // dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
       for (int isd = 0; isd < 3; ++isd)
       {
         for (int j = 0; j < 2; ++j)
@@ -605,7 +605,7 @@ double BoundaryCoverageRatioT(
       
       // compute covariant metric tensor G for surface element (2x2)
       static LINALG::Matrix<2,2> metric;
-      //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+      // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
       
       const double detmetric = sqrt(metric.Determinant());

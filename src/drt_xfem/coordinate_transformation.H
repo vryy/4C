@@ -135,7 +135,7 @@ namespace GEO
     DRT::UTILS::shape_function_2D(funct,pos_eta(0),pos_eta(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    //const LINALG::SerialDenseVector pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+    // pos_xsi_boundary = xyze_cell(i,j) * funct(j);
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
     //GEO::PosXiBoundary pos_xsi_boundary;
     BLITZTINY::MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
