@@ -34,16 +34,6 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     gid2distype["NURBS4"]   = nurbs4;
     gid2distype["NURBS9"]   = nurbs9;
 
-    typedef map<DiscretizationType, int> DisType2NumNodes;
-    DisType2NumNodes distype2NumNodes;
-    distype2NumNodes[quad4]    = 4;
-    distype2NumNodes[quad8]    = 8;
-    distype2NumNodes[quad9]    = 9;
-    distype2NumNodes[tri3]     = 3;
-    distype2NumNodes[tri6]     = 6;
-    distype2NumNodes[nurbs4]   = 4;
-    distype2NumNodes[nurbs9]   = 9;
-
     // read element's nodes
     int   ierr = 0;
     int   nnode = 0;
@@ -58,7 +48,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
         if (ierr == 1)
         {
             distype = gid2distype[eletext];
-            nnode = distype2NumNodes[distype];
+            nnode = DRT::UTILS::getNumberOfElementNodes(distype);
             frint_n(eletext.c_str(), nodes, nnode, &ierr);
             dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
             break;
