@@ -878,7 +878,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       visc_old_(0) = viscs2_(0,0)*evelnp(0,0)+viscs2_(1,0)*evelnp(1,0);
       visc_old_(1) = viscs2_(1,0)*evelnp(0,0)+viscs2_(3,0)*evelnp(1,0);
 
-      for (int i=1; i<numnode; ++i) 
+      for (int i=1; i<numnode; ++i)
       {
         double sum = (derxy2_(0,i)+derxy2_(1,i))/prefac;
 
@@ -1895,9 +1895,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
           emesh(tvip,  tui ) += v*(velint_(1)-rhsmom_(1))*derxy_(0, ui);
           emesh(tvip,  tuip) += v*(velint_(1)-rhsmom_(1))*derxy_(1, ui);
-
-          emesh(tvipp, tui ) += v*(velint_(2)-rhsmom_(2))*derxy_(0, ui);
-          emesh(tvipp, tuip) += v*(velint_(2)-rhsmom_(2))*derxy_(1, ui);
         }
       }
 
@@ -1964,7 +1961,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           deriv_(0,ui)*vderiv_(1,1) - deriv_(1,ui)*vderiv_(1,0)
           ) ;
 
-          emesh(tvipp + 2, tui + 1) += v*(
+          emesh(tvipp, tui + 1) += v*(
           deriv_(0,ui)*vderiv_(0,1) - deriv_(1,ui)*vderiv_(0,0)
           ) ;
         }
