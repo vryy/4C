@@ -35,7 +35,8 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
     const Teuchos::RCP<DRT::Discretization>  fluiddis,
     const Teuchos::RCP<DRT::Discretization>  gfuncdis
     ) : InterfaceHandle(fluiddis),
-        gfuncdis_(gfuncdis)
+        gfuncdis_(gfuncdis),
+        flamefront_(Teuchos::null) // pointer to the flame front is a dummy for the time being!
 {
   if (fluiddis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
@@ -45,6 +46,10 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
 
   SanityChecks();
 
+  // construct a flame front
+  Teuchos::RCP<COMBUST::FlameFront> flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,elementalDomainIntCells_,elementalBoundaryIntCells_));
+
+// Kläre was mit diesen Bäumen passieren soll!
 //  octTreenp_ = rcp( new GEO::SearchTree(5));
 //  octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
 //  octTreen_ = rcp( new GEO::SearchTree(5));

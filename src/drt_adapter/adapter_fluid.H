@@ -213,6 +213,13 @@ namespace ADAPTER {
     /// Some applications need only access to velocity-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
+    /// Multi field problems which involve an implicitly defined interface, e.g. via level set
+    /// methods, might need to access a second discretization.
+    virtual void ImportDiscretization(Teuchos::RCP<const DRT::Discretization> importdis)
+    {
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    };
+
     //@}
 
     //! @name Apply interface values

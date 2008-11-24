@@ -29,18 +29,18 @@ int DRT::ELEMENTS::Combust3Line::Evaluate(
         Epetra_SerialDenseVector& elevec2,
         Epetra_SerialDenseVector& elevec3)
 {
-    DRT::ELEMENTS::Combust3Line::ActionType act = Combust3Line::none;
-    string action = params.get<string>("action","none");
-    if (action == "none") dserror("No action supplied");
-    else dserror("Unknown type of action for Combust3_Line");
-    
-    switch(act)
-    {
-    default:
-        dserror("Unknown type of action for Combust3_Line");
-    } // end of switch(act)
-    
-    return 0;
+  DRT::ELEMENTS::Combust3Line::ActionType act = Combust3Line::none;
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else dserror("Unknown type of action for Combust3_Line");
+
+  switch(act)
+  {
+  default:
+    dserror("Unknown type of action for Combust3_Line");
+  } // end of switch(act)
+
+  return 0;
 }
 
 
@@ -54,8 +54,8 @@ int DRT::ELEMENTS::Combust3Line::EvaluateNeumann(
         std::vector<int>&         lm,
         Epetra_SerialDenseVector& elevec1)
 {  
-    dserror("Neumann condition on line not implemented");
-    return 0;
+  dserror("Neumann condition on line not implemented");
+  return 0;
 }
 
 

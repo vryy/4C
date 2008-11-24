@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_solver.H"
+#include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -1338,6 +1339,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  timeint_stationary,
                                  timeint_one_step_theta),
                                &combustcontrol);
+  setStringToIntegralParameter<INPAR::COMBUST::ReInitialActionGfunc>("REINITGFUNCTION","Signed Distance Function","Type of reinitialization level set",
+                               tuple<std::string>(
+                                 "Function",
+                                 "Signed Distance Function"),
+                               tuple<INPAR::COMBUST::ReInitialActionGfunc>(
+                                 INPAR::COMBUST::reinitialize_by_function,
+                                 INPAR::COMBUST::compute_signeddistancefunction),
+                               &combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,"");
@@ -1347,6 +1356,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,"");
+
+  IntParameter("REINITFUNCNO",-1,"function number for reinitialization of G-function field",&combustcontrolgfunc);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(

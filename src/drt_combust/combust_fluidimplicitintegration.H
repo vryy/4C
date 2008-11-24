@@ -20,11 +20,12 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
+#include "combust_interface.H"
 
 namespace FLD
 {
 /*!
-\brief time integration for fluid problems
+\brief implicit time integration for combustion problems (at the moment there is no other one!)
 
 \author henke (henke@lnm.mw.tum.de)
 */
@@ -51,28 +52,12 @@ public:
   virtual ~CombustFluidImplicitTimeInt();
 
   /*!
-  \brief switch over stationary or dynamic time integration
-
-  */
-  void Integrate(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-      );
-
-  /*!
-  \brief time loop
-
-  */
-  void TimeLoop(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-      );
-
-  /*!
   \brief solve stationary problem
-
+         Even though it does not make much sense, this member function this member function belongs 
+         to the implicit time integration scheme for convenience. Of course, there is no time
+         integration for stationary problems.
   */
-  void SolveStationaryProblem(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-      );
+  void SolveStationaryProblem();
 
   /// prepare a time step
   void PrepareTimeStep();
@@ -80,28 +65,12 @@ public:
   /// prepare a nonlinear iteration
   void PrepareNonlinearSolve();
 
+  void IncorporateInterface(Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle);
+
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration
-
   */
-  void NonlinearSolve(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
-      );
-
-  /*!
-  \brief compute interface
-  
-  */
-  void ComputeInterfaceAndSetDOFs(
-      Teuchos::RCP<DRT::Discretization>  cutterdiscret);
-
-  /*!
-    \brief build linear system matrix and rhs
-    this function is not used in combustion and XFEM
-
-    \param vel new guess at velocity and pressure
-  */
-  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+  void NonlinearSolve();
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -150,10 +119,67 @@ public:
   void TimeUpdate();
 
   /*!
+  \brief lift'n'drag forces, statistics time sample and output of solution and statistics
+  */
+  void StatisticsAndOutput();
+
+  
+  /*!
   \brief update configuration and output to file/screen
 
   */
   void Output();
+
+  /*!
+  \brief set initial flow field for analytical test problems
+  */
+  void SetInitialFlowField(
+      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
+      int whichinitialfield,
+      int startfuncno);
+
+  /*!
+  \brief calculate error between a analytical solution and the
+         numerical solution of a test problems
+  */
+  void EvaluateErrorComparedToAnalyticalSol();
+
+  /*!
+  \brief calculate stresses
+  */
+  Teuchos::RCP<Epetra_Vector> CalcStresses();
+
+
+
+// unused functions
+
+
+
+
+  /*!
+  \brief not used, relict from Axels XFSI -> remove
+  */
+  void Integrate();
+
+  /*!
+  \brief not used, relict from Axels XFSI -> remove
+  */
+  void TimeLoop();
+
+  /*!
+  \brief not used in combustion or XFEM -> remove
+         build linear system matrix and rhs
+  \param vel new guess at velocity and pressure
+  */
+  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+
+
+
+
+// output functions
+
+
+
 
   /*!
   \brief output solution fields to Gmsh for debugging
@@ -176,60 +202,38 @@ public:
       const bool plot_to_gnuplot
       ) const;
 
-  /*!
-  \brief set initial flow field for analytical test problems
 
-  */
-  void SetInitialFlowField(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-      int whichinitialfield,
-      int startfuncno);
-
-  /*!
-  \brief calculate error between a analytical solution and the
-         numerical solution of a test problems
-
-  */
-  void EvaluateErrorComparedToAnalyticalSol();
-
-  /*!
-  \brief calculate stresses
-
-  */
-  Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /*!
   \brief read restart data
-
   */
   void ReadRestart(int step);
 
   //! @name access methods for composite algorithms
-  /// monolithic FSI needs to access the linear fluid problem
 
-  Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
-  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp() { return state_.velnp_; }
-  Teuchos::RCP<Epetra_Vector> Veln() { return state_.veln_; }
-  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
-  Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
+  Teuchos::RCP<Epetra_Vector> InitialGuess()  { return incvel_; }
+  Teuchos::RCP<Epetra_Vector> Residual()      { return residual_; }
+  Teuchos::RCP<Epetra_Vector> TrueResidual()  { return trueresidual_; }
+  Teuchos::RCP<Epetra_Vector> Velnp()         { return state_.velnp_; }
+  Teuchos::RCP<Epetra_Vector> Veln()          { return state_.veln_; }
+
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
-  Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
+  Teuchos::RCP<Epetra_Vector> RobinRHS()      { return robinrhs_; }
 
-  LINALG::MapExtractor& VelPresSplitter() { return velpressplitter_; }
+  LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
-  double Dt() const { return dta_; }
-
+  double Dt()   const { return dta_; }
   double Time() const { return time_; }
-  int Step() const { return step_; }
-
-  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+  int Step()    const { return step_; }
+  int Itemax()  const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   /*!
@@ -243,7 +247,7 @@ public:
     Introduce the FSI surface to the fluid algorithm. This way special case
     algorithms (robin coupling) can work on the surface.
    */
-  void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+  //void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
   /// calculate lift&drag forces and angular moments
   /*!
@@ -271,6 +275,9 @@ public:
     Needed for Mortar coupling at the FSI interface
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+
+  /// integrate mass flow over a surface 
+  void ComputeSurfaceFlowrates() const;
 
   /// switch fluid field to block matrix
   void UseBlockMatrix(
@@ -314,7 +321,7 @@ protected:
   /// density extracted from element material
   double density_;
 
-  /// whether we do some extrapolation at the begin of each time step
+  /// whether we do some extrapolation at the beginning of each time step
   bool extrapolationpredictor_;
 
   //! @name restart variables
@@ -337,17 +344,17 @@ protected:
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
-  /// toggle vector indicating which dofs have Dirichlet BCs
-  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
-
-  /// toggle vector indicating which dofs DON'T have Dirichlet BCs
-  Teuchos::RCP<Epetra_Vector>    invtoggle_;
+  /// maps for extracting Dirichlet and free DOF sets
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   Teuchos::RCP<Epetra_Vector>    zeros_;
 
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
+
+  /// the vector containing potential Neumann-type outflow stabilization
+  Teuchos::RCP<Epetra_Vector>    outflow_stabil_;
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
@@ -387,12 +394,7 @@ protected:
     Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
     Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
-
   } state_;
-
-  /// histvector --- a linear combination of velnm, veln (BDF)
-  ///                or veln, accn (One-Step-Theta)
-  //Teuchos::RCP<Epetra_Vector>    hist_;
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
@@ -400,12 +402,12 @@ protected:
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
-  /// (robin) fsi coupling row dof map extractor
-  const LINALG::MapExtractor* fsisurface_;
-
+  //! pointer to the geometrical information about the flame front
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+  
 }; // class CombustFluidImplicitTimeInt
 
-}
+} // namespace FLD
 
 
 #endif  // #ifndef COMBUST_FLUIDIMPLICITINTEGRATION_H

@@ -16,7 +16,6 @@ Maintainer: Florian Henke
 
 #include "adapter_fluid_combust.H"
 
-#include "../drt_fluid/xfluidresulttest.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_lib/linalg_utils.H"
@@ -25,68 +24,26 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Export.h>
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
+ |
+ | It initializes its associated time integration scheme fluid_.
  *------------------------------------------------------------------------------------------------*/
 ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
                                     Teuchos::RCP<LINALG::Solver> solver,
                                     Teuchos::RCP<ParameterList> params,
                                     Teuchos::RCP<IO::DiscretizationWriter> output)
-  : fluid_(dis, *solver, *params, *output),
-    dis_(dis),
+  : fluid_(dis, *solver, *params, *output), // calls COMBUST::CombustFluidImplicitTimeInt()
+    fluiddis_(dis),
     solver_(solver),
     params_(params),
     output_(output)
+    //interfacehandle_(Teuchos::null) // Null pointer auf ein InterfaceHandleCombust
 {
-  vector<string> conditions_to_copy;
-  conditions_to_copy.push_back("FSICoupling");
-  conditions_to_copy.push_back("XFEMCoupling");
-//  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(null, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
-  dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
-  
-//  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-//  boundaryoutput_->WriteMesh(0,0.0);
-
-  // create node and element distribution with elements and nodes ghosted on all processors
-  const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
-  const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
-
-  // put all boundary nodes and elements onto all processors
-  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
-  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
-  
-  // redistribute nodes and elements to column (ghost) map
-  boundarydis_->ExportColumnNodes(nodecolmap);
-  boundarydis_->ExportColumnElements(elemcolmap);
-
-  // Now we are done. :)
-  const int err = boundarydis_->FillComplete();
-  if (err) dserror("FillComplete() returned err=%d",err);
-
-  DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
-
-  // create interface DOF vectors using the solid parallel distribution
-  const Epetra_Map* fluidsurface_dofrowmap = boundarydis_->DofRowMap();
-//  idispnp_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  ivelnp_     = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  itrueresnp_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-
-//  idispn_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-
   std::cout << "FluidCombust constructor done" << endl;
 }
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidCombust::Discretization()
-{
-  return boundarydis_;
-}
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -94,8 +51,9 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
 {
   fluid_.PrepareTimeStep();
 }
+
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | Wozu ist diese Abfrage nötig? henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
@@ -108,14 +66,17 @@ void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     fluid_.Evaluate(Teuchos::null);
   }
 }
+
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08  |
+ | In der Zeitintegration gibt es keine Update Funktion, das passiert hier!          henke 10/08  |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Update()
 {
   fluid_.TimeUpdate();
 
-//  henke 08/08 const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+// henke 08/08 Ich denke die Parameterliste müsste mit params_ eigentlich schon alles beeinhalten!
+// -> wozu ist das hier dann gut?
+//  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = params_->get<double>("TIMESTEP");
 
   // compute acceleration at timestep n+1
@@ -143,53 +104,19 @@ void ADAPTER::FluidCombust::Update()
 
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
-//  iveln_->Update(1.0,*ivelnp,0.0);
-  
-  // update displacement n
-//  idispn_->Update(1.0,*idispnp_,0.0);
+
 }
+
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | Was davon brauche ich? henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Output()
 {
   fluid_.Output();
-
-//  boundaryoutput_->NewStep(Step(),Time());
-//  boundaryoutput_->WriteVector("interface displacement", idisp_);
-//  boundaryoutput_->WriteVector("interface velocity", ivel_);
-//  boundaryoutput_->WriteVector("interface velocity (n)", iveln_);
-//  boundaryoutput_->WriteVector("interface velocity (n-1)", ivelnm_);
-//  boundaryoutput_->WriteVector("interface acceleration (n)", iaccn_);
-//  boundaryoutput_->WriteVector("interface force", itrueres_);
-
-  // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  
-  // map to fluid parallel distribution
-//  LINALG::Export(*idispnp_ ,*idispcol);
-  LINALG::Export(*ivelnp_  ,*ivelnpcol);
-  LINALG::Export(*iveln_   ,*ivelncol);
-  LINALG::Export(*iaccn_   ,*iaccncol);
-  LINALG::Export(*itrueresnp_,*itruerescol);
-
-  // print redundant arrays on proc 0
-  if (boundarydis_->Comm().MyPID() == 0)
-  {
-    PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
-    PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
-    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
-  }
-
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | Baue diese Funktion eventuell für dich um!                                         henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::PrintInterfaceVectorField(
     const Teuchos::RCP<Epetra_Vector>   displacementfield,
@@ -198,7 +125,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
     const std::string name_in_gmsh
     )
 {
-  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+/*  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
   if (gmshdebugout)
   {
@@ -258,6 +185,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
     f_system.close();
     std::cout << " done" << endl;
   }
+*/
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -266,77 +194,11 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
 void ADAPTER::FluidCombust::NonlinearSolve()
 {
 
-  cout << "FluidCombust::NonlinearSolve()" << endl;
+  std::cout << "FluidCombust::NonlinearSolve()" << endl;
 
-  // create interface DOF vectors using the fluid parallel distribution
-//  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-//  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnp  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelcoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iacccoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-//  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-//
-//  Teuchos::RCP<Epetra_Vector> ivelncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-//  Teuchos::RCP<Epetra_Vector> iaccncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  // map to fluid parallel distribution
-//  LINALG::Export(*idispnp_,*idispcolnp);
-//  LINALG::Export(*idispn_ ,*idispcoln);
-  LINALG::Export(*ivelnp_ ,*ivelcolnp);
-  LINALG::Export(*iveln_  ,*ivelcoln);
-  LINALG::Export(*iaccn_  ,*iacccoln);
-
-  cout << "SetState" << endl;
-//  cout << "SetState" << endl;
-//  boundarydis_->SetState("idispcolnp",idispcolnp);
-//  boundarydis_->SetState("idispcoln" ,idispcoln);
-  
-  boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
-  boundarydis_->SetState("ivelcoln"  ,ivelcoln);
-  boundarydis_->SetState("iacccoln"  ,iacccoln);
-  
-  fluid_.NonlinearSolve(boundarydis_);
-  
-  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
-  
-  boundarydis_->ClearState();
-
-  // map back to solid parallel distribution
-  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
-  itrueresnp_->PutScalar(0.0);
-  itrueresnp_->Export(*itruerescol,*conimpo,Add); 
-  //LINALG::Export(*itruerescol,*itrueresnp_);
+  fluid_.NonlinearSolve();
 }
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::InnerVelocityRowMap()
-{
-  // build inner velocity map
-  // dofs at the interface are excluded
-  // we use only velocity dofs and only those without Dirichlet constraint
 
-  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
-
-  const int numvelids = velmap->NumMyElements();
-  std::vector<int> velids;
-  velids.reserve(numvelids);
-  for (int i=0; i<numvelids; ++i)
-  {
-    int gid = velmap->GID(i);
-    // NOTE: in xfem, there are no interface dofs in the fluid field
-    if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
-    {
-      velids.push_back(gid);
-    }
-  }
-
-  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
-
-  return innervelmap_;
-}
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -344,6 +206,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::VelocityRowMap()
 {
   return fluid_.VelocityRowMap();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -351,6 +214,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::PressureRowMap()
 {
   return fluid_.PressureRowMap();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -358,6 +222,7 @@ double ADAPTER::FluidCombust::ResidualScaling() const
 {
   return fluid_.ResidualScaling();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -365,6 +230,7 @@ double ADAPTER::FluidCombust::TimeScaling() const
 {
   return 1./fluid_.Dt();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -372,6 +238,7 @@ void ADAPTER::FluidCombust::ReadRestart(int step)
 {
   fluid_.ReadRestart(step);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -379,6 +246,7 @@ double ADAPTER::FluidCombust::Time()
 {
   return fluid_.Time();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -386,6 +254,7 @@ int ADAPTER::FluidCombust::Step()
 {
   return fluid_.Step();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -393,6 +262,7 @@ int ADAPTER::FluidCombust::Itemax() const
 {
   return fluid_.Itemax();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -400,6 +270,7 @@ void ADAPTER::FluidCombust::SetItemax(int itemax)
 {
   fluid_.SetItemax(itemax);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -407,27 +278,34 @@ void ADAPTER::FluidCombust::LiftDrag()
 {
   fluid_.LiftDrag();
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceForces()
 {
+  dserror("Don't use this function, I don't know what it does!");
   return interface_.ExtractCondVector(itrueresnp_);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
 {
+  dserror("Don't use this function, I don't know what it does!");
   return interface_.ExtractCondVector(iveln_);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
+  dserror("Don't use this function, I don't know what it does!");
   interface_.InsertCondVector(ivel,ivelnp_);
 }
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -435,13 +313,26 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidCombust::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::CombustFluidResultTest(fluid_));
 }
+
 /*------------------------------------------------------------------------------------------------*
- | Es sieht so aus als hätte Axel diese Funktion mittlerweile wieder eingeführt       henke 08/08 |
+ | Zum Exportieren der Konvektionsgeschw. Warum die Bezeichnung velpres? Druck?       henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-//Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
-//{
-//  dserror("not implemented!");
-//  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
-//}
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
+{
+  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
+}
+
+void ADAPTER::FluidCombust::ImportDiscretization(const Teuchos::RCP<DRT::Discretization> importdis)
+{
+  // import level set discretization from combustion algorithm
+  gfuncdis_=importdis;
+
+  // construct a combustion interface handle (couldn't we also construct a flame front here!) and
+  // thus automatically process the flame front
+  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis_,gfuncdis_));
+
+  // pass geometrical information aboout flame front to the fluid time integration
+  fluid_.IncorporateInterface(interfacehandle_);
+}
 
 #endif  // #ifdef CCADISCRET

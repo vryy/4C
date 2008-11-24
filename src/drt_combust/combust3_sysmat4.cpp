@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 
 #include "combust3_sysmat.H"
 #include "combust3_utils.H"
+#include "../drt_f3/xfluid3_utils.H"
 #include "../drt_f3/fluid3_stabilization.H"
 #include "combust3_local_assembler.H"
 #include "combust3_interpolation.H"
@@ -52,9 +53,6 @@ struct Shp
 
 using namespace XFEM::PHYSICS;
 
-//namespace COMBUST
-//{
-
   //! size factor to allow static arrays
   ///
   /// to allow static arrays for a unknown number of unknowns, we make them bigger than necessary
@@ -66,25 +64,7 @@ using namespace XFEM::PHYSICS;
   /// specialization of SizeFac for XFEM::xfem_assembly
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const int fac = 3;};
 
-  //! interpolate from nodal vector array to integration point vector using the shape function
-  template <class M, class MS>
-  static LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
-      const M&  eleVectorField,       ///< array with nodal vector values
-      const MS& shp,                  ///< array with nodal shape function
-      const int numparam              ///< number of parameters
-      )
-  {
-    LINALG::Matrix<3,1> v;
-    const int nsd = 3;
-    for (int isd = 0; isd < nsd; ++isd)
-    {
-        v(isd) = 0.0;
-        for (int iparam = 0; iparam < numparam; ++iparam)
-            v(isd) += eleVectorField(isd,iparam)*shp(iparam);
-    }
-    return v;
-  }
-  
+  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
   static bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
@@ -135,12 +115,12 @@ using namespace XFEM::PHYSICS;
         }
 //              theta_dt = theta_dt_pure;// * delta_slab;
       
-        DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
+        const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const int numnode_boundary = boundaryele->NumNode();
         
-        LINALG::Matrix<3,1> iveln;
-        LINALG::Matrix<3,1> ivelnm;
-        LINALG::Matrix<3,1> iaccn;
+        static LINALG::Matrix<3,1> iveln;
+        static LINALG::Matrix<3,1> ivelnm;
+        static LINALG::Matrix<3,1> iaccn;
         
         if (ivelcoln.GlobalLength() > 3)
         {
@@ -156,7 +136,7 @@ using namespace XFEM::PHYSICS;
           {
             const DRT::Node* node = nodes[inode];
             const std::vector<int> lm = ih->cutterdis()->Dof(node);
-            std::vector<double> myvel(3);
+            static std::vector<double> myvel(3);
             DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
             veln_boundary(0,inode) = myvel[0];
             veln_boundary(1,inode) = myvel[1];
@@ -166,7 +146,7 @@ using namespace XFEM::PHYSICS;
             veln_boundary(1,inode+4) = myvel[1];
             veln_boundary(2,inode+4) = myvel[2];
             
-            std::vector<double> myvelnm(3);
+            static std::vector<double> myvelnm(3);
             DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
             velnm_boundary(0,inode) = myvelnm[0];
             velnm_boundary(1,inode) = myvelnm[1];
@@ -176,7 +156,7 @@ using namespace XFEM::PHYSICS;
             velnm_boundary(1,inode+4) = myvelnm[1];
             velnm_boundary(2,inode+4) = myvelnm[2];
             
-            std::vector<double> myacc(3);
+            static std::vector<double> myacc(3);
             DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
             accn_boundary(0,inode) = myacc[0];
             accn_boundary(1,inode) = myacc[1];
@@ -191,9 +171,9 @@ using namespace XFEM::PHYSICS;
           
           LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
           DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          iveln  = interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          ivelnm = interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
-          iaccn  = interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
+          iveln  = COMBUST::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          ivelnm = COMBUST::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
+          iaccn  = COMBUST::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
   //                cout << "iveln " << iveln << endl;
   //                cout << "iaccn " << iaccn << endl;
         }
@@ -287,14 +267,14 @@ using namespace XFEM::PHYSICS;
       }
       for (int iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
-      const bool tauele_unknowns_present = (XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
+      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
       if (tauele_unknowns_present)
       {
-          const int numparamtauyy = XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
-          const int numparamtauzz = XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
-          const int numparamtauxy = XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
-          const int numparamtauxz = XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
-          const int numparamtauyz = XFEM::comgetNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+          const int numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
+          const int numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
+          const int numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
+          const int numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
+          const int numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
           const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
           const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
           const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
@@ -361,7 +341,7 @@ static void SysmatDomain4(
     const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
     
     // dead load in element nodes
-    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
+    //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
     // get viscosity
     // check here, if we really have a fluid !!
@@ -375,7 +355,7 @@ static void SysmatDomain4(
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     
     // figure out whether we have stress unknowns at all
-    const bool tauele_unknowns_present = (XFEM::comgetNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+    const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
 //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 //    cout << endl;
@@ -631,10 +611,10 @@ static void SysmatDomain4(
             }
             
             // get velocities and accelerations at integration point
-            const LINALG::Matrix<3,1> gpvelnp = interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpveln  = interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpvelnm = interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpaccn  = interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const LINALG::Matrix<3,1> gpvelnp = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+            LINALG::Matrix<3,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            LINALG::Matrix<3,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            LINALG::Matrix<3,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
             
             
             if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
@@ -660,7 +640,7 @@ static void SysmatDomain4(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
-            LINALG::Matrix<3,3> vderxy;
+            static LINALG::Matrix<3,3> vderxy;
             //vderxy = enr_derxy(j,k)*evelnp(i,k);
             vderxy = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
@@ -679,7 +659,7 @@ static void SysmatDomain4(
             static LINALG::Matrix<3,6> vderxy2;
             if (higher_order_ele)
             {
-              //vderxy2 = enr_derxy2(j,k)*evelnp(i,k);
+              //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
               vderxy2 = 0.0;
               for (int iparam = 0; iparam < numparamvelx; ++iparam)
               {
@@ -700,7 +680,7 @@ static void SysmatDomain4(
             }
 
             // get pressure gradients
-            LINALG::Matrix<3,1> gradp;
+            static LINALG::Matrix<3,1> gradp;
             //gradp = enr_derxy(i,j)*eprenp(j);
             gradp = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
@@ -726,7 +706,7 @@ static void SysmatDomain4(
               pres += shp.d0(iparam)*eprenp(iparam);
             
             // get viscous stress unknowns
-            LINALG::Matrix<3,3> tau;
+            static LINALG::Matrix<3,3> tau;
             if (tauele_unknowns_present)
             {
               XFEM::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -771,14 +751,13 @@ static void SysmatDomain4(
             conv_old.Multiply(vderxy,gpvelnp);
             
             /* Viscous term  div epsilon(u_old) */
-            LINALG::Matrix<3,1> visc_old;
+            static LINALG::Matrix<3,1> visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            LINALG::Matrix<3,1> res_old;
-            //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
+            static LINALG::Matrix<3,1> res_old;
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
             
@@ -1431,7 +1410,7 @@ static void SysmatBoundary4(
       const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
       
       
-      const bool tauele_unknowns_present = (XFEM::comgetNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
         // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
         if (tauele_unknowns_present){
     
@@ -1517,30 +1496,30 @@ static void SysmatBoundary4(
             
             // position of the gausspoint in physical coordinates
 //            gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            LINALG::Matrix<3,1> gauss_pos_xyz;
-            for (int isd = 0; isd < 3; ++isd)
+            LINALG::Matrix<3,1> gauss_pos_xyz(true);
+            for (int inode = 0; inode < numnode_boundary; ++inode)
             {
-                gauss_pos_xyz(isd) = 0.0;
-                for (int inode = 0; inode < numnode_boundary; ++inode)
-                {
-                    gauss_pos_xyz(isd) += funct_boundary(inode)*xyze_boundary(isd,inode);
-                }
+              for (int isd = 0; isd < 3; ++isd)
+              {
+                gauss_pos_xyz(isd) += xyze_boundary(isd,inode)*funct_boundary(inode);
+              }
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
             static LINALG::Matrix<3,2> dxyzdrs;
-            //dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
-            for (int isd = 0; isd < 3; ++isd)
-            {
-                for (int j = 0; j < 2; ++j)
-                {
-                    dxyzdrs(isd,j) = 0.0;
-                    for (int k = 0; k < numnode_boundary; ++k)
-                    {
-                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
-                    }
-                }
-            }
+            // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
+//            for (int isd = 0; isd < 3; ++isd)
+//            {
+//                for (int j = 0; j < 2; ++j)
+//                {
+//                    dxyzdrs(isd,j) = 0.0;
+//                    for (int k = 0; k < numnode_boundary; ++k)
+//                    {
+//                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
+//                    }
+//                }
+//            }
+            xyze_boundary.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
             
             // compute covariant metric tensor G for surface element (2x2)
             static LINALG::Matrix<2,2> metric;
@@ -1807,12 +1786,12 @@ static void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    LINALG::Matrix<shpVecSize,1> eprenp;
-    LINALG::Matrix<3,shpVecSize> evelnp;
-    LINALG::Matrix<3,shpVecSize> eveln;
-    LINALG::Matrix<3,shpVecSize> evelnm;
-    LINALG::Matrix<3,shpVecSize> eaccn;
-    LINALG::Matrix<6,shpVecSizeStress> etau;
+    static LINALG::Matrix<shpVecSize,1> eprenp;
+    static LINALG::Matrix<3,shpVecSize> evelnp;
+    static LINALG::Matrix<3,shpVecSize> eveln;
+    static LINALG::Matrix<3,shpVecSize> evelnm;
+    static LINALG::Matrix<3,shpVecSize> eaccn;
+    static LINALG::Matrix<6,shpVecSizeStress> etau;
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
     
@@ -1919,7 +1898,6 @@ void COMBUST::callSysmat4(
         };
     }
 }
-//} // end namespace COMBUST
 
 #endif
 

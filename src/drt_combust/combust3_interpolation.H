@@ -23,6 +23,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/physics.H"
 
 
+//! support routines for the combust3 element
 namespace COMBUST
 {
   
@@ -127,13 +128,13 @@ namespace COMBUST
   inline map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype)
   {
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-    //          element_ansatz[XFEM::PHYSICS::Tauxx] = COMBUST::getStressInterpolationType3D(eledistype);
-    //          element_ansatz[XFEM::PHYSICS::Tauyy] = COMBUST::getStressInterpolationType3D(eledistype);
-    //          element_ansatz[XFEM::PHYSICS::Tauzz] = COMBUST::getStressInterpolationType3D(eledistype);
-    //          element_ansatz[XFEM::PHYSICS::Tauxy] = COMBUST::getStressInterpolationType3D(eledistype);
-    //          element_ansatz[XFEM::PHYSICS::Tauxz] = COMBUST::getStressInterpolationType3D(eledistype);
-    //          element_ansatz[XFEM::PHYSICS::Tauyz] = COMBUST::getStressInterpolationType3D(eledistype);
-    //element_ansatz[XFEM::PHYSICS::DiscPres] = COMBUST::getDiscPressureInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauxx] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauyy] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauzz] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauxy] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauxz] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::Tauyz] = COMBUST::getStressInterpolationType3D(eledistype);
+//    element_ansatz[XFEM::PHYSICS::DiscPres] = COMBUST::getDiscPressureInterpolationType3D(eledistype);
     element_ansatz[XFEM::PHYSICS::Sigmaxx] = COMBUST::getStressInterpolationType3D(eledistype);
     element_ansatz[XFEM::PHYSICS::Sigmayy] = COMBUST::getStressInterpolationType3D(eledistype);
     element_ansatz[XFEM::PHYSICS::Sigmazz] = COMBUST::getStressInterpolationType3D(eledistype);

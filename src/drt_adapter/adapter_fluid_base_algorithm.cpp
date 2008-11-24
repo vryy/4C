@@ -305,8 +305,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     else if (genprob.probtyp == prb_combust)
     {
-      cout << "Ich bin jetzt eine CombustFluidTimeInt" << &endl;
-      //fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
       fluid_ = rcp(new ADAPTER::FluidCombust(actdis, solver, fluidtimeparams, output));
     }
     else

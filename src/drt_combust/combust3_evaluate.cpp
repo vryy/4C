@@ -12,6 +12,8 @@ Maintainer: Florian Henke
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
@@ -20,6 +22,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"
 
 
@@ -33,12 +36,6 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_linear_fluid")
     act = Combust3::calc_linear_fluid;
-  else if (action == "calc_fluid_genalpha_sysmat_and_residual")
-    act = Combust3::calc_fluid_genalpha_sysmat_and_residual;
-  else if (action == "time update for subscales")
-    act = Combust3::calc_fluid_genalpha_update_for_subscales;
-  else if (action == "time average for subscales and residual")
-    act = Combust3::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = Combust3::calc_fluid_stationary_systemmat_and_residual;  
   else if (action == "calc_fluid_beltrami_error")
@@ -85,13 +82,13 @@ DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStr
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
-                                      DRT::Discretization&      discretization,
-                                      std::vector<int>&         lm,
-                                      Epetra_SerialDenseMatrix& elemat1,
-                                      Epetra_SerialDenseMatrix&,
-                                      Epetra_SerialDenseVector& elevec1,
-                                      Epetra_SerialDenseVector&,
-                                      Epetra_SerialDenseVector&)
+                                     DRT::Discretization&      discretization,
+                                     std::vector<int>&         lm,
+                                     Epetra_SerialDenseMatrix& elemat1,
+                                     Epetra_SerialDenseMatrix&,
+                                     Epetra_SerialDenseVector& elevec1,
+                                     Epetra_SerialDenseVector&,
+                                     Epetra_SerialDenseVector&)
 {
   // This is a temporary security abort for the Combust3 element  henke 08/08
 //  dserror("Das Combust3 Element geht noch nicht! henke 08/08");
@@ -111,13 +108,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
   {
     case get_density:
     {
-      // This is a very poor way to transport the density to the outside world. Is there a better one?
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
       params.set("density", actmat->m.fluid->density);
       break;
     }
     // One-step-theta scheme
     case calc_fluid_systemmat_and_residual:
     {
+      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_systemmat_and_residual");
+
       // do no calculation, if not needed
       if (lm.empty())
         break;
@@ -142,7 +142,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            theta    = params.get<double>("theta");
 
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-//  const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("velocity field");
+//      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
       if (ivelcol==null)
         dserror("Cannot get interface velocity from parameters");
       const Teuchos::RCP<Epetra_Vector> iforcecol = null; //params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
@@ -154,16 +154,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
               *eleDofManager_, NumNode(), NodeIds());
 
-      //--------------------------------------------------
       // calculate element coefficient matrix and rhs
-      //--------------------------------------------------
       COMBUST::callSysmat4(assembly_type,
         this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
         actmat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
-
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      params.set("density", actmat->m.fluid->density);
     }
     break;
     case calc_fluid_beltrami_error:
@@ -177,7 +171,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           dserror("Cannot get state vectors 'velnp'");
 
         // extract local values from the global vectors
-        vector<double> my_vel_pre_np(lm.size());
+        std::vector<double> my_vel_pre_np(lm.size());
         DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
 
         // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
@@ -190,7 +184,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
           myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
           myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
-          
+
           myprenp[i]=my_vel_pre_np[3+(i*4)];
         }
 
@@ -201,6 +195,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     break;
     case calc_fluid_stationary_systemmat_and_residual:
     {
+      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
       // do no calculation, if not needed
       if (lm.empty())
         break;
@@ -231,7 +226,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
               *eleDofManager_, NumNode(), NodeIds());
-          
+
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
           if ((assembly_type == XFEM::xfem_assembly) and (boundaryIntCells.size() > 0))
@@ -251,7 +246,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
-              blitz::Array<double, 1> eforce_0(locval.size());
+              LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
               {
                   eforce_0(i) = eforce(i);
@@ -305,6 +300,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     break;
     case store_xfem_info:
     {
+      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
+
+      // store pointer to interface handle
+      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
+
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
@@ -312,9 +312,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
 
       eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
-
-      // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
     }
     break;
     default:
@@ -329,14 +326,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
  |  do nothing (public)                                      gammi 04/07|
  |                                                                      |
  |  The function is just a dummy. For the fluid elements, the           |
- |  integration of the volume neumann loads takes place in the element. |
- |  We need it there for the stabilisation terms!                       |
+ |  integration of the volume neumann (body forces) loads takes place   |
+ |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3::EvaluateNeumann(ParameterList& params,
-                                             DRT::Discretization&      discretization,
-                                             DRT::Condition&           condition,
-                                             std::vector<int>&         lm,
-                                             Epetra_SerialDenseVector& elevec1)
+                                            DRT::Discretization&      discretization,
+                                            DRT::Condition&           condition,
+                                            std::vector<int>&         lm,
+                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -365,7 +362,6 @@ DRT::UTILS::GaussRule3D DRT::ELEMENTS::Combust3::getOptimalGaussrule(const Discr
   return rule;
 }
 
-
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
@@ -387,6 +383,7 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
   const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  xjm(3,3);
   Epetra_SerialDenseMatrix  deriv(3,iel);
 
   // get node coordinates of element
@@ -419,7 +416,7 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
 
   // gaussian points
   const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -450,7 +447,7 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
       |     +-            -+        +-            -+
       |
       *----------------------------------------------------------------------*/
-    Epetra_SerialDenseMatrix    xjm(NSD,NSD);
+    LINALG::Matrix<NSD,NSD>    xjm;
 
     for (int isd=0; isd<NSD; isd++)
     {
@@ -466,12 +463,7 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
     }
 
     // determinant of jacobian matrix
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double det = xjm.Determinant();
 
     if(det < 0.0)
     {

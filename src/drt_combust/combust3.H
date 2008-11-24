@@ -22,6 +22,8 @@ Maintainer: Florian Henke
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 namespace DRT
 {
@@ -50,10 +52,10 @@ namespace DRT
         struct MyState
         {
           bool instationary;
-          vector<double> velnp;
-          vector<double> veln;
-          vector<double> velnm;
-          vector<double> accn;
+          std::vector<double> velnp;
+          std::vector<double> veln;
+          std::vector<double> velnm;
+          std::vector<double> accn;
         };
         
         //! @name Constructors and destructors and related methods
@@ -66,7 +68,7 @@ namespace DRT
         
         /*!
          * \brief Copy Constructor
-         *  
+         * 
          *  Makes a deep copy of a Element
          */
         Combust3(const Combust3& old);
@@ -154,15 +156,12 @@ namespace DRT
 
       private:
         
-        //! action parameters recognized by fluid3
+        //! action parameters recognized by combust3
         enum ActionType
         {
           none,
           calc_fluid_systemmat_and_residual,
           calc_linear_fluid,
-          calc_fluid_genalpha_sysmat_and_residual,
-          calc_fluid_genalpha_update_for_subscales,
-          calc_fluid_genalpha_average_for_subscales_and_residual,
           calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_beltrami_error,
           calc_turbulence_statistics,
@@ -220,8 +219,6 @@ namespace DRT
         //! map that converts strings to actions (stabilization)
         static map<string,StabilisationAction>          stabstrtoact_;
         
-//        //! flag for euler/ale net algorithm
-//        bool                                            is_ale_;
         //! container containing all kind of fluid3 this and that
         DRT::Container                                  data_;
         
@@ -311,12 +308,7 @@ namespace DRT
     
     
     /*!
-     * \brief An element representing a surface of a fluid3 element
-     * 
-     * \note This is a pure Neumann boundary condition element. It's only
-     *       purpose is to evaluate surface Neumann boundary conditions that might be
-     *       adjacent to a parent fluid3 element. It therefore does not implement
-     *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     * \brief An element representing a surface of a combust3 element
      * 
      * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
      */
@@ -411,7 +403,8 @@ namespace DRT
         enum ActionType
         {
           none,
-          integrate_Shapefunction
+          integrate_Shapefunction,
+          calc_flux
         };
         
         //! don't want = operator
@@ -424,10 +417,10 @@ namespace DRT
 
         //!  compute kovariant metric tensor G for fluid surface element
         void f3_metric_tensor_for_surface(
-            const Epetra_SerialDenseMatrix  xyze,
-            const Epetra_SerialDenseMatrix  deriv,
+            const Epetra_SerialDenseMatrix& xyze,
+            const Epetra_SerialDenseMatrix& deriv,
             Epetra_SerialDenseMatrix&       metrictensor,
-            double                         *drs);
+            double&                         drs);
         
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(
@@ -438,16 +431,20 @@ namespace DRT
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
             );
         
+        //! integrate shapefunction over surface element
+        void IntegrateSurfaceFlow(
+            ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
+            DRT::Discretization&             discretization,  ///< vector to be filled by element
+            const std::vector<int>&          lm,              ///< location vector of this element
+            Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
+            const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
+            );
+
     }; // class Fluid3Surface
     
     
     /*!
-     * \brief An element representing a line of a fluid3 element
-     * 
-     * \note This is a pure Neumann boundary condition element. It's only
-     *       purpose is to evaluate surface Neumann boundary conditions that might be
-     *       adjacent to a parent fluid3 element. It therefore does not implement
-     *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     * \brief An element representing a line of a combust3 element
      * 
      * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
      */

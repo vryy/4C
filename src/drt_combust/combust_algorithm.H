@@ -27,9 +27,10 @@ Maintainer: Florian Henke
 #include <Epetra_Comm.h>
 
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "../drt_inpar/inpar_combust.H"
 
 /*!
-\brief COMBUST: namespace of the combustion module in BACI
+\brief namespace of the combustion module in BACI
 
 */
 namespace COMBUST
@@ -63,21 +64,11 @@ namespace COMBUST
 
   protected:
 
-    //! Options to reinitialize the G-function
-    enum ReinitializationAction
-    {
-      initialize,
-      compute_signeddistancefunction
-    };
-
     /// FG iteration number
     int FGiter() const { return fgiter_; }
 
     /// reinitialize G-function
-    void ReinitializeGfunc(ReinitializationAction action);
-
-    /// initialize g-function by scalar function field
-    void InitializeGFunc();
+    void ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc action);
 
     /// build signed distance function
     void SignedDistFunc();
@@ -108,14 +99,6 @@ namespace COMBUST
 
   private:
 
-    //! @name Time stepping variables
-    //int step_;
-    //int stepmax_;
-    //double time_;
-    //double timemax_;
-    //double dt_;
-    //@}
-    
     //! @name Fluid-G-function iteration variables
     // Fluid-G-function iteration counter
     int fgiter_;
@@ -128,8 +111,9 @@ namespace COMBUST
     //@}
 
     /// options for reinitialization of G-function;
-    ReinitializationAction reinitializationaction_;
+    INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
 
+    const Teuchos::ParameterList& combustdyn_;
   };
 
 } // namespace COMBUST

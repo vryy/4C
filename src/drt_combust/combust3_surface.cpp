@@ -29,8 +29,9 @@ DRT::ELEMENTS::Combust3Surface::Combust3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::Combust3* parent,
     const int lsurface) :
-  DRT::Element(id, element_combust3surface, owner), parent_(parent),
-      lsurface_(lsurface)
+DRT::Element(id,element_combust3surface,owner),
+parent_(parent),
+lsurface_(lsurface)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -107,6 +108,17 @@ DRT::ELEMENTS::Combust3Surface::~Combust3Surface()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  print this element (public)                              mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
+{
+  os << "XFluid3Surface ";
+  Element::Print(os);
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -121,18 +133,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3Surface::Lines()
   // so we have to allocate new line elements:
   return DRT::UTILS::ElementBoundaryFactory<Combust3Line,Combust3Surface>(DRT::UTILS::buildLines,this);
 }
-  
-
-/*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 01/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
-{
-  os << "Combust3Surface ";
-  Element::Print(os);
-  return;
-}
-
 
 
 #endif  // #ifdef CCADISCRET

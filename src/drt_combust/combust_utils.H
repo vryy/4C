@@ -14,6 +14,10 @@ Maintainer: Florian Henke
 #ifndef COMBUST_UTILS_H
 #define COMBUST_UTILS_H
 
+#include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/interfacexfsi.H"
+#include "../drt_xfem/field_enriched.H"
+
 namespace COMBUST
 {
 
@@ -22,37 +26,44 @@ namespace COMBUST
  *------------------------------------------------------------------------------------------------*/
 void printlogo();
 
-/*------------------------------------------------------------------------------------------------*
- | henke 09/08 |
- *------------------------------------------------------------------------------------------------*/
-/*void CaptureFlameFront()
-{
-  dserror("Geht noch nicht!");
-  return;
-}*/
+/*! 
+ * \brief create a map which, for each node (gid) and element (gid) on this processor, holds the
+ * corresponding enriched fields 
+ * 
+ * remark: Sind das nicht eigentlich einfach die dofs? Es sind ja auch Standard
+ * Anreicherungen (also eben auch nicht angereicherte dofs!) dabei              .   henke 10/08
+ */
+void createDofMap(
+    const XFEM::InterfaceHandle&                      ih,                  ///< interface information
+    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
+    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal   ///< enriched fields per element
+);
 
-/*------------------------------------------------------------------------------------------------*
- | henke 09/08 |
- *------------------------------------------------------------------------------------------------*/
-/*void DetermineGFunctionZeroLevelSet()
-{
-  dserror("Geht noch nicht!");
-  return;
-}*/
+/// apply nodal enrichments to intersected element
+void ApplyNodalEnrichments(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const int&                                    label,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+    );
 
-/*------------------------------------------------------------------------------------------------*
- | henke 09/08 |
- *------------------------------------------------------------------------------------------------*/
-/*void RefineFlameFront()
-{
-  dserror("Geht noch nicht!");
-  return;
-}*/
+/// apply standard dofs to nodes
 
-/*------------------------------------------------------------------------------------------------*
- | create integration cells at discontinuity                                          henke 09/08 |
- *------------------------------------------------------------------------------------------------*/
-void CreateIntegrationCells();
+void applyStandardEnrichment(
+    const XFEM::InterfaceHandle&                  ih,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+);
+
+/*! 
+ * \brief apply standard dofs to nodes
+ * \note this is 3d fluid specific and should somehow be generalized
+ */
+void applyStandardEnrichmentNodalBasedApproach(
+    const XFEM::InterfaceHandle&                  ih,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+);
 
 } //namespace COMBUST
 

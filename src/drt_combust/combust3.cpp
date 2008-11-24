@@ -94,8 +94,6 @@ void DRT::ELEMENTS::Combust3::Pack(std::vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // is_ale_
-//  AddtoPack(data,is_ale_);
 
   // data_
   vector<char> tmp(0);
@@ -121,8 +119,6 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // is_ale_
-//  ExtractfromPack(position,data,is_ale_);
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

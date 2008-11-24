@@ -3,10 +3,10 @@
 \brief not documented yet!
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Florian Henke
+            henke@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15265
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -15,8 +15,8 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "combust_fluidimplicitintegration.H"
-#include "../drt_fluid/time_integration_scheme.H"
 
+#include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
@@ -28,17 +28,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "combust3_interpolation.H"
-#include "combust_interface.H"
+#include "combust_interface.H" // nötig?
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_geometry/vector_definitions.H"
 
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
@@ -59,6 +54,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   step_(0),
   stepmax_(params_.get<int>   ("max number timesteps")),
   maxtime_(params_.get<double>("total time")),
+  timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
@@ -81,11 +77,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 //  emptyboundarydis_->SetState("idispcolnp",tmpdisp);
 //  emptyboundarydis_->SetState("idispcoln",tmpdisp);
 
-  // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,null,0));
+  // soll der DofManager hier bleiben, oder soll er in den Combustion Algorithmus wandern? henke 10/08
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,true));
-
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,true));
   /*----------------------------------------------------------------------------------------------*
    * comment missing! Axels comment: tell elements about the dofs and the integration  
    *----------------------------------------------------------------------------------------------*/
@@ -93,12 +87,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     ParameterList eleparams;
     eleparams.set("action","store_xfem_info");
     eleparams.set("dofmanager",dofmanager);
-    eleparams.set("interfacehandle",ih);
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
+    eleparams.set("interfacehandle",null);  // klären, wie das interfacehandle hier rein kommt!
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
 
@@ -132,7 +121,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 /*------------------------------------------------------------------------------------------------*
- | destructor                                                                         henke 08/08 |
+ | destructor: Steht in xfluidimplicitintegration.cpp weiter unten!                   henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 FLD::CombustFluidImplicitTimeInt::~CombustFluidImplicitTimeInt()
 {
@@ -140,11 +129,12 @@ FLD::CombustFluidImplicitTimeInt::~CombustFluidImplicitTimeInt()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | Don't use! Switch over transient/stationary is in combust_dyn!                     henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::Integrate(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret)
+void FLD::CombustFluidImplicitTimeInt::Integrate()
 {
+  dserror("Don't use this function! Its switch over transient/stationary scheme is in dynamic routine!");
+/*
   // bound for the number of startsteps
   const int    numstasteps         =params_.get<int>   ("number of start steps");
 
@@ -193,17 +183,16 @@ void FLD::CombustFluidImplicitTimeInt::Integrate(
   }
 
   // print the results of time measurements
-  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
+*/
 } // FluidImplicitTimeInt::Integrate
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::TimeLoop(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret)
+void FLD::CombustFluidImplicitTimeInt::TimeLoop()
 {
 
 /*
@@ -212,8 +201,8 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
  * NonlinearSolve in this class CombustFluidImplicitTimeInt.
  */
 
-  dserror("This is the wrong time loop! Use COMBUST::Algorithm::TimeLoop()");
-
+  dserror("Don't use this function! Use COMBUST::Algorithm::TimeLoop()");
+/*
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
@@ -224,8 +213,8 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
   {
 //    if (alefluid_)
 //      dserror("no ALE possible with linearised fluid");
-//    /* additionally it remains to mention that for the linearised
-//       fluid the stbilisation is hard coded to be SUPG/PSPG */
+//      additionally it remains to mention that for the linearised
+//       fluid the stbilisation is hard coded to be SUPG/PSPG 
   }
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
@@ -234,6 +223,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
 
   Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   cutterdiscret->SetState("idispcolnp",idispcolnp);
@@ -263,7 +253,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
         break;
       default:
         dserror("parameter out of range: IOP\n");
-      } /* end of switch(timealgo) */
+      } // end of switch(timealgo) 
     }
 
     switch (dyntype)
@@ -290,29 +280,16 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
     // -------------------------------------------------------------------
     TimeUpdate();
 
-    // time measurement: output and statistics
-    TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
+    // -------------------------------------------------------------------
+    //  lift'n'drag forces, statistics time sample and output of solution
+    //  and statistics
+    // -------------------------------------------------------------------
+    StatisticsAndOutput();
 
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     EvaluateErrorComparedToAnalyticalSol();
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    Output();
-
-    // -------------------------------------------------------------------
-    //                    calculate lift'n'drag forces
-    // -------------------------------------------------------------------
-    const int liftdrag = params_.get<int>("liftdrag");
-
-    if (liftdrag == 0); // do nothing, we don't want lift & drag
-    if (liftdrag == 1)
-      dserror("how did you manage to get here???");
-    if (liftdrag == 2)
-      LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -323,6 +300,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop(
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
   }
+*/
 } // FluidImplicitTimeInt::TimeLoop
 
 /*------------------------------------------------------------------------------------------------*
@@ -339,13 +317,23 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   // for bdf2 theta is set by the timestepsizes, 2/3 for const. dt
   if (timealgo_==timeint_bdf2)
   {
-    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-  }
-
-  // do a backward Euler step for the first timestep
-  if (step_==1)
-  {
-    theta_ = 1.0;
+    // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
+    if (params_.get<FLUID_TIMEINTTYPE>("time int algo")==timeint_bdf2)
+    {
+      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    }
+    
+    // do a backward Euler step for the first timestep
+    if (step_==1)
+    {
+      timealgo_ = timeint_one_step_theta;
+      theta_ = params_.get<double>("start theta");
+    }
+    else
+    {
+      timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+      theta_ = params_.get<double>("theta");
+    }
   }
 }
 
@@ -386,12 +374,6 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   {
     ParameterList eleparams;
 
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
@@ -402,8 +384,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->SetState("velnp",state_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,dirichtoggle_);
+    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -415,33 +396,28 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->ClearState();
   }
 
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 }
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
+ |
+ | Within this routine, no parallel re-distribution is allowed to take place. Before and after this 
+ | function, it's ok to do that.
+ | Calling this function multiple times always results in the same solution vectors (axels comment)
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
-    Teuchos::RCP<DRT::Discretization>  cutterdiscret
-    )
+void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle)
 {
-  // within this routine, no parallel re-distribution is allowed to take place
-  // before and after this function, it's ok to do that
+  // import information about interface from Adapter class ADAPTER::FluidCombust
+  interfacehandle_ = interfacehandle;
 
-  // calling this function multiple times always results in the same solution vectors
-
-  // compute Intersection
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih = rcp(new COMBUST::InterfaceHandleCombust(discret_, cutterdiscret));
-//  cout << "tree after interfaceconstructor" << endl;
-//  ih->PrintTreeInformation(step_);
-  ih->toGmsh(step_);
+//  std::cout << "tree after interfaceconstructor" << endl;
+//  interfacehandle_->PrintTreeInformation(step_);
+//  interfacehandle_->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,true));
-
-  // save to be able to plot Gmsh stuff in Output()
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,true));
+  
+  // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
@@ -449,23 +425,23 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       ParameterList eleparams;
       eleparams.set("action","store_xfem_info");
       eleparams.set("dofmanager",dofmanager);
-      eleparams.set("interfacehandle",ih);
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",false);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
+      eleparams.set("interfacehandle",interfacehandle_);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
 
   // print global and element dofmanager to Gmsh
-  //XFEM::toGmsh(ih, step_);
+//  dofmanager->toGmsh(step_);
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it
   Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
   Epetra_Map newdofrowmap = *discret_->DofRowMap();
+
+  // print information about dofs
+  const int numdof = newdofrowmap.NumGlobalElements();
+  const int numnodaldof = dofmanager->NumNodalDof();
+  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl; 
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
@@ -475,11 +451,9 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
-  cout0_ << "switching " << endl;
-
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
-          ih, dofmanager,
+          interfacehandle_, dofmanager,
           olddofrowmap, newdofrowmap,
           oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
           oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -497,25 +471,22 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   dofswitch.mapVectorToNewDofDistribution(state_.veln_);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
-//  if (alefluid_)
-//  {
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispnp_);
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispn_);
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispnm_);
-//      dofswitch.mapVectorToNewDofDistribution(gridv_);
-//  }
-
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
-  //hist_         = LINALG::CreateVector(newdofrowmap,true);
-
-//  gridv_        = LINALG::CreateVector(newdofrowmap,true);
-
-  dirichtoggle_ = LINALG::CreateVector(newdofrowmap,true);
-  invtoggle_    = LINALG::CreateVector(newdofrowmap,true);
 
   zeros_        = LINALG::CreateVector(newdofrowmap,true);
+
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  {
+    ParameterList eleparams;
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
 
   neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
 
@@ -565,10 +536,9 @@ void FLD::CombustFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret)
+void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 {
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  //IncorporateInterface();
 
   PrepareNonlinearSolve();
 
@@ -586,18 +556,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
   //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
   int               itnum = 0;
+  const int         itemax = params_.get<int>("max nonlin iter steps");
   bool              stopnonliniter = false;
-
-  const int itemax  = params_.get<int>   ("max nonlin iter steps");
 
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
   // get new interface velocity
-  const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
-  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
+// const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
+// const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
-  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+  // rausgenommen, damit es kompiliert henke 14.11.08
+  //if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
 //    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
 //    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
@@ -610,12 +580,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-    f << time_ << " " << (*ivelcolnp)[0] << "  " << endl;
+//    f << time_ << " " << (*ivelcolnp)[0] << "  " << "\n";
 
     f.close();
   }
 
-  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
+  // rausgenommen, damit es kompiliert henke 14.11.08
+  //if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
   {
 //    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
 //    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
@@ -628,12 +599,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-    f << time_ << " " << (*ivelcoln)[0] << "  " << endl;
+//    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
 
     f.close();
   }
 
-  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+  // rausgenommen, damit es kompiliert henke 14.11.08
+  //if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -644,31 +616,29 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     const double periodendauer = 10.0;
-    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << endl;
+    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
 
     f.close();
   }
 
-
+  // action for elements
+  if (timealgo_!=timeint_stationary)
+  {
+    cout0_ << "******************************************************" << endl;
+    cout0_ << "* Warning! Does not work for moving boundaries, yet! *" << endl;
+    cout0_ << "******************************************************" << endl;
+  }
 
   if (myrank_ == 0)
   {
-    // action for elements
-    if (timealgo_==timeint_stationary)
-    {
-
-    }
-    else
-    {
-      cout << "******************************************************" << endl;
-      cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
-      cout << "******************************************************" << endl;
-    }
 
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
-
+  
+  // this is a hack to make the code compile! There should be no cutterdis in here! henke 10/08
+  Teuchos::RCP<DRT::Discretization>      cutterdiscret;
+  cutterdiscret = null;
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
@@ -698,9 +668,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       if (timealgo_==timeint_stationary)
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
-      {
         eleparams.set("action","calc_fluid_systemmat_and_residual");
-      }
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -724,9 +692,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("accn" ,state_.accn_);
 
       // give interface velocity to elements
-      eleparams.set("interface velocity",ivelcolnp);
-      //cout << "interface velocity" << endl;
-      //cout << *ivelcol << endl;
+//      eleparams.set("interface velocity",ivelcolnp);
 
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
@@ -745,9 +711,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
 
         discret_->ClearState();
 
-        // How to extract the density from the fluid material?
-        //trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
-        iforcecolnp->Scale(density_/dta_/theta_);
+        // get physical surface force
+        iforcecolnp->Scale(ResidualScaling());
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -763,10 +728,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
-    {
-      Epetra_Vector residual(*residual_);
-      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
-    }
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     double incvelnorm_L2;
     double velnorm_L2;
@@ -840,7 +802,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E",dtele);
-        printf(")\n");
+        printf(")");
       }
     }
     /* ordinary case later iteration steps:
@@ -881,7 +843,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")\n");
+          printf(")");
         }
     }
 
@@ -911,14 +873,14 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
       break;
     }
 
-    //--------- Apply dirichlet boundary conditions to system of equations
-    //          residual discplacements are supposed to be zero at
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    //          residual displacements are supposed to be zero at
     //          boundary conditions
     incvel_->PutScalar(0.0);
     {
       // time measurement: application of dbc
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
     //-------solve for residual displacements to correct incremental displacements
@@ -954,71 +916,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve(
   // macht der FSI algorithmus
   iforcecolnp->Scale(-1.0);
 
-  cutterdiscret->SetState("iforcenp", iforcecolnp);
-
-
-  const int nsd = 3;
-  const Epetra_Map* dofcolmap = cutterdiscret->DofColMap();
-  LINALG::Matrix<3,1> c;
-  c = 0.0;
-  for (int inode = 0; inode < cutterdiscret->NumMyColNodes(); ++inode)
-  {
-    const DRT::Node* node = cutterdiscret->lColNode(inode);
-    const std::vector<int> dof = cutterdiscret->Dof(node);
-    for (int isd = 0; isd < nsd; ++isd)
-    {
-      const double val = (*iforcecolnp)[dofcolmap->LID(dof[isd])];
-      c(isd) -= val; // minus to get correct sign of lift and drag (force acting on the body)
-    }
-
-  }
-
-  {
-    std::stringstream s;
-    std::stringstream header;
-
-    header << left  << std::setw(10) << "Time"
-           << right << std::setw(16) << "F_x"
-           << right << std::setw(16) << "F_y"
-           << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << time_
-      << right << std::setw(16) << scientific << c(0)
-      << right << std::setw(16) << scientific << c(1)
-      << right << std::setw(16) << scientific << c(2);
-
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".liftdrag.txt";
-    if (step_ <= 1)
-    {
-      f.open(fname.c_str(),std::fstream::trunc);
-      //f << header.str() << endl;
-    }
-    else
-    {
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-    }
-    f << s.str() << endl;
-    f.close();
-
-    //cout << header.str() << endl << s.str() << endl;
-  }
-
-  if (myrank_ == 0 && iforcecolnp->MyLength() >= 3)
-  {
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifaceforce.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-    f << time_ << " " << (*iforcecolnp)[0] << "  " << endl;
-
-    f.close();
-  }
-
+//  cutterdiscret->SetState("iforcenp", iforcecolnp);
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1033,25 +931,11 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    const int len = vel->MyLength();
-
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    //
-    // There is no epetra operation for this! Maybe we could have such a beast
-    // in ANA?
-
-    double* veln  = &(*state_.veln_)[0];
-    double* velnp = &(*state_.velnp_)[0];
-    double* dt    = &(*dirichtoggle_)[0];
-    double* idv   = &(*invtoggle_)[0];
-    const double* incvel = &(*vel)[0];
-
-    //------------------------------------------------ update (u,p) trial
-    for (int i=0; i<len; ++i)
-    {
-      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
-    }
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    aux->Update(1.0, *state_.veln_, 1.0, *vel, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
   }
 
   // add Neumann loads
@@ -1070,7 +954,12 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
   eleparams.set("total time",time_);
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
-  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameters for stabilization
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1086,13 +975,13 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
   // finalize the system matrix
   sysmat_->Complete();
 
-  trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // Apply dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
   // conditions
   incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
   */
 }
 
@@ -1121,6 +1010,42 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 }// FluidImplicitTimeInt::TimeUpdate
 
 /*------------------------------------------------------------------------------------------------*
+ | gammi 11/08 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
+{
+  // time measurement: output and statistics
+  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
+
+  // -------------------------------------------------------------------
+  //          calculate lift'n'drag forces from the residual
+  // -------------------------------------------------------------------
+  LiftDrag();
+
+  // -------------------------------------------------------------------
+  //          calculate flow through surfaces
+  // -------------------------------------------------------------------
+  ComputeSurfaceFlowrates();
+
+  // -------------------------------------------------------------------
+  //   add calculated velocity to mean value calculation (statistics)
+  // -------------------------------------------------------------------
+//  statisticsmanager_->DoTimeSample(step_,time_);
+
+  // -------------------------------------------------------------------
+  //                         output of solution
+  // -------------------------------------------------------------------
+  Output();
+
+  // -------------------------------------------------------------------
+  //          dumping of turbulence statistics if required
+  // -------------------------------------------------------------------
+//  statisticsmanager_->DoOutput(step_);
+
+  return;
+} // CombustFluidImplicitTimeInt::StatisticsAndOutput
+
+/*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Output()
@@ -1144,7 +1069,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
 //    output_.WriteVector("accn", accn_out);
 
-    // output real pressure
+    // output (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
     pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
@@ -1163,7 +1088,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (step_%uprestart_ == 0) //add restart data
+    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
       output_.WriteVector("accn", state_.accn_);
       output_.WriteVector("veln", state_.veln_);
@@ -1172,7 +1097,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (step_%uprestart_ == 0)
+  else if (uprestart_ != 0 && step_%uprestart_ == 0)
   {
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", state_.velnp_);
@@ -1221,25 +1146,25 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
+  const bool screen_out = false;
+
   if (gmshdebugout)
   {
     cout << "CombustFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
     std::stringstream filename;
     std::stringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamedel << filebase << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
 
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {"
-      << endl;
+      gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
@@ -1298,23 +1223,22 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           f.close();
         }
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 #if 0
   if (gmshdebugout)
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
+    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
     << ".pos";
-    filenamedel << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
@@ -1334,9 +1258,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1373,14 +1295,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
             //cout << cellvalues << endl;
           }
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-              cell->Shape(), cellvalues, xyze_cell) << endl;
+              cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
       }
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 #endif
 #if 0
@@ -1419,8 +1341,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
     std::remove(filenamexydel.str().c_str());
     std::remove(filenamexzdel.str().c_str());
     std::remove(filenameyzdel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"...";
-    flush(cout);
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
+
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
@@ -1440,12 +1362,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
       stringstream gmshfilecontentxz;
       stringstream gmshfilecontentyz;
       //gmshfilecontent << "View \" " << "Discontinous Viscous Stress Solution (Physical) \" {" << endl;
-      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {" << endl;
-      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {" << endl;
-      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {" << endl;
-      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {" << endl;
-      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {" << endl;
-      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {" << endl;
+      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {\n";
+      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {\n";
+      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {\n";
+      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {\n";
+      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {\n";
+      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
 
@@ -1457,9 +1379,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
-          dofmanagerForOutput_->constructElementDofManager(*actele,
-              element_ansatz);
+        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1477,7 +1397,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxz);
         const vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayz);
 
-        BlitzMat elementvalues(9,numparam);
+        LINALG::SerialDenseMatrix elementvalues(9,numparam);
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(0,iparam) = myvelnp[dofposxx[iparam]];
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(1,iparam) = myvelnp[dofposxy[iparam]];
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(2,iparam) = myvelnp[dofposxz[iparam]];
@@ -1505,7 +1425,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           cell->NodalPosXYZ(*actele, xyze_cell);
 
 //          {
-//          BlitzMat cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 //          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
 //              *cell, field, elementvalues, cellvalues);
 //          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
@@ -1514,42 +1434,42 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
-          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << endl;
+          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << "\n";
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
-          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << endl;
+          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << "\n";
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
-          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << endl;
+          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << "\n";
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
-          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << endl;
+          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << "\n";
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
-          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << endl;
+          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << "\n";
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
-          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << endl;
+          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << "\n";
           }
         }
       }
       //gmshfilecontent   << "};" << endl;
-      gmshfilecontentxx << "};" << endl;
-      gmshfilecontentyy << "};" << endl;
-      gmshfilecontentzz << "};" << endl;
-      gmshfilecontentxy << "};" << endl;
-      gmshfilecontentxz << "};" << endl;
-      gmshfilecontentyz << "};" << endl;
+      gmshfilecontentxx << "};\n";
+      gmshfilecontentyy << "};\n";
+      gmshfilecontentzz << "};\n";
+      gmshfilecontentxy << "};\n";
+      gmshfilecontentxz << "};\n";
+      gmshfilecontentyz << "};\n";
       //f_system   << gmshfilecontent.str();
       f_systemxx << gmshfilecontentxx.str();
       f_systemyy << gmshfilecontentyy.str();
@@ -1558,15 +1478,15 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
       f_systemxz << gmshfilecontentxz.str();
       f_systemyz << gmshfilecontentyz.str();
     }
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 #endif
 
 
   PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
-  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
-  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
-  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+//  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
+//  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
+//  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1583,6 +1503,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
+  const bool screen_out = false;
+
   if (gmshdebugout)
   {
 
@@ -1593,12 +1515,12 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     filename << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
     filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << name_in_gmsh << "\" {" << endl;
+      gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
@@ -1650,7 +1572,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                cell->Shape(), cellvalues, xyze_cell) << endl;
+                cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
         }
         else
@@ -1661,16 +1583,14 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           for (GEO::BoundaryIntCells::const_iterator cell =
             boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
           {
-            {
-              LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-              //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                  *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-              LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-              cell->NodalPosXYZ(*actele, xyze_cell);
-              gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-                  cell->Shape(), cellvalues, xyze_cell) << endl;
-            }
+            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            //std::cout << cellvalues << endl;
+            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
+            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+            cell->NodalPosXYZ(*actele, xyze_cell);
+            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+                cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
 
           // draw uncutted element
@@ -1697,7 +1617,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0,0) << endl;
+          f << time_ << "  " << elementvalues(0,0) << "\n";
 
           f.close();
         }
@@ -1707,7 +1627,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << endl;
   }
 }
 
@@ -1730,16 +1650,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
     Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-    cutterdiscret->SetState("idispcolnp",idispcolnp);
-    cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-
-    cutterdiscret->SetState("idispcoln",idispcoln);
-    cutterdiscret->SetState("ivelcoln",ivelcoln);
-    cutterdiscret->SetState("iacccoln",iacccoln);
-
-    ComputeInterfaceAndSetDOFs(cutterdiscret);
+    //IncorporateInterface();
     cutterdiscret->ClearState();
   }
 
@@ -1845,6 +1759,97 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         state_.veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
+
+    // add random perturbation
+    if(whichinitialfield==3)
+    {
+      const int numdim = params_.get<int>("number of velocity degrees of freedom");
+
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+      int err =0;
+
+      // random noise is perc percent of the initial profile
+
+      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+
+      // out to screen
+      if (myrank_==0)
+      {
+        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
+        cout << "\n\n";
+      }
+
+      double bmvel=0;
+      double mybmvel=0;
+      double thisvel=0;
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+          int lid = dofrowmap->LID(gid);
+
+          thisvel=(*state_.velnp_)[lid];
+          if (mybmvel*mybmvel < thisvel*thisvel) mybmvel=thisvel;
+        }
+      }
+
+      // the noise is proportional to the bulk mean velocity of the
+      // undisturbed initial field (=2/3*maximum velocity)
+      mybmvel=2*mybmvel/3;
+      discret_->Comm().MaxAll(&mybmvel,&bmvel,1);
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        // check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
+
+        lnode->GetCondition("SurfacePeriodic",mypbc);
+
+        // check whether a periodic boundary condition is active on this node
+        if (mypbc.size()>0)
+        {
+          // yes, we have one
+
+          // get the list of all his slavenodes
+//          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+
+          // slavenodes are ignored
+//          if(master == pbcmapmastertoslave_->end()) continue;
+        }
+
+        // add random noise on initial function field
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+
+          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+
+          double noise = perc * bmvel * randomnumber;
+
+          err += state_.velnp_->SumIntoGlobalValues(1,&noise,&gid);
+          err += state_.veln_ ->SumIntoGlobalValues(1,&noise,&gid);
+        }
+
+        if(err!=0)
+        {
+          dserror("dof not on proc");
+        }
+      }
+    }
   }
   else
   {
@@ -1924,8 +1929,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret)
+void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem()
 {
 
 /*
@@ -1934,24 +1938,18 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
  * NonlinearSolve in this class CombustFluidImplicitTimeInt.
  */
 
-  dserror("This is the wrong static algorithm! Use COMBUST::Algorithm::Solve StationaryProblem()");
-
+  dserror("This is the wrong stationary algorithm! Use COMBUST::Algorithm::SolveStationaryProblem()");
+/*
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
   const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  const Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-  cout << "SetState" << endl;
-  cutterdiscret->SetState("idispcolnp", idispcolnp);
-  cutterdiscret->SetState("idispcoln", idispcoln);
-  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-  cutterdiscret->SetState("ivelcoln", ivelcoln);
-  cutterdiscret->SetState("iacccoln", iacccoln);
-
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  IncorporateInterface();
 
   PrepareNonlinearSolve();
 
@@ -1992,22 +1990,21 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
-   {
-     ParameterList eleparams;
+    {
+      ParameterList eleparams;
 
-     // other parameters needed by the elements
-     eleparams.set("total time",time_);
-     eleparams.set("delta time",origdta);
-     eleparams.set("thsl",1.0); // no timefac in stationary case
+      // other parameters needed by the elements
+      eleparams.set("total time",time_);
+      eleparams.set("delta time",origdta);
+      eleparams.set("thsl",1.0); // no timefac in stationary case
 
-     // set vector values needed by elements
-     discret_->ClearState();
-     discret_->SetState("velnp",state_.velnp_);
-     // predicted dirichlet values
-     // velnp then also holds prescribed new dirichlet values
-     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-     discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,dirichtoggle_);
-     discret_->ClearState();
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("velnp",state_.velnp_);
+      // predicted dirichlet values
+      // velnp then also holds prescribed new dirichlet values
+      discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+      discret_->ClearState();
 
      // evaluate Neumann b.c.
      neumann_loads_->PutScalar(0.0);
@@ -2015,35 +2012,19 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem(
      discret_->ClearState();
    }
 
-   // compute an inverse of the dirichtoggle vector
-   invtoggle_->PutScalar(1.0);
-   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
-
-
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolve(cutterdiscret);
-
-    // -------------------------------------------------------------------
-    //                    calculate lift'n'drag forces
-    // -------------------------------------------------------------------
-    int liftdrag = params_.get<int>("liftdrag");
-
-    if(liftdrag == 0); // do nothing, we don't want lift & drag
-    if(liftdrag == 1)
-      dserror("how did you manage to get here???");
-    if(liftdrag == 2)
-      LiftDrag();
+    NonlinearSolve();
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    StatisticsAndOutput();
 
-  } // end of time loop
-
-} // FluidImplicitTimeInt::SolveStationaryProblem
+  } // end of pseudo time loop
+*/
+} // CombustFluidImplicitTimeInt::SolveStationaryProblem
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -2067,142 +2048,54 @@ Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::CalcStresses()
 
   return integratedshapefunc;
 
-} // FluidImplicitTimeInt::CalcStresses()
+} // CombustFluidImplicitTimeInt::CalcStresses()
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 {
-  std::map< const int, std::set<DRT::Node* > > ldnodemap;
-  std::map< const int, const std::vector<double>* > ldcoordmap;
+  // in this map, the results of the lift drag calculation are stored
+  RCP<map<int,vector<double> > > liftdragvals;
 
-  // allocate and initialise LiftDrag conditions
-  std::vector<DRT::Condition*> ldconds;
-  discret_->GetCondition("LIFTDRAG",ldconds);
+  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
 
-  // space dimension of the problem
-  const int ndim = params_.get<int>("number of velocity degrees of freedom");
+  return;
+} // CombustFluidImplicitTimeInt::LiftDrag
 
-  // there is an L&D condition if it has a size
-  if( ldconds.size() )
+/*------------------------------------------------------------------------------------------------*
+ | henke 08/08 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
+{
+  
+  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
+
+  if (not volumeflowratepersurface.empty())
   {
-
-    // prepare output
-    if (myrank_==0)
+    cout << "Number of flow rate conditions... " << volumeflowratepersurface.size() << endl;
+  }
+  
+  double overall_flowrate = 0.0;
+  std::map<int,double>::const_iterator entry;
+  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )
+  {
+    const int condID = entry->first;
+    const double value = entry->second;
+    overall_flowrate += value;
+    if (myrank_ == 0)
     {
-      std::cout << "Lift and drag calculation:" << "\n";
-      if (ndim == 2)
-      {
-        std::cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
-      }
-      if (ndim == 3)
-      {
-        std::cout << "lift'n'drag Id      F_x             F_y             F_z           ";
-        std::cout << "M_x             M_y             M_z :" << "\n";
-      }
-    }
-
-    // sort data
-    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
-    {
-      /* get label of present LiftDrag condition  */
-      const unsigned int label = ldconds[i]->Getint("label");
-      /* get new nodeset for new label OR:
-         return pointer to nodeset for known label ... */
-      std::set<DRT::Node*>& nodes = ldnodemap[label];
-
-      // centre coordinates to present label
-      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
-
-      /* get pointer to its nodal Ids*/
-      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
-
-      /* put all nodes belonging to the L&D line or surface into 'nodes' which are
-         associated with the present label */
-      for (unsigned j=0; j<ids->size(); ++j)
-      {
-        // give me present node Id
-        const int node_id = (*ids)[j];
-        // put it into nodeset of actual label if node is new and mine
-        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
-	  nodes.insert(discret_->gNode(node_id));
-      }
-    } // end loop over conditions
-
-
-    // now step the label map
-    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
-         labelit != ldnodemap.end(); ++labelit )
-    {
-      const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
-      const int label = labelit->first;                    // the present label
-      std::vector<double> values(6,0.0);             // vector with lift&drag forces
-      std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
-
-      // get also pointer to centre coordinates
-      const std::vector<double>* centerCoord = ldcoordmap[label];
-
-      // loop all nodes within my set
-      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
-      {
-        const double* x = (*actnode)->X(); // pointer to nodal coordinates
-        const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
-        const std::vector<int> dof = discret_->Dof(*actnode);
-
-        std::vector<double> distances (3);
-        for (unsigned j=0; j<3; ++j)
-        {
-          distances[j]= x[j]-(*centerCoord)[j];
-        }
-        // get nodal forces
-        const double fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
-        const double fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
-        const double fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
-        values[0] += fx;
-        values[1] += fy;
-        values[2] += fz;
-
-        // calculate nodal angular momenta
-        values[3] += distances[1]*fz-distances[2]*fy;
-        values[4] += distances[2]*fx-distances[0]*fz;
-        values[5] += distances[0]*fy-distances[1]*fx;
-      } // end: loop over nodes
-
-      // care for the fact that we are (most likely) parallel
-      trueresidual_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
-
-      // do the output
-      if (myrank_==0)
-      {
-        if (ndim == 2)
-	{
-          std::cout << "     " << label << "         ";
-          std::cout << std::scientific << resultvec[0] << "    ";
-          std::cout << std::scientific << resultvec[1] << "    ";
-          std::cout << std::scientific << resultvec[5];
-          std::cout << "\n";
-        }
-        if (ndim == 3)
-	{
-          std::cout << "     " << label << "         ";
-          std::cout << std::scientific << resultvec[0] << "    ";
-          std::cout << std::scientific << resultvec[1] << "    ";
-          std::cout << std::scientific << resultvec[2] << "    ";
-          std::cout << std::scientific << resultvec[3] << "    ";
-          std::cout << std::scientific << resultvec[4] << "    ";
-          std::cout << std::scientific << resultvec[5];
-          std::cout << "\n";
-	}
-      }
-
-    } // end: loop over L&D labels
-    if (myrank_== 0)
-    {
-      std::cout << "\n";
+      cout << " - flowrate for label " << condID << ":  " <<  scientific << value << endl;
     }
   }
-}//FluidImplicitTimeInt::LiftDrag
+  if (not volumeflowratepersurface.empty())
+  {
+    cout << " - flowrate over all boundaries: " << overall_flowrate << endl;
+  }
+
+  return;
+}
+
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
